@@ -1339,8 +1339,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   service_manager::Identity renderer_identity = host->GetChildIdentity();
   ChromeService::GetInstance()->connector()->StartService(
       service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                renderer_identity.user_id(),
-                                renderer_identity.instance()),
+                                renderer_identity.instance_group(),
+                                renderer_identity.instance_id()),
       std::move(service), mojo::MakeRequest(&pid_receiver));
 }
 

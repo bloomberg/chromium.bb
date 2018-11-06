@@ -29,7 +29,7 @@ SpellcheckService* SpellcheckServiceFactory::GetForRenderer(
     const service_manager::Identity& renderer_identity) {
   content::BrowserContext* context =
       content::BrowserContext::GetBrowserContextForServiceUserId(
-          renderer_identity.user_id());
+          renderer_identity.instance_group());
   if (!context)
     return nullptr;
   return GetForContext(context);

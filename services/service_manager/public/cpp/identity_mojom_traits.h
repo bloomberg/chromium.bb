@@ -17,26 +17,27 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
   static const std::string& name(const service_manager::Identity& identity) {
     return identity.name();
   }
-  static const std::string& user_id(const service_manager::Identity& identity) {
-    return identity.user_id();
-  }
-  static const std::string& instance(
+  static const std::string& instance_group(
       const service_manager::Identity& identity) {
-    return identity.instance();
+    return identity.instance_group();
+  }
+  static const std::string& instance_id(
+      const service_manager::Identity& identity) {
+    return identity.instance_id();
   }
   static bool Read(service_manager::mojom::IdentityDataView data,
                    service_manager::Identity* out) {
-    std::string name, user_id, instance;
+    std::string name, instance_group, instance_id;
     if (!data.ReadName(&name))
       return false;
 
-    if (!data.ReadUserId(&user_id))
+    if (!data.ReadInstanceGroup(&instance_group))
       return false;
 
-    if (!data.ReadInstance(&instance))
+    if (!data.ReadInstanceId(&instance_id))
       return false;
 
-    *out = service_manager::Identity(name, user_id, instance);
+    *out = service_manager::Identity(name, instance_group, instance_id);
     return true;
   }
 };

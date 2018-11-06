@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -534,8 +536,8 @@ class ServiceManager::Instance
 
   // mojom::ServiceManager implementation:
   void AddListener(mojom::ServiceManagerListenerPtr listener) override {
-    // TODO(beng): this should only track the instances matching this user, and
-    // root.
+    // TODO(beng): this should only track the instances matching this instance
+    // group, or the root instance group.
     service_manager_->AddListener(std::move(listener));
   }
 
@@ -544,8 +546,8 @@ class ServiceManager::Instance
       mojom::ServicePtr* service,
       mojom::PIDReceiverRequest* pid_receiver_request,
       const std::string* target_interface_name) {
-    if (target->user_id() == mojom::kInheritUserID)
-      target->set_user_id(identity_.user_id());
+    if (target->instance_group() == mojom::kInheritUserID)
+      target->set_instance_group(identity_.instance_group());
 
     mojom::ConnectResult result = ValidateIdentity(*target);
     if (!Succeeded(result))
@@ -562,8 +564,9 @@ class ServiceManager::Instance
       LOG(ERROR) << "Error: empty service name.";
       return mojom::ConnectResult::INVALID_ARGUMENT;
     }
-    if (!base::IsValidGUID(identity.user_id())) {
-      LOG(ERROR) << "Error: invalid user_id: " << identity.user_id();
+    if (!base::IsValidGUID(identity.instance_group())) {
+      LOG(ERROR) << "Error: invalid instance group: "
+                 << identity.instance_group();
       return mojom::ConnectResult::INVALID_ARGUMENT;
     }
     return mojom::ConnectResult::SUCCEEDED;
@@ -590,8 +593,9 @@ class ServiceManager::Instance
       }
       if (service_manager_->GetExistingInstance(target)) {
         LOG(ERROR) << "Cannot find a client process matching existing identity:"
-                   << "Name: " << target.name() << " User: "
-                   << target.user_id() << " Instance: " << target.instance();
+                   << "Name: " << target.name()
+                   << " Instance Group: " << target.instance_group()
+                   << " Instance: " << target.instance_id();
         return mojom::ConnectResult::INVALID_ARGUMENT;
       }
     }
@@ -605,29 +609,31 @@ class ServiceManager::Instance
     // TODO(beng): Need to do the following additional policy validation of
     // whether this instance is allowed to connect using:
     // - non-null client process info.
-    bool skip_user_check =
+    bool skip_instance_group_check =
         options_.instance_sharing ==
             catalog::ServiceOptions::InstanceSharingType::SINGLETON ||
         options_.instance_sharing ==
             catalog::ServiceOptions::InstanceSharingType::
-                SHARED_INSTANCE_ACROSS_USERS ||
-        options_.can_connect_to_other_services_as_any_user;
+                SHARED_ACROSS_INSTANCE_GROUPS ||
+        options_.can_connect_to_instances_in_any_group;
 
-    if (!skip_user_check && target.user_id() != identity_.user_id() &&
-        target.user_id() != mojom::kRootUserID) {
+    if (!skip_instance_group_check &&
+        target.instance_group() != identity_.instance_group() &&
+        target.instance_group() != mojom::kRootUserID) {
       LOG(ERROR) << "Instance: " << identity_.name()
-                 << " running as: " << identity_.user_id()
+                 << " running in group: " << identity_.instance_group()
                  << " attempting to connect to: " << target.name()
-                 << " as: " << target.user_id() << " without"
-                 << " the 'can_connect_to_other_services_as_any_user' option.";
+                 << " in group: " << target.instance_group() << " without"
+                 << " the 'can_connect_to_instances_in_any_group' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
-    if (!target.instance().empty() && target.instance() != target.name() &&
+    if (!target.instance_id().empty() &&
+        target.instance_id() != target.name() &&
         !options_.can_connect_to_other_services_with_any_instance_name) {
       LOG(ERROR)
           << "Instance: " << identity_.name() << " attempting to"
           << " connect to " << target.name()
-          << " using Instance name: " << target.instance() << " without the"
+          << " using Instance name: " << target.instance_id() << " without the"
           << " 'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
@@ -781,9 +787,10 @@ class ServiceManager::IdentityToInstanceMap {
       case InstanceType::kRegular:
         regular_instances_.insert(std::make_pair(identity, instance));
         break;
-      case InstanceType::kAllUsers:
+      case InstanceType::kSharedAcrossInstanceGroups:
         all_user_instances_.insert(std::make_pair(
-            NameAndInstanceId(identity.name(), identity.instance()), instance));
+            NameAndInstanceId(identity.name(), identity.instance_id()),
+            instance));
         break;
       case InstanceType::kSingleton:
         singleton_instances_.insert(std::make_pair(identity.name(), instance));
@@ -798,7 +805,7 @@ class ServiceManager::IdentityToInstanceMap {
     if (default_iter != regular_instances_.end())
       return default_iter->second;
     auto all_user_iter = all_user_instances_.find(
-        NameAndInstanceId(identity.name(), identity.instance()));
+        NameAndInstanceId(identity.name(), identity.instance_id()));
     if (all_user_iter != all_user_instances_.end())
       return all_user_iter->second;
     auto singleton_iter = singleton_instances_.find(identity.name());
@@ -814,7 +821,7 @@ class ServiceManager::IdentityToInstanceMap {
       return true;
     }
     auto all_user_iter = all_user_instances_.find(
-        NameAndInstanceId(identity.name(), identity.instance()));
+        NameAndInstanceId(identity.name(), identity.instance_id()));
     if (all_user_iter != all_user_instances_.end()) {
       all_user_instances_.erase(all_user_iter);
       return true;
@@ -824,6 +831,7 @@ class ServiceManager::IdentityToInstanceMap {
       singleton_instances_.erase(singleton_iter);
       return true;
     }
+
     return false;
   }
 
@@ -913,8 +921,8 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
   DCHECK(!params->target().name().empty());
-  DCHECK(base::IsValidGUID(params->target().user_id()));
-  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
+  DCHECK(base::IsValidGUID(params->target().instance_group()));
+  DCHECK_NE(mojom::kInheritUserID, params->target().instance_group());
   DCHECK(!params->HasClientProcessInfo() ||
          GetExistingInstance(params->target()) == nullptr);
 
@@ -923,7 +931,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     return;
 
   const catalog::Entry* entry =
-      catalog_.GetInstanceForUserId(params->target().user_id())
+      catalog_.GetInstanceForGroup(params->target().instance_group())
           ->Resolve(params->target().name());
   if (!entry) {
     LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
@@ -932,7 +940,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     return;
   }
 
-  const std::string& instance_name = params->target().instance();
+  const std::string& instance_name = params->target().instance_id();
   const InterfaceProviderSpecMap& interface_provider_specs =
       entry->interface_provider_specs();
 
@@ -940,17 +948,17 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   bool all_user_instance = entry->options().instance_sharing ==
                            catalog::ServiceOptions::InstanceSharingType::
-                               SHARED_INSTANCE_ACROSS_USERS;
+                               SHARED_ACROSS_INSTANCE_GROUPS;
   bool singleton_instance =
       entry->options().instance_sharing ==
       catalog::ServiceOptions::InstanceSharingType::SINGLETON;
   const Identity original_target(params->target());
 
-  // Services that have "shared_instance_across_users" value of
-  // "instance_sharing" option are
-  // allowed to field connection requests from any user. They also run with a
-  // synthetic user id generated here. The user id provided via Connect() is
-  // ignored. Additionally services with the "shared_instance_across_users"
+  // Services that have "shared_across_instance_groups" value of
+  // "instance_sharing" option are allowed to field connection requests from
+  // instances in any instance group. They also run with a synthetic instance
+  // group generated here. The instance group provided via |Connect()| is
+  // ignored. Additionally services with the "shared_across_instance_groups"
   // value are not tied to the lifetime of the service that started them,
   // instead they are owned by the Service Manager.
   Identity source_identity_for_creation;
@@ -959,7 +967,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   if (singleton_instance)
     instance_type = InstanceType::kSingleton;
   else if (all_user_instance)
-    instance_type = InstanceType::kAllUsers;
+    instance_type = InstanceType::kSharedAcrossInstanceGroups;
   else
     instance_type = InstanceType::kRegular;
 
@@ -967,15 +975,15 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   if (instance_type == InstanceType::kSingleton) {
     source_identity_for_creation = CreateServiceManagerIdentity();
     target = Identity(params->target().name(), base::GenerateGUID());
-  } else if (instance_type == InstanceType::kAllUsers) {
+  } else if (instance_type == InstanceType::kSharedAcrossInstanceGroups) {
     source_identity_for_creation = CreateServiceManagerIdentity();
     target =
         Identity(params->target().name(), base::GenerateGUID(), instance_name);
   } else {
     DCHECK_EQ(instance_type, InstanceType::kRegular);
     source_identity_for_creation = params->source();
-    target = Identity(params->target().name(), params->target().user_id(),
-                      instance_name);
+    target = Identity(params->target().name(),
+                      params->target().instance_group(), instance_name);
   }
   params->set_target(target);
 
@@ -1006,17 +1014,20 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   if (entry->parent()) {
     // This service is provided by another service via a ServiceFactory.
-    const std::string* target_user_id = &target.user_id();
     std::string factory_instance_name = instance_name;
 
-    // Use the original user ID so the existing embedder factory can be found
-    // and used to create the new service.
-    target_user_id = &original_target.user_id();
-    Identity packaged_service_target(target);
-    packaged_service_target.set_user_id(original_target.user_id());
+    // We normally ignore the target instance group and generate a unique
+    // instance group identifier when starting shared instances, but when those
+    // instances need to be started by a service factory, it's conceivable that
+    // the factory itself may be part of the originally targeted instance group.
+    // In that case we use the originally targeted instance group to identify
+    // the factory service.
+    Identity packaged_service_target(instance->identity());
+    packaged_service_target.set_instance_group(
+        original_target.instance_group());
     instance->set_identity(packaged_service_target);
 
-    Identity factory(entry->parent()->name(), *target_user_id,
+    Identity factory(entry->parent()->name(), original_target.instance_group(),
                      factory_instance_name);
 
     mojom::PIDReceiverPtr pid_receiver;
@@ -1051,8 +1062,8 @@ void ServiceManager::StartService(const Identity& identity) {
   params->set_source(CreateServiceManagerIdentity());
 
   Identity target_identity = identity;
-  if (target_identity.user_id() == mojom::kInheritUserID)
-    target_identity.set_user_id(mojom::kRootUserID);
+  if (target_identity.instance_group() == mojom::kInheritUserID)
+    target_identity.set_instance_group(mojom::kRootUserID);
   params->set_target(target_identity);
 
   Connect(std::move(params));
@@ -1061,7 +1072,7 @@ void ServiceManager::StartService(const Identity& identity) {
 bool ServiceManager::QueryCatalog(const Identity& identity,
                                   std::string* sandbox_type) {
   const catalog::Entry* entry =
-      catalog_.GetInstanceForUserId(identity.user_id())
+      catalog_.GetInstanceForGroup(identity.instance_group())
           ->Resolve(identity.name());
   if (!entry)
     return false;
@@ -1189,7 +1200,7 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     InstanceType instance_type,
     const InterfaceProviderSpecMap& specs,
     const catalog::ServiceOptions& options) {
-  CHECK(target.user_id() != mojom::kInheritUserID);
+  CHECK(target.instance_group() != mojom::kInheritUserID);
 
   auto instance = std::make_unique<Instance>(this, target, specs, options);
   Instance* raw_instance = instance.get();

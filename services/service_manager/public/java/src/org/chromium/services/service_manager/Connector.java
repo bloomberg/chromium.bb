@@ -40,8 +40,8 @@ public class Connector implements ConnectionErrorHandler {
             String serviceName, String interfaceName, InterfaceRequest<I> request) {
         Identity target = new Identity();
         target.name = serviceName;
-        target.userId = ConstantsConstants.INHERIT_USER_ID;
-        target.instance = "";
+        target.instanceGroup = ConstantsConstants.INHERIT_USER_ID;
+        target.instanceId = "";
 
         org.chromium.service_manager.mojom.Connector.BindInterfaceResponse callback =
                 new ConnectorBindInterfaceResponseImpl();

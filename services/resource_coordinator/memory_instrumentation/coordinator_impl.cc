@@ -379,7 +379,7 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
     if (pid == base::kNullProcessId) {
       VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
-              << "." << client_identity.instance() << "\"";
+              << "." << client_identity.instance_id() << "\"";
       continue;
     }
     clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type);

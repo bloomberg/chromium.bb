@@ -232,8 +232,9 @@ class ServiceManagerTest : public test::ServiceTest,
         [](base::RunLoop* loop, const Identity* expected_identity,
            const Identity& identity) {
           EXPECT_EQ(expected_identity->name(), identity.name());
-          EXPECT_EQ(expected_identity->user_id(), identity.user_id());
-          EXPECT_EQ(expected_identity->instance(), identity.instance());
+          EXPECT_EQ(expected_identity->instance_group(),
+                    identity.instance_group());
+          EXPECT_EQ(expected_identity->instance_id(), identity.instance_id());
           loop->Quit();
         },
         &loop, &identity));

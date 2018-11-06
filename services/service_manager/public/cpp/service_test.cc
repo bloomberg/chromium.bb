@@ -22,7 +22,7 @@ ServiceTestClient::~ServiceTestClient() {}
 
 void ServiceTestClient::OnStart() {
   test_->OnStartCalled(context()->connector(), context()->identity().name(),
-                       context()->identity().user_id());
+                       context()->identity().instance_group());
 }
 
 void ServiceTestClient::OnBindInterface(
@@ -53,10 +53,9 @@ std::unique_ptr<base::Value> ServiceTest::CreateCustomTestCatalog() {
 
 void ServiceTest::OnStartCalled(Connector* connector,
                                 const std::string& name,
-                                const std::string& user_id) {
+                                const std::string& instance_group) {
   DCHECK_EQ(connector_, connector);
   initialize_name_ = name;
-  initialize_userid_ = user_id;
   initialize_called_.Run();
 }
 

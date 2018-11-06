@@ -93,9 +93,21 @@ class ServiceManager {
   // Used in CreateInstance to specify how an instance should be shared between
   // various identities.
   enum class InstanceType {
-    kRegular,   // Unique for each user and each instance name.
-    kAllUsers,  // Same instance for all users. Unique for each instance name.
-    kSingleton  // Same instance for all users and all instance names.
+    // All fields of the instance's identity are relevant, so instances are
+    // generally isolated to their own instance group, and there may be multiple
+    // instances of the service within each instance group.
+    kRegular,
+
+    // There may be multiple instances of the service qualified by instance ID,
+    // but all such instances are shared across instance group boundaries. The
+    // instance group is therefore effectively ignored when resolving an
+    // Identity to a running instance.
+    kSharedAcrossInstanceGroups,
+
+    // A single instance of the service exists globally. For all connections to
+    // the service, both instance group and instance ID are ignored when
+    // resolving the Identity.
+    kSingleton,
   };
 
   void InitCatalog(mojom::ServicePtr catalog);
@@ -111,8 +123,8 @@ class ServiceManager {
   void OnInstanceStopped(const Identity& identity);
 
   // Returns a running instance matching |identity|. This might be an instance
-  // running as a different user or with a different instance name if one is
-  // available that services all users or is a singleton.
+  // running as in a different instance group or with a different instance ID if
+  // the service is shared across instance groups or is a singleton.
   Instance* GetExistingInstance(const Identity& identity) const;
 
   // Erases any identities mapping to |instance|. Following this call it is

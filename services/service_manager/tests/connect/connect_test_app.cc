@@ -84,9 +84,11 @@ class ConnectTestApp : public Service,
     bindings_.AddBinding(this, std::move(request));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
-    state->connection_remote_userid = source_info.identity.user_id();
+    state->connection_remote_instance_group =
+        source_info.identity.instance_group();
     state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
+    state->initialize_local_instance_group =
+        context()->identity().instance_group();
 
     context()->connector()->BindInterface(source_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
@@ -112,7 +114,7 @@ class ConnectTestApp : public Service,
     std::move(callback).Run("APP");
   }
   void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   // test::mojom::StandaloneApp:
