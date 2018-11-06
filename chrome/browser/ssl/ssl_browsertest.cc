@@ -5886,6 +5886,32 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SameDocumentHasSSLState) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Simulate the user revisiting a page without triggering a reload (e.g., when
+// clicking a bookmark with an anchor hash twice).  As this is a same document
+// navigation, the SSL state should be left intact despite not triggering a
+// network request. Regression test for https://crbug.com/877618.
+IN_PROC_BROWSER_TEST_P(SSLUITest, SameDocumentHasSSLStateNoLoad) {
+  ASSERT_TRUE(https_server_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL start_url(https_server_.GetURL("/ssl/google.html#foo"));
+  ui_test_utils::NavigateToURL(browser(), start_url);
+
+  // Simulate clicking on a bookmark.
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    NavigateParams navigate_params(browser(), start_url,
+                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    Navigate(&navigate_params);
+    observer.Wait();
+  }
+
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
 // Checks that if a client redirect occurs while the page is loading, the SSL
 // state reflects the final URL.
 IN_PROC_BROWSER_TEST_P(SSLUITest, ClientRedirectSSLState) {
