@@ -60,7 +60,6 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 # Next 5 here: https://ci.chromium.org/buildbot/tryserver.blink/mac10.10-blink-rel/1162
 crbug.com/891427 fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 # Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
@@ -77,7 +76,6 @@ crbug.com/891427 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Pass Failure Timeout Crash ]
 # Next 3 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac10.13_retina-blink-rel/996
-crbug.com/891427 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
 # Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
@@ -376,11 +374,6 @@ crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpa
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects.html [ Skip ]
-crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Skip ]
-crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scrollbar-touchscreen-fling.html [ Skip ]
-crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
-crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 
 # Tests not yet passing with Blink FractionalScrollOffsets enabled.
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
@@ -1963,7 +1956,8 @@ crbug.com/877361 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bu
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
-crbug.com/522648 virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
+crbug.com/522648 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
+crbug.com/522648 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Skip ]
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
@@ -2037,14 +2031,6 @@ crbug.com/567837 fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ S
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
-
-# These tests currently fail but are fixed with PaintTouchActionRects.
-crbug.com/876305 fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
-crbug.com/876305 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
-crbug.com/897186 fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
-crbug.com/897186 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
-crbug.com/897186 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
-crbug.com/897186 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
@@ -2521,21 +2507,6 @@ crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/to
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scroll.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scroll-by-page.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scrollbar-mainframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/gesture-scrollbar.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
@@ -2543,8 +2514,6 @@ crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gestu
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-####crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
@@ -2913,7 +2882,6 @@ crbug.com/828506 [ Linux Win ] fast/events/touch/scroll-without-mouse-lacks-mous
 crbug.com/828506 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Linux Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
 crbug.com/828506 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/828506 [ Linux Win ] virtual/paint-touchaction-rects/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Failure Pass ]
 
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]

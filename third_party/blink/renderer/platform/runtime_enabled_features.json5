@@ -926,6 +926,7 @@
     // Compute touch action rects in paint instead of ScrollingCoordinator.
     {
       name: "PaintTouchActionRects",
+      status: "stable",
     },
     // PaintTracking enables the Largest Text Paint metric, Last Text Paint
     // metric, Largest Image Paint metric and Last Image Paint metric.
