@@ -343,9 +343,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
-    // Temporarily CHECK for debugging https://crbug.com/817981.
-    CHECK(service_worker_ptr_.is_bound());
-    CHECK(service_worker_ptr_.get());
+    DCHECK(service_worker_ptr_.is_bound());
     return service_worker_ptr_.get();
   }
 
