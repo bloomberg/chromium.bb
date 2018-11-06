@@ -3,10 +3,11 @@ function clickOnElement(id, callback) {
   const rect = element.getBoundingClientRect();
   const xCenter = rect.x + rect.width / 2;
   const yCenter = rect.y + rect.height / 2;
+  const leftButton = 0;
   var pointerActions = [{
     source: "mouse",
     actions: [
-      { name: "pointerDown", x: xCenter, y: yCenter, button: "left" },
+      { name: "pointerDown", x: xCenter, y: yCenter, button: leftButton },
       { name: "pointerUp" },
     ]
   }];

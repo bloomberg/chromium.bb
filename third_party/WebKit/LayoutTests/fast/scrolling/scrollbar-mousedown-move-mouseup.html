@@ -39,6 +39,7 @@
   window.onload = async () => {
     let d1 = document.querySelector('#scrollme');
     let d2 = document.querySelector('#notscrollme');
+    const middleButton = 1;
 
     initEventHandlers(d1);
     initEventHandlers(d2);
@@ -67,7 +68,7 @@
         d1.offsetTop + 30,
         d2.offsetLeft + d2.offsetWidth - 4,
         d2.offsetTop + 4,
-        'middle');
+        middleButton);
       await waitFor(() => { return events['scrollme'].length == 4; });
 
       assert_greater_than(d1.scrollTop, 0);

@@ -216,7 +216,7 @@ function mouseUpAt(xPosition, yPosition) {
 }
 
 // Simulate a mouse click on point.
-function mouseClickOn(x, y, button = 'left') {
+function mouseClickOn(x, y, button = 0 /* left */) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
@@ -256,7 +256,7 @@ function mousePressOn(x, y, t) {
 
 // Simulate a mouse drag and drop. mouse down at {start_x, start_y}, move to
 // {end_x, end_y} and release.
-function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 'left', t = 0) {
+function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 0 /* left */, t = 0) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{

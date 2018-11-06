@@ -3,6 +3,7 @@
   // Define functions one by one and do not override the whole
   // test_driver_internal as it masks the new testing fucntions
   // that will be added in the future.
+  const leftButton = 0;
 
   window.test_driver_internal.click = function(element, coords) {
     return new Promise(function(resolve, reject) {
@@ -12,8 +13,8 @@
               source: 'mouse',
               actions: [
               {name: 'pointerMove', x: coords.x, y: coords.y},
-              {name: 'pointerDown', x: coords.x, y: coords.y, button: 'left'},
-              {name: 'pointerUp', button: 'left'}
+              {name: 'pointerDown', x: coords.x, y: coords.y, button: leftButton},
+              {name: 'pointerUp', button: leftButton}
               ]
             }],
             resolve);

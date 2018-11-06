@@ -12,6 +12,7 @@
 function selectText(start, end) {
   let startPoint = { x: 10 + 10, y: 20 + start * 20 + 8 };
   let endPoint = { x: 10 + 10, y: 20 + (end + 1) * 20 - 8 };
+  const leftButton = 0;
 
   assert_own_property(window, 'chrome');
   assert_own_property(window.chrome, 'gpuBenchmarking');
@@ -21,9 +22,9 @@ function selectText(start, end) {
         source: 'mouse',
         actions: [
           { name: 'pointerMove', x: startPoint.x, y: startPoint.y },
-          { name: 'pointerDown', x: startPoint.x, y: startPoint.y, button: 'left' },
+          { name: 'pointerDown', x: startPoint.x, y: startPoint.y, button: leftButton },
           { name: 'pointerMove', x: endPoint.x, y: endPoint.y },
-          { name: 'pointerUp', button: 'left' }
+          { name: 'pointerUp', button: leftButton }
         ]
       }], resolve);
   });

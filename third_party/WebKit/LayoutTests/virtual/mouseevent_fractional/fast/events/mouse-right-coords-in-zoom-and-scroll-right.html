@@ -14,6 +14,7 @@
 </div>
 <script>
     const floatPrecision = 0.00001;
+    const rightButton = 2;
 
     function sendMouseDownAt(x, y) {
         return new Promise(function(resolve, reject) {
@@ -22,7 +23,7 @@
                   [{source: "mouse",
                     actions: [
                       { name: "pointerMove", x: x, y: y},
-                      { name: "pointerDown", x: x, y: y, button: "right"},
+                      { name: "pointerDown", x: x, y: y, button: rightButton},
                       { name: "pointerUp" },
                   ]}];
               chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);

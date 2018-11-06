@@ -13,9 +13,9 @@ TEST(ActionsParserTest, ParseMousePointerActionSequence) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(
       R"( [{"source": "mouse", "id": 0,
             "actions": [{"name": "pointerDown", "x": 2, "y": 3,
-                         "button": "left"},
+                         "button": 0},
                         {"name": "pointerUp", "x": 2, "y": 3,
-                         "button": "left"}]}] )");
+                         "button": 0}]}] )");
 
   ActionsParser actions_parser(value.get());
   EXPECT_TRUE(actions_parser.ParsePointerActionSequence());
@@ -177,9 +177,9 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceMissingId) {
 TEST(ActionsParserTest, ParseMousePointerActionSequenceNoSource) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(
       R"( [{"id": 0, "actions": [{"name": "pointerDown", "x": 2, "y": 3,
-                                  "button": "left"},
+                                  "button": 0},
                                  {"name": "pointerUp", "x": 2, "y": 3,
-                                  "button": "left"}]}] )");
+                                  "button": 0}]}] )");
 
   ActionsParser actions_parser(value.get());
   EXPECT_FALSE(actions_parser.ParsePointerActionSequence());
@@ -201,9 +201,9 @@ TEST(ActionsParserTest, ParseMousePointerActionSequenceUnsupportedButton) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(
       R"( [{"source": "mouse", "id": 0,
             "actions": [{"name": "pointerDown", "x": 2, "y": 3,
-                         "button": "l"},
+                         "button": -1},
                         {"name": "pointerUp", "x": 2, "y": 3,
-                         "button": "left"}]}] )");
+                         "button": 0}]}] )");
 
   ActionsParser actions_parser(value.get());
   EXPECT_FALSE(actions_parser.ParsePointerActionSequence());

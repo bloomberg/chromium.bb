@@ -80,6 +80,8 @@ function mouseChordedButtonPress(targetSelector) {
       var targetRect = target.getBoundingClientRect();
       var xPosition = targetRect.left + boundaryOffset;
       var yPosition = targetRect.top + boundaryOffset;
+      const leftButton = 0;
+      const middleButton = 1;
       chrome.gpuBenchmarking.pointerActionSequence(
           [{
             source: 'mouse',
@@ -88,16 +90,16 @@ function mouseChordedButtonPress(targetSelector) {
                 name: 'pointerDown',
                 x: xPosition,
                 y: yPosition,
-                button: 'left'
+                button: leftButton
               },
               {
                 name: 'pointerDown',
                 x: xPosition,
                 y: yPosition,
-                button: 'middle'
+                button: middleButton
               },
-              {name: 'pointerUp', button: 'middle'},
-              {name: 'pointerUp', button: 'left'}
+              {name: 'pointerUp', button: middleButton},
+              {name: 'pointerUp', button: leftButton}
             ]
           }],
           resolve);
@@ -111,8 +113,9 @@ function mouseClickInTarget(targetSelector, targetFrame, button, shouldScrollToT
   var targetDocument = document;
   var frameLeft = 0;
   var frameTop = 0;
+  // Initialize the button value to left button.
   if (button === undefined) {
-    button = 'left';
+    button = 0;
   }
   if (targetFrame !== undefined) {
     targetDocument = targetFrame.contentDocument;
@@ -147,8 +150,9 @@ function mouseClickInTarget(targetSelector, targetFrame, button, shouldScrollToT
 function mouseDragInTargets(targetSelectorList, button) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
+      // Initialize the button value to left button.
       if (button === undefined) {
-        button = 'left';
+        button = 0;
       }
       scrollPageIfNeeded(targetSelectorList[0], document);
       var target = document.querySelector(targetSelectorList[0]);
@@ -209,7 +213,8 @@ function mouseRequestPointerLockAndCaptureInTarget(targetSelector, targetFrame) 
   var targetDocument = document;
   var frameLeft = 0;
   var frameTop = 0;
-  var button = 'left';
+  // Initialize the button value to left button.
+  var button = 0;
   if (targetFrame !== undefined) {
     targetDocument = targetFrame.contentDocument;
     var frameRect = targetFrame.getBoundingClientRect();
@@ -228,7 +233,7 @@ function mouseRequestPointerLockAndCaptureInTarget(targetSelector, targetFrame) 
         {source: 'mouse',
          actions: [
             {name: 'pointerMove', x: xPosition, y: yPosition},
-            {name: 'pointerDown', x: xPosition, y: yPosition, button: 'left'},
+            {name: 'pointerDown', x: xPosition, y: yPosition, button: button},
             {name: 'pointerMove', x: xPosition + 30, y: yPosition + 30},
             {name: 'pointerMove', x: xPosition + 30, y: yPosition},
             {name: 'pointerMove', x: xPosition + 60, y: yPosition + 30},

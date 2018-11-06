@@ -26,6 +26,7 @@ const selection = window.getSelection();
 
 const borderWidth = 2;
 const charWidth = metricSample.offsetWidth / metricSample.firstChild.length;
+const leftButton = 0;
 
 // To verify test script regression, we verify this test script moves mouse on
 // |unselectable| element.
@@ -51,7 +52,7 @@ function doAction() {
           actions: [
             {
               name: 'pointerDown',
-              button: 'left',
+              button: leftButton,
                x: startX + charWidth * 3,
                y: dragY,
             },
