@@ -140,12 +140,12 @@ void vp9_fwht4x4_c(const int16_t* input, tran_low_t* output, int stride);
 #define vp9_fwht4x4 vp9_fwht4x4_c
 
 void vp9_iht16x16_256_add_c(const tran_low_t* input,
-                            uint8_t* output,
-                            int pitch,
+                            uint8_t* dest,
+                            int stride,
                             int tx_type);
 void vp9_iht16x16_256_add_neon(const tran_low_t* input,
-                               uint8_t* output,
-                               int pitch,
+                               uint8_t* dest,
+                               int stride,
                                int tx_type);
 #define vp9_iht16x16_256_add vp9_iht16x16_256_add_neon
 
