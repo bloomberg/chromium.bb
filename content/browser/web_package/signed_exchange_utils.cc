@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/loader/download_utils_impl.h"
 #include "content/browser/web_package/origins_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
@@ -94,6 +95,10 @@ bool ShouldHandleAsSignedHTTPExchange(
     return false;
   if (!SignedExchangeRequestHandler::IsSupportedMimeType(head.mime_type))
     return false;
+  if (download_utils::MustDownload(request_url, head.headers.get(),
+                                   head.mime_type)) {
+    return false;
+  }
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     return true;
   if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeOriginTrial))
