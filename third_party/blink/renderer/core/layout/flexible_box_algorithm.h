@@ -152,6 +152,11 @@ class FlexItemVectorView {
     return vector_->at(start_ + i);
   }
 
+  FlexItem* begin() { return vector_->begin() + start_; }
+  const FlexItem* begin() const { return vector_->begin() + start_; }
+  FlexItem* end() { return vector_->begin() + end_; }
+  const FlexItem* end() const { return vector_->begin() + end_; }
+
  private:
   FlexItemVector* vector_;
   wtf_size_t start_;

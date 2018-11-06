@@ -1491,11 +1491,8 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
        ++line_number) {
     FlexLine& line_context = line_contexts[line_number];
     line_context.cross_axis_offset += line_offset;
-    for (wtf_size_t child_number = 0;
-         child_number < line_context.line_items.size(); ++child_number) {
-      FlexItem& flex_item = line_context.line_items[child_number];
+    for (FlexItem& flex_item : line_context.line_items)
       AdjustAlignmentForChild(*flex_item.box, line_offset);
-    }
 
     if (align_content.Distribution() == ContentDistributionType::kStretch &&
         available_cross_axis_space > 0)
@@ -1519,6 +1516,7 @@ void LayoutFlexibleBox::AdjustAlignmentForChild(LayoutBox& child,
 void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
   // Keep track of the space between the baseline edge and the after edge of
   // the box for each line.
+  // TODO(cbiesinger): This should be stored in FlexLine
   Vector<LayoutUnit> min_margin_after_baselines;
 
   for (FlexLine& line_context : line_contexts) {
@@ -1526,9 +1524,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
     LayoutUnit line_cross_axis_extent = line_context.cross_axis_extent;
     LayoutUnit max_ascent = line_context.max_ascent;
 
-    for (wtf_size_t child_number = 0;
-         child_number < line_context.line_items.size(); ++child_number) {
-      FlexItem& flex_item = line_context.line_items[child_number];
+    for (FlexItem& flex_item : line_context.line_items) {
       DCHECK(!flex_item.box->IsOutOfFlowPositioned());
 
       if (UpdateAutoMarginsInCrossAxis(
@@ -1564,14 +1560,11 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
   // wrap-reverse flips the cross axis start and end. For baseline alignment,
   // this means we need to align the after edge of baseline elements with the
   // after edge of the flex line.
-  for (wtf_size_t line_number = 0; line_number < line_contexts.size();
-       ++line_number) {
-    const FlexLine& line_context = line_contexts[line_number];
+  wtf_size_t line_number = 0;
+  for (FlexLine& line_context : line_contexts) {
     LayoutUnit min_margin_after_baseline =
-        min_margin_after_baselines[line_number];
-    for (wtf_size_t child_number = 0;
-         child_number < line_context.line_items.size(); ++child_number) {
-      const FlexItem& flex_item = line_context.line_items[child_number];
+        min_margin_after_baselines[line_number++];
+    for (FlexItem& flex_item : line_context.line_items) {
       if (flex_item.Alignment() == ItemPosition::kBaseline &&
           !flex_item.HasAutoMarginsInCrossAxis() && min_margin_after_baseline)
         AdjustAlignmentForChild(*flex_item.box, min_margin_after_baseline);
@@ -1627,9 +1620,7 @@ void LayoutFlexibleBox::FlipForRightToLeftColumn(
 
   LayoutUnit cross_extent = CrossAxisExtent();
   for (const FlexLine& line_context : line_contexts) {
-    for (wtf_size_t child_number = 0;
-         child_number < line_context.line_items.size(); ++child_number) {
-      const FlexItem& flex_item = line_context.line_items[child_number];
+    for (const FlexItem& flex_item : line_context.line_items) {
       DCHECK(!flex_item.box->IsOutOfFlowPositioned());
 
       LayoutPoint location = FlowAwareLocationForChild(*flex_item.box);
@@ -1646,9 +1637,7 @@ void LayoutFlexibleBox::FlipForWrapReverse(
     LayoutUnit cross_axis_start_edge) {
   LayoutUnit content_extent = CrossAxisContentExtent();
   for (const FlexLine& line_context : line_contexts) {
-    for (wtf_size_t child_number = 0;
-         child_number < line_context.line_items.size(); ++child_number) {
-      const FlexItem& flex_item = line_context.line_items[child_number];
+    for (const FlexItem& flex_item : line_context.line_items) {
       LayoutUnit line_cross_axis_extent = line_context.cross_axis_extent;
       LayoutUnit original_offset =
           line_context.cross_axis_offset - cross_axis_start_edge;
