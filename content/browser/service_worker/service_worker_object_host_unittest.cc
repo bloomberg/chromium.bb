@@ -55,8 +55,7 @@ class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
       override {
     events_.push_back(std::move(event));
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   const std::vector<mojom::ExtendableMessageEventPtr>& events() {

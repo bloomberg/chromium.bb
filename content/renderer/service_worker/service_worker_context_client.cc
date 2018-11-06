@@ -334,16 +334,15 @@ template <typename MapType, typename... Args>
 base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
                                                                  Args... args) {
   return base::BindOnce(
-      [](MapType* map, Args... args, base::TimeTicks dispatched_time,
-         int event_id) {
+      [](MapType* map, Args... args, int event_id) {
         auto iter = map->find(event_id);
         DCHECK(iter != map->end());
         std::move(iter->second)
             .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 std::forward<Args>(args)..., dispatched_time);
+                 std::forward<Args>(args)...);
         map->erase(iter);
       },
-      map, std::forward<Args>(args)..., base::TimeTicks::Now());
+      map, std::forward<Args>(args)...);
 }
 
 }  // namespace
@@ -845,8 +844,7 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
 
 void ServiceWorkerContextClient::DidHandleActivateEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerContextClient::DidHandleActivateEvent",
                          TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -854,14 +852,12 @@ void ServiceWorkerContextClient::DidHandleActivateEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->activate_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent",
@@ -870,14 +866,12 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_abort_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent",
@@ -886,14 +880,12 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_click_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent",
@@ -902,14 +894,12 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetch_fail_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchSuccessEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleBackgroundFetchSuccessEvent",
@@ -918,14 +908,12 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchSuccessEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->background_fetched_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleCookieChangeEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerContextClient::DidHandleCookieChangeEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -933,14 +921,12 @@ void ServiceWorkerContextClient::DidHandleCookieChangeEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->cookie_change_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleExtendableMessageEvent",
@@ -949,14 +935,12 @@ void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->message_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleInstallEvent(
     int event_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerContextClient::DidHandleInstallEvent",
                          TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -965,7 +949,7 @@ void ServiceWorkerContextClient::DidHandleInstallEvent(
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->install_event_callbacks,
                    context_->timeout_timer.get(), event_id, status,
-                   proxy_->HasFetchEventHandler(), event_dispatch_time);
+                   proxy_->HasFetchEventHandler());
 }
 
 void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
@@ -1054,8 +1038,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
 
 void ServiceWorkerContextClient::DidHandleFetchEvent(
     int event_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
@@ -1065,8 +1048,7 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   if (!RunEventCallback(&context_->fetch_event_callbacks,
-                        context_->timeout_timer.get(), event_id, status,
-                        event_dispatch_time)) {
+                        context_->timeout_timer.get(), event_id, status)) {
     // The event may have been aborted. Its response callback also needs to be
     // deleted.
     context_->fetch_response_callbacks.erase(event_id);
@@ -1079,8 +1061,7 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
 
 void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleNotificationClickEvent",
@@ -1089,14 +1070,12 @@ void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->notification_click_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleNotificationCloseEvent",
@@ -1105,14 +1084,12 @@ void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->notification_close_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandlePushEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerContextClient::DidHandlePushEvent",
                          TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1120,14 +1097,12 @@ void ServiceWorkerContextClient::DidHandlePushEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->push_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::DidHandleSyncEvent(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerContextClient::DidHandleSyncEvent",
                          TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1135,14 +1110,12 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
   RunEventCallback(&context_->sync_event_callbacks,
-                   context_->timeout_timer.get(), request_id, status,
-                   event_dispatch_time);
+                   context_->timeout_timer.get(), request_id, status);
 }
 
 void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
     int event_id,
-    bool payment_aborted,
-    base::TimeTicks event_dispatch_time) {
+    bool payment_aborted) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerContextClient::RespondToAbortPaymentEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1151,15 +1124,13 @@ void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
   DCHECK(base::ContainsKey(context_->abort_payment_result_callbacks, event_id));
   const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
       context_->abort_payment_result_callbacks[event_id];
-  result_callback->OnResponseForAbortPayment(payment_aborted,
-                                             event_dispatch_time);
+  result_callback->OnResponseForAbortPayment(payment_aborted);
   context_->abort_payment_result_callbacks.erase(event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
     int event_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerContextClient::DidHandleAbortPaymentEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1167,16 +1138,14 @@ void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->abort_payment_event_callbacks,
-                       context_->timeout_timer.get(), event_id, status,
-                       event_dispatch_time)) {
+                       context_->timeout_timer.get(), event_id, status)) {
     context_->abort_payment_result_callbacks.erase(event_id);
   }
 }
 
 void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
     int event_id,
-    bool can_make_payment,
-    base::TimeTicks event_dispatch_time) {
+    bool can_make_payment) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::RespondToCanMakePaymentEvent",
@@ -1187,15 +1156,13 @@ void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
       base::ContainsKey(context_->can_make_payment_result_callbacks, event_id));
   const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
       context_->can_make_payment_result_callbacks[event_id];
-  result_callback->OnResponseForCanMakePayment(can_make_payment,
-                                               event_dispatch_time);
+  result_callback->OnResponseForCanMakePayment(can_make_payment);
   context_->can_make_payment_result_callbacks.erase(event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
     int event_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandleCanMakePaymentEvent",
@@ -1204,16 +1171,14 @@ void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
       TRACE_EVENT_FLAG_FLOW_IN, "status",
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->can_make_payment_event_callbacks,
-                       context_->timeout_timer.get(), event_id, status,
-                       event_dispatch_time)) {
+                       context_->timeout_timer.get(), event_id, status)) {
     context_->can_make_payment_result_callbacks.erase(event_id);
   }
 }
 
 void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
     int payment_request_id,
-    const blink::WebPaymentHandlerResponse& web_response,
-    base::TimeTicks event_dispatch_time) {
+    const blink::WebPaymentHandlerResponse& web_response) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerContextClient::RespondToPaymentRequestEvent",
@@ -1228,15 +1193,13 @@ void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
       payments::mojom::PaymentHandlerResponse::New();
   response->method_name = web_response.method_name.Utf8();
   response->stringified_details = web_response.stringified_details.Utf8();
-  response_callback->OnResponseForPaymentRequest(std::move(response),
-                                                 event_dispatch_time);
+  response_callback->OnResponseForPaymentRequest(std::move(response));
   context_->payment_response_callbacks.erase(payment_request_id);
 }
 
 void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
     int payment_request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerContextClient::DidHandlePaymentRequestEvent",
@@ -1246,7 +1209,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
       ServiceWorkerUtils::MojoEnumToString(status));
   if (RunEventCallback(&context_->payment_request_event_callbacks,
                        context_->timeout_timer.get(), payment_request_id,
-                       status, event_dispatch_time)) {
+                       status)) {
     context_->payment_response_callbacks.erase(payment_request_id);
   }
 }

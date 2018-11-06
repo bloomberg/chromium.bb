@@ -259,27 +259,24 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
         response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
                                       std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kAbort:
-        std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                                base::TimeTicks());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::ABORTED);
         break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
                                             std::move(stream_handle_),
                                             std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kBlob:
         response_callback->OnResponse(OkResponse(std::move(blob_body_)),
                                       std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
 
       case ResponseMode::kBlobRange: {
@@ -312,29 +309,25 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                                                 blob_range_body_.size()));
         response_callback->OnResponse(std::move(response), std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks::Now());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       }
 
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks::Now());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kErrorResponse:
         response_callback->OnResponse(ErrorResponse(), std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::REJECTED,
-            base::TimeTicks::Now());
+            blink::mojom::ServiceWorkerEventStatus::REJECTED);
         break;
       case ResponseMode::kRedirectResponse: {
         response_callback->OnResponse(
             RedirectResponse(redirect_location_header_), std::move(timing));
         std::move(callback).Run(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-            base::TimeTicks());
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       }
     }

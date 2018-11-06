@@ -111,7 +111,6 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
-  event_dispatch_time_ = WTF::CurrentTimeTicks();
   // When handling a notificationclick, paymentrequest, or backgroundfetchclick
   // event, we want to allow one window to be focused or opened. These calls are
   // allowed between the call to willDispatchEvent() and the last call to
@@ -257,66 +256,55 @@ void WaitUntilObserver::MaybeCompleteEvent() {
           : mojom::ServiceWorkerEventStatus::COMPLETED;
   switch (type_) {
     case kAbortPayment:
-      client->DidHandleAbortPaymentEvent(event_id_, status,
-                                         event_dispatch_time_);
+      client->DidHandleAbortPaymentEvent(event_id_, status);
       break;
     case kActivate:
-      client->DidHandleActivateEvent(event_id_, status, event_dispatch_time_);
+      client->DidHandleActivateEvent(event_id_, status);
       break;
     case kCanMakePayment:
-      client->DidHandleCanMakePaymentEvent(event_id_, status,
-                                           event_dispatch_time_);
+      client->DidHandleCanMakePaymentEvent(event_id_, status);
       break;
     case kCookieChange:
-      client->DidHandleCookieChangeEvent(event_id_, status,
-                                         event_dispatch_time_);
+      client->DidHandleCookieChangeEvent(event_id_, status);
       break;
     case kFetch:
-      client->DidHandleFetchEvent(event_id_, status, event_dispatch_time_);
+      client->DidHandleFetchEvent(event_id_, status);
       break;
     case kInstall:
       To<ServiceWorkerGlobalScope>(*execution_context_).SetIsInstalling(false);
-      client->DidHandleInstallEvent(event_id_, status, event_dispatch_time_);
+      client->DidHandleInstallEvent(event_id_, status);
       break;
     case kMessage:
-      client->DidHandleExtendableMessageEvent(event_id_, status,
-                                              event_dispatch_time_);
+      client->DidHandleExtendableMessageEvent(event_id_, status);
       break;
     case kNotificationClick:
-      client->DidHandleNotificationClickEvent(event_id_, status,
-                                              event_dispatch_time_);
+      client->DidHandleNotificationClickEvent(event_id_, status);
       consume_window_interaction_timer_.Stop();
       ConsumeWindowInteraction(nullptr);
       break;
     case kNotificationClose:
-      client->DidHandleNotificationCloseEvent(event_id_, status,
-                                              event_dispatch_time_);
+      client->DidHandleNotificationCloseEvent(event_id_, status);
       break;
     case kPush:
-      client->DidHandlePushEvent(event_id_, status, event_dispatch_time_);
+      client->DidHandlePushEvent(event_id_, status);
       break;
     case kSync:
-      client->DidHandleSyncEvent(event_id_, status, event_dispatch_time_);
+      client->DidHandleSyncEvent(event_id_, status);
       break;
     case kPaymentRequest:
-      client->DidHandlePaymentRequestEvent(event_id_, status,
-                                           event_dispatch_time_);
+      client->DidHandlePaymentRequestEvent(event_id_, status);
       break;
     case kBackgroundFetchAbort:
-      client->DidHandleBackgroundFetchAbortEvent(event_id_, status,
-                                                 event_dispatch_time_);
+      client->DidHandleBackgroundFetchAbortEvent(event_id_, status);
       break;
     case kBackgroundFetchClick:
-      client->DidHandleBackgroundFetchClickEvent(event_id_, status,
-                                                 event_dispatch_time_);
+      client->DidHandleBackgroundFetchClickEvent(event_id_, status);
       break;
     case kBackgroundFetchFail:
-      client->DidHandleBackgroundFetchFailEvent(event_id_, status,
-                                                event_dispatch_time_);
+      client->DidHandleBackgroundFetchFailEvent(event_id_, status);
       break;
     case kBackgroundFetchSuccess:
-      client->DidHandleBackgroundFetchSuccessEvent(event_id_, status,
-                                                   event_dispatch_time_);
+      client->DidHandleBackgroundFetchSuccessEvent(event_id_, status);
       break;
   }
   execution_context_ = nullptr;

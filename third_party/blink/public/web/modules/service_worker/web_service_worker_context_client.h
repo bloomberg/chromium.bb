@@ -145,39 +145,31 @@ class WebServiceWorkerContextClient {
 
   // Called after an 'activate' event completed.
   virtual void DidHandleActivateEvent(int event_id,
-                                      mojom::ServiceWorkerEventStatus,
-                                      base::TimeTicks event_dispatch_time) {}
+                                      mojom::ServiceWorkerEventStatus) {}
 
   // Called after Background Fetch events (dispatched via
   // WebServiceWorkerContextProxy) are handled by the service worker.
   virtual void DidHandleBackgroundFetchAbortEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
   virtual void DidHandleBackgroundFetchClickEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
   virtual void DidHandleBackgroundFetchFailEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
   virtual void DidHandleBackgroundFetchSuccessEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
 
   // Called after 'cookiechange' events are handled by the service worker.
   virtual void DidHandleCookieChangeEvent(int event_id,
-                                          mojom::ServiceWorkerEventStatus,
-                                          base::TimeTicks event_dispatch_time) {
-  }
+                                          mojom::ServiceWorkerEventStatus) {}
 
   // Called after ExtendableMessageEvent was handled by the service worker.
   virtual void DidHandleExtendableMessageEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
 
   // RespondToFetchEvent* will be called after the service worker returns a
   // response to a FetchEvent, and DidHandleFetchEvent will be called after the
@@ -204,71 +196,56 @@ class WebServiceWorkerContextClient {
       base::TimeTicks event_dispatch_time,
       base::TimeTicks respond_with_settled_time) {}
   virtual void DidHandleFetchEvent(int fetch_event_id,
-                                   mojom::ServiceWorkerEventStatus,
-                                   base::TimeTicks event_dispatch_time) {}
+                                   mojom::ServiceWorkerEventStatus) {}
 
   // Called after InstallEvent (dispatched via WebServiceWorkerContextProxy) is
   // handled by the service worker.
   virtual void DidHandleInstallEvent(int install_event_id,
-                                     mojom::ServiceWorkerEventStatus,
-                                     base::TimeTicks event_dispatch_time) {}
+                                     mojom::ServiceWorkerEventStatus) {}
 
   // Called after NotificationClickEvent (dispatched via
   // WebServiceWorkerContextProxy) is handled by the service worker.
   virtual void DidHandleNotificationClickEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
 
   // Called after NotificationCloseEvent (dispatched via
   // WebServiceWorkerContextProxy) is handled by the service worker.
   virtual void DidHandleNotificationCloseEvent(
       int event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+      mojom::ServiceWorkerEventStatus) {}
 
   // Called after PushEvent (dispatched via WebServiceWorkerContextProxy) is
   // handled by the service worker.
   virtual void DidHandlePushEvent(int push_event_id,
-                                  mojom::ServiceWorkerEventStatus,
-                                  base::TimeTicks event_dispatch_time) {}
+                                  mojom::ServiceWorkerEventStatus) {}
 
   // Called after SyncEvent (dispatched via WebServiceWorkerContextProxy) is
   // handled by the service worker.
   virtual void DidHandleSyncEvent(int sync_event_id,
-                                  mojom::ServiceWorkerEventStatus,
-                                  base::TimeTicks event_dispatch_time) {}
+                                  mojom::ServiceWorkerEventStatus) {}
 
   // RespondToAbortPaymentEvent will be called after the service worker
   // returns a response to a AbortPaymentEvent, and DidHandleAbortPaymentEvent
   // will be called after the end of AbortPaymentEvent's lifecycle.
   // |event_id| is the id that was passed to DispatchAbortPaymentEvent.
-  virtual void RespondToAbortPaymentEvent(int event_id,
-                                          bool abort_payment,
-                                          base::TimeTicks event_dispatch_time) {
-  }
+  virtual void RespondToAbortPaymentEvent(int event_id, bool abort_payment) {}
   // Called after AbortPaymentEvent (dispatched
   // via WebServiceWorkerContextProxy) is handled by the service worker.
   virtual void DidHandleAbortPaymentEvent(int abort_payment_event_id,
-                                          mojom::ServiceWorkerEventStatus,
-                                          base::TimeTicks event_dispatch_time) {
-  }
+                                          mojom::ServiceWorkerEventStatus) {}
 
   // RespondToCanMakePaymentEvent will be called after the service worker
   // returns a response to a CanMakePaymentEvent, and
   // DidHandleCanMakePaymentEvent will be called after the end of
   // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed
   // to DispatchCanMakePaymentEvent.
-  virtual void RespondToCanMakePaymentEvent(
-      int event_id,
-      bool can_make_payment,
-      base::TimeTicks event_dispatch_time) {}
+  virtual void RespondToCanMakePaymentEvent(int event_id,
+                                            bool can_make_payment) {}
   // Called after CanMakePaymentEvent (dispatched
   // via WebServiceWorkerContextProxy) is handled by the service worker.
-  virtual void DidHandleCanMakePaymentEvent(
-      int payment_request_event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+  virtual void DidHandleCanMakePaymentEvent(int payment_request_event_id,
+                                            mojom::ServiceWorkerEventStatus) {}
 
   // RespondToPaymentRequestEvent will be called after the service worker
   // returns a response to a PaymentRequestEvent, and
@@ -277,14 +254,11 @@ class WebServiceWorkerContextClient {
   // to DispatchPaymentRequestEvent.
   virtual void RespondToPaymentRequestEvent(
       int event_id,
-      const WebPaymentHandlerResponse& response,
-      base::TimeTicks event_dispatch_time) {}
+      const WebPaymentHandlerResponse& response) {}
   // Called after PaymentRequestEvent (dispatched via
   // WebServiceWorkerContextProxy) is handled by the service worker.
-  virtual void DidHandlePaymentRequestEvent(
-      int payment_request_event_id,
-      mojom::ServiceWorkerEventStatus,
-      base::TimeTicks event_dispatch_time) {}
+  virtual void DidHandlePaymentRequestEvent(int payment_request_event_id,
+                                            mojom::ServiceWorkerEventStatus) {}
 
   // Called on the main thread.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>

@@ -346,8 +346,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   params->request = *request;
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
@@ -386,8 +385,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
   params->request = *request;
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
@@ -433,8 +431,7 @@ TEST_F(ServiceWorkerContextClientTest,
   params->request = *request;
   context_client->DispatchOrQueueFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   EXPECT_FALSE(context_client->RequestedTermination());
@@ -481,8 +478,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
@@ -532,8 +528,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
@@ -549,8 +544,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.service_worker->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_FALSE(context_client->RequestedTermination());

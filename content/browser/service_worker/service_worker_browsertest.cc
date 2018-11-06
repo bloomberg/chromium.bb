@@ -840,8 +840,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       base::Optional<blink::ServiceWorkerStatusCode>* out_result,
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      bool has_fetch_handler,
-      base::TimeTicks /* dispatch_event_time */) {
+      bool has_fetch_handler) {
     version_->FinishRequest(
         request_id,
         status == blink::mojom::ServiceWorkerEventStatus::COMPLETED);
