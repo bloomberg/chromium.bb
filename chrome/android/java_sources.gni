@@ -1099,6 +1099,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/AnswersImageFetcher.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteController.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteCoordinator.java",
+  "java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxResultsAdapter.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestion.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsList.java",

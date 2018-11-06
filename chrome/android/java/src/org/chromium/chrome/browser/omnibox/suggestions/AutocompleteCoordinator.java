@@ -29,8 +29,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -58,10 +57,10 @@ public class AutocompleteCoordinator
     private final AutocompleteDelegate mDelegate;
     private final OmniboxSuggestionListEmbedder mSuggestionListEmbedder;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
+    private final AutocompleteMediator mMediator;
 
     private final OmniboxResultsAdapter mSuggestionListAdapter;
     private final AnswersImageFetcher mAnswersImageFetcher;
-    private final List<OmniboxResultItem> mSuggestionItems;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
     private ToolbarDataProvider mToolbarDataProvider;
@@ -171,11 +170,11 @@ public class AutocompleteCoordinator
         mSuggestionListEmbedder = listEmbedder;
         mUrlBarEditingTextProvider = urlBarEditingTextProvider;
 
-        mSuggestionItems = new ArrayList<OmniboxResultItem>();
         mAnswersImageFetcher = new AnswersImageFetcher();
-        mSuggestionListAdapter =
-                new OmniboxResultsAdapter(mContext, mSuggestionItems, mAnswersImageFetcher);
+        mSuggestionListAdapter = new OmniboxResultsAdapter(mContext);
         mAutocomplete = new AutocompleteController(this);
+        mMediator = new AutocompleteMediator(
+                mContext, urlBarEditingTextProvider, mSuggestionListAdapter::updateSuggestions);
     }
 
     @Override
@@ -215,7 +214,7 @@ public class AutocompleteCoordinator
      */
     public void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider) {
         mToolbarDataProvider = toolbarDataProvider;
-        mSuggestionListAdapter.setToolbarDataProvider(toolbarDataProvider);
+        mMediator.setToolbarDataProvider(toolbarDataProvider);
     }
 
     /**
@@ -237,7 +236,7 @@ public class AutocompleteCoordinator
      * @return The number of current autocomplete suggestions.
      */
     public int getSuggestionCount() {
-        return mSuggestionItems.size();
+        return mMediator.getSuggestionCount();
     }
 
     /**
@@ -249,7 +248,7 @@ public class AutocompleteCoordinator
      * @return The suggestion at the given index.
      */
     public OmniboxSuggestion getSuggestionAt(int index) {
-        return mSuggestionItems.get(index).getSuggestion();
+        return mMediator.getSuggestionAt(index);
     }
 
     /**
@@ -324,7 +323,7 @@ public class AutocompleteCoordinator
         mSuggestionList.setVisibility(View.GONE);
         mSuggestionList.setAdapter(mSuggestionListAdapter);
         mSuggestionList.setClipToPadding(false);
-        mSuggestionListAdapter.setSuggestionDelegate(new OmniboxSuggestionDelegate() {
+        mMediator.setSuggestionDelegate(new OmniboxSuggestionDelegate() {
             private long mLastActionUpTimestamp;
 
             @Override
@@ -495,9 +494,7 @@ public class AutocompleteCoordinator
      * Update the layout direction of the suggestion list based on the parent layout direction.
      */
     public void updateSuggestionListLayoutDirection() {
-        if (mSuggestionList == null) return;
-        int layoutDirection = ViewCompat.getLayoutDirection(mParent);
-        mSuggestionListAdapter.setLayoutDirection(layoutDirection);
+        mMediator.setLayoutDirection(ViewCompat.getLayoutDirection(mParent));
     }
 
     /**
@@ -540,9 +537,9 @@ public class AutocompleteCoordinator
         } else if (KeyNavigationUtil.isGoRight(event) && mSuggestionList != null
                 && mSuggestionList.isShown()
                 && mSuggestionList.getSelectedItemPosition() != ListView.INVALID_POSITION) {
-            OmniboxResultItem selectedItem = (OmniboxResultItem) mSuggestionListAdapter.getItem(
-                    mSuggestionList.getSelectedItemPosition());
-            mDelegate.setOmniboxEditingText(selectedItem.getSuggestion().getFillIntoEdit());
+            OmniboxSuggestion suggestion =
+                    mMediator.getSuggestionAt(mSuggestionList.getSelectedItemPosition());
+            mDelegate.setOmniboxEditingText(suggestion.getFillIntoEdit());
             onTextChangedForAutocomplete();
             mSuggestionList.setSelection(0);
             return true;
@@ -570,13 +567,11 @@ public class AutocompleteCoordinator
             // Bluetooth keyboard case: the user highlighted a suggestion with the arrow
             // keys, then pressed enter.
             suggestionMatchPosition = mSuggestionList.getSelectedItemPosition();
-            OmniboxResultItem selectedItem =
-                    (OmniboxResultItem) mSuggestionListAdapter.getItem(suggestionMatchPosition);
-            suggestionMatch = selectedItem.getSuggestion();
-        } else if (!mSuggestionItems.isEmpty()
+            suggestionMatch = mMediator.getSuggestionAt(suggestionMatchPosition);
+        } else if (mMediator.getSuggestionCount() > 0
                 && urlText.equals(mUrlTextAfterSuggestionsReceived)) {
             // Common case: the user typed something, received suggestions, then pressed enter.
-            suggestionMatch = mSuggestionItems.get(0).getSuggestion();
+            suggestionMatch = mMediator.getSuggestionAt(0);
             suggestionMatchPosition = 0;
         } else {
             // Less common case: there are no valid omnibox suggestions. This can happen if the
@@ -620,14 +615,14 @@ public class AutocompleteCoordinator
         if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
             int verifiedIndex = -1;
             if (!skipCheck) {
-                if (mSuggestionItems.size() > selectedIndex
-                        && mSuggestionItems.get(selectedIndex).getSuggestion() == suggestion) {
+                if (mMediator.getSuggestionCount() > selectedIndex
+                        && mMediator.getSuggestionAt(selectedIndex) == suggestion) {
                     verifiedIndex = selectedIndex;
                 } else {
                     // Underlying omnibox results may have changed since the selection was made,
                     // find the suggestion item, if possible.
-                    for (int i = 0; i < mSuggestionItems.size(); i++) {
-                        if (suggestion.equals(mSuggestionItems.get(i).getSuggestion())) {
+                    for (int i = 0; i < mMediator.getSuggestionCount(); i++) {
+                        if (suggestion.equals(mMediator.getSuggestionAt(i))) {
                             verifiedIndex = i;
                             break;
                         }
@@ -738,52 +733,12 @@ public class AutocompleteCoordinator
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
-        boolean itemsChanged = false;
-        // If the length of the incoming suggestions matches that of those currently being shown,
-        // replace them inline to allow transient entries to retain their proper highlighting.
-        if (mSuggestionItems.size() == newSuggestions.size()) {
-            for (int index = 0; index < newSuggestions.size(); index++) {
-                OmniboxResultItem suggestionItem = mSuggestionItems.get(index);
-                OmniboxSuggestion suggestion = suggestionItem.getSuggestion();
-                OmniboxSuggestion newSuggestion = newSuggestions.get(index);
-                // Determine whether the suggestions have changed. If not, save some time by not
-                // redrawing the suggestions UI.
-                if (suggestion.equals(newSuggestion)
-                        && suggestion.getType() != OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
-                    if (suggestionItem.getMatchedQuery().equals(userText)) {
-                        continue;
-                    } else if (!suggestion.getDisplayText().startsWith(userText)
-                            && !suggestion.getUrl().contains(userText)) {
-                        continue;
-                    }
-                }
-                mSuggestionItems.set(index, new OmniboxResultItem(newSuggestion, userText));
-                itemsChanged = true;
-            }
-        } else {
-            itemsChanged = true;
-            clearSuggestions(false);
-            for (int i = 0; i < newSuggestions.size(); i++) {
-                mSuggestionItems.add(new OmniboxResultItem(newSuggestions.get(i), userText));
-            }
-        }
-
-        if (mSuggestionItems.isEmpty()) {
-            if (mSuggestionsShown) {
-                hideSuggestions();
-            } else {
-                mSuggestionListAdapter.notifySuggestionsChanged();
-            }
-            return;
-        }
-
-        mDelegate.onSuggestionsChanged(inlineAutocompleteText);
-
         // Show the suggestion list.
         initSuggestionList(); // It may not have been initialized yet.
         resetMaxTextWidths();
-
-        if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
+        mMediator.onSuggestionsReceived(newSuggestions, inlineAutocompleteText);
+        if (mSuggestionsShown && mMediator.getSuggestionCount() == 0) hideSuggestions();
+        mDelegate.onSuggestionsChanged(inlineAutocompleteText);
 
         updateOmniboxSuggestionsVisibility();
     }
@@ -878,15 +833,7 @@ public class AutocompleteCoordinator
         if (mSuggestionList != null) {
             mSuggestionList.refreshPopupBackground();
         }
-        mSuggestionListAdapter.setUseDarkColors(useDarkColors);
-    }
-
-    private void clearSuggestions(boolean notifyChange) {
-        mSuggestionItems.clear();
-        // Make sure to notify the adapter. If the ListView becomes out of sync
-        // with its adapter and it has not been notified, it will throw an
-        // exception when some UI events are propagated.
-        if (notifyChange) mSuggestionListAdapter.notifyDataSetChanged();
+        mMediator.setUseDarkColors(useDarkColors);
     }
 
     /**
@@ -902,7 +849,7 @@ public class AutocompleteCoordinator
 
         stopAutocomplete(true);
 
-        clearSuggestions(true);
+        mMediator.clearSuggestions();
         updateOmniboxSuggestionsVisibility();
     }
 
