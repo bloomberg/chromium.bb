@@ -360,6 +360,7 @@ Surface::FrameData::FrameData(CompositorFrame&& frame,
                               PresentedCallback presented_callback)
     : frame(std::move(frame)),
       frame_index(frame_index),
+      frame_processed(false),
       presented_callback(std::move(presented_callback)) {}
 
 Surface::FrameData::FrameData(FrameData&& other) = default;
@@ -646,17 +647,12 @@ bool Surface::TakePresentedCallback(PresentedCallback* callback) {
   return false;
 }
 
-void Surface::SendAckToClient() {
-  if (!active_frame_data_ || active_frame_data_->frame_acked)
+void Surface::RunDrawCallback() {
+  if (!active_frame_data_ || active_frame_data_->frame_processed)
     return;
-  active_frame_data_->frame_acked = true;
+  active_frame_data_->frame_processed = true;
   if (surface_client_)
     surface_client_->OnSurfaceProcessed(this);
-}
-
-void Surface::MarkAsDrawn() {
-  if (active_frame_data_)
-    active_frame_data_->frame_drawn = true;
 }
 
 void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -686,7 +682,7 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
     resource.sync_token.Clear();
   surface_client_->UnrefResources(resources);
 
-  if (!frame_data->frame_acked)
+  if (!frame_data->frame_processed)
     surface_client_->OnSurfaceProcessed(this);
 
   if (frame_data->presented_callback) {

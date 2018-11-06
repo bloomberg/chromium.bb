@@ -175,7 +175,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   }
 
  private:
-  friend class DisplayTest;
   friend class FrameSinkManagerTest;
 
   SubmitResult MaybeSubmitCompositorFrameInternal(
@@ -217,7 +216,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void MaybeEvictSurfaces();
   void EvictLastActiveSurface();
-  bool ShouldThrottleBeginFrame();
 
   mojom::CompositorFrameSinkClient* const client_;
 

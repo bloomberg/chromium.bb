@@ -549,7 +549,7 @@ void SurfaceManager::SurfaceActivated(
   if (!SurfaceModified(surface->surface_id(), frame.metadata.begin_frame_ack)) {
     TRACE_EVENT_INSTANT0("viz", "Damage not visible.",
                          TRACE_EVENT_SCOPE_THREAD);
-    surface->SendAckToClient();
+    surface->RunDrawCallback();
   }
 
   for (auto& observer : observer_list_)
