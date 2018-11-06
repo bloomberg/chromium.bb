@@ -38,8 +38,8 @@ grammar.
 libFuzzer.
 * [Reproducing on Windows] describes how to reproduce bugs found by libFuzzer
   and reported by ClusterFuzz.
-* [Reproducing on Linux and Mac] describes how to reproduce bugs reported by
-  ClusterFuzz on Linux and Mac.
+* [Reproducing on Linux, Mac, and Android] describes how to reproduce bugs
+  reported by ClusterFuzz on Linux, Mac, and Android.
 * [Reference] contains detailed references for different integration parts.
 
 ## Trophies
@@ -63,7 +63,7 @@ libFuzzer.
 [Guide to libprotobuf-mutator]: libprotobuf-mutator.md
 [ClusterFuzz Integration]: clusterfuzz.md
 [Reproducing on Windows]: reproducing_on_windows.md
-[Reproducing on Linux and Mac]: https://github.com/google/clusterfuzz-tools
+[Reproducing on Linux, Mac, and Android]: https://github.com/google/clusterfuzz-tools
 [Reference]: reference.md
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label:Stability-LibFuzzer%20label:ClusterFuzz&sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
 [Pdfium Bugs]: https://bugs.chromium.org/p/pdfium/issues/list?can=1&q=libfuzzer&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
