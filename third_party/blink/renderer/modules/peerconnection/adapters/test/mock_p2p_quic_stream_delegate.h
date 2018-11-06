@@ -16,7 +16,7 @@ class MockP2PQuicStreamDelegate
   // P2PQuicStream::Delegate overrides.
   MOCK_METHOD1(OnWriteDataConsumed, void(uint32_t));
   MOCK_METHOD0(OnRemoteReset, void());
-  MOCK_METHOD0(OnRemoteFinish, void());
+  MOCK_METHOD2(OnDataReceived, void(std::vector<uint8_t>, bool));
 };
 
 }  // namespace blink

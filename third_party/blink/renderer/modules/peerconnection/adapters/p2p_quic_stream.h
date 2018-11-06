@@ -33,13 +33,13 @@ class P2PQuicStream {
     // deleted by the quic::QuicSession.
     virtual void OnRemoteReset() {}
 
-    // Called when the P2PQuicStream has consumed all incoming data from the
-    // remote side up to the FIN bit. Consuming means that the data is marked
-    // as consumed by quic::QuicStreamSequencer, but the data has not
-    // necessarily been read by the application. If the stream has already
-    // finished writing, then upon consuming the FIN bit the stream can no
-    // longer read or write and is deleted by the quic::QuicSession.
-    virtual void OnRemoteFinish() {}
+    // Called when the P2PQuicStream has received data from the remote side.
+    // If |fin| is set to true that means that the FIN bit has been received
+    // and the Delegate will no longer receive data with OnDataReceived.
+    // If the stream has already finished writing, then upon receiving the FIN
+    // bit the stream can no longer read or write and is deleted by the
+    // quic::QuicSession.
+    virtual void OnDataReceived(std::vector<uint8_t> data, bool fin) {}
 
     // Called when data written with WriteData() has been consumed by QUIC.
     //
@@ -59,6 +59,13 @@ class P2PQuicStream {
   // not trigger OnRemoteReset to be called locally when the RST_STREAM frame is
   // received from the remote side, because the local stream is already closed.
   virtual void Reset() = 0;
+
+  // Marks received data of size |amount| as being consumed by the Delegate.
+  // This is used in conjuction with Delegate::OnDataReceived, to let the
+  // P2PQuicStream know that received data has been consumed. This allows the
+  // P2PQuicStream to send back pressure to the send side, if the Delegate
+  // cannot receive more data.
+  virtual void MarkReceivedDataConsumed(uint32_t amount) = 0;
 
   // Writes |data| to a STREAM frame and gives it to QUIC to be buffered or sent
   // to the remote endpoint. Once that data has been sent Delegate::OnDataSent()

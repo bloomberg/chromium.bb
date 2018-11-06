@@ -23,14 +23,17 @@ struct P2PQuicTransportConfig final {
       P2PQuicPacketTransport* const packet_transport_in,
       const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>
           certificates_in,
+      uint32_t stream_delegate_read_buffer_size_in,
       uint32_t stream_write_buffer_size_in)
       : packet_transport(packet_transport_in),
         certificates(certificates_in),
         delegate(delegate_in),
+        stream_delegate_read_buffer_size(stream_delegate_read_buffer_size_in),
         stream_write_buffer_size(stream_write_buffer_size_in) {
     DCHECK_GT(certificates.size(), 0u);
     DCHECK(packet_transport);
     DCHECK(delegate);
+    DCHECK_GT(stream_delegate_read_buffer_size, 0u);
     DCHECK_GT(stream_write_buffer_size, 0u);
   }
   P2PQuicTransportConfig(const P2PQuicTransportConfig&) = delete;
@@ -54,6 +57,11 @@ struct P2PQuicTransportConfig final {
   // to listen and respond to a crypto handshake upon construction.
   // This will NOT start a handshake.
   bool can_respond_to_crypto_handshake = true;
+  // The amount that the delegate can store in its read buffer. This is a
+  // mandatory field that must be set to ensure that the
+  // P2PQuicStream::Delegate will not give the delegate more data than it can
+  // store.
+  const uint32_t stream_delegate_read_buffer_size;
   // The amount that the P2PQuicStream will allow to buffer. This is a mandatory
   // field that must be set to ensure that the client of the P2PQuicStream does
   // not write more data than can be buffered.

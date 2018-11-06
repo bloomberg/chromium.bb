@@ -28,6 +28,7 @@ using ::testing::PolymorphicAction;
 
 const std::string kTriggerRemoteStreamPhrase = "open sesame";
 const uint32_t kWriteBufferSize = 100 * 1024;
+const uint32_t kDelegateReadBufferSize = 100 * 1024;
 
 // A custom gmock Action that fires the given callback. This is used in
 // conjuction with the CallbackRunLoop in order to drive the TestTaskRunner
@@ -388,9 +389,9 @@ class P2PQuicTransportTest : public testing::Test {
         std::make_unique<MockP2PQuicTransportDelegate>();
     std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> client_certificates;
     client_certificates.push_back(client_cert);
-    P2PQuicTransportConfig client_config(client_quic_transport_delegate.get(),
-                                         client_packet_transport.get(),
-                                         client_certificates, kWriteBufferSize);
+    P2PQuicTransportConfig client_config(
+        client_quic_transport_delegate.get(), client_packet_transport.get(),
+        client_certificates, kDelegateReadBufferSize, kWriteBufferSize);
     client_config.is_server = false;
     client_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
@@ -415,9 +416,9 @@ class P2PQuicTransportTest : public testing::Test {
         CreateTestCertificate();
     std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> server_certificates;
     server_certificates.push_back(server_cert);
-    P2PQuicTransportConfig server_config(server_quic_transport_delegate.get(),
-                                         server_packet_transport.get(),
-                                         server_certificates, kWriteBufferSize);
+    P2PQuicTransportConfig server_config(
+        server_quic_transport_delegate.get(), server_packet_transport.get(),
+        server_certificates, kDelegateReadBufferSize, kWriteBufferSize);
     server_config.is_server = true;
     server_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
@@ -981,7 +982,8 @@ TEST_F(P2PQuicTransportTest, StreamClosedAfterSendingAndReceivingFin) {
   SetupConnectedStreams();
   CallbackRunLoop run_loop(runner());
 
-  EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnDataReceived(_, /*fin=*/true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   client_peer()->stream()->WriteData({}, /*fin=*/true);
@@ -998,7 +1000,8 @@ TEST_F(P2PQuicTransportTest, StreamClosedAfterSendingAndReceivingFin) {
   EXPECT_FALSE(client_peer()->quic_transport()->IsClosedStream(
       client_peer()->stream_id()));
 
-  EXPECT_CALL(*client_peer()->stream_delegate(), OnRemoteFinish())
+  EXPECT_CALL(*client_peer()->stream_delegate(),
+              OnDataReceived(_, /*fin=*/true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   server_peer()->stream()->WriteData({}, /*fin=*/true);
@@ -1024,7 +1027,8 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterSendingFin) {
   SetupConnectedStreams();
   CallbackRunLoop run_loop(runner());
 
-  EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnDataReceived(_, /*fin=*/true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   client_peer()->stream()->WriteData({}, /*fin=*/true);
@@ -1048,7 +1052,8 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterReceivingFin) {
   SetupConnectedStreams();
   CallbackRunLoop run_loop(runner());
 
-  EXPECT_CALL(*server_peer()->stream_delegate(), OnRemoteFinish())
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnDataReceived(_, /*fin=*/true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   client_peer()->stream()->WriteData({}, /*fin=*/true);
@@ -1061,6 +1066,66 @@ TEST_F(P2PQuicTransportTest, StreamResetAfterReceivingFin) {
   // The server stream has received its FIN bit from the remote side, and
   // responds with a Reset() to close everything down.
   server_peer()->stream()->Reset();
+  run_loop.RunUntilCallbacksFired();
+
+  ExpectStreamsClosed();
+}
+
+// Tests that when data is sent on a stream it is received on the other end.
+TEST_F(P2PQuicTransportTest, StreamDataSentThenReceivedOnRemoteSide) {
+  Initialize();
+  Connect();
+  SetupConnectedStreams();
+  CallbackRunLoop run_loop(runner());
+  std::string message = "howdy partner";
+
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnDataReceived(
+                  std::vector<uint8_t>(message.begin(), message.end()), false))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*client_peer()->stream_delegate(),
+              OnWriteDataConsumed(message.size()))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  client_peer()->stream()->WriteData(
+      std::vector<uint8_t>(message.begin(), message.end()), /* fin= */ false);
+  run_loop.RunUntilCallbacksFired();
+}
+
+// Tests that if both sides have a stream that sends data and FIN bit
+// they both close down for reading and writing properly.
+TEST_F(P2PQuicTransportTest, StreamDataSentWithFinClosesStreams) {
+  Initialize();
+  Connect();
+  SetupConnectedStreams();
+  CallbackRunLoop run_loop(runner());
+  std::string server_message = "some server data";
+  std::string client_message = "client data";
+
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnDataReceived(std::vector<uint8_t>(client_message.begin(),
+                                                  client_message.end()),
+                             true))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*server_peer()->stream_delegate(),
+              OnWriteDataConsumed(server_message.size()))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  EXPECT_CALL(*client_peer()->stream_delegate(),
+              OnDataReceived(std::vector<uint8_t>(server_message.begin(),
+                                                  server_message.end()),
+                             true))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*client_peer()->stream_delegate(),
+              OnWriteDataConsumed(client_message.size()))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  client_peer()->stream()->WriteData(
+      std::vector<uint8_t>(client_message.begin(), client_message.end()),
+      /*fin=*/true);
+  server_peer()->stream()->WriteData(
+      std::vector<uint8_t>(server_message.begin(), server_message.end()),
+      /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   ExpectStreamsClosed();

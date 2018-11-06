@@ -170,6 +170,9 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Owned by whatever creates the P2PQuicTransportImpl. The |clock_| needs to
   // outlive the P2PQuicTransportImpl.
   quic::QuicClock* clock_ = nullptr;
+  // The size of the stream delegate's read buffer, used when creating
+  // P2PQuicStreams.
+  uint32_t stream_delegate_read_buffer_size_;
   // Determines the size of the write buffer when P2PQuicStreams.
   uint32_t stream_write_buffer_size_;
 

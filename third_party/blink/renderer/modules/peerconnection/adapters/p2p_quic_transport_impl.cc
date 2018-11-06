@@ -152,11 +152,14 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
       packet_transport_(p2p_transport_config.packet_transport),
       delegate_(p2p_transport_config.delegate),
       clock_(clock),
+      stream_delegate_read_buffer_size_(
+          p2p_transport_config.stream_delegate_read_buffer_size),
       stream_write_buffer_size_(p2p_transport_config.stream_write_buffer_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
   DCHECK(clock_);
   DCHECK(packet_transport_);
+  DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
   DCHECK_GT(stream_write_buffer_size_, 0u);
   DCHECK_GT(p2p_transport_config.certificates.size(), 0u);
   if (p2p_transport_config.can_respond_to_crypto_handshake) {
@@ -252,7 +255,8 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
   DCHECK(crypto_stream_);
   DCHECK(IsEncryptionEstablished());
   DCHECK(!IsClosed());
-  return new P2PQuicStreamImpl(id, this, stream_write_buffer_size_);
+  return new P2PQuicStreamImpl(id, this, stream_delegate_read_buffer_size_,
+                               stream_write_buffer_size_);
 }
 
 void P2PQuicTransportImpl::InitializeCryptoStream() {

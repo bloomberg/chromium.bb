@@ -64,7 +64,7 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
 
   // P2PQuicStream::Delegate overrides.
   void OnRemoteReset() override;
-  void OnRemoteFinish() override;
+  void OnDataReceived(std::vector<uint8_t> data, bool fin) override;
 
   // Up reference. Owned by QuicTransportProxy.
   QuicTransportHost* transport_host_ = nullptr;

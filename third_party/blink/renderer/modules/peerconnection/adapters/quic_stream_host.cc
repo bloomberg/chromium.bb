@@ -70,8 +70,14 @@ void QuicStreamHost::OnRemoteReset() {
   Delete();
 }
 
-void QuicStreamHost::OnRemoteFinish() {
+// TODO(https://crbug.com/874296): When the blink binding (RTCQuicStream) is
+// updated to support reading/writing, update this function to do more than just
+// call OnRemoteFinish.
+void QuicStreamHost::OnDataReceived(std::vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!fin) {
+    return;
+  }
   PostCrossThreadTask(
       *proxy_thread(), FROM_HERE,
       CrossThreadBind(&QuicStreamProxy::OnRemoteFinish, stream_proxy_));
