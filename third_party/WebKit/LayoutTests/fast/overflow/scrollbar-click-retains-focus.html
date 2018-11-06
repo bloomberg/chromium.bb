@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 
-<script src="../../resources/js-test.js"></script>
+<title>
+This tests clicking scrollbars, which should only move the focus if an ancestor is mouse focusable.
+</title>
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 
 <style>
     /* Float everything so they fit inside the viewport for using eventSender to click */
@@ -45,9 +50,6 @@
 </select>
 
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 function click(x, y)
 {
     if (window.eventSender) {
@@ -69,51 +71,43 @@ function clickHorizontalScrollbar(type)
     click(element.offsetLeft + 5, element.offsetTop + element.offsetHeight - 5);
 }
 
-function test(name, fn)
-{
-    debug("<br>" + name);
-    fn();
-}
-
-description("This tests clicking scrollbars, which should only move the focus if an ancestor is mouse focusable.");
-
-test("Focus should remain in the input", function() {
+test(function() {
     document.querySelector("input").focus();
     clickVerticalScrollbar("section");
     clickHorizontalScrollbar("section");
-    shouldBeEqualToString("document.activeElement.tagName", "INPUT");
-});
+    assert_equals(document.activeElement.tagName, "INPUT");
+}, "Focus should remain in the input");
 
-test("Focus should move if ancestor is mouse focusable", function() {
+test(function() {
     document.querySelector("input").focus();
     clickVerticalScrollbar("header");
-    shouldBeEqualToString("document.activeElement.tagName", "DIV");
+    assert_equals(document.activeElement.tagName, "DIV");
     document.querySelector("input").focus();
     clickHorizontalScrollbar("header");
-    shouldBeEqualToString("document.activeElement.tagName", "DIV");
-});
+    assert_equals(document.activeElement.tagName, "DIV");
+}, "Focus should move if ancestor is mouse focusable");
 
-test("Focus should move if ancestor is content editable", function() {
+test(function() {
     document.querySelector("input").focus();
     clickVerticalScrollbar("u");
-    shouldBeEqualToString("document.activeElement.tagName", "SPAN");
+    assert_equals(document.activeElement.tagName, "SPAN");
     document.querySelector("input").focus();
     clickHorizontalScrollbar("u");
-    shouldBeEqualToString("document.activeElement.tagName", "SPAN");
-});
+    assert_equals(document.activeElement.tagName, "SPAN");
+}, "Focus should move if ancestor is content editable");
 
-test("Form controls should move the focus", function() {
+test(function() {
     clickVerticalScrollbar("textarea");
-    shouldBeEqualToString("document.activeElement.tagName", "TEXTAREA");
+    assert_equals(document.activeElement.tagName, "TEXTAREA");
     clickVerticalScrollbar("select");
-    shouldBeEqualToString("document.activeElement.tagName", "SELECT");
-});
+    assert_equals(document.activeElement.tagName, "SELECT");
+}, "Form controls should move the focus");
 
-test("Disabled form controls should not move the focus", function() {
+test(function() {
     document.querySelector("input").focus();
     document.querySelector("select").disabled = true;
     clickVerticalScrollbar("select");
-    shouldBeEqualToString("document.activeElement.tagName", "INPUT");
-});
+    assert_equals(document.activeElement.tagName, "INPUT");
+}, "Disabled form controls should not move the focus");
 </script>
 
