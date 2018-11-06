@@ -23,7 +23,6 @@ extern const char kNotificationLaunchAttribute[];
 
 // Builds XML-based notification template for displaying a given |notification|
 // in the Windows Action Center.
-// https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-adaptive-interactive-toasts
 base::string16 BuildNotificationTemplate(
     NotificationImageRetainer* image_retainer,
     const NotificationLaunchId& launch_id,
