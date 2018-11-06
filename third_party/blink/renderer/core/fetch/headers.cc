@@ -40,7 +40,7 @@ class HeadersIterationSource final
 
  private:
   Vector<std::pair<String, String>> headers_;
-  size_t current_;
+  wtf_size_t current_;
 };
 
 }  // namespace
@@ -246,7 +246,7 @@ void Headers::FillWith(const Vector<Vector<String>>& object,
   //        TypeError.
   //     2. Append |header|’s first item/|header|’s second item to |headers|.
   //        Rethrow any exception."
-  for (size_t i = 0; i < object.size(); ++i) {
+  for (wtf_size_t i = 0; i < object.size(); ++i) {
     if (object[i].size() != 2) {
       exception_state.ThrowTypeError("Invalid value");
       return;
