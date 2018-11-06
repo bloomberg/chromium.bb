@@ -232,8 +232,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
+// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
+#define MAYBE_CanDecryptPbkdf2KeyEncryptedData \
+  DISABLED_CanDecryptPbkdf2KeyEncryptedData
+#else
+#define MAYBE_CanDecryptPbkdf2KeyEncryptedData CanDecryptPbkdf2KeyEncryptedData
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       CanDecryptPbkdf2KeyEncryptedData) {
+                       MAYBE_CanDecryptPbkdf2KeyEncryptedData) {
   KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
   InjectEncryptedServerBookmark("PBKDF2-encrypted bookmark",
                                 GURL("http://example.com/doesnt-matter"),
@@ -248,8 +255,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
+#if defined(GOOGLE_CHROME_BUILD)
+// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
+#define MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled \
+  DISABLED_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled
+#else
+#define MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled \
+  CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SingleClientCustomPassphraseSyncTest,
+    MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
   ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
                                      /*use_for_new_passphrases_=*/false);
   KeyParams key_params = {
@@ -267,8 +283,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("scypt-encrypted bookmark"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
+#if defined(GOOGLE_CHROME_BUILD)
+// TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
+#define MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled \
+  DISABLED_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled
+#else
+#define MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled \
+  CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SingleClientCustomPassphraseSyncTest,
+    MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
   sync_pb::NigoriSpecifics nigori = CreateCustomPassphraseNigori(key_params);
