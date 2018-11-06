@@ -11,6 +11,8 @@ static_library("leveldb_proto") {
     "proto_database_impl.h",
     "proto_leveldb_wrapper.cc",
     "proto_leveldb_wrapper.h",
+    "proto_leveldb_wrapper_metrics.cc",
+    "proto_leveldb_wrapper_metrics.h",
     "unique_proto_database.h",
   ]
 

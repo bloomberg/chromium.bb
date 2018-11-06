@@ -80,7 +80,8 @@ leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
   if (open_histogram_)
     open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (destroy_on_corruption && status.IsCorruption()) {
-    if (!Destroy())
+    auto destroy_status = Destroy();
+    if (!destroy_status.ok())
       return status;
     status = leveldb_env::OpenDB(open_options_, path, &db_);
     // Intentionally do not log the status of the second open. Doing so destroys
@@ -108,7 +109,9 @@ leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
 }
 
 bool LevelDB::Save(const base::StringPairs& entries_to_save,
-                   const std::vector<std::string>& keys_to_remove) {
+                   const std::vector<std::string>& keys_to_remove,
+                   leveldb::Status* status) {
+  DCHECK(status);
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
     return false;
@@ -123,17 +126,19 @@ bool LevelDB::Save(const base::StringPairs& entries_to_save,
   leveldb::WriteOptions options;
   options.sync = true;
 
-  leveldb::Status status = db_->Write(options, &updates);
-  if (status.ok())
+  *status = db_->Write(options, &updates);
+  if (status->ok())
     return true;
 
   DLOG(WARNING) << "Failed writing leveldb_proto entries: "
-                << status.ToString();
+                << status->ToString();
   return false;
 }
 
 bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
-                                     const KeyFilter& delete_key_filter) {
+                                     const KeyFilter& delete_key_filter,
+                                     leveldb::Status* status) {
+  DCHECK(status);
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
     return false;
@@ -157,12 +162,12 @@ bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
 
   leveldb::WriteOptions write_options;
   write_options.sync = true;
-  leveldb::Status status = db_->Write(write_options, &updates);
-  if (status.ok())
+  *status = db_->Write(write_options, &updates);
+  if (status->ok())
     return true;
 
   DLOG(WARNING) << "Failed deleting leveldb_proto entries: "
-                << status.ToString();
+                << status->ToString();
   return false;
 }
 
@@ -243,36 +248,40 @@ bool LevelDB::LoadKeys(std::vector<std::string>* keys) {
   return true;
 }
 
-bool LevelDB::Get(const std::string& key, bool* found, std::string* entry) {
+bool LevelDB::Get(const std::string& key,
+                  bool* found,
+                  std::string* entry,
+                  leveldb::Status* status) {
+  DCHECK(status);
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
     return false;
 
   leveldb::ReadOptions options;
-  leveldb::Status status = db_->Get(options, key, entry);
-  if (status.ok()) {
+  *status = db_->Get(options, key, entry);
+  if (status->ok()) {
     *found = true;
     return true;
   }
-  if (status.IsNotFound()) {
+  if (status->IsNotFound()) {
     *found = false;
     return true;
   }
 
   DLOG(WARNING) << "Failed loading leveldb_proto entry with key \"" << key
-                << "\": " << status.ToString();
+                << "\": " << status->ToString();
   return false;
 }
 
-bool LevelDB::Destroy() {
+leveldb::Status LevelDB::Destroy() {
   db_.reset();
   const std::string path = database_dir_.AsUTF8Unsafe();
-  const leveldb::Status s = leveldb::DestroyDB(path, open_options_);
-  if (!s.ok())
-    LOG(WARNING) << "Unable to destroy " << path << ": " << s.ToString();
+  leveldb::Status status = leveldb::DestroyDB(path, open_options_);
+  if (!status.ok())
+    LOG(WARNING) << "Unable to destroy " << path << ": " << status.ToString();
   if (destroy_histogram_)
-    destroy_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(s));
-  return s.ok();
+    destroy_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
+  return status;
 }
 
 bool LevelDB::GetApproximateMemoryUse(uint64_t* approx_mem) {
