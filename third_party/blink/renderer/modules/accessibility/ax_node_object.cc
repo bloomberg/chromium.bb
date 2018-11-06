@@ -1200,21 +1200,22 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   DocumentMarkerVector markers =
       marker_controller.MarkersFor(ToText(*GetNode()));
   for (DocumentMarker* marker : markers) {
-    if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {
-      marker_types.push_back(marker->GetType());
-      const Position start_position(*GetNode(), marker->StartOffset());
-      const Position end_position(*GetNode(), marker->EndOffset());
-      if (!start_position.IsValidFor(*GetDocument()) ||
-          !end_position.IsValidFor(*GetDocument())) {
-        continue;
-      }
+    if (!MarkerTypeIsUsedForAccessibility(marker->GetType()))
+      continue;
 
-      marker_ranges.emplace_back(
-          AXPosition::FromPosition(start_position, TextAffinity::kDownstream,
-                                   AXPositionAdjustmentBehavior::kMoveLeft),
-          AXPosition::FromPosition(end_position, TextAffinity::kDownstream,
-                                   AXPositionAdjustmentBehavior::kMoveRight));
+    const Position start_position(*GetNode(), marker->StartOffset());
+    const Position end_position(*GetNode(), marker->EndOffset());
+    if (!start_position.IsValidFor(*GetDocument()) ||
+        !end_position.IsValidFor(*GetDocument())) {
+      continue;
     }
+
+    marker_types.push_back(marker->GetType());
+    marker_ranges.emplace_back(
+        AXPosition::FromPosition(start_position, TextAffinity::kDownstream,
+                                 AXPositionAdjustmentBehavior::kMoveLeft),
+        AXPosition::FromPosition(end_position, TextAffinity::kDownstream,
+                                 AXPositionAdjustmentBehavior::kMoveRight));
   }
 }
 
