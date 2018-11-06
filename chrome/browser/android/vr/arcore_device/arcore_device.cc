@@ -42,7 +42,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id) {
   device->capabilities->hasPosition = true;
   device->capabilities->hasExternalDisplay = false;
   device->capabilities->canPresent = false;
-  device->capabilities->can_provide_pass_through_images = true;
+  device->capabilities->canProvideEnvironmentIntegration = true;
   device->leftEye = mojom::VREyeParameters::New();
   device->rightEye = nullptr;
   mojom::VREyeParametersPtr& left_eye = device->leftEye;
@@ -306,15 +306,12 @@ void ArCoreDevice::CallDeferredRequestSessionCallbacks(bool success) {
     mojom::XRSessionPtr session;
     if (success) {
       mojom::XRFrameDataProviderPtr data_provider;
-      mojom::XREnvironmentIntegrationProviderPtr environment_provider;
       magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
           this, mojo::MakeRequest(&data_provider),
-          mojo::MakeRequest(&environment_provider),
           mojo::MakeRequest(&controller)));
 
       session = mojom::XRSession::New();
       session->data_provider = data_provider.PassInterface();
-      session->environment_provider = environment_provider.PassInterface();
       session->display_info = display_info_.Clone();
     }
     // We don't expect this call to alter deferred_request_session_callbacks_.

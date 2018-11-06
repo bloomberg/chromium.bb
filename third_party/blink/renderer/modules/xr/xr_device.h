@@ -43,10 +43,8 @@ class XRDevice final : public ScriptWrappable {
       const {
     return magic_window_provider_;
   }
-  const device::mojom::blink::XREnvironmentIntegrationProviderPtr&
-  xrEnvironmentProviderPtr() const {
-    return environment_provider_;
-  }
+  const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
+  xrEnvironmentProviderPtr();
 
   void OnFrameFocusChanged();
   bool HasFrameFocus() { return IsFrameFocused(); }
@@ -81,7 +79,7 @@ class XRDevice final : public ScriptWrappable {
   bool did_log_request_immersive_session_ = false;
 
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
-  device::mojom::blink::XREnvironmentIntegrationProviderPtr
+  device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;
   device::mojom::blink::XRDevicePtr device_ptr_;
 };
