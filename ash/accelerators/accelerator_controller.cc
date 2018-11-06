@@ -165,7 +165,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
           l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
           base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierAccelerator),
           message_center::RichNotificationData(), std::move(delegate),
           kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
@@ -809,7 +809,7 @@ void CreateAndShowStickyNotification(const int title_id,
           l10n_util::GetStringUTF16(message_id),
           base::string16() /* display source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierAccelerator),
           message_center::RichNotificationData(), nullptr,
           kNotificationAccessibilityIcon,

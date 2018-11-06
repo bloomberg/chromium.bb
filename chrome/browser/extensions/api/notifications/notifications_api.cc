@@ -378,7 +378,7 @@ bool NotificationsApiFunction::CreateNotification(
   message_center::Notification notification(
       type, notification_id, title, message, icon,
       base::UTF8ToUTF16(extension_->name()), extension_->url(),
-      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+      message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                  extension_->id()),
       optional_fields, nullptr /* delegate */);
 
@@ -535,9 +535,8 @@ bool NotificationsApiFunction::AreExtensionNotificationsAllowed() const {
   NotifierStateTracker* notifier_state_tracker =
       NotifierStateTrackerFactory::GetForProfile(GetProfile());
 
-  return notifier_state_tracker->IsNotifierEnabled(
-      message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                 extension_->id()));
+  return notifier_state_tracker->IsNotifierEnabled(message_center::NotifierId(
+      message_center::NotifierType::APPLICATION, extension_->id()));
 }
 
 bool NotificationsApiFunction::IsNotificationsApiEnabled() const {

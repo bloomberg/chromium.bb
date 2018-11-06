@@ -361,7 +361,7 @@ TEST_F(NotificationControllerTest, NoMessage) {
 TEST_F(NotificationControllerTest, MessageSize) {
   message_center::RichNotificationData data;
   std::string id("id");
-  NotifierId notifier_id(NotifierId::APPLICATION, "notifier");
+  NotifierId notifier_id(NotifierType::APPLICATION, "notifier");
   std::unique_ptr<Notification> notification(new Notification(
       NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16(""),
       ASCIIToUTF16("And\neven\nthe\nmessage is long.\nThis sure is wordy"),

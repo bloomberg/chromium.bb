@@ -47,10 +47,8 @@ void MessageCenterStatsCollector::NotificationStats::RecordAggregateStats() {
   }
 }
 
-void MessageCenterStatsCollector::RecordNotifierType(
-    NotifierId::NotifierType type) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.NotifierType", type,
-                            NotifierId::NotifierType::SIZE);
+void MessageCenterStatsCollector::RecordNotifierType(NotifierType type) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.NotifierType", type);
 }
 
 MessageCenterStatsCollector::MessageCenterStatsCollector(

@@ -108,7 +108,7 @@ void LocaleNotificationController::OnLocaleChanged(
                                      from, to),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierLocale),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierLocale),
           optional, new LocaleNotificationDelegate(std::move(callback)),
           kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

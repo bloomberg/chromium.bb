@@ -158,8 +158,8 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
         message_center::NOTIFICATION_TYPE_CUSTOM, kNotificationKey,
         base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display_source"), GURL(),
-        message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
-                                   "test_app_id"),
+        message_center::NotifierId(
+            message_center::NotifierType::ARC_APPLICATION, "test_app_id"),
         message_center::RichNotificationData(), nullptr);
     notification->set_custom_view_type(ash::kArcNotificationCustomViewType);
     return notification;

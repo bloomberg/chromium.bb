@@ -105,8 +105,8 @@ class ArcNotificationViewTest : public AshTestBase {
         message_center::NOTIFICATION_TYPE_CUSTOM, kDefaultNotificationId,
         base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display source"), GURL(),
-        message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
-                                   "test_app_id"),
+        message_center::NotifierId(
+            message_center::NotifierType::ARC_APPLICATION, "test_app_id"),
         message_center::RichNotificationData(), nullptr);
 
     notification->set_custom_view_type(kArcNotificationCustomViewType);
@@ -304,7 +304,7 @@ TEST_F(ArcNotificationViewTest, SnoozeButton) {
       message_center::NOTIFICATION_TYPE_CUSTOM, kDefaultNotificationId,
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),
-      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+      message_center::NotifierId(message_center::NotifierType::ARC_APPLICATION,
                                  "test_app_id"),
       rich_data, nullptr);
 

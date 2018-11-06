@@ -133,7 +133,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   auto notification = message_center::Notification::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kHotwordNotificationId, title,
       base::string16(), display_source, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierAssistant),
       {}, base::MakeRefCounted<AssistantHotwordNotificationDelegate>(profile),
       ash::kNotificationAssistantIcon,

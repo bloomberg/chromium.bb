@@ -76,14 +76,15 @@ ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
   }
 
   sources_.insert(
-      std::make_pair(NotifierId::APPLICATION,
+      std::make_pair(message_center::NotifierType::APPLICATION,
                      std::make_unique<ExtensionNotifierController>(this)));
 
-  sources_.insert(std::make_pair(
-      NotifierId::WEB_PAGE, std::make_unique<WebPageNotifierController>(this)));
+  sources_.insert(
+      std::make_pair(message_center::NotifierType::WEB_PAGE,
+                     std::make_unique<WebPageNotifierController>(this)));
 
   sources_.insert(std::make_pair(
-      NotifierId::ARC_APPLICATION,
+      message_center::NotifierType::ARC_APPLICATION,
       std::make_unique<arc::ArcApplicationNotifierController>(this)));
 }
 

@@ -138,7 +138,8 @@ std::unique_ptr<Notification> DualRoleNotification::CreateNotification() {
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DUAL_ROLE_MESSAGE),
           base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDualRole),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierDualRole),
           message_center::RichNotificationData(), std::move(delegate),
           kNotificationChargingUsbCIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

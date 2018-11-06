@@ -110,7 +110,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       is_snooze_supported && !is_setting_shown;
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::ARC_APPLICATION,
+      message_center::NotifierType::ARC_APPLICATION,
       app_id.empty() ? kDefaultArcNotifierId : app_id);
   notifier_id.profile_id = profile_id_.GetUserEmail();
 

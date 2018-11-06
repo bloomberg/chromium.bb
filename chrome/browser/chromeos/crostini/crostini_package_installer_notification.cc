@@ -44,7 +44,7 @@ CrostiniPackageInstallerNotification::CrostiniPackageInstallerNotification(
       l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE),
       GURL(),  // origin_url
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierCrostiniPackageInstaller),
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(

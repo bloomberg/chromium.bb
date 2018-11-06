@@ -71,7 +71,7 @@ void ScreenSecurityNotificationController::CreateNotification(
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
           data, std::move(delegate), kNotificationScreenshareIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

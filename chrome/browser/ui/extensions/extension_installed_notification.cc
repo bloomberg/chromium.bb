@@ -48,7 +48,7 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
           l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
           GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
           {}, this, ash::kNotificationInstalledIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 

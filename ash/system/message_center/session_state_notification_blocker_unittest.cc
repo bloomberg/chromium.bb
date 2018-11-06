@@ -83,7 +83,7 @@ class SessionStateNotificationBlockerTest
 TEST_F(SessionStateNotificationBlockerTest, BaseTest) {
   // Default status: OOBE.
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, "test-notifier");
+      message_center::NotifierType::APPLICATION, "test-notifier");
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
@@ -110,7 +110,7 @@ TEST_F(SessionStateNotificationBlockerTest, BaseTest) {
 TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierSystemPriority);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierSystemPriority);
 
   // Default status: OOBE.
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
@@ -139,7 +139,7 @@ TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
 TEST_F(SessionStateNotificationBlockerTest, BlockOnPrefService) {
   // Default status: OOBE.
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, "test-notifier");
+      message_center::NotifierType::APPLICATION, "test-notifier");
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
@@ -177,7 +177,7 @@ TEST_F(SessionStateNotificationBlockerTest, BlockOnPrefService) {
 
 TEST_F(SessionStateNotificationBlockerTest, BlockInKioskMode) {
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierSystemPriority);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierSystemPriority);
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   SimulateKioskMode(user_manager::USER_TYPE_KIOSK_APP);

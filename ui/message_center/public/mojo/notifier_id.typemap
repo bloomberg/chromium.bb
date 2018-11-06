@@ -11,5 +11,5 @@ deps = [
 ]
 type_mappings = [
   "message_center.mojom.NotifierId=message_center::NotifierId",
-  "message_center.mojom.NotifierType=message_center::NotifierId::NotifierType",
+  "message_center.mojom.NotifierType=message_center::NotifierType",
 ]

@@ -427,7 +427,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
           base::UTF8ToUTF16(extension->name()),
           base::Int64ToString16(current_usage / kMBytes)),
       notification_image, base::string16() /* display source */, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kSystemNotifierId),
       notification_data,
       new message_center::HandleNotificationClickDelegate(

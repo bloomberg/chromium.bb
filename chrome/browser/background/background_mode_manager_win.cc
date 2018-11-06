@@ -47,7 +47,7 @@ void BackgroundModeManager::DisplayClientInstalledNotification(
       l10n_util::GetStringFUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,
                                  name,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kAppInstalledNotifierId));
 }
 

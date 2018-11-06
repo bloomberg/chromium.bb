@@ -44,7 +44,7 @@ constexpr char kPlayStorePackageName[] = "com.android.vending";
 std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
     const message_center::Notification& notification) {
   DCHECK_EQ(notification.notifier_id().type,
-            message_center::NotifierId::ARC_APPLICATION);
+            message_center::NotifierType::ARC_APPLICATION);
   DCHECK_EQ(kArcNotificationCustomViewType, notification.custom_view_type());
   auto* arc_delegate =
       static_cast<ArcNotificationDelegate*>(notification.delegate());

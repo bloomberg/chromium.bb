@@ -334,7 +334,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
       base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
           std::string(), network->guid(), weak_factory_.GetWeakPtr());
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       kNotifierNetworkPortalDetector);
   bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
   std::unique_ptr<message_center::Notification> notification =
@@ -365,7 +365,7 @@ NetworkPortalNotificationController::
       base::MakeRefCounted<NetworkPortalNotificationControllerDelegate>(
           extension->id(), network->guid(), weak_factory_.GetWeakPtr());
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       kNotifierNetworkPortalDetector);
 
   extensions::NetworkingConfigService::AuthenticationResult

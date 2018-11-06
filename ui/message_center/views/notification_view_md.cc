@@ -772,8 +772,8 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
     app_name = url_formatter::FormatUrlForSecurityDisplay(
         notification.origin_url(),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-  } else if (app_name.empty() &&
-             notification.notifier_id().type == NotifierId::SYSTEM_COMPONENT) {
+  } else if (app_name.empty() && notification.notifier_id().type ==
+                                     NotifierType::SYSTEM_COMPONENT) {
     app_name = MessageCenter::Get()->GetSystemNotificationAppName();
   }
   header_row_->SetAppName(app_name);
@@ -1078,21 +1078,20 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 
   int block_notifications_message_id = 0;
   switch (notification.notifier_id().type) {
-    case NotifierId::APPLICATION:
-    case NotifierId::ARC_APPLICATION:
+    case NotifierType::APPLICATION:
+    case NotifierType::ARC_APPLICATION:
       block_notifications_message_id =
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_APP;
       break;
-    case NotifierId::WEB_PAGE:
+    case NotifierType::WEB_PAGE:
       block_notifications_message_id =
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_SITE;
       break;
-    case NotifierId::SYSTEM_COMPONENT:
+    case NotifierType::SYSTEM_COMPONENT:
       block_notifications_message_id =
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS;
       break;
-    case NotifierId::CROSTINI_APPLICATION:
-    case NotifierId::SIZE:
+    case NotifierType::CROSTINI_APPLICATION:
       NOTREACHED();
       break;
   }

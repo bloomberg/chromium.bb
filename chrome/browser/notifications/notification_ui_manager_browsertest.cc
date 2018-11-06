@@ -104,7 +104,7 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
         base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
         gfx::Image(), base::UTF8ToUTF16("chrome-test://testing/"),
         GURL("chrome-test://testing/"),
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+        message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                    "extension_id"),
         data, new_delegate);
   }

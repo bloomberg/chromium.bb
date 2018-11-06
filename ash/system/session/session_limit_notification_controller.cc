@@ -93,7 +93,7 @@ void SessionLimitNotificationController::UpdateNotification() {
               IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_MESSAGE),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierSessionLengthTimeout),
           data, nullptr /* delegate */, kNotificationTimerIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

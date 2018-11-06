@@ -121,7 +121,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
       const base::string16& title,
       const base::string16& message) {
     const message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION, kTestAppId);
+        message_center::NotifierType::APPLICATION, kTestAppId);
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
         message, gfx::Image(), base::ASCIIToUTF16("www.test.org"), GURL(),
@@ -137,7 +137,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
       const base::string16& title,
       const base::string16& message) {
     const message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION, kTestAppId);
+        message_center::NotifierType::APPLICATION, kTestAppId);
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
         message, gfx::Image(), base::ASCIIToUTF16("www.test.org"), GURL(),

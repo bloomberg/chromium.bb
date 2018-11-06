@@ -36,8 +36,7 @@ bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
 
   if (enabled && !should_block_) {
     UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Windowed",
-                              notification.notifier_id().type,
-                              message_center::NotifierId::SIZE);
+                              notification.notifier_id().type);
   }
 
   return enabled;

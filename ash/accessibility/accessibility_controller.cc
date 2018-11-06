@@ -214,7 +214,7 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
           text, base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierAccessibility),
           options, nullptr, GetNotificationIcon(type),
           message_center::SystemNotificationWarningLevel::NORMAL);

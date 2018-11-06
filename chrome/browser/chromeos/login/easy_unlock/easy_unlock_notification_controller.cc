@@ -45,8 +45,8 @@ std::unique_ptr<message_center::Notification> CreateNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id, title,
       message, icon, base::string16() /* display_source */,
       GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT, id),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 id),
       rich_notification_data, delegate);
 }
 

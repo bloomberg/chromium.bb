@@ -256,7 +256,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
           l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataPromo),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierDataPromo),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(base::Bind(
               &NotificationClicked, default_network->guid(), info_url)),
@@ -294,7 +295,8 @@ bool DataPromoNotification::ShowDataSaverNotification() {
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataSaverNotificationId,
           title, message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataSaver),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierDataSaver),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),

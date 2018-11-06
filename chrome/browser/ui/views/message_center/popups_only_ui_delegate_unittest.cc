@@ -60,7 +60,7 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
         base::ASCIIToUTF16("Some Chrome extension"),
         GURL("chrome-extension://abbccedd"),
-        NotifierId(NotifierId::APPLICATION, id),
+        NotifierId(message_center::NotifierType::APPLICATION, id),
         message_center::RichNotificationData(), nullptr);
 
     MessageCenter::Get()->AddNotification(std::move(notification));
@@ -73,7 +73,7 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
         base::ASCIIToUTF16("Some Chrome extension"),
         GURL("chrome-extension://abbccedd"),
-        NotifierId(NotifierId::APPLICATION, id),
+        NotifierId(message_center::NotifierType::APPLICATION, id),
         message_center::RichNotificationData(), nullptr);
 
     MessageCenter::Get()->UpdateNotification(id, std::move(notification));

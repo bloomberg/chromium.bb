@@ -69,7 +69,7 @@ void DetachableBaseNotificationController::
           kBaseRequiresUpdateNotificationId, title, message, base::string16(),
           GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kDetachableBaseNotifierId),
           message_center::RichNotificationData(), nullptr,
           kNotificationWarningIcon,
@@ -144,7 +144,7 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
           message_center::NOTIFICATION_TYPE_SIMPLE, kBaseChangedNotificationId,
           title, message, base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kDetachableBaseNotifierId),
           options, nullptr, kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);

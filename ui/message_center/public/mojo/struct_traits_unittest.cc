@@ -81,7 +81,7 @@ TEST_F(StructTraitsTest, Notification) {
   gfx::Image icon(gfx::test::CreateImage(64, 64));
   base::string16 display_source(base::ASCIIToUTF16("display_source"));
   GURL origin_url("www.example.com");
-  NotifierId notifier_id(NotifierId::NotifierType::APPLICATION, id);
+  NotifierId notifier_id(NotifierType::APPLICATION, id);
   notifier_id.profile_id = "profile_id";
   RichNotificationData optional_fields;
   optional_fields.settings_button_handler = SettingsButtonHandler::INLINE;
@@ -114,7 +114,7 @@ TEST_F(StructTraitsTest, EmptyIconNotification) {
       base::ASCIIToUTF16("I'm a notification with no icon!"));
   base::string16 display_source(base::ASCIIToUTF16("display_source"));
   GURL origin_url("www.example.com");
-  NotifierId notifier_id(NotifierId::NotifierType::APPLICATION, id);
+  NotifierId notifier_id(NotifierType::APPLICATION, id);
   Notification input(type, id, title, message, gfx::Image(), display_source,
                      origin_url, notifier_id, RichNotificationData(), nullptr);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

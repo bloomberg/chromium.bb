@@ -92,7 +92,7 @@ void ShowSupervisionTransitionNotification(Profile* profile) {
          transition == ArcSupervisionTransition::REGULAR_TO_CHILD);
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 

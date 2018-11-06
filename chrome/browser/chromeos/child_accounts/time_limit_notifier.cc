@@ -49,7 +49,7 @@ void ShowNotification(TimeLimitNotifier::LimitType limit_type,
           l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE),
           GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kTimeLimitNotifierId),
           message_center::RichNotificationData(),
           base::MakeRefCounted<message_center::NotificationDelegate>(),
