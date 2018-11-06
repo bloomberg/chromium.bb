@@ -421,8 +421,11 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
   if (params.show_state != ui::SHOW_STATE_DEFAULT)
     window()->SetProperty(aura::client::kShowStateKey, params.show_state);
 
-  if (!params.bounds.IsEmpty())
+  if (!params.bounds.IsEmpty()) {
+    // Init the scale now (before InitHost below), it is used by SetBoundsInDIP.
+    IntializeDeviceScaleFactor(GetDisplay().device_scale_factor());
     SetBoundsInDIP(params.bounds);
+  }
 
   cursor_manager_ = std::make_unique<wm::CursorManager>(
       std::make_unique<NativeCursorManagerMus>(window()));
