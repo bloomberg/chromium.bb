@@ -624,6 +624,28 @@ unpacker.app = {
                 function() {});
           }, unpacker.app.PACKING_NOTIFICATION_DELAY);
 
+          var progressNotificationCreated = false;
+          // If notification is closed while packing is in progress, flag to
+          // create/update is reset.
+          var onNotificationClosed = function(notificationId) {
+            if (notificationId === compressorId.toString())
+              progressNotificationCreated = false;
+          };
+          var onNotificationButtonClicked = function(
+              notificationId, buttonIndex) {
+            if (notificationId === compressorId.toString())
+              compressor.sendCancelArchiveRequest();
+          };
+          chrome.notifications.onClosed.addListener(onNotificationClosed);
+          chrome.notifications.onButtonClicked.addListener(
+              onNotificationButtonClicked);
+          var clearNotifications = function(compressorId) {
+            chrome.notifications.clear(compressorId.toString(), function() {});
+            chrome.notifications.onClosed.removeListener(onNotificationClosed);
+            chrome.notifications.onButtonClicked.removeListener(
+                onNotificationButtonClicked);
+          };
+
           var onError = function(compressorId) {
             clearTimeout(deferredNotificationTimer);
             chrome.notifications.create(
@@ -649,8 +671,7 @@ unpacker.app = {
             // content of a zip file is small it will flash the notification.
             // Thus we clear the notification with a delay to avoid flashing.
             setTimeout(function() {
-              chrome.notifications.clear(
-                  compressorId.toString(), function() {});
+              clearNotifications(compressorId);
             }, unpacker.app.PACKING_NOTIFICATION_CLEAR_DELAY);
             unpacker.app.cleanupCompressor(
                 compressorId, false /* hasError */, false /* canceled */);
@@ -658,12 +679,11 @@ unpacker.app = {
 
           var onCancel = function(compressorId) {
             clearTimeout(deferredNotificationTimer);
-            chrome.notifications.clear(compressorId.toString(), function() {});
+            clearNotifications(compressorId);
             unpacker.app.cleanupCompressor(
                 compressorId, false /* hasError */, true /* canceled */);
           };
 
-          var progressNotificationCreated = false;
           var progressValue = -1;
           var onProgress = function(compressorId, progress) {
             clearTimeout(deferredNotificationTimer);
@@ -703,17 +723,6 @@ unpacker.app = {
           };
 
           compressor.compress(onSuccess, onError, onProgress, onCancel);
-
-          // If notification is closed while packing is in progress, flag to
-          // create/update is reset.
-          chrome.notifications.onClosed.addListener(function() {
-            progressNotificationCreated = false;
-          });
-          chrome.notifications.onButtonClicked.addListener(function(
-              notificationId, buttonIndex) {
-            if (notificationId === compressorId.toString())
-              compressor.sendCancelArchiveRequest();
-          });
         });
   },
 
