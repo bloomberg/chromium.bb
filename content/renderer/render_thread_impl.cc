@@ -1001,6 +1001,14 @@ void RenderThreadImpl::Init() {
 
 RenderThreadImpl::~RenderThreadImpl() {
   g_main_task_runner.Get() = nullptr;
+
+  // Need to make sure this reference is removed on the correct task runner;
+  if (video_frame_compositor_task_runner_ &&
+      video_frame_compositor_context_provider_) {
+    video_frame_compositor_context_provider_->AddRef();
+    video_frame_compositor_task_runner_->ReleaseSoon(
+        FROM_HERE, std::move(video_frame_compositor_context_provider_).get());
+  }
 }
 
 void RenderThreadImpl::Shutdown() {
@@ -1367,12 +1375,21 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 scoped_refptr<viz::ContextProvider>
 RenderThreadImpl::GetVideoFrameCompositorContextProvider(
     scoped_refptr<viz::ContextProvider> unwanted_context_provider) {
+  DCHECK(video_frame_compositor_task_runner_);
   if (video_frame_compositor_context_provider_ &&
       video_frame_compositor_context_provider_ != unwanted_context_provider) {
     return video_frame_compositor_context_provider_;
   }
 
-  video_frame_compositor_context_provider_ = nullptr;
+  // Need to make sure these references are removed on the correct task runner;
+  if (video_frame_compositor_context_provider_) {
+    video_frame_compositor_context_provider_->AddRef();
+    viz::ContextProvider* context_provider_ptr =
+        video_frame_compositor_context_provider_.get();
+    video_frame_compositor_context_provider_ = nullptr;
+    video_frame_compositor_task_runner_->ReleaseSoon(FROM_HERE,
+                                                     context_provider_ptr);
+  }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
       EstablishGpuChannelSync();
