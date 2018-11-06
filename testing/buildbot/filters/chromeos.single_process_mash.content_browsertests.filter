@@ -19,7 +19,3 @@
 # or RenderWidgetHostMouseEventMonitor::EventWasReceived fails.
 # https://crbug.com/884360
 -SitePerProcessHitTestBrowserTest.CrossProcessTooltipTest*
-
-
-# Flaky. https://crbug.com/889878
--SyntheticKeyEventTest.KeyboardEventAck
