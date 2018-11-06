@@ -202,7 +202,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   bool IsPreloading() const;
 
   // Called by url_index when it's time to fire callbacks sent to WaitToLoad().
-  void LoadNow();
+  // |immediate| is true if this call was not delayed in any way.
+  void LoadNow(bool immediate);
 
   void OnEmpty();
   void MergeFrom(const scoped_refptr<UrlData>& other);
@@ -332,7 +333,9 @@ class MEDIA_BLINK_EXPORT UrlIndex {
 
   // Call url_data->LoadNow() when it's ok to start preloading.
   // Note that LoadNow may be called immediately.
-  void WaitToLoad(UrlData* url_data);
+  // |immediate| shold be true if this was called directly from
+  // UrlData::WaitToLoad.
+  void WaitToLoad(UrlData* url_data, bool immediate);
 
   // Let us know that |url_data| is done preloading. If other resources
   // are waiting, we will let one of them know it's ok to load now.
