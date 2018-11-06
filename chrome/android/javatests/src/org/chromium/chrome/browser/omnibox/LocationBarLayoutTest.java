@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
+import android.widget.ImageButton;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -131,18 +131,16 @@ public class LocationBarLayoutTest {
         return (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
     }
 
-    private AppCompatImageButton getDeleteButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(
-                R.id.delete_button);
+    private ImageButton getDeleteButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.delete_button);
     }
 
-    private AppCompatImageButton getMicButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(R.id.mic_button);
+    private ImageButton getMicButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.mic_button);
     }
 
-    private AppCompatImageButton getSecurityButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(
-                R.id.security_button);
+    private ImageButton getSecurityButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.security_button);
     }
 
     private void setUrlBarTextAndFocus(String text)
@@ -270,7 +268,7 @@ public class LocationBarLayoutTest {
         mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
         setUrlToPageUrl(locationBar);
 
-        AppCompatImageButton securityButton = getSecurityButton();
+        ImageButton securityButton = getSecurityButton();
         Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertNotEquals(mTestLocationBarModel.getSecurityIconResource(
@@ -290,7 +288,7 @@ public class LocationBarLayoutTest {
         mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        AppCompatImageButton securityButton = getSecurityButton();
+        ImageButton securityButton = getSecurityButton();
         Assert.assertEquals(securityButton.getVisibility(), View.VISIBLE);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(mTestLocationBarModel.getSecurityIconResource(

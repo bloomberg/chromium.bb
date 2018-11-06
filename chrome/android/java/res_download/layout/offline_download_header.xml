@@ -16,7 +16,7 @@
         android:id="@+id/layout_container"
         style="@style/ListItemContainer" >
 
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/icon_view"
             style="@style/DownloadIconView"
             android:src="@drawable/ic_chrome"
@@ -47,7 +47,7 @@
                     android:layout_weight="0"
                     android:visibility="gone" />
 
-                <android.support.v7.widget.AppCompatImageView
+                <org.chromium.ui.widget.ChromeImageView
                     android:id="@+id/expand_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

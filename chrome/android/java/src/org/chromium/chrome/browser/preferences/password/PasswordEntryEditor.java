@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -266,7 +265,7 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     private void hookupCopyUsernameButton(View usernameView) {
-        final AppCompatImageButton copyUsernameButton =
+        final ImageButton copyUsernameButton =
                 usernameView.findViewById(R.id.password_entry_editor_copy);
         copyUsernameButton.setImageDrawable(
                 AppCompatResources.getDrawable(getActivity(), R.drawable.ic_content_copy_black));
@@ -288,8 +287,7 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     private void hookupCopySiteButton(View siteView) {
-        final AppCompatImageButton copySiteButton =
-                siteView.findViewById(R.id.password_entry_editor_copy);
+        final ImageButton copySiteButton = siteView.findViewById(R.id.password_entry_editor_copy);
         copySiteButton.setContentDescription(
                 getActivity().getString(R.string.password_entry_editor_copy_stored_site));
         copySiteButton.setImageDrawable(
@@ -362,7 +360,7 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     private void hookupPasswordButtons() {
-        final AppCompatImageButton copyPasswordButton =
+        final ImageButton copyPasswordButton =
                 mView.findViewById(R.id.password_entry_editor_copy_password);
         final ImageButton viewPasswordButton =
                 mView.findViewById(R.id.password_entry_editor_view_password);

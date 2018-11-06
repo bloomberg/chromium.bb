@@ -11,7 +11,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -21,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -52,7 +52,7 @@ public class LanguageListBaseAdapter
         private TextView mTitle;
         private TextView mDescription;
 
-        private AppCompatImageView mStartIcon;
+        private ImageView mStartIcon;
         private ListMenuButton mMoreButton;
 
         LanguageRowViewHolder(View view) {
@@ -61,7 +61,7 @@ public class LanguageListBaseAdapter
             mTitle = (TextView) view.findViewById(R.id.title);
             mDescription = (TextView) view.findViewById(R.id.description);
 
-            mStartIcon = (AppCompatImageView) view.findViewById(R.id.icon_view);
+            mStartIcon = view.findViewById(R.id.icon_view);
             mMoreButton = (ListMenuButton) view.findViewById(R.id.more);
         }
 

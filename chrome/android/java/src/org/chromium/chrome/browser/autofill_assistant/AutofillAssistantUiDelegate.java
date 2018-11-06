@@ -12,7 +12,6 @@ import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -20,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -64,7 +64,7 @@ class AutofillAssistantUiDelegate {
     private final AnimatedProgressBar mProgressBar;
 
     private final ViewGroup mDetails;
-    private final AppCompatImageView mDetailsImage;
+    private final ImageView mDetailsImage;
     private final TextView mDetailsTitle;
     private final TextView mDetailsText;
     private final int mDetailsImageWidth;
@@ -215,7 +215,7 @@ class AutofillAssistantUiDelegate {
                 mActivity.getColor(R.color.modern_blue_600_alpha_38_opaque));
 
         mDetails = (ViewGroup) mBottomBar.findViewById(R.id.details);
-        mDetailsImage = (AppCompatImageView) mDetails.findViewById(R.id.details_image);
+        mDetailsImage = mDetails.findViewById(R.id.details_image);
         mDetailsTitle = (TextView) mDetails.findViewById(R.id.details_title);
         mDetailsText = (TextView) mDetails.findViewById(R.id.details_text);
         mDetailsImageWidth = mActivity.getResources().getDimensionPixelSize(

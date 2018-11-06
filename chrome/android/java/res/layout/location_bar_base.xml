@@ -24,7 +24,7 @@
             android:scaleType="center"
             android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/security_button"
             style="@style/LocationBarButton"
             android:layout_width="match_parent"

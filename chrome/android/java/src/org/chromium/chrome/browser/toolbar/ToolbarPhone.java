@@ -30,7 +30,6 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.util.TypedValue;
@@ -46,6 +45,7 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -142,11 +142,11 @@ public class ToolbarPhone extends ToolbarLayout
     private IncognitoToggleTabLayout mIncognitoToggleTabLayout;
     protected ImageView mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
-    protected @Nullable AppCompatImageButton mHomeButton;
+    protected @Nullable ImageButton mHomeButton;
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
-    private @Nullable AppCompatImageButton mExperimentalButton;
+    private @Nullable ImageButton mExperimentalButton;
 
     private final int mProgressBackBackgroundColorWhite;
 
@@ -376,7 +376,7 @@ public class ToolbarPhone extends ToolbarLayout
 
             mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
-            mHomeButton = (AppCompatImageButton) findViewById(R.id.home_button);
+            mHomeButton = findViewById(R.id.home_button);
             changeIconToNTPIcon(mHomeButton);
             if (FeatureUtilities.isBottomToolbarEnabled()) {
                 disableMenuButton();
@@ -476,7 +476,7 @@ public class ToolbarPhone extends ToolbarLayout
         mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                final AppCompatImageButton menuButton = getMenuButton();
+                final ImageButton menuButton = getMenuButton();
                 if (menuButton != null && menuButton.isShown()) {
                     return menuButton;
                 } else {
@@ -1371,7 +1371,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         // Draw the menu button if necessary.
-        final AppCompatImageButton menuButton = getMenuButton();
+        final ImageButton menuButton = getMenuButton();
         if (menuButton != null && !mShowMenuBadge && mTabSwitcherAnimationMenuDrawable != null
                 && mUrlExpansionPercent != 1f) {
             mTabSwitcherAnimationMenuDrawable.setBounds(menuButton.getPaddingLeft(),
@@ -2666,7 +2666,7 @@ public class ToolbarPhone extends ToolbarLayout
             OnClickListener onClickListener, int drawableResId, int contentDescriptionResId) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
-            mExperimentalButton = (AppCompatImageButton) viewStub.inflate();
+            mExperimentalButton = (ImageButton) viewStub.inflate();
 
             if (!isMenuButtonPresent()) mExperimentalButton.setPadding(0, 0, 0, 0);
             mExperimentalButtonTranslation = getResources().getDimensionPixelSize(

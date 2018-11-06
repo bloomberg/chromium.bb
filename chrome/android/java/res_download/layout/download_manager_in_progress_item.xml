@@ -7,7 +7,6 @@
 <android.support.v7.widget.GridLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="64dp"
@@ -43,7 +42,7 @@
         app:layout_row="1"
         app:layout_gravity="fill_horizontal" />
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/cancel_button"
         android:layout_width="48dp"
         android:layout_height="48dp"

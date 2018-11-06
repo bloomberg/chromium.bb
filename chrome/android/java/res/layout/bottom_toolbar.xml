@@ -39,7 +39,7 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                 android:id="@+id/first_button"
                 style="@style/ToolbarButton"
                 android:layout_gravity="center" />
@@ -49,7 +49,7 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                 android:id="@+id/second_button"
                 style="@style/ToolbarButton"
                 android:layout_gravity="center" />

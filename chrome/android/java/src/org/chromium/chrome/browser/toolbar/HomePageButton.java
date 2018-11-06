@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -17,11 +16,12 @@ import android.view.View.OnCreateContextMenuListener;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * View that displays the home page button.
  */
-public class HomePageButton extends AppCompatImageButton
+public class HomePageButton extends ChromeImageButton
         implements OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
     private static final int ID_REMOVE = 0;
 

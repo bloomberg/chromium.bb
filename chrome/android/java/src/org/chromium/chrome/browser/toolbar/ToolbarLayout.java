@@ -18,13 +18,13 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -61,7 +61,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * The app menu button.
      */
-    protected AppCompatImageButton mMenuButton;
+    protected ImageButton mMenuButton;
     private ImageView mMenuBadge;
     private MenuButton mMenuButtonWrapper;
     private AppMenuButtonHelper mAppMenuButtonHelper;
@@ -154,7 +154,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mMenuButton = (AppCompatImageButton) findViewById(R.id.menu_button);
+        mMenuButton = findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
 
@@ -304,9 +304,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * @return The {@link AppCompatImageButton} containing the menu button.
+     * @return The {@link ImageButton} containing the menu button.
      */
-    protected AppCompatImageButton getMenuButton() {
+    protected ImageButton getMenuButton() {
         return mMenuButton;
     }
 
@@ -982,7 +982,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * #onNativeLibraryReady() & once in #onFinishInflate() (see https://crbug.com/862887).
      * @param ntpButton The button that needs to be changed.
      */
-    protected void changeIconToNTPIcon(AppCompatImageButton ntpButton) {
+    protected void changeIconToNTPIcon(ImageButton ntpButton) {
         if (FeatureUtilities.isNewTabPageButtonEnabled())
             ntpButton.setImageResource(R.drawable.ic_home);
     }

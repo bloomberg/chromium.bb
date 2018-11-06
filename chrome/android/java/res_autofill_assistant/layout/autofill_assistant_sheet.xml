@@ -40,7 +40,7 @@
             android:layout_marginEnd="24dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
-            <android.support.v7.widget.AppCompatImageView
+            <org.chromium.ui.widget.ChromeImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 app:srcCompat="@drawable/ic_autofill_assistant_24dp" />
@@ -96,13 +96,12 @@
             android:padding="8dp"
             android:visibility="gone"
             android:orientation="horizontal">
-            <android.support.v7.widget.AppCompatImageView
+            <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/details_image"
                 android:layout_width="@dimen/autofill_assistant_details_image_size"
                 android:layout_height="@dimen/autofill_assistant_details_image_size"
                 android:layout_marginEnd="16dp"
-                android:scaleType="centerCrop">
-            </android.support.v7.widget.AppCompatImageView>
+                android:scaleType="centerCrop"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

@@ -11,9 +11,9 @@ import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageButton;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
  * The SelectableItemView for items displayed in the browsing history UI.
  */
 public class HistoryItemView extends SelectableItemView<HistoryItem> implements LargeIconCallback {
-    private AppCompatImageButton mRemoveButton;
+    private ImageButton mRemoveButton;
     private VectorDrawableCompat mBlockedVisitDrawable;
     private View mContentView;
 
@@ -62,7 +62,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         super.onFinishInflate();
         mIconView.setImageResource(R.drawable.default_favicon);
         mContentView = findViewById(R.id.content);
-        mRemoveButton = (AppCompatImageButton) findViewById(R.id.remove);
+        mRemoveButton = findViewById(R.id.remove);
         mRemoveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

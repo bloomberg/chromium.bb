@@ -7,7 +7,6 @@ package org.chromium.ui.widget;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 
@@ -15,7 +14,7 @@ import android.widget.Checkable;
  * ImageView that has checkable state. Checkable state can be used with StateListDrawable and
  * AnimatedStateListDrawable to dynamically change the appearance of this widget.
  */
-public class CheckableImageView extends AppCompatImageView implements Checkable {
+public class CheckableImageView extends ChromeImageView implements Checkable {
     private static final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
 
     private boolean mChecked;

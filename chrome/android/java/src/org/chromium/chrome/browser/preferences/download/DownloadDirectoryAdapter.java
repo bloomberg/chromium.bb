@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.preferences.download;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.AppCompatImageView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
@@ -144,7 +144,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             }
         }
 
-        AppCompatImageView imageView = (AppCompatImageView) view.findViewById(R.id.icon_view);
+        ImageView imageView = view.findViewById(R.id.icon_view);
         imageView.setVisibility(View.GONE);
 
         return view;
