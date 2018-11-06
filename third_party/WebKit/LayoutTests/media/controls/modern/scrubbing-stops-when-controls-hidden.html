@@ -10,6 +10,7 @@ async_test(t => {
   const thumb = timelineThumb(video);
   const MOVEMENT_X = 50;
   let thumbPosition;
+  const leftButton = 0;
 
   video.onloadedmetadata = t.step_func(() => {
     // Should not be initially scrubbing.
@@ -26,7 +27,7 @@ async_test(t => {
         source: 'mouse',
         actions: [
           { name: 'pointerMove', x: thumbPosition[0], y: thumbPosition[1] },
-          { name: 'pointerDown', x: thumbPosition[0], y: thumbPosition[1], button: 'left' },
+          { name: 'pointerDown', x: thumbPosition[0], y: thumbPosition[1], button: leftButton },
         ]
       }
     ], t.step_func(() => {

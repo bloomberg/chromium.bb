@@ -13,8 +13,9 @@ function mouseClickInTarget(targetSelector, targetFrame, button) {
   let targetDocument = document;
   let frameLeft = 0;
   let frameTop = 0;
+  // Initialize the button value to left button.
   if (button === undefined) {
-    button = 'left';
+    button = 0;
   }
   if (targetFrame !== undefined) {
     targetDocument = targetFrame.contentDocument;

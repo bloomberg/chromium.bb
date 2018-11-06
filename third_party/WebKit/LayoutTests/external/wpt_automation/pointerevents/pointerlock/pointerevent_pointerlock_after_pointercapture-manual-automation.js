@@ -10,15 +10,17 @@ function inject_input() {
       var targetRect = target.getBoundingClientRect();
       var xPosition = targetRect.left + boundaryOffset;
       var yPosition = targetRect.top + boundaryOffset;
+      const leftButton = 0;
+      const rightButton = 2;
 
       chrome.gpuBenchmarking.pointerActionSequence( [
         {source: 'mouse',
          actions: [
             {name: 'pointerMove', x: xPosition, y: yPosition},
-            {name: 'pointerDown', x: xPosition, y: yPosition, button: 'left'},
+            {name: 'pointerDown', x: xPosition, y: yPosition, button: leftButton},
             {name: 'pointerMove', x: xPosition + 30, y: yPosition + 30},
             {name: 'pointerMove', x: xPosition + 30, y: yPosition},
-            {name: 'pointerDown', x: xPosition + 30, y: yPosition, button: 'right'},
+            {name: 'pointerDown', x: xPosition + 30, y: yPosition, button: rightButton},
             {name: 'pointerMove', x: xPosition + 60, y: yPosition + 30},
             {name: 'pointerMove', x: xPosition + 30, y: yPosition + 20},
         ]}], resolve);

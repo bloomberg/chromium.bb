@@ -18,6 +18,7 @@ async_test(t => {
     // Get the coordinates of the thumb and the timeline.
     const c = elementCoordinates(thumb);
     const c2 = elementCoordinates(timeline);
+    const leftButton = 0;
 
     // Add an event listener for when we start playing again after seeking.
     video.addEventListener('playing', t.step_func_done(() => {
@@ -34,10 +35,10 @@ async_test(t => {
         source: 'mouse',
         actions: [
           { name: 'pointerMove', x: c[0], y: c[1] },
-          { name: 'pointerDown', x: c[0], y: c[1], button: 'left' },
+          { name: 'pointerDown', x: c[0], y: c[1], button: leftButton },
           { name: 'pointerMove', x: c2[0], y: c2[1]},
           { name: 'pause', duration: 5 },
-          { name: 'pointerUp', button: 'left' }
+          { name: 'pointerUp', button: leftButton }
         ]
       }
     ]);

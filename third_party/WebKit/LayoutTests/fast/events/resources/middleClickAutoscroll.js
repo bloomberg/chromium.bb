@@ -7,6 +7,7 @@ var startY;
 var endX;
 var endY;
 var autoscrollParam;
+const middleButton = 1;
 
 function $(id) {
   return document.getElementById(id);
@@ -37,11 +38,11 @@ function testSetUp(param) {
     // Start atuoscrolling.
     if (autoscrollParam.clickOrDrag == 'click') {
       await mouseMoveTo(startX, startY);
-      await mouseClickOn(startX, startY, 'middle');
+      await mouseClickOn(startX, startY, middleButton);
       await mouseMoveTo(endX, endY);
     } else {
       assert_equals('drag', autoscrollParam.clickOrDrag);
-      mouseDragAndDrop(startX, startY, endX, endY, 'middle',
+      mouseDragAndDrop(startX, startY, endX, endY, middleButton,
           waitTimeBeforeMoveInSeconds);
     }
 
@@ -50,7 +51,7 @@ function testSetUp(param) {
       return scrolledObject.scrollTop > 0 || scrolledObject.scrollLeft > 0;
     });
     if (autoscrollParam.clickOrDrag == 'click')
-      await mouseClickOn(endX, endY, 'middle');
+      await mouseClickOn(endX, endY, middleButton);
 
     // Wait for the cursor shape to go back to normal.
     await waitFor(() => {

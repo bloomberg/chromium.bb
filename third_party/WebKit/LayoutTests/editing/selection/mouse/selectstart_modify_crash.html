@@ -4,7 +4,7 @@
 <body>
 <script>
 // For http://crbug.com/748570
-
+const leftButton = 0;
 document.addEventListener('selectstart', () => {
     document.body.innerHTML = '<textarea></textarea>';
 });
@@ -20,7 +20,7 @@ promise_test(() => {
         actions: [
           {
             name: 'pointerDown',
-            button: 'left',
+            button: leftButton,
             x: 0,
             y: 0,
           },

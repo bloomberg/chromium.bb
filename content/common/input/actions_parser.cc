@@ -40,17 +40,16 @@ SyntheticGestureParams::GestureSourceType ToSyntheticGestureSourceType(
     return SyntheticGestureParams::DEFAULT_INPUT;
 }
 
-SyntheticPointerActionParams::Button ToSyntheticMouseButton(
-    std::string button) {
-  if (button == "left")
+SyntheticPointerActionParams::Button ToSyntheticMouseButton(int button) {
+  if (button == 0)
     return SyntheticPointerActionParams::Button::LEFT;
-  if (button == "middle")
+  if (button == 1)
     return SyntheticPointerActionParams::Button::MIDDLE;
-  if (button == "right")
+  if (button == 2)
     return SyntheticPointerActionParams::Button::RIGHT;
-  if (button == "back")
+  if (button == 3)
     return SyntheticPointerActionParams::Button::BACK;
-  if (button == "forward")
+  if (button == 4)
     return SyntheticPointerActionParams::Button::FORWARD;
   NOTREACHED() << "Unexpected button";
   return SyntheticPointerActionParams::Button();
@@ -232,20 +231,18 @@ bool ActionsParser::ParseAction(
     return false;
   }
 
-  std::string button_name = "left";
-  if (action.HasKey("button") && !action.GetString("button", &button_name)) {
+  int button_id = 0;
+  if (action.HasKey("button") && !action.GetInteger("button", &button_id)) {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is not a string", action_index_);
     return false;
-  } else if (button_name != "left" && button_name != "middle" &&
-             button_name != "right" && button_name != "back" &&
-             button_name != "forward") {
+  } else if (button_id < 0 || button_id > 4) {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is an unsupported button", action_index_);
     return false;
   }
   SyntheticPointerActionParams::Button button =
-      ToSyntheticMouseButton(button_name);
+      ToSyntheticMouseButton(button_id);
 
   double duration = 0;
   int num_idle = 0;
