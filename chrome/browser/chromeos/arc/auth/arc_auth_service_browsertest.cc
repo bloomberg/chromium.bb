@@ -75,6 +75,8 @@ namespace {
 constexpr char kRefreshToken[] = "fake-refresh-token";
 constexpr char kFakeUserName[] = "test@example.com";
 constexpr char kFakeGaiaId[] = "1234567890";
+constexpr char kSecondaryAccountGaiaId[] = "123999";
+constexpr char kSecondaryAccountEmail[] = "email.111@gmail.com";
 constexpr char kFakeAuthCode[] = "fake-auth-code";
 
 std::string GetFakeAuthTokenResponse() {
@@ -117,17 +119,29 @@ class FakeAuthInstance : public mojom::AuthInstance {
         weak_ptr_factory_.GetWeakPtr(), std::move(done_closure)));
   }
 
+  void RequestAccountInfo(const std::string& account_name,
+                          base::OnceClosure done_closure) {
+    host_->RequestAccountInfo(
+        account_name, base::BindOnce(&FakeAuthInstance::OnAccountInfoResponse,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(done_closure)));
+  }
+
   mojom::AccountInfo* account_info() { return account_info_.get(); }
+
+  mojom::ArcSignInStatus sign_in_status() const { return status_; }
 
  private:
   void OnAccountInfoResponse(base::OnceClosure done_closure,
                              mojom::ArcSignInStatus status,
                              mojom::AccountInfoPtr account_info) {
     account_info_ = std::move(account_info);
+    status_ = status;
     std::move(done_closure).Run();
   }
 
   mojom::AuthHostPtr host_;
+  mojom::ArcSignInStatus status_;
   mojom::AccountInfoPtr account_info_;
   base::OnceClosure done_closure_;
 
@@ -364,6 +378,83 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
             auth_instance().account_info()->account_type);
   EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       ReAuthenticatePrimaryAccountSucceeds) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        std::string() /* response */,
+                                        net::HTTP_UNAUTHORIZED);
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_FALSE(auth_instance().account_info());
+  EXPECT_EQ(mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR,
+            auth_instance().sign_in_status());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
+  // Add a Secondary Account.
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(kSecondaryAccountGaiaId, kSecondaryAccountEmail);
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        GetFakeAuthTokenResponse());
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kSecondaryAccountEmail,
+                                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kSecondaryAccountEmail,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       FetchSecondaryAccountInfoFailsForInvalidAccounts) {
+  // Add a Secondary Account.
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(kSecondaryAccountGaiaId, kSecondaryAccountEmail);
+  test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
+                                        std::string() /* response */,
+                                        net::HTTP_UNAUTHORIZED);
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kSecondaryAccountEmail,
+                                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_FALSE(auth_instance().account_info());
+  EXPECT_EQ(mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR,
+            auth_instance().sign_in_status());
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
