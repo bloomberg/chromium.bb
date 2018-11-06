@@ -99,6 +99,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   friend class CameraDeviceDelegateTest;
 
+  void TakePhotoImpl();
+
   // Mojo connection error handler.
   void OnMojoConnectionError();
 

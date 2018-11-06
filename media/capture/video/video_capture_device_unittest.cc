@@ -713,7 +713,7 @@ void VideoCaptureDeviceTest::RunTakePhotoTestCase() {
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*video_capture_client_, OnError(_, _, _)).Times(0);
-  EXPECT_CALL(*video_capture_client_, OnStarted());
+  EXPECT_CALL(*video_capture_client_, OnStarted()).Times(testing::AtLeast(1));
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size = frame_size;
