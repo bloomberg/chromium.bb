@@ -622,6 +622,21 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Persistent<Node> mouse_capture_node_;
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
+  // WebViews, and WebWidgets, are used to host a Page and present it via a
+  // WebLayerTreeView compositor. The WidgetClient() provides compositing
+  // support for the WebView.
+  // In some cases, a WidgetClient() is not provided, or it informs us that
+  // it won't be presenting content via a compositor.
+  // When not compositing, the |layer_tree_view_| will be null, otherwise it
+  // would be non-null until closing.
+  //
+  // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
+  // but for various reasons, that's not the case... WebView plugin, printing,
+  // workers, and tests don't use a compositor in their WebViews. Sometimes
+  // they avoid the compositor by using a null client, and sometimes by having
+  // the client return a null compositor. We should make things more consistent
+  // and clear.
+  const bool does_composite_;
   WebLayerTreeView* layer_tree_view_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
 

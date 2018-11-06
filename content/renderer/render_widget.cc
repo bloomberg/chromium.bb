@@ -397,7 +397,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       display_mode_(display_mode),
       ime_event_guard_(nullptr),
       closing_(false),
-      host_closing_(false),
+      host_will_close_this_(false),
       is_swapped_out_(swapped_out),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
@@ -1022,22 +1022,16 @@ void RenderWidget::DidCompletePageScaleAnimation() {
 }
 
 bool RenderWidget::IsClosing() const {
-  // TODO(ajwong): There is oddly 2 closing states. This API is used by
-  // LayerTreeView only as part of the LayerTreeViewDelegate interface and
-  // is the guard against creating new compositor frames unnecessarily.
-  // Historically, when RenderViewImpl and RenderWidget shared the same
-  // routing id, it was possible for |closing_| to be true, |host_closing_| to
-  // false, and for the code in
-  // RenderThreadImpl::RequestNewLayerTreeFrameSink() to still look up a valid
-  // RenderViewImpl from the routing id. This is actually a benign shutdown
-  // race in Android that can be triggered in the SynchronouslyComposite path
-  // via AwContentsGarbageCollectionTest#testCreateAndGcManyTimes.
-  //
-  // Once RenderViewImpl and RenderWidget are split, attempt to combine two
-  // states so the shutdown logic is cleaner.
+  // The |host_will_close_this_| is an optimization when we know that a
+  // WidgetMsg_Close IPC will be coming, though it has not arrived yet.
+  // The |closing_| state means we have received this IPC and are in the
+  // process of closing/destroying the RenderWidget.
+
+  // TODO(ajwong): Once RenderViewImpl and RenderWidget are split, attempt to
+  // combine two states so the shutdown logic is cleaner.
   //
   // http://crbug.com/545684
-  return host_closing_ || closing_;
+  return host_will_close_this_ || closing_;
 }
 
 void RenderWidget::RequestScheduleAnimation() {
@@ -1429,19 +1423,6 @@ void RenderWidget::IntrinsicSizingInfoChanged(
   Send(new WidgetHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
 }
 
-void RenderWidget::WillCloseLayerTreeView() {
-  if (host_closing_)
-    return;
-
-  // Prevent new compositors or output surfaces from being created.
-  host_closing_ = true;
-
-  // Always send this notification to prevent new layer tree views from
-  // being created, even if one hasn't been created yet.
-  if (blink::WebWidget* widget = GetWebWidget())
-    widget->WillCloseLayerTreeView();
-}
-
 void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
   if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
     QueueMessage(new WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
@@ -1545,7 +1526,7 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
 
 LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
-  DCHECK(!host_closing_);
+  DCHECK(!IsClosing());
 
   layer_tree_view_ = std::make_unique<LayerTreeView>(
       this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
@@ -1594,7 +1575,9 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
 }
 
 void RenderWidget::DoDeferredClose() {
-  WillCloseLayerTreeView();
+  // Prevent compositor from setting up new IPC channels, since we know a
+  // WidgetMsg_Close is coming.
+  host_will_close_this_ = true;
   Send(new WidgetHostMsg_Close(routing_id_));
 }
 
@@ -1626,7 +1609,11 @@ void RenderWidget::CloseWidgetSoon() {
 }
 
 void RenderWidget::Close() {
-  CloseWebWidget();
+  // This was done immediately in the |for_oopif_| case in the OnClose() IPC
+  // handler.
+  if (!for_oopif_)
+    CloseWebWidget();
+
   layer_tree_view_.reset();
   if (owner_delegate_)
     owner_delegate_->DidCloseWidget();
@@ -1652,11 +1639,22 @@ void RenderWidget::CloseWebWidget() {
   // closing. Then we would not have to destroy this so carefully.
   screen_metrics_emulator_.reset();
 
-  WillCloseLayerTreeView();
-  if (webwidget_internal_) {
-    webwidget_internal_->Close();
-    webwidget_internal_ = nullptr;
-  }
+  // Informs the WebWidget that compositor is being destroyed, so it can remove
+  // references to it first.
+  //
+  // When |owner_delegate_| is present, the RenderWidget is for a main frame,
+  // and the GetWebWidget() is not the same as |webwidget_internal_|. However
+  // that widget is responsible for doing WillCloseLayerTreeView() on the
+  // |webwidget_internal_|, not us. Otherwise, they are the same and this is
+  // notifying |webwidget_internal_|.
+  GetWebWidget()->WillCloseLayerTreeView();
+
+  // While the wrapping WebWidget from an |owner_delegate_| is responsible for
+  // doing WillCloseLayerTreeView() on the |webwidget_internal_|, this class is
+  // responsible for calling Close() on it. Notably, then, the wrapping
+  // WebWidget does not.
+  webwidget_internal_->Close();
+  webwidget_internal_ = nullptr;
 }
 
 void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {

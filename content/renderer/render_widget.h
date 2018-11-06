@@ -568,9 +568,6 @@ class CONTENT_EXPORT RenderWidget
   // It is safe to call this multiple times, which happens in the case of
   // frame widgets beings closed, since subsequent calls are ignored.
   void CloseWebWidget();
-  // Informs the WebWidget that compositor is being destroyed, so it can remove
-  // references to it first.
-  void WillCloseLayerTreeView();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void SetExternalPopupOriginAdjustmentsForEmulation(
@@ -810,7 +807,7 @@ class CONTENT_EXPORT RenderWidget
   bool closing_;
 
   // True if it is known that the host is in the process of being shut down.
-  bool host_closing_;
+  bool host_will_close_this_;
 
   // Whether this RenderWidget is currently swapped out, such that the view is
   // being rendered by another process.  If all RenderWidgets in a process are

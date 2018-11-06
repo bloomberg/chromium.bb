@@ -315,6 +315,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       ime_accept_events_(true),
       dev_tools_emulator_(nullptr),
       tabs_to_links_(false),
+      does_composite_(widget_client_ &&
+                      !widget_client_->AllowsBrokenNullLayerTreeView()),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
       root_graphics_layer_(nullptr),
@@ -342,21 +344,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
   SetVisibilityState(visibility_state, true);
 
-  // WebViews, and WebWidgets, are used to host a Page and present it via a
-  // WebLayerTreeView compositor. The WidgetClient() provides compositing
-  // support for the WebView.
-  // In some cases, a WidgetClient() is not provided, or it informs us that
-  // it won't be presenting content via a compositor. In that case we keep the
-  // Page in the loop so that it will paint all content into the root layer
-  // as multiple layers can only be used when compositing them together later.
-  //
-  // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
-  // but for various reasons, that's not the case... WebView plugin, printing,
-  // workers, and tests don't use a compositor in their WebViews. Sometimes
-  // they avoid the compositor by using a null client, and sometimes by having
-  // the client return a null compositor. We should make things more consistent
-  // and clear.
-  if (WidgetClient() && !WidgetClient()->AllowsBrokenNullLayerTreeView())
+  // When not compositing, keep the Page in the loop so that it will paint all
+  // content into the root layer, as multiple layers can only be used when
+  // compositing them together later.
+  if (does_composite_)
     page_->GetSettings().SetAcceleratedCompositingEnabled(true);
 
   dev_tools_emulator_ = DevToolsEmulator::Create(this);
@@ -3334,10 +3325,7 @@ void WebViewImpl::SetVisibilityState(
     // when the main frame is local. A remote main frame is not composited from
     // this WebView, it would never be visible even if the Page is.
     if (GetPage()->MainFrame()->IsLocalFrame()) {
-      // TODO(danakj): We shouldn't be changing visibility after closing, so why
-      // do we need to null check here - only for the DoDeferredClose case which
-      // does close out of order, starting with blink before IPCs are closed.
-      if (layer_tree_view_)
+      if (does_composite_)
         layer_tree_view_->SetVisible(visible);
     }
   }
