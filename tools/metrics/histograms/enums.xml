@@ -52304,6 +52304,14 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Fullscreen"/>
 </enum>
 
+<enum name="WebAppInstallResultCode">
+  <int value="0" label="Success"/>
+  <int value="1" label="AlreadyInstalled"/>
+  <int value="2" label="FailedUnknownReason"/>
+  <int value="3" label="GetWebApplicationInfoFailed"/>
+  <int value="4" label="PreviouslyUninstalled"/>
+</enum>
+
 <enum name="WebAppInstallSource">
   <obsolete>
     Removed from code Jan 2018.
