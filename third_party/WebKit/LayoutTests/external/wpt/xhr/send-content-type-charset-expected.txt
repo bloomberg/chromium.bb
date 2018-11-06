@@ -12,7 +12,8 @@ FAIL If charset= param is UTF-8 (case-insensitive), it should not be changed (bo
 PASS charset given but wrong, fix it (known MIME, actual charset)
 FAIL Multiple non-UTF-8 charset parameters deduplicate, bogus parameter dropped assert_equals: expected "text/x-pink-unicorn;charset=UTF-8" but got "text/x-pink-unicorn; charset=UTF-8; charset=UTF-8; notrelated; charset=UTF-8"
 PASS No content type set, give MIME and charset
-FAIL charset with space that is UTF-8 does not change assert_equals: expected "text/plain;charset= utf-8" but got "text/plain;charset= UTF-8"
+FAIL charset with leading space that is UTF-8 does change assert_equals: expected "text/plain;charset=UTF-8" but got "text/plain;charset= UTF-8"
+FAIL charset with trailing space that is UTF-8 does not change assert_equals: expected "text/plain;charset=utf-8 ;x=x" but got "text/plain;charset=UTF-8 ;x=x"
 FAIL charset in double quotes that is UTF-8 does not change assert_equals: expected "text/plain;charset=\"utf-8\"" but got "text/plain;charset=\"UTF-8\""
 FAIL charset in double quotes with space assert_equals: expected "text/plain;charset=UTF-8" but got "text/plain;charset=\" UTF-8\""
 FAIL charset in double quotes with backslashes that is UTF-8 does not change assert_equals: expected "text/plain;charset=\"u\\t\f-8\"" but got "text/plain;charset=\"UTF-8\""
