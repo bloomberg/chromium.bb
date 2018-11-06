@@ -978,11 +978,9 @@ void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
-  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
-  CHECK(response_callback.is_bound());
 
   auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
@@ -1002,16 +1000,7 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  // These CHECKs are for debugging: https://crbug.com/889567.
-  CHECK(context_);
-  if (!base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id)) {
-    bool does_exist_fetch_event_callback =
-        base::ContainsKey(context_->fetch_event_callbacks, fetch_event_id);
-    base::debug::Alias(&does_exist_fetch_event_callback);
-    CHECK(false);
-    return;
-  }
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
 
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
@@ -1038,8 +1027,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
-  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
@@ -1085,8 +1073,7 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
   } else {
     // |fetch_response_callback| should be used before settling a promise for
     // waitUntil().
-    // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
-    CHECK(!base::ContainsKey(context_->fetch_response_callbacks, event_id));
+    DCHECK(!base::ContainsKey(context_->fetch_response_callbacks, event_id));
   }
 }
 
