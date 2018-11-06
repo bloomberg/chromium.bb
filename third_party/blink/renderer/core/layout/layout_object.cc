@@ -2146,6 +2146,12 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       }
     }
 
+    if (diff.TextDecorationOrColorChanged() ||
+        style_->InsideLink() != new_style.InsideLink()) {
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+        cache->TextChanged(this);
+    }
+
     if (diff.TransformChanged()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
         cache->LocationChanged(this);
