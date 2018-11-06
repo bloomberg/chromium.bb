@@ -6,6 +6,7 @@
 #define CC_RASTER_GPU_RASTER_BUFFER_PROVIDER_H_
 
 #include <stdint.h>
+#include <random>
 
 #include "base/macros.h"
 #include "cc/raster/raster_buffer_provider.h"
@@ -160,7 +161,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       GUARDED_BY(pending_raster_queries_lock_);
 
   // Accessed with the worker context lock acquired.
-  int raster_tasks_count_ = 0;
+  std::mt19937 random_generator_;
+  std::uniform_int_distribution<int> uniform_distribution_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);
 };
