@@ -51,7 +51,6 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
-    &contextual_suggestions::kContextualSuggestionsAlternateCardLayout,
     &contextual_suggestions::kContextualSuggestionsButton,
     &contextual_suggestions::kContextualSuggestionsIPHReverseScroll,
     &contextual_suggestions::kContextualSuggestionsOptOut,

@@ -2651,12 +2651,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSuggestionsButtonName,
      flag_descriptions::kContextualSuggestionsButtonDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsButton)},
-    {"enable-contextual-suggestions-alternate-card-layout",
-     flag_descriptions::kContextualSuggestionsAlternateCardLayoutName,
-     flag_descriptions::kContextualSuggestionsAlternateCardLayoutDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         contextual_suggestions::kContextualSuggestionsAlternateCardLayout)},
     {"contextual-suggestions-iph-reverse-scroll",
      flag_descriptions::kContextualSuggestionsIPHReverseScrollName,
      flag_descriptions::kContextualSuggestionsIPHReverseScrollDescription,

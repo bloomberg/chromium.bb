@@ -9,7 +9,6 @@
 
 namespace contextual_suggestions {
 
-extern const base::Feature kContextualSuggestionsAlternateCardLayout;
 extern const base::Feature kContextualSuggestionsButton;
 extern const base::Feature kContextualSuggestionsIPHReverseScroll;
 extern const base::Feature kContextualSuggestionsOptOut;
