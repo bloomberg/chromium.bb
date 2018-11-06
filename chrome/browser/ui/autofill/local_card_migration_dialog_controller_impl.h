@@ -34,10 +34,18 @@ class LocalCardMigrationDialogControllerImpl
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
 
+  // When migration is finished, show a feedback dialog containing
+  // all the upload results for cards that the user selected to upload.
+  void ShowFeedbackDialog(
+      const base::string16& tip_message,
+      LocalCardMigrationDialog* local_card_migration_dialog,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards);
+
   // LocalCardMigrationDialogController:
   LocalCardMigrationDialogState GetViewState() const override;
   const std::vector<MigratableCreditCard>& GetCardList() const override;
   const LegalMessageLines& GetLegalMessageLines() const override;
+  const base::string16& GetTipMessage() const override;
   void OnSaveButtonClicked(
       const std::vector<std::string>& selected_cards_guids) override;
   void OnCancelButtonClicked() override;
@@ -77,6 +85,10 @@ class LocalCardMigrationDialogControllerImpl
   // Timer used to measure the amount of time that the local card migration
   // dialog is visible to users.
   base::ElapsedTimer dialog_is_visible_duration_timer_;
+
+  // The message containing information from Google Payments. Shown in the
+  // feedback dialogs after migration process is finished.
+  base::string16 tip_message_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogControllerImpl);
 };

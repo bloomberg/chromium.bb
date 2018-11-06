@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
+#include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -19,7 +20,7 @@ class WebContents;
 
 namespace autofill {
 
-class LocalCardMigrationDialogController;
+enum class LocalCardMigrationDialogState;
 class LocalCardMigrationOfferView;
 
 class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
@@ -34,7 +35,6 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // LocalCardMigrationDialog
   void ShowDialog() override;
   void CloseDialog() override;
-  void OnMigrationFinished() override;
 
   // views::DialogDelegateView
   gfx::Size CalculatePreferredSize() const override;

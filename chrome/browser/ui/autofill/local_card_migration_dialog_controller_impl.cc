@@ -68,6 +68,29 @@ void LocalCardMigrationDialogControllerImpl::ShowDialog(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_SHOWN);
 }
 
+void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog(
+    const base::string16& tip_message,
+    LocalCardMigrationDialog* local_card_migration_dialog,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+  if (local_card_migration_dialog_)
+    local_card_migration_dialog_->CloseDialog();
+
+  migratable_credit_cards_ = migratable_credit_cards;
+  tip_message_ = tip_message;
+  local_card_migration_dialog_ = local_card_migration_dialog;
+
+  view_state_ = LocalCardMigrationDialogState::kFinished;
+  for (const auto& cc : migratable_credit_cards) {
+    if (cc.migration_status() ==
+        MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD) {
+      view_state_ = LocalCardMigrationDialogState::kActionRequired;
+      break;
+    }
+  }
+
+  local_card_migration_dialog_->ShowDialog();
+}
+
 LocalCardMigrationDialogState
 LocalCardMigrationDialogControllerImpl::GetViewState() const {
   return view_state_;
@@ -81,6 +104,11 @@ LocalCardMigrationDialogControllerImpl::GetCardList() const {
 const LegalMessageLines&
 LocalCardMigrationDialogControllerImpl::GetLegalMessageLines() const {
   return legal_message_lines_;
+}
+
+const base::string16& LocalCardMigrationDialogControllerImpl::GetTipMessage()
+    const {
+  return tip_message_;
 }
 
 void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(

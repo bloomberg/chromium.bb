@@ -10,7 +10,9 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -37,40 +39,52 @@ MigratableCardView::MigratableCardView(
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+  constexpr int kMigrationResultImageSize = 16;
+
   std::unique_ptr<views::Label> card_description =
       std::make_unique<views::Label>(
           migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
           views::style::CONTEXT_LABEL);
 
-  if (should_show_checkbox) {
-    checkbox_ = new views::Checkbox(base::string16(), listener);
-    checkbox_->SetChecked(true);
-    // TODO(crbug/867194): Currently the ink drop animation circle is cut by the
-    // border of scroll bar view. Find a way to adjust the format.
-    checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
-    checkbox_->SetAssociatedLabel(card_description.get());
-    AddChildView(checkbox_);
+  switch (migratable_credit_card.migration_status()) {
+    case MigratableCreditCard::MigrationStatus::UNKNOWN: {
+      if (should_show_checkbox) {
+        DCHECK(listener);
+        checkbox_ = new views::Checkbox(base::string16(), listener);
+        checkbox_->SetChecked(true);
+        // TODO(crbug/867194): Currently the ink drop animation circle is
+        // cropped by the border of scroll bar view. Find a way to adjust the
+        // format.
+        checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+        checkbox_->SetAssociatedLabel(card_description.get());
+        AddChildView(checkbox_);
+      }
+      break;
+    }
+    case MigratableCreditCard::MigrationStatus::SUCCESS_ON_UPLOAD: {
+      auto* migration_succeeded_image = new views::ImageView();
+      migration_succeeded_image->SetImage(gfx::CreateVectorIcon(
+          vector_icons::kCheckCircleIcon, kMigrationResultImageSize,
+          gfx::kGoogleGreen700));
+      AddChildView(migration_succeeded_image);
+      break;
+    }
+    case MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD: {
+      auto* migration_failed_image = new views::ImageView();
+      migration_failed_image->SetImage(
+          gfx::CreateVectorIcon(kBrowserToolsErrorIcon,
+                                kMigrationResultImageSize, gfx::kGoogleRed700));
+      AddChildView(migration_failed_image);
+      break;
+    }
   }
 
-  constexpr int kMigrationResultImageSize = 16;
-  migration_succeeded_image_ = new views::ImageView();
-  migration_succeeded_image_->SetImage(
-      gfx::CreateVectorIcon(vector_icons::kCheckCircleIcon,
-                            kMigrationResultImageSize, gfx::kGoogleGreen700));
-  migration_succeeded_image_->SetVisible(false);
-  AddChildView(migration_succeeded_image_);
-  migration_failed_image_ = new views::ImageView();
-  migration_failed_image_->SetImage(gfx::CreateVectorIcon(
-      kBrowserToolsErrorIcon, kMigrationResultImageSize, gfx::kGoogleRed700));
-  migration_failed_image_->SetVisible(false);
-  AddChildView(migration_failed_image_);
-
-  views::View* card_network_and_last_four_digits = new views::View();
+  std::unique_ptr<views::View> card_network_and_last_four_digits =
+      std::make_unique<views::View>();
   card_network_and_last_four_digits->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
-  AddChildView(card_network_and_last_four_digits);
 
   std::unique_ptr<views::ImageView> card_image =
       std::make_unique<views::ImageView>();
@@ -81,8 +95,8 @@ MigratableCardView::MigratableCardView(
   card_image->SetAccessibleName(
       migratable_credit_card.credit_card().NetworkForDisplay());
   card_network_and_last_four_digits->AddChildView(card_image.release());
-
   card_network_and_last_four_digits->AddChildView(card_description.release());
+  AddChildView(card_network_and_last_four_digits.release());
 
   std::unique_ptr<views::Label> card_expiration =
       std::make_unique<views::Label>(
@@ -91,12 +105,21 @@ MigratableCardView::MigratableCardView(
           views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
   AddChildView(card_expiration.release());
 
-  delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
-  views::SetImageFromVectorIcon(delete_card_from_local_button_, kTrashCanIcon);
-  // TODO(crbug.com/867194): Add tooltip and tag for the
-  // delete_card_from_local_button_.
-  delete_card_from_local_button_->SetVisible(false);
-  AddChildView(delete_card_from_local_button_);
+  // If card is not successfully uploaded we create the trash can icon.
+  if (migratable_credit_card.migration_status() ==
+      MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD) {
+    // TODO(crbug.com/867194): Add the invalid string for failed card, and
+    // update the above comment.
+
+    DCHECK(listener);
+    delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
+    views::SetImageFromVectorIcon(delete_card_from_local_button_,
+                                  kTrashCanIcon);
+    // TODO(crbug.com/867194): Add tooltip and tag for the
+    // delete_card_from_local_button_, and then set it visible by default.
+    delete_card_from_local_button_->SetVisible(false);
+    AddChildView(delete_card_from_local_button_);
+  }
 }
 
 MigratableCardView::~MigratableCardView() = default;

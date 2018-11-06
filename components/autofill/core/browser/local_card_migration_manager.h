@@ -36,7 +36,7 @@ const char kMigrationResultSuccess[] = "SUCCESS";
 class MigratableCreditCard {
  public:
   // Possible states for the migratable local card.
-  enum MigrationStatus {
+  enum class MigrationStatus {
     // Set if the migratable card have not been uploaded.
     UNKNOWN,
     // Set if the migratable card was successfully uploaded to the server.
