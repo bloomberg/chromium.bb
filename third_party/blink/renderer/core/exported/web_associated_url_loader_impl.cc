@@ -404,7 +404,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     task_runner = To<Document>(observer_->LifecycleContext())
                       ->GetTaskRunner(TaskType::kInternalLoading);
   } else {
-    task_runner = Platform::Current()->CurrentThread()->GetTaskRunner();
+    task_runner = Thread::Current()->GetTaskRunner();
   }
   client_ = client;
   client_adapter_ = ClientAdapter::Create(

@@ -38,7 +38,7 @@ FrameOrWorkerScheduler* NullExecutionContext::GetScheduler() {
 
 scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
     TaskType) {
-  return Platform::Current()->CurrentThread()->GetTaskRunner();
+  return Thread::Current()->GetTaskRunner();
 }
 
 }  // namespace blink

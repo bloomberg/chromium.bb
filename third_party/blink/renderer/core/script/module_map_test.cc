@@ -139,7 +139,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   }
 
   base::SingleThreadTaskRunner* TaskRunner() override {
-    return Platform::Current()->CurrentThread()->GetTaskRunner().get();
+    return Thread::Current()->GetTaskRunner().get();
   };
 
   struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {

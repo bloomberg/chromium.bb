@@ -298,7 +298,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFail(file_error::ErrorCode) {
 void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
     DOMArrayBuffer* array_buffer) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
   background_scheduler::PostOnBackgroundThread(
       FROM_HERE,
       CrossThreadBind(

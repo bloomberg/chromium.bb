@@ -54,7 +54,7 @@ class LongTaskDetectorTest : public testing::Test {
 
   void SimulateTask(base::TimeDelta duration) {
     PostCrossThreadTask(
-        *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+        *Thread::Current()->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&LongTaskDetectorTest::DummyTaskWithDuration,
                         CrossThreadUnretained(this), duration));
     platform_->RunUntilIdle();

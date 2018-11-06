@@ -341,7 +341,7 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
 scoped_refptr<base::SingleThreadTaskRunner>
 FrameFetchContext::GetLoadingTaskRunner() {
   if (IsDetached())
-    return Platform::Current()->CurrentThread()->GetTaskRunner();
+    return Thread::Current()->GetTaskRunner();
   return FetchContext::GetLoadingTaskRunner();
 }
 

@@ -187,7 +187,7 @@ ClientMessageLoopAdapter* ClientMessageLoopAdapter::instance_ = nullptr;
 void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                          bool restore) {
   if (!network_agents_.size())
-    Platform::Current()->CurrentThread()->AddTaskObserver(this);
+    Thread::Current()->AddTaskObserver(this);
 
   ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
   MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
@@ -345,7 +345,7 @@ void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
   page_agents_.erase(session);
   overlay_agents_.erase(session);
   if (!network_agents_.size())
-    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+    Thread::Current()->RemoveTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {

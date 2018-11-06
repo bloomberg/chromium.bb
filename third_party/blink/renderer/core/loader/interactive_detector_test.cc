@@ -521,7 +521,7 @@ TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
 
   // Post a task with 6 seconds duration.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 6.0));
 
@@ -542,7 +542,7 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 1.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 0.1));
 
@@ -555,7 +555,7 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 2.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 0.1));
 
