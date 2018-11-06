@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_STRUCT_TRAITS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_STRUCT_TRAITS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_MOJOM_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -36,7 +36,8 @@ struct BLINK_COMMON_EXPORT
   static int64_t id(const blink::IndexedDBDatabaseMetadata& metadata) {
     return metadata.id;
   }
-  static base::string16 name(const blink::IndexedDBDatabaseMetadata& metadata) {
+  static const base::string16& name(
+      const blink::IndexedDBDatabaseMetadata& metadata) {
     return metadata.name;
   }
   static int64_t version(const blink::IndexedDBDatabaseMetadata& metadata) {
@@ -74,7 +75,8 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::IDBIndexMetadataDataView,
   static int64_t id(const blink::IndexedDBIndexMetadata& metadata) {
     return metadata.id;
   }
-  static base::string16 name(const blink::IndexedDBIndexMetadata& metadata) {
+  static const base::string16& name(
+      const blink::IndexedDBIndexMetadata& metadata) {
     return metadata.name;
   }
   static const blink::IndexedDBKeyPath& key_path(
@@ -170,7 +172,7 @@ struct BLINK_COMMON_EXPORT
   static int64_t id(const blink::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.id;
   }
-  static base::string16 name(
+  static const base::string16& name(
       const blink::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.name;
   }
@@ -230,4 +232,4 @@ struct BLINK_COMMON_EXPORT
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_STRUCT_TRAITS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_MOJOM_TRAITS_H_
