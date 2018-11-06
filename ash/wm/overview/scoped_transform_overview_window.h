@@ -20,6 +20,7 @@
 
 namespace aura {
 class Window;
+class WindowTargeter;
 }
 
 namespace gfx {
@@ -230,6 +231,15 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
+
+  // Stores the targeter for the window. For the duration of this object,
+  // |window_|'s event targeter will be replaced by a NullWindowTargeter to
+  // prevent events from reaching |window_|.
+  // TODO(sammiequon): Investigate if we can use a custom event targeter on
+  // windows for overview mode and remove the need for the extra widget which
+  // blocks events in WindowSelectorItem.
+  std::unique_ptr<aura::WindowTargeter> original_targeter_;
+  aura::WindowTargeter* null_targeter_ = nullptr;
 
   base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
 

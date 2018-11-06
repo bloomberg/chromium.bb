@@ -236,6 +236,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Show or hide the mask and shadow on this window item.
   void UpdateMaskAndShadow(bool show);
 
+  // Called when the starting animation is completed, or called immediately
+  // if there was no starting animation.
+  void OnStartingAnimationComplete();
+
   // Changes the opacity of all the windows the item owns.
   void SetOpacity(float opacity);
   float GetOpacity();
