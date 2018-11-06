@@ -343,29 +343,6 @@ fuzzer_test("hash_fuzzer") {
   ]
 }
 
-# third_party/minizip/src is checked out only on unix platform by gclient.
-if (is_linux) {
-  fuzzer_test("minizip_uncompress_fuzzer") {
-    sources = [
-      "minizip_uncompress_fuzzer.cc",
-    ]
-    deps = [
-      "//third_party/minizip:minizip",
-    ]
-    seed_corpus = "//testing/libfuzzer/fuzzers/minizip_uncompress_corpus"
-  }
-
-  fuzzer_test("minizip_compress_fuzzer") {
-    sources = [
-      "minizip_compress_fuzzer.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/minizip:minizip",
-    ]
-  }
-}
-
 action("gen_javascript_parser_proto") {
   # Only targets in this file and the top-level visibility target can
   # depend on this.
