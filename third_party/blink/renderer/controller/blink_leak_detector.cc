@@ -25,7 +25,7 @@
 namespace blink {
 
 BlinkLeakDetector::BlinkLeakDetector()
-    : delayed_gc_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
+    : delayed_gc_timer_(Thread::Current()->GetTaskRunner(),
                         this,
                         &BlinkLeakDetector::TimerFiredGC) {}
 

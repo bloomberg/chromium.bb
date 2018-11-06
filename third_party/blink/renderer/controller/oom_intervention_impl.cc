@@ -23,7 +23,7 @@ void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
 }
 
 OomInterventionImpl::OomInterventionImpl()
-    : timer_(Platform::Current()->MainThread()->GetTaskRunner(),
+    : timer_(Thread::MainThread()->GetTaskRunner(),
              this,
              &OomInterventionImpl::Check) {}
 

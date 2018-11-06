@@ -116,7 +116,7 @@ TEST(DOMWrapperWorldTest, Basic) {
       ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("DOMWrapperWorld test thread"));
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
   thread->BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(&WorkerThreadFunc, CrossThreadUnretained(thread.get()),
