@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/null_task_runner.h"
@@ -419,7 +420,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   void TearDownInProcessBrowserTestFixture() override {
     // Check that the component policy cache was not cleared during browser
     // teardown.
-    ResourceCache cache(component_policy_cache_dir_, new base::NullTaskRunner);
+    ResourceCache cache(component_policy_cache_dir_, new base::NullTaskRunner,
+                        /* max_cache_size */ base::nullopt);
     std::string stub;
     EXPECT_TRUE(cache.Load(kPolicyProtoCacheKey, kTestExtensionId, &stub));
     EXPECT_TRUE(cache.Load(kPolicyDataCacheKey, kTestExtensionId, &stub));
@@ -534,7 +536,8 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
     EXPECT_TRUE(base::PathService::Get(
         chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY, &cache_dir));
 
-    ResourceCache cache(cache_dir, new base::NullTaskRunner);
+    ResourceCache cache(cache_dir, new base::NullTaskRunner,
+                        /* max_cache_size */ base::nullopt);
     EXPECT_TRUE(cache.Store(kPolicyProtoCacheKey, kTestExtensionId,
                             BuildTestComponentPolicy().SerializeAsString()));
     EXPECT_TRUE(

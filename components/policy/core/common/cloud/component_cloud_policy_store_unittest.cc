@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
@@ -93,9 +94,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_.reset(
-        new ResourceCache(temp_dir_.GetPath(),
-                          base::MakeRefCounted<base::TestSimpleTaskRunner>()));
+    cache_.reset(new ResourceCache(
+        temp_dir_.GetPath(), base::MakeRefCounted<base::TestSimpleTaskRunner>(),
+        /* max_cache_size */ base::nullopt));
     store_ = CreateStore();
     store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
                            PolicyBuilder::kFakeToken,

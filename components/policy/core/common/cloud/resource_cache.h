@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_RESOURCE_CACHE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_RESOURCE_CACHE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -13,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "components/policy/policy_export.h"
 
 namespace base {
@@ -27,10 +30,13 @@ namespace policy {
 // Purge*().
 // The class can be instantiated on any thread but from then on, it must be
 // accessed via the |task_runner| only. The |task_runner| must support file I/O.
+// The class needs to have exclusive control on cache directory since it should
+// know about all files changes for correct recalculating cache directory size.
 class POLICY_EXPORT ResourceCache {
  public:
-  explicit ResourceCache(const base::FilePath& cache_path,
-                         scoped_refptr<base::SequencedTaskRunner> task_runner);
+  ResourceCache(const base::FilePath& cache_path,
+                scoped_refptr<base::SequencedTaskRunner> task_runner,
+                const base::Optional<int64_t> max_cache_size);
   virtual ~ResourceCache();
 
   // Stores |data| under (key, subkey). Returns true if the store suceeded, and
@@ -85,10 +91,51 @@ class POLICY_EXPORT ResourceCache {
                                      const std::string& subkey,
                                      base::FilePath* subkey_path);
 
+  // Initializes |current_cache_size_| with the size of cache directory.
+  // It's called once from constructor and is executed in provided
+  // |task_runner_|.
+  void InitCurrentCacheSize();
+
+  // Writes the given data into the file in the cache directory and updates
+  // |current_cache_size_| accordingly.
+  // Deletes the file before writing to it. This ensures that the write does not
+  // follow a symlink planted at |subkey_path|, clobbering a file outside the
+  // cache directory. The mechanism is meant to foil file-system-level attacks
+  // where a symlink is planted in the cache directory before Chrome has
+  // started. An attacker controlling a process running concurrently with Chrome
+  // would be able to race against the protection by re-creating the symlink
+  // between these two calls. There is nothing in file_util that could be used
+  // to protect against such races, especially as the cache is cross-platform
+  // and therefore cannot use any POSIX-only tricks.
+  // Note that |path| must belong to |cache_dir_|.
+  bool WriteCacheFile(const base::FilePath& path, const std::string& data);
+
+  // Deletes the given path in the cache directory and updates
+  // |current_cache_size_| accordingly.
+  // Note that |path| must belong to |cache_dir_|.
+  bool DeleteCacheFile(const base::FilePath& path, bool recursive);
+
+  // Returns the size of given directory or file in the cache directory skipping
+  // symlinks or 0 if any error occurred.
+  // We couldn't use |base::ComputeDirectorySize| here because it doesn't allow
+  // to skip symlinks.
+  // Skipping symlinks is important here to prevent exploit which puts symlink
+  // to e.g. root directory and freezes this thread since traversing the whole
+  // filesystem takes a while.
+  // Note that |path| must belong to |cache_dir_|.
+  int64_t GetCacheDirectoryOrFileSize(const base::FilePath& path) const;
+
   base::FilePath cache_dir_;
 
   // Task runner that |this| runs on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Maximum size of the cache directory.
+  const base::Optional<int64_t> max_cache_size_;
+
+  // Note that this variable could be created on any thread, but is modified
+  // only on the |task_runner_| thread.
+  int64_t current_cache_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCache);
 };

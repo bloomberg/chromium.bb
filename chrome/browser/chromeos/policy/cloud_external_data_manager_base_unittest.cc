@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -110,8 +111,9 @@ CloudExternalDataManagerBaseTest::CloudExternalDataManagerBaseTest() {
 
 void CloudExternalDataManagerBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  resource_cache_.reset(
-      new ResourceCache(temp_dir_.GetPath(), message_loop_.task_runner()));
+  resource_cache_.reset(new ResourceCache(temp_dir_.GetPath(),
+                                          message_loop_.task_runner(),
+                                          /* max_cache_size */ base::nullopt));
   SetUpExternalDataManager();
 
   // Set |kStringPolicy| to a string value.

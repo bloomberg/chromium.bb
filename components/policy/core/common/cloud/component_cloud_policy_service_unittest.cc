@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -121,8 +122,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    owned_cache_.reset(
-        new ResourceCache(temp_dir_.GetPath(), loop_.task_runner()));
+    owned_cache_.reset(new ResourceCache(temp_dir_.GetPath(),
+                                         loop_.task_runner(),
+                                         /* max_cache_size */ base::nullopt));
     cache_ = owned_cache_.get();
   }
 
