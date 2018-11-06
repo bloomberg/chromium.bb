@@ -165,3 +165,31 @@ fuzzer_test("merkle_integrity_source_stream_fuzzer") {
   ]
   dict = "//content/test/data/fuzzer_dictionaries/merkle_integrity_source_stream_fuzzer.dict"
 }
+
+proto_library("appcache_fuzzer_proto") {
+  sources = [
+    "../../browser/appcache/appcache_fuzzer.proto",
+  ]
+  testonly = true
+}
+
+fuzzer_test("appcache_fuzzer") {
+  sources = [
+    "../../browser/appcache/appcache_fuzzer.cc",
+    "../../browser/appcache/mock_appcache_storage.cc",
+    "../../browser/appcache/mock_appcache_storage.h",
+  ]
+
+  deps = [
+    ":appcache_fuzzer_proto",
+    "//base/test:test_support",
+    "//content/app:both_for_content_tests",
+    "//content/browser:browser",
+    "//content/public/browser:browser_sources",
+    "//content/test:test_support",
+    "//mojo/core/embedder",
+    "//services/network:test_support",
+    "//storage/browser:test_support",
+    "//third_party/libprotobuf-mutator",
+  ]
+}

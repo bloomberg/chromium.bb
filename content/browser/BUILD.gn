@@ -23,6 +23,7 @@ jumbo_source_set("browser") {
     ":for_content_tests",  # See top of //content/BUILD.gn for why.
     "//content/app:*",
     "//content/public/browser:browser_sources",
+    "//content/test/fuzzer:appcache_fuzzer",
   ]
 
   configs += [
