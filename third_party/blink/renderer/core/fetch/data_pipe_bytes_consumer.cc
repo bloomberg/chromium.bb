@@ -143,6 +143,7 @@ void DataPipeBytesConsumer::ClearClient() {
 
 void DataPipeBytesConsumer::Cancel() {
   DCHECK(!is_in_two_phase_read_);
+  ClearClient();
   ClearDataPipe();
   SignalComplete();
 }
