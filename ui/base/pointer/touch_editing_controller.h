@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TOUCH_TOUCH_EDITING_CONTROLLER_H_
-#define UI_BASE_TOUCH_TOUCH_EDITING_CONTROLLER_H_
+#ifndef UI_BASE_POINTER_TOUCH_EDITING_CONTROLLER_H_
+#define UI_BASE_POINTER_TOUCH_EDITING_CONTROLLER_H_
 
 #include "ui/base/models/simple_menu_model.h"
 
@@ -11,7 +11,7 @@ namespace gfx {
 class Point;
 class Rect;
 class SelectionBound;
-}
+}  // namespace gfx
 
 namespace ui {
 
@@ -76,8 +76,7 @@ class UI_BASE_EXPORT TouchEditingControllerDeprecated {
 
   // Creates a TouchEditingControllerDeprecated. Caller owns the returned
   // object.
-  static TouchEditingControllerDeprecated* Create(
-      TouchEditable* client_view);
+  static TouchEditingControllerDeprecated* Create(TouchEditable* client_view);
 
   // Notifies the controller that the selection has changed.
   virtual void SelectionChanged() = 0;
@@ -96,10 +95,10 @@ class UI_BASE_EXPORT TouchEditingControllerFactory {
 
   static void SetInstance(TouchEditingControllerFactory* instance);
 
-  virtual TouchEditingControllerDeprecated* Create(TouchEditable* client_view)
-      = 0;
+  virtual TouchEditingControllerDeprecated* Create(
+      TouchEditable* client_view) = 0;
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_TOUCH_TOUCH_EDITING_CONTROLLER_H_
+#endif  // UI_BASE_POINTER_TOUCH_EDITING_CONTROLLER_H_
