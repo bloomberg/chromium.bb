@@ -63,6 +63,7 @@ enum class DecisionFailureReason : int32_t {
   LIVE_STATE_PLAYING_AUDIO,
   // The tab is opted out of the intervention as it is currently using
   // WebSockets.
+  // NOTE: This heuristic isn't used in the freezing/discarding interventions.
   LIVE_STATE_USING_WEB_SOCKETS,
   // The tab is opted out of the intervention as it is currently WebUSB.
   LIVE_STATE_USING_WEB_USB,
