@@ -4,11 +4,19 @@
 
 #include <stdlib.h>
 
+#include "base/at_exit.h"
+#include "base/i18n/icu_util.h"
 #include "components/password_manager/core/browser/android_affiliation/lookup_affiliation_response_parser.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
 
 namespace password_manager {
 namespace {
+
+struct IcuEnvironment {
+  IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
+  // used by ICU integration.
+  base::AtExitManager at_exit_manager;
+};
 
 // We run ParseLookupAffiliationResponse twice with two hardcoded vectors of
 // FacetURI. This approach can be extended to generating not only
@@ -17,6 +25,8 @@ namespace {
 // https://crrev.com/c/1131185/1/components/password_manager/core/browser/android_affiliation/lookup_affiliation_response_parser_fuzzer.cc#25
 DEFINE_BINARY_PROTO_FUZZER(
     const affiliation_pb::LookupAffiliationResponse& response) {
+  static IcuEnvironment env;
+
   AffiliationFetcherDelegate::Result result;
 
   std::vector<FacetURI> uris;
