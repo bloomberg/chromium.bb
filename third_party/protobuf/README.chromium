@@ -91,3 +91,7 @@ Description of the patches:
   Corrects override in proto_writer.h.
   https://github.com/google/protobuf/pull/4707
 
+- 0024-add_wire_format_lite_inl_include.patch
+
+  Fix components build on Windows.
+  https://github.com/protocolbuffers/protobuf/pull/5316
