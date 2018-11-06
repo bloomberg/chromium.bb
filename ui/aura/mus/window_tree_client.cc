@@ -963,6 +963,10 @@ void WindowTreeClient::SetEventTargetingPolicy(
   tree_->SetEventTargetingPolicy(window->server_id(), policy);
 }
 
+void WindowTreeClient::OnClientId(uint32_t client_id) {
+  id_ = client_id;
+}
+
 void WindowTreeClient::OnEmbed(
     ws::mojom::WindowDataPtr root_data,
     ws::mojom::WindowTreePtr tree,

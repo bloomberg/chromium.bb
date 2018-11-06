@@ -64,6 +64,8 @@ bool TestWindowTreeClient::AckFirstEvent(WindowTree* tree,
 
 void TestWindowTreeClient::OnChangeAdded() {}
 
+void TestWindowTreeClient::OnClientId(uint32_t client_id) {}
+
 void TestWindowTreeClient::OnEmbed(
     mojom::WindowDataPtr root,
     mojom::WindowTreePtr tree,

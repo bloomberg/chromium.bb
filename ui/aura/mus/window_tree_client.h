@@ -126,6 +126,8 @@ class AURA_EXPORT WindowTreeClient
   // Blocks until the initial screen configuration is received.
   bool WaitForDisplays();
 
+  const base::Optional<uint32_t>& id() const { return id_; }
+
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
@@ -363,6 +365,7 @@ class AURA_EXPORT WindowTreeClient
                                   std::unique_ptr<ui::PropertyData> data);
 
   // Overridden from WindowTreeClient:
+  void OnClientId(uint32_t client_id) override;
   void OnEmbed(
       ws::mojom::WindowDataPtr root,
       ws::mojom::WindowTreePtr tree,
@@ -588,6 +591,9 @@ class AURA_EXPORT WindowTreeClient
 
   mojo::AssociatedBinding<ws::mojom::ScreenProviderObserver>
       screen_provider_observer_binding_{this};
+
+  // Id for this connection. The server provides this value in OnClientId().
+  base::Optional<uint32_t> id_;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 

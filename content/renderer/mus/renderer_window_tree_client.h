@@ -110,6 +110,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   // these will remain unimplemented in the long-term. Some of the
   // implementations would require some amount of refactoring out of
   // RenderWidget and related classes (e.g. resize, input, ime etc.).
+  void OnClientId(uint32_t client_id) override;
   void OnEmbed(
       ws::mojom::WindowDataPtr root,
       ws::mojom::WindowTreePtr tree,
