@@ -536,6 +536,7 @@ if (use_libfuzzer) {
       ":browser",
       ":proto",
       "//base:base",
+      "//base:i18n",
       "//third_party/libprotobuf-mutator",
     ]
   }
