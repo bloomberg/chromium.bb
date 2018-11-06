@@ -410,6 +410,7 @@ void FeatureInfo::EnableOESTextureHalfFloatLinear() {
     return;
   AddExtensionString("GL_OES_texture_half_float_linear");
   feature_flags_.enable_texture_half_float_linear = true;
+  feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RGBA_F16);
 }
 
 void FeatureInfo::InitializeFeatures() {
@@ -842,6 +843,8 @@ void FeatureInfo::InitializeFeatures() {
         GL_BGRA8_EXT);
     validators_.texture_sized_texture_filterable_internal_format.AddValue(
         GL_BGRA8_EXT);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRX_8888);
   }
 
   // On desktop, all devices support BGRA render buffers (note that on desktop
@@ -1092,10 +1095,15 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
+  if (feature_flags_.chromium_image_ycbcr_420v) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::YUV_420_BIPLANAR);
+  }
 
   if (gfx::HasExtension(extensions, "GL_APPLE_ycbcr_422")) {
     AddExtensionString("GL_CHROMIUM_ycbcr_422_image");
     feature_flags_.chromium_image_ycbcr_422 = true;
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::UYVY_422);
   }
 
 #if defined(OS_MACOSX)
@@ -1116,6 +1124,14 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_RGB10_A2_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RGB10_A2_EXT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_INT_2_10_10_10_REV);
+  }
+  if (feature_flags_.chromium_image_xr30) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::BGRX_1010102);
+  }
+  if (feature_flags_.chromium_image_xb30) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::RGBX_1010102);
   }
 
   // TODO(gman): Add support for these extensions.
@@ -1364,6 +1380,9 @@ void FeatureInfo::InitializeFeatures() {
 
     validators_.texture_internal_format_storage.AddValue(GL_R8_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RG8_EXT);
+
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_8);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RG_88);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
@@ -1383,6 +1402,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_internal_format.AddValue(GL_RED_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_R16_EXT);
+
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_16);
   }
 
   UMA_HISTOGRAM_ENUMERATION(
