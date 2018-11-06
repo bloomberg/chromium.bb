@@ -91,7 +91,8 @@ bool BrowserCompositorMac::RequestRepaintForTesting() {
   delegated_frame_host_->EmbedSurface(
       new_local_surface_id_allocation.local_surface_id(), dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  return client_->SynchronizeVisualProperties(new_local_surface_id_allocation);
+  return client_->OnBrowserCompositorSurfaceIdChanged(
+      new_local_surface_id_allocation);
 }
 
 const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
@@ -125,7 +126,7 @@ void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
 }
 
-bool BrowserCompositorMac::UpdateNSViewAndDisplay(
+bool BrowserCompositorMac::UpdateSurfaceFromNSView(
     const gfx::Size& new_size_dip,
     const display::Display& new_display) {
   if (new_size_dip == dfh_size_dip_ && new_display == dfh_display_)
@@ -160,7 +161,7 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   return true;
 }
 
-void BrowserCompositorMac::SynchronizeVisualProperties(
+void BrowserCompositorMac::UpdateSurfaceFromChild(
     float new_device_scale_factor,
     const gfx::Size& new_size_in_pixels,
     const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
@@ -179,7 +180,8 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         dfh_size_dip_, GetDeadlinePolicy(true /* is_resize */));
   }
-  client_->SynchronizeVisualProperties(child_local_surface_id_allocation);
+  client_->OnBrowserCompositorSurfaceIdChanged(
+      child_local_surface_id_allocation);
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(
@@ -368,7 +370,7 @@ void BrowserCompositorMac::DidNavigate() {
   delegated_frame_host_->EmbedSurface(
       local_surface_id_allocation.local_surface_id(), dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  client_->SynchronizeVisualProperties(local_surface_id_allocation);
+  client_->OnBrowserCompositorSurfaceIdChanged(local_surface_id_allocation);
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
@@ -389,7 +391,7 @@ void BrowserCompositorMac::SetParentUiLayer(ui::Layer* new_parent_ui_layer) {
 bool BrowserCompositorMac::ForceNewSurfaceForTesting() {
   display::Display new_display(dfh_display_);
   new_display.set_device_scale_factor(new_display.device_scale_factor() * 2.0f);
-  return UpdateNSViewAndDisplay(dfh_size_dip_, new_display);
+  return UpdateSurfaceFromNSView(dfh_size_dip_, new_display);
 }
 
 void BrowserCompositorMac::GetRendererScreenInfo(
