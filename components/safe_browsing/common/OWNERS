@@ -1,5 +1,3 @@
-jialiul@chromium.org
-
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 per-file *.mojom=set noparent
