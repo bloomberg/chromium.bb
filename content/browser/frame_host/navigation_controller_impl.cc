@@ -505,6 +505,7 @@ void NavigationControllerImpl::Restore(
   DCHECK_EQ(-1, pending_entry_index_);
 
   needs_reload_ = true;
+  needs_reload_type_ = NeedsReloadType::kRestoreSession;
   entries_.reserve(entries->size());
   for (auto& entry : *entries)
     entries_.push_back(
@@ -1763,6 +1764,7 @@ void NavigationControllerImpl::CopyStateFrom(const NavigationController& temp,
     return;  // Nothing new to do.
 
   needs_reload_ = needs_reload;
+  needs_reload_type_ = NeedsReloadType::kCopyStateFrom;
   InsertEntriesFrom(source, source.GetEntryCount());
 
   for (auto it = source.session_storage_namespace_map_.begin();
@@ -2186,6 +2188,7 @@ bool NavigationControllerImpl::NeedsReload() const {
 
 void NavigationControllerImpl::SetNeedsReload() {
   needs_reload_ = true;
+  needs_reload_type_ = NeedsReloadType::kRequestedByClient;
 
   if (last_committed_entry_index_ != -1) {
     entries_[last_committed_entry_index_]->SetTransitionType(
@@ -2931,6 +2934,9 @@ void NavigationControllerImpl::SetActive(bool is_active) {
 void NavigationControllerImpl::LoadIfNecessary() {
   if (!needs_reload_)
     return;
+
+  UMA_HISTOGRAM_ENUMERATION("Navigation.LoadIfNecessaryType",
+                            needs_reload_type_);
 
   // Calling Reload() results in ignoring state, and not loading.
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
