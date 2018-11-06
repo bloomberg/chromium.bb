@@ -30,7 +30,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // The current authentication stage. Used to get more verbose logging.
   enum class AuthenticationStage {
     kIdle,
-    kGetSystemSalt,
     kDoAuthenticate,
     kUserCallback,
   };
@@ -162,14 +161,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   }
 
  private:
-  using PendingDoAuthenticateUser =
-      base::OnceCallback<void(const std::string& system_salt)>;
-
-  void DoAuthenticateUser(const AccountId& account_id,
-                          const std::string& password,
-                          bool authenticated_by_pin,
-                          OnAuthenticateCallback callback,
-                          const std::string& system_salt);
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 
   // Returns the active data dispatcher or nullptr if there is no lock screen.

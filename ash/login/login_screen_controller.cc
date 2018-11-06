@@ -25,7 +25,6 @@
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/session_manager/session_manager_types.h"
 
@@ -122,13 +121,15 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
       return;
   }
 
-  // |DoAuthenticateUser| requires the system salt.
-  authentication_stage_ = AuthenticationStage::kGetSystemSalt;
-  chromeos::SystemSaltGetter::Get()->GetSystemSalt(
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&LoginScreenController::DoAuthenticateUser,
-                         weak_factory_.GetWeakPtr(), account_id, password,
-                         authenticated_by_pin, std::move(callback))));
+  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
+
+  int dummy_value;
+  bool is_pin =
+      authenticated_by_pin && base::StringToInt(password, &dummy_value);
+  login_screen_client_->AuthenticateUserWithPasswordOrPin(
+      account_id, password, is_pin,
+      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void LoginScreenController::AuthenticateUserWithExternalBinary(
@@ -530,24 +531,6 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
 
 void LoginScreenController::FocusOobeDialog() {
   login_screen_client_->FocusOobeDialog();
-}
-
-void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
-                                               const std::string& password,
-                                               bool authenticated_by_pin,
-                                               OnAuthenticateCallback callback,
-                                               const std::string& system_salt) {
-  // TODO(jdufault): Simplify this, system_salt is no longer used so fetching
-  // the system salt can be skipped.
-  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
-
-  int dummy_value;
-  bool is_pin =
-      authenticated_by_pin && base::StringToInt(password, &dummy_value);
-  login_screen_client_->AuthenticateUserWithPasswordOrPin(
-      account_id, password, is_pin,
-      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void LoginScreenController::OnAuthenticateComplete(
