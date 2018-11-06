@@ -507,33 +507,32 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
 void AudioContext::NotifyAudibleAudioStarted() {
   DCHECK(IsMainThread());
 
-  if (!audio_context_manager_) {
-    Document* document = GetDocument();
-
-    // If there's no document don't bother to try to create the mojom interface.
-    // This can happen if the document has been reloaded while the audio thread
-    // is still running.
-    if (!document) {
-      return;
-    }
-
-    document->GetFrame()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&audio_context_manager_));
-  }
-
-  DCHECK(audio_context_manager_);
-  audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
+  EnsureAudioContextManagerService();
+  if (audio_context_manager_)
+    audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
 }
 
 void AudioContext::NotifyAudibleAudioStopped() {
   DCHECK(IsMainThread());
-  DCHECK(audio_context_manager_);
 
-  // If we don't have a document, we don't need to notify anyone that we've
-  // stopped.
-  if (GetDocument()) {
+  EnsureAudioContextManagerService();
+  if (audio_context_manager_)
     audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
-  }
+}
+
+void AudioContext::EnsureAudioContextManagerService() {
+  if (audio_context_manager_ || !GetDocument())
+    return;
+
+  GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&audio_context_manager_));
+  audio_context_manager_.set_connection_error_handler(
+      WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
+                WrapWeakPersistent(this)));
+}
+
+void AudioContext::OnAudioContextManagerServiceConnectionError() {
+  audio_context_manager_ = nullptr;
 }
 
 }  // namespace blink

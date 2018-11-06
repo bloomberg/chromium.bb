@@ -605,10 +605,11 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
   // notification is required when the context gets suspended or closed.
   if (was_audible_ && context_state_ != kRunning) {
     was_audible_ = false;
-    PostCrossThreadTask(
-        *task_runner_, FROM_HERE,
-        CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
-                        WrapCrossThreadPersistent(this)));
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMediaElementEvent)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&BaseAudioContext::NotifyAudibleAudioStopped,
+                             WrapPersistent(this)));
   }
 
   // Notify context that state changed

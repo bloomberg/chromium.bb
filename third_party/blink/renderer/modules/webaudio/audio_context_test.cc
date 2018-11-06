@@ -87,6 +87,16 @@ class AudioContextTest : public PageTestBase {
 
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
+  mojom::blink::AudioContextManagerPtr& GetAudioContextManagerPtrFor(
+      AudioContext* audio_context) {
+    return audio_context->audio_context_manager_;
+  }
+
+  void SetContextState(AudioContext* audio_context,
+                       AudioContext::AudioContextState state) {
+    audio_context->SetContextState(state);
+  }
+
  private:
   std::unique_ptr<ScopedTestingPlatformSupport<AudioContextTestPlatform>>
       platform_;
@@ -144,6 +154,19 @@ TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
       GetDocument(), exact_too_big_options, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(exact_too_big_context->baseLatency(),
             playback_context->baseLatency());
+}
+
+TEST_F(AudioContextTest, AudioContextAudibility_ServiceUnbind) {
+  AudioContextOptions* options = AudioContextOptions::Create();
+  AudioContext* audio_context =
+      AudioContext::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  audio_context->set_was_audible_for_testing(true);
+  GetAudioContextManagerPtrFor(audio_context).reset();
+  SetContextState(audio_context, AudioContext::AudioContextState::kSuspended);
+
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
+  platform->RunUntilIdle();
 }
 
 }  // namespace blink
