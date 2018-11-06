@@ -39,6 +39,10 @@
 #include "net/url_request/url_request_context_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#endif
+
 class GURL;
 
 namespace net {
@@ -203,6 +207,9 @@ struct SpdySessionDependencies {
   std::unique_ptr<MockClientSocketFactory> socket_factory;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   std::unique_ptr<HttpServerPropertiesImpl> http_server_properties;
+#if BUILDFLAG(ENABLE_REPORTING)
+  std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service;
+#endif
   bool enable_ip_pooling;
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;

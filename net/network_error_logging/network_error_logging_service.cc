@@ -130,33 +130,10 @@ bool IsHttpError(const NetworkErrorLoggingService::RequestDetails& request) {
   return request.status_code >= 400 && request.status_code < 600;
 }
 
-enum class HeaderOutcome {
-  DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
-  DISCARDED_INVALID_SSL_INFO = 1,
-  DISCARDED_CERT_STATUS_ERROR = 2,
-
-  DISCARDED_INSECURE_ORIGIN = 3,
-
-  DISCARDED_JSON_TOO_BIG = 4,
-  DISCARDED_JSON_INVALID = 5,
-  DISCARDED_NOT_DICTIONARY = 6,
-  DISCARDED_TTL_MISSING = 7,
-  DISCARDED_TTL_NOT_INTEGER = 8,
-  DISCARDED_TTL_NEGATIVE = 9,
-  DISCARDED_REPORT_TO_MISSING = 10,
-  DISCARDED_REPORT_TO_NOT_STRING = 11,
-
-  REMOVED = 12,
-  SET = 13,
-
-  DISCARDED_MISSING_REMOTE_ENDPOINT = 14,
-
-  MAX
-};
-
-void RecordHeaderOutcome(HeaderOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.NetworkErrorLogging.HeaderOutcome", outcome,
-                            HeaderOutcome::MAX);
+void RecordHeaderOutcome(NetworkErrorLoggingService::HeaderOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(NetworkErrorLoggingService::kHeaderOutcomeHistogram,
+                            outcome,
+                            NetworkErrorLoggingService::HeaderOutcome::MAX);
 }
 
 enum class RequestOutcome {
@@ -220,6 +197,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     if (policy.expires.is_null())
       return;
 
+    DVLOG(1) << "Received NEL policy for " << origin;
     auto inserted = policies_.insert(std::make_pair(origin, policy));
     DCHECK(inserted.second);
     MaybeAddWildcardPolicy(origin, &inserted.first->second);
@@ -577,6 +555,10 @@ NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
 const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
+
+// static
+const char NetworkErrorLoggingService::kHeaderOutcomeHistogram[] =
+    "Net.NetworkErrorLogging.HeaderOutcome";
 
 // Allow NEL reports on regular requests, plus NEL reports on Reporting uploads
 // containing only regular requests, but do not allow NEL reports on Reporting

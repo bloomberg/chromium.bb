@@ -7253,16 +7253,6 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
   std::vector<RequestDetails> errors_;
 };
 
-std::unique_ptr<test_server::HttpResponse> SendNelHeader(
-    const test_server::HttpRequest& request) {
-  std::unique_ptr<test_server::BasicHttpResponse> http_response(
-      new test_server::BasicHttpResponse);
-  http_response->set_code(HTTP_OK);
-  http_response->AddCustomHeader(NetworkErrorLoggingService::kHeaderName,
-                                 "foo");
-  return std::move(http_response);
-}
-
 std::unique_ptr<test_server::HttpResponse> SendEmptyResponse(
     const test_server::HttpRequest& request) {
   return std::make_unique<test_server::RawHttpResponse>("", "");
@@ -7274,99 +7264,6 @@ constexpr char kHeaderUserAgent[] = "MozillaFromHeader/1.0";
 constexpr char kSettingsUserAgent[] = "MozillaFromSettings/1.0";
 
 }  // namespace
-
-TEST_F(URLRequestTestHTTP, DontProcessNelHeaderNoDelegate) {
-  http_test_server()->RegisterRequestHandler(
-      base::BindRepeating(&SendNelHeader));
-  ASSERT_TRUE(http_test_server()->Start());
-  GURL request_url = http_test_server()->GetURL("/");
-
-  TestNetworkDelegate network_delegate;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> request(context.CreateRequest(
-      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  d.RunUntilComplete();
-}
-
-TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
-  http_test_server()->RegisterRequestHandler(
-      base::BindRepeating(&SendNelHeader));
-  ASSERT_TRUE(http_test_server()->Start());
-  GURL request_url = http_test_server()->GetURL("/");
-
-  TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingService nel_service;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_service(&nel_service);
-  context.Init();
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> request(context.CreateRequest(
-      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  d.RunUntilComplete();
-
-  EXPECT_TRUE(nel_service.headers().empty());
-}
-
-TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
-  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.RegisterRequestHandler(base::BindRepeating(&SendNelHeader));
-  ASSERT_TRUE(https_test_server.Start());
-  GURL request_url = https_test_server.GetURL("/");
-
-  TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingService nel_service;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_service(&nel_service);
-  context.Init();
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> request(context.CreateRequest(
-      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  d.RunUntilComplete();
-
-  ASSERT_EQ(1u, nel_service.headers().size());
-  EXPECT_EQ(url::Origin::Create(request_url), nel_service.headers()[0].origin);
-  AddressList address_list;
-  EXPECT_TRUE(https_test_server.GetAddressList(&address_list));
-  EXPECT_TRUE(nel_service.headers()[0].MatchesAddressList(address_list));
-  EXPECT_EQ("foo", nel_service.headers()[0].value);
-}
-
-TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
-  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  https_test_server.RegisterRequestHandler(base::BindRepeating(&SendNelHeader));
-  ASSERT_TRUE(https_test_server.Start());
-  GURL request_url = https_test_server.GetURL("/");
-
-  TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingService nel_service;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_service(&nel_service);
-  context.Init();
-
-  TestDelegate d;
-  d.set_allow_certificate_errors(true);
-  std::unique_ptr<URLRequest> request(context.CreateRequest(
-      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  d.RunUntilComplete();
-
-  EXPECT_TRUE(d.have_certificate_errors());
-  EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
-  EXPECT_TRUE(nel_service.headers().empty());
-}
 
 TEST_F(URLRequestTestHTTP, DontForwardErrorToNelNoDelegate) {
   URLRequestFailedJob::AddUrlHandler();

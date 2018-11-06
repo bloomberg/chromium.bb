@@ -70,6 +70,10 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#endif
+
 namespace {
 
 // Max number of |retry_attempts| (excluding the initial request) after which
@@ -1190,6 +1194,10 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (rv != OK)
     return rv;
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  ProcessNetworkErrorLoggingHeader();
+#endif
+
   headers_valid_ = true;
 
   // We have reached the end of Start state machine, set the RequestInfo to
@@ -1295,6 +1303,43 @@ int HttpNetworkTransaction::DoDrainBodyForAuthRestartComplete(int result) {
 
   return OK;
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
+  std::string value;
+  if (!response_.headers->GetNormalizedHeader(
+          NetworkErrorLoggingService::kHeaderName, &value)) {
+    return;
+  }
+
+  NetworkErrorLoggingService* service =
+      session_->network_error_logging_service();
+  if (!service) {
+    NetworkErrorLoggingService::
+        RecordHeaderDiscardedForNoNetworkErrorLoggingService();
+    return;
+  }
+
+  // Only accept NEL headers on HTTPS connections that have no certificate
+  // errors.
+  if (!response_.ssl_info.is_valid()) {
+    NetworkErrorLoggingService::RecordHeaderDiscardedForInvalidSSLInfo();
+    return;
+  }
+  if (IsCertStatusError(response_.ssl_info.cert_status)) {
+    NetworkErrorLoggingService::RecordHeaderDiscardedForCertStatusError();
+    return;
+  }
+
+  if (remote_endpoint_.address().empty()) {
+    NetworkErrorLoggingService::RecordHeaderDiscardedForMissingRemoteEndpoint();
+    return;
+  }
+
+  service->OnHeader(url::Origin::Create(url_), remote_endpoint_.address(),
+                    value);
+}
+#endif
 
 int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // There are two paths through which the server can request a certificate

@@ -2765,6 +2765,8 @@ static_library("test_support") {
 
   if (enable_reporting) {
     sources += [
+      "network_error_logging/network_error_logging_test_util.cc",
+      "network_error_logging/network_error_logging_test_util.h",
       "reporting/reporting_test_util.cc",
       "reporting/reporting_test_util.h",
     ]

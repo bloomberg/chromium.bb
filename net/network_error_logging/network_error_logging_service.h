@@ -89,6 +89,35 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kPhaseKey[];
   static const char kTypeKey[];
 
+  // Histograms.  These are mainly used in test cases to verify that interesting
+  // events occurred.
+
+  static const char kHeaderOutcomeHistogram[];
+
+  enum class HeaderOutcome {
+    DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
+    DISCARDED_INVALID_SSL_INFO = 1,
+    DISCARDED_CERT_STATUS_ERROR = 2,
+
+    DISCARDED_INSECURE_ORIGIN = 3,
+
+    DISCARDED_JSON_TOO_BIG = 4,
+    DISCARDED_JSON_INVALID = 5,
+    DISCARDED_NOT_DICTIONARY = 6,
+    DISCARDED_TTL_MISSING = 7,
+    DISCARDED_TTL_NOT_INTEGER = 8,
+    DISCARDED_TTL_NEGATIVE = 9,
+    DISCARDED_REPORT_TO_MISSING = 10,
+    DISCARDED_REPORT_TO_NOT_STRING = 11,
+
+    REMOVED = 12,
+    SET = 13,
+
+    DISCARDED_MISSING_REMOTE_ENDPOINT = 14,
+
+    MAX
+  };
+
   static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();
   static void RecordHeaderDiscardedForInvalidSSLInfo();
   static void RecordHeaderDiscardedForCertStatusError();
