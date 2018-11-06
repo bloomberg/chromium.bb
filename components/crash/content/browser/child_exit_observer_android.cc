@@ -171,6 +171,7 @@ void ChildExitObserver::BrowserChildProcessKilled(
   info.pid = data.GetProcess().Pid();
   info.process_type = static_cast<content::ProcessType>(data.process_type);
   info.app_state = base::android::ApplicationStatusListener::GetState();
+  info.normal_termination = content_info.clean_exit;
   PopulateTerminationInfo(content_info, &info);
   browser_child_process_info_.emplace(data.id, info);
   // Subsequent BrowserChildProcessHostDisconnected will call OnChildExit.

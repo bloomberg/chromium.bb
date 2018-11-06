@@ -6,7 +6,7 @@ package org.chromium.base.process_launcher;
 
 import android.os.Bundle;
 
-import org.chromium.base.process_launcher.ICallbackInt;
+import org.chromium.base.process_launcher.IParentProcess;
 
 interface IChildProcessService {
   // On the first call to this method, the service will record the calling PID
@@ -15,8 +15,8 @@ interface IChildProcessService {
   boolean bindToCaller();
 
   // Sets up the initial IPC channel.
-  oneway void setupConnection(in Bundle args, ICallbackInt pidCallback,
-          in List<IBinder>  clientInterfaces);
+  oneway void setupConnection(in Bundle args, IParentProcess parentProcess,
+          in List<IBinder> clientInterfaces);
 
   // Forcefully kills the child process.
   oneway void forceKill();

@@ -83,4 +83,12 @@ bool TerminateMultiProcessTestChild(const Process& process,
       env, process.Pid(), exit_code, wait);
 }
 
+bool MultiProcessTestChildHasCleanExit(const Process& process) {
+  JNIEnv* env = android::AttachCurrentThread();
+  DCHECK(env);
+
+  return android::Java_MultiprocessTestClientLauncher_hasCleanExit(
+      env, process.Pid());
+}
+
 }  // namespace base

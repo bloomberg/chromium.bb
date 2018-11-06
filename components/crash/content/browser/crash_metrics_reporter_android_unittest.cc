@@ -157,6 +157,22 @@ TEST_F(CrashMetricsReporterTest, UtilityProcessOOM) {
       nullptr);
 }
 
+TEST_F(CrashMetricsReporterTest, NormalTerminationIsNotOOMUtilityProcess) {
+  ChildExitObserver::TerminationInfo termination_info;
+  termination_info.process_host_id = 1;
+  termination_info.pid = base::kNullProcessHandle;
+  termination_info.process_type = content::PROCESS_TYPE_UTILITY;
+  termination_info.app_state =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+  termination_info.normal_termination = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
+  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.was_oom_protected_status = true;
+  termination_info.renderer_has_visible_clients = true;
+
+  TestOomCrashProcessing(termination_info, {}, nullptr);
+}
+
 TEST_F(CrashMetricsReporterTest, UtilityProcessAll) {
   ChildExitObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
