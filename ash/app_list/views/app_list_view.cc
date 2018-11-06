@@ -97,7 +97,7 @@ constexpr int kAppListBackgroundRadius = 28;
 constexpr int kAppListHomeLaucherGesturesThreshold = 32;
 
 // Quality of the shield background blur.
-constexpr float kAppListBlurQuality = 0.25f;
+constexpr float kAppListBlurQuality = 0.33f;
 
 // Set animation durations to 0 for testing.
 static bool short_animations_for_testing;
