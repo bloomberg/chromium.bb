@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/config/android/rules.gni")
 import("//testing/test.gni")
 
@@ -72,7 +71,6 @@ android_apk("sample_jni_apk") {
 generate_jni_registration("sample_jni_registration") {
   target = ":sample_jni_apk"
   output = "$target_gen_dir/${target_name}.h"
-  exception_files = jni_exception_files
 }
 
 # Serves to test that generated bindings compile properly.

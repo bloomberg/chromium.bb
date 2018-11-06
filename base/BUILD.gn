@@ -2967,6 +2967,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/DoNotInline.java",
       "android/java/src/org/chromium/base/annotations/JNIAdditionalImport.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
+      "android/java/src/org/chromium/base/annotations/JniIgnoreNatives.java",
       "android/java/src/org/chromium/base/annotations/MainDex.java",
       "android/java/src/org/chromium/base/annotations/NativeCall.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",

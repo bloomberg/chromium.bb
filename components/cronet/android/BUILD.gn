@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
@@ -41,9 +40,8 @@ generate_jni("cronet_jni_headers") {
 generate_jni_registration("cronet_jni_registration") {
   target = ":cronet_jni_apk"
   output = "$root_gen_dir/components/cronet/android/${target_name}.h"
-  exception_files = jni_exception_files
 
-  exception_files += [
+  exception_files = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
     "//base/android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
     "//base/android/java/src/org/chromium/base/SysUtils.java",
