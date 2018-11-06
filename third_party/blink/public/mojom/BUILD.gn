@@ -5,8 +5,8 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # This target includes all mojom interfaces which can be used from
-# Source/platform. In particular these mojom interfaces can't use types that
-# are typemapped to a type in Source/core.
+# renderer/platform. In particular these mojom interfaces can't use types that
+# are typemapped to a type in renderer/core.
 mojom("mojom_platform") {
   sources = [
     "array_buffer/array_buffer_contents.mojom",
@@ -31,7 +31,6 @@ mojom("mojom_platform") {
     "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
     "frame/navigation_initiator.mojom",
-    "indexeddb/indexeddb.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
     "loader/navigation_predictor.mojom",
@@ -122,8 +121,8 @@ mojom("speech_recognition_error_code") {
 }
 
 # This target can include mojom interfaces which do use types that are
-# typemapped to a type in Source/core. This also means these interfaces are not
-# available from Source/platform.
+# typemapped to a type in renderer/core. This also means these interfaces are
+# not available from renderer/platform.
 # Note that service_worker_object.mojom and service_worker.mojom depend
 # on transferable_message.mojom, and service_worker_registration.mojom depends
 # on service_worker_object.mojom, so we put these three service worker
@@ -159,4 +158,39 @@ mojom("mojom_core") {
   export_class_attribute_blink = "CORE_EXPORT"
   export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/core/core_export.h"
+}
+
+# This target can include mojom interfaces which use types that are typemapped
+# to a type in renderer/modules. This also means these interfaces are not
+# available from renderer/platform or renderer/core.
+mojom("mojom_modules") {
+  sources = [
+    "indexeddb/indexeddb.mojom",
+  ]
+
+  public_deps = [
+    ":mojom_core",
+
+    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
+    # get fixed.
+    ":mojom_platform",
+    "//mojo/public/mojom/base",
+    "//skia/public/interfaces",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  overridden_deps_blink = [
+    ":mojom_core",
+    ":mojom_platform",
+  ]
+  component_deps_blink = [ "//third_party/blink/renderer/core" ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "MODULES_EXPORT"
+  export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/modules/modules_export.h"
 }

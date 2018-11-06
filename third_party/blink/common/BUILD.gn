@@ -36,7 +36,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
-    "indexeddb/indexeddb_struct_traits.cc",
+    "indexeddb/indexeddb_mojom_traits.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",
     "messaging/cloneable_message.cc",
