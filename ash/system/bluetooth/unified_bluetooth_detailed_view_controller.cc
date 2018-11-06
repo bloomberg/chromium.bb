@@ -10,6 +10,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "base/stl_util.h"
 
 using device::mojom::BluetoothSystem;
 
@@ -40,14 +41,10 @@ void UpdateBluetoothDeviceListHelper(BluetoothDeviceList* list,
 void RemoveObsoleteBluetoothDevicesFromList(
     BluetoothDeviceList* device_list,
     const std::set<std::string>& new_device_address_list) {
-  for (BluetoothDeviceList::iterator it = device_list->begin();
-       it != device_list->end(); ++it) {
-    if (!new_device_address_list.count((*it).address)) {
-      it = device_list->erase(it);
-      if (it == device_list->end())
-        return;
-    }
-  }
+  base::EraseIf(*device_list, [&new_device_address_list](
+                                  const BluetoothDeviceInfo& info) {
+    return !base::ContainsKey(new_device_address_list, info.address);
+  });
 }
 
 }  // namespace
