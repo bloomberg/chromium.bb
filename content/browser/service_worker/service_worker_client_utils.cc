@@ -285,16 +285,15 @@ void AddWindowClient(
                                          host->client_uuid()));
 }
 
-void AddNonWindowClient(
-    const ServiceWorkerProviderHost* host,
-    blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
-    ServiceWorkerClientPtrs* out_clients) {
+void AddNonWindowClient(const ServiceWorkerProviderHost* host,
+                        blink::mojom::ServiceWorkerClientType client_type,
+                        ServiceWorkerClientPtrs* out_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blink::mojom::ServiceWorkerClientType host_client_type = host->client_type();
   if (host_client_type == blink::mojom::ServiceWorkerClientType::kWindow)
     return;
-  if (options->client_type != blink::mojom::ServiceWorkerClientType::kAll &&
-      options->client_type != host_client_type)
+  if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
+      client_type != host_client_type)
     return;
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
@@ -380,13 +379,14 @@ void GetNonWindowClients(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!options->include_uncontrolled) {
     for (auto& controllee : controller->controllee_map())
-      AddNonWindowClient(controllee.second, std::move(options), clients.get());
+      AddNonWindowClient(controllee.second, options->client_type,
+                         clients.get());
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
     for (auto it = controller->context()->GetClientProviderHostIterator(
              origin, false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      AddNonWindowClient(it->GetProviderHost(), std::move(options),
+      AddNonWindowClient(it->GetProviderHost(), options->client_type,
                          clients.get());
     }
   }
