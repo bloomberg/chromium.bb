@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -488,8 +489,9 @@ void BodyStreamBuffer::ProcessData() {
       return;
     DOMUint8Array* array = nullptr;
     if (result == BytesConsumer::Result::kOk) {
-      array = DOMUint8Array::Create(
-          reinterpret_cast<const unsigned char*>(buffer), available);
+      array =
+          DOMUint8Array::Create(reinterpret_cast<const unsigned char*>(buffer),
+                                SafeCast<uint32_t>(available));
       result = consumer_->EndRead(available);
     }
     switch (result) {
