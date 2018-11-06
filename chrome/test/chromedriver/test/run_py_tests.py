@@ -1757,6 +1757,29 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('test', report['type']);
     self.assertEquals('test report message', report['body']['message']);
 
+# Tests in the following class are expected to be moved to ChromeDriverTest
+# class when we no longer support the legacy mode.
+class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
+  """W3C mode specific tests."""
+
+  def setUp(self):
+    self._driver = self.CreateDriver(
+        send_w3c_capability=True, send_w3c_request=True)
+
+  def testSendKeysToElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    text = self._driver.ExecuteScript(
+        'document.body.innerHTML = \'<input type="text">\';'
+        'var input = document.getElementsByTagName("input")[0];'
+        'input.addEventListener("change", function() {'
+        '  document.body.appendChild(document.createElement("br"));'
+        '});'
+        'return input;')
+    text.SendKeysW3c('0123456789+-*/ Hi')
+    text.SendKeysW3c(', there!')
+    value = self._driver.ExecuteScript('return arguments[0].value;', text)
+    self.assertEquals('0123456789+-*/ Hi, there!', value)
+
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
 
