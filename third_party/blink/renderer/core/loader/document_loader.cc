@@ -266,7 +266,8 @@ Resource* DocumentLoader::StartPreload(ResourceType type,
       break;
     case ResourceType::kScript:
       params.SetRequestContext(mojom::RequestContextType::SCRIPT);
-      resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
+      resource = ScriptResource::Fetch(params, Fetcher(), nullptr,
+                                       ScriptResource::kAllowStreaming);
       break;
     case ResourceType::kCSSStyleSheet:
       resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
