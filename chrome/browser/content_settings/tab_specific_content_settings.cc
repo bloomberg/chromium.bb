@@ -336,17 +336,6 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
 
   ContentSettingsStatus& status = content_settings_status_[type];
 
-#if defined(OS_ANDROID)
-  if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
-    // For Android we do not have a persistent button that will always be
-    // visible for blocked popups.  Instead we have info bars which could be
-    // dismissed.  Have to clear the blocked state so we properly notify the
-    // relevant pieces again.
-    status.blocked = false;
-    status.blockage_indicated_to_user = false;
-  }
-#endif
-
   if (!status.blocked) {
     status.blocked = true;
     // TODO: it would be nice to have a way of mocking this in tests.
