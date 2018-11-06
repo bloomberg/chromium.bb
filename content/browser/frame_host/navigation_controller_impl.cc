@@ -965,7 +965,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
                                         was_restored, navigation_handle);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
-      RendererDidNavigateToSamePage(rfh, params, navigation_handle);
+      RendererDidNavigateToSamePage(rfh, params, details->is_same_document,
+                                    navigation_handle);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(rfh, params, details->is_same_document,
@@ -1533,6 +1534,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 void NavigationControllerImpl::RendererDidNavigateToSamePage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_same_document,
     NavigationHandleImpl* handle) {
   // This classification says that we have a pending entry that's the same as
   // the last committed entry. This entry is guaranteed to exist by
@@ -1556,9 +1558,13 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->SetURL(params.url);
 
   // If a user presses enter in the omnibox and the server redirects, the URL
-  // might change (but it's still considered a SAME_PAGE navigation). So we must
-  // update the SSL status.
-  existing_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+  // might change (but it's still considered a SAME_PAGE navigation), so we must
+  // update the SSL status if we perform a network request (e.g. a
+  // non-same-document navigation). Requests that don't result in a network
+  // request do not have a valid SSL status, but since the document didn't
+  // change, the previous SSLStatus is still valid.
+  if (!is_same_document)
+    existing_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
 
   if (existing_entry->GetURL().SchemeIs(url::kHttpsScheme) &&
       !rfh->GetParent() && handle->GetNetErrorCode() == net::OK) {
