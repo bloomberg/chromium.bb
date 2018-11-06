@@ -178,13 +178,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
-  // Mostly the GpuFeatureInfo from GpuInit will be used to create a gpu thread
-  // service. In certain tests GpuInit is not part of the execution path, so
-  // the test suite need to compute it and pass it to the default service.
-  // See "gpu/ipc/in_process_command_buffer.cc".
-  static void InitializeDefaultServiceForTesting(
-      const GpuFeatureInfo& gpu_feature_info);
-
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
   int GetRasterDecoderIdForTest() const;
 

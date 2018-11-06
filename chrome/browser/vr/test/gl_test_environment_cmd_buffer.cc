@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/gl_in_process_context.h"
+#include "gpu/ipc/test_gpu_thread_holder.h"
 
 namespace {
 
@@ -65,14 +66,13 @@ GlTestEnvironment::GlTestEnvironment(const gfx::Size frame_buffer_size) {
   attributes.bind_generates_resource = false;
 
   context_ = std::make_unique<gpu::GLInProcessContext>();
-  auto result = context_->Initialize(nullptr,                 /* service */
-                                     nullptr,                 /* surface */
-                                     true,                    /* offscreen */
-                                     gpu::kNullSurfaceHandle, /* window */
-                                     attributes, gpu::SharedMemoryLimits(),
-                                     nullptr /* memory_buffer_manager */,
-                                     nullptr, /* image_factory */
-                                     base::ThreadTaskRunnerHandle::Get());
+  auto result = context_->Initialize(
+      gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, /* surface */
+      true,                                                      /* offscreen */
+      gpu::kNullSurfaceHandle,                                   /* window */
+      attributes, gpu::SharedMemoryLimits(),
+      nullptr /* memory_buffer_manager */, nullptr, /* image_factory */
+      base::ThreadTaskRunnerHandle::Get());
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   gles2::SetGLContext(context_->GetImplementation());
 
