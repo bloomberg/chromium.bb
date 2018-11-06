@@ -1332,6 +1332,35 @@ height, its message will be rejected and the pipe will be closed. In this way,
 type mapping can serve to enable custom validation logic in addition to making
 callsites and interface implemention more convenient.
 
+When the struct fields have non-primitive types, e.g. string or array,
+returning a read-only view of the data in the accessor is recommended to
+avoid copying. It is safe because the input object is guaranteed to
+outlive the usage of the result returned by the accessor method.
+
+The following example uses `StringPiece` to return a view of the GURL's
+data (`//url/mojom/url_gurl_mojom_traits.h`):
+
+``` cpp
+#include "base/strings/string_piece.h"
+#include "url/gurl.h"
+#include "url/mojom/url.mojom.h"
+#include "url/url_constants.h"
+
+namespace mojo {
+
+template <>
+struct StructTraits<url::mojom::UrlDataView, GURL> {
+  static base::StringPiece url(const GURL& r) {
+    if (r.possibly_invalid_spec().length() > url::kMaxURLChars ||
+        !r.is_valid()) {
+      return base::StringPiece();
+    }
+    return base::StringPiece(r.possibly_invalid_spec().c_str(),
+                             r.possibly_invalid_spec().length());
+  }
+}  // namespace mojo
+```
+
 ### Enabling a New Type Mapping
 
 We've defined the `StructTraits` necessary, but we still need to teach the
