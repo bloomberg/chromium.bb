@@ -254,23 +254,28 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        PopupShownManuallyAndPasswordErased) {
   NavigateToFile("/password/password_form.html");
 
-  FocusPasswordField();
+  // Focus the field that is not the first password field. The first one is
+  // considered "automatic" generation field.
+  ASSERT_TRUE(content::ExecuteScript(
+      WebContents(), "document.getElementById('password_redirect').focus()"));
   // The same flow happens when user generates a password from the context menu.
   password_manager_util::UserTriggeredManualGenerationFromContextMenu(
       ChromePasswordManagerClient::FromWebContents(WebContents()));
+  WaitForPopupStatusChange();
   EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);
 
   // Wait until the password is filled.
-  WaitForNonEmptyFieldValue("password_field");
+  WaitForNonEmptyFieldValue("password_redirect");
 
   // Re-focusing the password field should show the editing popup.
-  FocusPasswordField();
+  ASSERT_TRUE(content::ExecuteScript(
+      WebContents(), "document.getElementById('password_redirect').focus()"));
   EXPECT_TRUE(EditingPopupShowing());
 
   // Delete the password. The generation prompt should not be visible.
-  SimulateUserDeletingFieldContent("password_field");
+  SimulateUserDeletingFieldContent("password_redirect");
   WaitForPopupStatusChange();
   EXPECT_FALSE(EditingPopupShowing());
   EXPECT_FALSE(GenerationPopupShowing());
