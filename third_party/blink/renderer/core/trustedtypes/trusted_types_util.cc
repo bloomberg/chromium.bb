@@ -9,10 +9,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
 namespace blink {
@@ -68,17 +72,34 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
   DCHECK(!string_or_trusted_html.IsNull());
 
-  if (!string_or_trusted_html.IsTrustedHTML() && doc &&
-      doc->RequireTrustedTypes()) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type && string_or_trusted_html.IsString()) {
+    return string_or_trusted_html.GetAsString();
+  }
+
+  if (string_or_trusted_html.IsTrustedHTML()) {
+    return string_or_trusted_html.GetAsTrustedHTML()->toString();
+  }
+
+  TrustedTypePolicy* default_policy =
+      doc->ExecutingWindow()->trustedTypes()->getExposedPolicy("default");
+  if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
     return g_empty_string;
   }
 
-  String markup = string_or_trusted_html.IsString()
-                      ? string_or_trusted_html.GetAsString()
-                      : string_or_trusted_html.GetAsTrustedHTML()->toString();
-  return markup;
+  TrustedHTML* result = default_policy->CreateHTML(
+      ToIsolate(doc), string_or_trusted_html.GetAsString(), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment and 'default' policy "
+        "failed to execute.");
+    return g_empty_string;
+  }
+
+  return result->toString();
 }
 
 String GetStringFromTrustedScript(
@@ -89,18 +110,35 @@ String GetStringFromTrustedScript(
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
   DCHECK(!string_or_trusted_script.IsNull());
 
-  if (!string_or_trusted_script.IsTrustedScript() && doc &&
-      doc->RequireTrustedTypes()) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type && string_or_trusted_script.IsString()) {
+    return string_or_trusted_script.GetAsString();
+  }
+
+  if (string_or_trusted_script.IsTrustedScript()) {
+    return string_or_trusted_script.GetAsTrustedScript()->toString();
+  }
+
+  TrustedTypePolicy* default_policy =
+      doc->ExecutingWindow()->trustedTypes()->getExposedPolicy("default");
+  if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedScript` assignment.");
     return g_empty_string;
   }
 
-  String markup =
-      string_or_trusted_script.IsString()
-          ? string_or_trusted_script.GetAsString()
-          : string_or_trusted_script.GetAsTrustedScript()->toString();
-  return markup;
+  TrustedScript* result = default_policy->CreateScript(
+      ToIsolate(doc), string_or_trusted_script.GetAsString(), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedScript` assignment and 'default' "
+        "policy "
+        "failed to execute.");
+    return g_empty_string;
+  }
+
+  return result->toString();
 }
 
 String GetStringFromTrustedScriptURL(
@@ -111,18 +149,37 @@ String GetStringFromTrustedScriptURL(
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
   DCHECK(!string_or_trusted_script_url.IsNull());
 
-  if (!string_or_trusted_script_url.IsTrustedScriptURL() && doc &&
-      doc->RequireTrustedTypes()) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type && string_or_trusted_script_url.IsString()) {
+    return string_or_trusted_script_url.GetAsString();
+  }
+
+  if (string_or_trusted_script_url.IsTrustedScriptURL()) {
+    return string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
+  }
+
+  TrustedTypePolicy* default_policy =
+      doc->ExecutingWindow()->trustedTypes()->getExposedPolicy("default");
+  if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedScriptURL` assignment.");
     return g_empty_string;
   }
 
-  String markup =
-      string_or_trusted_script_url.IsString()
-          ? string_or_trusted_script_url.GetAsString()
-          : string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
-  return markup;
+  TrustedScriptURL* result = default_policy->CreateScriptURL(
+      ToIsolate(doc), string_or_trusted_script_url.GetAsString(),
+      exception_state);
+
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedScriptURL` assignment and 'default' "
+        "policy "
+        "failed to execute.");
+    return g_empty_string;
+  }
+
+  return result->toString();
 }
 
 String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
@@ -132,16 +189,33 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
   DCHECK(!string_or_trusted_url.IsNull());
 
-  if (!string_or_trusted_url.IsTrustedURL() && doc &&
-      doc->RequireTrustedTypes()) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type && string_or_trusted_url.IsUSVString()) {
+    return string_or_trusted_url.GetAsUSVString();
+  }
+
+  if (string_or_trusted_url.IsTrustedURL()) {
+    return string_or_trusted_url.GetAsTrustedURL()->toString();
+  }
+
+  TrustedTypePolicy* default_policy =
+      doc->ExecutingWindow()->trustedTypes()->getExposedPolicy("default");
+  if (!default_policy) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedURL` assignment.");
     return g_empty_string;
   }
 
-  String markup = string_or_trusted_url.IsUSVString()
-                      ? string_or_trusted_url.GetAsUSVString()
-                      : string_or_trusted_url.GetAsTrustedURL()->toString();
-  return markup;
+  TrustedURL* result = default_policy->CreateURL(
+      ToIsolate(doc), string_or_trusted_url.GetAsUSVString(), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment and 'default' policy "
+        "failed to execute.");
+    return g_empty_string;
+  }
+
+  return result->toString();
 }
 }  // namespace blink

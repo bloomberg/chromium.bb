@@ -31,13 +31,39 @@ TrustedTypePolicy* TrustedTypePolicy::Create(
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
                                            const String& input,
                                            ExceptionState& exception_state) {
+  return CreateHTML(script_state->GetIsolate(), input, exception_state);
+}
+
+TrustedScript* TrustedTypePolicy::createScript(
+    ScriptState* script_state,
+    const String& input,
+    ExceptionState& exception_state) {
+  return CreateScript(script_state->GetIsolate(), input, exception_state);
+}
+
+TrustedScriptURL* TrustedTypePolicy::createScriptURL(
+    ScriptState* script_state,
+    const String& input,
+    ExceptionState& exception_state) {
+  return CreateScriptURL(script_state->GetIsolate(), input, exception_state);
+}
+
+TrustedURL* TrustedTypePolicy::createURL(ScriptState* script_state,
+                                         const String& input,
+                                         ExceptionState& exception_state) {
+  return CreateURL(script_state->GetIsolate(), input, exception_state);
+}
+
+TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
+                                           const String& input,
+                                           ExceptionState& exception_state) {
   if (!policy_options_->createHTML()) {
     exception_state.ThrowTypeError(
         "Policy " + name_ +
         "'s TrustedTypePolicyOptions did not specify a 'createHTML' member.");
     return nullptr;
   }
-  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::TryCatch try_catch(isolate);
   String html;
   if (!policy_options_->createHTML()->Invoke(nullptr, input).To(&html)) {
     DCHECK(try_catch.HasCaught());
@@ -47,8 +73,8 @@ TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
   return TrustedHTML::Create(html);
 }
 
-TrustedScript* TrustedTypePolicy::createScript(
-    ScriptState* script_state,
+TrustedScript* TrustedTypePolicy::CreateScript(
+    v8::Isolate* isolate,
     const String& input,
     ExceptionState& exception_state) {
   if (!policy_options_->createScript()) {
@@ -57,7 +83,7 @@ TrustedScript* TrustedTypePolicy::createScript(
         "'s TrustedTypePolicyOptions did not specify a 'createScript' member.");
     return nullptr;
   }
-  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::TryCatch try_catch(isolate);
   String script;
   if (!policy_options_->createScript()->Invoke(nullptr, input).To(&script)) {
     DCHECK(try_catch.HasCaught());
@@ -67,8 +93,8 @@ TrustedScript* TrustedTypePolicy::createScript(
   return TrustedScript::Create(script);
 }
 
-TrustedScriptURL* TrustedTypePolicy::createScriptURL(
-    ScriptState* script_state,
+TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
+    v8::Isolate* isolate,
     const String& input,
     ExceptionState& exception_state) {
   if (!policy_options_->createScriptURL()) {
@@ -77,7 +103,7 @@ TrustedScriptURL* TrustedTypePolicy::createScriptURL(
                                    "specify a 'createScriptURL' member.");
     return nullptr;
   }
-  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::TryCatch try_catch(isolate);
   String script_url;
   if (!policy_options_->createScriptURL()
            ->Invoke(nullptr, input)
@@ -89,7 +115,7 @@ TrustedScriptURL* TrustedTypePolicy::createScriptURL(
   return TrustedScriptURL::Create(KURL(script_url));
 }
 
-TrustedURL* TrustedTypePolicy::createURL(ScriptState* script_state,
+TrustedURL* TrustedTypePolicy::CreateURL(v8::Isolate* isolate,
                                          const String& input,
                                          ExceptionState& exception_state) {
   if (!policy_options_->createURL()) {
@@ -98,7 +124,7 @@ TrustedURL* TrustedTypePolicy::createURL(ScriptState* script_state,
         "'s TrustedTypePolicyOptions did not specify a 'createURL' member.");
     return nullptr;
   }
-  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::TryCatch try_catch(isolate);
   String url;
   if (!policy_options_->createURL()->Invoke(nullptr, input).To(&url)) {
     DCHECK(try_catch.HasCaught());
@@ -120,4 +146,5 @@ void TrustedTypePolicy::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_options_);
   ScriptWrappable::Trace(visitor);
 }
+
 }  // namespace blink
