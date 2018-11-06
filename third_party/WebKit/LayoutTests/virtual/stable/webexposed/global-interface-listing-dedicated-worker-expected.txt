@@ -472,6 +472,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method cmp
 [Worker]     method constructor
+[Worker]     method databases
 [Worker]     method deleteDatabase
 [Worker]     method open
 [Worker] interface IDBIndex
