@@ -58,24 +58,6 @@ def _JsTypeForPrimitiveType(t):
   return mapping[t]
 
 
-def _InlineSizeOfType(t):
-  if t.kind == fidl.TypeKind.PRIMITIVE:
-    return {
-        'int16': 2,
-        'int32': 4,
-        'int64': 8,
-        'int8': 1,
-        'uint16': 2,
-        'uint32': 4,
-        'uint64': 8,
-        'uint8': 1,
-    }[t.subtype]
-  elif t.kind == fidl.TypeKind.STRING:
-    return 16
-  else:
-    raise NotImplementedError(t.kind)
-
-
 def _CompileConstant(val, assignment_type):
   """|assignment_type| is the TypeClass to which |val| will be assigned. This is
   is currently used to scope identifiers to their enum."""
@@ -117,6 +99,7 @@ class Compiler(object):
     self.f = output_file
     self.output_deferred_to_eof = ''
     self.type_table_defined = set()
+    self.type_inline_size_by_name = {}
 
   def Compile(self):
     self._EmitHeader()
@@ -132,6 +115,29 @@ class Compiler(object):
       self._CompileInterface(i)
 
     self.f.write(self.output_deferred_to_eof)
+
+  def _InlineSizeOfType(self, t):
+    if t.kind == fidl.TypeKind.PRIMITIVE:
+      return {
+          'int16': 2,
+          'int32': 4,
+          'int64': 8,
+          'int8': 1,
+          'uint16': 2,
+          'uint32': 4,
+          'uint64': 8,
+          'uint8': 1,
+      }[t.subtype]
+    elif t.kind == fidl.TypeKind.STRING:
+      return 16
+    elif t.kind == fidl.TypeKind.IDENTIFIER:
+      size = self.type_inline_size_by_name.get(t.identifier)
+      if size is None:
+        raise Exception('expected ' + t.identifier +
+                        ' to be in self.type_inline_size_by_name')
+      return size
+    else:
+      raise NotImplementedError(t.kind)
 
   def _EmitHeader(self):
     self.f.write('''// Copyright 2018 The Chromium Authors. All rights reserved.
@@ -173,6 +179,7 @@ const %(name)s = {
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
   def _CompileUnion(self, union):
+    self.type_inline_size_by_name[union.name] = union.size
     compound = _ParseCompoundIdentifier(union.name)
     name = _CompileCompoundIdentifier(compound)
     member_names = []
@@ -273,6 +280,7 @@ function %(name)s() { this.reset(); }
       })
 
   def _CompileStruct(self, struct):
+    self.type_inline_size_by_name[struct.name] = struct.size
     compound = _ParseCompoundIdentifier(struct.name)
     name = _CompileCompoundIdentifier(compound)
     param_names = [_ChangeIfReserved(x.name) for x in struct.members]
@@ -376,13 +384,12 @@ const _kTT_%(ttname)s = {
             'ttname': ttname,
             'element_ttname': element_ttname,
             'element_count': t.element_count,
-            'element_size': _InlineSizeOfType(t.element_type),
+            'element_size': self._InlineSizeOfType(t.element_type),
         })
       return ttname
     elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
-      ttname = (
-          'VEC_' + ('Nullable_' if t.nullable else '') + element_ttname)
+      ttname = ('VEC_' + ('Nullable_' if t.nullable else '') + element_ttname)
       pointer_set = '''    if (v === null || v === undefined) {
       e.data.setUint32(o + 8, 0, $fidl__kLE);
       e.data.setUint32(o + 12, 0, $fidl__kLE);
@@ -429,7 +436,7 @@ const _kTT_%(ttname)s = {
 ''' % {
             'ttname': ttname,
             'element_ttname': element_ttname,
-            'element_size': _InlineSizeOfType(t.element_type),
+            'element_size': self._InlineSizeOfType(t.element_type),
             'pointer_set': pointer_set,
             'throw_if_null_enc': throw_if_null_enc,
             'throw_if_null_dec': throw_if_null_dec

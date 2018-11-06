@@ -231,7 +231,7 @@ class TestolaImpl : public fidljstest::Testola {
     }
 
     EXPECT_TRUE(somu.trailing.is_swu());
-    EXPECT_EQ(somu.trailing.swu().length, 123456u);
+    EXPECT_EQ(somu.trailing.swu().num, 123456u);
 
     did_receive_union_ = true;
   }
@@ -244,16 +244,17 @@ class TestolaImpl : public fidljstest::Testola {
 
     resp.optional = std::make_unique<fidljstest::UnionOfStructs>();
     resp.optional->set_swu(fidljstest::StructWithUint());
-    resp.optional->swu().length = 987654;
+    resp.optional->swu().num = 987654;
 
     resp.trailing.set_lswa(fidljstest::LargerStructWithArray());
 
     callback(std::move(resp));
   }
 
-  void SendVectorsOfString(fidl::VectorPtr<fidl::StringPtr> unsized,
-                           fidl::VectorPtr<fidl::StringPtr> nullable,
-                           fidl::VectorPtr<fidl::StringPtr> sized10) override {
+  void SendVectorsOfString(
+      fidl::VectorPtr<fidl::StringPtr> unsized,
+      fidl::VectorPtr<fidl::StringPtr> nullable,
+      fidl::VectorPtr<fidl::StringPtr> max_strlen) override {
     ASSERT_EQ(unsized->size(), 3u);
     EXPECT_EQ((*unsized)[0], "str0");
     EXPECT_EQ((*unsized)[1], "str1");
@@ -266,10 +267,28 @@ class TestolaImpl : public fidljstest::Testola {
     EXPECT_TRUE((*nullable)[3].is_null());
     EXPECT_EQ((*nullable)[4], "str4");
 
-    ASSERT_EQ(sized10->size(), 1u);
-    EXPECT_EQ((*sized10)[0], "0123456789");
+    ASSERT_EQ(max_strlen->size(), 1u);
+    EXPECT_EQ((*max_strlen)[0], "0123456789");
 
     did_get_vectors_of_string_ = true;
+  }
+
+  void VectorOfStruct(fidl::VectorPtr<fidljstest::StructWithUint> stuff,
+                      VectorOfStructCallback callback) override {
+    ASSERT_EQ(stuff->size(), 4u);
+    EXPECT_EQ((*stuff)[0].num, 456u);
+    EXPECT_EQ((*stuff)[1].num, 789u);
+    EXPECT_EQ((*stuff)[2].num, 123u);
+    EXPECT_EQ((*stuff)[3].num, 0xfffffu);
+
+    fidl::VectorPtr<fidljstest::StructWithUint> response;
+    fidljstest::StructWithUint a;
+    a.num = 369;
+    response.push_back(a);
+    fidljstest::StructWithUint b;
+    b.num = 258;
+    response.push_back(b);
+    callback(std::move(response));
   }
 
   bool was_do_something_called() const { return was_do_something_called_; }
@@ -710,7 +729,7 @@ TEST_F(FidlGenJsTest, UnionReceive) {
       this.result_trailing_is_lswa = resp.trailing.is_lswa();
 
       this.result_initial_some_bool = resp.initial.swb.some_bool;
-      this.result_length = resp.optional.swu.length;
+      this.result_optional_num = resp.optional.swu.num;
     }).catch((e) => log('FAILED: ' + e));
   )";
   helper.runner().Run(source, "test.js");
@@ -730,7 +749,7 @@ TEST_F(FidlGenJsTest, UnionReceive) {
   EXPECT_TRUE(helper.Get<bool>("result_trailing_is_lswa"));
 
   EXPECT_TRUE(helper.Get<bool>("result_initial_some_bool"));
-  EXPECT_EQ(helper.Get<uint32_t>("result_length"), 987654u);
+  EXPECT_EQ(helper.Get<uint32_t>("result_optional_num"), 987654u);
 }
 
 TEST_F(FidlGenJsTest, DefaultUsingIdentifier) {
@@ -791,6 +810,38 @@ TEST_F(FidlGenJsTest, VectorOfStringsTooLongString) {
 
   EXPECT_TRUE(helper.Get<bool>("tried_to_send"));
   EXPECT_FALSE(testola_impl.did_get_vectors_of_string());
+}
+
+TEST_F(FidlGenJsTest, VectorOfStruct) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    var data = [
+      new StructWithUint(456),
+      new StructWithUint(789),
+      new StructWithUint(123),
+      new StructWithUint(0xfffff),
+    ];
+    proxy.VectorOfStruct(data).then(resp => {
+      this.result_length = resp.length;
+      this.result_0 = resp[0].num;
+      this.result_1 = resp[1].num;
+    }).catch((e) => log('FAILED: ' + e));
+  )";
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(helper.Get<uint32_t>("result_length"), 2u);
+  EXPECT_EQ(helper.Get<int>("result_0"), 369);
+  EXPECT_EQ(helper.Get<int>("result_1"), 258);
 }
 
 int main(int argc, char** argv) {
