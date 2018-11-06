@@ -7,7 +7,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace ash {
 namespace wm {
@@ -89,6 +91,31 @@ TEST_F(WindowFinderTest, MultipleDisplays) {
             GetTopmostWindowAtPoint(gfx::Point(210, 10), ignore, nullptr));
   EXPECT_EQ(nullptr,
             GetTopmostWindowAtPoint(gfx::Point(10, 210), ignore, nullptr));
+}
+
+TEST_F(WindowFinderTest, WindowTargeterWithHitTestRects) {
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100));
+
+  std::set<aura::Window*> ignore;
+
+  aura::Window* real_topmost = nullptr;
+  EXPECT_EQ(window2.get(),
+            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, &real_topmost));
+  EXPECT_EQ(window2.get(), real_topmost);
+
+  auto targeter = std::make_unique<aura::WindowTargeter>();
+  targeter->SetInsets(gfx::Insets(0, 50, 0, 0));
+  window2->SetEventTargeter(std::move(targeter));
+
+  EXPECT_EQ(window1.get(),
+            GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore, &real_topmost));
+  EXPECT_EQ(window1.get(), real_topmost);
+  EXPECT_EQ(window2.get(),
+            GetTopmostWindowAtPoint(gfx::Point(60, 10), ignore, &real_topmost));
+  EXPECT_EQ(window2.get(), real_topmost);
 }
 
 }  // namespace wm

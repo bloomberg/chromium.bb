@@ -656,31 +656,18 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
 }
 
 #if defined(USE_AURA)
-namespace {
-
-// We need both MaskedWindowTargeter and MaskedWindowDelegate as they
-// are used in two different pathes. crbug.com/493354.
-class MaskedWindowTargeter : public aura::WindowTargeter {
- public:
-  MaskedWindowTargeter() {}
-  ~MaskedWindowTargeter() override {}
-
-  // aura::WindowTargeter:
-  bool EventLocationInsideBounds(aura::Window* target,
-                                 const ui::LocatedEvent& event) const override {
-    aura::Window* window = static_cast<aura::Window*>(target);
-    gfx::Point local_point = event.location();
-    if (window->parent())
-      aura::Window::ConvertPointToTarget(window->parent(), window,
-                                         &local_point);
-    return window->GetEventHandlerForPoint(local_point);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaskedWindowTargeter);
-};
-
-}  // namespace
+bool SubtreeShouldBeExplored(aura::Window* window,
+                             const gfx::Point& local_point) {
+  gfx::Point point_in_parent = local_point;
+  aura::Window::ConvertPointToTarget(window, window->parent(),
+                                     &point_in_parent);
+  gfx::Point point_in_root = local_point;
+  aura::Window::ConvertPointToTarget(window, window->GetRootWindow(),
+                                     &point_in_root);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, point_in_parent, point_in_root,
+                       base::TimeTicks::Now(), 0, 0);
+  return window->targeter()->SubtreeShouldBeExploredForEvent(window, event);
+}
 
 // The logic to find the target tabstrip should take the window mask into
 // account. This test hangs without the fix. crbug.com/473080.
@@ -690,19 +677,20 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
   const gfx::Rect bounds = browser_window->GetBoundsInScreen();
-  aura::test::MaskedWindowDelegate masked_window_delegate(
-      gfx::Rect(bounds.width() - 10, 0, 10, bounds.height()));
-  gfx::Rect test(bounds);
+  aura::test::TestWindowDelegate masked_window_delegate;
   masked_window_delegate.set_can_focus(false);
   std::unique_ptr<aura::Window> masked_window(
-      aura::test::CreateTestWindowWithDelegate(&masked_window_delegate, 10,
-                                               test, browser_window->parent()));
-  masked_window->SetEventTargeter(std::make_unique<MaskedWindowTargeter>());
+      aura::test::CreateTestWindowWithDelegate(
+          &masked_window_delegate, 10, bounds, browser_window->parent()));
+  masked_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  auto targeter = std::make_unique<aura::WindowTargeter>();
+  targeter->SetInsets(gfx::Insets(0, bounds.width() - 10, 0, 0));
+  masked_window->SetEventTargeter(std::move(targeter));
 
-  ASSERT_FALSE(masked_window->GetEventHandlerForPoint(
-      gfx::Point(bounds.width() - 11, 0)));
-  ASSERT_TRUE(masked_window->GetEventHandlerForPoint(
-      gfx::Point(bounds.width() - 9, 0)));
+  ASSERT_FALSE(SubtreeShouldBeExplored(masked_window.get(),
+                                       gfx::Point(bounds.width() - 11, 0)));
+  ASSERT_TRUE(SubtreeShouldBeExplored(masked_window.get(),
+                                      gfx::Point(bounds.width() - 9, 0)));
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
 
