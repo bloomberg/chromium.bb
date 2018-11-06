@@ -67,18 +67,26 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
       LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
+
   // Keyboard may not always be enabled. https://crbug.com/749989
-  if (keyboard_controller->IsEnabled()) {
-    keyboard_controller->ShowKeyboardInDisplay(
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            shelf_->GetWindow()));
-  }
+  if (!keyboard_controller->IsEnabled())
+    return true;
+
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially
   // the first time, takes some time. We need to set active status here to
   // prevent bad things happening if user clicked the button before keyboard is
   // shown.
-  SetIsActive(true);
+  if (is_active()) {
+    keyboard_controller->HideKeyboardByUser();
+    SetIsActive(false);
+  } else {
+    keyboard_controller->ShowKeyboardInDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            shelf_->GetWindow()));
+    SetIsActive(true);
+  }
+
   return true;
 }
 
