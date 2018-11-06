@@ -70,16 +70,8 @@ class TestDataReductionProxyRequestOptions
 
   // Overrides of DataReductionProxyRequestOptions.
   std::string GetDefaultKey() const override;
-  base::Time Now() const override;
-  void RandBytes(void* output, size_t length) const override;
-
-  // Time after the unix epoch that Now() reports.
-  void set_offset(const base::TimeDelta& now_offset);
 
   using DataReductionProxyRequestOptions::GetHeaderValueForTesting;
-
- private:
-  base::TimeDelta now_offset_;
 };
 
 // Mock version of |DataReductionProxyRequestOptions|.

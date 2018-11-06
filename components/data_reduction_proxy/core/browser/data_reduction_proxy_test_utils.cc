@@ -95,24 +95,6 @@ std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
   return kTestKey;
 }
 
-base::Time TestDataReductionProxyRequestOptions::Now() const {
-  return base::Time::UnixEpoch() + now_offset_;
-}
-
-void TestDataReductionProxyRequestOptions::RandBytes(void* output,
-                                                     size_t length) const {
-  char* c = static_cast<char*>(output);
-  for (size_t i = 0; i < length; ++i) {
-    c[i] = 'a';
-  }
-}
-
-// Time after the unix epoch that Now() reports.
-void TestDataReductionProxyRequestOptions::set_offset(
-    const base::TimeDelta& now_offset) {
-  now_offset_ = now_offset;
-}
-
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     Client client,
     DataReductionProxyConfig* config)

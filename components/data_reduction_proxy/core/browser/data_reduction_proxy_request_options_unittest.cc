@@ -11,13 +11,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -40,17 +36,11 @@ const char kChromeProxyHeader[] = "chrome-proxy";
 const char kVersion[] = "0.1.2.3";
 const char kExpectedBuild[] = "2";
 const char kExpectedPatch[] = "3";
-const char kExpectedCredentials[] = "96bd72ec4a050ba60981743d41787768";
-const char kExpectedSession[] = "0-1633771873-1633771873-1633771873";
 const char kPageId[] = "1";
 const uint64_t kPageIdValue = 1;
 
 const char kTestKey2[] = "test-key2";
-const char kExpectedCredentials2[] = "c911fdb402f578787562cf7f00eda972";
-const char kExpectedSession2[] = "0-1633771873-1633771873-1633771873";
-const char kDataReductionProxyKey[] = "12345";
 const char kPageId2[] = "f";
-const uint64_t kPageIdValue2 = 15;
 
 const char kSecureSession[] = "TestSecureSessionKey";
 }  // namespace
@@ -94,9 +84,7 @@ const Client kClient = Client::UNKNOWN;
 const char kClientStr[] = "";
 #endif
 
-void SetHeaderExpectations(const std::string& session,
-                           const std::string& credentials,
-                           const std::string& secure_session,
+void SetHeaderExpectations(const std::string& secure_session,
                            const std::string& client,
                            const std::string& build,
                            const std::string& patch,
@@ -104,14 +92,6 @@ void SetHeaderExpectations(const std::string& session,
                            const std::vector<std::string> experiments,
                            std::string* expected_header) {
   std::vector<std::string> expected_options;
-  if (!session.empty()) {
-    expected_options.push_back(
-        std::string(kSessionHeaderOption) + "=" + session);
-  }
-  if (!credentials.empty()) {
-    expected_options.push_back(
-        std::string(kCredentialsHeaderOption) + "=" + credentials);
-  }
   if (!secure_session.empty()) {
     expected_options.push_back(std::string(kSecureSessionHeaderOption) + "=" +
                                secure_session);
@@ -197,26 +177,16 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   net::HttpRequestHeaders callback_headers_;
 };
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
-  std::string salt = "8675309"; // Jenny's number to test the hash generator.
-  std::string salted_key = salt + kDataReductionProxyKey + salt;
-  base::string16 expected_hash = base::UTF8ToUTF16(base::MD5String(salted_key));
-  EXPECT_EQ(expected_hash,
-            DataReductionProxyRequestOptions::AuthHashForSalt(
-                8675309, kDataReductionProxyKey));
-}
-
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        &expected_header);
 
   std::string expected_header2;
-  SetHeaderExpectations("86401-1633771873-1633771873-1633771873",
-                        "d7c1c34ef6b90303b01c48a6c1db6419", std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId2,
-                        std::vector<std::string>(), &expected_header2);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId2, std::vector<std::string>(),
+                        &expected_header2);
 
   CreateRequestOptions(kVersion);
   test_context_->RunUntilIdle();
@@ -226,21 +196,13 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
 
   // Write headers.
   VerifyExpectedHeader(expected_header, kPageIdValue);
-
-  // Fast forward 24 hours. The header should be the same.
-  request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
-  VerifyExpectedHeader(expected_header, kPageIdValue);
-
-  // Fast forward one more second. The header should be new.
-  request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
-  VerifyExpectedHeader(expected_header2, kPageIdValue2);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        &expected_header);
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
 
@@ -252,9 +214,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
   std::string expected_header;
-  SetHeaderExpectations(std::string(), std::string(), kSecureSession,
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(kSecureSession, kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        &expected_header);
 
   CreateRequestOptions(kVersion);
   request_options()->SetSecureSession(kSecureSession);
@@ -263,9 +225,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, CallsHeaderCallback) {
   std::string expected_header;
-  SetHeaderExpectations(std::string(), std::string(), kSecureSession,
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(kSecureSession, kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, std::vector<std::string>(),
+                        &expected_header);
 
   CreateRequestOptionsWithCallback(kVersion);
   request_options()->SetSecureSession(kSecureSession);
@@ -288,9 +250,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
   expected_experiments.push_back("staging");
   expected_experiments.push_back("\"foo,bar\"");
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, expected_experiments,
+                        &expected_header);
 
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -355,9 +317,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
     if (!test.expected_experiment.empty())
       expected_experiments.push_back(test.expected_experiment);
 
-    SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                          kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                          expected_experiments, &expected_header);
+    SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                          kExpectedPatch, kPageId, expected_experiments,
+                          &expected_header);
 
     CreateRequestOptions(kVersion);
     VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -382,9 +344,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   std::vector<std::string> expected_experiments;
   expected_experiments.push_back("foo");
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, expected_experiments,
+                        &expected_header);
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
 
@@ -393,9 +355,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
       data_reduction_proxy::switches::kDataReductionProxyExperiment, "bar");
   expected_experiments.clear();
   expected_experiments.push_back("bar");
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
+  SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
+                        kExpectedPatch, kPageId, expected_experiments,
+                        &expected_header);
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
 }
