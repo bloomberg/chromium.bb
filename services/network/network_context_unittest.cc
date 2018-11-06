@@ -4364,8 +4364,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
   EXPECT_EQ(client->response_head().proxy_server, proxy_server);
 }
 
-TEST_F(NetworkContextMockHostTest,
-       CustomProxyRequestHeadersOverrideConfigHeaders) {
+TEST_F(NetworkContextMockHostTest, CustomProxyHeadersAreMerged) {
   net::EmbeddedTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
@@ -4383,14 +4382,16 @@ TEST_F(NetworkContextMockHostTest,
   auto config = mojom::CustomProxyConfig::New();
   net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
   config->rules.ParseFromString("http=" + proxy_server.ToURI());
-  config->pre_cache_headers.SetHeader("foo", "bad");
-  config->post_cache_headers.SetHeader("bar", "bad");
+  config->pre_cache_headers.SetHeader("foo", "first_foo_key=value1");
+  config->post_cache_headers.SetHeader("bar", "first_bar_key=value2");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
   scoped_task_environment_.RunUntilIdle();
 
   ResourceRequest request;
-  request.custom_proxy_pre_cache_headers.SetHeader("foo", "foo_value");
-  request.custom_proxy_post_cache_headers.SetHeader("bar", "bar_value");
+  request.custom_proxy_pre_cache_headers.SetHeader("foo",
+                                                   "foo_next_key=value3");
+  request.custom_proxy_post_cache_headers.SetHeader("bar",
+                                                    "bar_next_key=value4");
   request.url = GetURLWithMockHost(test_server, "/echoheader?foo&bar");
   std::unique_ptr<TestURLLoaderClient> client =
       FetchRequest(request, network_context.get());
@@ -4398,7 +4399,10 @@ TEST_F(NetworkContextMockHostTest,
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
-  EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
+  EXPECT_EQ(response,
+            base::JoinString({"first_bar_key=value2, bar_next_key=value4",
+                              "first_foo_key=value1, foo_next_key=value3"},
+                             "\n"));
   EXPECT_EQ(client->response_head().proxy_server, proxy_server);
 }
 

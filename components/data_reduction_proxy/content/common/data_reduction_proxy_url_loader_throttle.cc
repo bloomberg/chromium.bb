@@ -31,7 +31,8 @@ std::vector<DataReductionProxyServer> GetConfiguredDataReductionProxies(
     const network::ResourceResponseHead& response_head) {
   std::vector<DataReductionProxyServer> result;
   if (!proxy_server.is_direct() &&
-      (response_head.headers->HasHeader("Chrome-Proxy") ||
+      ((response_head.headers &&
+        response_head.headers->HasHeader("Chrome-Proxy")) ||
        url.spec().find("Chrome-Proxy") != std::string::npos)) {
     result.push_back(
         DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE));
