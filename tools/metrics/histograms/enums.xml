@@ -34155,6 +34155,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Same process navigation"/>
 </enum>
 
+<enum name="NavigationNeedsReloadType">
+  <int value="0" label="kRequestedByClient"/>
+  <int value="1" label="kRestoreSession"/>
+  <int value="2" label="kCopyStateFrom"/>
+</enum>
+
 <enum name="NavigationScheme">
   <int value="0" label="(Unknown)"/>
   <int value="1" label="http"/>
