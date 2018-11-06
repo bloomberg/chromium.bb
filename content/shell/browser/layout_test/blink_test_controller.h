@@ -260,10 +260,13 @@ class BlinkTestController : public WebContentsObserver,
   // Each call to CompositeWithRaster() is an asynchronous Mojo call, to avoid
   // reentrancy problems.
   void CompositeAllFramesThen(base::OnceCallback<void()> callback);
+
+ private:
   Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames);
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
 
+ public:
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
