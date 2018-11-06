@@ -75,7 +75,8 @@ def collect(url, task_ids, task_stdout=('console', 'json')):
     task_summary_json=None,
     task_output_dir=None,
     task_output_stdout=task_stdout,
-    include_perf=False)
+    include_perf=False,
+    filepath_filter='.*')
 
 
 def main(args):
@@ -812,18 +813,20 @@ class TestSwarmingCollection(NetTestCase):
 
   def test_collect_multi(self):
     actual_calls = []
-    def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
+    def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
+                       filepath_filter):
       self.assertIs(storage.__class__, isolateserver.Storage)
       self.assertIs(cache.__class__, local_caching.MemoryContentAddressedCache)
       # Ensure storage is pointing to required location.
       self.assertEqual('https://localhost:2', storage.location)
       self.assertEqual('default', storage.namespace)
       self.assertEqual(False, use_symlinks)
+      self.assertEqual('.*', filepath_filter)
       actual_calls.append((isolated_hash, outdir))
     self.mock(isolateserver, 'fetch_isolated', fetch_isolated)
 
     collector = swarming.TaskOutputCollector(
-        self.tempdir, ['json', 'console'], 2)
+        self.tempdir, ['json', 'console'], 2, '.*')
     for index in xrange(2):
       collector.process_shard_result(
           index,
@@ -892,14 +895,14 @@ class TestSwarmingCollection(NetTestCase):
 
     # Feed them to collector.
     collector = swarming.TaskOutputCollector(
-        self.tempdir, ['json', 'console'], 2)
+        self.tempdir, ['json', 'console'], 2, None)
     for index, result in enumerate(data):
       collector.process_shard_result(index, result)
     collector.finalize()
 
     # Only first fetch is made, second one is ignored.
     self.assertEqual(1, len(actual_calls))
-    isolated_hash, storage, _, outdir, _ = actual_calls[0]
+    isolated_hash, storage, _, outdir, _, _ = actual_calls[0]
     self.assertEqual(
         ('hash1', os.path.join(self.tempdir, '0')),
         (isolated_hash, outdir))
@@ -1686,7 +1689,8 @@ class TestMain(NetTestCase):
       json.dump(data, f)
     def stub_collect(
         swarming_server, task_ids, timeout, decorate, print_status_updates,
-        task_summary_json, task_output_dir, task_output_stdout, include_perf):
+        task_summary_json, task_output_dir, task_output_stdout, include_perf,
+        filepath_filter):
       self.assertEqual('https://host', swarming_server)
       self.assertEqual([u'12300'], task_ids)
       # It is automatically calculated from hard timeout + expiration + 10.
@@ -1697,12 +1701,14 @@ class TestMain(NetTestCase):
       self.assertEqual('/b', task_output_dir)
       self.assertSetEqual(set(['console', 'json']), set(task_output_stdout))
       self.assertEqual(False, include_perf)
+      self.assertEqual('output.json', filepath_filter)
       print('Fake output')
     self.mock(swarming, 'collect', stub_collect)
     self.main_safe(
         ['collect', '--swarming', 'https://host', '--json', j, '--decorate',
-          '--print-status-updates', '--task-summary-json', '/a',
-          '--task-output-dir', '/b', '--task-output-stdout', 'all'])
+         '--print-status-updates', '--task-summary-json', '/a',
+         '--task-output-dir', '/b', '--task-output-stdout', 'all',
+         '--filepath-filter', 'output.json'])
     self._check_output('Fake output\n', '')
 
   def test_post(self):
@@ -1870,7 +1876,8 @@ class TestMain(NetTestCase):
 
     def stub_collect(
         swarming_server, task_ids, timeout, decorate, print_status_updates,
-        task_summary_json, task_output_dir, task_output_stdout, include_perf):
+        task_summary_json, task_output_dir, task_output_stdout, include_perf,
+        filepath_filter):
       self.assertEqual('https://localhost:1', swarming_server)
       self.assertEqual([u'12300'], task_ids)
       # It is automatically calculated from hard timeout + expiration + 10.
@@ -1881,6 +1888,7 @@ class TestMain(NetTestCase):
       self.assertEqual(None, task_output_dir)
       self.assertSetEqual(set(['console', 'json']), set(task_output_stdout))
       self.assertEqual(False, include_perf)
+      self.assertEqual(None, filepath_filter)
       print('Fake output')
       return 0
     self.mock(swarming, 'collect', stub_collect)
