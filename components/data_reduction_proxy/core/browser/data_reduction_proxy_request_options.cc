@@ -12,13 +12,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -26,7 +22,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
-#include "crypto/random.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/proxy_server.h"
@@ -45,8 +40,6 @@ std::string FormatOption(const std::string& name, const std::string& value) {
 
 }  // namespace
 
-const char kSessionHeaderOption[] = "ps";
-const char kCredentialsHeaderOption[] = "sid";
 const char kSecureSessionHeaderOption[] = "s";
 const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
@@ -80,7 +73,6 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     const std::string& version,
     DataReductionProxyConfig* config)
     : client_(util::GetStringForClient(client)),
-      use_assigned_credentials_(false),
       data_reduction_proxy_config_(config),
       current_page_id_(base::RandUint64()) {
   DCHECK(data_reduction_proxy_config_);
@@ -137,38 +129,11 @@ void DataReductionProxyRequestOptions::AddServerExperimentFromFieldTrial() {
     experiments_.push_back(server_experiment);
 }
 
-// static
-base::string16 DataReductionProxyRequestOptions::AuthHashForSalt(
-    int64_t salt,
-    const std::string& key) {
-  std::string salted_key =
-      base::StringPrintf("%lld%s%lld",
-                         static_cast<long long>(salt),
-                         key.c_str(),
-                         static_cast<long long>(salt));
-  return base::UTF8ToUTF16(base::MD5String(salted_key));
-}
-
-base::Time DataReductionProxyRequestOptions::Now() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return base::Time::Now();
-}
-
-void DataReductionProxyRequestOptions::RandBytes(void* output,
-                                                 size_t length) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  crypto::RandBytes(output, length);
-}
-
 void DataReductionProxyRequestOptions::AddRequestHeader(
     net::HttpRequestHeaders* request_headers,
     base::Optional<uint64_t> page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!page_id || page_id.value() > 0u);
-  base::Time now = Now();
-  // Authorization credentials must be regenerated if they are expired.
-  if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
-    UpdateCredentials();
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
   if (request_headers->HasHeader(kChromeProxyHeader)) {
@@ -193,31 +158,7 @@ void DataReductionProxyRequestOptions::AddRequestHeader(
   request_headers->SetHeader(kChromeProxyHeader, header_value);
 }
 
-void DataReductionProxyRequestOptions::ComputeCredentials(
-    const base::Time& now,
-    std::string* session,
-    std::string* credentials) const {
-  DCHECK(session);
-  DCHECK(credentials);
-  int64_t timestamp = (now - base::Time::UnixEpoch()).InMilliseconds() / 1000;
-
-  int32_t rand[3];
-  RandBytes(rand, 3 * sizeof(rand[0]));
-  *session = base::StringPrintf("%lld-%u-%u-%u",
-                                static_cast<long long>(timestamp),
-                                rand[0],
-                                rand[1],
-                                rand[2]);
-  *credentials = base::UTF16ToUTF8(AuthHashForSalt(timestamp, key_));
-
-  DVLOG(1) << "session: [" << *session << "] "
-           << "password: [" << *credentials  << "]";
-}
-
 void DataReductionProxyRequestOptions::UpdateCredentials() {
-  base::Time now = Now();
-  ComputeCredentials(now, &session_, &credentials_);
-  credentials_expiration_time_ = now + base::TimeDelta::FromHours(24);
   RegenerateRequestHeaderValue();
 }
 
@@ -232,14 +173,9 @@ void DataReductionProxyRequestOptions::SetKeyOnIO(const std::string& key) {
 void DataReductionProxyRequestOptions::SetSecureSession(
     const std::string& secure_session) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  session_.clear();
-  credentials_.clear();
   secure_session_ = secure_session;
   // Reset Page ID, so users can't be tracked across sessions.
   ResetPageId();
-  // Force skipping of credential regeneration. It should be handled by the
-  // caller.
-  use_assigned_credentials_ = true;
   RegenerateRequestHeaderValue();
 }
 
@@ -276,10 +212,6 @@ const std::string& DataReductionProxyRequestOptions::GetSecureSession() const {
 
 void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
   std::vector<std::string> headers;
-  if (!session_.empty())
-    headers.push_back(FormatOption(kSessionHeaderOption, session_));
-  if (!credentials_.empty())
-    headers.push_back(FormatOption(kCredentialsHeaderOption, credentials_));
   if (!secure_session_.empty()) {
     headers.push_back(
         FormatOption(kSecureSessionHeaderOption, secure_session_));

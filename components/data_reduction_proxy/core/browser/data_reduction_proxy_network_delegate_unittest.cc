@@ -904,10 +904,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
                                               proxy_retry_info, &headers);
 
   EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
-  std::string header_value;
-  headers.GetHeader(chrome_proxy_header(), &header_value);
-  EXPECT_TRUE(header_value.find("ps=") != std::string::npos);
-  EXPECT_TRUE(header_value.find("sid=") != std::string::npos);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
