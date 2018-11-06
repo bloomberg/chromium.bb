@@ -330,6 +330,19 @@ cr.define('languages_page_tests', function() {
         }, settings.kMenuCloseDelay + 1);
       });
 
+      test('toggle translate for target language', function() {
+        // Open options for 'en'.
+        const languageOptionsDropdownTrigger =
+            languagesCollapse.querySelectorAll('button')[0];
+        assertTrue(!!languageOptionsDropdownTrigger);
+        languageOptionsDropdownTrigger.click();
+        assertTrue(actionMenu.open);
+
+        // 'en' does not support.
+        const translateOption = getMenuItem('offerToTranslateInThisLanguage');
+        assertTrue(translateOption.disabled);
+      });
+
       test('disable translate hides language-specific option', function() {
         // Disables translate.
         languageHelper.setPrefValue('translate.enabled', false);
