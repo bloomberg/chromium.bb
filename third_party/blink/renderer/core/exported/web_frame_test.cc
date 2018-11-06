@@ -4474,7 +4474,7 @@ class TestReloadDoesntRedirectWebFrameClient
 
   // frame_test_helpers::TestWebFrameClient:
   WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
+      NavigationPolicyInfo& info) override {
     EXPECT_FALSE(info.is_client_redirect);
     return kWebNavigationPolicyCurrentTab;
   }
@@ -7380,7 +7380,7 @@ class TestNewWindowWebFrameClient
 
   // frame_test_helpers::TestWebFrameClient:
   WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
+      NavigationPolicyInfo& info) override {
     if (ignore_navigations_) {
       decide_policy_call_count_++;
       return kWebNavigationPolicyIgnore;
@@ -7874,10 +7874,8 @@ class TestHistoryChildWebFrameClient
   ~TestHistoryChildWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidStartProvisionalLoad(
-      WebDocumentLoader* document_loader,
-      WebURLRequest& request,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override {
+  void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
+                               WebURLRequest& request) override {
     replaces_current_history_item_ =
         document_loader->ReplacesCurrentHistoryItem();
   }
@@ -10700,10 +10698,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, callback_count_++);
     frame_test_helpers::TestWebFrameClient::DidStartLoading();
   }
-  void DidStartProvisionalLoad(
-      WebDocumentLoader*,
-      WebURLRequest&,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override {
+  void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
     EXPECT_EQ(1, callback_count_++);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
@@ -12458,10 +12453,15 @@ class TestFallbackWebFrameClient
     return CreateLocalChild(*parent, scope, child_client_);
   }
   WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
+      NavigationPolicyInfo& info) override {
     if (child_client_ || KURL(info.url_request.Url()) == BlankURL())
       return kWebNavigationPolicyCurrentTab;
-    return kWebNavigationPolicyHandledByClient;
+
+    Frame()->CreatePlaceholderDocumentLoader(
+        info.url_request, info.frame_load_type, info.navigation_type,
+        info.is_client_redirect, base::UnguessableToken::Create(), nullptr,
+        nullptr);
+    return kWebNavigationPolicyIgnore;
   }
 
  private:
@@ -12481,9 +12481,9 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   WebURLRequest request(ToKURL(base_url_ + "fallback.html"));
   main_frame->StartNavigation(request);
 
-  // Because the child frame will be HandledByClient, the main frame will not
-  // finish loading, so frame_test_helpers::PumpPendingRequestsForFrameToLoad
-  // doesn't work here.
+  // Because the child frame will have placeholder document loader, the main
+  // frame will not finish loading, so
+  // frame_test_helpers::PumpPendingRequestsForFrameToLoad doesn't work here.
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   // Overwrite the client-handled child frame navigation with about:blank.

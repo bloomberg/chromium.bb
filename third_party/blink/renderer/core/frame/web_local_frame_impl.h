@@ -307,6 +307,14 @@ class CORE_EXPORT WebLocalFrameImpl final
                          const WebSourceLocation&) override;
   void ClientDroppedNavigation() override;
   void MarkAsLoading() override;
+  bool CreatePlaceholderDocumentLoader(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      WebNavigationType,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebNavigationParams>,
+      std::unique_ptr<WebDocumentLoader::ExtraData>) override;
   void SendOrientationChangeEvent() override;
   WebSandboxFlags EffectiveSandboxFlags() const override;
   void DidCallAddSearchProvider() override;

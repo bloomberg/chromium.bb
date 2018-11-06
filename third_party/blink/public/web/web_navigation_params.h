@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
@@ -19,7 +20,7 @@ namespace blink {
 // DocumentLoader and used by the embedder.
 struct WebNavigationParams {
   WebNavigationTimings navigation_timings;
-  WebSourceLocation source_location;
+  base::Optional<WebSourceLocation> source_location;
   bool is_user_activated = false;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
       service_worker_network_provider;

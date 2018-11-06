@@ -89,7 +89,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
+      blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               ax::mojom::Event event) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& object,

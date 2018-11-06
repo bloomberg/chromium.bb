@@ -3417,7 +3417,7 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
       base_url);
 
   // Make a request from a local frame.
-  WebURLRequest web_url_request_with_target_start;
+  WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   LocalFrame* local_frame =
       ToWebLocalFrameImpl(web_view_impl->MainFrame()->FirstChild())->GetFrame();
   FrameLoadRequest request_with_target_start(
@@ -3437,7 +3437,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   frame->SetName("_start");
 
   // Make a request that will open a new window
-  WebURLRequest web_url_request;
+  WebURLRequest web_url_request(KURL("about:blank"));
   FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
                            "_blank");
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
@@ -3448,7 +3448,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
 
   // Make a request from the new window that will navigate the original window.
   // The original window should be focused.
-  WebURLRequest web_url_request_with_target_start;
+  WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   FrameLoadRequest request_with_target_start(
       nullptr, web_url_request_with_target_start.ToResourceRequest(), "_start");
   ToLocalFrame(static_cast<WebViewImpl*>(client.CreatedWebView())

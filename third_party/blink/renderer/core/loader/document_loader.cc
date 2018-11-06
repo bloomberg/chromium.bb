@@ -172,8 +172,8 @@ DocumentLoader::DocumentLoader(
     }
   }
 
-  if (navigation_params) {
-    WebSourceLocation& location = navigation_params->source_location;
+  if (navigation_params && navigation_params->source_location.has_value()) {
+    WebSourceLocation& location = navigation_params->source_location.value();
     source_location_ = SourceLocation::Create(
         location.url, location.line_number, location.column_number, nullptr);
   }

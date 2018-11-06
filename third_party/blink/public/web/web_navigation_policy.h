@@ -41,7 +41,6 @@ enum WebNavigationPolicy {
   kWebNavigationPolicyNewForegroundTab,
   kWebNavigationPolicyNewWindow,
   kWebNavigationPolicyNewPopup,
-  kWebNavigationPolicyHandledByClient,
 };
 
 }  // namespace blink

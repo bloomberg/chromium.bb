@@ -793,7 +793,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
-  DCHECK(policy != kNavigationPolicyHandledByClient);
 
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -889,18 +888,15 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
 
-  mojo::ScopedMessagePipeHandle navigation_initiator_handle;
+  mojom::blink::NavigationInitiatorPtr navigation_initiator;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     WebContentSecurityPolicyList initiator_csp =
         origin_document->GetContentSecurityPolicy()
             ->ExposeForNavigationalChecks();
     resource_request.SetInitiatorCSP(initiator_csp);
-    mojom::blink::NavigationInitiatorPtr navigation_initiator;
     auto request = mojo::MakeRequest(&navigation_initiator);
     origin_document->BindNavigationInitiatorRequest(std::move(request));
-    navigation_initiator_handle =
-        navigation_initiator.PassInterface().PassHandle();
   }
 
   // Record the latest requiredCSP value that will be used when sending this
@@ -944,13 +940,12 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   policy = Client()->DecidePolicyForNavigation(
       resource_request, origin_document, nullptr /* document_loader */,
-      navigation_type, policy, has_transient_activation,
-      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
+      navigation_type, policy, has_transient_activation, frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
-      request.HrefTranslate().GetString());
+      request.HrefTranslate().GetString(), std::move(navigation_initiator));
 
   // 'beforeunload' can be fired above, which can detach this frame from inside
   // the event handler.
@@ -960,38 +955,10 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (policy == kNavigationPolicyIgnore)
     return;
 
-  if (policy == kNavigationPolicyCurrentTab) {
-    CommitNavigation(resource_request, SubstituteData(),
-                     request.ClientRedirect(), base::UnguessableToken::Create(),
-                     frame_load_type, nullptr, nullptr, nullptr);
-    return;
-  }
-
-  DCHECK(policy == kNavigationPolicyHandledByClient);
-  if (!CancelProvisionalLoaderForNewNavigation(
-          true /* cancel_scheduled_navigations */)) {
-    return;
-  }
-
-  provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, SubstituteData(), request.ClientRedirect(),
-      base::UnguessableToken::Create(), frame_load_type, navigation_type,
-      nullptr /* navigation_params */, nullptr /* extra_data */);
-
-  provisional_document_loader_->AppendRedirect(
-      provisional_document_loader_->Url());
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-
-  // TODO(ananta):
-  // We should get rid of the dependency on the DocumentLoader in consumers of
-  // the DidStartProvisionalLoad() notification.
-  Client()->DispatchDidStartProvisionalLoad(
-      provisional_document_loader_, resource_request,
-      std::move(navigation_initiator_handle));
-  probe::didStartProvisionalLoad(frame_);
-  virtual_time_pauser_.PauseVirtualTime();
-  DCHECK(provisional_document_loader_);
-  TakeObjectSnapshot();
+  DCHECK(policy == kNavigationPolicyCurrentTab);
+  CommitNavigation(resource_request, SubstituteData(), request.ClientRedirect(),
+                   base::UnguessableToken::Create(), frame_load_type, nullptr,
+                   nullptr, nullptr);
 }
 
 void FrameLoader::CommitNavigation(
@@ -1082,8 +1049,7 @@ void FrameLoader::CommitNavigation(
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request,
-                                            mojo::ScopedMessagePipeHandle());
+                                            resource_request);
   probe::didStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
 
@@ -1137,6 +1103,32 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
                      client_redirect_policy, origin_document,
                      std::move(extra_data));
   return mojom::CommitResult::Ok;
+}
+
+bool FrameLoader::CreatePlaceholderDocumentLoader(
+    const ResourceRequest& resource_request,
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token,
+    WebFrameLoadType frame_load_type,
+    WebNavigationType navigation_type,
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  if (!CancelProvisionalLoaderForNewNavigation(
+          true /* cancel_scheduled_navigations */)) {
+    return false;
+  }
+
+  provisional_document_loader_ = CreateDocumentLoader(
+      resource_request, SubstituteData(), client_redirect_policy,
+      devtools_navigation_token, frame_load_type, navigation_type,
+      std::move(navigation_params), std::move(extra_data));
+  provisional_document_loader_->AppendRedirect(
+      provisional_document_loader_->Url());
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+  probe::didStartProvisionalLoad(frame_);
+  virtual_time_pauser_.PauseVirtualTime();
+  TakeObjectSnapshot();
+  return true;
 }
 
 SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {

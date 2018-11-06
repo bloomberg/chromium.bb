@@ -64,6 +64,7 @@
 #include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -341,7 +342,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     WebNavigationType navigation_type;
     WebNavigationPolicy default_policy;
     bool has_user_gesture;
-    bool replaces_current_history_item;
+    WebFrameLoadType frame_load_type;
     bool is_history_navigation_in_new_child_frame;
     bool is_client_redirect;
     WebTriggeringEventInfo triggering_event_info;
@@ -353,6 +354,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     mojo::ScopedMessagePipeHandle blob_url_token;
     base::TimeTicks input_start;
     WebString href_translate;
+    mojo::ScopedMessagePipeHandle navigation_initiator_handle;
 
     // Specify whether or not a MHTML Archive can be used to load a subframe
     // resource instead of doing a network request.
@@ -364,7 +366,7 @@ class BLINK_EXPORT WebLocalFrameClient {
           navigation_type(kWebNavigationTypeOther),
           default_policy(kWebNavigationPolicyIgnore),
           has_user_gesture(false),
-          replaces_current_history_item(false),
+          frame_load_type(WebFrameLoadType::kStandard),
           is_history_navigation_in_new_child_frame(false),
           is_client_redirect(false),
           triggering_event_info(WebTriggeringEventInfo::kUnknown),
@@ -374,7 +376,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   };
 
   virtual WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) {
+      NavigationPolicyInfo& info) {
     return info.default_policy;
   }
 
@@ -406,10 +408,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidCreateDocumentLoader(WebDocumentLoader*) {}
 
   // A new provisional load has been started.
-  virtual void DidStartProvisionalLoad(
-      WebDocumentLoader* document_loader,
-      WebURLRequest& request,
-      mojo::ScopedMessagePipeHandle navigation_initiator_handle) {}
+  virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
+                                       WebURLRequest& request) {}
 
   // The provisional load failed. The WebHistoryCommitType is the commit type
   // that would have been used had the load succeeded.

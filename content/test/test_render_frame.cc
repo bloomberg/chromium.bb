@@ -207,7 +207,7 @@ void TestRenderFrame::SetCompositionFromExistingText(
 }
 
 blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
-    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
+    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
   if (info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
       ((GetWebFrame()->Parent() && info.form.IsNull()) ||
        next_request_url_override_.has_value())) {

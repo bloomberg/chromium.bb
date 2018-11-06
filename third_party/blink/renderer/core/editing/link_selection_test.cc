@@ -114,7 +114,7 @@ String LinkSelectionTestBase::GetSelectionText() {
 class TestFrameClient : public frame_test_helpers::TestWebFrameClient {
  public:
   WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
+      NavigationPolicyInfo& info) override {
     last_policy_ = info.default_policy;
     return kWebNavigationPolicyIgnore;
   }
