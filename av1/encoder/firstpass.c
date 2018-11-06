@@ -58,7 +58,8 @@
 #define KF_MAX_FRAME_BOOST 128.0
 #define MIN_ARF_GF_BOOST 240
 #define MIN_DECAY_FACTOR 0.01
-#define MIN_KF_BOOST 300
+#define MIN_KF_BOOST 300          // Minimum boost for non-static KF interval
+#define MIN_STATIC_KF_BOOST 5400  // Minimum boost for static KF interval
 #define NEW_MV_MODE_PENALTY 32
 #define DARK_THRESH 64
 #define DEFAULT_GRP_WEIGHT 1.0
@@ -2019,7 +2020,10 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
     accumulative_subgroup_interval += subgroup_interval[cpi->num_extra_arfs];
   }
 
-  for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending; ++i) {
+  const int normal_frames =
+      rc->baseline_gf_interval - (key_frame || rc->source_alt_ref_pending);
+
+  for (i = 0; i < normal_frames; ++i) {
     gf_group->arf_update_idx[frame_index] = which_arf;
     gf_group->arf_ref_idx[frame_index] = which_arf;
 
@@ -2204,7 +2208,10 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #endif  // USE_SYMM_MULTI_LAYER
 
   // Allocate bits to the other frames in the group.
-  for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending; ++i) {
+  const int normal_frames =
+      rc->baseline_gf_interval - (key_frame || rc->source_alt_ref_pending);
+
+  for (i = 0; i < normal_frames; ++i) {
     FIRSTPASS_STATS frame_stats;
     if (EOF == input_stats(twopass, &frame_stats)) break;
 
@@ -2275,8 +2282,7 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     frame_index = tmp_frame_index;
 
     // Re-distribute this extra budget to overlay frames in the group.
-    for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending;
-         ++i) {
+    for (i = 0; i < normal_frames; ++i) {
       if (cpi->new_bwdref_update_rule &&
           gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
         assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
@@ -2332,6 +2338,12 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       }
     }
   }
+}
+
+// Returns true if KF group and GF group both are almost completely static.
+static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
+  return (gf_zero_motion >= 0.995) &&
+         (kf_zero_motion >= STATIC_KF_GROUP_THRESH);
 }
 
 // Analyse and define a gf/arf group.
@@ -2481,8 +2493,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       decay_accumulator = decay_accumulator * loop_decay_rate;
 
       // Monitor for static sections.
-      zero_motion_accumulator = AOMMIN(
-          zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+      if ((rc->frames_since_key + i - 1) > 1) {
+        zero_motion_accumulator = AOMMIN(
+            zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+      }
 
       // Break clause to detect very still sections after motion. For example,
       // a static image after a fade or other transition.
@@ -2498,14 +2512,27 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         decay_accumulator *
         calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
 #if CONFIG_FIX_GF_LENGTH
-    if (i == (FIXED_GF_LENGTH + 1)) break;
+    // If almost totally static, we will not use the FIXED_GF_LENGTH later, so
+    // we can continue for more frames.
+    if (i >= (FIXED_GF_LENGTH + 1) &&
+        !is_almost_static(zero_motion_accumulator,
+                          twopass->kf_zeromotion_pct)) {
+      break;
+    }
 #else
-    // Skip breaking condition for CONFIG_FIX_GF_LENGTH
     // Break out conditions.
-    if (
-        // Break at active_max_gf_interval unless almost totally static.
-        (i >= (active_max_gf_interval + arf_active_or_kf) &&
-         zero_motion_accumulator < 0.995) ||
+    // Break at maximum of active_max_gf_interval unless almost totally static.
+    //
+    // Note that the addition of a test of rc->source_alt_ref_active is
+    // deliberate. The effect of this is that after a normal altref group even
+    // if the material is static there will be one normal length GF group
+    // before allowing longer GF groups. The reason for this is that in cases
+    // such as slide shows where slides are separated by a complex transition
+    // such as a fade, the arf group spanning the transition may not be coded
+    // at a very high quality and hence this frame (with its overlay) is a
+    // poor golden frame to use for an extended group.
+    if ((i >= (active_max_gf_interval + arf_active_or_kf) &&
+         ((zero_motion_accumulator < 0.995) || (rc->source_alt_ref_active))) ||
         (
             // Don't break out with a very short interval.
             (i >= active_min_gf_interval + arf_active_or_kf) &&
@@ -2551,23 +2578,24 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   if (disable_bwd_extarf) cpi->extra_arf_allowed = 0;
 
+  const int use_alt_ref =
+      !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
+      allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
+      (i >= rc->min_gf_interval);
+
 #define REDUCE_GF_LENGTH_THRESH 4
 #define REDUCE_GF_LENGTH_TO_KEY_THRESH 9
 #define REDUCE_GF_LENGTH_BY 1
   int alt_offset = 0;
 #if REDUCE_LAST_GF_LENGTH
-  // TODO(weitinglin): The length reduction stretagy is tweaking using AOM_Q
-  // mode, and hurting the performance of VBR mode. We need to investigate how
-  // to adjust GF length for other modes.
+  // The length reduction strategy is tweaked using AOM_Q mode, and doesn't work
+  // for VBR mode.
+  // Also, we don't have do adjustment for lossless mode.
+  const int allow_gf_length_reduction =
+      (cpi->oxcf.rc_mode == AOM_Q || cpi->extra_arf_allowed == 0) &&
+      !is_lossless_requested(&cpi->oxcf);
 
-  int allow_gf_length_reduction =
-      cpi->oxcf.rc_mode == AOM_Q || cpi->extra_arf_allowed == 0;
-
-  // We are going to have an alt ref, but we don't have do adjustment for
-  // lossless mode
-  if (allow_alt_ref && allow_gf_length_reduction &&
-      (i < cpi->oxcf.lag_in_frames) && (i >= rc->min_gf_interval) &&
-      !is_lossless_requested(&cpi->oxcf)) {
+  if (allow_gf_length_reduction && use_alt_ref) {
     // adjust length of this gf group if one of the following condition met
     // 1: only one overlay frame left and this gf is too long
     // 2: next gf group is too short to have arf compared to the current gf
@@ -2591,11 +2619,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       i -= roll_back;
     }
   }
-#endif
+#endif  // REDUCE_LAST_GF_LENGTH
 
   // Should we use the alternate reference frame.
-  if (allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
-      (i >= rc->min_gf_interval)) {
+  if (use_alt_ref) {
     // Calculate the boost for alt ref.
     rc->gfu_boost =
         calc_arf_boost(cpi, alt_offset, (i - 1), (i - 1), &f_boost, &b_boost);
@@ -2629,11 +2656,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         rc->baseline_gf_interval = rc->frames_to_key - MIN_FWD_KF_INTERVAL;
       }
     } else {
-      rc->baseline_gf_interval =
-          i - (is_key_frame || rc->source_alt_ref_pending);
+      rc->baseline_gf_interval = i - rc->source_alt_ref_pending;
     }
   } else {
-    rc->baseline_gf_interval = i - (is_key_frame || rc->source_alt_ref_pending);
+    rc->baseline_gf_interval = i - rc->source_alt_ref_pending;
   }
 
 #if REDUCE_LAST_ALT_BOOST
@@ -2883,6 +2909,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   av1_zero(next_frame);
 
   cpi->common.frame_type = KEY_FRAME;
+  rc->frames_since_key = 0;
 
   // Reset the GF group data structures.
   av1_zero(*gf_group);
@@ -3027,8 +3054,13 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     if (EOF == input_stats(twopass, &next_frame)) break;
 
     // Monitor for static sections.
-    zero_motion_accumulator = AOMMIN(zero_motion_accumulator,
-                                     get_zero_motion_factor(cpi, &next_frame));
+    // For the first frame in kf group, the second ref indicator is invalid.
+    if (i > 0) {
+      zero_motion_accumulator = AOMMIN(
+          zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+    } else {
+      zero_motion_accumulator = next_frame.pcnt_inter - next_frame.pcnt_motion;
+    }
 
     // Not all frames in the group are necessarily used in calculating boost.
     if ((i <= rc->max_gf_interval) ||
@@ -3060,10 +3092,18 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->section_intra_rating = calculate_section_intra_ratio(
       start_position, twopass->stats_in_end, rc->frames_to_key);
 
-  // Apply various clamps for min and max boost
   rc->kf_boost = (int)(av_decay_accumulator * boost_score);
-  rc->kf_boost = AOMMAX(rc->kf_boost, (rc->frames_to_key * 3));
-  rc->kf_boost = AOMMAX(rc->kf_boost, MIN_KF_BOOST);
+
+  // Special case for static / slide show content but don't apply
+  // if the kf group is very short.
+  if ((zero_motion_accumulator > STATIC_KF_GROUP_FLOAT_THRESH) &&
+      (rc->frames_to_key > 8)) {
+    rc->kf_boost = AOMMAX(rc->kf_boost, MIN_STATIC_KF_BOOST);
+  } else {
+    // Apply various clamps for min and max boost
+    rc->kf_boost = AOMMAX(rc->kf_boost, (rc->frames_to_key * 3));
+    rc->kf_boost = AOMMAX(rc->kf_boost, MIN_KF_BOOST);
+  }
 
   // Work out how many bits to allocate for the key frame itself.
   kf_bits = calculate_boost_bits((rc->frames_to_key - 1), rc->kf_boost,
