@@ -233,7 +233,7 @@ class TaskTracker;
 
 class AdjustOOMScoreHelper;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
-class MessageLoop;
+class MessageLoopImpl;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
@@ -375,7 +375,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
       ThreadRestrictionsTest,
       ScopedAllowBaseSyncPrimitivesOutsideBlockingScopeResetsState);
   friend class ::KeyStorageLinux;
-  friend class base::MessageLoop;
+  friend class base::MessageLoopImpl;
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;

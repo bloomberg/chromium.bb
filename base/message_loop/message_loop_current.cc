@@ -104,12 +104,13 @@ void MessageLoopCurrent::SetNestableTasksAllowed(bool allowed) {
     // loop that does not go through RunLoop::Run().
     current_->pump_->ScheduleWork();
   }
-  current_->task_execution_allowed_ = allowed;
+
+  current_->SetTaskExecutionAllowed(allowed);
 }
 
 bool MessageLoopCurrent::NestableTasksAllowed() const {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
-  return current_->task_execution_allowed_;
+  return current_->IsTaskExecutionAllowed();
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
@@ -156,7 +157,7 @@ MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
 #endif  // defined(OS_ANDROID)
   auto* loop_for_ui = static_cast<MessageLoopForUI*>(loop);
   return MessageLoopCurrentForUI(
-      loop_for_ui, static_cast<MessagePumpForUI*>(loop_for_ui->pump_.get()));
+      loop_for_ui, static_cast<MessagePumpForUI*>(loop_for_ui->pump_));
 }
 
 // static
@@ -219,7 +220,7 @@ MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
   DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
   auto* loop_for_io = static_cast<MessageLoopForIO*>(loop);
   return MessageLoopCurrentForIO(
-      loop_for_io, static_cast<MessagePumpForIO*>(loop_for_io->pump_.get()));
+      loop_for_io, static_cast<MessagePumpForIO*>(loop_for_io->pump_));
 }
 
 // static

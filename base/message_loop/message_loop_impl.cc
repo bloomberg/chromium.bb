@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 
 #include <algorithm>
-#include <atomic>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,9 +18,7 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/sequenced_task_source.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,23 +30,13 @@
 
 namespace base {
 
-namespace {
-
-MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
-
-std::unique_ptr<MessagePump> ReturnPump(std::unique_ptr<MessagePump> pump) {
-  return pump;
-}
-
-}  // namespace
-
-class MessageLoop::Controller : public SequencedTaskSource::Observer {
+class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
  public:
   // Constructs a MessageLoopController which controls |message_loop|, notifying
   // |task_annotator_| when tasks are queued and scheduling work on
   // |message_loop| as fits. |message_loop| and |task_annotator_| will not be
   // used after DisconnectFromParent() returns.
-  Controller(MessageLoop* message_loop);
+  Controller(MessageLoopImpl* message_loop);
 
   ~Controller() override;
 
@@ -118,26 +105,26 @@ class MessageLoop::Controller : public SequencedTaskSource::Observer {
   // |initialization_state_| must be set to kReadyForScheduling before using
   // this. |operations_state_| must then be incremented per the above protocol
   // to use this.
-  MessageLoop* const message_loop_;
+  MessageLoopImpl* const message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
-MessageLoop::Controller::Controller(MessageLoop* message_loop)
+MessageLoopImpl::Controller::Controller(MessageLoopImpl* message_loop)
     : message_loop_(message_loop) {
   DCHECK(message_loop_);
 }
 
-MessageLoop::Controller::~Controller() {
+MessageLoopImpl::Controller::~Controller() {
   DCHECK(safe_to_shutdown_)
       << "DisconnectFromParent() needs to be invoked before destruction.";
 }
 
-void MessageLoop::Controller::WillQueueTask(PendingTask* task) {
+void MessageLoopImpl::Controller::WillQueueTask(PendingTask* task) {
   task_annotator_.WillQueueTask("MessageLoop::PostTask", task);
 }
 
-void MessageLoop::Controller::DidQueueTask(bool was_empty) {
+void MessageLoopImpl::Controller::DidQueueTask(bool was_empty) {
   if (!was_empty)
     return;
 
@@ -173,7 +160,7 @@ void MessageLoop::Controller::DidQueueTask(bool was_empty) {
   AfterOperation();
 }
 
-void MessageLoop::Controller::StartScheduling() {
+void MessageLoopImpl::Controller::StartScheduling() {
   DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
 
   // std::memory_order_release because any thread that acquires this value and
@@ -188,7 +175,7 @@ void MessageLoop::Controller::StartScheduling() {
     message_loop_->ScheduleWork();
 }
 
-void MessageLoop::Controller::DisconnectFromParent() {
+void MessageLoopImpl::Controller::DisconnectFromParent() {
   DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
   DCHECK(!safe_to_shutdown_);
 
@@ -206,7 +193,7 @@ void MessageLoop::Controller::DisconnectFromParent() {
   }
 }
 
-bool MessageLoop::Controller::BeforeOperation() {
+bool MessageLoopImpl::Controller::BeforeOperation() {
   // Acquire semantics are required to ensure that no operation on the current
   // thread can be reordered before this one.
   const bool allowed = (operations_state_.fetch_add(kOperationInProgress,
@@ -221,7 +208,7 @@ bool MessageLoop::Controller::BeforeOperation() {
   return allowed;
 }
 
-void MessageLoop::Controller::AfterOperation() {
+void MessageLoopImpl::Controller::AfterOperation() {
   constexpr int kWasDisconnectedWithOnlyOneOperationLeft =
       kOperationInProgress | kDisconnectedBit;
   // Release semantics are required to ensure that no operation on the current
@@ -243,58 +230,11 @@ void MessageLoop::Controller::AfterOperation() {
 
 //------------------------------------------------------------------------------
 
-MessageLoop::MessageLoop(Type type)
-    : MessageLoop(type, MessagePumpFactoryCallback()) {
-  BindToCurrentThread();
-}
-
-MessageLoop::MessageLoop(std::unique_ptr<MessagePump> pump)
-    : MessageLoop(TYPE_CUSTOM, BindOnce(&ReturnPump, std::move(pump))) {
-  BindToCurrentThread();
-}
-
-MessageLoop::~MessageLoop() {
-  // If |pump_| is non-null, this message loop has been bound and should be the
-  // current one on this thread. Otherwise, this loop is being destructed before
-  // it was bound to a thread, so a different message loop (or no loop at all)
-  // may be current.
-  DCHECK((pump_ && IsBoundToCurrentThread()) ||
-         (!pump_ && !IsBoundToCurrentThread()));
-
-  // iOS just attaches to the loop, it doesn't Run it.
-  // TODO(stuartmorgan): Consider wiring up a Detach().
-#if !defined(OS_IOS)
-  // There should be no active RunLoops on this thread, unless this MessageLoop
-  // isn't bound to the current thread (see other condition at the top of this
-  // method).
-  DCHECK((!pump_ && !IsBoundToCurrentThread()) ||
-         !RunLoop::IsRunningOnCurrentThread());
-#endif  // !defined(OS_IOS)
-
+MessageLoopImpl::~MessageLoopImpl() {
 #if defined(OS_WIN)
   if (in_high_res_mode_)
     Time::ActivateHighResolutionTimer(false);
 #endif
-  // Clean up any unprocessed tasks, but take care: deleting a task could
-  // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
-  // limit on the number of times we will allow a deleted task to generate more
-  // tasks.  Normally, we should only pass through this loop once or twice.  If
-  // we end up hitting the loop limit, then it is probably due to one task that
-  // is being stubborn.  Inspect the queues to see who is left.
-  bool tasks_remain;
-  for (int i = 0; i < 100; ++i) {
-    DeletePendingTasks();
-    // If we end up with empty queues, then break out of the loop.
-    tasks_remain = sequenced_task_source_->HasTasks();
-    if (!tasks_remain)
-      break;
-  }
-  DCHECK(!tasks_remain);
-
-  // Let interested parties have one last shot at accessing this.
-  for (auto& observer : destruction_observers_)
-    observer.WillDestroyCurrentMessageLoop();
-
   thread_task_runner_handle_.reset();
 
   // Detach this instance's Controller from |this|. After this point,
@@ -313,68 +253,17 @@ MessageLoop::~MessageLoop() {
   // serialize ScheduleWork() call and as such that optimization isn't worth it.
   message_loop_controller_->DisconnectFromParent();
   underlying_task_runner_->Shutdown();
-
-  // OK, now make it so that no one can find us.
-  if (IsBoundToCurrentThread())
-    MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
-}
-
-// static
-bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
-  if (message_pump_for_ui_factory_)
-    return false;
-
-  message_pump_for_ui_factory_ = factory;
-  return true;
-}
-
-// static
-std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
-  if (type == MessageLoop::TYPE_UI) {
-    if (message_pump_for_ui_factory_)
-      return message_pump_for_ui_factory_();
-#if defined(OS_IOS) || defined(OS_MACOSX)
-    return MessagePumpMac::Create();
-#elif defined(OS_NACL) || defined(OS_AIX)
-    // Currently NaCl and AIX don't have a UI MessageLoop.
-    // TODO(abarth): Figure out if we need this.
-    NOTREACHED();
-    return nullptr;
-#else
-    return std::make_unique<MessagePumpForUI>();
-#endif
-  }
-
-  if (type == MessageLoop::TYPE_IO)
-    return std::unique_ptr<MessagePump>(new MessagePumpForIO());
-
-#if defined(OS_ANDROID)
-  if (type == MessageLoop::TYPE_JAVA)
-    return std::unique_ptr<MessagePump>(new MessagePumpForUI());
-#endif
-
-  DCHECK_EQ(MessageLoop::TYPE_DEFAULT, type);
-#if defined(OS_IOS)
-  // On iOS, a native runloop is always required to pump system work.
-  return std::make_unique<MessagePumpCFRunLoop>();
-#else
-  return std::make_unique<MessagePumpDefault>();
-#endif
-}
-
-bool MessageLoop::IsType(Type type) const {
-  return type_ == type;
 }
 
 // TODO(gab): Migrate TaskObservers to RunLoop as part of separating concerns
 // between MessageLoop and RunLoop and making MessageLoop a swappable
 // implementation detail. http://crbug.com/703346
-void MessageLoop::AddTaskObserver(TaskObserver* task_observer) {
+void MessageLoopImpl::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   task_observers_.push_back(task_observer);
 }
 
-void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
+void MessageLoopImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   auto it =
       std::find(task_observers_.begin(), task_observers_.end(), task_observer);
@@ -382,16 +271,12 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   task_observers_.erase(it);
 }
 
-bool MessageLoop::IsBoundToCurrentThread() const {
-  return MessageLoopCurrent::Get()->ToMessageLoopDeprecated() == this;
-}
-
-void MessageLoop::SetAddQueueTimeToTasks(bool enable) {
+void MessageLoopImpl::SetAddQueueTimeToTasks(bool enable) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   underlying_task_runner_->SetAddQueueTimeToTasks(enable);
 }
 
-bool MessageLoop::IsIdleForTesting() {
+bool MessageLoopImpl::IsIdleForTesting() {
   // Have unprocessed tasks? (this reloads the work queue if necessary)
   if (sequenced_task_source_->HasTasks())
     return false;
@@ -407,42 +292,22 @@ bool MessageLoop::IsIdleForTesting() {
 
 //------------------------------------------------------------------------------
 
-// static
-std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
-    Type type,
-    MessagePumpFactoryCallback pump_factory) {
-  return WrapUnique(new MessageLoop(type, std::move(pump_factory)));
-}
-
-MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : MessageLoopCurrent(this),
-      type_(type),
-      pump_factory_(std::move(pump_factory)),
-      message_loop_controller_(
+MessageLoopImpl::MessageLoopImpl()
+    : message_loop_controller_(
           new Controller(this)),  // Ownership transferred on the next line.
       underlying_task_runner_(MakeRefCounted<internal::MessageLoopTaskRunner>(
           WrapUnique(message_loop_controller_))),
       sequenced_task_source_(underlying_task_runner_.get()),
       task_runner_(underlying_task_runner_) {
-  // If type is TYPE_CUSTOM non-null pump_factory must be given.
-  DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
-
   // Bound in BindToCurrentThread();
   DETACH_FROM_THREAD(bound_thread_checker_);
 }
 
-void MessageLoop::BindToCurrentThread() {
+void MessageLoopImpl::BindToCurrentThread(std::unique_ptr<MessagePump> pump) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
 
   DCHECK(!pump_);
-  if (!pump_factory_.is_null())
-    pump_ = std::move(pump_factory_).Run();
-  else
-    pump_ = CreateMessagePumpForType(type_);
-
-  DCHECK(!MessageLoopCurrent::IsSet())
-      << "should only have one message loop per thread";
-  MessageLoopCurrent::BindToCurrentThreadInternal(this);
+  pump_ = std::move(pump);
 
   underlying_task_runner_->BindToCurrentThread();
   message_loop_controller_->StartScheduling();
@@ -454,22 +319,16 @@ void MessageLoop::BindToCurrentThread() {
       &sequence_local_storage_map_);
 
   RunLoop::RegisterDelegateForCurrentThread(this);
-
-#if defined(OS_ANDROID)
-  // On Android, attach to the native loop when there is one.
-  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
-    static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
-#endif
 }
 
-std::string MessageLoop::GetThreadName() const {
+std::string MessageLoopImpl::GetThreadName() const {
   DCHECK_NE(kInvalidThreadId, thread_id_)
       << "GetThreadName() must only be called after BindToCurrentThread()'s "
       << "side-effects have been synchronized with this thread.";
   return ThreadIdNameManager::GetInstance()->GetName(thread_id_);
 }
 
-void MessageLoop::SetTaskRunner(
+void MessageLoopImpl::SetTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner);
   if (thread_id_ == kInvalidThreadId) {
@@ -485,7 +344,7 @@ void MessageLoop::SetTaskRunner(
   }
 }
 
-void MessageLoop::Run(bool application_tasks_allowed) {
+void MessageLoopImpl::Run(bool application_tasks_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   if (application_tasks_allowed && !task_execution_allowed_) {
     // Allow nested task execution as explicitly requested.
@@ -498,18 +357,18 @@ void MessageLoop::Run(bool application_tasks_allowed) {
   }
 }
 
-void MessageLoop::Quit() {
+void MessageLoopImpl::Quit() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   pump_->Quit();
 }
 
-void MessageLoop::EnsureWorkScheduled() {
+void MessageLoopImpl::EnsureWorkScheduled() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   if (sequenced_task_source_->HasTasks())
     pump_->ScheduleWork();
 }
 
-void MessageLoop::SetThreadTaskRunnerHandle() {
+void MessageLoopImpl::SetThreadTaskRunnerHandle() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   // Clear the previous thread task runner first, because only one can exist at
   // a time.
@@ -517,7 +376,7 @@ void MessageLoop::SetThreadTaskRunnerHandle() {
   thread_task_runner_handle_.reset(new ThreadTaskRunnerHandle(task_runner_));
 }
 
-bool MessageLoop::ProcessNextDelayedNonNestableTask() {
+bool MessageLoopImpl::ProcessNextDelayedNonNestableTask() {
   if (RunLoop::IsNestedOnCurrentThread())
     return false;
 
@@ -532,7 +391,7 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
   return false;
 }
 
-void MessageLoop::RunTask(PendingTask* pending_task) {
+void MessageLoopImpl::RunTask(PendingTask* pending_task) {
   DCHECK(task_execution_allowed_);
 
   // Execute the task and assume the worst: It is probably not reentrant.
@@ -550,7 +409,7 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
   task_execution_allowed_ = true;
 }
 
-bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
+bool MessageLoopImpl::DeferOrRunPendingTask(PendingTask pending_task) {
   if (pending_task.nestable == Nestable::kNestable ||
       !RunLoop::IsNestedOnCurrentThread()) {
     RunTask(&pending_task);
@@ -565,7 +424,7 @@ bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
   return false;
 }
 
-void MessageLoop::DeletePendingTasks() {
+void MessageLoopImpl::DeletePendingTasks() {
   // Delete all currently pending tasks but not tasks potentially posted from
   // their destructors. See ~MessageLoop() for the full logic mitigating against
   // infite loops when clearing pending tasks. The ScopedClosureRunner below
@@ -598,15 +457,27 @@ void MessageLoop::DeletePendingTasks() {
   pending_task_queue_.delayed_tasks().Clear();
 }
 
-void MessageLoop::ScheduleWork() {
+bool MessageLoopImpl::HasTasks() {
+  return sequenced_task_source_->HasTasks();
+}
+
+void MessageLoopImpl::SetTaskExecutionAllowed(bool allowed) {
+  task_execution_allowed_ = allowed;
+}
+
+bool MessageLoopImpl::IsTaskExecutionAllowed() const {
+  return task_execution_allowed_;
+}
+
+void MessageLoopImpl::ScheduleWork() {
   pump_->ScheduleWork();
 }
 
-TimeTicks MessageLoop::CapAtOneDay(TimeTicks next_run_time) {
+TimeTicks MessageLoopImpl::CapAtOneDay(TimeTicks next_run_time) {
   return std::min(next_run_time, recent_time_ + TimeDelta::FromDays(1));
 }
 
-bool MessageLoop::DoWork() {
+bool MessageLoopImpl::DoWork() {
   if (!task_execution_allowed_)
     return false;
 
@@ -634,7 +505,7 @@ bool MessageLoop::DoWork() {
   return false;
 }
 
-bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
+bool MessageLoopImpl::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   if (!task_execution_allowed_ ||
       !pending_task_queue_.delayed_tasks().HasTasks()) {
     *next_delayed_work_time = TimeTicks();
@@ -669,7 +540,7 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   return DeferOrRunPendingTask(std::move(pending_task));
 }
 
-bool MessageLoop::DoIdleWork() {
+bool MessageLoopImpl::DoIdleWork() {
   if (ProcessNextDelayedNonNestableTask())
     return true;
 
@@ -684,11 +555,7 @@ bool MessageLoop::DoIdleWork() {
   if (ShouldQuitWhenIdle()) {
     pump_->Quit();
   } else if (task_execution_allowed_) {
-    // Only track idle metrics in MessageLoopForUI to avoid too much contention
-    // logging the histogram (https://crbug.com/860801) -- there's typically
-    // only one UI thread per process and, for practical purposes, restricting
-    // the MessageLoop diagnostic metrics to it yields similar information.
-    if (type_ == TYPE_UI)
+    if (should_record_idle_metrics_)
       pending_task_queue_.ReportMetricsOnIdle();
 
 #if defined(OS_WIN)
@@ -709,6 +576,11 @@ bool MessageLoop::DoIdleWork() {
 
   // When we return we will do a kernel wait for more tasks.
   return false;
+}
+
+void MessageLoopImpl::SetShouldRecordIdleMetrics(
+    bool should_record_idle_metrics) {
+  should_record_idle_metrics_ = should_record_idle_metrics;
 }
 
 }  // namespace base

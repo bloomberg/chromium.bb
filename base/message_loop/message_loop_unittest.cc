@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
@@ -58,8 +58,7 @@ namespace {
 
 class Foo : public RefCounted<Foo> {
  public:
-  Foo() : test_count_(0) {
-  }
+  Foo() : test_count_(0) {}
 
   void Test0() { ++test_count_; }
 
@@ -133,40 +132,52 @@ enum TaskType {
 
 // Saves the order in which the tasks executed.
 struct TaskItem {
-  TaskItem(TaskType t, int c, bool s)
-      : type(t),
-        cookie(c),
-        start(s) {
-  }
+  TaskItem(TaskType t, int c, bool s) : type(t), cookie(c), start(s) {}
 
   TaskType type;
   int cookie;
   bool start;
 
-  bool operator == (const TaskItem& other) const {
+  bool operator==(const TaskItem& other) const {
     return type == other.type && cookie == other.cookie && start == other.start;
   }
 };
 
-std::ostream& operator <<(std::ostream& os, TaskType type) {
+std::ostream& operator<<(std::ostream& os, TaskType type) {
   switch (type) {
-  case MESSAGEBOX:        os << "MESSAGEBOX"; break;
-  case ENDDIALOG:         os << "ENDDIALOG"; break;
-  case RECURSIVE:         os << "RECURSIVE"; break;
-  case TIMEDMESSAGELOOP:  os << "TIMEDMESSAGELOOP"; break;
-  case QUITMESSAGELOOP:   os << "QUITMESSAGELOOP"; break;
-  case ORDERED:          os << "ORDERED"; break;
-  case PUMPS:             os << "PUMPS"; break;
-  case SLEEP:             os << "SLEEP"; break;
-  default:
-    NOTREACHED();
-    os << "Unknown TaskType";
-    break;
+    case MESSAGEBOX:
+      os << "MESSAGEBOX";
+      break;
+    case ENDDIALOG:
+      os << "ENDDIALOG";
+      break;
+    case RECURSIVE:
+      os << "RECURSIVE";
+      break;
+    case TIMEDMESSAGELOOP:
+      os << "TIMEDMESSAGELOOP";
+      break;
+    case QUITMESSAGELOOP:
+      os << "QUITMESSAGELOOP";
+      break;
+    case ORDERED:
+      os << "ORDERED";
+      break;
+    case PUMPS:
+      os << "PUMPS";
+      break;
+    case SLEEP:
+      os << "SLEEP";
+      break;
+    default:
+      NOTREACHED();
+      os << "Unknown TaskType";
+      break;
   }
   return os;
 }
 
-std::ostream& operator <<(std::ostream& os, const TaskItem& item) {
+std::ostream& operator<<(std::ostream& os, const TaskItem& item) {
   if (item.start)
     return os << item.type << " " << item.cookie << " starts";
   return os << item.type << " " << item.cookie << " ends";
@@ -186,13 +197,9 @@ class TaskList {
     task_list_.push_back(item);
   }
 
-  size_t Size() {
-    return task_list_.size();
-  }
+  size_t Size() { return task_list_.size(); }
 
-  TaskItem Get(int n)  {
-    return task_list_[n];
-  }
+  TaskItem Get(int n) { return task_list_[n]; }
 
  private:
   std::vector<TaskItem> task_list_;
@@ -233,8 +240,7 @@ class DummyTaskObserver : public MessageLoop::TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskObserver);
 };
 
-void RecursiveFunc(TaskList* order, int cookie, int depth,
-                   bool is_reentrant) {
+void RecursiveFunc(TaskList* order, int cookie, int depth, bool is_reentrant) {
   order->RecordStart(RECURSIVE, cookie);
   if (depth > 0) {
     if (is_reentrant)
@@ -520,10 +526,8 @@ void RunTest_IOHandler() {
 }
 
 void RunTest_WaitForIO() {
-  win::ScopedHandle callback1_called(
-      CreateEvent(NULL, TRUE, FALSE, NULL));
-  win::ScopedHandle callback2_called(
-      CreateEvent(NULL, TRUE, FALSE, NULL));
+  win::ScopedHandle callback1_called(CreateEvent(NULL, TRUE, FALSE, NULL));
+  win::ScopedHandle callback2_called(CreateEvent(NULL, TRUE, FALSE, NULL));
   ASSERT_TRUE(callback1_called.IsValid());
   ASSERT_TRUE(callback2_called.IsValid());
 
@@ -566,7 +570,7 @@ void RunTest_WaitForIO() {
 
   EXPECT_TRUE(WriteFile(server2.Get(), buffer, sizeof(buffer), &written, NULL));
 
-  HANDLE objects[2] = { callback1_called.Get(), callback2_called.Get() };
+  HANDLE objects[2] = {callback1_called.Get(), callback2_called.Get()};
   DWORD result = WaitForMultipleObjects(2, objects, TRUE, 1000);
   EXPECT_EQ(WAIT_OBJECT_0, result);
 
@@ -1990,18 +1994,17 @@ namespace {
 // Inject a test point for recording the destructor calls for Closure objects
 // send to MessageLoop::PostTask(). It is awkward usage since we are trying to
 // hook the actual destruction, which is not a common operation.
-class DestructionObserverProbe :
-  public RefCounted<DestructionObserverProbe> {
+class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
  public:
   DestructionObserverProbe(bool* task_destroyed,
                            bool* destruction_observer_called)
       : task_destroyed_(task_destroyed),
-        destruction_observer_called_(destruction_observer_called) {
-  }
+        destruction_observer_called_(destruction_observer_called) {}
   virtual void Run() {
     // This task should never run.
     ADD_FAILURE();
   }
+
  private:
   friend class RefCounted<DestructionObserverProbe>;
 
@@ -2019,8 +2022,7 @@ class MLDestructionObserver : public MessageLoopCurrent::DestructionObserver {
   MLDestructionObserver(bool* task_destroyed, bool* destruction_observer_called)
       : task_destroyed_(task_destroyed),
         destruction_observer_called_(destruction_observer_called),
-        task_destroyed_before_message_loop_(false) {
-  }
+        task_destroyed_before_message_loop_(false) {}
   void WillDestroyCurrentMessageLoop() override {
     task_destroyed_before_message_loop_ = *task_destroyed_;
     *destruction_observer_called_ = true;
@@ -2028,6 +2030,7 @@ class MLDestructionObserver : public MessageLoopCurrent::DestructionObserver {
   bool task_destroyed_before_message_loop() const {
     return task_destroyed_before_message_loop_;
   }
+
  private:
   bool* task_destroyed_;
   bool* destruction_observer_called_;
@@ -2059,7 +2062,6 @@ TEST_F(MessageLoopTest, DestructionObserverTest) {
   EXPECT_TRUE(task_destroyed);
   EXPECT_TRUE(destruction_observer_called);
 }
-
 
 // Verify that MessageLoop sets ThreadMainTaskRunner::current() and it
 // posts tasks on that message loop.
@@ -2112,47 +2114,50 @@ void EndTest(bool* did_run, HWND hwnd) {
 
 int kMyMessageFilterCode = 0x5002;
 
-LRESULT CALLBACK TestWndProcThunk(HWND hwnd, UINT message,
-                                  WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK TestWndProcThunk(HWND hwnd,
+                                  UINT message,
+                                  WPARAM wparam,
+                                  LPARAM lparam) {
   if (message == WM_CLOSE)
     EXPECT_TRUE(DestroyWindow(hwnd));
   if (message != kSignalMsg)
     return DefWindowProc(hwnd, message, wparam, lparam);
 
   switch (lparam) {
-  case 1:
-    // First, we post a task that will post multiple no-op tasks to make sure
-    // that the pump's incoming task queue does not become empty during the
-    // test.
-    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                            base::BindOnce(&PostMultipleTasks));
-    // Next, we post a task that posts a windows message to trigger the second
-    // stage of the test.
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&PostWindowsMessage, hwnd));
-    break;
-  case 2:
-    // Since we're about to enter a modal loop, tell the message loop that we
-    // intend to nest tasks.
-    MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
-    bool did_run = false;
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&EndTest, &did_run, hwnd));
-    // Run a nested windows-style message loop and verify that our task runs. If
-    // it doesn't, then we'll loop here until the test times out.
-    MSG msg;
-    while (GetMessage(&msg, 0, 0, 0)) {
-      if (!CallMsgFilter(&msg, kMyMessageFilterCode))
-        DispatchMessage(&msg);
-      // If this message is a WM_CLOSE, explicitly exit the modal loop. Posting
-      // a WM_QUIT should handle this, but unfortunately MessagePumpWin eats
-      // WM_QUIT messages even when running inside a modal loop.
-      if (msg.message == WM_CLOSE)
-        break;
-    }
-    EXPECT_TRUE(did_run);
-    RunLoop::QuitCurrentWhenIdleDeprecated();
-    break;
+    case 1:
+      // First, we post a task that will post multiple no-op tasks to make sure
+      // that the pump's incoming task queue does not become empty during the
+      // test.
+      ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&PostMultipleTasks));
+      // Next, we post a task that posts a windows message to trigger the second
+      // stage of the test.
+      ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&PostWindowsMessage, hwnd));
+      break;
+    case 2:
+      // Since we're about to enter a modal loop, tell the message loop that we
+      // intend to nest tasks.
+      MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
+      bool did_run = false;
+      ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&EndTest, &did_run, hwnd));
+      // Run a nested windows-style message loop and verify that our task runs.
+      // If it doesn't, then we'll loop here until the test times out.
+      MSG msg;
+      while (GetMessage(&msg, 0, 0, 0)) {
+        if (!CallMsgFilter(&msg, kMyMessageFilterCode))
+          DispatchMessage(&msg);
+        // If this message is a WM_CLOSE, explicitly exit the modal loop.
+        // Posting a WM_QUIT should handle this, but unfortunately
+        // MessagePumpWin eats WM_QUIT messages even when running inside a modal
+        // loop.
+        if (msg.message == WM_CLOSE)
+          break;
+      }
+      EXPECT_TRUE(did_run);
+      RunLoop::QuitCurrentWhenIdleDeprecated();
+      break;
   }
   return 0;
 }

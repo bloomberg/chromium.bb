@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -56,7 +57,7 @@ class ScheduleWorkTest : public testing::Test {
     uint64_t schedule_calls = 0u;
     do {
       for (size_t i = 0; i < kBatchSize; ++i) {
-        target_message_loop()->ScheduleWork();
+        target_message_loop()->impl_for_testing()->ScheduleWork();
         schedule_calls++;
       }
       now = base::TimeTicks::Now();
