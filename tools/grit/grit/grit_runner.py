@@ -211,7 +211,12 @@ def Main(args):
     return 0
   else:
     options = Options()
-    args = options.ReadOptions(args)  # args may be shorter after this
+    try:
+      args = options.ReadOptions(args)  # args may be shorter after this
+    except getopt.GetoptError as e:
+      print "grit:", str(e)
+      print "Try running 'grit help' for valid options."
+      return 1
     if not args:
       print "No tool provided.  Try running 'grit help' for a list of tools."
       return 2
@@ -237,13 +242,18 @@ def Main(args):
     if options.hash:
       grit.extern.FP.UseUnsignedFingerPrintFromModule(options.hash)
 
-    toolobject = _GetToolInfo(tool)[_FACTORY]()
-    if options.profile_dest:
-      import hotshot
-      prof = hotshot.Profile(options.profile_dest)
-      return prof.runcall(toolobject.Run, options, args[1:])
-    else:
-      return toolobject.Run(options, args[1:])
+    try:
+      toolobject = _GetToolInfo(tool)[_FACTORY]()
+      if options.profile_dest:
+        import hotshot
+        prof = hotshot.Profile(options.profile_dest)
+        return prof.runcall(toolobject.Run, options, args[1:])
+      else:
+        return toolobject.Run(options, args[1:])
+    except getopt.GetoptError as e:
+      print "grit: %s: %s" % (tool, str(e))
+      print "Try running 'grit help %s' for valid options." % (tool,)
+      return 1
 
 
 if __name__ == '__main__':
