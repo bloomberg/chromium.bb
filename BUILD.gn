@@ -26,6 +26,7 @@ import("//ui/ozone/ozone.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
 import("//gpu/vulkan/features.gni")
+import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -934,8 +935,21 @@ if (!is_ios) {
   # and is useful for testing with the regular isolate mechanism.
   # To run the full layout test suite you need to use
   # :webkit_layout_tests_exparchive, above, instead.
-  group("webkit_layout_tests") {
-    testonly = true
+  generated_script_test("webkit_layout_tests") {
+    generator_script = "//testing/scripts/generators/gen_run_web_tests_script.py"
+    extra_args = []
+    if (is_debug) {
+      extra_args += [
+        "--build-type",
+        "debug",
+      ]
+    } else {
+      extra_args += [
+        "--build-type",
+        "release",
+      ]
+    }
+
     data_deps = [
       ":layout_test_data_mojo_bindings",
       ":layout_test_data_mojo_bindings_lite",
