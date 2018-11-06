@@ -108,6 +108,20 @@ class FakeAuthInstance : public mojom::AuthInstance {
     std::move(done_closure_).Run();
   }
 
+  void OnAccountUpdated(const std::string& account_name,
+                        mojom::AccountUpdateType update_type) override {
+    switch (update_type) {
+      case mojom::AccountUpdateType::UPSERT:
+        ++num_account_upserted_calls_;
+        last_upserted_account_ = account_name;
+        break;
+      case mojom::AccountUpdateType::REMOVAL:
+        ++num_account_removed_calls_;
+        last_removed_account_ = account_name;
+        break;
+    }
+  }
+
   void RequestAccountInfoDeprecated(base::OnceClosure done_closure) {
     done_closure_ = std::move(done_closure);
     host_->RequestAccountInfoDeprecated(true /* initial_signin */);
@@ -130,6 +144,11 @@ class FakeAuthInstance : public mojom::AuthInstance {
   mojom::AccountInfo* account_info() { return account_info_.get(); }
 
   mojom::ArcSignInStatus sign_in_status() const { return status_; }
+
+  int num_account_upserted_calls_ = 0;
+  std::string last_upserted_account_;
+  int num_account_removed_calls_ = 0;
+  std::string last_removed_account_;
 
  private:
   void OnAccountInfoResponse(base::OnceClosure done_closure,
@@ -455,6 +474,37 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
   EXPECT_FALSE(auth_instance().account_info());
   EXPECT_EQ(mojom::ArcSignInStatus::CHROME_SERVER_COMMUNICATION_ERROR,
             auth_instance().sign_in_status());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountUpsertsArePropagated) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(kSecondaryAccountGaiaId, kSecondaryAccountEmail);
+
+  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
+
+  chromeos::AccountManager::AccountKey account_key{
+      kSecondaryAccountGaiaId,
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  auth_service().OnTokenUpserted(account_key);
+
+  EXPECT_EQ(1, auth_instance().num_account_upserted_calls_);
+  EXPECT_EQ(kSecondaryAccountEmail, auth_instance().last_upserted_account_);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(kSecondaryAccountGaiaId, kSecondaryAccountEmail);
+
+  EXPECT_EQ(0, auth_instance().num_account_removed_calls_);
+
+  chromeos::AccountManager::AccountKey account_key{
+      kSecondaryAccountGaiaId,
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  auth_service().OnAccountRemoved(account_key);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, auth_instance().num_account_removed_calls_);
+  EXPECT_EQ(kSecondaryAccountEmail, auth_instance().last_removed_account_);
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {

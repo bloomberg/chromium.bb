@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/arc/common/auth.mojom.h"
@@ -42,7 +43,8 @@ class ArcFetcherBase;
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
-                       public chromeos::AccountManager::Observer {
+                       public chromeos::AccountManager::Observer,
+                       public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -56,6 +58,7 @@ class ArcAuthService : public KeyedService,
   static const char kArcServiceName[];
 
   // ConnectionObserver<mojom::AuthInstance>:
+  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // mojom::AuthHost:
@@ -81,6 +84,9 @@ class ArcAuthService : public KeyedService,
       const chromeos::AccountManager::AccountKey& account_key) override;
   void OnAccountRemoved(
       const chromeos::AccountManager::AccountKey& account_key) override;
+
+  // ArcSessionManager::Observer:
+  void OnArcInitialStart() override;
 
   void SkipMergeSessionForTesting();
 
@@ -149,7 +155,7 @@ class ArcAuthService : public KeyedService,
 
   // Creates an |ArcBackgroundAuthCodeFetcher| for |account_id|. Can be used for
   // Device Account and Secondary Accounts. |initial_signin| denotes whether the
-  // fetcher is being created for the initial ARC++ provisioning flow or for a
+  // fetcher is being created for the initial ARC provisioning flow or for a
   // subsequent sign-in.
   std::unique_ptr<ArcBackgroundAuthCodeFetcher>
   CreateArcBackgroundAuthCodeFetcher(const std::string& account_id,
@@ -158,6 +164,9 @@ class ArcAuthService : public KeyedService,
   // Deletes a completed enrollment token / auth code fetch request from
   // |pending_token_requests_|.
   void DeletePendingTokenRequest(ArcFetcherBase* fetcher);
+
+  // Triggers an async push of the accounts in Chrome OS Account Manager to ARC.
+  void TriggerAccountsPushToArc();
 
   // Non-owning pointers.
   Profile* const profile_;

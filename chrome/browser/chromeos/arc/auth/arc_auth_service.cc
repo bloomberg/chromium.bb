@@ -184,6 +184,8 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
   arc_bridge_service_->auth()->SetHost(this);
   arc_bridge_service_->auth()->AddObserver(this);
 
+  ArcSessionManager::Get()->AddObserver(this);
+
   if (chromeos::switches::IsAccountManagerEnabled()) {
     // TODO(sinhak): This will need to be independent of Profile, when
     // Multi-Profile on Chrome OS is launched.
@@ -198,8 +200,20 @@ ArcAuthService::~ArcAuthService() {
   if (chromeos::switches::IsAccountManagerEnabled())
     account_manager_->RemoveObserver(this);
 
+  ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->auth()->RemoveObserver(this);
   arc_bridge_service_->auth()->SetHost(nullptr);
+}
+
+void ArcAuthService::OnConnectionReady() {
+  // |TriggerAccountsPushToArc()| will not be triggered for the first session,
+  // when ARC has not been provisioned yet. For the first session, an account
+  // push will be triggered by |OnArcInitialStart()|, after a successful device
+  // provisioning.
+  // For the second and subsequent sessions,
+  // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
+  if (arc::IsArcProvisioned(profile_))
+    TriggerAccountsPushToArc();
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -410,16 +424,44 @@ void ArcAuthService::OnTokenUpserted(
     const chromeos::AccountManager::AccountKey& account_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(sinhak): Implement sending notifications to ARC++.
-  NOTREACHED();
+  // Ignore the update if ARC has not been provisioned yet.
+  if (!arc::IsArcProvisioned(profile_))
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               OnAccountUpdated);
+  if (!instance)
+    return;
+
+  const std::string account_name =
+      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
+  DCHECK(!account_name.empty());
+  instance->OnAccountUpdated(account_name, mojom::AccountUpdateType::UPSERT);
 }
 
 void ArcAuthService::OnAccountRemoved(
     const chromeos::AccountManager::AccountKey& account_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(sinhak): Implement sending notifications to ARC++.
-  NOTREACHED();
+  DCHECK(!IsPrimaryAccount(account_key));
+
+  // Ignore the update if ARC has not been provisioned yet.
+  if (!arc::IsArcProvisioned(profile_))
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               OnAccountUpdated);
+  if (!instance)
+    return;
+
+  const std::string account_name =
+      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
+  DCHECK(!account_name.empty());
+  instance->OnAccountUpdated(account_name, mojom::AccountUpdateType::REMOVAL);
+}
+
+void ArcAuthService::OnArcInitialStart() {
+  TriggerAccountsPushToArc();
 }
 
 void ArcAuthService::OnActiveDirectoryEnrollmentTokenFetched(
@@ -595,6 +637,15 @@ ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
 
 void ArcAuthService::SkipMergeSessionForTesting() {
   skip_merge_session_for_testing_ = true;
+}
+
+void ArcAuthService::TriggerAccountsPushToArc() {
+  if (!chromeos::switches::IsAccountManagerEnabled())
+    return;
+
+  DCHECK(account_manager_);
+  account_manager_->GetAccounts(base::BindOnce(&ArcAuthService::OnGetAccounts,
+                                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace arc
