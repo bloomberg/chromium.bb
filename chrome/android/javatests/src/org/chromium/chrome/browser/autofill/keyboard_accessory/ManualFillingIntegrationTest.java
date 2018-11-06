@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +46,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.test.util.UiRestriction;
@@ -61,6 +61,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * passwords.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
+        // TODO(crbug.com/894428): Remove and use the embedded test server instead of data urls.
+        ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManualFillingIntegrationTest {
     @Rule
@@ -68,13 +71,6 @@ public class ManualFillingIntegrationTest {
             new ChromeTabbedActivityTestRule();
 
     private final ManualFillingTestHelper mHelper = new ManualFillingTestHelper(mActivityTestRule);
-
-    @Before
-    public void setUp() throws Exception {
-        // TODO(crbug.com/894428) - fix this suite to use the embedded test server instead of
-        // data urls.
-        Features.getInstance().enable(ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION);
-    }
 
     @After
     public void tearDown() {
