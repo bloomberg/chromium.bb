@@ -29,6 +29,7 @@ component("webrtc") {
   deps = [
     "//base",
     "//third_party/webrtc/modules/audio_processing",
+    "//third_party/webrtc/modules/audio_processing:api",
     "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
     "//third_party/webrtc_overrides:init_webrtc",
   ]
