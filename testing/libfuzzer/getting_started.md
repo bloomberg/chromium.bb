@@ -115,8 +115,8 @@ Alternatively, you can set `external_symbolizer_path` option via
 `ASAN_OPTIONS` env variable:
 
 ```bash
-$ ASAN_OPTIONS=external_symbolizer_path=/my/local/llvm/build/llvm-symbolizer \
-    ./fuzzer ./crash-input
+ASAN_OPTIONS=external_symbolizer_path=/my/local/llvm/build/llvm-symbolizer \
+  ./fuzzer ./crash-input
 ```
 
 The same approach works with other sanitizers (e.g. `MSAN_OPTIONS`,

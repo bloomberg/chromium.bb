@@ -36,7 +36,7 @@ running:
 |Linux MSan \[[*](#MSan)\] | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux MSan' out/Directory` |
 |Linux UBSan \[[*](#UBSan)\]| `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux UBSan' out/Directory` |
 |Mac ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Mac ASan' out/Directory` |
-|Windows ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Windows ASan' out/Directory` |
+|Windows ASan | `tools/mb/mb.py gen -m chromium.fyi -b "Libfuzzer Upload Windows ASan" out/Directory` |
 
 
 ### Linux
