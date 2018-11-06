@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/events/resource_progress_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 

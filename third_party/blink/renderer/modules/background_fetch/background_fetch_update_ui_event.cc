@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_ui_options.h"
-#include "third_party/blink/renderer/modules/event_modules_names.h"
+#include "third_party/blink/renderer/modules/event_interface_modules_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 
 namespace blink {

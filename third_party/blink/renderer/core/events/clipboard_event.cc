@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/events/clipboard_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
+
 namespace blink {
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,

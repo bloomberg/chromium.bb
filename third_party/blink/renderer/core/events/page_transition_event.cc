@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 

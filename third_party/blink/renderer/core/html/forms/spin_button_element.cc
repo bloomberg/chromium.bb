@@ -28,6 +28,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"

@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
 

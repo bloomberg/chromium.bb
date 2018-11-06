@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 
 namespace blink {
