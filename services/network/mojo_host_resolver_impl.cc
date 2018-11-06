@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/mojo_host_resolver_impl.h"
+#include "services/network/mojo_host_resolver_impl.h"
 
 #include <utility>
 
@@ -11,7 +11,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/dns/host_resolver.h"
 
-namespace net {
+namespace network {
 
 // Handles host resolution for a single request and sends a response when done.
 // Also detects connection errors for HostResolverRequestClient and cancels the
@@ -21,8 +21,8 @@ class MojoHostResolverImpl::Job {
   Job(MojoHostResolverImpl* resolver_service,
       net::HostResolver* resolver,
       const net::HostResolver::RequestInfo& request_info,
-      const NetLogWithSource& net_log,
-      interfaces::HostResolverRequestClientPtr client);
+      const net::NetLogWithSource& net_log,
+      proxy_resolver::mojom::HostResolverRequestClientPtr client);
   ~Job();
 
   void set_iter(std::list<Job>::iterator iter) { iter_ = iter; }
@@ -42,15 +42,15 @@ class MojoHostResolverImpl::Job {
   std::list<Job>::iterator iter_;
   net::HostResolver* resolver_;
   net::HostResolver::RequestInfo request_info_;
-  const NetLogWithSource net_log_;
-  interfaces::HostResolverRequestClientPtr client_;
+  const net::NetLogWithSource net_log_;
+  proxy_resolver::mojom::HostResolverRequestClientPtr client_;
   std::unique_ptr<net::HostResolver::Request> request_;
-  AddressList result_;
+  net::AddressList result_;
   base::ThreadChecker thread_checker_;
 };
 
 MojoHostResolverImpl::MojoHostResolverImpl(net::HostResolver* resolver,
-                                           const NetLogWithSource& net_log)
+                                           const net::NetLogWithSource& net_log)
     : resolver_(resolver), net_log_(net_log) {}
 
 MojoHostResolverImpl::~MojoHostResolverImpl() {
@@ -58,14 +58,14 @@ MojoHostResolverImpl::~MojoHostResolverImpl() {
 }
 
 void MojoHostResolverImpl::Resolve(
-    std::unique_ptr<HostResolver::RequestInfo> request_info,
-    interfaces::HostResolverRequestClientPtr client) {
+    std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+    proxy_resolver::mojom::HostResolverRequestClientPtr client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (request_info->is_my_ip_address()) {
     // The proxy resolver running inside a sandbox may not be able to get the
     // correct host name. Instead, fill it ourself if the request is for our own
     // IP address.
-    request_info->set_host_port_pair(HostPortPair(GetHostName(), 80));
+    request_info->set_host_port_pair(net::HostPortPair(net::GetHostName(), 80));
   }
 
   pending_jobs_.emplace_front(this, resolver_, *request_info, net_log_,
@@ -84,8 +84,8 @@ MojoHostResolverImpl::Job::Job(
     MojoHostResolverImpl* resolver_service,
     net::HostResolver* resolver,
     const net::HostResolver::RequestInfo& request_info,
-    const NetLogWithSource& net_log,
-    interfaces::HostResolverRequestClientPtr client)
+    const net::NetLogWithSource& net_log,
+    proxy_resolver::mojom::HostResolverRequestClientPtr client)
     : resolver_service_(resolver_service),
       resolver_(resolver),
       request_info_(request_info),
@@ -101,12 +101,12 @@ void MojoHostResolverImpl::Job::Start() {
 
   DVLOG(1) << "Resolve " << request_info_.host_port_pair().ToString();
   int result =
-      resolver_->Resolve(request_info_, DEFAULT_PRIORITY, &result_,
+      resolver_->Resolve(request_info_, net::DEFAULT_PRIORITY, &result_,
                          base::Bind(&MojoHostResolverImpl::Job::OnResolveDone,
                                     base::Unretained(this)),
                          &request_, net_log_);
 
-  if (result != ERR_IO_PENDING)
+  if (result != net::ERR_IO_PENDING)
     OnResolveDone(result);
 }
 
@@ -134,4 +134,4 @@ void MojoHostResolverImpl::Job::OnConnectionError() {
   resolver_service_->DeleteJob(iter_);
 }
 
-}  // namespace net
+}  // namespace network
