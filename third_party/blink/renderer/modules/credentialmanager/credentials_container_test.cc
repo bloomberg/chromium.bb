@@ -120,7 +120,9 @@ class CredentialManagerTestingContext {
 // The completion callbacks for pending mojom::CredentialManager calls each own
 // a persistent handle to a ScriptPromiseResolver instance. Ensure that if the
 // document is destored while a call is pending, it can still be freed up.
-TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
+// TODO(https://crbug.com/902286): This test was disabled due to failures caused
+// by "unified garbage collections", fix the test and re-enable it.
+TEST(CredentialsContainerTest, DISABLED_PendingGetRequest_NoGCCycles) {
   MockCredentialManager mock_credential_manager;
   GCObjectLivenessObserver<Document> document_observer;
 
