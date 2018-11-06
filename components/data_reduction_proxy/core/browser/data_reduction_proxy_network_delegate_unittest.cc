@@ -398,7 +398,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         io_data()->test_request_options()->GetHeaderValueForTesting().empty());
 
     std::string suffix =
-        std::string("Chrome-Proxy: ") +
+        std::string("chrome-proxy: ") +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         std::string("\r\n\r\n");
 
@@ -596,7 +596,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                              "\r\n";
 
     std::string suffix_headers =
-        std::string("Chrome-Proxy: ") +
+        std::string("chrome-proxy: ") +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         std::string("\r\n\r\n");
 
@@ -709,7 +709,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         "keep-alive\r\nUser-Agent: \r\nAccept-Encoding: gzip, "
         "deflate\r\nAccept-Language: en-us,fr\r\n"
         "chrome-proxy-ect: Unknown\r\n"
-        "Chrome-Proxy: " +
+        "chrome-proxy: " +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         (page_id_value.empty() ? "" : (", " + page_id_value)) + "\r\n\r\n";
 
@@ -1776,7 +1776,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "Chrome-Proxy: ofcl=200\r\n"
+      "chrome-proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Content-Encoding: br\r\n"
       "Vary: accept-encoding\r\n";

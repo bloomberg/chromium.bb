@@ -129,33 +129,44 @@ void DataReductionProxyRequestOptions::AddServerExperimentFromFieldTrial() {
     experiments_.push_back(server_experiment);
 }
 
+void DataReductionProxyRequestOptions::AddPageIDRequestHeader(
+    net::HttpRequestHeaders* request_headers,
+    uint64_t page_id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::string header_value;
+  if (request_headers->HasHeader(chrome_proxy_header())) {
+    request_headers->GetHeader(chrome_proxy_header(), &header_value);
+    request_headers->RemoveHeader(chrome_proxy_header());
+    header_value += ", ";
+  }
+  // 64 bit uint fits in 17 characters when represented in hexadecimal,
+  // including trailing null terminated character.
+  char page_id_buffer[17];
+  if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id) > 0) {
+    header_value += FormatOption(kPageIdOption, page_id_buffer);
+  }
+  uint64_t page_id_tested;
+  DCHECK(base::HexStringToUInt64(page_id_buffer, &page_id_tested) &&
+         page_id_tested == page_id);
+  ALLOW_UNUSED_LOCAL(page_id_tested);
+  request_headers->SetHeader(chrome_proxy_header(), header_value);
+}
+
 void DataReductionProxyRequestOptions::AddRequestHeader(
     net::HttpRequestHeaders* request_headers,
     base::Optional<uint64_t> page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!page_id || page_id.value() > 0u);
-  const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
-  if (request_headers->HasHeader(kChromeProxyHeader)) {
-    request_headers->GetHeader(kChromeProxyHeader, &header_value);
-    request_headers->RemoveHeader(kChromeProxyHeader);
+  if (request_headers->HasHeader(chrome_proxy_header())) {
+    request_headers->GetHeader(chrome_proxy_header(), &header_value);
+    request_headers->RemoveHeader(chrome_proxy_header());
     header_value += ", ";
   }
-  header_value += header_value_;
-
-  if (page_id) {
-    // 64 bit uint fits in 16 characters when represented in hexadecimal, but
-    // there needs to be a trailing null termianted character in the buffer.
-    char page_id_buffer[17];
-    if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id.value()) > 0) {
-      header_value += ", " + FormatOption(kPageIdOption, page_id_buffer);
-    }
-    uint64_t page_id_tested;
-    DCHECK(base::HexStringToUInt64(page_id_buffer, &page_id_tested) &&
-           page_id_tested == page_id.value());
-    ALLOW_UNUSED_LOCAL(page_id_tested);
-  }
-  request_headers->SetHeader(kChromeProxyHeader, header_value);
+  request_headers->SetHeader(chrome_proxy_header(),
+                             header_value + header_value_);
+  if (page_id)
+    AddPageIDRequestHeader(request_headers, page_id.value());
 }
 
 void DataReductionProxyRequestOptions::UpdateCredentials() {
