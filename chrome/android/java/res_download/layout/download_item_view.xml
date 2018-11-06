@@ -15,7 +15,7 @@
             android:id="@+id/layout_container"
             style="@style/ListItemContainer" >
 
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/icon_view"
             style="@style/DownloadIconView"
             app:tint="@color/dark_mode_tint" />
@@ -91,7 +91,7 @@
                     android:layout_below="@+id/download_progress_view"
                     android:textAlignment="viewEnd" />
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                     android:id="@+id/pause_button"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -104,7 +104,7 @@
                     android:src="@drawable/ic_pause_white_24dp"
                     app:tint="@color/default_icon_color" />
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                     android:id="@+id/cancel_button"
                     android:layout_width="48dp"
                     android:layout_height="48dp"

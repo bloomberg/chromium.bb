@@ -9,7 +9,6 @@ import android.content.res.ColorStateList;
 import android.support.annotation.StringRes;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -17,11 +16,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * Button for creating new tabs.
  */
-public class NewTabButton extends AppCompatImageButton {
+public class NewTabButton extends ChromeImageButton {
     private final ColorStateList mLightModeTint;
     private final ColorStateList mDarkModeTint;
     private boolean mIsIncognito;

@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
@@ -34,11 +34,11 @@ public class BottomToolbarViewBinder
         /** A handle to the composited bottom toolbar layer. */
         public ScrollingBottomViewSceneLayer sceneLayer;
 
-        /** Cached {@link android.support.v7.widget.AppCompatImageButton} of the first button. */
-        public final AppCompatImageButton firstImageButton;
+        /** Cached {@link ImageButton} of the first button. */
+        public final ImageButton firstImageButton;
 
-        /** Cached {@link android.support.v7.widget.AppCompatImageButton} of the second button. */
-        public final AppCompatImageButton secondImageButton;
+        /** Cached {@link ImageButton} of the second button. */
+        public final ImageButton secondImageButton;
 
         /**
          * @param toolbarRootView The Android View based toolbar.
@@ -110,7 +110,7 @@ public class BottomToolbarViewBinder
     }
 
     private static void updateButton(
-            AppCompatImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
+            ImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
         if (buttonData == null) {
             ToolbarButtonData.clearButton(button);
         } else {
@@ -119,7 +119,7 @@ public class BottomToolbarViewBinder
     }
 
     private static void updateButtonDrawable(
-            AppCompatImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
+            ImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
         if (buttonData != null) buttonData.updateButtonDrawable(button, useLightIcons);
     }
 }

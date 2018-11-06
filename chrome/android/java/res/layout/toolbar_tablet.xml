@@ -30,14 +30,14 @@
             android:visibility="gone"
             app:tint="@color/dark_mode_tint" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
             app:tint="@color/dark_mode_tint" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
@@ -45,7 +45,7 @@
             app:tint="@color/dark_mode_tint" />
 
         <!-- The src will be set in onFinishInflate. -->
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
             style="@style/ToolbarButton"
             android:contentDescription="@string/accessibility_btn_refresh"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/menu_button_wrapper" >
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                 android:id="@+id/menu_button"
                 style="@style/ToolbarMenuButtonTablet"
                 android:src="@drawable/ic_more_vert_black_24dp"

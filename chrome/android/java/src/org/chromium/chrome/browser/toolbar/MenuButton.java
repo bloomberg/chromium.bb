@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.toolbar;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -21,8 +21,8 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
  * The overflow menu button.
  */
 class MenuButton extends FrameLayout {
-    /** The {@link android.support.v7.widget.AppCompatImageButton} for the menu button. */
-    private AppCompatImageButton mMenuImageButton;
+    /** The {@link ImageButton} for the menu button. */
+    private ImageButton mMenuImageButton;
 
     /** The view for the update badge. */
     private ImageView mUpdateBadgeView;
@@ -140,7 +140,7 @@ class MenuButton extends FrameLayout {
         }
     }
 
-    AppCompatImageButton getImageButton() {
+    ImageButton getImageButton() {
         return mMenuImageButton;
     }
 

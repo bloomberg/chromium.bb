@@ -14,7 +14,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,13 +49,13 @@ public class ToolbarTablet
     // The number of toolbar buttons that can be hidden at small widths (reload, back, forward).
     public static final int HIDEABLE_BUTTON_COUNT = 3;
 
-    private AppCompatImageButton mHomeButton;
-    private AppCompatImageButton mBackButton;
-    private AppCompatImageButton mForwardButton;
-    private AppCompatImageButton mReloadButton;
-    private AppCompatImageButton mBookmarkButton;
-    private AppCompatImageButton mSaveOfflineButton;
-    private AppCompatImageButton mSecurityButton;
+    private ImageButton mHomeButton;
+    private ImageButton mBackButton;
+    private ImageButton mForwardButton;
+    private ImageButton mReloadButton;
+    private ImageButton mBookmarkButton;
+    private ImageButton mSaveOfflineButton;
+    private ImageButton mSecurityButton;
     private ImageButton mAccessibilitySwitcherButton;
 
     private OnClickListener mBookmarkListener;
@@ -66,7 +65,7 @@ public class ToolbarTablet
 
     private boolean mShowTabStack;
     private boolean mToolbarButtonsVisible;
-    private AppCompatImageButton[] mToolbarButtons;
+    private ImageButton[] mToolbarButtons;
 
     private NavigationPopup mNavigationPopup;
 
@@ -101,11 +100,11 @@ public class ToolbarTablet
         super.onFinishInflate();
         mLocationBar = (LocationBarTablet) findViewById(R.id.location_bar);
 
-        mHomeButton = (AppCompatImageButton) findViewById(R.id.home_button);
+        mHomeButton = findViewById(R.id.home_button);
         changeIconToNTPIcon(mHomeButton);
-        mBackButton = (AppCompatImageButton) findViewById(R.id.back_button);
-        mForwardButton = (AppCompatImageButton) findViewById(R.id.forward_button);
-        mReloadButton = (AppCompatImageButton) findViewById(R.id.refresh_button);
+        mBackButton = findViewById(R.id.back_button);
+        mForwardButton = findViewById(R.id.forward_button);
+        mReloadButton = findViewById(R.id.refresh_button);
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
         // See https://crbug.com/891593 for details.
         Drawable reloadIcon =
@@ -113,7 +112,7 @@ public class ToolbarTablet
         DrawableCompat.setTintList(reloadIcon,
                 AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint));
         mReloadButton.setImageDrawable(reloadIcon);
-        mSecurityButton = (AppCompatImageButton) findViewById(R.id.security_button);
+        mSecurityButton = findViewById(R.id.security_button);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
 
@@ -126,7 +125,7 @@ public class ToolbarTablet
         mAccessibilitySwitcherButton.setImageDrawable(mTabSwitcherButtonDrawable);
         updateSwitcherButtonVisibility(mShowTabStack);
 
-        mBookmarkButton = (AppCompatImageButton) findViewById(R.id.bookmark_button);
+        mBookmarkButton = findViewById(R.id.bookmark_button);
 
         final View menuButtonWrapper = getMenuButtonWrapper();
         menuButtonWrapper.setVisibility(View.VISIBLE);
@@ -137,13 +136,13 @@ public class ToolbarTablet
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
 
-        mSaveOfflineButton = (AppCompatImageButton) findViewById(R.id.save_offline_button);
+        mSaveOfflineButton = findViewById(R.id.save_offline_button);
 
         // Initialize values needed for showing/hiding toolbar buttons when the activity size
         // changes.
         mShouldAnimateButtonVisibilityChange = false;
         mToolbarButtonsVisible = true;
-        mToolbarButtons = new AppCompatImageButton[] {mBackButton, mForwardButton, mReloadButton};
+        mToolbarButtons = new ImageButton[] {mBackButton, mForwardButton, mReloadButton};
     }
 
     @Override
@@ -616,7 +615,7 @@ public class ToolbarTablet
         if (mShouldAnimateButtonVisibilityChange) {
             runToolbarButtonsVisibilityAnimation(visible);
         } else {
-            for (AppCompatImageButton button : mToolbarButtons) {
+            for (ImageButton button : mToolbarButtons) {
                 button.setVisibility(visible ? View.VISIBLE : View.GONE);
             }
             mLocationBar.setShouldShowButtonsWhenUnfocused(visible);
@@ -658,7 +657,7 @@ public class ToolbarTablet
         Collection<Animator> animators = new ArrayList<>();
 
         // Create animators for all of the toolbar buttons.
-        for (AppCompatImageButton button : mToolbarButtons) {
+        for (ImageButton button : mToolbarButtons) {
             animators.add(mLocationBar.createShowButtonAnimator(button));
         }
 
@@ -672,7 +671,7 @@ public class ToolbarTablet
         set.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                for (AppCompatImageButton button : mToolbarButtons) {
+                for (ImageButton button : mToolbarButtons) {
                     button.setVisibility(View.VISIBLE);
                 }
                 // Set the padding at the start of the animation so the toolbar buttons don't jump
@@ -693,7 +692,7 @@ public class ToolbarTablet
         Collection<Animator> animators = new ArrayList<>();
 
         // Create animators for all of the toolbar buttons.
-        for (AppCompatImageButton button : mToolbarButtons) {
+        for (ImageButton button : mToolbarButtons) {
             animators.add(mLocationBar.createHideButtonAnimator(button));
         }
 
@@ -710,7 +709,7 @@ public class ToolbarTablet
                 // Only set end visibility and alpha if the animation is ending because it's
                 // completely finished and not because it was canceled.
                 if (mToolbarButtons[0].getAlpha() == 0.f) {
-                    for (AppCompatImageButton button : mToolbarButtons) {
+                    for (ImageButton button : mToolbarButtons) {
                         button.setVisibility(View.GONE);
                         button.setAlpha(1.f);
                     }

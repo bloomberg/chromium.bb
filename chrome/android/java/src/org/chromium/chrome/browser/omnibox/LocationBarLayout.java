@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -23,6 +22,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -73,8 +73,8 @@ public class LocationBarLayout extends FrameLayout
                    LocationBarVoiceRecognitionHandler.Delegate, StatusViewCoordinator.Delegate {
     private static final String TAG = "cr_LocationBar";
 
-    protected AppCompatImageButton mDeleteButton;
-    protected AppCompatImageButton mMicButton;
+    protected ImageButton mDeleteButton;
+    protected ImageButton mMicButton;
     protected View mUrlBar;
     private final boolean mIsTablet;
 
@@ -153,7 +153,7 @@ public class LocationBarLayout extends FrameLayout
 
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
 
-        mDeleteButton = (AppCompatImageButton) findViewById(R.id.delete_button);
+        mDeleteButton = findViewById(R.id.delete_button);
 
         mUrlBar = findViewById(R.id.url_bar);
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
@@ -191,7 +191,7 @@ public class LocationBarLayout extends FrameLayout
         addUrlFocusChangeListener(mAutocompleteCoordinator);
         mUrlCoordinator.setUrlTextChangeListener(mAutocompleteCoordinator);
 
-        mMicButton = (AppCompatImageButton) findViewById(R.id.mic_button);
+        mMicButton = findViewById(R.id.mic_button);
 
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 

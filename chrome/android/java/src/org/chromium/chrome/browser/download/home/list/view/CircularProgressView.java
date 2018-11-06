@@ -10,13 +10,13 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.download.R;
+import org.chromium.ui.widget.ChromeImageButton;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,7 +31,7 @@ import java.lang.annotation.RetentionPolicy;
  * The indeterminate and determinate {@link Drawable}s support {@link Animatable} drawables and the
  * animation will be started/stopped when shown/hidden respectively.
  */
-public class CircularProgressView extends AppCompatImageButton {
+public class CircularProgressView extends ChromeImageButton {
     /**
      * The value to use with {@link #setProgress(int)} to specify that the indeterminate
      * {@link Drawable} should be used.

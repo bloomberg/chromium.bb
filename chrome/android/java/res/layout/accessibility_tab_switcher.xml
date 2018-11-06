@@ -54,7 +54,7 @@
         android:id="@+id/button_wrapper"
         android:visibility="gone">
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/standard_tabs_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
             android:layout_gravity="center_vertical"
             android:background="#292929" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/incognito_tabs_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

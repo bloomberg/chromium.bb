@@ -15,8 +15,8 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -74,7 +74,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private final boolean mIsTablet;
     private final View mParentView;
     private final ImageView mNavigationButton;
-    private final AppCompatImageButton mSecurityButton;
+    private final ImageButton mSecurityButton;
     private final TextView mVerboseStatusTextView;
 
     private final float mUrlMinWidth;

@@ -13,9 +13,9 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -75,19 +75,19 @@ class ToolbarButtonSlotData {
         }
 
         /**
-         * @param imageButton The {@link AppCompatImageButton} this button data will fill.
+         * @param imageButton The {@link ImageButton} this button data will fill.
          * @param isLight Whether or not to use light mode.
          */
-        void updateButton(AppCompatImageButton imageButton, boolean isLight) {
+        void updateButton(ImageButton imageButton, boolean isLight) {
             imageButton.setOnClickListener(mOnClickListener);
             updateButtonDrawable(imageButton, isLight);
         }
 
         /**
-         * @param imageButton The {@link AppCompatImageButton} this button data will fill.
+         * @param imageButton The {@link ImageButton} this button data will fill.
          * @param isLight Whether or not to use light mode.
          */
-        void updateButtonDrawable(AppCompatImageButton imageButton, boolean isLight) {
+        void updateButtonDrawable(ImageButton imageButton, boolean isLight) {
             ObjectAnimator fadeOutAnim =
                     ObjectAnimator.ofFloat(imageButton, View.ALPHA, 1.0f, 0.0f);
             fadeOutAnim.setDuration(FADE_DURATION / 2);
@@ -124,7 +124,7 @@ class ToolbarButtonSlotData {
             animatorSet.start();
         }
 
-        static void clearButton(AppCompatImageButton button) {
+        static void clearButton(ImageButton button) {
             ToolbarButtonData emptyButtonData =
                     new ToolbarButtonData(null, "", "", null, button.getContext());
             emptyButtonData.updateButton(button, false);

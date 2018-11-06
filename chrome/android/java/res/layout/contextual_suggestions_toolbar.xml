@@ -48,7 +48,7 @@
             app:tint="@color/dark_mode_tint"
             tools:ignore="ContentDescription" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/close_button"
             android:layout_height="match_parent"
             android:layout_width="@dimen/contextual_suggestions_toolbar_icon_size"
