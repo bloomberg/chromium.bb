@@ -747,6 +747,8 @@ def main(args):
 
   debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
   if debug_temp_resources_dir:
+    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
+                                            os.path.basename(options.apk_path))
     build_utils.DeleteDirectory(debug_temp_resources_dir)
     build_utils.MakeDirectory(debug_temp_resources_dir)
 
