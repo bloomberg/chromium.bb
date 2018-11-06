@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -348,7 +349,9 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       unpremultiply_and_dither_low_bit_depth_tiles_(
           unpremultiply_and_dither_low_bit_depth_tiles),
       enable_oop_rasterization_(enable_oop_rasterization),
-      raster_metric_frequency_(raster_metric_frequency) {
+      raster_metric_frequency_(raster_metric_frequency),
+      random_generator_(base::RandUint64()),
+      uniform_distribution_(1, raster_metric_frequency) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
 }
@@ -500,12 +503,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 
-  raster_tasks_count_++;
-  bool measure_raster_metric = false;
-  if (raster_tasks_count_ == raster_metric_frequency_) {
-    measure_raster_metric = true;
-    raster_tasks_count_ = 0;
-  }
+  const bool measure_raster_metric =
+      uniform_distribution_(random_generator_) == raster_metric_frequency_;
 
   gfx::Rect playback_rect = raster_full_rect;
   if (resource_has_previous_content) {
