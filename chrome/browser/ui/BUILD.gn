@@ -1689,8 +1689,6 @@ jumbo_split_static_library("ui") {
       "webui/settings/chromeos/device_storage_handler.h",
       "webui/settings/chromeos/device_stylus_handler.cc",
       "webui/settings/chromeos/device_stylus_handler.h",
-      "webui/settings/chromeos/easy_unlock_settings_handler.cc",
-      "webui/settings/chromeos/easy_unlock_settings_handler.h",
       "webui/settings/chromeos/fingerprint_handler.cc",
       "webui/settings/chromeos/fingerprint_handler.h",
       "webui/settings/chromeos/google_assistant_handler.cc",

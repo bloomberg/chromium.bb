@@ -93,7 +93,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
@@ -297,12 +296,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           password_protection_available);
 
 #if defined(OS_CHROMEOS)
-  chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =
-      chromeos::settings::EasyUnlockSettingsHandler::Create(html_source,
-                                                            profile);
-  if (easy_unlock_handler)
-    AddSettingsPageUIHandler(base::WrapUnique(easy_unlock_handler));
-
   AddSettingsPageUIHandler(base::WrapUnique(
       chromeos::settings::DateTimeHandler::Create(html_source)));
 

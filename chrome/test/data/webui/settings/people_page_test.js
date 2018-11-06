@@ -13,8 +13,6 @@ cr.define('settings_people_page', function() {
 
     suiteSetup(function() {
       loadTimeData.overrideValues({
-        // Force easy unlock off. Those have their own ChromeOS-only tests.
-        easyUnlockAllowed: false,
         // Force Dice off. Dice is tested in the DiceUITest suite.
         diceEnabled: false,
         // Force Unified Consent off. Unified Consent is tested in the
@@ -87,13 +85,6 @@ cr.define('settings_people_page', function() {
       let browserProxy = null;
       /** @type {settings.ProfileInfoBrowserProxy} */
       let profileInfoBrowserProxy = null;
-
-      suiteSetup(function() {
-        // Force easy unlock off. Those have their own ChromeOS-only tests.
-        loadTimeData.overrideValues({
-          easyUnlockAllowed: false,
-        });
-      });
 
       setup(function() {
         browserProxy = new TestSyncBrowserProxy();
