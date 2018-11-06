@@ -20,7 +20,8 @@
     ] Promise<MediaStream>
     getUserMedia(optional MediaStreamConstraints constraints);
     [
-      RuntimeEnabled = GetDisplayMedia, CallWith = ScriptState, RaisesException
+      RuntimeEnabled = GetDisplayMedia, CallWith = ScriptState, RaisesException,
+      MeasureAs = GetDisplayMedia
     ] Promise<MediaStream>
     getDisplayMedia(optional MediaStreamConstraints constraints);
 };
