@@ -97,22 +97,15 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   Destroy();
 }
 
-bool RenderWidgetHostViewMac::SynchronizeVisualProperties(
-    const base::Optional<viz::LocalSurfaceIdAllocation>&
-        child_local_surface_id_allocation) {
-  if (child_local_surface_id_allocation) {
-    browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
-        *child_local_surface_id_allocation);
-  } else {
-    browser_compositor_->AllocateNewRendererLocalSurfaceId();
-  }
-
+bool RenderWidgetHostViewMac::OnBrowserCompositorSurfaceIdChanged(
+    const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
+  browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
+      child_local_surface_id_allocation);
   if (auto* host = browser_compositor_->GetDelegatedFrameHost()) {
     host->EmbedSurface(browser_compositor_->GetRendererLocalSurfaceId(),
                        browser_compositor_->GetRendererSize(),
                        cc::DeadlinePolicy::UseDefaultDeadline());
   }
-
   return host()->SynchronizeVisualProperties();
 }
 
@@ -405,7 +398,7 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   // to send to the renderer, so it is required that BrowserCompositorMac be
   // updated first. Only notify RenderWidgetHostImpl of the update if any
   // properties it will query have changed.
-  if (browser_compositor_->UpdateNSViewAndDisplay(
+  if (browser_compositor_->UpdateSurfaceFromNSView(
           view_bounds_in_window_dip_.size(), display_)) {
     host()->NotifyScreenInfoChanged();
   }
@@ -822,7 +815,13 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  SynchronizeVisualProperties(base::nullopt);
+  browser_compositor_->AllocateNewRendererLocalSurfaceId();
+  if (auto* host = browser_compositor_->GetDelegatedFrameHost()) {
+    host->EmbedSurface(browser_compositor_->GetRendererLocalSurfaceId(),
+                       browser_compositor_->GetRendererSize(),
+                       cc::DeadlinePolicy::UseDefaultDeadline());
+  }
+  host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -836,7 +835,7 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
 
 void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
-  browser_compositor_->SynchronizeVisualProperties(
+  browser_compositor_->UpdateSurfaceFromChild(
       metadata.device_scale_factor, metadata.viewport_size_in_pixels,
       metadata.local_surface_id_allocation.value_or(
           viz::LocalSurfaceIdAllocation()));

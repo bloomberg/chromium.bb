@@ -34,8 +34,8 @@ class BrowserCompositorMacClient {
   virtual void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DestroyCompositorForShutdown() = 0;
-  virtual bool SynchronizeVisualProperties(
-      const base::Optional<viz::LocalSurfaceIdAllocation>&
+  virtual bool OnBrowserCompositorSurfaceIdChanged(
+      const viz::LocalSurfaceIdAllocation&
           child_local_surface_id_allocation) = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
@@ -82,12 +82,12 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // NSView. This will allocate a new SurfaceId if needed. This will return
   // true if any properties that need to be communicated to the
   // RenderWidgetHostImpl have changed.
-  bool UpdateNSViewAndDisplay(const gfx::Size& new_size_dip,
-                              const display::Display& new_display);
+  bool UpdateSurfaceFromNSView(const gfx::Size& new_size_dip,
+                               const display::Display& new_display);
 
   // Update the renderer's SurfaceId to reflect |new_size_in_pixels| in
   // anticipation of the NSView resizing during auto-resize.
-  void SynchronizeVisualProperties(
+  void UpdateSurfaceFromChild(
       float new_device_scale_factor,
       const gfx::Size& new_size_in_pixels,
       const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation);
