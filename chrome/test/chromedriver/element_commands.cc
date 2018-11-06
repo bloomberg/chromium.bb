@@ -474,11 +474,22 @@ Status ExecuteIsElementEnabled(Session* session,
                                std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
+
+  bool is_xml = false;
+  Status status = IsDocumentTypeXml(session, web_view, &is_xml);
+  if (status.IsError())
+    return status;
+
+  if (is_xml) {
+      value->reset(new base::Value(false));
+      return Status(kOk);
+  } else {
+    return web_view->CallFunction(
       session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::IS_ENABLED),
       args,
       value);
+  }
 }
 
 Status ExecuteIsElementDisplayed(Session* session,
