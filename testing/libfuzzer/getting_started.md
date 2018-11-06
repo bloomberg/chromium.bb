@@ -50,7 +50,7 @@ function:
 #include <stdint.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // put your fuzzing code here and use data+size as input.
+  // Put your fuzzing code here and use data+size as input.
   return 0;
 }
 ```
@@ -163,7 +163,12 @@ struct Environment {
   }
 };
 
-Environment* env = new Environment();
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Environment env;
+  
+  // Put your fuzzing code here and use data+size as input.
+  return 0;
+}
 ```
 
 ## Mutating Multiple Inputs
