@@ -57,7 +57,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // TrayBubbleView::Delegate:
   void ProcessGestureEventForBubble(ui::GestureEvent* event) override;

@@ -12,7 +12,6 @@
 #include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -372,35 +371,6 @@ TrayBackgroundView::CreateInkDropHighlight() const {
                                   GetInkDropBaseColor()));
   highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
   return highlight;
-}
-
-void TrayBackgroundView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (shelf()->GetBackgroundType() ==
-          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
-      !separator_visible_) {
-    return;
-  }
-  // In the given |canvas|, for a horizontal shelf draw a separator line to the
-  // right or left of the TrayBackgroundView when the system is LTR or RTL
-  // aligned, respectively. For a vertical shelf draw the separator line
-  // underneath the items instead.
-  const gfx::Rect local_bounds = GetLocalBounds();
-  const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
-  const int shelf_size = ShelfConstants::shelf_size();
-  const int separator_width = ash::TrayConstants::separator_width();
-
-  if (shelf_->IsHorizontalAlignment()) {
-    const gfx::PointF point(
-        base::i18n::IsRTL() ? 0 : (local_bounds.width() - separator_width),
-        (shelf_size - kTrayItemSize) / 2);
-    const gfx::Vector2dF vector(0, kTrayItemSize);
-    canvas->Draw1pxLine(point, point + vector, color);
-  } else {
-    const gfx::PointF point((shelf_size - kTrayItemSize) / 2,
-                            local_bounds.height() - separator_width);
-    const gfx::Vector2dF vector(kTrayItemSize, 0);
-    canvas->Draw1pxLine(point, point + vector, color);
-  }
 }
 
 void TrayBackgroundView::ProcessGestureEventForBubble(ui::GestureEvent* event) {
