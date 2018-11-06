@@ -382,7 +382,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     return;
   }
 
-  bool corruption_detected = false;
   for (const std::pair<int64_t, std::string>& data : user_data) {
     BackgroundSyncRegistrationsProto registrations_proto;
     if (registrations_proto.ParseFromString(data.second)) {
@@ -406,19 +405,9 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
             base::Time::FromInternalValue(registration_proto.delay_until()));
       }
     }
-
-    if (corruption_detected)
-      break;
-  }
-
-  if (corruption_detected) {
-    LOG(ERROR) << "Corruption detected in background sync backend";
-    DisableAndClearManager(std::move(callback));
-    return;
   }
 
   FireReadyEvents();
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
