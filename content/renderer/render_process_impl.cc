@@ -190,6 +190,13 @@ RenderProcessImpl::RenderProcessImpl(
     v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler);
   }
 #endif
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+  if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+    // On Windows we use the default trap handler provided by V8.
+    bool use_v8_trap_handler = true;
+    v8::V8::EnableWebAssemblyTrapHandler(use_v8_trap_handler);
+  }
+#endif
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
