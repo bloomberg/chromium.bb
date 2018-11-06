@@ -56,7 +56,10 @@ NSString* const kMessageTextViewBulletSuffix = @"\n";
 NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 }  // namespace
 
-@interface SadTabView ()
+@interface SadTabView () {
+  UITextView* _messageTextView;
+  MDCFlatButton* _actionButton;
+}
 
 // YES if the SadTab UI is displayed in Off The Record browsing mode.
 @property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;
@@ -66,15 +69,11 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 // Displays the Sad Tab title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
-// Displays the Sad Tab message.
-@property(nonatomic, readonly, strong) UITextView* messageTextView;
 // Displays the Sad Tab footer message (including a link to more help).
 @property(nonatomic, readonly, strong) UILabel* footerLabel;
 // Provides Link functionality to the footerLabel.
 @property(nonatomic, readonly, strong)
     LabelLinkController* footerLabelLinkController;
-// Triggers a reload or feedback action.
-@property(nonatomic, readonly, strong) MDCFlatButton* actionButton;
 // The bounds of |containerView|, with a height updated to CGFLOAT_MAX to allow
 // text to be laid out using as many lines as necessary.
 @property(nonatomic, readonly) CGRect containerBounds;
@@ -129,10 +128,8 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 @synthesize imageView = _imageView;
 @synthesize containerView = _containerView;
 @synthesize titleLabel = _titleLabel;
-@synthesize messageTextView = _messageTextView;
 @synthesize footerLabel = _footerLabel;
 @synthesize footerLabelLinkController = _footerLabelLinkController;
-@synthesize actionButton = _actionButton;
 @synthesize mode = _mode;
 @synthesize delegate = _delegate;
 
@@ -351,22 +348,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   return _titleLabel;
 }
 
-- (UITextView*)messageTextView {
-  if (!_messageTextView) {
-    _messageTextView = [[UITextView alloc] initWithFrame:CGRectZero];
-    [_messageTextView setBackgroundColor:self.backgroundColor];
-    [_messageTextView setAttributedText:[self messageTextViewAttributedText]];
-    _messageTextView.textContainer.lineFragmentPadding = 0.0f;
-    [_messageTextView
-        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
-                                       alpha:1.0]];
-    [_messageTextView setFont:[[MDCTypography fontLoader]
-                                  regularFontOfSize:kMessageTextViewFontSize]];
-    [_messageTextView setUserInteractionEnabled:NO];
-  }
-  return _messageTextView;
-}
-
 - (UILabel*)footerLabel {
   if (!_footerLabel) {
     _footerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -383,28 +364,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
                           forLinkText:[self footerLinkText]];
   }
   return _footerLabel;
-}
-
-- (UIButton*)actionButton {
-  if (!_actionButton) {
-    _actionButton = [[MDCFlatButton alloc] init];
-    [_actionButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
-                             forState:UIControlStateNormal];
-    [_actionButton setBackgroundColor:[[MDCPalette greyPalette] tint500]
-                             forState:UIControlStateDisabled];
-    [_actionButton setTitleColor:[UIColor whiteColor]
-                        forState:UIControlStateNormal];
-    [_actionButton setUnderlyingColorHint:[UIColor blackColor]];
-    [_actionButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
-
-    [_actionButton setTitle:[self buttonText] forState:UIControlStateNormal];
-    [_actionButton setTitleColor:[UIColor whiteColor]
-                        forState:UIControlStateNormal];
-    [_actionButton addTarget:self
-                      action:@selector(handleActionButtonTapped)
-            forControlEvents:UIControlEventTouchUpInside];
-  }
-  return _actionButton;
 }
 
 - (CGRect)containerBounds {
@@ -569,6 +528,50 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 + (UIColor*)sadTabBackgroundColor {
   return [UIColor colorWithWhite:kBackgroundColorBrightness alpha:1.0];
+}
+
+@end
+
+#pragma mark -
+
+@implementation SadTabView (UIElements)
+
+- (UITextView*)messageTextView {
+  if (!_messageTextView) {
+    _messageTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+    [_messageTextView setBackgroundColor:self.backgroundColor];
+    [_messageTextView setAttributedText:[self messageTextViewAttributedText]];
+    _messageTextView.textContainer.lineFragmentPadding = 0.0f;
+    [_messageTextView
+        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
+                                       alpha:1.0]];
+    [_messageTextView setFont:[[MDCTypography fontLoader]
+                                  regularFontOfSize:kMessageTextViewFontSize]];
+    [_messageTextView setUserInteractionEnabled:NO];
+  }
+  return _messageTextView;
+}
+
+- (UIButton*)actionButton {
+  if (!_actionButton) {
+    _actionButton = [[MDCFlatButton alloc] init];
+    [_actionButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
+                             forState:UIControlStateNormal];
+    [_actionButton setBackgroundColor:[[MDCPalette greyPalette] tint500]
+                             forState:UIControlStateDisabled];
+    [_actionButton setTitleColor:[UIColor whiteColor]
+                        forState:UIControlStateNormal];
+    [_actionButton setUnderlyingColorHint:[UIColor blackColor]];
+    [_actionButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
+
+    [_actionButton setTitle:[self buttonText] forState:UIControlStateNormal];
+    [_actionButton setTitleColor:[UIColor whiteColor]
+                        forState:UIControlStateNormal];
+    [_actionButton addTarget:self
+                      action:@selector(handleActionButtonTapped)
+            forControlEvents:UIControlEventTouchUpInside];
+  }
+  return _actionButton;
 }
 
 @end

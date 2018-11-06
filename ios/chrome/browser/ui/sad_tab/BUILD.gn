@@ -7,6 +7,8 @@ source_set("sad_tab") {
   sources = [
     "sad_tab_view.h",
     "sad_tab_view.mm",
+    "sad_tab_view_controller.h",
+    "sad_tab_view_controller.mm",
   ]
   deps = [
     "//base",
@@ -40,6 +42,21 @@ source_set("coordinator") {
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/web",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "sad_tab_view_controller_unittest.mm",
+  ]
+  deps = [
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/browser/ui/sad_tab",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//ui/base",
   ]
 }
 

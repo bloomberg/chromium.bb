@@ -224,6 +224,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/qr_scanner:unit_tests",
     "//ios/chrome/browser/ui/reading_list:unit_tests",
     "//ios/chrome/browser/ui/recent_tabs:unit_tests",
+    "//ios/chrome/browser/ui/sad_tab:unit_tests",
     "//ios/chrome/browser/ui/safe_mode:unit_tests",
     "//ios/chrome/browser/ui/settings:unit_tests",
     "//ios/chrome/browser/ui/settings/cells:unit_tests",
