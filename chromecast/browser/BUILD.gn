@@ -329,6 +329,17 @@ cast_source_set("browser") {
     ]
   }
 
+  if (enable_cast_wayland_server) {
+    sources += [
+      "exo/wm_helper_cast_shell.cc",
+      "exo/wm_helper_cast_shell.h",
+    ]
+    deps += [
+      "//components/exo",
+      "//components/exo/wayland",
+    ]
+  }
+
   configs += [ "//media/audio:platform_config" ]
 }
 

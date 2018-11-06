@@ -98,6 +98,9 @@ declare_args() {
   # Set to true to disable secure flac/opus support in EME, when using
   # cast CMA media backend and supporting Widevine or Playready.
   disable_secure_flac_and_opus_decoding = false
+
+  # Set to true to enable wayland server
+  enable_cast_wayland_server = false
 }
 
 declare_args() {
