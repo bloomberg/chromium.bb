@@ -1036,7 +1036,9 @@
       },
       'Mac Goma Canary (clobber)': {
         'additional_compile_targets': [
-          'all',
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
         ],
         'test_suites': {
           'gtest_tests': 'goma_mac_gtests',
@@ -1575,7 +1577,9 @@
       },
       'Chromium Mac Goma GCE Staging': {
         'additional_compile_targets': [
-          'all',
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',

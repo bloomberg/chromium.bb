@@ -1217,7 +1217,7 @@
   },
   "Mac Goma Canary (clobber)": {
     "additional_compile_targets": [
-      "all"
+      "chrome"
     ],
     "gtest_tests": [
       {
