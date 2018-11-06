@@ -41,7 +41,7 @@ def _symbol(entry):
     if entry['Symbol'] is not None:
         return entry['Symbol']
     # TODO(tkent): Separate path information and interface name in
-    # event_target_names.json5.
+    # event_interface_names.json5.
     name = os.path.basename(entry['name'].original)
     return 'k' + NameStyleConverter(name).to_upper_camel_case()
 
