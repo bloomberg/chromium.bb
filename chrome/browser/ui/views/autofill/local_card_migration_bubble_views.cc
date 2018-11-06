@@ -84,7 +84,6 @@ int LocalCardMigrationBubbleViews::GetDialogButtons() const {
 
 base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  // TODO(crbug.com/859254): Update OK button label once mock is finalized.
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK
           ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL
@@ -115,10 +114,12 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   title_container->AddChildView(icon_view);
 
-  auto* title = new views::Label(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE),
-      views::style::CONTEXT_DIALOG_TITLE);
+  auto* title =
+      new views::Label(GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Need to set title's preferred size otherwise the long title
+  // would not be two-lined but would change the width of bubble.
+  title->SetPreferredSize(gfx::Size(0, 0));
   title->SetMultiLine(true);
   title_container->AddChildView(title);
 
@@ -127,6 +128,12 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
 
 bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
   return true;
+}
+
+base::string16 LocalCardMigrationBubbleViews::GetWindowTitle() const {
+  return controller_ ? l10n_util::GetStringUTF16(
+                           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE)
+                     : base::string16();
 }
 
 void LocalCardMigrationBubbleViews::WindowClosing() {
