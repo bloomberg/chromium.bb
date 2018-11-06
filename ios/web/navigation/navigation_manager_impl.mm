@@ -415,29 +415,29 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
     const {
   GURL loaded_url(url);
 
-  bool url_was_rewritten = false;
-  if (additional_rewriters && !additional_rewriters->empty()) {
-    url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
-        &loaded_url, browser_state_, *additional_rewriters);
+  // Do not rewrite placeholder URL. Navigation code relies on this special URL
+  // to implement native view and WebUI, and rewriter code should not be exposed
+  // to this special type of about:blank URL.
+  if (!IsPlaceholderUrl(url)) {
+    bool url_was_rewritten = false;
+    if (additional_rewriters && !additional_rewriters->empty()) {
+      url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
+          &loaded_url, browser_state_, *additional_rewriters);
+    }
+
+    if (!url_was_rewritten) {
+      web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+          &loaded_url, browser_state_);
+    }
   }
 
-  if (!url_was_rewritten) {
-    web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
-        &loaded_url, browser_state_);
-  }
-
-  // The URL should not be changed to app-specific URL in two cases:
-  // 1) The load is renderer-initiated requested by non-app-specific URL. Pages
-  //    with app-specific urls have elevated previledges and should not be
-  //    allowed to open app-specific URLs.
-  // 2) The load is a placeholder URL. Navigation code relies on this special
-  //    URL to implement native view and WebUI.
-  bool is_renderer_initiated_app_specific_url_from_non_app_specific_url =
-      initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+  // The URL should not be changed to app-specific URL if the load is
+  // renderer-initiated requested by non-app-specific URL. Pages with
+  // app-specific urls have elevated previledges and should not be allowed to
+  // open app-specific URLs.
+  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
       loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
-      !web::GetWebClient()->IsAppSpecificURL(previous_url);
-  if (is_renderer_initiated_app_specific_url_from_non_app_specific_url ||
-      IsPlaceholderUrl(url)) {
+      !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
     loaded_url = url;
   }
 
