@@ -4400,8 +4400,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     net::HttpRequestHeaders headers;
     data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
         io_data->data_reduction_proxy_io_data()->request_options();
-    request_options->AddRequestHeader(&headers,
-                                      request_options->GeneratePageId());
+    request_options->AddPageIDRequestHeader(&headers,
+                                            request_options->GeneratePageId());
     result.push_back(std::make_unique<
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
         headers, io_data->data_reduction_proxy_io_data()));
