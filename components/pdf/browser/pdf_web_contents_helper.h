@@ -77,7 +77,7 @@ class PDFWebContentsHelper
   // mojom::PdfService:
   void SetListener(mojom::PdfListenerPtr listener) override;
   void HasUnsupportedFeature() override;
-  void SaveUrlAs(const GURL& url, const content::Referrer& referrer) override;
+  void SaveUrlAs(const GURL& url, blink::mojom::ReferrerPtr referrer) override;
   void UpdateContentRestrictions(int32_t content_restrictions) override;
   void SelectionChanged(const gfx::PointF& left,
                         int32_t left_height,

@@ -16,9 +16,10 @@ namespace content {
 // This struct holds a referrer URL, as well as the referrer policy to be
 // applied to this URL. When passing around referrers that will eventually end
 // up being used for URL requests, always use this struct.
+//
+// TODO(leonhsl): Replace this struct everywhere with blink::mojom::Referrer.
 
 struct CONTENT_EXPORT Referrer {
-  // TODO(jam): convert this to hold the net enum
   Referrer(const GURL& url, network::mojom::ReferrerPolicy policy)
       : url(url), policy(policy) {}
   Referrer() : policy(network::mojom::ReferrerPolicy::kDefault) {}

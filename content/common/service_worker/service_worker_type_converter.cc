@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/common/service_worker/service_worker_type_converter.h"
+
+#include "content/public/common/referrer_type_converters.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace mojo {
@@ -20,7 +22,7 @@ TypeConverter<blink::mojom::FetchAPIRequestPtr,
   request_ptr->url = request.url;
   request_ptr->method = request.method;
   request_ptr->headers.insert(request.headers.begin(), request.headers.end());
-  request_ptr->referrer = request.referrer;
+  request_ptr->referrer = blink::mojom::Referrer::From(request.referrer);
   request_ptr->credentials_mode = request.credentials_mode;
   request_ptr->cache_mode = request.cache_mode;
   request_ptr->redirect_mode = request.redirect_mode;
@@ -47,7 +49,7 @@ TypeConverter<content::ServiceWorkerFetchRequest,
   request.method = request_ptr->method;
   request.headers.insert(request_ptr->headers.begin(),
                          request_ptr->headers.end());
-  request.referrer = request_ptr->referrer;
+  request.referrer = request_ptr->referrer.To<content::Referrer>();
   request.credentials_mode = request_ptr->credentials_mode;
   request.cache_mode = request_ptr->cache_mode;
   request.redirect_mode = request_ptr->redirect_mode;

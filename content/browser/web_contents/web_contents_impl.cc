@@ -133,6 +133,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_utils.h"
@@ -2766,8 +2767,8 @@ void WebContentsImpl::CreateNewWindow(
 
   for (auto& observer : observers_) {
     observer.DidOpenRequestedURL(new_contents_impl, opener, params.target_url,
-                                 params.referrer, params.disposition,
-                                 ui::PAGE_TRANSITION_LINK,
+                                 params.referrer.To<Referrer>(),
+                                 params.disposition, ui::PAGE_TRANSITION_LINK,
                                  false,  // started_from_context_menu
                                  true);  // renderer_initiated
   }
@@ -2798,7 +2799,7 @@ void WebContentsImpl::CreateNewWindow(
       std::unique_ptr<NavigationController::LoadURLParams> load_params =
           std::make_unique<NavigationController::LoadURLParams>(
               params.target_url);
-      load_params->referrer = params.referrer;
+      load_params->referrer = params.referrer.To<Referrer>();
       load_params->transition_type = ui::PAGE_TRANSITION_LINK;
       load_params->is_renderer_initiated = true;
       load_params->has_user_gesture = params.mimic_user_gesture;

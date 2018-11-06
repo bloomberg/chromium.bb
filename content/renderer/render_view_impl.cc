@@ -57,6 +57,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -1358,7 +1359,8 @@ WebView* RenderViewImpl::CreateView(
   params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.IsNull()) {
     params->target_url = request.Url();
-    params->referrer = GetReferrerFromRequest(creator, request);
+    params->referrer =
+        blink::mojom::Referrer::From(GetReferrerFromRequest(creator, request));
   }
   params->features = ConvertWebWindowFeaturesToMojoWindowFeatures(features);
 

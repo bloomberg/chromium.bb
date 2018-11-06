@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -215,9 +216,9 @@ void PDFWebContentsHelper::HasUnsupportedFeature() {
 }
 
 void PDFWebContentsHelper::SaveUrlAs(const GURL& url,
-                                     const content::Referrer& referrer) {
+                                     blink::mojom::ReferrerPtr referrer) {
   client_->OnSaveURL(web_contents());
-  web_contents()->SaveFrame(url, referrer);
+  web_contents()->SaveFrame(url, referrer.To<content::Referrer>());
 }
 
 void PDFWebContentsHelper::UpdateContentRestrictions(
