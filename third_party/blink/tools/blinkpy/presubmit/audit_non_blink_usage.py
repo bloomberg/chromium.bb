@@ -321,6 +321,7 @@ _CONFIG = [
         'paths': ['third_party/blink/renderer/core/css'],
         'allowed': [
             # Internal implementation details for CSS.
+            'css_property_parser_helpers::.+',
             'detail::.+',
         ],
     },

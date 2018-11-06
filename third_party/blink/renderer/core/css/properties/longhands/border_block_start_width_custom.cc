@@ -17,7 +17,8 @@ const CSSValue* BorderBlockStartWidth::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeBorderWidth(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 }  // namespace CSSLonghand

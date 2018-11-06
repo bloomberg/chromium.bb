@@ -78,7 +78,7 @@ CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
 CSSValue* ConsumeMaskSourceType(CSSParserTokenRange&);
 bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                const CSSParserContext&,
-                               CSSPropertyParserHelpers::UnitlessQuirk,
+                               css_property_parser_helpers::UnitlessQuirk,
                                CSSValue*& result_x,
                                CSSValue*& result_y);
 CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange&, AllowTextValue);
@@ -139,10 +139,11 @@ CSSValue* ConsumeGapLength(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeCounter(CSSParserTokenRange&, int);
 
-CSSValue* ConsumeFontSize(CSSParserTokenRange&,
-                          CSSParserMode,
-                          CSSPropertyParserHelpers::UnitlessQuirk =
-                              CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+CSSValue* ConsumeFontSize(
+    CSSParserTokenRange&,
+    CSSParserMode,
+    css_property_parser_helpers::UnitlessQuirk =
+        css_property_parser_helpers::UnitlessQuirk::kForbid);
 
 CSSValue* ConsumeLineHeight(CSSParserTokenRange&, CSSParserMode);
 
@@ -190,17 +191,17 @@ bool ConsumeFromColumnOrPageBreakInside(CSSParserTokenRange&, CSSValueID&);
 CSSValue* ConsumeMaxWidthOrHeight(
     CSSParserTokenRange&,
     const CSSParserContext&,
-    CSSPropertyParserHelpers::UnitlessQuirk =
-        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+    css_property_parser_helpers::UnitlessQuirk =
+        css_property_parser_helpers::UnitlessQuirk::kForbid);
 CSSValue* ConsumeWidthOrHeight(
     CSSParserTokenRange&,
     const CSSParserContext&,
-    CSSPropertyParserHelpers::UnitlessQuirk =
-        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+    css_property_parser_helpers::UnitlessQuirk =
+        css_property_parser_helpers::UnitlessQuirk::kForbid);
 
 CSSValue* ConsumeMarginOrOffset(CSSParserTokenRange&,
                                 CSSParserMode,
-                                CSSPropertyParserHelpers::UnitlessQuirk);
+                                css_property_parser_helpers::UnitlessQuirk);
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumePathOrNone(CSSParserTokenRange&);
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange&, const CSSParserContext&);
@@ -228,7 +229,7 @@ CSSValue* ConsumeBorderColorSide(CSSParserTokenRange&,
                                  const CSSParserLocalContext&);
 CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
                              CSSParserMode,
-                             CSSPropertyParserHelpers::UnitlessQuirk);
+                             css_property_parser_helpers::UnitlessQuirk);
 CSSValue* ParsePaintStroke(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
 
@@ -250,7 +251,7 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
     return CSSPrimitiveValue::Create(percent,
                                      CSSPrimitiveValue::UnitType::kPercentage);
   }
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, css_parser_mode, kValueRangeAll);
 }
 

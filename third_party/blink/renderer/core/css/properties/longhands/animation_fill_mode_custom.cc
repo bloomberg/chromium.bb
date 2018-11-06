@@ -16,9 +16,9 @@ const CSSValue* AnimationFillMode::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueNone, CSSValueForwards,
-                                             CSSValueBackwards, CSSValueBoth>,
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_property_parser_helpers::ConsumeIdent<
+          CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>,
       range);
 }
 

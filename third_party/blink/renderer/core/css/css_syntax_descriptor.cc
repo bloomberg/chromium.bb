@@ -96,7 +96,7 @@ bool ConsumeSyntaxIdent(const String& input,
   if (offset == ident_start)
     return false;
   ident = input.Substring(ident_start, offset - ident_start);
-  return !CSSPropertyParserHelpers::IsCSSWideKeyword(ident);
+  return !css_property_parser_helpers::IsCSSWideKeyword(ident);
 }
 
 CSSSyntaxDescriptor::CSSSyntaxDescriptor(const String& input) {
@@ -155,7 +155,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(const String& input) {
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
-  using namespace CSSPropertyParserHelpers;
+  using namespace css_property_parser_helpers;
 
   switch (syntax.GetType()) {
     case CSSSyntaxType::kIdent:
@@ -222,7 +222,8 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
       if (!value)
         return nullptr;
       list->Append(*value);
-    } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+    } while (
+        css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
     return list->length() ? list : nullptr;
   }
   const CSSValue* result = ConsumeSingleType(syntax, range, context);

@@ -23,10 +23,11 @@ bool WebkitColumnBreakInside::ParseShorthand(
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBreakInside, CSSPropertyWebkitColumnBreakInside,
       *CSSIdentifierValue::Create(value), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

@@ -18,7 +18,7 @@ const CSSValue* ObjectPosition::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumePosition(range, context,
-                         CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
+                         css_property_parser_helpers::UnitlessQuirk::kForbid,
                          base::Optional<WebFeature>());
 }
 

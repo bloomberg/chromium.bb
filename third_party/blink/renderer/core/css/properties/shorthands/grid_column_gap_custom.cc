@@ -22,9 +22,10 @@ bool GridColumnGap::ParseShorthand(
   if (!gap_length || !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnGap, CSSPropertyGridColumnGap, *gap_length, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

@@ -24,10 +24,11 @@ bool PageBreakBefore::ParseShorthand(
   }
 
   DCHECK_NE(value, CSSValueInvalid);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBreakBefore, CSSPropertyPageBreakBefore,
       *CSSIdentifierValue::Create(value), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

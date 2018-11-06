@@ -17,7 +17,7 @@ const CSSValue* FontVariantNumeric::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   FontVariantNumericParser numeric_parser;
   do {

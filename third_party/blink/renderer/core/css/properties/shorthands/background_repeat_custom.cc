@@ -29,17 +29,17 @@ bool BackgroundRepeat::ParseShorthand(
       !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundRepeatX, CSSPropertyBackgroundRepeat, *result_x,
       important,
-      implicit ? CSSPropertyParserHelpers::IsImplicitProperty::kImplicit
-               : CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
+               : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundRepeatY, CSSPropertyBackgroundRepeat, *result_y,
       important,
-      implicit ? CSSPropertyParserHelpers::IsImplicitProperty::kImplicit
-               : CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
+               : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

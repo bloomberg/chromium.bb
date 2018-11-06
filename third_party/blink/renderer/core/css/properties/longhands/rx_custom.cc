@@ -14,9 +14,9 @@ const CSSValue* Rx::ParseSingleValue(CSSParserTokenRange& range,
                                      const CSSParserContext& context,
                                      const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeSVGGeometryPropertyLength(range,
-                                                                    context);
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeSVGGeometryPropertyLength(range,
+                                                                       context);
 }
 
 const CSSValue* Rx::CSSValueFromComputedStyleInternal(

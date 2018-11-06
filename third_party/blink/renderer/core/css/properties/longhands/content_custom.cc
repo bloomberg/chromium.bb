@@ -37,7 +37,7 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
 
 CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
   CSSCustomIdentValue* identifier =
-      CSSPropertyParserHelpers::ConsumeCustomIdent(args);
+      css_property_parser_helpers::ConsumeCustomIdent(args);
   if (!identifier)
     return nullptr;
 
@@ -45,7 +45,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
   if (!counters) {
     separator = CSSStringValue::Create(String());
   } else {
-    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args) ||
+    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args) ||
         args.Peek().GetType() != kStringToken)
       return nullptr;
     separator = CSSStringValue::Create(
@@ -53,12 +53,12 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
   }
 
   CSSIdentifierValue* list_style = nullptr;
-  if (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
+  if (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)) {
     CSSValueID id = args.Peek().Id();
     if ((id != CSSValueNone &&
          (id < CSSValueDisc || id > CSSValueKatakanaIroha)))
       return nullptr;
-    list_style = CSSPropertyParserHelpers::ConsumeIdent(args);
+    list_style = css_property_parser_helpers::ConsumeIdent(args);
   } else {
     list_style = CSSIdentifierValue::Create(CSSValueDecimal);
   }
@@ -74,32 +74,32 @@ namespace CSSLonghand {
 const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNone, CSSValueNormal>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueNone, CSSValueNormal>(
           range.Peek().Id()))
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
 
   do {
     CSSValue* parsed_value =
-        CSSPropertyParserHelpers::ConsumeImage(range, &context);
+        css_property_parser_helpers::ConsumeImage(range, &context);
     if (!parsed_value) {
-      parsed_value = CSSPropertyParserHelpers::ConsumeIdent<
+      parsed_value = css_property_parser_helpers::ConsumeIdent<
           CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote,
           CSSValueNoCloseQuote>(range);
     }
     if (!parsed_value)
-      parsed_value = CSSPropertyParserHelpers::ConsumeString(range);
+      parsed_value = css_property_parser_helpers::ConsumeString(range);
     if (!parsed_value) {
       if (range.Peek().FunctionId() == CSSValueAttr) {
         parsed_value = ConsumeAttr(
-            CSSPropertyParserHelpers::ConsumeFunction(range), context);
+            css_property_parser_helpers::ConsumeFunction(range), context);
       } else if (range.Peek().FunctionId() == CSSValueCounter) {
         parsed_value = ConsumeCounterContent(
-            CSSPropertyParserHelpers::ConsumeFunction(range), false);
+            css_property_parser_helpers::ConsumeFunction(range), false);
       } else if (range.Peek().FunctionId() == CSSValueCounters) {
         parsed_value = ConsumeCounterContent(
-            CSSPropertyParserHelpers::ConsumeFunction(range), true);
+            css_property_parser_helpers::ConsumeFunction(range), true);
       }
       if (!parsed_value)
         return nullptr;

@@ -18,7 +18,7 @@ bool MarginInline::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
       marginInlineShorthand(), important, context, range, properties);
 }
 

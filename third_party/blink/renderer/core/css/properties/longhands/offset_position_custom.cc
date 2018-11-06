@@ -14,7 +14,7 @@
 namespace blink {
 namespace CSSLonghand {
 
-using namespace CSSPropertyParserHelpers;
+using namespace css_property_parser_helpers;
 
 const CSSValue* OffsetPosition::ParseSingleValue(
     CSSParserTokenRange& range,

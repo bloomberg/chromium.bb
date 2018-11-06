@@ -20,15 +20,15 @@ CSSValueList* ConsumeImplicitAutoFlow(CSSParserTokenRange& range,
                                       const CSSValue& flow_direction) {
   // [ auto-flow && dense? ]
   CSSValue* dense_algorithm = nullptr;
-  if ((CSSPropertyParserHelpers::ConsumeIdent<CSSValueAutoFlow>(range))) {
+  if ((css_property_parser_helpers::ConsumeIdent<CSSValueAutoFlow>(range))) {
     dense_algorithm =
-        CSSPropertyParserHelpers::ConsumeIdent<CSSValueDense>(range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
   } else {
     dense_algorithm =
-        CSSPropertyParserHelpers::ConsumeIdent<CSSValueDense>(range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
     if (!dense_algorithm)
       return nullptr;
-    if (!CSSPropertyParserHelpers::ConsumeIdent<CSSValueAutoFlow>(range))
+    if (!css_property_parser_helpers::ConsumeIdent<CSSValueAutoFlow>(range))
       return nullptr;
   }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -61,32 +61,38 @@ bool Grid::ParseShorthand(bool important,
     DCHECK(template_columns);
     DCHECK(template_areas);
 
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyGridTemplateRows, CSSPropertyGrid, *template_rows, important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-    CSSPropertyParserHelpers::AddProperty(
-        CSSPropertyGridTemplateColumns, CSSPropertyGrid, *template_columns,
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
+        CSSPropertyGridTemplateColumns, CSSPropertyGrid, *template_columns,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
+    css_property_parser_helpers::AddProperty(
         CSSPropertyGridTemplateAreas, CSSPropertyGrid, *template_areas,
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
 
     // It can only be specified the explicit or the implicit grid properties in
     // a single grid declaration. The sub-properties not specified are set to
     // their initial value, as normal for shorthands.
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyGridAutoFlow, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyGridAutoColumns, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyGridAutoRows, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     return true;
   }
@@ -99,21 +105,22 @@ bool Grid::ParseShorthand(bool important,
   template_rows = nullptr;
   template_columns = nullptr;
 
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueDense, CSSValueAutoFlow>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueDense,
+                                                CSSValueAutoFlow>(
           range.Peek().Id())) {
     // 2- [ auto-flow && dense? ] <grid-auto-rows>? / <grid-template-columns>
     grid_auto_flow = ConsumeImplicitAutoFlow(
         range, *CSSIdentifierValue::Create(CSSValueRow));
     if (!grid_auto_flow)
       return false;
-    if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
+    if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
       auto_rows_value = CSSInitialValue::Create();
     } else {
       auto_rows_value = css_parsing_utils::ConsumeGridTrackList(
           range, context.Mode(), css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
-      if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
+      if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return false;
     }
     if (!(template_columns =
@@ -128,7 +135,7 @@ bool Grid::ParseShorthand(bool important,
         range, context.Mode());
     if (!template_rows)
       return false;
-    if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
+    if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return false;
     grid_auto_flow = ConsumeImplicitAutoFlow(
         range, *CSSIdentifierValue::Create(CSSValueColumn));
@@ -152,27 +159,30 @@ bool Grid::ParseShorthand(bool important,
   // It can only be specified the explicit or the implicit grid properties in a
   // single grid declaration. The sub-properties not specified are set to their
   // initial value, as normal for shorthands.
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateColumns, CSSPropertyGrid, *template_columns,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateRows, CSSPropertyGrid, *template_rows, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateAreas, CSSPropertyGrid, *CSSInitialValue::Create(),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridAutoFlow, CSSPropertyGrid, *grid_auto_flow, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
-      CSSPropertyGridAutoColumns, CSSPropertyGrid, *auto_columns_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
+      CSSPropertyGridAutoColumns, CSSPropertyGrid, *auto_columns_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridAutoRows, CSSPropertyGrid, *auto_rows_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 

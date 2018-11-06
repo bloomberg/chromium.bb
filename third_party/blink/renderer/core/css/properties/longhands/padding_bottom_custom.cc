@@ -20,7 +20,7 @@ const CSSValue* PaddingBottom::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 bool PaddingBottom::IsLayoutDependent(const ComputedStyle* style,

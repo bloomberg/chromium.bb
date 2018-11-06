@@ -16,8 +16,8 @@ const CSSValue* WebkitHyphenateCharacter::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeString(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeString(range);
 }
 
 const CSSValue* WebkitHyphenateCharacter::CSSValueFromComputedStyleInternal(

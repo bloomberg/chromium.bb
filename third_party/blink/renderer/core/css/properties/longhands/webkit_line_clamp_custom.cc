@@ -15,7 +15,7 @@ const CSSValue* WebkitLineClamp::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // When specifying number of lines, don't allow 0 as a valid value.
-  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+  return css_property_parser_helpers::ConsumePositiveInteger(range);
 }
 
 const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(

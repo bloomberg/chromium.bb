@@ -20,16 +20,16 @@ bool BorderInline::ParseShorthand(
   const CSSValue* style = nullptr;
   const CSSValue* color = nullptr;
 
-  if (!CSSPropertyParserHelpers::ConsumeBorderShorthand(range, context, width,
-                                                        style, color)) {
+  if (!css_property_parser_helpers::ConsumeBorderShorthand(
+          range, context, width, style, color)) {
     return false;
   };
 
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineWidth, *width, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineStyle, *style, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineColor, *color, important, properties);
 
   return range.AtEnd();

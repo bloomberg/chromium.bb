@@ -19,8 +19,9 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  if (CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context))
+    return css_property_parser_helpers::ConsumeIdent(range);
+  if (CSSURIValue* url =
+          css_property_parser_helpers::ConsumeUrl(range, &context))
     return url;
   return css_parsing_utils::ConsumeBasicShape(range, context);
 }

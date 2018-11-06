@@ -18,15 +18,15 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (id == CSSValueStrict || id == CSSValueContent) {
-    list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    list->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return list;
   }
   while (true) {
-    CSSIdentifierValue* ident = CSSPropertyParserHelpers::ConsumeIdent<
+    CSSIdentifierValue* ident = css_property_parser_helpers::ConsumeIdent<
         CSSValuePaint, CSSValueLayout, CSSValueStyle, CSSValueSize>(range);
     if (!ident)
       break;

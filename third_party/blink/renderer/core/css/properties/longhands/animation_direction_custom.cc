@@ -16,10 +16,10 @@ const CSSValue* AnimationDirection::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal, CSSValueAlternate,
-                                             CSSValueReverse,
-                                             CSSValueAlternateReverse>,
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_property_parser_helpers::ConsumeIdent<
+          CSSValueNormal, CSSValueAlternate, CSSValueReverse,
+          CSSValueAlternateReverse>,
       range);
 }
 

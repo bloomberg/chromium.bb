@@ -23,7 +23,7 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   NamedGridAreaMap grid_area_map;
   size_t row_count = 0;

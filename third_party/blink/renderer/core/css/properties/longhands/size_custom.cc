@@ -13,7 +13,7 @@ namespace blink {
 namespace CSSLonghand {
 
 static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
-  return CSSPropertyParserHelpers::ConsumeIdent<
+  return css_property_parser_helpers::ConsumeIdent<
       CSSValueA3, CSSValueA4, CSSValueA5, CSSValueB4, CSSValueB5,
       CSSValueLedger, CSSValueLegal, CSSValueLetter>(range);
 }
@@ -54,13 +54,13 @@ const CSSValue* Size::ParseSingleValue(CSSParserTokenRange& range,
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
 
   if (range.Peek().Id() == CSSValueAuto) {
-    result->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    result->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return result;
   }
 
-  if (CSSValue* width = CSSPropertyParserHelpers::ConsumeLength(
+  if (CSSValue* width = css_property_parser_helpers::ConsumeLength(
           range, context.Mode(), kValueRangeNonNegative)) {
-    CSSValue* height = CSSPropertyParserHelpers::ConsumeLength(
+    CSSValue* height = css_property_parser_helpers::ConsumeLength(
         range, context.Mode(), kValueRangeNonNegative);
     result->Append(*width);
     if (height)
@@ -70,8 +70,8 @@ const CSSValue* Size::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValue* page_size = ConsumePageSize(range);
   CSSValue* orientation =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValuePortrait,
-                                             CSSValueLandscape>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValuePortrait,
+                                                CSSValueLandscape>(range);
   if (!page_size)
     page_size = ConsumePageSize(range);
 

@@ -17,7 +17,7 @@ namespace {
 
 CSSValue* ConsumeReflect(CSSParserTokenRange& range,
                          const CSSParserContext& context) {
-  CSSIdentifierValue* direction = CSSPropertyParserHelpers::ConsumeIdent<
+  CSSIdentifierValue* direction = css_property_parser_helpers::ConsumeIdent<
       CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(range);
   if (!direction)
     return nullptr;
@@ -28,7 +28,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
   } else {
     offset = ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
-        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+        css_property_parser_helpers::UnitlessQuirk::kForbid);
     if (!offset)
       return nullptr;
   }

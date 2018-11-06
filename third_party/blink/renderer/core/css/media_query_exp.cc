@@ -234,16 +234,19 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   String lower_media_feature =
       AttemptStaticStringCreation(media_feature.LowerASCII());
 
-  CSSPrimitiveValue* value = CSSPropertyParserHelpers::ConsumeInteger(range, 0);
+  CSSPrimitiveValue* value =
+      css_property_parser_helpers::ConsumeInteger(range, 0);
   if (!value && !FeatureExpectingPositiveInteger(lower_media_feature) &&
-      !FeatureWithAspectRatio(lower_media_feature))
-    value =
-        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+      !FeatureWithAspectRatio(lower_media_feature)) {
+    value = css_property_parser_helpers::ConsumeNumber(range,
+                                                       kValueRangeNonNegative);
+  }
+  if (!value) {
+    value = css_property_parser_helpers::ConsumeLength(range, kHTMLStandardMode,
+                                                       kValueRangeNonNegative);
+  }
   if (!value)
-    value = CSSPropertyParserHelpers::ConsumeLength(range, kHTMLStandardMode,
-                                                    kValueRangeNonNegative);
-  if (!value)
-    value = CSSPropertyParserHelpers::ConsumeResolution(range);
+    value = css_property_parser_helpers::ConsumeResolution(range);
   // Create value for media query expression that must have 1 or more values.
   if (value) {
     if (FeatureWithAspectRatio(lower_media_feature)) {
@@ -251,10 +254,10 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
               CSSPrimitiveValue::UnitType::kInteger ||
           value->GetDoubleValue() == 0)
         return Invalid();
-      if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
+      if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return Invalid();
       CSSPrimitiveValue* denominator =
-          CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+          css_property_parser_helpers::ConsumePositiveInteger(range);
       if (!denominator)
         return Invalid();
 
@@ -275,7 +278,8 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
     } else {
       return Invalid();
     }
-  } else if (CSSIdentifierValue* ident = CSSPropertyParserHelpers::ConsumeIdent(range)) {
+  } else if (CSSIdentifierValue* ident =
+                 css_property_parser_helpers::ConsumeIdent(range)) {
     CSSValueID ident_id = ident->GetValueID();
     if (!FeatureWithValidIdent(lower_media_feature, ident_id))
       return Invalid();
