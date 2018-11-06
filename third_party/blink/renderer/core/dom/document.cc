@@ -2744,9 +2744,12 @@ void Document::Initialize() {
   layout_view_->Compositor()->SetNeedsCompositingUpdate(
       kCompositingUpdateAfterCompositingInputChange);
 
-  DCHECK(!firstChild());
-  if (AXObjectCache* cache = ExistingAXObjectCache())
-    cache->UpdateCacheAfterNodeIsAttached(this);
+  {
+    ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
+    AttachContext context;
+    ContainerNode::AttachLayoutTree(context);
+    legacy_layout_objects.ForceLegacyLayoutIfNeeded();
+  }
 
   // The TextAutosizer can't update layout view info while the Document is
   // detached, so update now in case anything changed.
