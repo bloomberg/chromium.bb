@@ -28,6 +28,8 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/device_orientation/device_orientation_event.idl",
     "//third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event.idl",
     "//third_party/blink/renderer/modules/encryptedmedia/media_key_message_event.idl",
+    "//third_party/blink/renderer/modules/gamepad/gamepad_axis_event.idl",
+    "//third_party/blink/renderer/modules/gamepad/gamepad_button_event.idl",
     "//third_party/blink/renderer/modules/gamepad/gamepad_event.idl",
     "//third_party/blink/renderer/modules/indexeddb/idb_version_change_event.idl",
     "//third_party/blink/renderer/modules/mediarecorder/blob_event.idl",

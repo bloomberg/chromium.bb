@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class GamepadEvent final : public Event {
+class GamepadEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -33,10 +33,11 @@ class GamepadEvent final : public Event {
 
   void Trace(blink::Visitor*) override;
 
- private:
+ protected:
   GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
   GamepadEvent(const AtomicString&, const GamepadEventInit*);
 
+ private:
   Member<Gamepad> gamepad_;
 };
 
