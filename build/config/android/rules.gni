@@ -3168,6 +3168,7 @@ if (enable_java_templates) {
         data = [
           "$_final_apk_path.mapping",
         ]
+        data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
       }
 
       dist_ijar_path = _dist_ijar_path
