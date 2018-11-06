@@ -111,6 +111,15 @@
 
 #pragma mark Layout
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    // In case the preferred content size changes, the layout is dirty.
+    [self setNeedsLayout];
+  }
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
 
