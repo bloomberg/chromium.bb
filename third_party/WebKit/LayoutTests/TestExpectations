@@ -3892,8 +3892,6 @@ crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Ti
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/interface-objects.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/unresolvable-url.html [ Failure ]
-crbug.com/685303 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/propagate-to-window-onerror.html [ Failure Timeout ]
-crbug.com/685303 external/wpt/workers/constructors/Worker/AbstractWorker.onerror.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/importScripts/006.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
