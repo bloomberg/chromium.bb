@@ -861,7 +861,8 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
 
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
       info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
-      !info.browser_controls_constraint_changed) {
+      !info.browser_controls_constraint_changed &&
+      !info.scroll_gesture_did_end) {
     return;
   }
 
@@ -879,10 +880,10 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
                                    info.elastic_overscroll_delta);
   // TODO(ccameron): pass the elastic overscroll here so that input events
   // may be translated appropriately.
-  client_->ApplyViewportChanges({inner_viewport_scroll_delta,
-                                 info.elastic_overscroll_delta,
-                                 info.page_scale_delta, info.top_controls_delta,
-                                 info.browser_controls_constraint});
+  client_->ApplyViewportChanges(
+      {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
+       info.page_scale_delta, info.top_controls_delta,
+       info.browser_controls_constraint, info.scroll_gesture_did_end});
   SetNeedsUpdateLayers();
 }
 

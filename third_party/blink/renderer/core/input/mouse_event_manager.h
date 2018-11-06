@@ -154,6 +154,8 @@ class CORE_EXPORT MouseEventManager final
 
   bool FakeMouseMovePending() const;
 
+  void RecomputeMouseHoverState();
+
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:

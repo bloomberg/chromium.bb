@@ -42,6 +42,10 @@ struct ApplyViewportChangesArgs {
   // Whether the browser controls have been locked to fully hidden or shown or
   // whether they can be freely moved.
   BrowserControlsState browser_controls_constraint;
+
+  // Set to true when a scroll gesture being handled on the compositor has
+  // ended.
+  bool scroll_gesture_did_end;
 };
 
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering

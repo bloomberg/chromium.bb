@@ -350,6 +350,10 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
   TRACE_EVENT0("input", "MouseEventManager::fakeMouseMoveEventTimerFired");
   DCHECK(timer == &fake_mouse_move_event_timer_);
 
+  RecomputeMouseHoverState();
+}
+
+void MouseEventManager::RecomputeMouseHoverState() {
   if (is_mouse_position_unknown_)
     return;
 

@@ -286,6 +286,8 @@ class CORE_EXPORT EventHandler final
 
   void AnimateSnapFling(base::TimeTicks monotonic_time);
 
+  void RecomputeMouseHoverState();
+
  private:
   enum NoCursorChangeType { kNoCursorChange };
 

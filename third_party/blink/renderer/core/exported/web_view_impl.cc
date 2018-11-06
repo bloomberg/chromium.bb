@@ -3265,6 +3265,10 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   elastic_overscroll_ += FloatSize(args.elastic_overscroll_delta.x(),
                                    args.elastic_overscroll_delta.y());
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
+
+  if (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled() &&
+      args.scroll_gesture_did_end)
+    MainFrameImpl()->GetFrame()->GetEventHandler().RecomputeMouseHoverState();
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(
