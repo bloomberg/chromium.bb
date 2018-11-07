@@ -13,6 +13,7 @@ import contextlib
 import glob
 import json
 import os
+import re
 
 from chromite.cbuildbot import archive_lib
 from chromite.cli import command
@@ -433,13 +434,14 @@ class SDKFetcher(object):
 
     Args:
       version: A ChromeOS platform number of the form XXXX.XX.XX, i.e.,
-        3918.0.0.
+        3918.0.0. If a full version is provided, it will be returned unmodified.
 
     Returns:
       The version with release branch and build number added, as needed. E.g.
       R28-3918.0.0-b1234.
     """
-    assert not version.startswith('R')
+    if version.startswith('R'):
+      return version
 
     with self.misc_cache.Lookup(('full-version', self.board, version)) as ref:
       if ref.Exists(lock=True):
@@ -620,9 +622,15 @@ class ChromeSDKCommand(command.CliCommand):
 
   @staticmethod
   def ValidateVersion(version):
-    if version.startswith('R') or len(version.split('.')) != 3:
+    """Ensures that the version arg is potentially valid.
+
+    See the argument description for supported version formats.
+    """
+
+    if (not re.match(r'^[0-9]+\.0\.0$', version) and
+        not re.match(r'^R[0-9]+-[0-9]+\.[0-9]+\.[0-9]+', version)):
       raise argparse.ArgumentTypeError(
-          '--version should be in the format 3912.0.0')
+          '--version should be in the format 1234.0.0 or R56-1234.0.0')
     return version
 
   @classmethod
@@ -692,9 +700,14 @@ class ChromeSDKCommand(command.CliCommand):
         help='Use the goma installation at the specified PATH.')
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
-        help="Specify version of SDK to use, in the format '3912.0.0'.  "
-             "Defaults to determining version based on the type of checkout "
-             "(Chrome or ChromeOS) you are executing from.")
+        help="Specify the SDK version to use. This can be a platform version "
+             "ending in .0.0, e.g. 1234.0.0, in which case the full version "
+             "will be extracted from the corresponding LATEST file for the "
+             "specified board. If no LATEST file exists, an older version "
+             "will be used if available. Alternatively, a full version may be "
+             "specified, e.g. R56-1234.0.0, in which case that exact version "
+             "will be used. Defaults to using the version specified in the "
+             "CHROMEOS_LKGM file in the chromium checkout.")
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '

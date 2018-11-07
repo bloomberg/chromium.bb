@@ -57,6 +57,20 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
       self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
 
+  def testVersion(self):
+    """Tests that a platform version is allowed."""
+    VERSION = '1234.0.0'
+    with MockChromeSDKCommand(
+        ['--board', SDKFetcherMock.BOARD, '--version', VERSION]) as parser:
+      self.assertEquals(parser.inst.options.version, VERSION)
+
+  def testFullVersion(self):
+    """Tests that a full version is allowed."""
+    FULL_VERSION = 'R56-1234.0.0'
+    with MockChromeSDKCommand(
+        ['--board', SDKFetcherMock.BOARD, '--version', FULL_VERSION]) as parser:
+      self.assertEquals(parser.inst.options.version, FULL_VERSION)
+
 
 def _GSCopyMock(_self, path, dest, **_kwargs):
   """Used to simulate a GS Copy operation."""
@@ -535,8 +549,18 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
 
-  def testFullVersion(self):
-    """Test full version calculation."""
+  def testFullVersionFromFullVersion(self):
+    """Test that a fully specified version is allowed."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        output=self.FULL_VERSION)
+    self.assertEquals(
+        self.FULL_VERSION,
+        self.sdk.GetFullVersion(self.FULL_VERSION))
+
+  def testFullVersionFromPlatformVersion(self):
+    """Test full version calculation from the platform version."""
     self.sdk_mock.UnMockAttr('GetFullVersion')
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
