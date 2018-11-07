@@ -95,6 +95,29 @@ void SanitizePossibleUsernames(PasswordForm* form) {
   });
 }
 
+// Returns bit masks with differences in forms attributes which are important
+// for parsing. Bits are set according to enum FormDataDifferences.
+uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
+  if (lhs.fields.size() != rhs.fields.size())
+    return PasswordFormMetricsRecorder::kFieldsNumber;
+  size_t differences_bitmask = 0;
+  for (size_t i = 0; i < lhs.fields.size(); ++i) {
+    const FormFieldData& lhs_field = lhs.fields[i];
+    const FormFieldData& rhs_field = rhs.fields[i];
+
+    if (lhs_field.unique_renderer_id != rhs_field.unique_renderer_id)
+      differences_bitmask |= PasswordFormMetricsRecorder::kRendererFieldIDs;
+
+    if (lhs_field.form_control_type != rhs_field.form_control_type)
+      differences_bitmask |= PasswordFormMetricsRecorder::kFormControlTypes;
+
+    if (lhs_field.autocomplete_attribute != rhs_field.autocomplete_attribute)
+      differences_bitmask |=
+          PasswordFormMetricsRecorder::kAutocompleteAttributes;
+  }
+  return differences_bitmask;
+}
+
 }  // namespace
 
 NewPasswordFormManager::NewPasswordFormManager(
@@ -140,7 +163,7 @@ NewPasswordFormManager::NewPasswordFormManager(
 NewPasswordFormManager::~NewPasswordFormManager() = default;
 
 bool NewPasswordFormManager::DoesManage(
-    const autofill::FormData& form,
+    const FormData& form,
     const PasswordManagerDriver* driver) const {
   if (driver != driver_.get())
     return false;
@@ -446,7 +469,8 @@ void NewPasswordFormManager::ProcessMatches(
   if (parser_.predictions() || !wait_for_server_predictions_for_filling_) {
     ReportTimeBetweenStoreAndServerUMA();
     Fill();
-  } else {
+  } else if (!waiting_for_server_predictions_) {
+    waiting_for_server_predictions_ = true;
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&NewPasswordFormManager::Fill,
@@ -490,6 +514,7 @@ void NewPasswordFormManager::ProcessServerPredictions(
 }
 
 void NewPasswordFormManager::Fill() {
+  waiting_for_server_predictions_ = false;
   if (autofills_left_ <= 0)
     return;
   autofills_left_--;
@@ -518,6 +543,18 @@ void NewPasswordFormManager::Fill() {
                                 *observed_password_form.get(), best_matches_,
                                 federated_matches, preferred_match_,
                                 metrics_recorder_.get());
+}
+
+void NewPasswordFormManager::FillForm(const FormData& observed_form) {
+  uint32_t differences_bitmask =
+      FindFormsDifferences(observed_form_, observed_form);
+  metrics_recorder_->RecordFormChangeBitmask(differences_bitmask);
+
+  if (differences_bitmask)
+    observed_form_ = observed_form;
+
+  if (!waiting_for_server_predictions_)
+    Fill();
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
