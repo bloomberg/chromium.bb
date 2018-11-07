@@ -488,7 +488,7 @@ void ServiceWorkerContextWrapper::
     return;
   }
 
-  context_core_->storage()->FindRegistrationForPattern(
+  FindReadyRegistrationForPattern(
       net::SimplifyUrlForRequest(pattern),
       base::BindOnce(&ServiceWorkerContextWrapper::
                          DidFindRegistrationForLongRunningMessage,
