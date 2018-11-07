@@ -102,6 +102,15 @@ class BASE_EXPORT ConditionVariable {
   // Signal() revives one waiting thread.
   void Signal();
 
+  // Declares that this ConditionVariable will only ever be used by a thread
+  // that is idle at the bottom of its stack and waiting for work (in
+  // particular, it is not synchronously waiting on this ConditionVariable
+  // before resuming ongoing work). This is useful to avoid telling
+  // base-internals that this thread is "blocked" when it's merely idle and
+  // ready to do work. As such, this is only expected to be used by thread and
+  // thread pool impls.
+  void declare_only_used_while_idle() { waiting_is_blocking_ = false; }
+
  private:
 
 #if defined(OS_WIN)
@@ -115,6 +124,11 @@ class BASE_EXPORT ConditionVariable {
 #if DCHECK_IS_ON()
   base::Lock* const user_lock_;  // Needed to adjust shadow lock state on wait.
 #endif
+
+  // Whether a thread invoking Wait() on this ConditionalVariable should be
+  // considered blocked as opposed to idle (and potentially replaced if part of
+  // a pool).
+  bool waiting_is_blocking_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };

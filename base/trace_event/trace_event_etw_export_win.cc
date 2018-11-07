@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -32,6 +33,7 @@
 #include "base/trace_event/etw_manifest/chrome_events_win.h"  // NOLINT
 
 namespace {
+
 // |kFilteredEventGroupNames| contains the event categories that can be
 // exported individually. These categories can be enabled by passing the correct
 // keyword when starting the trace. A keyword is a 64-bit flag and we attribute
@@ -135,12 +137,6 @@ TraceEventETWExport::~TraceEventETWExport() {
 }
 
 // static
-TraceEventETWExport* TraceEventETWExport::GetInstance() {
-  return Singleton<TraceEventETWExport,
-                   StaticMemorySingletonTraits<TraceEventETWExport>>::get();
-}
-
-// static
 void TraceEventETWExport::EnableETWExport() {
   auto* instance = GetInstance();
   if (instance && !instance->etw_export_enabled_) {
@@ -167,7 +163,7 @@ void TraceEventETWExport::DisableETWExport() {
 
 // static
 bool TraceEventETWExport::IsETWExportEnabled() {
-  auto* instance = GetInstance();
+  auto* instance = GetInstanceIfExists();
   return (instance && instance->etw_export_enabled_);
 }
 
@@ -294,7 +290,7 @@ void TraceEventETWExport::AddCompleteEndEvent(const char* name) {
 bool TraceEventETWExport::IsCategoryGroupEnabled(
     StringPiece category_group_name) {
   DCHECK(!category_group_name.empty());
-  auto* instance = GetInstance();
+  auto* instance = GetInstanceIfExists();
   if (instance == nullptr)
     return false;
 
@@ -377,5 +373,19 @@ void TraceEventETWExport::UpdateETWKeyword() {
   DCHECK(instance);
   instance->UpdateEnabledCategories();
 }
+
+// static
+TraceEventETWExport* TraceEventETWExport::GetInstance() {
+  return Singleton<TraceEventETWExport,
+                   StaticMemorySingletonTraits<TraceEventETWExport>>::get();
+}
+
+// static
+TraceEventETWExport* TraceEventETWExport::GetInstanceIfExists() {
+  return Singleton<
+      TraceEventETWExport,
+      StaticMemorySingletonTraits<TraceEventETWExport>>::GetIfExists();
+}
+
 }  // namespace trace_event
 }  // namespace base
