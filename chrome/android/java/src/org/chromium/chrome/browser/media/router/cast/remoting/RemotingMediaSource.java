@@ -33,7 +33,7 @@ public class RemotingMediaSource implements MediaSource {
     /**
      * The Cast application id.
      */
-    private String mApplicationId = null;
+    private final String mApplicationId;
 
     /**
      * The URL to fling to the Cast device.
@@ -61,7 +61,9 @@ public class RemotingMediaSource implements MediaSource {
             return null;
         }
 
-        return new RemotingMediaSource(sourceId, mediaUrl);
+        // TODO(avayvod): check the content URL and override the app id if needed.
+        String applicationId = CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
+        return new RemotingMediaSource(sourceId, applicationId, mediaUrl);
     }
 
     /**
@@ -73,7 +75,7 @@ public class RemotingMediaSource implements MediaSource {
     @Override
     public MediaRouteSelector buildRouteSelector() {
         return new MediaRouteSelector.Builder()
-                .addControlCategory(CastMediaControlIntent.categoryForCast(getApplicationId()))
+                .addControlCategory(CastMediaControlIntent.categoryForCast(mApplicationId))
                 .build();
     }
 
@@ -82,12 +84,6 @@ public class RemotingMediaSource implements MediaSource {
      */
     @Override
     public String getApplicationId() {
-        if (mApplicationId == null) {
-            RemotingAppLauncher.RemotingApp app =
-                    RemotingAppLauncher.instance().getRemotingApp(this);
-
-            mApplicationId = (app != null) ? app.getApplicationId() : "";
-        }
         return mApplicationId;
     }
 
@@ -106,8 +102,9 @@ public class RemotingMediaSource implements MediaSource {
         return mMediaUrl;
     }
 
-    private RemotingMediaSource(String sourceId, String mediaUrl) {
+    private RemotingMediaSource(String sourceId, String applicationId, String mediaUrl) {
         mSourceId = sourceId;
+        mApplicationId = applicationId;
         mMediaUrl = mediaUrl;
     }
 }
