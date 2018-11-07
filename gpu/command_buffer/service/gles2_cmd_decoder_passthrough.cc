@@ -2041,7 +2041,11 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
     switch (query.target) {
       case GL_COMMANDS_COMPLETED_CHROMIUM:
         DCHECK(query.commands_completed_fence != nullptr);
-        result_available = query.commands_completed_fence->HasCompleted();
+        // Note: |did_finish| guarantees that the GPU has passed the fence but
+        // we cannot assume that GLFence::HasCompleted() will return true yet as
+        // that's not guaranteed by all GLFence implementations.
+        result_available =
+            did_finish || query.commands_completed_fence->HasCompleted();
         result = result_available;
         break;
 
@@ -2066,6 +2070,9 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
              pending_read_pixels_) {
           if (pending_read_pixels.waiting_async_pack_queries.count(
                   query.service_id) > 0) {
+            // Async read pixel processing happens before query processing. If
+            // there was a finish then there should be no pending read pixels.
+            DCHECK(!did_finish);
             result_available = GL_FALSE;
             result = GL_FALSE;
             break;
@@ -2075,7 +2082,7 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
 
       case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
         DCHECK(query.buffer_shadow_update_fence);
-        if (query.buffer_shadow_update_fence->HasCompleted()) {
+        if (did_finish || query.buffer_shadow_update_fence->HasCompleted()) {
           ReadBackBuffersIntoShadowCopies(query.buffer_shadow_updates);
           result_available = GL_TRUE;
           result = 0;
