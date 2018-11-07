@@ -85,6 +85,7 @@ void SaveCardBubbleControllerImpl::OfferLocalSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -120,6 +121,7 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -130,6 +132,7 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
         is_upload_save_, is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -186,6 +189,7 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -359,6 +363,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -381,6 +386,7 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -408,6 +414,7 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
       is_upload_save_, is_reshow_, should_request_name_from_user_,
+      should_request_expiration_date_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel());
@@ -504,6 +511,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
             ? AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING
             : AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN,
         is_upload_save_, is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
         GetSecurityLevel());
@@ -588,6 +596,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
       AutofillMetrics::LogSaveCardPromptMetric(
           AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, is_upload_save_, is_reshow_,
           should_request_name_from_user_,
+          should_request_expiration_date_from_user_,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState),
           GetSecurityLevel());

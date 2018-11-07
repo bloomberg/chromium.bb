@@ -103,6 +103,9 @@ class AutofillMetrics {
     // The Autofill StrikeDatabase decided not to allow offering to save for
     // this card. On mobile, that means no save prompt is shown at all.
     UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE = 1 << 13,
+    // A pair of dropdowns for the user to select expiration date was surfaced
+    // in the offer-to-save dialog.
+    USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE = 1 << 14,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -908,6 +911,7 @@ class AutofillMetrics {
       bool is_uploading,
       bool is_reshow,
       bool is_requesting_cardholder_name,
+      bool is_requesting_expiration_date_from_user,
       int previous_save_credit_card_prompt_user_decision,
       security_state::SecurityLevel security_level);
   static void LogSaveCardPromptMetricBySecurityLevel(
@@ -1278,7 +1282,7 @@ class AutofillMetrics {
   };
 
  private:
-  static const int kNumCardUploadDecisionMetrics = 14;
+  static const int kNumCardUploadDecisionMetrics = 15;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

@@ -760,6 +760,7 @@ void AutofillMetrics::LogSaveCardPromptMetric(
     bool is_uploading,
     bool is_reshow,
     bool is_requesting_cardholder_name,
+    bool is_requesting_expiration_date,
     int previous_save_credit_card_prompt_user_decision,
     security_state::SecurityLevel security_level) {
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
@@ -772,6 +773,11 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   if (is_requesting_cardholder_name) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_METRICS);
+  }
+  if (is_requesting_expiration_date) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingExpirationDate", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);
   }
   base::UmaHistogramEnumeration(
