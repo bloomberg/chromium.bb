@@ -5394,3 +5394,7 @@ crbug.com/901317 external/wpt/service-workers/service-worker/update-registration
 crbug.com/901317 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
 crbug.com/901317 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
 crbug.com/901317 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Failure Pass ]
+
+#Sheriff 2018-11-06
+crbug.com/902632 [ Win Debug ] fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
+
