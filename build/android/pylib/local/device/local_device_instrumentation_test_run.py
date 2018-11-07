@@ -298,9 +298,10 @@ class LocalDeviceInstrumentationTestRun(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
     if self._test_instance.wait_for_java_debugger:
+      apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
       logging.warning('Waiting for debugger to attach to process: %s',
-                      self._test_instance.apk_under_test.GetPackageName())
+                      apk.GetPackageName())
       logging.warning('*' * 80)
 
   #override
