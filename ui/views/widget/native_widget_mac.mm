@@ -302,13 +302,11 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
   if (modal_type == ui::MODAL_TYPE_NONE)
     return;
 
-  // System modal windows not implemented (or used) on Mac.
-  DCHECK_NE(ui::MODAL_TYPE_SYSTEM, modal_type);
-
   // A peculiarity of the constrained window framework is that it permits a
   // dialog of MODAL_TYPE_WINDOW to have a null parent window; falling back to
   // a non-modal window in this case.
-  DCHECK(bridge_host_->parent() || modal_type == ui::MODAL_TYPE_WINDOW);
+  DCHECK(bridge_host_->parent() || modal_type == ui::MODAL_TYPE_WINDOW ||
+         modal_type == ui::MODAL_TYPE_SYSTEM);
 
   // Everything happens upon show.
 }
