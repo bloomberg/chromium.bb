@@ -20,6 +20,7 @@ mojom_component("base") {
     "text_direction.mojom",
     "thread_priority.mojom",
     "time.mojom",
+    "token.mojom",
     "unguessable_token.mojom",
     "values.mojom",
   ]
