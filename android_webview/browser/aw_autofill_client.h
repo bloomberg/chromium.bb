@@ -91,8 +91,9 @@ class AwAutofillClient : public autofill::AutofillClient,
       const autofill::CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
-      base::OnceCallback<void(const base::string16&)> callback) override;
+      UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    const base::Closure& callback) override;
   void LoadRiskData(

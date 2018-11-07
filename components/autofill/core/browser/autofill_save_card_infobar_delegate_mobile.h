@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -34,7 +35,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       StrikeDatabase* strike_database,
-      base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
+      AutofillClient::UserAcceptedUploadCallback upload_save_card_callback,
       base::OnceClosure local_save_card_callback,
       PrefService* pref_service);
 
@@ -78,7 +79,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // The callback to save the credit card to Google Payments if |upload_| is
   // true and the user accepts the infobar.
-  base::OnceCallback<void(const base::string16&)> upload_save_card_callback_;
+  AutofillClient::UserAcceptedUploadCallback upload_save_card_callback_;
 
   // The callback to save the credit card locally to the device if |upload_| is
   // false and the user accepts the infobar.

@@ -434,7 +434,8 @@ void CreditCardSaveManager::OfferCardUploadSave() {
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message_),
-        should_request_name_from_user_, show_save_prompt_.value(),
+        should_request_name_from_user_,
+        should_request_expiration_date_from_user_, show_save_prompt_.value(),
         base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
                        weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
@@ -717,17 +718,30 @@ int CreditCardSaveManager::GetDetectedValues() const {
 }
 
 void CreditCardSaveManager::OnUserDidAcceptUpload(
-    const base::string16& cardholder_name) {
+    const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   // If cardholder name was explicitly requested for the user to enter/confirm,
   // replace the name on |upload_request_.card| with the entered name.  (Note
   // that it is possible a name already existed on the card if conflicting names
   // were found, which this intentionally overwrites.)
-  if (!cardholder_name.empty()) {
+  if (!user_provided_card_details.cardholder_name.empty()) {
     DCHECK(should_request_name_from_user_);
-    upload_request_.card.SetInfo(CREDIT_CARD_NAME_FULL, cardholder_name,
+    upload_request_.card.SetInfo(CREDIT_CARD_NAME_FULL,
+                                 user_provided_card_details.cardholder_name,
                                  app_locale_);
   }
   user_did_accept_upload_prompt_ = true;
+  // If expiration date was explicitly requested for the user to select, replace
+  // the expiration date on |upload_request_.card| with the selected date.
+  if (!user_provided_card_details.expiration_date_month.empty() &&
+      !user_provided_card_details.expiration_date_year.empty()) {
+    DCHECK(should_request_expiration_date_from_user_);
+    upload_request_.card.SetInfo(
+        CREDIT_CARD_EXP_MONTH, user_provided_card_details.expiration_date_month,
+        app_locale_);
+    upload_request_.card.SetInfo(
+        CREDIT_CARD_EXP_4_DIGIT_YEAR,
+        user_provided_card_details.expiration_date_year, app_locale_);
+  }
   // Populating risk data and offering upload occur asynchronously.
   // If |risk_data| has already been loaded, send the upload card request.
   // Otherwise, continue to wait and let OnDidGetUploadRiskData handle it.

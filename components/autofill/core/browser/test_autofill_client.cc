@@ -115,10 +115,11 @@ void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_prompt,
-    base::OnceCallback<void(const base::string16&)> callback) {
+    UserAcceptedUploadCallback callback) {
   offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
-  std::move(callback).Run(base::string16());
+  std::move(callback).Run({});
 }
 
 void TestAutofillClient::ConfirmCreditCardFillAssist(

@@ -175,8 +175,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
           GetStrikeDatabase(),
-          /*upload_save_card_callback=*/
-          base::OnceCallback<void(const base::string16&)>(),
+          /*upload_save_card_callback=*/UserAcceptedUploadCallback(),
           /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 }
 
@@ -196,8 +195,9 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_prompt,
-    base::OnceCallback<void(const base::string16&)> callback) {
+    UserAcceptedUploadCallback callback) {
   DCHECK(show_prompt);
   auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(

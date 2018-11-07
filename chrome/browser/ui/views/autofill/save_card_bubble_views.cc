@@ -83,7 +83,7 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 
 bool SaveCardBubbleViews::Accept() {
   if (controller_)
-    controller_->OnSaveButton(base::string16());
+    controller_->OnSaveButton({});
   return true;
 }
 

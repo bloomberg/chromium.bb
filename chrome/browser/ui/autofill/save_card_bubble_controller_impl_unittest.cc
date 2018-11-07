@@ -93,7 +93,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void SetLegalMessage(const std::string& message_json,
-                       bool should_request_name_from_user = false) {
+                       bool should_request_name_from_user = false,
+                       bool should_request_expiration_date_from_user = false) {
     std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
@@ -102,6 +103,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         dictionary->CreateDeepCopy();
     controller()->OfferUploadSave(
         CreditCard(), std::move(legal_message), should_request_name_from_user,
+        should_request_expiration_date_from_user,
         /*show_bubble=*/true, base::BindOnce(&UploadSaveCardCallback));
   }
 
@@ -113,14 +115,16 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         /*show_bubble=*/true, base::BindOnce(&LocalSaveCardCallback));
   }
 
-  void ShowUploadBubble(bool should_request_name_from_user = false) {
+  void ShowUploadBubble(bool should_request_name_from_user = false,
+                        bool should_request_expiration_date_from_user = false) {
     SetLegalMessage(
         "{"
         "  \"line\" : [ {"
         "     \"template\": \"This is the entire message.\""
         "  } ]"
         "}",
-        should_request_name_from_user);
+        should_request_name_from_user,
+        should_request_expiration_date_from_user);
   }
 
   void CloseAndReshowBubble() {
@@ -129,7 +133,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void ClickSaveButton() {
-    controller()->OnSaveButton();
+    controller()->OnSaveButton({});
     if (controller()->CanAnimate())
       controller()->OnAnimationEnded();
   }
@@ -164,7 +168,9 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
   };
 
-  static void UploadSaveCardCallback(const base::string16& cardholder_name) {}
+  static void UploadSaveCardCallback(
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details) {}
   static void LocalSaveCardCallback() {}
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
@@ -955,7 +961,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
 
   // No other bubbles should have popped up.
   histogram_tester.ExpectTotalCount("Autofill.SignInPromo", 0);
@@ -988,7 +994,7 @@ TEST_F(
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
 
   // After closing the sign-in promo, clicking the icon should bring
@@ -1006,7 +1012,7 @@ TEST_F(
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
   CloseAndReshowBubble();
 
@@ -1042,7 +1048,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
 
   test_clock_.Advance(base::TimeDelta::FromSeconds(6));
@@ -1061,7 +1067,7 @@ TEST_F(
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
   controller()->OnBubbleClosed();
 
@@ -1080,9 +1086,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
@@ -1097,7 +1103,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
 
   ShowLocalBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   CloseAndReshowBubble();
   controller()->OnManageCardsClicked();
 
@@ -1128,7 +1134,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   base::HistogramTester histogram_tester;
 
   ShowUploadBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
 
   // No other bubbles should have popped up.
   histogram_tester.ExpectTotalCount("Autofill.SignInPromo", 0);
@@ -1142,7 +1148,7 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ManageCards) {
   base::HistogramTester histogram_tester;
 
   ShowUploadBubble();
-  controller()->OnSaveButton();
+  controller()->OnSaveButton({});
   controller()->ShowBubbleForManageCardsForTesting(
       autofill::test::GetCreditCard());
 
@@ -1150,6 +1156,20 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ManageCards) {
   // even when this flag is enabled.
   histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Local", 0);
   histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Upload", 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestExpirationDateFromUserWhenFalse) {
+  ShowUploadBubble(/*should_request_name_from_user=*/true,
+                   /*should_request_expiration_date_from_user=*/false);
+  EXPECT_FALSE(controller()->ShouldRequestExpirationDateFromUser());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestExpirationDateFromUserWhenTrue) {
+  ShowUploadBubble(/*should_request_name_from_user=*/true,
+                   /*should_request_expiration_date_from_user=*/true);
+  EXPECT_TRUE(controller()->ShouldRequestExpirationDateFromUser());
 }
 
 }  // namespace autofill
