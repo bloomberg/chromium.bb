@@ -31,6 +31,7 @@
 #include "net/dns/host_resolver.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
+#include "services/network/network_qualities_pref_delegate.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -336,6 +337,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     host_resolver_factory_ = std::move(factory);
   }
 
+  void set_network_qualities_pref_delegate_for_testing(
+      std::unique_ptr<NetworkQualitiesPrefDelegate>
+          network_qualities_pref_delegate) {
+    network_qualities_pref_delegate_ =
+        std::move(network_qualities_pref_delegate);
+  }
+
  private:
   class ContextNetworkDelegate;
 
@@ -503,6 +511,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
+
+  std::unique_ptr<NetworkQualitiesPrefDelegate>
+      network_qualities_pref_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

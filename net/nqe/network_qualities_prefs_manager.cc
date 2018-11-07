@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -74,6 +75,9 @@ NetworkQualitiesPrefsManager::NetworkQualitiesPrefsManager(
 NetworkQualitiesPrefsManager::~NetworkQualitiesPrefsManager() {
   if (!network_task_runner_)
     return;
+  if (pref_task_runner_->RunsTasksInCurrentSequence()) {
+    ShutdownOnPrefSequence();
+  }
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
   if (network_quality_estimator_)
     network_quality_estimator_->RemoveNetworkQualitiesCacheObserver(this);
@@ -113,6 +117,8 @@ void NetworkQualitiesPrefsManager::ShutdownOnPrefSequence() {
 
 void NetworkQualitiesPrefsManager::ClearPrefs() {
   DCHECK(pref_task_runner_->RunsTasksInCurrentSequence());
+
+  LOCAL_HISTOGRAM_COUNTS_100("NQE.PrefsSizeOnClearing", prefs_->size());
   prefs_->Clear();
   DCHECK_EQ(0u, prefs_->size());
   pref_delegate_->SetDictionaryValue(*prefs_);

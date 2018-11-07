@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -843,6 +845,34 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                      base::Unretained(this)));
 
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
+}
+
+// Verifies that the network quality prefs are cleared.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VerifyNQECacheCleared) {
+  base::HistogramTester histogram_tester;
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
+
+  // Wait until there is at least one sample in NQE.PrefsSizeOnClearing.
+  bool histogram_populated = false;
+  for (size_t attempt = 0; attempt < 3; ++attempt) {
+    const std::vector<base::Bucket> buckets =
+        histogram_tester.GetAllSamples("NQE.PrefsSizeOnClearing");
+    for (const auto& bucket : buckets) {
+      if (bucket.count > 0) {
+        histogram_populated = true;
+        break;
+      }
+    }
+    if (histogram_populated)
+      break;
+
+    // Retry fetching the histogram since it's not populated yet.
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  histogram_tester.ExpectTotalCount("NQE.PrefsSizeOnClearing", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,

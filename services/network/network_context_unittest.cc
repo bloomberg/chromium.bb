@@ -38,6 +38,7 @@
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -65,6 +66,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state_test_util.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -88,6 +90,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
+#include "services/network/network_qualities_pref_delegate.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
@@ -826,6 +829,45 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   EXPECT_FALSE(network_context->url_request_context()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
+}
+
+// Checks that ClearNetworkingHistorySince() clears network quality prefs.
+TEST_F(NetworkContextTest, ClearingNetworkingHistoryClearNetworkQualityPrefs) {
+  const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+  TestingPrefServiceSimple pref_service_simple;
+  NetworkQualitiesPrefDelegate::RegisterPrefs(pref_service_simple.registry());
+
+  std::unique_ptr<NetworkQualitiesPrefDelegate>
+      network_qualities_pref_delegate =
+          std::make_unique<NetworkQualitiesPrefDelegate>(&pref_service_simple,
+                                                         &estimator);
+  NetworkQualitiesPrefDelegate* network_qualities_pref_delegate_ptr =
+      network_qualities_pref_delegate.get();
+  network_context->set_network_qualities_pref_delegate_for_testing(
+      std::move(network_qualities_pref_delegate));
+
+  // Running the loop allows prefs to be set.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      network_qualities_pref_delegate_ptr->ForceReadPrefsForTesting().empty());
+
+  // Clear the networking history.
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+  network_context->ClearNetworkingHistorySince(
+      base::Time::Now() - base::TimeDelta::FromHours(1),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Running the loop should clear the network quality prefs.
+  base::RunLoop().RunUntilIdle();
+  // Prefs should be empty now.
+  EXPECT_TRUE(
+      network_qualities_pref_delegate_ptr->ForceReadPrefsForTesting().empty());
+  histogram_tester.ExpectTotalCount("NQE.PrefsSizeOnClearing", 1);
 }
 
 // Test that TransportSecurity state is persisted (or not) as expected.

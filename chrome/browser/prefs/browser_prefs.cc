@@ -32,7 +32,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -378,6 +377,9 @@ const char kSupervisedUserCreationAllowed[] =
 // Deprecated 10/2018
 const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 
+// Deprecated 11/2018.
+const char kNetworkQualities[] = "net.network_qualities";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -403,6 +405,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kSupervisedUserCreationAllowed, true);
 
   registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
+
+  registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace
@@ -603,7 +607,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
-  UINetworkQualityEstimatorService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -862,4 +865,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 10/2018
   profile_prefs->ClearPref(kReverseAutologinEnabled);
+
+  // Added 11/2018.
+  profile_prefs->ClearPref(kNetworkQualities);
 }
