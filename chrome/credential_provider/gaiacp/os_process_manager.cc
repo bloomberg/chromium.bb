@@ -244,8 +244,8 @@ HRESULT AllowLogonSIDOnLocalBasedNamedObjects(PSID sid) {
                                   DIRECTORY_CREATE_OBJECT |
                                   DIRECTORY_CREATE_SUBDIRECTORY;
   ACL* new_dacl = nullptr;
-  HRESULT hr = AddAllowedACE(dacl, NO_PROPAGATE_INHERIT_ACE,
-                             kDesiredSidAccess, sid, &new_dacl);
+  HRESULT hr = AddAllowedACE(dacl, NO_PROPAGATE_INHERIT_ACE, kDesiredSidAccess,
+                             sid, &new_dacl);
   ::LocalFree(sd);  // This "frees" dacl too.
   if (FAILED(hr)) {
     LOGFN(ERROR) << "AddAllowedACE 0 hr=" << putHR(hr);
@@ -288,14 +288,15 @@ HRESULT AllowLogonSIDOnWinSta0(PSID sid) {
   }
 
   // Add DACL entries.  This is the minimum set of access rights needed for
-  // a simple MFC app to run.  Hopefully a program that displays a webui
-  // won't need more than this.
+  // a simple MFC app to run.
   const DWORD kDesiredAccess =
       WINSTA_ACCESSGLOBALATOMS | WINSTA_READSCREEN | WINSTA_EXITWINDOWS |
       READ_CONTROL |
-      // The below needed to run chrome for webview.  In particular,
+      // The below are needed to run Chrome.  In particular,
       // WINSTA_WRITEATTRIBUTES is needed so that keyboard shortcuts works.
-      WINSTA_READATTRIBUTES | WINSTA_WRITEATTRIBUTES;
+      // WINSTA_CREATEDESKTOP is needed in order for Chrome's sandboxing
+      // to work.
+      WINSTA_CREATEDESKTOP | WINSTA_READATTRIBUTES | WINSTA_WRITEATTRIBUTES;
   ACL* new_dacl = nullptr;
   HRESULT hr = AddAllowedACE(dacl, NO_PROPAGATE_INHERIT_ACE, kDesiredAccess,
                              sid, &new_dacl);
@@ -360,12 +361,14 @@ HDESK GetAndAllowLogonSIDOnDesktop(const wchar_t* desktop_name,
   }
 
   // Add DACL entries.  This is the minimum set of access rights needed for
-  // a simple MFC app to run.  Hopefully a program that displays a webui
-  // won't need more than this.
-  const DWORD kAccessMask = DESKTOP_CREATEWINDOW | DESKTOP_CREATEMENU |
-                            DESKTOP_HOOKCONTROL | DESKTOP_ENUMERATE |
-                            DESKTOP_READOBJECTS | DESKTOP_WRITEOBJECTS |
-                            READ_CONTROL;
+  // a simple MFC app to run.
+  const DWORD kAccessMask =
+      DESKTOP_CREATEWINDOW | DESKTOP_CREATEMENU | DESKTOP_HOOKCONTROL |
+      DESKTOP_ENUMERATE | DESKTOP_READOBJECTS | DESKTOP_WRITEOBJECTS |
+      READ_CONTROL |
+      // This permission is needed specifically by Chrome to run due to the
+      // sandboxing it does with its processes.
+      DESKTOP_SWITCHDESKTOP;
   ACL* new_dacl = nullptr;
   HRESULT hr = AddAllowedACE(dacl, 0, kAccessMask, sid, &new_dacl);
   ::LocalFree(sd);  // This "frees" dacl too.
