@@ -4,13 +4,40 @@
 
 #include "components/sync/driver/test_sync_service.h"
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/engine/cycle/model_neutral_state.h"
 
 namespace syncer {
 
-TestSyncService::TestSyncService() = default;
+namespace {
+
+SyncCycleSnapshot MakeDefaultCycleSnapshot() {
+  return SyncCycleSnapshot(
+      ModelNeutralState(), ProgressMarkerMap(), /*is_silenced-*/ false,
+      /*num_encryption_conflicts=*/5, /*num_hierarchy_conflicts=*/2,
+      /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
+      /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
+      /*poll_finish_time=*/base::Time::Now(),
+      /*num_entries_by_type=*/std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+      /*num_to_delete_entries_by_type=*/
+      std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+      /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
+      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
+      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*has_remaining_local_changes=*/false);
+}
+
+}  // namespace
+
+TestSyncService::TestSyncService()
+    : preferred_data_types_(ModelTypeSet::All()),
+      active_data_types_(ModelTypeSet::All()),
+      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
 
 TestSyncService::~TestSyncService() = default;
 
@@ -26,6 +53,15 @@ void TestSyncService::SetLocalSyncEnabled(bool local_sync_enabled) {
   local_sync_enabled_ = local_sync_enabled;
 }
 
+void TestSyncService::SetAuthenticatedAccountInfo(
+    const AccountInfo& account_info) {
+  account_info_ = account_info;
+}
+
+void TestSyncService::SetIsAuthenticatedAccountPrimary(bool is_primary) {
+  account_is_primary_ = is_primary;
+}
+
 void TestSyncService::SetAuthError(const GoogleServiceAuthError& auth_error) {
   auth_error_ = auth_error;
 }
@@ -38,12 +74,20 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
   active_data_types_ = types;
 }
 
-void TestSyncService::SetCustomPassphraseEnabled(bool enabled) {
-  custom_passphrase_enabled_ = enabled;
+void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
+  using_secondary_passphrase_ = enabled;
 }
 
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
+}
+
+void TestSyncService::SetEmptyLastCycleSnapshot() {
+  SetLastCycleSnapshot(SyncCycleSnapshot());
+}
+
+void TestSyncService::SetNonEmptyLastCycleSnapshot() {
+  SetLastCycleSnapshot(MakeDefaultCycleSnapshot());
 }
 
 int TestSyncService::GetDisableReasons() const {
@@ -63,7 +107,7 @@ AccountInfo TestSyncService::GetAuthenticatedAccountInfo() const {
 }
 
 bool TestSyncService::IsAuthenticatedAccountPrimary() const {
-  return true;
+  return account_is_primary_;
 }
 
 const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
@@ -125,7 +169,7 @@ base::Time TestSyncService::GetExplicitPassphraseTime() const {
 }
 
 bool TestSyncService::IsUsingSecondaryPassphrase() const {
-  return custom_passphrase_enabled_;
+  return using_secondary_passphrase_;
 }
 
 void TestSyncService::EnableEncryptEverything() {}
@@ -153,7 +197,15 @@ UserShare* TestSyncService::GetUserShare() const {
 }
 
 syncer::SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
-  return syncer::SyncTokenStatus();
+  syncer::SyncTokenStatus token;
+
+  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    token.connection_status = syncer::ConnectionStatus::CONNECTION_AUTH_ERROR;
+    token.last_get_token_error =
+        GoogleServiceAuthError::FromServiceError("error");
+  }
+
+  return token;
 }
 
 bool TestSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
@@ -208,7 +260,7 @@ bool TestSyncService::IsPassphraseRequired() const {
 }
 
 ModelTypeSet TestSyncService::GetEncryptedDataTypes() const {
-  if (!custom_passphrase_enabled_) {
+  if (!using_secondary_passphrase_) {
     // PASSWORDS are always encrypted.
     return ModelTypeSet(syncer::PASSWORDS);
   }

@@ -29,13 +29,13 @@
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/browser/test_sync_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/webdata/common/web_data_results.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -254,7 +254,7 @@ class AutofillMetricsTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
-  TestSyncService sync_service_;
+  syncer::TestSyncService sync_service_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;

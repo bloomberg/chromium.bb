@@ -21,8 +21,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
-#include "components/autofill/core/browser/test_sync_service.h"
 #include "components/payments/content/payment_request.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -269,7 +269,7 @@ class PaymentRequestBrowserTestBase
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
-  autofill::TestSyncService sync_service_;
+  syncer::TestSyncService sync_service_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   bool is_incognito_;
   bool is_valid_ssl_;
