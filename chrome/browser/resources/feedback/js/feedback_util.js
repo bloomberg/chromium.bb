@@ -28,3 +28,18 @@ var FEEDBACK_PRIVACY_POLICY_URL = 'https://policies.google.com/privacy';
  * @const
  */
 var FEEDBACK_TERM_OF_SERVICE_URL = 'https://policies.google.com/terms';
+
+/**
+ * Opens the supplied url in an app window. It uses the url as the window ID.
+ * @param {string} url The destination URL for the link.
+ */
+function openUrlInAppWindow(url) {
+  chrome.app.window.create(url, {
+    frame: 'chrome',
+    id: url,
+    width: 640,
+    height: 400,
+    hidden: false,
+    resizable: true
+  });
+}
