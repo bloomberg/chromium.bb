@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.support.annotation.Nullable;
@@ -24,6 +25,9 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.crash.CrashKeyIndex;
 import org.chromium.chrome.browser.crash.CrashKeys;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics.DestructionReason;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Dynamically loads a module from another apk.
@@ -44,6 +48,7 @@ public class ModuleLoader {
     private boolean mIsModuleLoading;
 
     private final ObserverList<Callback<ModuleEntryPoint>> mCallbacks = new ObserverList<>();
+    private final List<Bundle> mPendingBundles = new ArrayList<>();
 
     /**
      * The timestamp of the moment the module became unused. This is used to determine whether or
@@ -112,6 +117,19 @@ public class ModuleLoader {
 
         mIsModuleLoading = true;
         new LoadClassTask(moduleContext).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Loads the dynamic module if it is not loaded yet,
+     * and transfers the bundle to it regardless of the previous loaded state.
+     */
+    public void sendBundleToModule(Bundle bundle) {
+        if (mModuleEntryPoint != null) {
+            mModuleEntryPoint.onBundleReceived(bundle);
+            return;
+        }
+        mPendingBundles.add(bundle);
+        loadModule();
     }
 
     /**
@@ -202,6 +220,14 @@ public class ModuleLoader {
         mCallbacks.clear();
     }
 
+    private void sendAllBundles() {
+        assert !mIsModuleLoading;
+        for (Bundle bundle: mPendingBundles) {
+            mModuleEntryPoint.onBundleReceived(bundle);
+        }
+        mPendingBundles.clear();
+    }
+
     /**
      * A task for loading the module entry point class on a background thread.
      */
@@ -280,10 +306,12 @@ public class ModuleLoader {
                 long entryPointInitStartTime = ModuleMetrics.now();
                 entryPoint.init(moduleHost);
                 ModuleMetrics.recordEntryPointInitTime(entryPointInitStartTime);
+
                 ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_NEW);
                 mModuleEntryPoint = entryPoint;
                 mModuleUnusedTimeMs = ModuleMetrics.now();
                 runAndClearCallbacks();
+                sendAllBundles();
                 return;
             } catch (Exception e) {
                 // No multi-catch below API level 19 for reflection exceptions.
