@@ -66,6 +66,8 @@
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
+#else
+#include "media/cdm/default_cdm_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -622,6 +624,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
+#else
+  cdm_factory_.reset(new media::DefaultCdmFactory());
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   return cdm_factory_.get();
