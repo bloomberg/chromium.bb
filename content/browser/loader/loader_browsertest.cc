@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -40,6 +42,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -723,7 +726,6 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RedirectToFileSystemURLBlocked) {
                    "/server-redirect?" + CreateFileSystemURL(shell()).spec())));
 }
 
-
 namespace {
 
 struct RequestData {
@@ -1132,6 +1134,72 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
     EXPECT_THAT(html_content.c_str(), Not(HasSubstr("cookie_A=A")));
     EXPECT_THAT(html_content.c_str(), HasSubstr("cookie_B=B"));
   }
+}
+
+class URLModifyingThrottle : public URLLoaderThrottle {
+ public:
+  URLModifyingThrottle() = default;
+  ~URLModifyingThrottle() override = default;
+
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    GURL::Replacements replacements;
+    replacements.SetQueryStr("foo=bar");
+    request->url = request->url.ReplaceComponents(replacements);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLModifyingThrottle);
+};
+
+class ThrottleContentBrowserClient : public TestContentBrowserClient {
+ public:
+  ThrottleContentBrowserClient() : TestContentBrowserClient() {}
+  ~ThrottleContentBrowserClient() override {}
+
+  // ContentBrowserClient overrides:
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      ResourceContext* resource_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
+    auto throttle = std::make_unique<URLModifyingThrottle>();
+    throttles.push_back(std::move(throttle));
+    return throttles;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThrottleContentBrowserClient);
+};
+
+// Ensures if a URLLoaderThrottle modifies a URL, the URL requested matches.
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleModifyURL) {
+  base::Lock lock;
+  ThrottleContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  std::set<GURL> urls_requested;
+  embedded_test_server()->RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        base::AutoLock auto_lock(lock);
+        urls_requested.insert(request.GetURL());
+      }));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("/simple_page.html");
+  NavigateToURL(shell(), url);
+
+  {
+    GURL expected_url(url.spec() + "?foo=bar");
+    base::AutoLock auto_lock(lock);
+    ASSERT_TRUE(urls_requested.find(expected_url) != urls_requested.end());
+  }
+
+  SetBrowserClientForTesting(old_content_browser_client);
 }
 
 }  // namespace content
