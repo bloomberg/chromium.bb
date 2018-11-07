@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/services/app_service/app_registry/app_registry.h"
+#include "chrome/browser/apps/foundation/app_service/app_registry/app_registry.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
