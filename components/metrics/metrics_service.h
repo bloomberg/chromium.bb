@@ -33,7 +33,6 @@
 #include "components/metrics/metrics_log_store.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_reporting_service.h"
-#include "components/metrics/net/network_metrics_provider.h"
 #include "components/variations/synthetic_trial_registry.h"
 
 class PrefService;
