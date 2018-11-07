@@ -16,9 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/net/wifi_access_point_info_provider.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace metrics {
@@ -27,11 +27,11 @@ SystemProfileProto::Network::EffectiveConnectionType
 ConvertEffectiveConnectionType(
     net::EffectiveConnectionType effective_connection_type);
 
-// Registers as observer with net::NetworkChangeNotifier and
-// network::NetworkQualityTracker to keep track of the network environment.
+// Registers as observer with network::NetworkConnectionTracker and keeps track
+// of the network environment.
 class NetworkMetricsProvider
     : public MetricsProvider,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Class that provides |this| with the network quality estimator.
   class NetworkQualityEstimatorProvider {
@@ -54,9 +54,10 @@ class NetworkMetricsProvider
   // Creates a NetworkMetricsProvider, where
   // |network_quality_estimator_provider| should be set if it is useful to
   // attach the quality of the network to the metrics report.
-  explicit NetworkMetricsProvider(
-      std::unique_ptr<NetworkQualityEstimatorProvider>
-          network_quality_estimator_provider = nullptr);
+  NetworkMetricsProvider(network::NetworkConnectionTrackerAsyncGetter
+                             network_connection_tracker_async_getter,
+                         std::unique_ptr<NetworkQualityEstimatorProvider>
+                             network_quality_estimator_provider = nullptr);
   ~NetworkMetricsProvider() override;
 
  private:
@@ -73,9 +74,8 @@ class NetworkMetricsProvider
       ChromeUserMetricsExtension* uma_proto) override;
   void ProvideSystemProfileMetrics(SystemProfileProto* system_profile) override;
 
-  // NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   SystemProfileProto::Network::ConnectionType GetConnectionType() const;
   SystemProfileProto::Network::WifiPHYLayerProtocol GetWifiPHYLayerProtocol()
@@ -98,12 +98,24 @@ class NetworkMetricsProvider
 
   void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
 
+  // Used as a callback to be given to NetworkConnectionTracker async getter to
+  // set the |network_connection_tracker_|.
+  void SetNetworkConnectionTracker(
+      network::NetworkConnectionTracker* network_connection_tracker);
+
+  // Watches for network connection changes.
+  // This |network_connection_tracker_| raw pointer is not owned by this class.
+  // It is obtained from the global |g_network_connection_tracker| pointer in
+  // //content/public/browser/network_service_instance.cc and points to the same
+  // object.
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;
-  // The connection type according to net::NetworkChangeNotifier.
-  net::NetworkChangeNotifier::ConnectionType connection_type_;
-  // True if the network change notifier has been initialized.
-  bool network_change_notifier_initialized_;
+  // The connection type according to network::NetworkConnectionTracker.
+  network::mojom::ConnectionType connection_type_;
+  // True if the network connection tracker has been initialized.
+  bool network_connection_tracker_initialized_;
 
   // True if |wifi_phy_layer_protocol_| changed during the lifetime of the log.
   bool wifi_phy_layer_protocol_is_ambiguous_;

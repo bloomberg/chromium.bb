@@ -90,6 +90,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -606,6 +607,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
+          content::CreateNetworkConnectionTrackerAsyncGetter(),
           std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
@@ -727,6 +729,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
+          content::CreateNetworkConnectionTrackerAsyncGetter(),
           std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>()));
 
 #if defined(OS_CHROMEOS)
