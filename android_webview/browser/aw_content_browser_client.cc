@@ -258,6 +258,10 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
+
+  // Quic is not currently supported in WebView.
+  content::GetNetworkService()->DisableQuic();
+
   return network_context;
 }
 
