@@ -321,6 +321,126 @@ static int compute_global_motion_feature_based(
   return 0;
 }
 #else
+double getCubicValue(double p[4], double x) {
+  return p[1] + 0.5 * x *
+                    (p[2] - p[0] +
+                     x * (2.0 * p[0] - 5.0 * p[1] + 4.0 * p[2] - p[3] +
+                          x * (3.0 * (p[1] - p[2]) + p[3] - p[0])));
+}
+
+void get_subcolumn(unsigned char *ref, double col[4], int stride, int x,
+                   int y_start) {
+  int i;
+  for (i = 0; i < 4; ++i) {
+    col[i] = ref[(i + y_start) * stride + x];
+  }
+}
+
+double bicubic(unsigned char *ref, double x, double y, int stride) {
+  double arr[4];
+  int k;
+  int i = (int)x;
+  int j = (int)y;
+  for (k = 0; k < 4; ++k) {
+    double arr_temp[4];
+    get_subcolumn(ref, arr_temp, stride, i + k - 1, j - 1);
+    arr[k] = getCubicValue(arr_temp, y - j);
+  }
+  return getCubicValue(arr, x - i);
+}
+
+// Interpolate a warped block using bicubic interpolation when possible
+unsigned char interpolate(unsigned char *ref, double x, double y, int width,
+                          int height, int stride) {
+  if (x < 0 && y < 0)
+    return ref[0];
+  else if (x < 0 && y > height - 1)
+    return ref[(height - 1) * stride];
+  else if (x > width - 1 && y < 0)
+    return ref[width - 1];
+  else if (x > width - 1 && y > height - 1)
+    return ref[(height - 1) * stride + (width - 1)];
+  else if (x < 0) {
+    int v;
+    int i = (int)y;
+    double a = y - i;
+    if (y > 1 && y < height - 2) {
+      double arr[4];
+      get_subcolumn(ref, arr, stride, 0, i - 1);
+      return clamp(getCubicValue(arr, a), 0, 255);
+    }
+    v = (int)(ref[i * stride] * (1 - a) + ref[(i + 1) * stride] * a + 0.5);
+    return clamp(v, 0, 255);
+  } else if (y < 0) {
+    int v;
+    int j = (int)x;
+    double b = x - j;
+    if (x > 1 && x < width - 2) {
+      double arr[4] = { ref[j - 1], ref[j], ref[j + 1], ref[j + 2] };
+      return clamp(getCubicValue(arr, b), 0, 255);
+    }
+    v = (int)(ref[j] * (1 - b) + ref[j + 1] * b + 0.5);
+    return clamp(v, 0, 255);
+  } else if (x > width - 1) {
+    int v;
+    int i = (int)y;
+    double a = y - i;
+    if (y > 1 && y < height - 2) {
+      double arr[4];
+      get_subcolumn(ref, arr, stride, width - 1, i - 1);
+      return clamp(getCubicValue(arr, a), 0, 255);
+    }
+    v = (int)(ref[i * stride + width - 1] * (1 - a) +
+              ref[(i + 1) * stride + width - 1] * a + 0.5);
+    return clamp(v, 0, 255);
+  } else if (y > height - 1) {
+    int v;
+    int j = (int)x;
+    double b = x - j;
+    if (x > 1 && x < width - 2) {
+      int row = (height - 1) * stride;
+      double arr[4] = { ref[row + j - 1], ref[row + j], ref[row + j + 1],
+                        ref[row + j + 2] };
+      return clamp(getCubicValue(arr, b), 0, 255);
+    }
+    v = (int)(ref[(height - 1) * stride + j] * (1 - b) +
+              ref[(height - 1) * stride + j + 1] * b + 0.5);
+    return clamp(v, 0, 255);
+  } else if (x > 1 && y > 1 && x < width - 2 && y < height - 2) {
+    return clamp(bicubic(ref, x, y, stride), 0, 255);
+  } else {
+    int i = (int)y;
+    int j = (int)x;
+    double a = y - i;
+    double b = x - j;
+    int v = (int)(ref[i * stride + j] * (1 - a) * (1 - b) +
+                  ref[i * stride + j + 1] * (1 - a) * b +
+                  ref[(i + 1) * stride + j] * a * (1 - b) +
+                  ref[(i + 1) * stride + j + 1] * a * b);
+    return clamp(v, 0, 255);
+  }
+}
+
+// Warps a block using flow vector [u, v] and computes the mse
+double compute_warp_and_error(unsigned char *ref, unsigned char *frm, int width,
+                              int height, int stride, double u, double v) {
+  int i, j, x, y;
+  double warped;
+  double mse = 0;
+  double err = 0;
+  for (i = 0; i < height; ++i)
+    for (j = 0; j < width; ++j) {
+      x = j - u;
+      y = i - v;
+      warped = interpolate(ref, x, y, width, height, stride);
+      err = warped - frm[j + i * stride];
+      mse += err * err;
+    }
+
+  mse /= (width * height);
+  return mse;
+}
+
 // Computes the components of the system of equations used to solve for
 // a flow vector. This includes:
 // 1.) The hessian matrix for optical flow. This matrix is in the
