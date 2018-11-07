@@ -248,8 +248,6 @@ void BackgroundFetchContext::UpdateUI(
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(crbug.com/901909): This call should reject if the event
-  // is out of scope.
   delegate_proxy_.UpdateUI(registration_id.unique_id(), title, icon);
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }
