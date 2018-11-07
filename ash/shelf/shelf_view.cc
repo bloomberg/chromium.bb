@@ -2051,6 +2051,12 @@ void ShelfView::AfterGetContextMenuItems(
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
+  // Prevent multiple requests for context menus before the current request
+  // completes. If a second request is sent before the first one can respond,
+  // the Chrome side ShelfItemDelegate will become unresponsive
+  // (https://crbug.com/881886).
+  if (waiting_for_context_menu_options_)
+    return;
   last_pressed_index_ = -1;
   const ShelfItem* item = ShelfItemForView(source);
   const int64_t display_id = GetDisplayIdForView(this);
@@ -2063,6 +2069,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
+  waiting_for_context_menu_options_ = true;
   // Get any custom entries; show the context menu in AfterGetContextMenuItems.
   model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
       display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
@@ -2076,6 +2083,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                          bool context_menu,
                          ui::MenuSourceType source_type) {
   DCHECK(!IsShowingMenu());
+  waiting_for_context_menu_options_ = false;
   if (menu_model->GetItemCount() == 0)
     return;
   menu_owner_ = source;

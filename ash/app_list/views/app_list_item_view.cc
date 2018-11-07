@@ -446,6 +446,7 @@ void AppListItemView::OnContextMenuModelReceived(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
     std::vector<ash::mojom::MenuItemPtr> menu) {
+  waiting_for_context_menu_options_ = false;
   if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
@@ -490,6 +491,13 @@ void AppListItemView::OnContextMenuModelReceived(
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
+  // Prevent multiple requests for context menus before the current request
+  // completes. If a second request is sent before the first one can respond,
+  // the Chrome side delegate will become unresponsive
+  // (https://crbug.com/881886).
+  if (waiting_for_context_menu_options_)
+    return;
+  waiting_for_context_menu_options_ = true;
   delegate_->GetContextMenuModel(
       item_weak_->id(),
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
