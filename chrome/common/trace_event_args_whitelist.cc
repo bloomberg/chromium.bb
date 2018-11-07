@@ -23,6 +23,7 @@ const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
+    {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
     {"__metadata", "process_uptime_seconds", nullptr},
