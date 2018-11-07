@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 566 tests; 396 PASS, 170 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 566 tests; 398 PASS, 168 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -58,8 +58,8 @@ PASS border-image-outset (type: discrete) has testAccumulation function
 PASS border-image-outset: "5 6 7 8" onto "1 2 3 4"
 PASS border-image-outset: "1 2 3 4" onto "5 6 7 8"
 PASS border-image-repeat (type: discrete) has testAccumulation function
-FAIL border-image-repeat: "repeat repeat" onto "stretch stretch" assert_equals: The value should be repeat repeat at 0ms expected "repeat repeat" but got "repeat"
-FAIL border-image-repeat: "stretch stretch" onto "repeat repeat" assert_equals: The value should be stretch stretch at 0ms expected "stretch stretch" but got "stretch"
+PASS border-image-repeat: "round space" onto "stretch repeat"
+PASS border-image-repeat: "stretch repeat" onto "round space"
 PASS border-image-slice (type: discrete) has testAccumulation function
 PASS border-image-slice: "5 6 7 8" onto "1 2 3 4"
 PASS border-image-slice: "1 2 3 4" onto "5 6 7 8"

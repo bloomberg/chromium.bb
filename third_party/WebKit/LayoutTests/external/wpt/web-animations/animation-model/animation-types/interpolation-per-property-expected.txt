@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 701 tests; 640 PASS, 61 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 701 tests; 643 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -71,9 +71,9 @@ FAIL border-image-outset uses discrete animation when animating between "1 2 3 4
 FAIL border-image-outset uses discrete animation when animating between "1 2 3 4" and "5 6 7 8" with effect easing assert_equals: The value should be 1 2 3 4 at 940ms expected "1 2 3 4" but got "2.71151 3.71151 4.71151 5.71151"
 FAIL border-image-outset uses discrete animation when animating between "1 2 3 4" and "5 6 7 8" with keyframe easing assert_equals: The value should be 1 2 3 4 at 940ms expected "1 2 3 4" but got "2.71151 3.71151 4.71151 5.71151"
 PASS border-image-repeat (type: discrete) has testInterpolation function
-FAIL border-image-repeat uses discrete animation when animating between "stretch stretch" and "repeat repeat" with linear easing assert_equals: The value should be stretch stretch at 0ms expected "stretch stretch" but got "stretch"
-FAIL border-image-repeat uses discrete animation when animating between "stretch stretch" and "repeat repeat" with effect easing assert_equals: The value should be stretch stretch at 0ms expected "stretch stretch" but got "stretch"
-FAIL border-image-repeat uses discrete animation when animating between "stretch stretch" and "repeat repeat" with keyframe easing assert_equals: The value should be stretch stretch at 0ms expected "stretch stretch" but got "stretch"
+PASS border-image-repeat uses discrete animation when animating between "stretch repeat" and "round space" with linear easing
+PASS border-image-repeat uses discrete animation when animating between "stretch repeat" and "round space" with effect easing
+PASS border-image-repeat uses discrete animation when animating between "stretch repeat" and "round space" with keyframe easing
 PASS border-image-slice (type: discrete) has testInterpolation function
 FAIL border-image-slice uses discrete animation when animating between "1 2 3 4" and "5 6 7 8" with linear easing assert_equals: The value should be 1 2 3 4 at 499ms expected "1 2 3 4" but got "2.996 3.996 4.996 5.996"
 FAIL border-image-slice uses discrete animation when animating between "1 2 3 4" and "5 6 7 8" with effect easing assert_equals: The value should be 1 2 3 4 at 940ms expected "1 2 3 4" but got "2.71151 3.71151 4.71151 5.71151"
