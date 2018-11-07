@@ -23,4 +23,9 @@ void PreviewsUserData::SetCommittedPreviewsType(
   committed_previews_type_ = previews_type;
 }
 
+void PreviewsUserData::SetCommittedPreviewsTypeForTesting(
+    previews::PreviewsType previews_type) {
+  committed_previews_type_ = previews_type;
+}
+
 }  // namespace previews

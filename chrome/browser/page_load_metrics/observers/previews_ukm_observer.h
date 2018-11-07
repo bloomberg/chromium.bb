@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
@@ -48,6 +49,9 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
 
  private:
   void RecordPreviewsTypes(const page_load_metrics::PageLoadExtraInfo& info);
+
+  // The preview type that was most recently committed.
+  PreviewsType committed_preview_;
 
   bool server_lofi_seen_ = false;
   bool client_lofi_seen_ = false;

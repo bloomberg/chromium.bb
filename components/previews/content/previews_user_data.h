@@ -69,6 +69,8 @@ class PreviewsUserData {
   }
   // Sets the committed previews type. Should only be called once.
   void SetCommittedPreviewsType(previews::PreviewsType previews_type);
+  // Sets the committed previews type for testing. Can be called multiple times.
+  void SetCommittedPreviewsTypeForTesting(previews::PreviewsType previews_type);
 
   bool offline_preview_used() const { return offline_preview_used_; }
   // Whether an offline preview is being served.

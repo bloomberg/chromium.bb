@@ -16,6 +16,7 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/previews_state.h"
@@ -35,12 +36,14 @@ const char kDefaultTestUrl[] = "https://www.google.com/";
 
 class TestPreviewsUKMObserver : public PreviewsUKMObserver {
  public:
-  TestPreviewsUKMObserver(bool lite_page_received,
+  TestPreviewsUKMObserver(PreviewsType committed_preview,
+                          bool lite_page_received,
                           bool noscript_on,
                           bool resource_loading_hints_on,
                           bool origin_opt_out_received,
                           bool save_data_enabled)
-      : lite_page_received_(lite_page_received),
+      : committed_preview_(committed_preview),
+        lite_page_received_(lite_page_received),
         noscript_on_(noscript_on),
         resource_loading_hints_on_(resource_loading_hints_on),
         origin_opt_out_received_(origin_opt_out_received),
@@ -56,6 +59,8 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
     previews::PreviewsUserData* user_data =
         ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
             navigation_handle, 1u);
+
+    user_data->SetCommittedPreviewsTypeForTesting(committed_preview_);
 
     if (noscript_on_) {
       content::PreviewsState previews_state =
@@ -91,6 +96,7 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
     return save_data_enabled_;
   }
 
+  PreviewsType committed_preview_;
   bool lite_page_received_;
   bool noscript_on_;
   bool resource_loading_hints_on_;
@@ -106,11 +112,13 @@ class PreviewsUKMObserverTest
   PreviewsUKMObserverTest() {}
   ~PreviewsUKMObserverTest() override {}
 
-  void RunTest(bool lite_page_received,
+  void RunTest(PreviewsType committed_preview,
+               bool lite_page_received,
                bool noscript_on,
                bool resource_loading_hints_on,
                bool origin_opt_out,
                bool save_data_enabled) {
+    committed_preview_ = committed_preview;
     lite_page_received_ = lite_page_received;
     noscript_on_ = noscript_on;
     resource_loading_hints_on_ = resource_loading_hints_on;
@@ -166,16 +174,17 @@ class PreviewsUKMObserverTest
   }
 
   void SetUp() override {
-    page_load_metrics::PageLoadMetricsObserverTestHarness ::SetUp();
+    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
     PreviewsUITabHelper::CreateForWebContents(web_contents());
   }
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<TestPreviewsUKMObserver>(
-        lite_page_received_, noscript_on_, resource_loading_hints_on_,
-        origin_opt_out_, save_data_enabled_));
+        committed_preview_, lite_page_received_, noscript_on_,
+        resource_loading_hints_on_, origin_opt_out_, save_data_enabled_));
     // Data is only added to the first navigation after RunTest().
+    committed_preview_ = PreviewsType::NONE;
     lite_page_received_ = false;
     noscript_on_ = false;
     resource_loading_hints_on_ = false;
@@ -183,6 +192,7 @@ class PreviewsUKMObserverTest
   }
 
  private:
+  PreviewsType committed_preview_ = PreviewsType::NONE;
   bool lite_page_received_ = false;
   bool noscript_on_ = false;
   bool resource_loading_hints_on_ = false;
@@ -193,9 +203,9 @@ class PreviewsUKMObserverTest
 };
 
 TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
@@ -207,9 +217,9 @@ TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
 }
 
 TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
@@ -223,9 +233,9 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
 }
 
 TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
-  RunTest(true /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, true /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   NavigateToUntrackedUrl();
 
@@ -244,9 +254,9 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(true /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LITE_PAGE, true /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -265,9 +275,9 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(true /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LITE_PAGE, true /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -281,9 +291,9 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
-  RunTest(false /* lite_page_received */, true /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          true /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   NavigateToUntrackedUrl();
 
@@ -302,9 +312,9 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* lite_page_received */, true /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          true /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -323,9 +333,9 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* lite_page_received */, true /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          true /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -339,9 +349,9 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          true /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* noscript_on */, true /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   NavigateToUntrackedUrl();
 
@@ -360,9 +370,9 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          true /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* noscript_on */, true /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -381,9 +391,9 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          true /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* noscript_on */, true /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
@@ -397,9 +407,9 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -441,9 +451,9 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -484,9 +494,9 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -522,9 +532,9 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -566,9 +576,9 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -610,9 +620,9 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -649,9 +659,9 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -698,9 +708,9 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -746,9 +756,9 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, false /* save_data_enabled */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -789,9 +799,9 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
 }
 
 TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, true /* origin_opt_out */,
-          false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          true /* origin_opt_out */, false /* save_data_enabled */);
 
   NavigateToUntrackedUrl();
 
@@ -804,9 +814,9 @@ TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
 }
 
 TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, true /* save_data_enabled */);
 
   NavigateToUntrackedUrl();
 
@@ -819,9 +829,9 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
 }
 
 TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, true /* save_data_enabled */);
 
   web_contents()->WasHidden();
 
@@ -834,9 +844,9 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
 }
 
 TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
-  RunTest(false /* lite_page_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* noscript_on */, false /* resource_loading_hints_on */,
+          false /* origin_opt_out */, true /* save_data_enabled */);
 
   SimulateAppEnterBackground();
 
@@ -846,6 +856,26 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
               true /* save_data_enabled_expected */);
+}
+
+TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
+  for (int i = static_cast<int>(PreviewsType::NONE);
+       i < static_cast<int>(PreviewsType::LAST); i++) {
+    PreviewsType type = static_cast<PreviewsType>(i);
+    if (type == PreviewsType::DEPRECATED_AMP_REDIRECTION)
+      continue;
+
+    base::HistogramTester tester;
+    RunTest(type, false /* lite_page_received */, false /* noscript_on */,
+            false /* resource_loading_hints_on */, false /* origin_opt_out */,
+            false /* save_data_enabled */);
+
+    NavigateToUntrackedUrl();
+
+    tester.ExpectUniqueSample(
+        "Previews.PageEndReason." + GetStringNameForType(type),
+        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  }
 }
 
 }  // namespace

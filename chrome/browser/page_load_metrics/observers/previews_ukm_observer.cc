@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +17,6 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
-#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -26,7 +26,8 @@
 
 namespace previews {
 
-PreviewsUKMObserver::PreviewsUKMObserver() {}
+PreviewsUKMObserver::PreviewsUKMObserver()
+    : committed_preview_(PreviewsType::NONE) {}
 
 PreviewsUKMObserver::~PreviewsUKMObserver() {}
 
@@ -47,6 +48,7 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   if (!previews_user_data)
     return STOP_OBSERVING;
 
+  committed_preview_ = previews_user_data->committed_previews_type();
   content::PreviewsState previews_state =
       previews_user_data->committed_previews_state();
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
@@ -106,6 +108,14 @@ void PreviewsUKMObserver::OnComplete(
 
 void PreviewsUKMObserver::RecordPreviewsTypes(
     const page_load_metrics::PageLoadExtraInfo& info) {
+  // Record the page end reason in UMA.
+  base::UmaHistogramExactLinear(
+      base::StringPrintf(
+          "Previews.PageEndReason.%s",
+          previews::GetStringNameForType(committed_preview_).c_str()),
+      info.page_end_reason,
+      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+
   // Only record previews types when they are active.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
       !noscript_seen_ && !resource_loading_hints_seen_ &&
