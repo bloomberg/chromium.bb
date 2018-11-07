@@ -15,6 +15,8 @@ import os
 import re
 import sys
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 # The -t tools are incompatible with -j
 t_specified = False
 j_specified = False
@@ -61,12 +63,13 @@ try:
 except IOError:
   pass
 
-if sys.platform.startswith('win'):
-  # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
-  # be called back.
-  args = ['ninja.exe'] + input_args[1:]
-else:
-  args = ['ninja'] + input_args[1:]
+# Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
+# be called back.
+ninja_exe = 'ninja.exe' if sys.platform.startswith('win') else 'ninja'
+
+# Use absolute path for ninja path,
+# or fail to execute ninja if depot_tools is not in PATH.
+args = [os.path.join(SCRIPT_DIR, ninja_exe)] + input_args[1:]
 
 num_cores = multiprocessing.cpu_count()
 if not j_specified and not t_specified:
