@@ -818,6 +818,23 @@ void LogIsShared(const bool is_shared, const ReportingType type) {
   INVESTIGATOR_HISTOGRAM_BOOLEAN("Signin.IsShared", type, is_shared);
 }
 
+void RecordRefreshTokenUpdatedFromSource(
+    bool refresh_token_is_valid,
+    SourceForRefreshTokenOperation source) {
+  if (refresh_token_is_valid) {
+    UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenUpdated.ToValidToken.Source",
+                              source);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Signin.RefreshTokenUpdated.ToInvalidToken.Source", source);
+  }
+}
+
+void RecordRefreshTokenRevokedFromSource(
+    SourceForRefreshTokenOperation source) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevoked.Source", source);
+}
+
 // --------------------------------------------------------------
 // User actions
 // --------------------------------------------------------------

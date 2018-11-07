@@ -786,8 +786,7 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ("token", consumer_.last_token_);
   EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
 
-  // Signs out and signs in
-  oauth2_service_->RevokeAllCredentials();
+  oauth2_service_->ClearCache();
 
   EXPECT_EQ(0, (int)oauth2_service_->token_cache_.size());
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(

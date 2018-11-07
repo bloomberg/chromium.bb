@@ -243,11 +243,15 @@ void SigninManager::OnSignoutDecisionReached(
     case RemoveAccountsOption::kRemoveAllAccounts:
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out, "
               << "IsSigninAllowed: " << IsSigninAllowed();
-      token_service_->RevokeAllCredentials();
+      token_service_->RevokeAllCredentials(
+          signin_metrics::SourceForRefreshTokenOperation::
+              kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
       if (token_service_->RefreshTokenHasError(account_id))
-        token_service_->RevokeCredentials(account_id);
+        token_service_->RevokeCredentials(
+            account_id, signin_metrics::SourceForRefreshTokenOperation::
+                            kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.
@@ -412,7 +416,10 @@ void SigninManager::CompletePendingSignin() {
 
   if (!temp_refresh_token_.empty()) {
     std::string account_id = GetAuthenticatedAccountId();
-    token_service_->UpdateCredentials(account_id, temp_refresh_token_);
+    token_service_->UpdateCredentials(
+        account_id, temp_refresh_token_,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kSigninManager_LegacyPreDiceSigninFlow);
     temp_refresh_token_.clear();
   }
   MergeSigninCredentialIntoCookieJar();

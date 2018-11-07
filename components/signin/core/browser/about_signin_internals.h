@@ -207,10 +207,13 @@ class AboutSigninInternals
   void OnAccessTokenRemoved(
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnRefreshTokenAvailableFromSource(const std::string& account_id,
+                                         bool is_refresh_token_valid,
+                                         const std::string& source) override;
+  void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+                                       const std::string& source) override;
 
   // OAuth2TokenServiceDelegate::Observer implementations.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnEndBatchChanges() override;
 

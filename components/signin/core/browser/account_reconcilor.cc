@@ -74,7 +74,8 @@ bool RevokeAllSecondaryTokens(
     ProfileOAuth2TokenService* token_service,
     signin::AccountReconcilorDelegate::RevokeTokenOption revoke_option,
     const std::string& primary_account,
-    bool is_account_consistency_enforced) {
+    bool is_account_consistency_enforced,
+    signin_metrics::SourceForRefreshTokenOperation source) {
   bool token_revoked = false;
   if (revoke_option ==
       AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke)
@@ -104,7 +105,7 @@ bool RevokeAllSecondaryTokens(
       token_revoked = true;
       VLOG(1) << "Revoke token for " << account;
       if (is_account_consistency_enforced)
-        token_service->RevokeCredentials(account);
+        token_service->RevokeCredentials(account, source);
     }
   }
   return token_revoked;
@@ -555,8 +556,9 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
   AccountReconcilorDelegate::RevokeTokenOption revoke_option =
       delegate_->ShouldRevokeSecondaryTokensBeforeReconcile(
           verified_gaia_accounts);
-  RevokeAllSecondaryTokens(token_service_, revoke_option, primary_account,
-                           true);
+  RevokeAllSecondaryTokens(token_service_, revoke_option, primary_account, true,
+                           signin_metrics::SourceForRefreshTokenOperation::
+                               kAccountReconcilor_GaiaCookiesUpdated);
 
   if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
       token_service_->RefreshTokenHasError(primary_account)) {
@@ -585,14 +587,18 @@ void AccountReconcilor::OnGaiaCookieDeletedByUserAction() {
   // Revoke secondary tokens.
   RevokeAllSecondaryTokens(
       token_service_, AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
-      primary_account, /*account_consistency_enforced=*/true);
+      primary_account, /*account_consistency_enforced=*/true,
+      signin_metrics::SourceForRefreshTokenOperation::
+          kAccountReconcilor_GaiaCookiesDeletedByUser);
   if (primary_account.empty())
     return;
   if (token_service_->RefreshTokenHasError(primary_account) ||
       synced_data_deletion_in_progress_count_ == 0) {
     // Invalidate the primary token, but do not revoke it.
     token_service_->UpdateCredentials(
-        primary_account, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+        primary_account, OAuth2TokenServiceDelegate::kInvalidRefreshToken,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kAccountReconcilor_GaiaCookiesDeletedByUser);
   }
 }
 
@@ -666,7 +672,9 @@ void AccountReconcilor::FinishReconcile(
     DCHECK(!delegate_->ShouldAbortReconcileIfPrimaryHasError());
     reconcile_is_noop_ = !RevokeAllSecondaryTokens(
         token_service_, AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
-        primary_account, delegate_->IsAccountConsistencyEnforced());
+        primary_account, delegate_->IsAccountConsistencyEnforced(),
+        signin_metrics::SourceForRefreshTokenOperation::
+            kAccountReconcilor_Reconcile);
   } else {
     // Create a list of accounts that need to be added to the Gaia cookie.
     if (base::ContainsValue(chrome_accounts, first_account)) {
