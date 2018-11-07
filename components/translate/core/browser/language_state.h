@@ -30,7 +30,8 @@ class LanguageState {
   // frame or sub-frame navigation).
   void DidNavigate(bool is_same_document_navigation,
                    bool is_main_frame,
-                   bool reload);
+                   bool reload,
+                   const std::string& href_translate);
 
   // Should be called when the language of the page has been determined.
   // |page_needs_translation| when false indicates that the browser should not
@@ -124,6 +125,8 @@ class LanguageState {
 
   // Whether the Translate is enabled.
   bool translate_enabled_;
+
+  std::string href_translate_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };
