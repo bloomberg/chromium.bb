@@ -99,6 +99,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_PASSWORD_PROTECTION_PHISHING;
     case SB_THREAT_TYPE_SUSPICIOUS_SITE:
       return ClientSafeBrowsingReportRequest::URL_SUSPICIOUS;
+    case SB_THREAT_TYPE_BILLING:
+      return ClientSafeBrowsingReportRequest::BILLING;
     default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type "
                    << threat_type;

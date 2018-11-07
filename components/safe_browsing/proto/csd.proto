@@ -1063,6 +1063,7 @@ message ClientSafeBrowsingReportRequest {
     DANGEROUS_DOWNLOAD_OPENED = 13;
     AD_SAMPLE = 14;
     URL_SUSPICIOUS = 15;
+    BILLING = 16;
   }
 
   message HTTPHeader {
