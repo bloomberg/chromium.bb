@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.PulseDrawable;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -1626,6 +1627,7 @@ public class Tab
                 ThreadUtils.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        ViewHighlighter.turnOffHighlight(anchorView);
                         tracker.dismissed(FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE);
                     }
                 });
@@ -1635,6 +1637,7 @@ public class Tab
                 R.dimen.text_bubble_menu_anchor_y_inset);
         rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         textBubble.show();
+        ViewHighlighter.turnOnHighlight(anchorView, true);
     }
 
     /**
