@@ -192,7 +192,7 @@ config.set10('HAVE_OPEN_MEMSTREAM', cc.has_function('open_memstream'))
 
 warn_c_args = []
 foreach a : ['-Wall', '-Wextra', '-Wsign-compare', '-Werror=undef',
-             '-Werror-implicit-function-declaration', '-Wpointer-arith',
+             '-Werror=implicit-function-declaration', '-Wpointer-arith',
              '-Wwrite-strings', '-Wstrict-prototypes', '-Wmissing-prototypes',
              '-Wmissing-declarations', '-Wnested-externs', '-Wpacked',
              '-Wswitch-enum', '-Wmissing-format-attribute',
