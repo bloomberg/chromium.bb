@@ -204,18 +204,6 @@ class PasswordFormMetricsRecorder
     kMaxValue = kPasswordRejectedInDialogObsolete
   };
 
-  // Represents form differences.
-  // 1.This is a bit mask, so new values must be powers of 2.
-  // 2.This is used for UMA, so no deletion, only adding at the end.
-  enum FormDataDifferences {
-    // Different number of fields.
-    kFieldsNumber = 1 << 0,
-    kRendererFieldIDs = 1 << 1,
-    kAutocompleteAttributes = 1 << 2,
-    kFormControlTypes = 1 << 3,
-    kMaxFormDifferencesValue = 1 << 4,
-  };
-
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -331,8 +319,6 @@ class PasswordFormMetricsRecorder
   void RecordShowManualFallbackForSaving(bool has_generated_password,
                                          bool is_update);
 
-  void RecordFormChangeBitmask(uint32_t bitmask);
-
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -432,8 +418,6 @@ class PasswordFormMetricsRecorder
   // 2 = the password was generated.
   // 4 = this was an update prompt.
   base::Optional<uint32_t> showed_manual_fallback_for_saving_;
-
-  base::Optional<uint32_t> form_changes_bitmask_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };
