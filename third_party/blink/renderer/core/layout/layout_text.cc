@@ -1603,10 +1603,39 @@ bool LayoutText::CanOptimizeSetText() const {
           // If "line-height" is "normal" we might need to recompute the
           // baseline which is not straight forward.
           !StyleRef().LineHeight().IsNegative() &&
-          // We would need to recompute the position if "direction" is "rtl" or
-          // "text-align" is not the default one.
+          // We would need to recompute the position if "direction" is "rtl".
           StyleRef().IsLeftToRightDirection() &&
-          (StyleRef().GetTextAlign(true) == ETextAlign::kStart));
+          // We would need to layout the text if it is justified.
+          (StyleRef().GetTextAlign(true) != ETextAlign::kJustify));
+}
+
+void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
+  DCHECK(FirstTextBox());
+  DCHECK(ContainingBlock());
+  DCHECK(StyleRef().IsLeftToRightDirection());
+
+  LayoutUnit offset_left = ContainingBlock()->LogicalLeftOffsetForContent();
+  LayoutUnit available_space = ContainingBlock()->ContentLogicalWidth();
+
+  switch (StyleRef().GetTextAlign(true)) {
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+    case ETextAlign::kJustify:
+    case ETextAlign::kStart:
+      // Do nothing.
+      break;
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+    case ETextAlign::kEnd:
+      offset_left += available_space - text_width;
+      break;
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
+      offset_left += (available_space - text_width) / 2;
+      break;
+  }
+
+  FirstTextBox()->SetLogicalLeft(offset_left);
 }
 
 void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
@@ -1634,6 +1663,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
     if (text_width <= ContainingBlock()->ContentLogicalWidth()) {
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
+      SetFirstTextBoxLogicalLeft(text_width);
       SetText(std::move(text), force, true);
       lines_dirty_ = false;
       valid_ng_items_ = false;
