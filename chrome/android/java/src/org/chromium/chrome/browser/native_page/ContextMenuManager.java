@@ -188,7 +188,9 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                         R.string.contextmenu_open_in_other_window);
                 put(ContextMenuItemId.OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
                 put(ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
-                        ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                        ChromeFeatureList.isInitialized()
+                                        && ChromeFeatureList.isEnabled(
+                                                   ChromeFeatureList.INCOGNITO_STRINGS)
                                 ? R.string.contextmenu_open_in_private_tab
                                 : R.string.contextmenu_open_in_incognito_tab);
                 put(ContextMenuItemId.SAVE_FOR_OFFLINE, R.string.contextmenu_save_link);
