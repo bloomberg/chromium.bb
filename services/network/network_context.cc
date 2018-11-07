@@ -709,6 +709,10 @@ void NetworkContext::ClearNetworkingHistorySince(
   url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
       time);
 
+  // May not be set in all tests.
+  if (network_qualities_pref_delegate_)
+    network_qualities_pref_delegate_->ClearPrefs();
+
   url_request_context_->http_server_properties()->Clear(
       std::move(completion_callback));
 }
@@ -1625,6 +1629,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     pref_service_factory.set_async(true);
     scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
     HttpServerPropertiesPrefDelegate::RegisterPrefs(pref_registry.get());
+    NetworkQualitiesPrefDelegate::RegisterPrefs(pref_registry.get());
     pref_service = pref_service_factory.Create(pref_registry.get());
 
     builder->SetHttpServerProperties(
@@ -1632,6 +1637,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
             std::make_unique<HttpServerPropertiesPrefDelegate>(
                 pref_service.get()),
             net_log));
+
+    network_qualities_pref_delegate_ =
+        std::make_unique<NetworkQualitiesPrefDelegate>(
+            pref_service.get(), network_service_->network_quality_estimator());
   }
 
   if (params_->transport_security_persister_path) {
