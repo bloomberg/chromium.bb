@@ -193,7 +193,6 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk_build_chrome=False,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
       # This only applies to vmtest enabled boards like betty and novato.
-      # TODO(derat): Add TastVMTestConfig here.
       vm_tests=[config_lib.VMTestConfig(
           constants.VM_SUITE_TEST_TYPE,
           test_suite='smoke',
