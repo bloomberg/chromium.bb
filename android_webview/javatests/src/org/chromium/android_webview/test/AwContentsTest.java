@@ -844,10 +844,18 @@ public class AwContentsTest {
         });
         Assert.assertEquals(0, getHistogramSampleCount(AwContents.DATA_URI_HISTOGRAM_NAME));
 
-        // Check a URL with a '#' character.
+        // '#' is legal if the baseUrl is not data scheme, because loadDataWithBaseURL accepts
+        // unencoded content.
         mActivityTestRule.runOnUiThread(() -> {
             awContents.loadDataWithBaseURL(
                     "http://www.example.com", "<html>test#foo</html>", "text/html", null, null);
+        });
+        Assert.assertEquals(0, getHistogramSampleCount(AwContents.DATA_URI_HISTOGRAM_NAME));
+
+        // Check a URL with a '#' character, with data-scheme baseUrl.
+        mActivityTestRule.runOnUiThread(() -> {
+            awContents.loadDataWithBaseURL(
+                    "data:text/html", "<html>test#foo</html>", "text/html", null, null);
         });
         Assert.assertEquals(1, getHistogramSampleCount(AwContents.DATA_URI_HISTOGRAM_NAME));
 
