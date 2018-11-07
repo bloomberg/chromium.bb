@@ -284,6 +284,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   base::RepeatingCallback<bool(const GURL& url)> filter =
       filter_builder.BuildGeneralFilter();
 
+  // Some backends support a filter that |is_null()| to make complete deletion
+  // more efficient.
+  base::RepeatingCallback<bool(const GURL&)> nullable_filter =
+      filter_builder.IsEmptyBlacklist()
+          ? base::RepeatingCallback<bool(const GURL&)>()
+          : filter;
+
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
   if ((remove_mask & DATA_TYPE_DOWNLOADS) &&
@@ -434,10 +441,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
           CreatePendingTaskCompletionClosureForMojo());
     } else {
       storage_partition->ClearHttpAndMediaCaches(
-          delete_begin, delete_end,
-          filter_builder.IsEmptyBlacklist()
-              ? base::Callback<bool(const GURL&)>()
-              : filter,
+          delete_begin, delete_end, nullable_filter,
           CreatePendingTaskCompletionClosureForMojo());
     }
     storage_partition->ClearCodeCaches(

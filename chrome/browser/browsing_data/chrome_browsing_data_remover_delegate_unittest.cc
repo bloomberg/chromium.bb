@@ -1799,8 +1799,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Beacons) {
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
-  EXPECT_TRUE(ProbablySameFilters(
-      BrowsingDataFilterBuilder::BuildNoopFilter(), tester.last_filter()));
+  EXPECT_TRUE(tester.last_filter().is_null());
 }
 
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
@@ -1832,8 +1831,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Contexts) {
                                 false);
   EXPECT_EQ(1u, tester.clear_count());
   EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
-  EXPECT_TRUE(ProbablySameFilters(
-      BrowsingDataFilterBuilder::BuildNoopFilter(), tester.last_filter()));
+  EXPECT_TRUE(tester.last_filter().is_null());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
