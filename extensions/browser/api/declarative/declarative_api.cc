@@ -150,6 +150,8 @@ ExtensionFunction::ResponseAction RulesFunction::Run() {
   int web_view_instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &web_view_instance_id));
 
+  EXTENSION_FUNCTION_VALIDATE(extension_);
+
   // <webview> embedders use the declarativeWebRequest API via
   // <webview>.onRequest.
   if (web_view_instance_id && !extension_->permissions_data()->HasAPIPermission(
