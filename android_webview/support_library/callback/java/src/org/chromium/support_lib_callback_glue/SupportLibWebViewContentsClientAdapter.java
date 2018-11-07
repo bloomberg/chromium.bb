@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwContentsClient.AwWebResourceError;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.support_lib_boundary.SafeBrowsingResponseBoundaryInterface;
 import org.chromium.support_lib_boundary.WebResourceErrorBoundaryInterface;
 import org.chromium.support_lib_boundary.WebViewClientBoundaryInterface;
@@ -29,6 +30,9 @@ import java.lang.reflect.InvocationHandler;
 public class SupportLibWebViewContentsClientAdapter {
     private static final String WEBVIEW_CLIENT_COMPAT_NAME = "androidx.webkit.WebViewClientCompat";
     private static final String[] EMPTY_FEATURE_LIST = new String[0];
+
+    private static final String COMPAT_CLIENT_HISTOGRAM =
+            "Android.WebView.SupportLibrary.ClientIsCompat";
 
     // If {@code null}, this indicates the WebViewClient is not a WebViewClientCompat. Otherwise,
     // this is a Proxy for the WebViewClientCompat.
@@ -47,6 +51,13 @@ public class SupportLibWebViewContentsClientAdapter {
             mWebViewClientSupportedFeatures = mWebViewClient == null
                     ? EMPTY_FEATURE_LIST
                     : mWebViewClient.getSupportedFeatures();
+
+            // We ignore the case where the client is set to null, since this is often done by
+            // WebView's internal logic (such as during destroy()), and would otherwise skew data.
+            if (possiblyCompatClient != null) {
+                RecordHistogram.recordBooleanHistogram(
+                        COMPAT_CLIENT_HISTOGRAM, mWebViewClient != null);
+            }
         }
     }
 
