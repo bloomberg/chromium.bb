@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -33,7 +32,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -1043,19 +1041,13 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
       IdentityTestEnvironmentProfileAdaptor::
           CreateProfileForIdentityTestEnvironment();
 
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile.get());
-  std::string account_1 =
-      account_tracker->SeedAccountInfo("1234", "a@gmail.com");
-  std::string account_2 =
-      account_tracker->SeedAccountInfo("5678", "b@gmail.com");
-
   auto identity_test_env_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
   auto* identity_test_env = identity_test_env_adaptor->identity_test_env();
-  identity_test_env->SetRefreshTokenForAccount(account_1);
-  identity_test_env->SetRefreshTokenForAccount(account_2);
-  identity_test_env->SetPrimaryAccount("a@gmail.com");
+
+  auto account_1 = identity_test_env->MakeAccountAvailable("a@gmail.com");
+  auto account_2 = identity_test_env->MakeAccountAvailable("b@gmail.com");
+  identity_test_env->SetPrimaryAccount(account_1.email);
 
   PeopleHandler handler(profile.get());
   std::unique_ptr<base::ListValue> accounts_list =
