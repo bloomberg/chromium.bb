@@ -16,6 +16,7 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_util.h"
 
 using base::trace_event::MemoryAllocatorDump;
@@ -140,8 +141,10 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
 SoftwareImageDecodeCache::SoftwareImageDecodeCache(
     SkColorType color_type,
     size_t locked_memory_limit_bytes,
-    PaintImage::GeneratorClientId generator_client_id)
+    PaintImage::GeneratorClientId generator_client_id,
+    sk_sp<SkColorSpace> target_color_space)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
+      target_color_space_(std::move(target_color_space)),
       locked_images_budget_(locked_memory_limit_bytes),
       color_type_(color_type),
       generator_client_id_(generator_client_id),
@@ -362,8 +365,9 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
   // If we can use the original decode, we'll definitely need a decode.
   if (key.type() == CacheKey::kOriginal) {
     base::AutoUnlock release(lock_);
-    local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
-                                             generator_client_id_);
+    local_cache_entry =
+        Utils::DoDecodeImage(key, paint_image, color_type_, target_color_space_,
+                             generator_client_id_);
   } else {
     // Attempt to find a cached decode to generate a scaled/subrected decode
     // from.
@@ -390,8 +394,9 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
     DCHECK(!should_decode_to_scale || !key.is_nearest_neighbor());
     if (should_decode_to_scale) {
       base::AutoUnlock release(lock_);
-      local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
-                                               generator_client_id_);
+      local_cache_entry =
+          Utils::DoDecodeImage(key, paint_image, color_type_,
+                               target_color_space_, generator_client_id_);
     }
 
     // Couldn't decode to scale or find a cached candidate. Create the
@@ -416,9 +421,9 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
           key.type() == CacheKey::kSubrectOriginal
               ? SkIRect::MakeWH(paint_image.width(), paint_image.height())
               : gfx::RectToSkIRect(key.src_rect());
-      DrawImage candidate_draw_image(
-          paint_image, src_rect, kNone_SkFilterQuality, SkMatrix::I(),
-          key.frame_key().frame_index(), key.target_color_space());
+      DrawImage candidate_draw_image(paint_image, src_rect,
+                                     kNone_SkFilterQuality, SkMatrix::I(),
+                                     key.frame_key().frame_index());
       candidate_key.emplace(
           CacheKey::FromDrawImage(candidate_draw_image, color_type_));
     }
@@ -519,9 +524,7 @@ bool SoftwareImageDecodeCache::UseCacheForDrawImage(
   // Cache images that need to be converted to a non-sRGB color space.
   // TODO(ccameron): Consider caching when any color conversion is required.
   // https://crbug.com/791828
-  const gfx::ColorSpace& dst_color_space = draw_image.target_color_space();
-  if (dst_color_space.IsValid() &&
-      dst_color_space != gfx::ColorSpace::CreateSRGB()) {
+  if (target_color_space_ && !target_color_space_->isSRGB()) {
     return true;
   }
 

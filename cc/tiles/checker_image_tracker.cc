@@ -387,7 +387,6 @@ void CheckerImageTracker::UpdateDecodeState(const DrawImage& draw_image,
       std::max(decode_state->scale.fHeight, draw_image.scale().fHeight));
   decode_state->filter_quality =
       std::max(decode_state->filter_quality, draw_image.filter_quality());
-  decode_state->color_space = draw_image.target_color_space();
   decode_state->frame_index = draw_image.frame_index();
 }
 
@@ -427,7 +426,7 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
         it->second.filter_quality,
         SkMatrix::MakeScale(it->second.scale.width(),
                             it->second.scale.height()),
-        it->second.frame_index, it->second.color_space);
+        it->second.frame_index);
     outstanding_image_decode_.emplace(candidate);
     break;
   }

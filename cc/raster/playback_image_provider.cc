@@ -18,10 +18,8 @@ void UnrefImageFromCache(DrawImage draw_image,
 
 PlaybackImageProvider::PlaybackImageProvider(
     ImageDecodeCache* cache,
-    const gfx::ColorSpace& target_color_space,
     base::Optional<Settings>&& settings)
     : cache_(cache),
-      target_color_space_(target_color_space),
       settings_(std::move(settings)) {
   DCHECK(cache_);
 }
@@ -53,7 +51,7 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
                            ? PaintImage::kDefaultFrameIndex
                            : it->second;
 
-  DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);
+  DrawImage adjusted_image(draw_image, 1.f, frame_index);
   if (!cache_->UseCacheForDrawImage(adjusted_image)) {
     return ScopedDecodedDrawImage(DecodedDrawImage(
         paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),

@@ -9895,6 +9895,11 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   // RequiresHighResToDraw is set when new output surface is used.
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
+  // The first commit will also set RequiresHighResToDraw due to the
+  // raster color space changing.
+  host_impl_->ResetRequiresHighResToDraw();
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetContentHasSlowPaths(false);

@@ -59,6 +59,7 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(
     const CacheKey& key,
     const PaintImage& paint_image,
     SkColorType color_type,
+    sk_sp<SkColorSpace> color_space,
     PaintImage::GeneratorClientId client_id) {
   SkISize target_size =
       SkISize::Make(key.target_size().width(), key.target_size().height());
@@ -74,7 +75,7 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(
                "SoftwareImageDecodeCacheUtils::DoDecodeImage - "
                "decode");
   bool result = paint_image.Decode(target_pixels->data(), &target_info,
-                                   key.target_color_space().ToSkColorSpace(),
+                                   std::move(color_space),
                                    key.frame_key().frame_index(), client_id);
   if (!result) {
     target_pixels->Unlock();
@@ -180,7 +181,7 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
     return CacheKey(frame_key, stable_id, kSubrectAndScale, false, src_rect,
-                    target_size, image.target_color_space());
+                    target_size);
   }
 
   ProcessingType type = kOriginal;
@@ -240,7 +241,7 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   }
 
   return CacheKey(frame_key, stable_id, type, is_nearest_neighbor, src_rect,
-                  target_size, image.target_color_space());
+                  target_size);
 }
 
 SoftwareImageDecodeCacheUtils::CacheKey::CacheKey(
@@ -249,15 +250,13 @@ SoftwareImageDecodeCacheUtils::CacheKey::CacheKey(
     ProcessingType type,
     bool is_nearest_neighbor,
     const gfx::Rect& src_rect,
-    const gfx::Size& target_size,
-    const gfx::ColorSpace& target_color_space)
+    const gfx::Size& target_size)
     : frame_key_(frame_key),
       stable_id_(stable_id),
       type_(type),
       is_nearest_neighbor_(is_nearest_neighbor),
       src_rect_(src_rect),
-      target_size_(target_size),
-      target_color_space_(target_color_space) {
+      target_size_(target_size) {
   if (type == kOriginal) {
     hash_ = frame_key_.hash();
   } else {
@@ -274,8 +273,6 @@ SoftwareImageDecodeCacheUtils::CacheKey::CacheKey(
     hash_ = base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
                            frame_key_.hash());
   }
-  // Include the target color space in the hash regardless of scaling.
-  hash_ = base::HashInts(hash_, target_color_space.GetHash());
 }
 
 SoftwareImageDecodeCacheUtils::CacheKey::CacheKey(const CacheKey& other) =
@@ -297,7 +294,6 @@ std::string SoftwareImageDecodeCacheUtils::CacheKey::ToString() const {
   }
   str << "]\nis_nearest_neightbor[" << is_nearest_neighbor_ << "]\nsrc_rect["
       << src_rect_.ToString() << "]\ntarget_size[" << target_size_.ToString()
-      << "]\ntarget_color_space[" << target_color_space_.ToString()
       << "]\nhash[" << hash_ << "]";
   return str.str();
 }
