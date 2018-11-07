@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 18
+// Next MinVersion: 19
 
 module arc.mojom;
 
@@ -209,8 +209,12 @@ interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
   // authorization happened for initial device provisioning.
-  [MinVersion=11] OnAuthorizationComplete@10(ArcSignInStatus status,
-                                             bool initial_signin);
+  // If |account_name| is not present, it is assumed to be the Primary/Device
+  // account. It cannot/must not be supplied when |initial_signin| is true.
+  [MinVersion=11] OnAuthorizationComplete@10(
+      ArcSignInStatus status,
+      bool initial_signin,
+      [MinVersion=18] string? account_name);
 
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInCompleteDeprecated@2();

@@ -159,6 +159,16 @@ bool IsPrimaryAccount(const chromeos::AccountManager::AccountKey& account_key) {
   return chromeos::AccountMapperUtil::IsEqual(account_key, primary_account_id);
 }
 
+std::string GetGaiaIdFromAccountName(
+    const AccountTrackerService* account_tracker_service,
+    const std::string& account_name) {
+  std::string gaia_id =
+      account_tracker_service->FindAccountInfoByEmail(account_name).gaia;
+  DCHECK(!gaia_id.empty());
+
+  return gaia_id;
+}
+
 }  // namespace
 
 // static
@@ -221,28 +231,46 @@ void ArcAuthService::OnConnectionClosed() {
   pending_token_requests_.clear();
 }
 
-void ArcAuthService::OnAuthorizationComplete(mojom::ArcSignInStatus status,
-                                             bool initial_signin) {
-  if (!initial_signin) {
-    // Note, UMA for initial signin is updated from ArcSessionManager.
-    DCHECK_NE(mojom::ArcSignInStatus::SUCCESS_ALREADY_PROVISIONED, status);
-    UpdateReauthorizationResultUMA(
-        ConvertArcSignInStatusToProvisioningResult(status), profile_);
+void ArcAuthService::OnAuthorizationComplete(
+    mojom::ArcSignInStatus status,
+    bool initial_signin,
+    const base::Optional<std::string>& account_name) {
+  if (initial_signin) {
+    DCHECK(!account_name.has_value());
+    // UMA for initial signin is updated from ArcSessionManager.
+    ArcSessionManager::Get()->OnProvisioningFinished(
+        ConvertArcSignInStatusToProvisioningResult(status));
     return;
   }
 
-  ArcSessionManager::Get()->OnProvisioningFinished(
-      ConvertArcSignInStatusToProvisioningResult(status));
+  if (!account_name.has_value() ||
+      IsPrimaryAccount(chromeos::AccountManager::AccountKey{
+          GetGaiaIdFromAccountName(account_tracker_service_,
+                                   account_name.value()),
+          chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
+    // Reauthorization for the Primary Account.
+    // The check for |!account_name.has_value()| is for backwards compatibility
+    // with older ARC versions, for which Mojo will set |account_name| to
+    // empty/null.
+    DCHECK_NE(mojom::ArcSignInStatus::SUCCESS_ALREADY_PROVISIONED, status);
+    UpdateReauthorizationResultUMA(
+        ConvertArcSignInStatusToProvisioningResult(status), profile_);
+  } else {
+    UpdateSecondarySigninResultUMA(
+        ConvertArcSignInStatusToProvisioningResult(status));
+  }
 }
 
 void ArcAuthService::OnSignInCompleteDeprecated() {
-  OnAuthorizationComplete(mojom::ArcSignInStatus::SUCCESS,
-                          true /* initial_signin */);
+  OnAuthorizationComplete(mojom::ArcSignInStatus::SUCCESS /* status */,
+                          true /* initial_signin */,
+                          base::nullopt /* account_name */);
 }
 
 void ArcAuthService::OnSignInFailedDeprecated(mojom::ArcSignInStatus reason) {
   DCHECK_NE(mojom::ArcSignInStatus::SUCCESS, reason);
-  OnAuthorizationComplete(reason, true /* initial_signin */);
+  OnAuthorizationComplete(reason /* status */, true /* initial_signin */,
+                          base::nullopt /* account_name */);
 }
 
 void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
@@ -332,13 +360,10 @@ void ArcAuthService::RequestAccountInfo(const std::string& account_name,
   // This is the post provisioning flow.
   // This request could have come for re-authenticating an existing account in
   // ARC, or for signing in a new Secondary Account.
-  const std::string gaia_id =
-      account_tracker_service_->FindAccountInfoByEmail(account_name).gaia;
-  DCHECK(!gaia_id.empty());
 
   // Check if |account_name| points to a Secondary Account.
   if (!IsPrimaryAccount(chromeos::AccountManager::AccountKey{
-          gaia_id,
+          GetGaiaIdFromAccountName(account_tracker_service_, account_name),
           chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA})) {
     FetchSecondaryAccountInfo(account_name, std::move(callback));
     return;
@@ -628,7 +653,9 @@ ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const std::string& account_id,
     bool initial_signin) {
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
-      url_loader_factory_, profile_, account_id, initial_signin);
+      url_loader_factory_, profile_, account_id, initial_signin,
+      IsPrimaryAccount(
+          account_mapper_util_.OAuthAccountIdToAccountKey(account_id)));
   if (skip_merge_session_for_testing_)
     fetcher->SkipMergeSessionForTesting();
 

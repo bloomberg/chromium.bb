@@ -51,12 +51,14 @@ ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
     const std::string& account_id,
-    bool initial_signin)
+    bool initial_signin,
+    bool is_primary_account)
     : OAuth2TokenService::Consumer(kConsumerName),
       url_loader_factory_(std::move(url_loader_factory)),
       profile_(profile),
       context_(profile_, account_id),
       initial_signin_(initial_signin),
+      is_primary_account_(is_primary_account),
       weak_ptr_factory_(this) {}
 
 ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
@@ -226,8 +228,11 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
   if (initial_signin_) {
     UpdateSilentAuthCodeUMA(uma_status);
   } else {
-    // TODO(sinhak): Check if we need to migrate this / create a new metric.
-    UpdateReauthorizationSilentAuthCodeUMA(uma_status);
+    // Not the initial provisioning.
+    if (is_primary_account_)
+      UpdateReauthorizationSilentAuthCodeUMA(uma_status);
+    else
+      UpdateSecondaryAccountSilentAuthCodeUMA(uma_status);
   }
   std::move(callback_).Run(!auth_code.empty(), auth_code);
 }

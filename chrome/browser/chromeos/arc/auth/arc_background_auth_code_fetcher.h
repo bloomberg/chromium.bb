@@ -43,7 +43,8 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       const std::string& account_id,
-      bool initial_signin);
+      bool initial_signin,
+      bool is_primary_account);
   ~ArcBackgroundAuthCodeFetcher() override;
 
   // ArcAuthCodeFetcher:
@@ -78,7 +79,11 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
 
   // Keeps context of account code request. |initial_signin_| is true if request
   // is made for initial sign-in flow.
-  bool initial_signin_;
+  const bool initial_signin_;
+
+  // Is this fetcher being used to fetch auth codes for the Device/Primary
+  // Account on Chrome OS.
+  const bool is_primary_account_;
 
   base::WeakPtrFactory<ArcBackgroundAuthCodeFetcher> weak_ptr_factory_;
 
