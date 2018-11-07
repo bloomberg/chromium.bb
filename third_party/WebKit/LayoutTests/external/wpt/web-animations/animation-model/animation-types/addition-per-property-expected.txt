@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 562 tests; 528 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 562 tests; 530 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -58,8 +58,8 @@ PASS border-image-outset (type: discrete) has testAddition function
 FAIL border-image-outset: "5 6 7 8" onto "1 2 3 4" assert_equals: The value should be 5 6 7 8 at 0ms expected "5 6 7 8" but got "6 8 10 12"
 FAIL border-image-outset: "1 2 3 4" onto "5 6 7 8" assert_equals: The value should be 1 2 3 4 at 0ms expected "1 2 3 4" but got "6 8 10 12"
 PASS border-image-repeat (type: discrete) has testAddition function
-FAIL border-image-repeat: "repeat repeat" onto "stretch stretch" assert_equals: The value should be repeat repeat at 0ms expected "repeat repeat" but got "repeat"
-FAIL border-image-repeat: "stretch stretch" onto "repeat repeat" assert_equals: The value should be stretch stretch at 0ms expected "stretch stretch" but got "stretch"
+PASS border-image-repeat: "round space" onto "stretch repeat"
+PASS border-image-repeat: "stretch repeat" onto "round space"
 PASS border-image-slice (type: discrete) has testAddition function
 FAIL border-image-slice: "5 6 7 8" onto "1 2 3 4" assert_equals: The value should be 5 6 7 8 at 0ms expected "5 6 7 8" but got "6 8 10 12"
 FAIL border-image-slice: "1 2 3 4" onto "5 6 7 8" assert_equals: The value should be 1 2 3 4 at 0ms expected "1 2 3 4" but got "6 8 10 12"
