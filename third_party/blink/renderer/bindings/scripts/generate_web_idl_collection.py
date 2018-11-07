@@ -32,7 +32,7 @@ def parse_options():
 
 def main():
     options, _ = parse_options()
-    idl_file_names = utilities.read_idl_files_list_from_file(options.idl_list_file, False)
+    idl_file_names = utilities.read_idl_files_list_from_file(options.idl_list_file)
 
     parser = blink_idl_parser.BlinkIDLParser()
     collector = Collector(component=options.component, parser=parser)

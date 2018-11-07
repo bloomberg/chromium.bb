@@ -220,7 +220,7 @@ def main():
         opts.info_dir, opts.target_component)
     generator = ExternalReferenceTableGenerator(opts, info_provider)
 
-    idl_files = utilities.read_idl_files_list_from_file(opts.idl_files_list, False)
+    idl_files = utilities.read_idl_files_list_from_file(opts.idl_files_list)
     for idl_file in idl_files:
         generator.process_idl_file(idl_file)
     output_code = generator.generate()

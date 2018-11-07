@@ -101,8 +101,8 @@ def main():
         for existing_interface_name_global_names
         in read_pickle_files(options.global_objects_component_files))
 
-    # Input IDL files are passed in a file, due to OS command line length
-    # limits. This is generated at GYP time, which is ok b/c files are static.
+    # File paths of input IDL files are passed in a file, which is generated at
+    # GN time. It is OK because the target IDL files themselves are static.
     idl_files = read_file_to_list(options.idl_files_list)
     interface_name_global_names.update(
             idl_files_to_interface_name_global_names(idl_files))
