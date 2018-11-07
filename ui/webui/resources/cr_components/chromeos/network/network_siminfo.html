@@ -95,7 +95,8 @@
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
         <network-password-input id="enterPin" value="{{pin_}}"
-            label="[[i18n('networkSimEnterPin')]]" on-enter="sendEnterPin_">
+            label="[[i18n('networkSimEnterPin')]]" on-enter="sendEnterPin_"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -118,14 +119,16 @@
       <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
         <network-password-input id="changePinOld" value="{{pin_}}"
-            label="[[i18n('networkSimEnterOldPin')]]">
+            label="[[i18n('networkSimEnterOldPin')]]"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <network-password-input id="changePinNew1" value="{{pin_new1_}}"
-            label="[[i18n('networkSimEnterNewPin')]]">
+            label="[[i18n('networkSimEnterNewPin')]]"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <network-password-input id="changePinNew2" value="{{pin_new2_}}"
             label="[[i18n('networkSimReEnterNewPin')]]"
-            on-enter="sendChangePin_">
+            on-enter="sendChangePin_" disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -148,7 +151,8 @@
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
         <network-password-input id="unlockPin" value="{{pin_}}"
-            label="[[i18n('networkSimEnterPin')]]" on-enter="sendUnlockPin_">
+            label="[[i18n('networkSimEnterPin')]]" on-enter="sendUnlockPin_"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -174,14 +178,16 @@
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
         <network-password-input id="unlockPuk" value="{{puk_}}"
-            label="[[i18n('networkSimEnterPuk')]]">
+            label="[[i18n('networkSimEnterPuk')]]"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <network-password-input id="unlockPin1" value="{{pin_new1_}}"
-            label="[[i18n('networkSimEnterNewPin')]]">
+            label="[[i18n('networkSimEnterNewPin')]]"
+            disabled="[[inProgress_]]">
         </network-password-input>
         <network-password-input id="unlockPin2" value="{{pin_new2_}}"
             label="[[i18n('networkSimReEnterNewPin')]]"
-            on-enter="sendUnlockPuk_">
+            on-enter="sendUnlockPuk_" disabled="[[inProgress_]]">
         </network-password-input>
         <div class="dialog-error">
           [[i18n('networkSimLockedWarning')]]
