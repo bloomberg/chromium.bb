@@ -83,15 +83,12 @@ class VRUiBrowserInterface : public UiBrowserInterface {
   void NavigateForward() override {}
   void ReloadTab() override {}
   void OpenNewTab(bool incognito) override {}
-  void SelectTab(int id, bool incognito) override {}
   void OpenBookmarks() override {}
   void OpenRecentTabs() override {}
   void OpenHistory() override {}
   void OpenDownloads() override {}
   void OpenShare() override {}
   void OpenSettings() override {}
-  void CloseTab(int id, bool incognito) override {}
-  void CloseAllTabs() override {}
   void CloseAllIncognitoTabs() override {}
   void OpenFeedback() override {}
   void CloseHostedDialog() override {}

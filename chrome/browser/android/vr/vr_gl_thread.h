@@ -98,15 +98,12 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void NavigateForward() override;
   void ReloadTab() override;
   void OpenNewTab(bool incognito) override;
-  void SelectTab(int id, bool incognito) override;
   void OpenBookmarks() override;
   void OpenRecentTabs() override;
   void OpenHistory() override;
   void OpenDownloads() override;
   void OpenShare() override;
   void OpenSettings() override;
-  void CloseTab(int id, bool incognito) override;
-  void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
   void OpenFeedback() override;
   void CloseHostedDialog() override;
@@ -142,6 +139,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
   void WaitForAssets() override;
+  void SetRegularTabsOpen(bool open) override;
+  void SetIncognitoTabsOpen(bool open) override;
   void SetOverlayTextureEmpty(bool empty) override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,
@@ -154,11 +153,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ShowPlatformToast(const base::string16& text) override;
   void CancelPlatformToast() override;
   void OnContentBoundsChanged(int width, int height) override;
-  void AddOrUpdateTab(int id,
-                      bool incognito,
-                      const base::string16& title) override;
-  void RemoveTab(int id, bool incognito) override;
-  void RemoveAllTabs() override;
   void PerformKeyboardInputForTesting(
       KeyboardTestInput keyboard_input) override;
 

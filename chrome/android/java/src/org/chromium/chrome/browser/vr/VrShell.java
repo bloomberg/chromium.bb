@@ -47,11 +47,9 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
@@ -1044,15 +1042,6 @@ public class VrShell extends GvrLayout
     }
 
     @CalledByNative
-    public void selectTab(int id, boolean incognito) {
-        TabModel tabModel = mTabModelSelector.getModel(incognito);
-        int index = TabModelUtils.getTabIndexById(tabModel, id);
-        if (index != TabModel.INVALID_TAB_INDEX) {
-            tabModel.setIndex(index, TabSelectionType.FROM_USER);
-        }
-    }
-
-    @CalledByNative
     public void openBookmarks() {
         mActivity.onMenuOrKeyboardAction(R.id.all_bookmarks_menu_id, true);
     }
@@ -1080,16 +1069,6 @@ public class VrShell extends GvrLayout
     @CalledByNative
     public void openSettings() {
         mActivity.onMenuOrKeyboardAction(R.id.preferences_id, true);
-    }
-
-    @CalledByNative
-    public void closeTab(int id, boolean incognito) {
-        TabModelUtils.closeTabById(mTabModelSelector.getModel(incognito), id);
-    }
-
-    @CalledByNative
-    public void closeAllTabs() {
-        mTabModelSelector.closeAllTabs();
     }
 
     @CalledByNative

@@ -44,6 +44,8 @@ class MockBrowserUiInterface : public BrowserUiInterface {
                       const base::Version& component_version) override {}
   MOCK_METHOD0(OnAssetsUnavailable, void());
   MOCK_METHOD0(WaitForAssets, void());
+  MOCK_METHOD1(SetRegularTabsOpen, void(bool));
+  MOCK_METHOD1(SetIncognitoTabsOpen, void(bool));
   MOCK_METHOD1(SetOverlayTextureEmpty, void(bool));
   MOCK_METHOD1(ShowSoftInput, void(bool));
   MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));
@@ -53,9 +55,6 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(ShowPlatformToast, void(const base::string16&));
   MOCK_METHOD0(CancelPlatformToast, void());
   MOCK_METHOD2(OnContentBoundsChanged, void(int, int));
-  MOCK_METHOD3(AddOrUpdateTab,
-               void(int id, bool incognito, const base::string16& title));
-  MOCK_METHOD2(RemoveTab, void(int id, bool incognito));
   MOCK_METHOD0(RemoveAllTabs, void());
   MOCK_METHOD1(PerformKeyboardInputForTesting, void(KeyboardTestInput));
 

@@ -214,13 +214,6 @@ void VrGLThread::OpenNewTab(bool incognito) {
       base::BindOnce(&VrShell::OpenNewTab, weak_vr_shell_, incognito));
 }
 
-void VrGLThread::SelectTab(int id, bool incognito) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::SelectTab, weak_vr_shell_, id, incognito));
-}
-
 void VrGLThread::OpenBookmarks() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
@@ -255,19 +248,6 @@ void VrGLThread::OpenSettings() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::OpenSettings, weak_vr_shell_));
-}
-
-void VrGLThread::CloseTab(int id, bool incognito) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::CloseTab, weak_vr_shell_, id, incognito));
-}
-
-void VrGLThread::CloseAllTabs() {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::CloseAllTabs, weak_vr_shell_));
 }
 
 void VrGLThread::CloseAllIncognitoTabs() {
@@ -468,6 +448,20 @@ void VrGLThread::WaitForAssets() {
       base::BindOnce(&BrowserUiInterface::WaitForAssets, weak_browser_ui_));
 }
 
+void VrGLThread::SetRegularTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetRegularTabsOpen,
+                                weak_browser_ui_, open));
+}
+
+void VrGLThread::SetIncognitoTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetIncognitoTabsOpen,
+                                weak_browser_ui_, open));
+}
+
 void VrGLThread::SetOverlayTextureEmpty(bool empty) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
@@ -528,29 +522,6 @@ void VrGLThread::OnContentBoundsChanged(int width, int height) {
       FROM_HERE,
       base::BindRepeating(&BrowserUiInterface::OnContentBoundsChanged,
                           weak_browser_ui_, width, height));
-}
-
-void VrGLThread::AddOrUpdateTab(int id,
-                                bool incognito,
-                                const base::string16& title) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::AddOrUpdateTab,
-                                weak_browser_ui_, id, incognito, title));
-}
-
-void VrGLThread::RemoveTab(int id, bool incognito) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&BrowserUiInterface::RemoveTab,
-                                         weak_browser_ui_, id, incognito));
-}
-
-void VrGLThread::RemoveAllTabs() {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserUiInterface::RemoveAllTabs, weak_browser_ui_));
 }
 
 void VrGLThread::PerformKeyboardInputForTesting(

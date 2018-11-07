@@ -421,9 +421,6 @@ const base::Feature kVideoPersistence{"VideoPersistence",
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kVrBrowsingTabsView{"VrBrowsingTabsView",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 static jboolean JNI_ChromeFeatureList_IsInitialized(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
