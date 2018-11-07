@@ -33836,6 +33836,14 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Success page"/>
 </enum>
 
+<enum name="MultiDevice_Setup_HostStatus">
+  <int value="0" label="No eligible hosts"/>
+  <int value="1" label="Eligible host exists but no host set"/>
+  <int value="2" label="Host set locally but waiting for backend confirmation"/>
+  <int value="3" label="Host set but not yet verified"/>
+  <int value="4" label="Host verified"/>
+</enum>
+
 <enum name="MultiDeviceSetupNotification">
   <int value="0" label="New user, potential host exists"/>
   <int value="1" label="Existing user, host switched"/>
