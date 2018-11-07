@@ -75,9 +75,6 @@ class VolumeArchiveMinizip : public VolumeArchive {
   // The minizip stream used to read the archive file.
   std::unique_ptr<MinizipStream> stream_;
 
-  // The minizip correspondent archive object.
-  ScopedMzZip zip_file_;
-
   // We use two kinds of cache strategies here: dynamic and static.
   // Dynamic cache is a common cache strategy used in most of IO streams such as
   // fread. When a file chunk is requested and if the size of the requested
@@ -154,6 +151,11 @@ class VolumeArchiveMinizip : public VolumeArchive {
 
   // The password cache to access password protected files.
   base::Optional<std::string> password_cache_;
+
+  // The minizip correspondent archive object.
+  // This must be destroyed before the archive stream and any of its buffers
+  // because AES encryption in minizip will try to read the file on close.
+  ScopedMzZip zip_file_;
 };
 
 #endif  // CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_
