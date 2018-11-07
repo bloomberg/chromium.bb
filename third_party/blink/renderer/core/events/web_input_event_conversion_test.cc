@@ -148,10 +148,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_EQ(15, transformed_event.PositionInScreen().x);
     EXPECT_EQ(15, transformed_event.PositionInScreen().y);
 
-    IntPoint movement =
-        FlooredIntPoint(transformed_event.MovementInRootFrame());
-    EXPECT_EQ(5, movement.X());
-    EXPECT_EQ(5, movement.Y());
+    EXPECT_EQ(15, transformed_event.movement_x);
+    EXPECT_EQ(15, transformed_event.movement_y);
   }
 
   {
@@ -322,8 +320,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_FLOAT_EQ(3.5f, transformed_event.PositionInWidget().y);
     EXPECT_FLOAT_EQ(2.2f, transformed_event.width);
     EXPECT_FLOAT_EQ(3.3f, transformed_event.height);
-    EXPECT_EQ(10, transformed_event.movement_x);
-    EXPECT_EQ(10, transformed_event.movement_y);
+    EXPECT_EQ(30, transformed_event.movement_x);
+    EXPECT_EQ(30, transformed_event.movement_y);
   }
 }
 
@@ -363,11 +361,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_FLOAT_EQ(30, position.Y());
     EXPECT_EQ(90, transformed_event.PositionInScreen().x);
     EXPECT_EQ(90, transformed_event.PositionInScreen().y);
-
-    IntPoint movement =
-        FlooredIntPoint(transformed_event.MovementInRootFrame());
-    EXPECT_EQ(20, movement.X());
-    EXPECT_EQ(20, movement.Y());
+    EXPECT_EQ(60, transformed_event.movement_x);
+    EXPECT_EQ(60, transformed_event.movement_y);
   }
 
   {
@@ -400,10 +395,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_EQ(90, coalescedevents[0].PositionInScreen().x);
     EXPECT_EQ(90, coalescedevents[0].PositionInScreen().y);
 
-    IntPoint movement =
-        FlooredIntPoint(coalescedevents[0].MovementInRootFrame());
-    EXPECT_EQ(20, movement.X());
-    EXPECT_EQ(20, movement.Y());
+    EXPECT_EQ(60, coalescedevents[0].movement_x);
+    EXPECT_EQ(60, coalescedevents[0].movement_y);
 
     position = coalescedevents[1].PositionInRootFrame();
     EXPECT_FLOAT_EQ(30, position.X());
@@ -411,9 +404,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_EQ(90, coalescedevents[1].PositionInScreen().x);
     EXPECT_EQ(120, coalescedevents[1].PositionInScreen().y);
 
-    movement = FlooredIntPoint(coalescedevents[1].MovementInRootFrame());
-    EXPECT_EQ(20, movement.X());
-    EXPECT_EQ(10, movement.Y());
+    EXPECT_EQ(60, coalescedevents[1].movement_x);
+    EXPECT_EQ(30, coalescedevents[1].movement_y);
   }
 
   {
