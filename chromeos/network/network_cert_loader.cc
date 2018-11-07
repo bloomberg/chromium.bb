@@ -91,8 +91,8 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
     if (nss_database_) {
       has_system_certificates_ =
           static_cast<bool>(nss_database_->GetSystemSlot());
-      nss_database_->ListCerts(base::AdaptCallbackForRepeating(base::BindOnce(
-          &CertCache::UpdateCertificates, weak_factory_.GetWeakPtr())));
+      nss_database_->ListCerts(base::BindOnce(&CertCache::UpdateCertificates,
+                                              weak_factory_.GetWeakPtr()));
     }
   }
 

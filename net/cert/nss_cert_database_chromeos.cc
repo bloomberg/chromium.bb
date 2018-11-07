@@ -48,13 +48,13 @@ ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsSync() {
 }
 
 void NSSCertDatabaseChromeOS::ListCerts(
-    const NSSCertDatabase::ListCertsCallback& callback) {
+    NSSCertDatabase::ListCertsCallback callback) {
   LogUserCertificates("ListCerts");
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&NSSCertDatabaseChromeOS::ListCertsImpl, profile_filter_),
-      callback);
+      base::BindOnce(&NSSCertDatabaseChromeOS::ListCertsImpl, profile_filter_),
+      std::move(callback));
 }
 
 crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetSystemSlot() const {

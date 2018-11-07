@@ -144,7 +144,7 @@ TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it might help with memory
   // leak tests.
   ScopedCERTCertificateList certs;
-  cert_db_->ListCerts(base::Bind(&SwapCertList, base::Unretained(&certs)));
+  cert_db_->ListCerts(base::BindOnce(&SwapCertList, base::Unretained(&certs)));
   EXPECT_EQ(0U, certs.size());
 
   RunUntilIdle();
