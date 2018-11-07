@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "components/prefs/pref_member.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "url/gurl.h"
 
