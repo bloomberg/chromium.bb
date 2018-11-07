@@ -551,6 +551,8 @@ source_set("common") {
     "browser/aw_safe_browsing_whitelist_manager.h",
     "browser/aw_settings.cc",
     "browser/aw_settings.h",
+    "browser/aw_speech_recognition_manager_delegate.cc",
+    "browser/aw_speech_recognition_manager_delegate.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
     "browser/aw_url_checker_delegate_impl.cc",

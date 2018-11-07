@@ -69,5 +69,7 @@ include_rules = [
   # Interface required for in-process input event handling.
   "+third_party/blink/public/web/WebCompositorInputHandler.h",
   # For find-in-page
-  "+third_party/blink/public/mojom/frame"
+  "+third_party/blink/public/mojom/frame",
+  # Required for the Web Speech API.
+  "+third_party/blink/public/mojom/speech"
 ]

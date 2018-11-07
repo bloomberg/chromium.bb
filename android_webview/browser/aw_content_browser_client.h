@@ -216,6 +216,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
     return aw_feature_list_creator_;
   }
 
+  content::SpeechRecognitionManagerDelegate*
+  CreateSpeechRecognitionManagerDelegate() override;
+
   static void DisableCreatingTaskScheduler();
 
  private:
