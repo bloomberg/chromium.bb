@@ -199,8 +199,8 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromEnv() {
   }
   // Note that this uses "suffix" matching. So a bypass of "google.com"
   // is understood to mean a bypass of "*google.com".
-  config.proxy_rules().bypass_rules.ParseFromStringUsingSuffixMatching(
-      no_proxy);
+  config.proxy_rules().bypass_rules.ParseFromString(
+      no_proxy, ProxyBypassRules::ParseFormat::kHostnameSuffixMatching);
   return ProxyConfigWithAnnotation(
       config, NetworkTrafficAnnotationTag(traffic_annotation_));
 }
@@ -381,7 +381,9 @@ class SettingGetterImplGSettings
     return false;
   }
 
-  bool MatchHostsUsingSuffixMatching() override { return false; }
+  ProxyBypassRules::ParseFormat GetBypassListFormat() override {
+    return ProxyBypassRules::ParseFormat::kDefault;
+  }
 
  private:
   bool GetStringByPath(GSettings* client,
@@ -671,7 +673,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
 
   bool BypassListIsReversed() override { return reversed_bypass_list_; }
 
-  bool MatchHostsUsingSuffixMatching() override { return true; }
+  ProxyBypassRules::ParseFormat GetBypassListFormat() override {
+    return ProxyBypassRules::ParseFormat::kHostnameSuffixMatching;
+  }
 
  private:
   void ResetCachedSettings() {
@@ -1137,18 +1141,14 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
   }
 
   // Now the bypass list.
+  auto format = setting_getter_->GetBypassListFormat();
+
   std::vector<std::string> ignore_hosts_list;
   config.proxy_rules().bypass_rules.Clear();
   if (setting_getter_->GetStringList(SettingGetter::PROXY_IGNORE_HOSTS,
                                      &ignore_hosts_list)) {
-    std::vector<std::string>::const_iterator it(ignore_hosts_list.begin());
-    for (; it != ignore_hosts_list.end(); ++it) {
-      if (setting_getter_->MatchHostsUsingSuffixMatching()) {
-        config.proxy_rules().bypass_rules.AddRuleFromStringUsingSuffixMatching(
-            *it);
-      } else {
-        config.proxy_rules().bypass_rules.AddRuleFromString(*it);
-      }
+    for (const auto& rule : ignore_hosts_list) {
+      config.proxy_rules().bypass_rules.AddRuleFromString(rule, format);
     }
   }
   // Note that there are no settings with semantics corresponding to

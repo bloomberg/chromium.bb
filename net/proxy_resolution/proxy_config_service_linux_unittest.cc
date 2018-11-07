@@ -254,7 +254,9 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
 
   bool BypassListIsReversed() override { return false; }
 
-  bool MatchHostsUsingSuffixMatching() override { return false; }
+  ProxyBypassRules::ParseFormat GetBypassListFormat() override {
+    return ProxyBypassRules::ParseFormat::kDefault;
+  }
 
   // Intentionally public, for convenience when setting up a test.
   GSettingsValues values;

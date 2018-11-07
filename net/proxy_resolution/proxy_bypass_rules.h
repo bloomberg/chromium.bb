@@ -15,31 +15,67 @@
 
 namespace net {
 
-// ProxyBypassRules describes the set of URLs that should bypass the proxy
-// settings, as a list of rules. A URL is said to match the bypass rules
-// if it matches any one of these rules.
+// ProxyBypassRules describes the set of URLs that should bypass the use of a
+// proxy.
+//
+// The rules are expressed as an ordered list of rules, which can be thought of
+// as being evaluated left-to-right. Order only matters when mixing "negative
+// rules" with "positive rules". For more details see the comments in
+// ProxyBypassRules::Matches().
+//
+// This rule list is serializable to a string (either comma or semi-colon
+// separated), which has similar semantics across platforms.
+//
+// When evalutating ProxyBypassRules there are some implicitly applied rules
+// when the URL does not match any of the explicit rules. See
+// MatchesImplicitRules() for details.
 class NET_EXPORT ProxyBypassRules {
  public:
   // Interface for an individual proxy bypass rule.
   class NET_EXPORT Rule {
    public:
+    // Describes the result of calling Rule::Evaluate() for a particular URL.
+    enum class Result {
+      // The URL does not match this rule.
+      kNoMatch,
+
+      // The URL matches this rule, and should bypass the proxy.
+      kBypass,
+
+      // The URL matches this rule, and should NOT bypass the proxy.
+      kDontBypass,
+    };
+
     Rule();
     virtual ~Rule();
 
-    // Returns true if |url| matches the rule.
-    virtual bool Matches(const GURL& url) const = 0;
+    // Evaluates the rule against |url|.
+    virtual Result Evaluate(const GURL& url) const = 0;
 
-    // Returns a string representation of this rule. This is used both for
-    // visualizing the rules, and also to test equality of a rules list.
+    // Returns a string representation of this rule (using
+    // ParseFormat::kDefault).
     virtual std::string ToString() const = 0;
-
-    // Creates a copy of this rule.
-    virtual std::unique_ptr<Rule> Clone() const = 0;
 
     bool Equals(const Rule& rule) const;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Rule);
+  };
+
+  // The input format to use when parsing proxy bypass rules. This format
+  // only applies when parsing, since once parsed any serialization will be in
+  // terms of ParseFormat::kDefault.
+  enum class ParseFormat {
+    kDefault,
+
+    // Variation of kDefault that interprets hostname patterns as being suffix
+    // tests rather than hostname tests. For example, "google.com" would be
+    // interpreted as "*google.com" when parsed with this format, and
+    // match "foogoogle.com".
+    //
+    // Only use this format if needed for compatibility when parsing Linux
+    // bypass strings.
+    kHostnameSuffixMatching,
   };
 
   typedef std::vector<std::unique_ptr<Rule>> RuleList;
@@ -55,25 +91,24 @@ class NET_EXPORT ProxyBypassRules {
   // or delete them.
   const RuleList& rules() const { return rules_; }
 
-  // Returns true if |url| matches any of the proxy bypass rules.
-  bool Matches(const GURL& url) const;
+  // Returns true if the bypass rules indicate that |url| should bypass the
+  // proxy. Matching is done using both the explicit rules, as well as a
+  // set of global implicit rules.
+  //
+  // If |reverse| is set to true then the bypass
+  // rule list is inverted (this is almost equivalent to negating the result of
+  // Matches(), except for implicit matches).
+  bool Matches(const GURL& url, bool reverse = false) const;
 
   // Returns true if |*this| is equal to |other|; in other words, whether they
   // describe the same set of rules.
   bool Equals(const ProxyBypassRules& other) const;
 
   // Initializes the list of rules by parsing the string |raw|. |raw| is a
-  // comma separated list of rules. See AddRuleFromString() to see the list
-  // of supported formats.
-  void ParseFromString(const std::string& raw);
-
-  // This is a variant of ParseFromString, which interprets hostname patterns
-  // as suffix tests rather than hostname tests (so "google.com" would actually
-  // match "*google.com"). This is only currently used for the linux no_proxy
-  // environment variable. It is less flexible, since with the suffix matching
-  // format you can't match an individual host.
-  // NOTE: Use ParseFromString() unless you truly need this behavior.
-  void ParseFromStringUsingSuffixMatching(const std::string& raw);
+  // comma separated or semi-colon separated list of rules. See
+  // AddRuleFromString() to see the specific rule grammar.
+  void ParseFromString(const std::string& raw,
+                       ParseFormat format = ParseFormat::kDefault);
 
   // Adds a rule that matches a URL when all of the following are true:
   //  (a) The URL's scheme matches |optional_scheme|, if
@@ -91,6 +126,8 @@ class NET_EXPORT ProxyBypassRules {
   // "Bypass proxy server for local addresses" settings checkbox. Fully
   // qualified domain names or IP addresses are considered non-local,
   // regardless of what they map to (except for the loopback addresses).
+  //
+  // TODO(https://crbug.com/902579): Fix.
   void AddRuleToBypassLocal();
 
   // Adds a rule given by the string |raw|. The format of |raw| can be any of
@@ -133,27 +170,40 @@ class NET_EXPORT ProxyBypassRules {
   //
   // (5)  "<local>"
   //
-  //   Match local addresses. The meaning of "<local>" is whether the
-  //   host matches one of: "127.0.0.1", "::1", "localhost".
+  //   Matches the bypass rule in Windows of the same name, which essentially
+  //   means hostnames without a period in them, as well as "127.0.0.1",
+  //   "[::1]" and "localhost" (but not other localhost names).
+  //
+  // TODO(https://crbug.com/902579): Fix.
+  //
+  // (6) "<-loopback>"
+  //
+  //   Subtracts the implicit proxy bypass rules (localhost and link local
+  //   addresses), so they are no longer bypassed.
+  //
+  //   This is equivalent to the same named bypass rule on Windows.
   //
   // See the unit-tests for more examples.
   //
   // Returns true if the rule was successfully added.
-  bool AddRuleFromString(const std::string& raw);
+  bool AddRuleFromString(const std::string& raw,
+                         ParseFormat format = ParseFormat::kDefault);
 
-  // This is a variant of AddFromString, which interprets hostname patterns as
-  // suffix tests rather than hostname tests (so "google.com" would actually
-  // match "*google.com"). This is used for KDE which interprets every rule as
-  // a suffix test. It is less flexible, since with the suffix matching format
-  // you can't match an individual host.
-  //
-  // Returns true if the rule was successfully added.
-  //
-  // NOTE: Use AddRuleFromString() unless you truly need this behavior.
-  bool AddRuleFromStringUsingSuffixMatching(const std::string& raw);
+  // Appends rules that "cancels out" the implicit bypass rules. See
+  // GetRulesToSubtractImplicit() for details.
+  void AddRulesToSubtractImplicit();
 
-  // Converts the rules to string representation. Inverse operation to
-  // ParseFromString().
+  // Returns a list of bypass rules that "cancels out" the implicit bypass
+  // rules.
+  //
+  // The current set of implicit bypass rules are localhost and link-local
+  // addresses, and are subtracted using <-loopback> (an idiom from Windows),
+  // however this could change.
+  //
+  // If using this for tests, see https://crbug.com/901896.
+  static std::string GetRulesToSubtractImplicit();
+
+  // Converts the rules to a string representation (ParseFormat::kDefault).
   std::string ToString() const;
 
   // Removes all the rules.
@@ -162,17 +212,11 @@ class NET_EXPORT ProxyBypassRules {
   // Sets |*this| to |other|.
   void AssignFrom(const ProxyBypassRules& other);
 
- private:
-  // The following are variants of ParseFromString() and AddRuleFromString(),
-  // which additionally prefix hostname patterns with a wildcard if
-  // |use_hostname_suffix_matching| was true.
-  void ParseFromStringInternal(const std::string& raw,
-                               bool use_hostname_suffix_matching);
-  bool AddRuleFromStringInternal(const std::string& raw,
-                                 bool use_hostname_suffix_matching);
-  bool AddRuleFromStringInternalWithLogging(const std::string& raw,
-                                            bool use_hostname_suffix_matching);
+  // Returns true if |url| matches one of the implicit proxy bypass rules
+  // (localhost or link local).
+  static bool MatchesImplicitRules(const GURL& url);
 
+ private:
   RuleList rules_;
 };
 

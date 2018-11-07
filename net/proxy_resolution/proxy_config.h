@@ -152,8 +152,7 @@ class NET_EXPORT ProxyConfig {
   ~ProxyConfig();
   ProxyConfig& operator=(const ProxyConfig& config);
 
-  // Returns true if the given config is equivalent to this config.  The
-  // comparison ignores differences in |source()|.
+  // Returns true if the given config is equivalent to this config.
   bool Equals(const ProxyConfig& other) const;
 
   // Returns true if this config contains any "automatic" settings. See the

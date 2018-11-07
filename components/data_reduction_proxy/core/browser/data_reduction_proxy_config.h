@@ -197,10 +197,6 @@ class DataReductionProxyConfig
  protected:
   virtual base::TimeTicks GetTicksNow() const;
 
-  // Returns true if the default bypass rules should be added. Virtualized for
-  // testing.
-  virtual bool ShouldAddDefaultProxyBypassRules() const;
-
   // Returns the ID of the current network by calling the platform APIs.
   virtual std::string GetCurrentNetworkID() const;
 
@@ -271,7 +267,8 @@ class DataReductionProxyConfig
                                       int http_response_code);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
-  void AddDefaultProxyBypassRules();
+  // Virtualized for testing.
+  virtual void AddDefaultProxyBypassRules();
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction

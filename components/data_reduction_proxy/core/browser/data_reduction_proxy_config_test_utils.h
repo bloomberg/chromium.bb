@@ -75,7 +75,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
     connection_type_ = connection_type;
   }
 
-  bool ShouldAddDefaultProxyBypassRules() const override;
+  void AddDefaultProxyBypassRules() override;
 
   void SetShouldAddDefaultProxyBypassRules(bool add_default_proxy_bypass_rules);
 

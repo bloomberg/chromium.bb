@@ -4364,14 +4364,14 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
   BlockingNetworkDelegate network_delegate(
       BlockingNetworkDelegate::AUTO_CALLBACK);
   network_delegate.set_block_on(BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST);
-  GURL redirect_url(http_test_server()->GetURL("/simple.html"));
+  GURL redirect_url("http://does.not.resolve.test/simple.html");
   network_delegate.set_redirect_url(redirect_url);
 
   TestURLRequestContextWithProxy context(
       http_test_server()->host_port_pair().ToString(), &network_delegate);
 
   {
-    GURL original_url(http_test_server()->GetURL("/defaultresponse"));
+    GURL original_url("http://does.not.resolve.test/defaultresponse");
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -4418,14 +4418,14 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
   TestDelegate d;
   BlockingNetworkDelegate network_delegate(
       BlockingNetworkDelegate::SYNCHRONOUS);
-  GURL redirect_url(http_test_server()->GetURL("/simple.html"));
+  GURL redirect_url("http://does.not.resolve.test/simple.html");
   network_delegate.set_redirect_url(redirect_url);
 
   TestURLRequestContextWithProxy context(
       http_test_server()->host_port_pair().ToString(), &network_delegate);
 
   {
-    GURL original_url(http_test_server()->GetURL("/defaultresponse"));
+    GURL original_url("http://does.not.resolve.test/defaultresponse");
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -4529,14 +4529,14 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestOnHeadersReceived) {
   BlockingNetworkDelegate network_delegate(
       BlockingNetworkDelegate::AUTO_CALLBACK);
   network_delegate.set_block_on(BlockingNetworkDelegate::ON_HEADERS_RECEIVED);
-  GURL redirect_url(http_test_server()->GetURL("/simple.html"));
+  GURL redirect_url("http://does.not.resolve.test/simple.html");
   network_delegate.set_redirect_on_headers_received_url(redirect_url);
 
   TestURLRequestContextWithProxy context(
       http_test_server()->host_port_pair().ToString(), &network_delegate);
 
   {
-    GURL original_url(http_test_server()->GetURL("/defaultresponse"));
+    GURL original_url("http://does.not.resolve.test/defaultresponse");
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 

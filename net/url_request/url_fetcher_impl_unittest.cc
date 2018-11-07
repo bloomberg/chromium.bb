@@ -511,8 +511,9 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
   context_getter->set_proxy_resolution_service(
       std::move(proxy_resolution_service));
 
-  delegate.CreateFetcher(test_server_->GetURL(kDefaultResponsePath),
-                         URLFetcher::GET, context_getter);
+  delegate.CreateFetcher(
+      GURL(std::string("http://does.not.resolve.test") + kDefaultResponsePath),
+      URLFetcher::GET, context_getter);
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());

@@ -18,6 +18,48 @@ namespace net {
 
 namespace {
 
+// The <-loopback> rule corresponds with "remove the implicitly added bypass
+// rules".
+//
+// The name <-loopback> is not a very precise name (as the implicit rules cover
+// more than strictly loopback addresses), however this is the name that is
+// used on Windows so re-used here.
+//
+// For platform-differences between implicit rules see
+// ProxyResolverRules::MatchesImplicitRules().
+const char kSubtractImplicitBypasses[] = "<-loopback>";
+
+// TODO(eroman): Fix - this should be renamed to kBypassSimpleHostnames.
+const char kWinLocal[] = "<local>";
+
+bool IsIPv4LinkLocal(const IPAddress& addr) {
+  // 169.254.0.0/16
+  return addr.IsIPv4() && (addr.bytes()[0] == 169) && (addr.bytes()[1] == 254);
+}
+
+bool IsIPv6LinkLocal(const IPAddress& addr) {
+  // [fe80::]/10
+  return addr.IsIPv6() && (addr.bytes()[0] == 0xFE) &&
+         ((addr.bytes()[1] & 0xC0) == 0x80);
+}
+
+bool IsLinkLocalIP(const GURL& url) {
+  // Quick fail if definitely not link-local, to avoid doing unnecessary work in
+  // common case. The |url| should be canonicalized, which for IPv6 literals
+  // means lowercase.
+  if (!(url.host_piece().starts_with("169.254.") ||
+        url.host_piece().starts_with("[fe"))) {
+    return false;
+  }
+
+  base::StringPiece host(url.host());
+  IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
+    return false;
+
+  return IsIPv4LinkLocal(ip_address) || IsIPv6LinkLocal(ip_address);
+}
+
 class HostnamePatternRule : public ProxyBypassRules::Rule {
  public:
   HostnamePatternRule(const std::string& optional_scheme,
@@ -27,16 +69,17 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
         hostname_pattern_(base::ToLowerASCII(hostname_pattern)),
         optional_port_(optional_port) {}
 
-  bool Matches(const GURL& url) const override {
+  Result Evaluate(const GURL& url) const override {
     if (optional_port_ != -1 && url.EffectiveIntPort() != optional_port_)
-      return false;  // Didn't match port expectation.
+      return Result::kNoMatch;  // Didn't match port expectation.
 
     if (!optional_scheme_.empty() && url.scheme() != optional_scheme_)
-      return false;  // Didn't match scheme expectation.
+      return Result::kNoMatch;  // Didn't match scheme expectation.
 
     // Note it is necessary to lower-case the host, since GURL uses capital
     // letters for percent-escaped characters.
-    return base::MatchPattern(url.host(), hostname_pattern_);
+    return base::MatchPattern(url.host(), hostname_pattern_) ? Result::kBypass
+                                                             : Result::kNoMatch;
   }
 
   std::string ToString() const override {
@@ -49,77 +92,91 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
     return str;
   }
 
-  std::unique_ptr<Rule> Clone() const override {
-    return std::make_unique<HostnamePatternRule>(
-        optional_scheme_, hostname_pattern_, optional_port_);
-  }
-
  private:
   const std::string optional_scheme_;
   const std::string hostname_pattern_;
   const int optional_port_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostnamePatternRule);
 };
 
-class BypassLocalRule : public ProxyBypassRules::Rule {
+// TODO(https://crbug.com/902579): Fix.
+class WinLocalRule : public ProxyBypassRules::Rule {
  public:
-  bool Matches(const GURL& url) const override {
+  WinLocalRule() = default;
+
+  Result Evaluate(const GURL& url) const override {
     const std::string& host = url.host();
     if (host == "127.0.0.1" || host == "[::1]")
-      return true;
-    return host.find('.') == std::string::npos;
+      return Result::kBypass;
+    return (host.find('.') == std::string::npos) ? Result::kBypass
+                                                 : Result::kNoMatch;
   }
 
-  std::string ToString() const override { return "<local>"; }
+  std::string ToString() const override { return kWinLocal; }
 
-  std::unique_ptr<Rule> Clone() const override {
-    return std::make_unique<BypassLocalRule>();
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WinLocalRule);
+};
+
+class SubtractImplicitBypassesRule : public ProxyBypassRules::Rule {
+ public:
+  SubtractImplicitBypassesRule() = default;
+
+  Result Evaluate(const GURL& url) const override {
+    return ProxyBypassRules::MatchesImplicitRules(url) ? Result::kDontBypass
+                                                       : Result::kNoMatch;
   }
+
+  std::string ToString() const override { return kSubtractImplicitBypasses; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SubtractImplicitBypassesRule);
 };
 
 // Rule for matching a URL that is an IP address, if that IP address falls
 // within a certain numeric range. For example, you could use this rule to
 // match all the IPs in the CIDR block 10.10.3.4/24.
-class BypassIPBlockRule : public ProxyBypassRules::Rule {
+class IPBlockRule : public ProxyBypassRules::Rule {
  public:
   // |ip_prefix| + |prefix_length| define the IP block to match.
-  BypassIPBlockRule(const std::string& description,
-                    const std::string& optional_scheme,
-                    const IPAddress& ip_prefix,
-                    size_t prefix_length_in_bits)
+  IPBlockRule(const std::string& description,
+              const std::string& optional_scheme,
+              const IPAddress& ip_prefix,
+              size_t prefix_length_in_bits)
       : description_(description),
         optional_scheme_(optional_scheme),
         ip_prefix_(ip_prefix),
         prefix_length_in_bits_(prefix_length_in_bits) {}
 
-  bool Matches(const GURL& url) const override {
+  Result Evaluate(const GURL& url) const override {
     if (!url.HostIsIPAddress())
-      return false;
+      return Result::kNoMatch;
 
     if (!optional_scheme_.empty() && url.scheme() != optional_scheme_)
-      return false;  // Didn't match scheme expectation.
+      return Result::kNoMatch;  // Didn't match scheme expectation.
 
     // Parse the input IP literal to a number.
     IPAddress ip_address;
     if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
-      return false;
+      return Result::kNoMatch;
 
     // Test if it has the expected prefix.
     return IPAddressMatchesPrefix(ip_address, ip_prefix_,
-                                  prefix_length_in_bits_);
+                                  prefix_length_in_bits_)
+               ? Result::kBypass
+               : Result::kNoMatch;
   }
 
   std::string ToString() const override { return description_; }
-
-  std::unique_ptr<Rule> Clone() const override {
-    return std::make_unique<BypassIPBlockRule>(
-        description_, optional_scheme_, ip_prefix_, prefix_length_in_bits_);
-  }
 
  private:
   const std::string description_;
   const std::string optional_scheme_;
   const IPAddress ip_prefix_;
   const size_t prefix_length_in_bits_;
+
+  DISALLOW_COPY_AND_ASSIGN(IPBlockRule);
 };
 
 // Returns true if the given string represents an IP address.
@@ -133,6 +190,10 @@ bool IsIPAddress(const std::string& domain) {
                              &host_info);
   return host_info.IsIPAddress();
 }
+
+std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
+    const std::string& raw_untrimmed,
+    ProxyBypassRules::ParseFormat format);
 
 }  // namespace
 
@@ -150,21 +211,52 @@ ProxyBypassRules::ProxyBypassRules(const ProxyBypassRules& rhs) {
   AssignFrom(rhs);
 }
 
-ProxyBypassRules::~ProxyBypassRules() {
-  Clear();
-}
+ProxyBypassRules::~ProxyBypassRules() = default;
 
 ProxyBypassRules& ProxyBypassRules::operator=(const ProxyBypassRules& rhs) {
   AssignFrom(rhs);
   return *this;
 }
 
-bool ProxyBypassRules::Matches(const GURL& url) const {
-  for (auto it = rules_.begin(); it != rules_.end(); ++it) {
-    if ((*it)->Matches(url))
-      return true;
+bool ProxyBypassRules::Matches(const GURL& url, bool reverse) const {
+  // Later rules override earlier rules, so evaluating the rule list can be
+  // done by iterating over it in reverse and short-circuiting when a match is
+  // found. If no matches are found then the implicit rules are consulted.
+  //
+  // The order of evaluation generally doesn't matter, since the common
+  // case is to have a set of (positive) bypass rules.
+  //
+  // However when mixing positive and negative bypass rules evaluation
+  // order makes a difference. The chosen evaluation order here matches
+  // WinInet (which supports <-loopback> as a negative rule).
+  //
+  // Consider these two rule lists:
+  //  (a) "localhost; <-loopback>"
+  //  (b) "<-loopback>; localhost"
+  //
+  // The expectation is that Matches("http://localhost/") returns false
+  // for (a) since the final rule <-loopback> unbypasses it. Whereas it is
+  // expected to return true for (b), since the final rule "localhost"
+  // bypasses it again.
+  for (auto it = rules_.rbegin(); it != rules_.rend(); ++it) {
+    const std::unique_ptr<Rule>& rule = *it;
+
+    switch (rule->Evaluate(url)) {
+      case Rule::Result::kBypass:
+        return !reverse;
+      case Rule::Result::kDontBypass:
+        return reverse;
+      case Rule::Result::kNoMatch:
+        continue;
+    }
   }
-  return false;
+
+  // If none of the explicit rules matched, fall back to the implicit rules.
+  bool matches_implicit = MatchesImplicitRules(url);
+  if (matches_implicit)
+    return matches_implicit;
+
+  return reverse;
 }
 
 bool ProxyBypassRules::Equals(const ProxyBypassRules& other) const {
@@ -176,15 +268,6 @@ bool ProxyBypassRules::Equals(const ProxyBypassRules& other) const {
       return false;
   }
   return true;
-}
-
-void ProxyBypassRules::ParseFromString(const std::string& raw) {
-  ParseFromStringInternal(raw, false);
-}
-
-void ProxyBypassRules::ParseFromStringUsingSuffixMatching(
-    const std::string& raw) {
-  ParseFromStringInternal(raw, true);
 }
 
 bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
@@ -199,16 +282,29 @@ bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
 }
 
 void ProxyBypassRules::AddRuleToBypassLocal() {
-  rules_.push_back(std::make_unique<BypassLocalRule>());
+  rules_.push_back(std::make_unique<WinLocalRule>());
 }
 
-bool ProxyBypassRules::AddRuleFromString(const std::string& raw) {
-  return AddRuleFromStringInternalWithLogging(raw, false);
+bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed,
+                                         ParseFormat format) {
+  auto rule = ParseRule(raw_untrimmed, format);
+
+  if (rule) {
+    rules_.push_back(std::move(rule));
+    return true;
+  }
+
+  return false;
 }
 
-bool ProxyBypassRules::AddRuleFromStringUsingSuffixMatching(
-    const std::string& raw) {
-  return AddRuleFromStringInternalWithLogging(raw, true);
+void ProxyBypassRules::AddRulesToSubtractImplicit() {
+  rules_.push_back(std::make_unique<SubtractImplicitBypassesRule>());
+}
+
+std::string ProxyBypassRules::GetRulesToSubtractImplicit() {
+  ProxyBypassRules rules;
+  rules.AddRulesToSubtractImplicit();
+  return rules.ToString();
 }
 
 std::string ProxyBypassRules::ToString() const {
@@ -225,38 +321,33 @@ void ProxyBypassRules::Clear() {
 }
 
 void ProxyBypassRules::AssignFrom(const ProxyBypassRules& other) {
-  Clear();
-
-  // Make a copy of the rules list.
-  for (auto it = other.rules_.begin(); it != other.rules_.end(); ++it) {
-    rules_.push_back((*it)->Clone());
-  }
+  ParseFromString(other.ToString());
 }
 
-void ProxyBypassRules::ParseFromStringInternal(
-    const std::string& raw,
-    bool use_hostname_suffix_matching) {
+void ProxyBypassRules::ParseFromString(const std::string& raw,
+                                       ParseFormat format) {
   Clear();
 
   base::StringTokenizer entries(raw, ",;");
   while (entries.GetNext()) {
-    AddRuleFromStringInternalWithLogging(entries.token(),
-                                         use_hostname_suffix_matching);
+    AddRuleFromString(entries.token(), format);
   }
 }
 
-bool ProxyBypassRules::AddRuleFromStringInternal(
+// TODO(eroman): Move this up in file.
+namespace {
+std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     const std::string& raw_untrimmed,
-    bool use_hostname_suffix_matching) {
+    ProxyBypassRules::ParseFormat format) {
   std::string raw;
   base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
 
-  // This is the special syntax used by WinInet's bypass list -- we allow it
-  // on all platforms and interpret it the same way.
-  if (base::LowerCaseEqualsASCII(raw, "<local>")) {
-    AddRuleToBypassLocal();
-    return true;
-  }
+  // <local> and <-loopback> are special syntax used by WinInet's bypass list
+  // -- we allow it on all platforms and interpret it the same way.
+  if (base::LowerCaseEqualsASCII(raw, kWinLocal))
+    return std::make_unique<WinLocalRule>();
+  if (base::LowerCaseEqualsASCII(raw, kSubtractImplicitBypasses))
+    return std::make_unique<SubtractImplicitBypassesRule>();
 
   // Extract any scheme-restriction.
   std::string::size_type scheme_pos = raw.find("://");
@@ -265,11 +356,11 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     scheme = raw.substr(0, scheme_pos);
     raw = raw.substr(scheme_pos + 3);
     if (scheme.empty())
-      return false;
+      return nullptr;
   }
 
   if (raw.empty())
-    return false;
+    return nullptr;
 
   // If there is a forward slash in the input, it is probably a CIDR style
   // mask.
@@ -278,12 +369,10 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     size_t prefix_length_in_bits;
 
     if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))
-      return false;
+      return nullptr;
 
-    rules_.push_back(std::make_unique<BypassIPBlockRule>(
-        raw, scheme, ip_prefix, prefix_length_in_bits));
-
-    return true;
+    return std::make_unique<IPBlockRule>(raw, scheme, ip_prefix,
+                                         prefix_length_in_bits);
   }
 
   // Check if we have an <ip-address>[:port] input. We need to treat this
@@ -294,7 +383,7 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
     // embedded NULL.
     if (host.find('\0') != std::string::npos)
-      return false;
+      return nullptr;
 
     // Note that HostPortPair is used to merely to convert any IPv6 literals to
     // a URL-safe format that can be used by canonicalization below.
@@ -302,7 +391,8 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     if (IsIPAddress(bracketed_host)) {
       // Canonicalize the IP literal before adding it as a string pattern.
       GURL tmp_url("http://" + bracketed_host);
-      return AddRuleForHostname(scheme, tmp_url.host(), port);
+      return std::make_unique<HostnamePatternRule>(scheme, tmp_url.host(),
+                                                   port);
     }
   }
 
@@ -313,7 +403,7 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
     if (!ParseInt32(base::StringPiece(raw.begin() + pos_colon + 1, raw.end()),
                     ParseIntFormat::NON_NEGATIVE, &port) ||
         port > 0xFFFF) {
-      return false;  // Port was invalid.
+      return nullptr;  // Port was invalid.
     }
     raw = raw.substr(0, pos_colon);
   }
@@ -325,17 +415,45 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
 
   // If suffix matching was asked for, make sure the pattern starts with a
   // wildcard.
-  if (use_hostname_suffix_matching &&
+  if (format == ProxyBypassRules::ParseFormat::kHostnameSuffixMatching &&
       !base::StartsWith(raw, "*", base::CompareCase::SENSITIVE))
     raw = "*" + raw;
 
-  return AddRuleForHostname(scheme, raw, port);
+  return std::make_unique<HostnamePatternRule>(scheme, raw, port);
 }
+}  // namespace
 
-bool ProxyBypassRules::AddRuleFromStringInternalWithLogging(
-    const std::string& raw,
-    bool use_hostname_suffix_matching) {
-  return AddRuleFromStringInternal(raw, use_hostname_suffix_matching);
+bool ProxyBypassRules::MatchesImplicitRules(const GURL& url) {
+  // On Windows the implict rules are:
+  //
+  //     localhost
+  //     loopback
+  //     127.0.0.1
+  //     [::1]
+  //     169.254/16
+  //     [FE80::]/10
+  //
+  // And on macOS they are:
+  //
+  //     localhost
+  //     127.0.0.1/8
+  //     [::1]
+  //     169.254/16
+  //
+  // Our implicit rules are approximately:
+  //
+  //     localhost
+  //     localhost.
+  //     *.localhost
+  //     localhost6
+  //     localhost6.localdomain6
+  //     [::1]
+  //     127.0.0.1/8
+  //     169.254/16
+  //     [FE80::]/10
+  //
+  // TODO(eroman): Does "loopback" need special treatment on Windows?
+  return net::IsLocalhost(url) || IsLinkLocalIP(url);
 }
 
 }  // namespace net

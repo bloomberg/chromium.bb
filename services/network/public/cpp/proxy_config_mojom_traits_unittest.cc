@@ -85,8 +85,15 @@ TEST(ProxyConfigTraitsTest, BypassRules) {
   // These should cover every one of the rule types documented in
   // proxy_bypass_rules.h.
   const char* kTestCases[] = {
-      ".foo.com", "*foo1.com:80, foo2.com", "*",
-      "<local>",  "http://1.2.3.4:99",      "1.2.3.4/16",
+      ".foo.com",
+      "*foo1.com:80, foo2.com",
+      "*",
+      "<local>",
+      "http://1.2.3.4:99",
+      "1.2.3.4/16",
+      "fe80::/10",
+      "<-loopback>",
+      "[e1f3:dEaD::3]",
   };
 
   for (const char* test_case : kTestCases) {

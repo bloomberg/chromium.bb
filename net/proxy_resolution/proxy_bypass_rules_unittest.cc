@@ -4,6 +4,7 @@
 
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
@@ -12,6 +13,77 @@
 namespace net {
 
 namespace {
+
+// Calls |rules.Matches()| for each name in |hosts| (for various URL schemes),
+// and checks that the result is |bypasses|. If the host is in |inverted_hosts|
+// then the expectation is reversed.
+void ExpectRulesMatch(const ProxyBypassRules& rules,
+                      const char* hosts[],
+                      size_t num_hosts,
+                      bool bypasses,
+                      const std::set<std::string>& inverted_hosts) {
+  // The scheme of the URL shouldn't matter.
+  const char* kUrlSchemes[] = {"http://", "https://", "ftp://"};
+
+  for (auto* scheme : kUrlSchemes) {
+    for (size_t i = 0; i < num_hosts; ++i) {
+      const char* host = hosts[i];
+
+      bool expectation = bypasses;
+
+      if (inverted_hosts.count(std::string(host)) != 0)
+        expectation = !expectation;
+
+      std::string url = std::string(scheme) + std::string(host);
+
+      EXPECT_EQ(expectation, rules.Matches(GURL(url))) << url;
+    }
+  }
+}
+
+// Tests calling |rules.Matches()| for localhost URLs returns |bypasses|.
+void ExpectBypassLocalhost(
+    const ProxyBypassRules& rules,
+    bool bypasses,
+    const std::set<std::string>& inverted_hosts = std::set<std::string>()) {
+  const char* kHosts[] = {
+      "localhost",
+      "localhost.",
+      "foo.localhost",
+      "localhost6",
+      "localhost6.localdomain6",
+      "127.0.0.1",
+      "127.100.0.2",
+      "[::1]",
+  };
+
+  ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, inverted_hosts);
+}
+
+// Tests calling |rules.Matches()| for link-local URLs returns |bypasses|.
+void ExpectBypassLinkLocal(const ProxyBypassRules& rules, bool bypasses) {
+  const char* kHosts[] = {
+      "169.254.3.2", "169.254.100.1", "[FE80::8]", "[fe91::1]",
+  };
+
+  ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, {});
+}
+
+// Tests calling |rules.Matches()| with miscelaneous URLs that are neither
+// localhost or link local IPs, returns |bypasses|.
+void ExpectBypassMisc(
+    const ProxyBypassRules& rules,
+    bool bypasses,
+    const std::set<std::string>& inverted_hosts = std::set<std::string>()) {
+  const char* kHosts[] = {
+      "192.168.0.1", "170.254.0.0", "128.0.0.1", "[::2]", "[FD80::1]", "foo",
+      "www.example3.com",
+      // On Windows, "loopback" is an implicitly matched hostname.
+      "loopback",
+  };
+
+  ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, inverted_hosts);
+}
 
 TEST(ProxyBypassRulesTest, ParseAndMatchBasicHost) {
   ProxyBypassRules rules;
@@ -192,9 +264,10 @@ TEST(ProxyBypassRulesTest, HTTPOnlyWithWildcard) {
 
 TEST(ProxyBypassRulesTest, UseSuffixMatching) {
   ProxyBypassRules rules;
-  rules.ParseFromStringUsingSuffixMatching(
+  rules.ParseFromString(
       "foo1.com, .foo2.com, 192.168.1.1, "
-      "*foobar.com:80, *.foo, http://baz, <local>");
+      "*foobar.com:80, *.foo, http://baz, <local>",
+      ProxyBypassRules::ParseFormat::kHostnameSuffixMatching);
   ASSERT_EQ(7u, rules.rules().size());
   EXPECT_EQ("*foo1.com", rules.rules()[0]->ToString());
   EXPECT_EQ("*.foo2.com", rules.rules()[1]->ToString());
@@ -252,33 +325,35 @@ TEST(ProxyBypassRulesTest, BypassLocalNames) {
     const char* url;
     bool expected_is_local;
   } tests[] = {
-    // Single-component hostnames are considered local.
-    {"http://localhost/x", true},
-    {"http://www", true},
+      // Single-component hostnames are considered local.
+      {"http://localhost/x", true},
+      {"http://www", true},
 
-    // IPv4 loopback interface.
-    {"http://127.0.0.1/x", true},
-    {"http://127.0.0.1:80/x", true},
+      // IPv4 loopback interface.
+      {"http://127.0.0.1/x", true},
+      {"http://127.0.0.1:80/x", true},
 
-    // IPv6 loopback interface.
-    {"http://[::1]:80/x", true},
-    {"http://[0:0::1]:6233/x", true},
-    {"http://[0:0:0:0:0:0:0:1]/x", true},
+      // IPv6 loopback interface.
+      {"http://[::1]:80/x", true},
+      {"http://[0:0::1]:6233/x", true},
+      {"http://[0:0:0:0:0:0:0:1]/x", true},
 
-    // Non-local URLs.
-    {"http://foo.com/", false},
-    {"http://localhost.i/", false},
-    {"http://www.google.com/", false},
-    {"http://192.168.0.1/", false},
+      // Non-local URLs.
+      {"http://foo.com/", false},
+      {"http://localhost.i/", false},
+      {"http://www.google.com/", false},
+      {"http://192.168.0.1/", false},
 
-    // Try with different protocols.
-    {"ftp://127.0.0.1/x", true},
-    {"ftp://foobar.com/x", false},
+      // Try with different protocols.
+      {"ftp://127.0.0.1/x", true},
+      {"ftp://foobar.com/x", false},
 
-    // This is a bit of a gray-area, but GURL does not strip trailing dots
-    // in host-names, so the following are considered non-local.
-    {"http://www./x", false},
-    {"http://localhost./x", false},
+      // This is a bit of a gray-area, but GURL does not strip trailing dots
+      // in host-names, so the following are considered non-local.
+      {"http://www./x", false},
+
+      // localhost. is bypassed by the implict rules already.
+      {"http://localhost./x", true},
   };
 
   ProxyBypassRules rules;
@@ -317,6 +392,101 @@ TEST(ProxyBypassRulesTest, ParseAndMatchCIDR_IPv6) {
   EXPECT_TRUE(rules.Matches(GURL("http://[A:b:C:9::]")));
   EXPECT_FALSE(rules.Matches(GURL("http://foobar.com")));
   EXPECT_FALSE(rules.Matches(GURL("http://192.169.1.1")));
+}
+
+// Check which URLs an empty ProxyBypassRules matches.
+TEST(ProxyBypassRulesTest, DefaultImplicitRules) {
+  ProxyBypassRules rules;
+
+  EXPECT_EQ("", rules.ToString());
+
+  // Should bypass all localhost and loopback names.
+  ExpectBypassLocalhost(rules, true);
+
+  // Should bypass all link-local addresses.
+  ExpectBypassLinkLocal(rules, true);
+
+  // Should not bypass other names.
+  ExpectBypassMisc(rules, false);
+}
+
+// Test use of the <-loopback> bypass rule.
+TEST(ProxyBypassRulesTest, NegativeWinLoopback) {
+  ProxyBypassRules rules;
+
+  rules.ParseFromString("www.example.com;<-loopback>");
+  ASSERT_EQ(2u, rules.rules().size());
+  EXPECT_EQ("www.example.com", rules.rules()[0]->ToString());
+  EXPECT_EQ("<-loopback>", rules.rules()[1]->ToString());
+
+  // Should NOT bypass localhost and loopback names.
+  ExpectBypassLocalhost(rules, false);
+
+  // Should NOT bypass link-local addresses.
+  ExpectBypassLinkLocal(rules, false);
+
+  // Should not bypass other names either.
+  ExpectBypassMisc(rules, false);
+
+  // Only www.example.com should be bypassed.
+  EXPECT_TRUE(rules.Matches(GURL("http://www.example.com/")));
+}
+
+// Verifies the evaluation order of mixing negative and positive rules. This
+// expectation comes from WinInet (which is where <-loopback> comes from).
+TEST(ProxyBypassRulesTest, RemoveImplicitAndAddLocalhost) {
+  ProxyBypassRules rules;
+
+  rules.ParseFromString("<-loopback>; localhost");
+  ASSERT_EQ(2u, rules.rules().size());
+  EXPECT_EQ("<-loopback>", rules.rules()[0]->ToString());
+  EXPECT_EQ("localhost", rules.rules()[1]->ToString());
+
+  // Should not bypass localhost names because of <-loopback>. Except for
+  // "localhost" which was added at the end.
+  ExpectBypassLocalhost(rules, false, {"localhost"});
+
+  // Should NOT bypass link-local addresses.
+  ExpectBypassLinkLocal(rules, false);
+
+  // Should not bypass other names either.
+  ExpectBypassMisc(rules, false);
+}
+
+// Verifies the evaluation order of mixing negative and positive rules. This
+// expectation comes from WinInet (which is where <-loopback> comes from).
+TEST(ProxyBypassRulesTest, AddLocalhostThenRemoveImplicit) {
+  ProxyBypassRules rules;
+
+  rules.ParseFromString("localhost; <-loopback>");
+  ASSERT_EQ(2u, rules.rules().size());
+  EXPECT_EQ("localhost", rules.rules()[0]->ToString());
+  EXPECT_EQ("<-loopback>", rules.rules()[1]->ToString());
+
+  // Because of the ordering, localhost is not bypassed, because <-loopback>
+  // "unbypasses" it.
+  ExpectBypassLocalhost(rules, false);
+
+  // Should NOT bypass link-local addresses.
+  ExpectBypassLinkLocal(rules, false);
+
+  // Should not bypass other names either.
+  ExpectBypassMisc(rules, false);
+}
+
+TEST(ProxyBypassRulesTest, AddRulesToSubtractImplicit) {
+  ProxyBypassRules rules;
+  rules.ParseFromString("foo");
+
+  rules.AddRulesToSubtractImplicit();
+
+  ASSERT_EQ(2u, rules.rules().size());
+  EXPECT_EQ("foo", rules.rules()[0]->ToString());
+  EXPECT_EQ("<-loopback>", rules.rules()[1]->ToString());
+}
+
+TEST(ProxyBypassRulesTest, GetRulesToSubtractImplicit) {
+  EXPECT_EQ("<-loopback>;", ProxyBypassRules::GetRulesToSubtractImplicit());
 }
 
 }  // namespace
