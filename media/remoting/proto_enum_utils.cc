@@ -406,32 +406,6 @@ base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<ColorSpace> ToMediaColorSpace(
-    pb::VideoDecoderConfig::ColorSpace value) {
-  using OriginType = pb::VideoDecoderConfig;
-  using OtherType = ColorSpace;
-  switch (value) {
-    CASE_RETURN_OTHER(COLOR_SPACE_UNSPECIFIED);
-    CASE_RETURN_OTHER(COLOR_SPACE_JPEG);
-    CASE_RETURN_OTHER(COLOR_SPACE_HD_REC709);
-    CASE_RETURN_OTHER(COLOR_SPACE_SD_REC601);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::VideoDecoderConfig::ColorSpace>
-ToProtoVideoDecoderConfigColorSpace(ColorSpace value) {
-  using OriginType = ColorSpace;
-  using OtherType = pb::VideoDecoderConfig;
-  switch (value) {
-    CASE_RETURN_OTHER(COLOR_SPACE_UNSPECIFIED);
-    CASE_RETURN_OTHER(COLOR_SPACE_JPEG);
-    CASE_RETURN_OTHER(COLOR_SPACE_HD_REC709);
-    CASE_RETURN_OTHER(COLOR_SPACE_SD_REC601);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
 base::Optional<BufferingState> ToMediaBufferingState(
     pb::RendererClientOnBufferingStateChange::State value) {
   using OriginType = pb::RendererClientOnBufferingStateChange;
