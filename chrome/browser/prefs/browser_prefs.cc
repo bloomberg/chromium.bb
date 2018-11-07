@@ -379,6 +379,7 @@ const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 
 // Deprecated 11/2018.
 const char kNetworkQualities[] = "net.network_qualities";
+const char kForceSessionSync[] = "settings.history_recorded";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -407,6 +408,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
 
   registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
+  registry->RegisterBooleanPref(kForceSessionSync, false);
 }
 
 }  // namespace
@@ -868,4 +870,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 11/2018.
   profile_prefs->ClearPref(kNetworkQualities);
+  profile_prefs->ClearPref(kForceSessionSync);
 }
