@@ -40,6 +40,7 @@ ScriptExecutor::ScriptExecutor(const std::string& script_path,
       at_end_(CONTINUE),
       should_stop_script_(false),
       should_clean_contextual_ui_on_finish_(false),
+      previous_action_type_(ActionProto::ACTION_INFO_NOT_SET),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
@@ -181,7 +182,14 @@ void ScriptExecutor::LoadURL(const GURL& url) {
 }
 
 void ScriptExecutor::Shutdown() {
-  at_end_ = SHUTDOWN;
+  // The following handles the case where scripts end with tell + stop
+  // differently from just stop. TODO(b/806868): Make that difference explicit:
+  // add an optional message to stop and update the scripts to use that.
+  if (previous_action_type_ == ActionProto::kTell) {
+    at_end_ = SHUTDOWN_GRACEFULLY;
+  } else {
+    at_end_ = SHUTDOWN;
+  }
 }
 
 void ScriptExecutor::Restart() {
@@ -294,6 +302,7 @@ void ScriptExecutor::GetNextActions() {
 
 void ScriptExecutor::OnProcessedAction(
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
+  previous_action_type_ = processed_action_proto->action().action_info_case();
   processed_actions_.emplace_back(*processed_action_proto);
   if (processed_actions_.back().status() !=
       ProcessedActionStatusProto::ACTION_APPLIED) {

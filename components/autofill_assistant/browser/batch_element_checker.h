@@ -90,7 +90,7 @@ class BatchElementChecker {
 
   // Returns true if all element that were asked for have been found. Can be
   // called while Run is progress or afterwards.
-  bool all_found() { return all_found_; }
+  bool all_found();
 
  private:
   // Tries running the checks, reporting only successes.
@@ -133,6 +133,9 @@ class BatchElementChecker {
       get_field_value_callbacks_;
   int pending_checks_count_;
   bool all_found_;
+
+  // Run() was called. Checking elements might or might not have finished yet.
+  bool started_;
 
   // The callback built for Try(). It is kept around while going through the
   // maps and called once all selectors in that map have been looked up once,

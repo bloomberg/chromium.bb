@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -184,6 +185,8 @@ void Controller::OnPeriodicScriptCheck() {
     GetUiController()->HideOverlay();
     GetUiController()->ShowStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+    GetUiController()->ShutdownGracefully();
+    return;
   }
 
   periodic_script_check_count_--;
@@ -224,12 +227,17 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     LOG(ERROR) << "Failed to execute script " << script_path;
     GetUiController()->ShowStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+    GetUiController()->ShutdownGracefully();
     return;
   }
 
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
       GetUiController()->Shutdown();  // indirectly deletes this
+      return;
+
+    case ScriptExecutor::SHUTDOWN_GRACEFULLY:
+      GetUiController()->ShutdownGracefully();
       return;
 
     case ScriptExecutor::RESTART:
@@ -263,6 +271,7 @@ void Controller::OnScriptSelected(const std::string& script_path) {
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
   script_tracker_->ClearRunnableScripts();
+  GetUiController()->UpdateScripts({});  // Clear scripts.
   allow_autostart_ = false;  // Only ever autostart the very first script.
   script_tracker_->ExecuteScript(
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
@@ -272,6 +281,12 @@ void Controller::OnScriptSelected(const std::string& script_path) {
 
 void Controller::OnDestroy() {
   delete this;
+}
+
+void Controller::OnGiveUp() {
+  GetUiController()->ShowStatusMessage(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
+  GetUiController()->ShutdownGracefully();
 }
 
 void Controller::DidAttachInterstitialPage() {
@@ -294,6 +309,20 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
     default:
       break;
   }
+}
+
+void Controller::OnNoRunnableScriptsAnymore() {
+  if (script_tracker_->running())
+    return;
+
+  // We're on a page that has no scripts or the scripts have reached a state
+  // from which they cannot recover through a DOM change. This should never
+  // happen with a consistent set of scripts; there should always be an explicit
+  // end.
+  GetUiController()->ShowStatusMessage(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+  GetUiController()->ShutdownGracefully();
+  return;
 }
 
 void Controller::OnRunnableScriptsChanged(
@@ -358,6 +387,26 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
   // Note that we also check for scripts in LoadProgressChanged below. This is
   // the last attempt and occurs later than a load progress of 1.0.
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+}
+
+void Controller::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // The following types of navigations are allowed for the main frame:
+  //  - first-time URL load
+  //  - script-directed navigation, while a script is running
+  //  - server redirections, which might happen outside of a script, but
+  //    because of a load triggered by a previously-running script.
+  //  - same-document modifications, which might happen automatically
+  ///
+  // Everything else, such as clicking on a link, going back to a previous page,
+  // or refreshing the page is considered an end condition.
+  if (navigation_handle->IsInMainFrame() &&
+      web_contents()->GetLastCommittedURL().is_valid() &&
+      !script_tracker_->running() && !navigation_handle->WasServerRedirect() &&
+      !navigation_handle->IsSameDocument()) {
+    OnGiveUp();
+    return;
+  }
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {

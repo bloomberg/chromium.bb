@@ -17,6 +17,7 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
     : delegate_(delegate),
       listener_(listener),
+      reported_runnable_scripts_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
@@ -46,6 +47,15 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
         delegate_->GetParameters(), executed_scripts_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
+  }
+  if (batch_element_checker_->all_found() &&
+      pending_runnable_scripts_.empty() && reported_runnable_scripts_) {
+    // There are no runnable scripts, even though we haven't checked the DOM
+    // yet. Report it all immediately.
+    UpdateRunnableScriptsIfNecessary();
+    listener_->OnNoRunnableScriptsAnymore();
+    OnCheckDone();
+    return;
   }
   batch_element_checker_->Run(
       max_duration,
@@ -81,7 +91,6 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
 void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
-  listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 
 void ScriptTracker::OnScriptRun(
@@ -112,6 +121,7 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
     runnable_scripts_.push_back(script->handle);
   }
 
+  reported_runnable_scripts_ = true;
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 

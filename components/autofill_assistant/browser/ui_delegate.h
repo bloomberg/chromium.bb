@@ -20,6 +20,11 @@ class UiDelegate {
   // detached from the associated activity.
   virtual void OnDestroy() = 0;
 
+  // Called when the Autofill Assistant should display a message saying that
+  // it's shutting down and then shut down, because something happened that
+  // scripts cannot handle, such as a new window being opened.
+  virtual void OnGiveUp() = 0;
+
   // Called when a script was selected for execution.
   virtual void OnScriptSelected(const std::string& script_path) = 0;
 

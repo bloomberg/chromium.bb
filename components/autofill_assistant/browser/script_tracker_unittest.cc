@@ -46,7 +46,10 @@ class ScriptTrackerTest : public testing::Test,
   }
 
  protected:
-  ScriptTrackerTest() : runnable_scripts_changed_(0), tracker_(this, this) {}
+  ScriptTrackerTest()
+      : no_runnable_scripts_anymore_(0),
+        runnable_scripts_changed_(0),
+        tracker_(this, this) {}
 
   // Overrides ScriptTrackerDelegate
   Service* GetService() override { return &mock_service_; }
@@ -74,6 +77,8 @@ class ScriptTrackerTest : public testing::Test,
     runnable_scripts_ = runnable_scripts;
   }
 
+  void OnNoRunnableScriptsAnymore() override { no_runnable_scripts_anymore_++; }
+
   void SetAndCheckScripts(const SupportsScriptResponseProto& response) {
     std::string response_str;
     response.SerializeToString(&response_str);
@@ -90,10 +95,12 @@ class ScriptTrackerTest : public testing::Test,
     SupportedScriptProto* script = response->add_scripts();
     script->set_path(path);
     script->mutable_presentation()->set_name(name);
-    script->mutable_presentation()
-        ->mutable_precondition()
-        ->add_elements_exist()
-        ->add_selectors(selector);
+    if (!selector.empty()) {
+      script->mutable_presentation()
+          ->mutable_precondition()
+          ->add_elements_exist()
+          ->add_selectors(selector);
+    }
     ScriptStatusMatchProto dont_run_twice_precondition;
     dont_run_twice_precondition.set_script(path);
     dont_run_twice_precondition.set_comparator(ScriptStatusMatchProto::EQUAL);
@@ -129,6 +136,8 @@ class ScriptTrackerTest : public testing::Test,
   ClientMemory client_memory_;
   std::map<std::string, std::string> parameters_;
 
+  // Number of times NoRunnableScriptsAnymore was called.
+  int no_runnable_scripts_anymore_;
   // Number of times OnRunnableScriptsChanged was called.
   int runnable_scripts_changed_;
   std::vector<ScriptHandle> runnable_scripts_;
@@ -137,9 +146,10 @@ class ScriptTrackerTest : public testing::Test,
 
 TEST_F(ScriptTrackerTest, NoScripts) {
   tracker_.SetScripts({});
-  EXPECT_EQ(0, runnable_scripts_changed_);
   tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
   EXPECT_THAT(runnable_scripts(), IsEmpty());
+  EXPECT_EQ(0, runnable_scripts_changed_);
+  EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
 
 TEST_F(ScriptTrackerTest, SomeRunnableScripts) {

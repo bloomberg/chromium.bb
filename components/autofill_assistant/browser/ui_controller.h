@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,11 @@ class UiController {
   //
   // Warning: this indirectly deletes the caller.
   virtual void Shutdown() = 0;
+
+  // Shuts down Autofill Assistant after a small delay.
+  //
+  // Warning: this indirectly deletes the caller.
+  virtual void ShutdownGracefully() = 0;
 
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;

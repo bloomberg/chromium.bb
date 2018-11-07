@@ -83,9 +83,11 @@ class Controller : public ScriptExecutorDelegate,
   // Overrides content::UiDelegate:
   void OnClickOverlay() override;
   void OnDestroy() override;
+  void OnGiveUp() override;
   void OnScriptSelected(const std::string& script_path) override;
 
   // Overrides ScriptTracker::Listener:
+  void OnNoRunnableScriptsAnymore() override;
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
@@ -94,6 +96,8 @@ class Controller : public ScriptExecutorDelegate,
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;

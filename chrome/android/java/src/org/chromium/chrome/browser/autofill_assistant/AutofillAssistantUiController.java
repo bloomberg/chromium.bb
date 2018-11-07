@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -29,12 +30,14 @@ import org.chromium.payments.mojom.PaymentOptions;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -56,6 +59,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
+
+    /** Display the final message for that long before shutting everything down. */
+    private static final long GRACEFUL_SHUTDOWN_DELAY_MS = 5000;
 
     private static final String RFC_3339_FORMAT = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ";
 
@@ -139,17 +145,14 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 currentTabModel.removeObserver(this);
 
-                // Assume newly selected tab is always different from the last one.
-                mUiDelegateHolder.shutdown();
-                // TODO(crbug.com/806868): May start a new Autofill Assistant instance for the newly
-                // selected Tab.
+                nativeGiveUp(mUiControllerAndroid);
             }
         });
     }
 
     @Override
     public void onDismiss() {
-        mUiDelegateHolder.showDismissSnackbar();
+        mUiDelegateHolder.dismiss();
     }
 
     @Override
@@ -243,6 +246,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @CalledByNative
     private void onShutdown() {
         mUiDelegateHolder.shutdown();
+    }
+
+    @CalledByNative
+    private void onShutdownGracefully() {
+        mUiDelegateHolder.enterGracefulShutdownMode();
     }
 
     @CalledByNative
@@ -350,9 +358,10 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
         private boolean mShouldQueueUiOperations = false;
         private boolean mHasBeenShutdown = false;
+        private boolean mIsShuttingDown = false;
         private SnackbarManager.SnackbarController mDismissSnackbar;
-        private final ArrayList<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
-                new ArrayList<>();
+        private final Queue<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
+                new ArrayDeque<>();
 
         private UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate) {
             mUiDelegate = uiDelegate;
@@ -365,7 +374,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
          *  - never if Autofill Assistant is shut down.
          */
         public void performUiOperation(Callback<AutofillAssistantUiDelegate> operation) {
-            assert !mHasBeenShutdown;
+            if (mHasBeenShutdown || mIsShuttingDown) {
+                return;
+            }
 
             if (mShouldQueueUiOperations) {
                 mPendingUiOperations.add(operation);
@@ -376,11 +387,18 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
 
         /**
-         * Hides the UI, pauses UI operations and, unless undone within the time delay, eventually
-         * destroy everything.
+         * Handles the dismiss operation.
+         *
+         * In normal mode, hides the UI, pauses UI operations and, unless undone within the time
+         * delay, eventually destroy everything. In graceful shutdown mode, shutdown immediately.
          */
-        public void showDismissSnackbar() {
+        public void dismiss() {
             assert !mHasBeenShutdown;
+
+            if (mIsShuttingDown) {
+                shutdown();
+                return;
+            }
 
             pauseUiOperations();
             mUiDelegate.hide();
@@ -401,7 +419,22 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             mUiDelegate.showAutofillAssistantStoppedSnackbar(mDismissSnackbar);
         }
 
-        /** Hides the UI and destroys everything. */
+        /** Enters graceful shutdown mode once we can again perform UI operations. */
+        public void enterGracefulShutdownMode() {
+            mUiDelegateHolder.performUiOperation(uiDelegate -> {
+                mIsShuttingDown = true;
+                mPendingUiOperations.clear();
+                uiDelegate.enterGracefulShutdownMode();
+                ThreadUtils.postOnUiThreadDelayed(this ::shutdown, GRACEFUL_SHUTDOWN_DELAY_MS);
+            });
+        }
+
+        /**
+         * Hides the UI and destroys everything.
+         *
+         * <p>Shutdown is final: After this call from the C++ side, as it's been deleted and no UI
+         * operation can run.
+         */
         public void shutdown() {
             if (mHasBeenShutdown) {
                 return;
@@ -430,10 +463,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
          */
         private void unpauseUiOperations() {
             mShouldQueueUiOperations = false;
-            for (int i = 0; i < mPendingUiOperations.size(); i++) {
-                mPendingUiOperations.get(i).onResult(mUiDelegate);
+            while (!mPendingUiOperations.isEmpty()) {
+                mPendingUiOperations.remove().onResult(mUiDelegate);
             }
-            mPendingUiOperations.clear();
         }
     }
 
@@ -528,6 +560,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native long nativeInit(WebContents webContents, String[] parameterNames,
             String[] parameterValues, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
+    private native void nativeGiveUp(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);

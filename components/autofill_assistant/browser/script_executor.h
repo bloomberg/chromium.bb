@@ -49,6 +49,9 @@ class ScriptExecutor : public ActionDelegate {
     // Shut down Autofill Assistant.
     SHUTDOWN,
 
+    // Shut down Autofill Assistant after a delay.
+    SHUTDOWN_GRACEFULLY,
+
     // Reset all state and restart.
     RESTART
   };
@@ -136,6 +139,7 @@ class ScriptExecutor : public ActionDelegate {
   AtEnd at_end_;
   bool should_stop_script_;
   bool should_clean_contextual_ui_on_finish_;
+  ActionProto::ActionInfoCase previous_action_type_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);
