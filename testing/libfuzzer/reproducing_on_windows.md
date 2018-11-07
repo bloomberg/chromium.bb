@@ -12,7 +12,8 @@ powershell.
 1. Download the test case from ClusterFuzz (if you are CCed on an issue filed by
    ClusterFuzz, a link to it is next to "Reproducer testcase" in the
    bug description). For the rest of this walkthrough, we call the path of this
-   file: `$TESTCASE_PATH`.
+   file: `$TESTCASE_PATH`. We will call the fuzz target you want to reproduce a
+   crash on: `$FUZZER_NAME`.
 
 2. Generate gn build configuration for libFuzzer:
 
