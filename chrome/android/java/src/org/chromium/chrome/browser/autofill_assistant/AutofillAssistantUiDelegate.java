@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -242,6 +243,16 @@ class AutofillAssistantUiDelegate {
 
         setCarouselTopPadding();
 
+        // Finch experiment to adjust overlay color
+        String overlayColor = VariationsAssociatedData.getVariationParamValue(
+                "AutofillAssistantOverlay", "overlay_color");
+        if (!overlayColor.isEmpty()) {
+            try {
+                mOverlay.setBackgroundColor(Color.parseColor(overlayColor));
+            } catch (IllegalArgumentException exception) {
+                // ignore
+            }
+        }
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
     }
 
