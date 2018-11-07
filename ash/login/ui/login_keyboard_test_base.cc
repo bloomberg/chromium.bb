@@ -54,8 +54,9 @@ void LoginKeyboardTestBase::ShowKeyboard() {
     keyboard_controller->GetKeyboardWindow()->SetBounds(
         keyboard::KeyboardBoundsFromRootBounds(
             Shell::GetPrimaryRootWindow()->bounds(), height));
+    keyboard_controller->NotifyKeyboardWindowLoaded();
   }
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  ASSERT_TRUE(keyboard_controller->IsKeyboardVisible());
 }
 
 void LoginKeyboardTestBase::HideKeyboard() {

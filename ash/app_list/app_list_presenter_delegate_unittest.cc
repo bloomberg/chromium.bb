@@ -101,6 +101,8 @@ class AppListPresenterDelegateTest : public AshTestBase,
   // testing::Test:
   void SetUp() override {
     app_list::AppListView::SetShortAnimationForTesting(true);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
 
     // Make the display big enough to hold the app list.
@@ -780,6 +782,65 @@ TEST_P(AppListPresenterDelegateTest, TapAndClickEnablesSearchBox) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Tests that tapping or clicking the body of the applist with an active virtual
+// keyboard results in the virtual keyboard closing with no side effects.
+TEST_P(AppListPresenterDelegateTest,
+       TapAppListWithVirtualKeyboardDismissesVirtualKeyboard) {
+  const bool test_click = GetParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  EnableTabletMode(true);
+
+  // Tap to activate the searchbox.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureTapAt(GetPointInsideSearchbox());
+
+  // Enter some text in the searchbox, the applist should transition to
+  // fullscreen search.
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_SEARCH);
+
+  // Manually show the virtual keyboard.
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(true);
+  keyboard_controller->GetKeyboardWindow()->SetBounds(
+      keyboard::KeyboardBoundsFromRootBounds(
+          Shell::GetPrimaryRootWindow()->bounds(), 100));
+  keyboard_controller->NotifyKeyboardWindowLoaded();
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
+
+  // Tap or click outside the searchbox, the virtual keyboard should hide.
+  if (test_click) {
+    generator->MoveMouseTo(GetPointOutsideSearchbox());
+    generator->ClickLeftButton();
+    generator->ReleaseLeftButton();
+  } else {
+    generator->GestureTapAt(GetPointOutsideSearchbox());
+  }
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+
+  // The searchbox should still be active and the AppListView should still be in
+  // FULLSCREEN_SEARCH.
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_SEARCH);
+  EXPECT_TRUE(GetAppListView()->search_box_view()->is_search_box_active());
+
+  // Tap or click the body of the AppList again, the searchbox should deactivate
+  // and the applist should be in FULLSCREEN_ALL_APPS.
+  if (test_click) {
+    generator->MoveMouseTo(GetPointOutsideSearchbox());
+    generator->ClickLeftButton();
+    generator->ReleaseLeftButton();
+  } else {
+    generator->GestureTapAt(GetPointOutsideSearchbox());
+  }
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  EXPECT_FALSE(GetAppListView()->search_box_view()->is_search_box_active());
 }
 
 // Tests that the shelf background displays/hides with bottom shelf
@@ -1619,85 +1680,6 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
-}
-
-// Tests that involve the virtual keyboard.
-class AppListPresenterDelegateVirtualKeyboardTest
-    : public AppListPresenterDelegateTest {
- public:
-  AppListPresenterDelegateVirtualKeyboardTest() = default;
-  ~AppListPresenterDelegateVirtualKeyboardTest() override = default;
-
-  // AppListPresenterDelegateTest:
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
-    AppListPresenterDelegateTest::SetUp();
-  }
-};
-
-// Instantiate the Boolean which is used to toggle mouse and touch events in
-// the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppListPresenterDelegateVirtualKeyboardTest,
-                        testing::Bool());
-
-// Tests that tapping or clicking the body of the applist with an active virtual
-// keyboard results in the virtual keyboard closing with no side effects.
-TEST_P(AppListPresenterDelegateVirtualKeyboardTest,
-       TapAppListWithVirtualKeyboardDismissesVirtualKeyboard) {
-  const bool test_click = GetParam();
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  EnableTabletMode(true);
-
-  // Tap to activate the searchbox.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureTapAt(GetPointInsideSearchbox());
-
-  // Enter some text in the searchbox, the applist should transition to
-  // fullscreen search.
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Manually show the virtual keyboard.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->GetKeyboardWindow()->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(
-          Shell::GetPrimaryRootWindow()->bounds(), 100));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
-
-  // Tap or click outside the searchbox, the virtual keyboard should hide.
-  if (test_click) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
-
-  // The searchbox should still be active and the AppListView should still be in
-  // FULLSCREEN_SEARCH.
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-  EXPECT_TRUE(GetAppListView()->search_box_view()->is_search_box_active());
-
-  // Tap or click the body of the AppList again, the searchbox should deactivate
-  // and the applist should be in FULLSCREEN_ALL_APPS.
-  if (test_click) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  EXPECT_FALSE(GetAppListView()->search_box_view()->is_search_box_active());
 }
 
 }  // namespace ash

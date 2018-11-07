@@ -35,7 +35,6 @@ class KEYBOARD_EXPORT KeyboardUI {
   // Begin loading the virtual keyboard window asynchronously.
   // Returns a window immediately, but the UI within the window is not
   // guaranteed to be fully loaded until |callback| is called.
-  // |callback| must be called after this function returns.
   // This function can only be called once.
   virtual aura::Window* LoadKeyboardWindow(LoadCallback callback) = 0;
 

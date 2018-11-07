@@ -63,7 +63,8 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
     keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
-    ASSERT_TRUE(keyboard::WaitUntilShown());
+    // Mock KeyboardUI notifying KeyboardController that the contents loaded.
+    keyboard_controller->NotifyKeyboardWindowLoaded();
   }
 
   void FocusNonEditableNode() {
@@ -227,8 +228,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   gfx::Rect test_bounds(0, 0, 0, screen_height - ime_window_visible_height + 1);
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false /* locked */);
+  controller->NotifyKeyboardWindowLoaded();
   controller->GetKeyboardWindow()->SetBounds(test_bounds);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Non ime window should have smaller visible view port due to overlap with
   // virtual keyboard.

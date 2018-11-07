@@ -5,7 +5,6 @@
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -131,10 +130,8 @@ aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->set_owned_by_parent(false);
 
-  // Simulate an asynchronous load.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(callback));
-
+  // TODO(https://crbug.com/849995): Call |callback| instead of having tests
+  // call |NotifyKeyboardWindowLoaded|.
   return window_.get();
 }
 
