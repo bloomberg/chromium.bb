@@ -38,6 +38,7 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/signin/core/browser",
     "//components/signin/core/browser:account_info",
     "//components/signin/core/browser:test_support",
