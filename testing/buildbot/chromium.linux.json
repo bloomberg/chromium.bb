@@ -650,6 +650,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -662,7 +665,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
+          "--qemu-require-kvm"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -675,6 +679,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -686,6 +693,9 @@
         "test": "cronet_tests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -697,6 +707,9 @@
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -708,6 +721,9 @@
         "test": "crypto_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -720,7 +736,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter",
+          "--qemu-require-kvm"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -733,6 +750,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -745,7 +765,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
+          "--qemu-require-kvm"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -758,6 +779,9 @@
         "test": "mojo_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -769,6 +793,9 @@
         "test": "service_manager_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -780,6 +807,9 @@
         "test": "skia_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -792,7 +822,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
+          "--qemu-require-kvm"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -805,6 +836,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -816,6 +850,9 @@
         "test": "webrunner_browsertests"
       },
       {
+        "args": [
+          "--qemu-require-kvm"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
