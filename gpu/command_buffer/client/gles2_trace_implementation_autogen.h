@@ -715,8 +715,6 @@ void DrawElementsInstancedANGLE(GLenum mode,
 void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) override;
 void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override;
 GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
-GLuint CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
-                                                const GLbyte* mailbox) override;
 void BindUniformLocationCHROMIUM(GLuint program,
                                  GLint location,
                                  const char* name) override;
@@ -930,4 +928,8 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                              GLint baseViewIndex,
                                              GLsizei numViews) override;
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
+GLuint CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
+                                                const GLbyte* mailbox) override;
+void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) override;
+void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_AUTOGEN_H_

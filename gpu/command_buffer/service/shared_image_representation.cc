@@ -18,4 +18,12 @@ SharedImageRepresentation::~SharedImageRepresentation() {
   manager_->OnRepresentationDestroyed(backing_->mailbox(), this);
 }
 
+bool SharedImageRepresentationGLTexture::BeginAccess(GLenum mode) {
+  return true;
+}
+
+bool SharedImageRepresentationGLTexturePassthrough::BeginAccess(GLenum mode) {
+  return true;
+}
+
 }  // namespace gpu

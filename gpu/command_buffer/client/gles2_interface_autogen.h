@@ -738,9 +738,6 @@ virtual void DrawElementsInstancedANGLE(GLenum mode,
 virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
 virtual void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;
-virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum internalFormat,
-    const GLbyte* mailbox) = 0;
 virtual void BindUniformLocationCHROMIUM(GLuint program,
                                          GLint location,
                                          const char* name) = 0;
@@ -961,4 +958,10 @@ virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                      GLint baseViewIndex,
                                                      GLsizei numViews) = 0;
 virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
+virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum internalFormat,
+    const GLbyte* mailbox) = 0;
+virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                  GLenum mode) = 0;
+virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

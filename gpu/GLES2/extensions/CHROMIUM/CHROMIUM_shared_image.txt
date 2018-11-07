@@ -22,10 +22,13 @@ Overview
 
 New Procedures and Functions
 
-    GLuint glCreateAndTexStorage2DSharedImageCHROMIUM (GLenum internal_format,
-                                                       const GLbyte *mailbox)
-    
-    This function takes two arguments:
+    The command
+
+      GLuint glCreateAndTexStorage2DSharedImageCHROMIUM (GLenum internal_format,
+                                                         const GLbyte *mailbox)
+
+    takes two arguments:
+
     internal_format - Must match the internal format of the SharedImage at
       creation time, with the exception that a caller may pass GL_RGB or
       GL_RGBA for a SharedImage created as RGBA_8888.
@@ -54,15 +57,50 @@ New Procedures and Functions
     texture object. In this case the new texture name remains unbound.  It is
     treated in the same way as a new texture name returned by GenTextures.
 
+    The command
+
+      void glBeginSharedImageAccessDirectCHROMIUM (GLuint texture,
+                                                   GLenum mode)
+
+    takes two arguments:
+
+    texture - the texture id for which to begin a shared image access scope.
+
+    mode - the access mode with which to begin access.
+
+    INVALID_OPERATION is generated if the texture id indicated is not
+    backed by a shared image.
+
+    INVALID_OPERATION is generated if we are requesting a READWRITE scope
+    and another consumer of the shared image is currently within a
+    READ or READWRITE scope.
+
+    INVALID_OPERATION is generated if we are requesting a READ scope and
+    another comsumer of the shared image is currently within a READWRITE
+    scope.
+
+    INVALID_ENUM is generated if <mode> is not one of
+    SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM or
+    SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM.
+
+    The command
+
+      void glEndSharedImageAccessDirectCHROMIUM (GLuint texture)
+
+    takes one argument:
+
+    texture - the texture id for which to end a shared image access scope.
+
+    INVALID_OPERATION is generated if this function is called without a
+    preceding call to glBeginSharedImageAccessCHROMIUM.
+
 New Tokens
 
-    None.
+    Accepted by the <mode> parameter of BeginSharedImageAccessCHROMIUM:
+    SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM        0x8AF5
+    SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM   0x8AF6
 
 Errors
-
-    None.
-
-New Tokens
 
     None.
 
@@ -73,3 +111,4 @@ New State
 Revision History
 
     2018-10-15   Created.
+    2018-10-31   Added Begin/End calls.

@@ -1690,6 +1690,14 @@ _NAMED_TYPE_INFO = {
       'gpu::SwapBuffersFlags::kVSyncParams',
     ],
   },
+  'SharedImageAccessMode': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM',
+      'GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM',
+    ],
+  },
 }
 
 # A function info object specifies the type and other special data for the
@@ -1958,20 +1966,6 @@ _FUNCTION_INFO = {
   },
   'CreateAndConsumeTextureINTERNAL': {
     'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
-    'internal': True,
-    'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'impl_func': False,
-    'unit_test': False,
-    'trace_level': 2,
-  },
-  'CreateAndTexStorage2DSharedImageCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_shared_image",
-    'trace_level': 2,
-  },
-  'CreateAndTexStorage2DSharedImageINTERNAL': {
-    'decoder_func': 'DoCreateAndTexStorage2DSharedImageINTERNAL',
     'internal': True,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
@@ -4129,6 +4123,32 @@ _FUNCTION_INFO = {
     'client_test': False,
     'extension': 'KHRParallelShaderCompile',
     'extension_flag': 'khr_parallel_shader_compile',
+  },
+  'CreateAndTexStorage2DSharedImageCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_shared_image",
+    'trace_level': 2,
+  },
+  'CreateAndTexStorage2DSharedImageINTERNAL': {
+    'decoder_func': 'DoCreateAndTexStorage2DSharedImageINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'impl_func': False,
+    'unit_test': False,
+    'trace_level': 2,
+  },
+  'BeginSharedImageAccessDirectCHROMIUM': {
+    'decoder_func': 'DoBeginSharedImageAccessDirectCHROMIUM',
+    'extension': 'CHROMIUM_shared_image',
+    'unit_test': False,
+    'client_test': False,
+    'cmd_args': 'GLuint texture, GLenumSharedImageAccessMode mode',
+  },
+  'EndSharedImageAccessDirectCHROMIUM': {
+    'decoder_func': 'DoEndSharedImageAccessDirectCHROMIUM',
+    'extension': 'CHROMIUM_shared_image',
+    'unit_test': False,
   }
 }
 

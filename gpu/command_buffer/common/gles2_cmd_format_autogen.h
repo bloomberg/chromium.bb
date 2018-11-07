@@ -13160,60 +13160,6 @@ static_assert(
     offsetof(CreateAndConsumeTextureINTERNALImmediate, texture) == 4,
     "offset of CreateAndConsumeTextureINTERNALImmediate texture should be 4");
 
-struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
-  typedef CreateAndTexStorage2DSharedImageINTERNALImmediate ValueType;
-  static const CommandId kCmdId =
-      kCreateAndTexStorage2DSharedImageINTERNALImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
-
-  static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
-  }
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
-  }
-
-  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
-
-  void Init(GLuint _texture, GLenum _internalFormat, const GLbyte* _mailbox) {
-    SetHeader();
-    texture = _texture;
-    internalFormat = _internalFormat;
-    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
-  }
-
-  void* Set(void* cmd,
-            GLuint _texture,
-            GLenum _internalFormat,
-            const GLbyte* _mailbox) {
-    static_cast<ValueType*>(cmd)->Init(_texture, _internalFormat, _mailbox);
-    const uint32_t size = ComputeSize();
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t texture;
-  uint32_t internalFormat;
-};
-
-static_assert(
-    sizeof(CreateAndTexStorage2DSharedImageINTERNALImmediate) == 12,
-    "size of CreateAndTexStorage2DSharedImageINTERNALImmediate should be 12");
-static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
-                       header) == 0,
-              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
-              "header should be 0");
-static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
-                       texture) == 4,
-              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
-              "texture should be 4");
-static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
-                       internalFormat) == 8,
-              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
-              "internalFormat should be 8");
-
 struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;
   static const CommandId kCmdId = kBindUniformLocationCHROMIUMBucket;
@@ -16784,5 +16730,134 @@ static_assert(offsetof(MaxShaderCompilerThreadsKHR, header) == 0,
               "offset of MaxShaderCompilerThreadsKHR header should be 0");
 static_assert(offsetof(MaxShaderCompilerThreadsKHR, count) == 4,
               "offset of MaxShaderCompilerThreadsKHR count should be 4");
+
+struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
+  typedef CreateAndTexStorage2DSharedImageINTERNALImmediate ValueType;
+  static const CommandId kCmdId =
+      kCreateAndTexStorage2DSharedImageINTERNALImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _texture, GLenum _internalFormat, const GLbyte* _mailbox) {
+    SetHeader();
+    texture = _texture;
+    internalFormat = _internalFormat;
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture,
+            GLenum _internalFormat,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _internalFormat, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+  uint32_t internalFormat;
+};
+
+static_assert(
+    sizeof(CreateAndTexStorage2DSharedImageINTERNALImmediate) == 12,
+    "size of CreateAndTexStorage2DSharedImageINTERNALImmediate should be 12");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       header) == 0,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "header should be 0");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       texture) == 4,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "texture should be 4");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       internalFormat) == 8,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "internalFormat should be 8");
+
+struct BeginSharedImageAccessDirectCHROMIUM {
+  typedef BeginSharedImageAccessDirectCHROMIUM ValueType;
+  static const CommandId kCmdId = kBeginSharedImageAccessDirectCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture, GLenum _mode) {
+    SetHeader();
+    texture = _texture;
+    mode = _mode;
+  }
+
+  void* Set(void* cmd, GLuint _texture, GLenum _mode) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _mode);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+  uint32_t mode;
+};
+
+static_assert(sizeof(BeginSharedImageAccessDirectCHROMIUM) == 12,
+              "size of BeginSharedImageAccessDirectCHROMIUM should be 12");
+static_assert(
+    offsetof(BeginSharedImageAccessDirectCHROMIUM, header) == 0,
+    "offset of BeginSharedImageAccessDirectCHROMIUM header should be 0");
+static_assert(
+    offsetof(BeginSharedImageAccessDirectCHROMIUM, texture) == 4,
+    "offset of BeginSharedImageAccessDirectCHROMIUM texture should be 4");
+static_assert(
+    offsetof(BeginSharedImageAccessDirectCHROMIUM, mode) == 8,
+    "offset of BeginSharedImageAccessDirectCHROMIUM mode should be 8");
+
+struct EndSharedImageAccessDirectCHROMIUM {
+  typedef EndSharedImageAccessDirectCHROMIUM ValueType;
+  static const CommandId kCmdId = kEndSharedImageAccessDirectCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture) {
+    SetHeader();
+    texture = _texture;
+  }
+
+  void* Set(void* cmd, GLuint _texture) {
+    static_cast<ValueType*>(cmd)->Init(_texture);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+};
+
+static_assert(sizeof(EndSharedImageAccessDirectCHROMIUM) == 8,
+              "size of EndSharedImageAccessDirectCHROMIUM should be 8");
+static_assert(
+    offsetof(EndSharedImageAccessDirectCHROMIUM, header) == 0,
+    "offset of EndSharedImageAccessDirectCHROMIUM header should be 0");
+static_assert(
+    offsetof(EndSharedImageAccessDirectCHROMIUM, texture) == 4,
+    "offset of EndSharedImageAccessDirectCHROMIUM texture should be 4");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

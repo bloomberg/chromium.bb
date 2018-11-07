@@ -1421,12 +1421,6 @@ void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
 GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) {
   return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(mailbox);
 }
-GLuint GL_APIENTRY
-GLES2CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
-                                              const GLbyte* mailbox) {
-  return gles2::GetGLContext()->CreateAndTexStorage2DSharedImageCHROMIUM(
-      internalFormat, mailbox);
-}
 void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
                                                   GLint location,
                                                   const char* name) {
@@ -1840,6 +1834,19 @@ GLES2FramebufferTextureMultiviewLayeredANGLE(GLenum target,
 }
 void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
   gles2::GetGLContext()->MaxShaderCompilerThreadsKHR(count);
+}
+GLuint GL_APIENTRY
+GLES2CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
+                                              const GLbyte* mailbox) {
+  return gles2::GetGLContext()->CreateAndTexStorage2DSharedImageCHROMIUM(
+      internalFormat, mailbox);
+}
+void GL_APIENTRY GLES2BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                           GLenum mode) {
+  gles2::GetGLContext()->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+}
+void GL_APIENTRY GLES2EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
+  gles2::GetGLContext()->EndSharedImageAccessDirectCHROMIUM(texture);
 }
 
 namespace gles2 {
@@ -2908,11 +2915,6 @@ extern const NameToFunc g_gles2_function_table[] = {
             glCreateAndConsumeTextureCHROMIUM),
     },
     {
-        "glCreateAndTexStorage2DSharedImageCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glCreateAndTexStorage2DSharedImageCHROMIUM),
-    },
-    {
         "glBindUniformLocationCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glBindUniformLocationCHROMIUM),
     },
@@ -3227,6 +3229,21 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glMaxShaderCompilerThreadsKHR",
         reinterpret_cast<GLES2FunctionPointer>(glMaxShaderCompilerThreadsKHR),
+    },
+    {
+        "glCreateAndTexStorage2DSharedImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glCreateAndTexStorage2DSharedImageCHROMIUM),
+    },
+    {
+        "glBeginSharedImageAccessDirectCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glBeginSharedImageAccessDirectCHROMIUM),
+    },
+    {
+        "glEndSharedImageAccessDirectCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glEndSharedImageAccessDirectCHROMIUM),
     },
     {
         nullptr, nullptr,

@@ -1153,6 +1153,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoCreateAndTexStorage2DSharedImageINTERNAL(GLuint client_id,
                                                   GLenum internal_format,
                                                   const volatile GLbyte* data);
+  void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
+  void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
   void BindImage(uint32_t client_texture_id,
@@ -17760,6 +17762,49 @@ void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
 
   texture_ref =
       texture_manager()->ConsumeSharedImage(client_id, std::move(shared_image));
+}
+
+void GLES2DecoderImpl::DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
+                                                              GLenum mode) {
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "invalid texture id");
+    return;
+  }
+
+  SharedImageRepresentationGLTexture* shared_image =
+      texture_ref->shared_image();
+  if (!shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "bound texture is not a shared image");
+    return;
+  }
+
+  if (!shared_image->BeginAccess(mode)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "Unable to begin access");
+    return;
+  }
+}
+
+void GLES2DecoderImpl::DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id) {
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoBeginSharedImageAccessCHROMIUM",
+                       "invalid texture id");
+    return;
+  }
+
+  SharedImageRepresentationGLTexture* shared_image =
+      texture_ref->shared_image();
+  if (!shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoEndSharedImageAccessCHROMIUM",
+                       "bound texture is not a shared image");
+    return;
+  }
+
+  shared_image->EndAccess();
 }
 
 void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {

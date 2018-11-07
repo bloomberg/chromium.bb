@@ -2051,14 +2051,6 @@ GLuint GLES2TraceImplementation::CreateAndConsumeTextureCHROMIUM(
   return gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
 }
 
-GLuint GLES2TraceImplementation::CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum internalFormat,
-    const GLbyte* mailbox) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::CreateAndTexStorage2DSharedImageCHROMIUM");
-  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(internalFormat, mailbox);
-}
-
 void GLES2TraceImplementation::BindUniformLocationCHROMIUM(GLuint program,
                                                            GLint location,
                                                            const char* name) {
@@ -2669,6 +2661,29 @@ void GLES2TraceImplementation::MaxShaderCompilerThreadsKHR(GLuint count) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::MaxShaderCompilerThreadsKHR");
   gl_->MaxShaderCompilerThreadsKHR(count);
+}
+
+GLuint GLES2TraceImplementation::CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum internalFormat,
+    const GLbyte* mailbox) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::CreateAndTexStorage2DSharedImageCHROMIUM");
+  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(internalFormat, mailbox);
+}
+
+void GLES2TraceImplementation::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint texture,
+    GLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::BeginSharedImageAccessDirectCHROMIUM");
+  gl_->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+}
+
+void GLES2TraceImplementation::EndSharedImageAccessDirectCHROMIUM(
+    GLuint texture) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::EndSharedImageAccessDirectCHROMIUM");
+  gl_->EndSharedImageAccessDirectCHROMIUM(texture);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

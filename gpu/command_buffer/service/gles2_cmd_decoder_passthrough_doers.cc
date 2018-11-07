@@ -4176,43 +4176,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
-    GLuint texture_client_id,
-    GLenum internal_format,
-    const volatile GLbyte* mailbox) {
-  if (!texture_client_id ||
-      resources_->texture_id_map.HasClientID(texture_client_id)) {
-    InsertError(GL_INVALID_OPERATION, "Invalid texture ID");
-    return error::kNoError;
-  }
-
-  const Mailbox& mb = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  auto shared_image = group_->shared_image_representation_factory()
-                          ->ProduceGLTexturePassthrough(mb);
-  if (shared_image == nullptr) {
-    // Create texture to handle invalid mailbox (see http://crbug.com/472465 and
-    // http://crbug.com/851878).
-    DoGenTextures(1, &texture_client_id);
-    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
-    return error::kNoError;
-  }
-
-  auto texture = shared_image->GetTexturePassthrough();
-
-  // Update id mappings
-  resources_->texture_id_map.RemoveClientID(texture_client_id);
-  resources_->texture_id_map.SetIDMapping(texture_client_id,
-                                          texture->service_id());
-  resources_->texture_object_map.RemoveClientID(texture_client_id);
-  resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
-  resources_->texture_shared_image_map[texture_client_id] =
-      std::move(shared_image);
-
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoBindUniformLocationCHROMIUM(
     GLuint program,
     GLint location,
@@ -5055,6 +5018,17 @@ GLES2DecoderPassthroughImpl::DoInitializeDiscardableTextureCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoLockDiscardableTextureCHROMIUM(
+    GLuint texture_id) {
+  if (!group_->passthrough_discardable_manager()->LockTexture(texture_id,
+                                                              group_.get())) {
+    InsertError(GL_INVALID_VALUE, "Texture ID not initialized");
+    return error::kNoError;
+  }
+
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
     GLuint texture_id) {
   TexturePassthrough* texture_to_unbind = nullptr;
@@ -5067,18 +5041,83 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
   if (texture_to_unbind != nullptr) {
     UpdateTextureBinding(texture_to_unbind->target(), texture_id, nullptr);
   }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint texture_client_id,
+    GLenum internal_format,
+    const volatile GLbyte* mailbox) {
+  if (!texture_client_id ||
+      resources_->texture_id_map.HasClientID(texture_client_id)) {
+    InsertError(GL_INVALID_OPERATION, "invalid client ID");
+    return error::kNoError;
+  }
+
+  const Mailbox& mb = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox));
+  auto shared_image = group_->shared_image_representation_factory()
+                          ->ProduceGLTexturePassthrough(mb);
+  if (shared_image == nullptr) {
+    // Create texture to handle invalid mailbox (see http://crbug.com/472465 and
+    // http://crbug.com/851878).
+    DoGenTextures(1, &texture_client_id);
+    InsertError(GL_INVALID_OPERATION, "invalid mailbox name.");
+    return error::kNoError;
+  }
+
+  auto texture = shared_image->GetTexturePassthrough();
+
+  // Update id mappings
+  resources_->texture_id_map.RemoveClientID(texture_client_id);
+  resources_->texture_id_map.SetIDMapping(texture_client_id,
+                                          texture->service_id());
+  resources_->texture_object_map.RemoveClientID(texture_client_id);
+  resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
+  resources_->texture_shared_image_map[texture_client_id] =
+      std::move(shared_image);
 
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoLockDiscardableTextureCHROMIUM(
-    GLuint texture_id) {
-  if (!group_->passthrough_discardable_manager()->LockTexture(texture_id,
-                                                              group_.get())) {
-    InsertError(GL_INVALID_VALUE, "Texture ID not initialized");
+error::Error
+GLES2DecoderPassthroughImpl::DoBeginSharedImageAccessDirectCHROMIUM(
+    GLuint client_id,
+    GLenum mode) {
+  if (mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM &&
+      mode != GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+    InsertError(GL_INVALID_ENUM, "unrecognized access mode");
     return error::kNoError;
   }
 
+  auto found = resources_->texture_shared_image_map.find(client_id);
+  if (found == resources_->texture_shared_image_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "texture is not a shared image");
+    return error::kNoError;
+  }
+
+  SharedImageRepresentationGLTexturePassthrough* shared_image =
+      found->second.get();
+  if (!shared_image->BeginAccess(mode)) {
+    InsertError(GL_INVALID_OPERATION, "unable to begin access");
+    return error::kNoError;
+  }
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoEndSharedImageAccessDirectCHROMIUM(
+    GLuint client_id) {
+  auto found = resources_->texture_shared_image_map.find(client_id);
+  if (found == resources_->texture_shared_image_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "texture is not a shared image");
+    return error::kNoError;
+  }
+
+  SharedImageRepresentationGLTexturePassthrough* shared_image =
+      found->second.get();
+  shared_image->EndAccess();
   return error::kNoError;
 }
 

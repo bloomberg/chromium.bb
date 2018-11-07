@@ -4166,36 +4166,6 @@ GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::
-    HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
-        uint32_t immediate_data_size,
-        const volatile void* cmd_data) {
-  const volatile gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate&
-      c = *static_cast<const volatile gles2::cmds::
-                           CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
-          cmd_data);
-  GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
-    return error::kOutOfBounds;
-  }
-  if (data_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
-  if (mailbox == nullptr) {
-    return error::kOutOfBounds;
-  }
-  error::Error error = DoCreateAndTexStorage2DSharedImageINTERNAL(
-      texture, internalFormat, mailbox);
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::HandleBindTexImage2DCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -4773,6 +4743,69 @@ error::Error GLES2DecoderPassthroughImpl::HandleMaxShaderCompilerThreadsKHR(
 
   GLuint count = static_cast<GLuint>(c.count);
   error::Error error = DoMaxShaderCompilerThreadsKHR(count);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::
+    HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
+        uint32_t immediate_data_size,
+        const volatile void* cmd_data) {
+  const volatile gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate&
+      c = *static_cast<const volatile gles2::cmds::
+                           CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  uint32_t data_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
+      c, data_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
+  error::Error error = DoCreateAndTexStorage2DSharedImageINTERNAL(
+      texture, internalFormat, mailbox);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleBeginSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  error::Error error = DoBeginSharedImageAccessDirectCHROMIUM(texture, mode);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleEndSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  error::Error error = DoEndSharedImageAccessDirectCHROMIUM(texture);
   if (error != error::kNoError) {
     return error;
   }

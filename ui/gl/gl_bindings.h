@@ -422,6 +422,12 @@
 #define GL_COMPLETION_STATUS_KHR 0x91B1
 #endif /* GL_KHR_parallel_shader_compile */
 
+#ifndef GL_CHROMIUM_shared_image
+#define GL_CHROMIUM_shared_image 1
+#define GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM 0x8AF5
+#define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF6
+#endif /* GL_CHROMIUM_shared_image */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

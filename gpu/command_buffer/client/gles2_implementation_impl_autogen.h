@@ -3698,4 +3698,24 @@ void GLES2Implementation::MaxShaderCompilerThreadsKHR(GLuint count) {
   CheckGLError();
 }
 
+void GLES2Implementation::BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                               GLenum mode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glBeginSharedImageAccessDirectCHROMIUM(" << texture
+                     << ", " << GLES2Util::GetStringSharedImageAccessMode(mode)
+                     << ")");
+  helper_->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+  CheckGLError();
+}
+
+void GLES2Implementation::EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glEndSharedImageAccessDirectCHROMIUM(" << texture
+                     << ")");
+  helper_->EndSharedImageAccessDirectCHROMIUM(texture);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

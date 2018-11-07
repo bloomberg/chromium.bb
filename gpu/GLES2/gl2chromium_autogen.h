@@ -308,8 +308,6 @@
   GLES2_GET_FUN(ProduceTextureDirectCHROMIUM)
 #define glCreateAndConsumeTextureCHROMIUM \
   GLES2_GET_FUN(CreateAndConsumeTextureCHROMIUM)
-#define glCreateAndTexStorage2DSharedImageCHROMIUM \
-  GLES2_GET_FUN(CreateAndTexStorage2DSharedImageCHROMIUM)
 #define glBindUniformLocationCHROMIUM GLES2_GET_FUN(BindUniformLocationCHROMIUM)
 #define glBindTexImage2DCHROMIUM GLES2_GET_FUN(BindTexImage2DCHROMIUM)
 #define glBindTexImage2DWithInternalformatCHROMIUM \
@@ -412,5 +410,11 @@
 #define glFramebufferTextureMultiviewLayeredANGLE \
   GLES2_GET_FUN(FramebufferTextureMultiviewLayeredANGLE)
 #define glMaxShaderCompilerThreadsKHR GLES2_GET_FUN(MaxShaderCompilerThreadsKHR)
+#define glCreateAndTexStorage2DSharedImageCHROMIUM \
+  GLES2_GET_FUN(CreateAndTexStorage2DSharedImageCHROMIUM)
+#define glBeginSharedImageAccessDirectCHROMIUM \
+  GLES2_GET_FUN(BeginSharedImageAccessDirectCHROMIUM)
+#define glEndSharedImageAccessDirectCHROMIUM \
+  GLES2_GET_FUN(EndSharedImageAccessDirectCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_
