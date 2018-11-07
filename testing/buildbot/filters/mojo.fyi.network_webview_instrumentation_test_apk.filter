@@ -139,9 +139,6 @@
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookiesArePerWebview
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyJavascriptCookie
 
-# https://crbug.com/893577
--org.chromium.android_webview.test.HttpCacheTest.testHttpCacheIsInsideCacheDir
-
 # https://crbug.com/893579
 -org.chromium.android_webview.test.KeySystemTest.testNotSupportFooKeySystem
 -org.chromium.android_webview.test.KeySystemTest.testSupportClearKeySystem
