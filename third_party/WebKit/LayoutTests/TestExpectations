@@ -5325,10 +5325,10 @@ crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/poin
 crbug.com/893869 [ Linux Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 
 # Sheriff 2018-10-12
-crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
-crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
-crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
+crbug.com/891155 [ Linux Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
+crbug.com/891155 [ Linux Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
+crbug.com/891155 [ Linux Win ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
+crbug.com/891155 [ Linux Win ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
 
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
