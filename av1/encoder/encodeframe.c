@@ -11,6 +11,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "config/aom_config.h"
@@ -511,6 +512,19 @@ static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
       cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
 }
 
+static uint16_t edge_strength(const struct buf_2d *ref, const BLOCK_SIZE bsize,
+                              const bool high_bd, const int bd) {
+  const int width = block_size_wide[bsize];
+  const int height = block_size_high[bsize];
+  // Implementation requires width to be a multiple of 8. It also requires
+  // height to be a multiple of 4, but this is always the case.
+  assert(height % 4 == 0);
+  if (width % 8 != 0) {
+    return 0;
+  }
+  return av1_edge_exists(ref->buf, ref->stride, width, height, high_bd, bd);
+}
+
 static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
                              RD_STATS *rd_cost, PARTITION_TYPE partition,
@@ -595,6 +609,9 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->source_variance =
         av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
   }
+  x->edge_strength =
+      edge_strength(&x->plane[0].src, bsize,
+                    xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd);
 
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;
