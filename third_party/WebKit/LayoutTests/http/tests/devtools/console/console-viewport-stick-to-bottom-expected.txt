@@ -27,3 +27,7 @@ Is at bottom: false, should stick: false
 Running: testShouldNotJumpToBottomWhenPromptFillsEntireViewport
 Is at bottom: false, should stick: false
 
+Running: testShouldStickWhenEnteringCommandAndPromptIsOutOfView
+Sending key: Enter
+Is at bottom: true, should stick: true
+
