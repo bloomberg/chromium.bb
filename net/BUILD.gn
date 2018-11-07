@@ -391,6 +391,7 @@ component("net") {
     "//net/dns:host_resolver",
     "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
+    "//net/dns/public",
   ]
 
   allow_circular_includes_from = [
@@ -399,6 +400,7 @@ component("net") {
     "//net/dns:host_resolver",
     "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
+    "//net/dns/public",
   ]
 
   if (!is_nacl) {
@@ -2155,6 +2157,7 @@ source_set("net_deps") {
     "//net/dns:host_resolver",
     "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
+    "//net/dns/public",
   ]
 
   public_deps = [
@@ -2222,6 +2225,7 @@ source_set("net_public_deps") {
     "//net/dns:host_resolver",
     "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
+    "//net/dns/public",
   ]
 
   public_deps = [
@@ -5271,6 +5275,7 @@ test("net_unittests") {
     "//crypto:test_support",
     "//net/base/registry_controlled_domains",
     "//net/dns:tests",
+    "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
     "//net/interfaces:tests",

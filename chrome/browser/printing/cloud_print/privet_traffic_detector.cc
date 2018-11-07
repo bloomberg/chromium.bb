@@ -19,8 +19,8 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client.h"
+#include "net/dns/public/dns_protocol.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {

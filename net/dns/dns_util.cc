@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/url_util.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"

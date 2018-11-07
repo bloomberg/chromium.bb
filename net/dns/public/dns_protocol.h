@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DNS_DNS_PROTOCOL_H_
-#define NET_DNS_DNS_PROTOCOL_H_
+#ifndef NET_DNS_PUBLIC_DNS_PROTOCOL_H_
+#define NET_DNS_PUBLIC_DNS_PROTOCOL_H_
 
 #include <stdint.h>
 
@@ -11,6 +11,13 @@
 
 namespace net {
 
+// General constants and structs defined by the DNS and MDNS protocols.
+//
+// Direct interaction with DNS and MDNS, as well as parsing DNS and MDNS
+// messages, should generally only be done within network stack code.
+// Network-stack-external code should interact indirectly through network
+// service APIs, e.g. NetworkContext::ResolveHost(). But these constants may
+// still be useful for other minor purposes.
 namespace dns_protocol {
 
 static const uint16_t kDefaultPort = 53;
@@ -150,4 +157,4 @@ static const uint16_t kFlagTC = 0x200;  // Truncated - server flag.
 
 }  // namespace net
 
-#endif  // NET_DNS_DNS_PROTOCOL_H_
+#endif  // NET_DNS_PUBLIC_DNS_PROTOCOL_H_

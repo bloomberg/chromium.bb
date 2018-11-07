@@ -290,7 +290,6 @@ source_set("dns_client") {
   if (!is_nacl) {
     sources += [
       "dns_client.h",
-      "dns_protocol.h",
       "dns_response.h",
       "dns_transaction.h",
       "record_parsed.h",
@@ -303,6 +302,7 @@ source_set("dns_client") {
   ]
   public_deps = [
     "//net:net_public_deps",
+    "//net/dns/public",
   ]
 }
 

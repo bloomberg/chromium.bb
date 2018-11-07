@@ -14,7 +14,7 @@
 
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 
 namespace net {
 
