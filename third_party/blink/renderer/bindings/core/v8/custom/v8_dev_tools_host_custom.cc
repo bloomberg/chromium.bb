@@ -155,7 +155,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
   } else {
     v8::Local<v8::Object> window_wrapper =
         V8Window::findInstanceInPrototypeChain(
-            isolate->GetEnteredContext()->Global(), isolate);
+            isolate->GetEnteredOrMicrotaskContext()->Global(), isolate);
     if (window_wrapper.IsEmpty())
       return;
     DOMWindow* window = V8Window::ToImpl(window_wrapper);
