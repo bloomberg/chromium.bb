@@ -1,4 +1,4 @@
-# These tests fail. https://crbug.com/646565
+# Virtual keyboard: these tests fail. https://crbug.com/646565
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/0
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/1
 -AshKeyboardControllerTest.*
@@ -14,7 +14,7 @@
 -WindowAnimationsTest.SlideOutAnimation
 -WorkspaceLayoutManagerSystemUiAreaTest.*
 
-# These tests crash. https://crbug.com/646565
+# Virtual keyboard: these tests crash. https://crbug.com/646565
 -LockContentsViewKeyboardUnitTest.AutoLayoutExtraSmallUsersListForKeyboard
 -LockContentsViewKeyboardUnitTest.AutoLayoutSmallUsersListForKeyboard
 -LockContentsViewKeyboardUnitTest.PinSubmitWithVirtualKeyboardShown
@@ -23,8 +23,6 @@
 -LockLayoutManagerTest.KeyboardBounds
 -LockWindowVirtualKeyboardTest.VirtualKeyboardDoesNotCoverAuthView
 -MagnificationControllerTest.TextfieldFocusedWithKeyboard
-# Crashes in ui::FakeContextFactory::GetLastCompositorFrame().
--NonClientFrameControllerMashTest.ContentRegionNotDrawnForClient
 -OverviewVirtualKeyboardTest.ToggleOverviewModeHidesVirtualKeyboard
 -OverviewVirtualKeyboardTest.ToggleOverviewModeDoesNotHideLockedVirtualKeyboard
 -ShelfLayoutManagerKeyboardTest.ShelfIgnoreWorkAreaChangeInNonStickyMode
@@ -61,3 +59,6 @@
 -VirtualKeyboardTest.HitTestBoundsAreResetWhenContainerTypeChanges
 -VirtualKeyboardTrayTest.PerformActionTogglesVirtualKeyboard
 -WorkspaceLayoutManagerKeyboardTest.IgnoreWorkAreaChangeinNonStickyMode
+
+# https://crbug.com/902171
+-NonClientFrameControllerMashTest.ContentRegionNotDrawnForClient
