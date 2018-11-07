@@ -319,8 +319,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
       ScheduleRemoveDownload(it->id);
       continue;
     }
-    if (item->GetId() == loading_id_)
-      OnDownloadRestoredFromHistory(item);
+    DCHECK_EQ(download::DownloadItem::kInvalidId, loading_id_);
 
     // The download might have been completed or cancelled without informing
     // history DB. If this is the case, populate the new state back to history

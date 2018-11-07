@@ -229,6 +229,9 @@ DownloadManagerService::RetriveInProgressDownloadManager(
     content::BrowserContext* context) {
   if (in_progress_manager_) {
     DCHECK(!context->IsOffTheRecord());
+    // Set |is_pending_downloads_loaded_| to false so that we need to wait for
+    // download history to initialize before performing new download actions.
+    is_pending_downloads_loaded_ = false;
     return in_progress_manager_.release();
   }
   return nullptr;
@@ -562,6 +565,10 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
 }
 
 void DownloadManagerService::OnPendingDownloadsLoaded() {
+  // If |in_progress_manager_| is null, wait for DownloadHistory to initialize
+  // before performing any pending actions.
+  if (!in_progress_manager_ && !is_history_query_complete_)
+    return;
   is_pending_downloads_loaded_ = true;
   for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
        ++iter) {

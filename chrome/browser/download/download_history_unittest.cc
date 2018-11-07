@@ -209,12 +209,9 @@ class DownloadHistoryTest : public testing::Test {
     return manager_observer_;
   }
 
-  // Creates the DownloadHistory. If |call_on_download_created| is false,
-  // DownloadHistory::OnDownloadCreated() will not be called by |manager_|.
-  // If |return_null_item| is true, |manager_| will return nullptr on
-  // CreateDownloadItem() call,
+  // Creates the DownloadHistory. If |return_null_item| is true, |manager_|
+  // will return nullptr on CreateDownloadItem() call,
   void CreateDownloadHistory(std::unique_ptr<InfoVector> infos,
-                             bool call_on_download_created = true,
                              bool return_null_item = false) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(infos.get());
@@ -235,28 +232,20 @@ class DownloadHistoryTest : public testing::Test {
           history::ToContentDownloadInterruptReason(row.interrupt_reason),
           row.opened, row.last_access_time, row.transient,
           history::ToContentReceivedSlices(row.download_slice_info));
-      if (call_on_download_created) {
+      if (return_null_item) {
+        EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
+            .WillOnce(Return(nullptr));
+      } else {
         EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
             .WillOnce(DoAll(
                 InvokeWithoutArgs(
                     this, &DownloadHistoryTest::CallOnDownloadCreatedInOrder),
                 Return(&item(index))));
-      } else {
-        download::DownloadItem* download =
-            return_null_item ? nullptr : &item(index);
-        EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
-            .WillOnce(Return(download));
       }
     }
     history_ = new FakeHistoryAdapter();
     history_->ExpectWillQueryDownloads(std::move(infos));
-    if (call_on_download_created) {
-      EXPECT_CALL(manager(), GetAllDownloads(_)).WillRepeatedly(Return());
-    } else {
-      EXPECT_CALL(manager(), GetAllDownloads(_))
-          .WillRepeatedly(
-              WithArg<0>(Invoke(this, &DownloadHistoryTest::AddAllDownloads)));
-    }
+    EXPECT_CALL(manager(), GetAllDownloads(_)).WillRepeatedly(Return());
     download_history_.reset(new DownloadHistory(
         &manager(),
         std::unique_ptr<DownloadHistory::HistoryAdapter>(history_)));
@@ -892,7 +881,7 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(50));
   std::unique_ptr<InfoVector> infos(new InfoVector());
   infos->push_back(info);
-  CreateDownloadHistory(std::move(infos), false);
+  CreateDownloadHistory(std::move(infos));
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
 
   // Modify the item, it should not trigger any updates.
@@ -924,7 +913,7 @@ TEST_F(DownloadHistoryTest, RemoveClearedItemFromHistory) {
 
   std::unique_ptr<InfoVector> infos(new InfoVector());
   infos->push_back(info);
-  CreateDownloadHistory(std::move(infos), false, true);
+  CreateDownloadHistory(std::move(infos), true);
 
   // The download should be removed from history afterwards.
   IdSet ids;
