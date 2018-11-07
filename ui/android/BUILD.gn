@@ -363,6 +363,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/AsyncViewStubTest.java",
     "junit/src/org/chromium/ui/AsyncViewProviderTest.java",
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
+    "junit/src/org/chromium/ui/base/LocalizationUtilsTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
