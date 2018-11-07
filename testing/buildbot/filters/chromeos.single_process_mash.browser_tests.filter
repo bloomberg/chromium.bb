@@ -33,9 +33,6 @@
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
 
-# Flaky (regardless of Mash). https://crbug.com/873884
--CrSettingsResetPageTest.All
-
 # Failing on ASAN bot. crbug.com/882631
 -ExtensionWebRequestApiTest.WebRequestTypes
 
