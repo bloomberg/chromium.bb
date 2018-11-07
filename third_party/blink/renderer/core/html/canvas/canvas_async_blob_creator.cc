@@ -130,8 +130,8 @@ CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
     ExecutionContext* context) {
   ImageEncodeOptions* options = ImageEncodeOptions::Create();
   options->setType(ImageEncodingMimeTypeName(mime_type));
-  return new CanvasAsyncBlobCreator(image, options, function_type, callback,
-                                    start_time, context, nullptr);
+  return MakeGarbageCollected<CanvasAsyncBlobCreator>(
+      image, options, function_type, callback, start_time, context, nullptr);
 }
 
 CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
@@ -141,8 +141,8 @@ CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
     TimeTicks start_time,
     ExecutionContext* context,
     ScriptPromiseResolver* resolver) {
-  return new CanvasAsyncBlobCreator(image, options, function_type, nullptr,
-                                    start_time, context, resolver);
+  return MakeGarbageCollected<CanvasAsyncBlobCreator>(
+      image, options, function_type, nullptr, start_time, context, resolver);
 }
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(

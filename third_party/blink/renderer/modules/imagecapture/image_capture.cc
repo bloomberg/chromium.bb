@@ -94,7 +94,7 @@ ImageCapture* ImageCapture::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  return new ImageCapture(context, track);
+  return MakeGarbageCollected<ImageCapture>(context, track);
 }
 
 ImageCapture::~ImageCapture() {

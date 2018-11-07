@@ -842,48 +842,50 @@ ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
                                  base::Optional<IntRect> crop_rect,
                                  Document* document,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(image, crop_rect, document, options);
+  return MakeGarbageCollected<ImageBitmap>(image, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLVideoElement* video,
                                  base::Optional<IntRect> crop_rect,
                                  Document* document,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(video, crop_rect, document, options);
+  return MakeGarbageCollected<ImageBitmap>(video, crop_rect, document, options);
 }
 
 ImageBitmap* ImageBitmap::Create(HTMLCanvasElement* canvas,
                                  base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(canvas, crop_rect, options);
+  return MakeGarbageCollected<ImageBitmap>(canvas, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(OffscreenCanvas* offscreen_canvas,
                                  base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(offscreen_canvas, crop_rect, options);
+  return MakeGarbageCollected<ImageBitmap>(offscreen_canvas, crop_rect,
+                                           options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageData* data,
                                  base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(data, crop_rect, options);
+  return MakeGarbageCollected<ImageBitmap>(data, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(ImageBitmap* bitmap,
                                  base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(bitmap, crop_rect, options);
+  return MakeGarbageCollected<ImageBitmap>(bitmap, crop_rect, options);
 }
 
 ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image,
                                  base::Optional<IntRect> crop_rect,
                                  const ImageBitmapOptions* options) {
-  return new ImageBitmap(std::move(image), crop_rect, options);
+  return MakeGarbageCollected<ImageBitmap>(std::move(image), crop_rect,
+                                           options);
 }
 
 ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image) {
-  return new ImageBitmap(std::move(image));
+  return MakeGarbageCollected<ImageBitmap>(std::move(image));
 }
 
 ImageBitmap* ImageBitmap::Create(const void* pixel_data,
@@ -892,9 +894,9 @@ ImageBitmap* ImageBitmap::Create(const void* pixel_data,
                                  bool is_image_bitmap_premultiplied,
                                  bool is_image_bitmap_origin_clean,
                                  const CanvasColorParams& color_params) {
-  return new ImageBitmap(pixel_data, width, height,
-                         is_image_bitmap_premultiplied,
-                         is_image_bitmap_origin_clean, color_params);
+  return MakeGarbageCollected<ImageBitmap>(
+      pixel_data, width, height, is_image_bitmap_premultiplied,
+      is_image_bitmap_origin_clean, color_params);
 }
 
 void ImageBitmap::ResolvePromiseOnOriginalThread(
@@ -927,7 +929,7 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
                     v8::Null(resolver->GetScriptState()->GetIsolate())));
     return;
   }
-  ImageBitmap* bitmap = new ImageBitmap(image);
+  ImageBitmap* bitmap = MakeGarbageCollected<ImageBitmap>(image);
   bitmap->BitmapImage()->SetOriginClean(origin_clean);
   resolver->Resolve(bitmap);
 }
@@ -981,7 +983,8 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   // a transparent black image, respecting the color_params but ignoring
   // poremultiply_alpha.
   if (src_rect.IsEmpty()) {
-    ImageBitmap* bitmap = new ImageBitmap(MakeBlankImage(parsed_options));
+    ImageBitmap* bitmap =
+        MakeGarbageCollected<ImageBitmap>(MakeBlankImage(parsed_options));
     if (bitmap->BitmapImage()) {
       bitmap->BitmapImage()->SetOriginClean(
           !image->WouldTaintOrigin(document->GetSecurityOrigin()));

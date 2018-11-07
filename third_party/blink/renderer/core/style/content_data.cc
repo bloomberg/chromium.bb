@@ -35,7 +35,7 @@
 namespace blink {
 
 ContentData* ContentData::Create(StyleImage* image) {
-  return new ImageContentData(image);
+  return MakeGarbageCollected<ImageContentData>(image);
 }
 
 ContentData* ContentData::Create(const String& text) {

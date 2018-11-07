@@ -78,6 +78,8 @@ class ImageContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }
+
   const StyleImage* GetImage() const { return image_.Get(); }
   StyleImage* GetImage() { return image_.Get(); }
   void SetImage(StyleImage* image) {
@@ -99,8 +101,6 @@ class ImageContentData final : public ContentData {
   void Trace(blink::Visitor*) override;
 
  private:
-  ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }
-
   ContentData* CloneInternal() const override {
     StyleImage* image = const_cast<StyleImage*>(this->GetImage());
     return Create(image);

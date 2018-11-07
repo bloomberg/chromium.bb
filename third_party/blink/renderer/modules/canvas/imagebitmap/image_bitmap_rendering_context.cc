@@ -38,7 +38,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
-  return new ImageBitmapRenderingContext(host, attrs);
+  return MakeGarbageCollected<ImageBitmapRenderingContext>(host, attrs);
 }
 
 }  // namespace blink

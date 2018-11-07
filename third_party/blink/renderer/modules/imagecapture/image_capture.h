@@ -40,6 +40,8 @@ class MODULES_EXPORT ImageCapture final
   static ImageCapture* Create(ExecutionContext*,
                               MediaStreamTrack*,
                               ExceptionState&);
+
+  ImageCapture(ExecutionContext*, MediaStreamTrack*);
   ~ImageCapture() override;
 
   // EventTarget implementation.
@@ -79,8 +81,6 @@ class MODULES_EXPORT ImageCapture final
  private:
   using PromiseResolverFunction =
       base::OnceCallback<void(ScriptPromiseResolver*)>;
-
-  ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
   void OnMojoGetPhotoState(ScriptPromiseResolver*,
                            PromiseResolverFunction,

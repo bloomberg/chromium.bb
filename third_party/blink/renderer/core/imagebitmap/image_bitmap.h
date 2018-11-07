@@ -88,6 +88,33 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
       const ImageBitmapOptions* = ImageBitmapOptions::Create());
   static sk_sp<SkImage> GetSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
 
+  ImageBitmap(ImageElementBase*,
+              base::Optional<IntRect>,
+              Document*,
+              const ImageBitmapOptions*);
+  ImageBitmap(HTMLVideoElement*,
+              base::Optional<IntRect>,
+              Document*,
+              const ImageBitmapOptions*);
+  ImageBitmap(HTMLCanvasElement*,
+              base::Optional<IntRect>,
+              const ImageBitmapOptions*);
+  ImageBitmap(OffscreenCanvas*,
+              base::Optional<IntRect>,
+              const ImageBitmapOptions*);
+  ImageBitmap(ImageData*, base::Optional<IntRect>, const ImageBitmapOptions*);
+  ImageBitmap(ImageBitmap*, base::Optional<IntRect>, const ImageBitmapOptions*);
+  ImageBitmap(scoped_refptr<StaticBitmapImage>);
+  ImageBitmap(scoped_refptr<StaticBitmapImage>,
+              base::Optional<IntRect>,
+              const ImageBitmapOptions*);
+  ImageBitmap(const void* pixel_data,
+              uint32_t width,
+              uint32_t height,
+              bool is_image_bitmap_premultiplied,
+              bool is_image_bitmap_origin_clean,
+              const CanvasColorParams&);
+
   // Type and helper function required by CallbackPromiseAdapter:
   using WebType = sk_sp<SkImage>;
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
@@ -145,32 +172,6 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   };
 
  private:
-  ImageBitmap(ImageElementBase*,
-              base::Optional<IntRect>,
-              Document*,
-              const ImageBitmapOptions*);
-  ImageBitmap(HTMLVideoElement*,
-              base::Optional<IntRect>,
-              Document*,
-              const ImageBitmapOptions*);
-  ImageBitmap(HTMLCanvasElement*,
-              base::Optional<IntRect>,
-              const ImageBitmapOptions*);
-  ImageBitmap(OffscreenCanvas*,
-              base::Optional<IntRect>,
-              const ImageBitmapOptions*);
-  ImageBitmap(ImageData*, base::Optional<IntRect>, const ImageBitmapOptions*);
-  ImageBitmap(ImageBitmap*, base::Optional<IntRect>, const ImageBitmapOptions*);
-  ImageBitmap(scoped_refptr<StaticBitmapImage>);
-  ImageBitmap(scoped_refptr<StaticBitmapImage>,
-              base::Optional<IntRect>,
-              const ImageBitmapOptions*);
-  ImageBitmap(const void* pixel_data,
-              uint32_t width,
-              uint32_t height,
-              bool is_image_bitmap_premultiplied,
-              bool is_image_bitmap_origin_clean,
-              const CanvasColorParams&);
   void UpdateImageBitmapMemoryUsage();
   static void ResolvePromiseOnOriginalThread(ScriptPromiseResolver*,
                                              sk_sp<SkImage>,

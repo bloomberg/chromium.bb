@@ -31,14 +31,17 @@ class CanvasRenderingContext2DState final
 
  public:
   static CanvasRenderingContext2DState* Create() {
-    return new CanvasRenderingContext2DState;
+    return MakeGarbageCollected<CanvasRenderingContext2DState>();
   }
 
+  enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
+
+  CanvasRenderingContext2DState();
+  CanvasRenderingContext2DState(const CanvasRenderingContext2DState&,
+                                ClipListCopyMode);
   ~CanvasRenderingContext2DState() override;
 
   void Trace(blink::Visitor*) override;
-
-  enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
 
   enum PaintType {
     kFillPaintType,
@@ -193,10 +196,6 @@ class CanvasRenderingContext2DState final
   const PaintFlags* GetFlags(PaintType, ShadowMode, ImageType = kNoImage) const;
 
  private:
-  CanvasRenderingContext2DState();
-  CanvasRenderingContext2DState(const CanvasRenderingContext2DState&,
-                                ClipListCopyMode);
-
   void UpdateLineDash() const;
   void UpdateStrokeStyle() const;
   void UpdateFillStyle() const;

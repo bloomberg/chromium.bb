@@ -42,14 +42,20 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
 
  public:
   static CanvasGradient* Create(const FloatPoint& p0, const FloatPoint& p1) {
-    return new CanvasGradient(p0, p1);
+    return MakeGarbageCollected<CanvasGradient>(p0, p1);
   }
   static CanvasGradient* Create(const FloatPoint& p0,
                                 float r0,
                                 const FloatPoint& p1,
                                 float r1) {
-    return new CanvasGradient(p0, r0, p1, r1);
+    return MakeGarbageCollected<CanvasGradient>(p0, r0, p1, r1);
   }
+
+  CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
+  CanvasGradient(const FloatPoint& p0,
+                 float r0,
+                 const FloatPoint& p1,
+                 float r1);
 
   Gradient* GetGradient() const { return gradient_.get(); }
 
@@ -58,12 +64,6 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
   bool IsZeroSize() const { return is_zero_size_; }
 
  private:
-  CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
-  CanvasGradient(const FloatPoint& p0,
-                 float r0,
-                 const FloatPoint& p1,
-                 float r1);
-
   scoped_refptr<Gradient> gradient_;
   const bool is_zero_size_;
 };

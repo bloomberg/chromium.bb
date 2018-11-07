@@ -112,7 +112,8 @@ ImageResourceContent::ImageResourceContent(scoped_refptr<blink::Image> image)
 ImageResourceContent* ImageResourceContent::CreateLoaded(
     scoped_refptr<blink::Image> image) {
   DCHECK(image);
-  ImageResourceContent* content = new ImageResourceContent(std::move(image));
+  ImageResourceContent* content =
+      MakeGarbageCollected<ImageResourceContent>(std::move(image));
   content->content_status_ = ResourceStatus::kCached;
   return content;
 }

@@ -158,10 +158,10 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options) const override {
-    return new ImageResource(request, options,
-                             ImageResourceContent::CreateNotStarted(),
-                             fetch_params_->GetImageRequestOptimization() ==
-                                 FetchParameters::kAllowPlaceholder);
+    return MakeGarbageCollected<ImageResource>(
+        request, options, ImageResourceContent::CreateNotStarted(),
+        fetch_params_->GetImageRequestOptimization() ==
+            FetchParameters::kAllowPlaceholder);
   }
 
  private:
@@ -212,8 +212,8 @@ bool ImageResource::CanUseCacheValidator() const {
 
 ImageResource* ImageResource::Create(const ResourceRequest& request) {
   ResourceLoaderOptions options;
-  return new ImageResource(request, options,
-                           ImageResourceContent::CreateNotStarted(), false);
+  return MakeGarbageCollected<ImageResource>(
+      request, options, ImageResourceContent::CreateNotStarted(), false);
 }
 
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
@@ -232,8 +232,10 @@ ImageResource::ImageResource(const ResourceRequest& resource_request,
           is_placeholder ? PlaceholderOption::kShowAndReloadPlaceholderAlways
                          : PlaceholderOption::kDoNotReloadPlaceholder) {
   DCHECK(GetContent());
-  RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
-  GetContent()->SetImageResourceInfo(new ImageResourceInfoImpl(this));
+  RESOURCE_LOADING_DVLOG(1)
+      << "MakeGarbageCollected<ImageResource>(ResourceRequest) " << this;
+  GetContent()->SetImageResourceInfo(
+      MakeGarbageCollected<ImageResourceInfoImpl>(this));
 }
 
 ImageResource::~ImageResource() {

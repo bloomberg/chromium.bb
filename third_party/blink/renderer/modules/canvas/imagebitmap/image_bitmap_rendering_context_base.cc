@@ -18,8 +18,8 @@ ImageBitmapRenderingContextBase::ImageBitmapRenderingContextBase(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(host, attrs),
-      image_layer_bridge_(
-          new ImageLayerBridge(attrs.alpha ? kNonOpaque : kOpaque)) {}
+      image_layer_bridge_(MakeGarbageCollected<ImageLayerBridge>(
+          attrs.alpha ? kNonOpaque : kOpaque)) {}
 
 ImageBitmapRenderingContextBase::~ImageBitmapRenderingContextBase() = default;
 

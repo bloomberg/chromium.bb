@@ -147,7 +147,9 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 
   class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
    public:
-    static WrapGradients* Create() { return new WrapGradients; }
+    static WrapGradients* Create() {
+      return MakeGarbageCollected<WrapGradients>();
+    }
 
     void Trace(blink::Visitor* visitor) {
       visitor->Trace(opaque_gradient_);

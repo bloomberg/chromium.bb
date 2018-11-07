@@ -238,7 +238,9 @@ ImageData* ImageData::Create(const IntSize& size,
       AllocateAndValidateDataArray(4 * static_cast<unsigned>(size.Width()) *
                                        static_cast<unsigned>(size.Height()),
                                    storage_format);
-  return data_array ? new ImageData(size, data_array, color_settings) : nullptr;
+  return data_array
+             ? MakeGarbageCollected<ImageData>(size, data_array, color_settings)
+             : nullptr;
 }
 
 ImageDataColorSettings* CanvasColorParamsToImageDataColorSettings(
@@ -312,7 +314,8 @@ ImageData* ImageData::Create(const IntSize& size,
                                                0, 0, data_array.View(),
                                                color_settings))
     return nullptr;
-  return new ImageData(size, data_array.View(), color_settings);
+  return MakeGarbageCollected<ImageData>(size, data_array.View(),
+                                         color_settings);
 }
 
 static SkImageInfo GetImageInfo(scoped_refptr<StaticBitmapImage> image) {
@@ -376,7 +379,8 @@ ImageData* ImageData::Create(unsigned width,
 
   DOMArrayBufferView* byte_array = AllocateAndValidateDataArray(
       4 * width * height, kUint8ClampedArrayStorageFormat, &exception_state);
-  return byte_array ? new ImageData(IntSize(width, height), byte_array)
+  return byte_array ? MakeGarbageCollected<ImageData>(IntSize(width, height),
+                                                      byte_array)
                     : nullptr;
 }
 
@@ -389,7 +393,7 @@ ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
     return nullptr;
 
   unsigned height = data.View()->length() / (width * 4);
-  return new ImageData(IntSize(width, height), data.View());
+  return MakeGarbageCollected<ImageData>(IntSize(width, height), data.View());
 }
 
 ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
@@ -401,7 +405,7 @@ ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
           data.View(), nullptr, &exception_state))
     return nullptr;
 
-  return new ImageData(IntSize(width, height), data.View());
+  return MakeGarbageCollected<ImageData>(IntSize(width, height), data.View());
 }
 
 ImageData* ImageData::CreateImageData(
@@ -422,7 +426,8 @@ ImageData* ImageData::CreateImageData(
   if (!buffer_view)
     return nullptr;
 
-  return new ImageData(IntSize(width, height), buffer_view, color_settings);
+  return MakeGarbageCollected<ImageData>(IntSize(width, height), buffer_view,
+                                         color_settings);
 }
 
 ImageData* ImageData::CreateImageData(ImageDataArray& data,
@@ -458,7 +463,8 @@ ImageData* ImageData::CreateImageData(ImageDataArray& data,
           buffer_view, color_settings, &exception_state))
     return nullptr;
 
-  return new ImageData(IntSize(width, height), buffer_view, color_settings);
+  return MakeGarbageCollected<ImageData>(IntSize(width, height), buffer_view,
+                                         color_settings);
 }
 
 // This function accepts size (0, 0) and always returns the ImageData in
@@ -476,7 +482,7 @@ ImageData* ImageData::CreateForTest(const IntSize& size) {
   if (!byte_array)
     return nullptr;
 
-  return new ImageData(size, byte_array);
+  return MakeGarbageCollected<ImageData>(size, byte_array);
 }
 
 // This function is called from unit tests, and all the parameters are supposed
@@ -485,7 +491,7 @@ ImageData* ImageData::CreateForTest(
     const IntSize& size,
     DOMArrayBufferView* buffer_view,
     const ImageDataColorSettings* color_settings) {
-  return new ImageData(size, buffer_view, color_settings);
+  return MakeGarbageCollected<ImageData>(size, buffer_view, color_settings);
 }
 
 // Crops ImageData to the intersect of its size and the given rectangle. If the
@@ -531,7 +537,8 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
       dst_index += dst_row_stride;
     }
   }
-  return new ImageData(dst_rect.Size(), buffer_view, color_settings_);
+  return MakeGarbageCollected<ImageData>(dst_rect.Size(), buffer_view,
+                                         color_settings_);
 }
 
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
