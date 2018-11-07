@@ -61,7 +61,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kSuppressHistoryEntryWithoutUserGesture,
           WebFeature::kCursorImageGT32x32, WebFeature::kCursorImageLE32x32,
           WebFeature::kHistoryPushState, WebFeature::kHistoryReplaceState,
-          WebFeature::kCursorImageGT64x64,
+          WebFeature::kCursorImageGT64x64, WebFeature::kAdClick,
       }));
   return opt_in_features->count(feature);
 }

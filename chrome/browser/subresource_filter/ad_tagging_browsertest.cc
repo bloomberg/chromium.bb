@@ -22,6 +22,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/frame/from_ad_state.h"
 #include "url/gurl.h"
 
 namespace subresource_filter {
@@ -343,15 +344,14 @@ const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
   return nullptr;
 }
 
-void ExpectLatestWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
-                                    size_t expected_num_entries,
-                                    bool from_main_frame,
-                                    const GURL& main_frame_url,
-                                    bool from_ad_subframe,
-                                    bool from_ad_script) {
+void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
+                              bool from_main_frame,
+                              const GURL& main_frame_url,
+                              bool from_ad_subframe,
+                              bool from_ad_script) {
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kEntryName);
-  EXPECT_EQ(expected_num_entries, entries.size());
+  EXPECT_EQ(1u, entries.size());
 
   // Check that the event is keyed to |main_frame_url| only if it was from the
   // top frame.
@@ -392,32 +392,30 @@ void ExpectLatestWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
       from_ad_script);
 }
 
-void ExpectWindowOpenUmaStatus(
-    const base::HistogramTester& histogram_tester,
-    base::HistogramBase::Count expected_num_from_adscript_adframe,
-    base::HistogramBase::Count expected_num_from_nonadscript_adframe,
-    base::HistogramBase::Count expected_num_from_adscript_nonadframe,
-    base::HistogramBase::Count expected_num_from_nonadscript_nonadframe) {
+void ExpectWindowOpenUmaEntry(const base::HistogramTester& histogram_tester,
+                              bool from_ad_subframe,
+                              bool from_ad_script) {
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectBucketCount(
-      kWindowOpenFromAdStateHistogram,
-      0 /* blink::WindowOpenFromAdState::kAdScriptAndAdFrame */,
-      expected_num_from_adscript_adframe);
-  histogram_tester.ExpectBucketCount(
-      kWindowOpenFromAdStateHistogram,
-      1 /* blink::WindowOpenFromAdState::kNonAdScriptAndAdFrame */,
-      expected_num_from_nonadscript_adframe);
-  histogram_tester.ExpectBucketCount(
-      kWindowOpenFromAdStateHistogram,
-      2 /* blink::WindowOpenFromAdState::kAdScriptAndNonAdFrame */,
-      expected_num_from_adscript_nonadframe);
-  histogram_tester.ExpectBucketCount(
-      kWindowOpenFromAdStateHistogram,
-      3 /* blink::WindowOpenFromAdState::kNonAdScriptAndNonAdFrame */,
-      expected_num_from_nonadscript_nonadframe);
+  blink::FromAdState state =
+      blink::GetFromAdState(from_ad_subframe, from_ad_script);
+  histogram_tester.ExpectBucketCount(kWindowOpenFromAdStateHistogram, state,
+                                     1 /* expected_count */);
 }
 
-IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
+class AdTaggingEventFromSubframeBrowserTest
+    : public AdTaggingBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool /* cross_origin */, bool /* from_ad_subframe */>> {};
+
+IN_PROC_BROWSER_TEST_P(AdTaggingEventFromSubframeBrowserTest,
+                       WindowOpenFromSubframe) {
+  bool cross_origin;
+  bool from_ad_subframe;
+  std::tie(cross_origin, from_ad_subframe) = GetParam();
+  SCOPED_TRACE(::testing::Message()
+               << "cross_origin = " << cross_origin << ", "
+               << "from_ad_subframe = " << from_ad_subframe);
+
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
   GURL main_frame_url =
@@ -425,59 +423,55 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
   content::WebContents* main_tab = GetWebContents();
 
-  size_t expected_num_entries = 0;
-  size_t expected_num_from_ad_subframe = 0;
-  for (bool cross_origin : {false, true}) {
-    for (bool ad_frame : {false, true}) {
-      std::string hostname = cross_origin ? "b.com" : "a.com";
-      std::string suffix = ad_frame ? "&ad=true" : "";
-      SCOPED_TRACE(::testing::Message()
-                   << "cross_origin = " << cross_origin << ", "
-                   << "ad_frame = " << ad_frame);
-      RenderFrameHost* child = CreateSrcFrame(
-          main_tab, embedded_test_server()->GetURL(
-                        hostname, "/ad_tagging/frame_factory.html?1" + suffix));
-      EXPECT_TRUE(content::ExecuteScript(child, "window.open();"));
-      ++expected_num_entries;
-      if (ad_frame)
-        ++expected_num_from_ad_subframe;
-      ExpectLatestWindowOpenUkmEntry(
-          ukm_recorder, expected_num_entries, false /* from_main_frame */,
-          main_frame_url, ad_frame /* from_ad_subframe */,
-          ad_frame /* from_ad_script */);
-      ExpectWindowOpenUmaStatus(
-          histogram_tester,
-          expected_num_from_ad_subframe /* adscript_adframe */,
-          0 /* nonadscript_adframe */, 0 /* adscript_nonadframe */,
-          expected_num_entries -
-              expected_num_from_ad_subframe /* nonadscript_nonadframe */);
-    }
-  }
+  std::string hostname = cross_origin ? "b.com" : "a.com";
+  std::string suffix = from_ad_subframe ? "&ad=true" : "";
+  RenderFrameHost* child = CreateSrcFrame(
+      main_tab, embedded_test_server()->GetURL(
+                    hostname, "/ad_tagging/frame_factory.html?1" + suffix));
+
+  EXPECT_TRUE(content::ExecuteScript(child, "window.open();"));
+
+  bool from_ad_script = from_ad_subframe;
+  ExpectWindowOpenUkmEntry(ukm_recorder, false /* from_main_frame */,
+                           main_frame_url, from_ad_subframe, from_ad_script);
+  ExpectWindowOpenUmaEntry(histogram_tester, from_ad_subframe, from_ad_script);
 }
 
-IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenWithScriptInStack) {
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    AdTaggingEventFromSubframeBrowserTest,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+
+class AdTaggingEventWithScriptInStackBrowserTest
+    : public AdTaggingBrowserTest,
+      public ::testing::WithParamInterface<bool /* from_ad_script */> {};
+
+IN_PROC_BROWSER_TEST_P(AdTaggingEventWithScriptInStackBrowserTest,
+                       WindowOpenWithScriptInStack) {
+  bool from_ad_script = GetParam();
+  SCOPED_TRACE(::testing::Message() << "from_ad_script = " << from_ad_script);
+
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
   GURL main_frame_url = GetURL("frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
   content::WebContents* main_tab = GetWebContents();
 
-  EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromNonAdScript();"));
-  ExpectLatestWindowOpenUkmEntry(
-      ukm_recorder, 1 /* expected_num_entries */, true /* from_main_frame */,
-      main_frame_url, false /* from_ad_subframe */, false /* from_ad_script */);
-  ExpectWindowOpenUmaStatus(
-      histogram_tester, 0 /* adscript_adframe */, 0 /* nonadscript_adframe */,
-      0 /* adscript_nonadframe */, 1 /* nonadscript_nonadframe */);
+  std::string script = from_ad_script ? "windowOpenFromAdScript();"
+                                      : "windowOpenFromNonAdScript();";
 
-  EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromAdScript();"));
-  ExpectLatestWindowOpenUkmEntry(
-      ukm_recorder, 2 /* expected_num_entries */, true /* from_main_frame */,
-      main_frame_url, false /* from_ad_subframe */, true /* from_ad_script */);
-  ExpectWindowOpenUmaStatus(
-      histogram_tester, 0 /* adscript_adframe */, 0 /* nonadscript_adframe */,
-      1 /* adscript_nonadframe */, 1 /* nonadscript_nonadframe */);
+  EXPECT_TRUE(content::ExecuteScript(main_tab, script));
+
+  bool from_ad_subframe = false;
+  ExpectWindowOpenUkmEntry(ukm_recorder, true /* from_main_frame */,
+                           main_frame_url, from_ad_subframe, from_ad_script);
+  ExpectWindowOpenUmaEntry(histogram_tester, from_ad_subframe, from_ad_script);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    AdTaggingEventWithScriptInStackBrowserTest,
+    ::testing::Bool());
 
 }  // namespace
 

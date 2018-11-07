@@ -32,6 +32,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/frame/from_ad_state.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -205,33 +206,17 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
   return nullptr;
 }
 
-enum class WindowOpenFromAdState {
-  // This is used for a UMA histogram. Please never alter existing values, only
-  // append new ones and make sure to update enums.xml.
-  kAdScriptAndAdFrame = 0,
-  kNonAdScriptAndAdFrame = 1,
-  kAdScriptAndNonAdFrame = 2,
-  kNonAdScriptAndNonAdFrame = 3,
-  kMaxValue = kNonAdScriptAndNonAdFrame,
-};
-
 static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   AdTracker* ad_tracker = opener_frame.GetAdTracker();
-  if (!ad_tracker) {
+  if (!ad_tracker)
     return;
-  }
 
   bool is_ad_subframe = opener_frame.IsAdSubframe();
   bool is_ad_script_in_stack = ad_tracker->IsAdScriptInStack();
+  FromAdState state =
+      blink::GetFromAdState(is_ad_subframe, is_ad_script_in_stack);
 
   // Log to UMA.
-  WindowOpenFromAdState state =
-      is_ad_subframe ? (is_ad_script_in_stack
-                            ? WindowOpenFromAdState::kAdScriptAndAdFrame
-                            : WindowOpenFromAdState::kNonAdScriptAndAdFrame)
-                     : (is_ad_script_in_stack
-                            ? WindowOpenFromAdState::kAdScriptAndNonAdFrame
-                            : WindowOpenFromAdState::kNonAdScriptAndNonAdFrame);
   UMA_HISTOGRAM_ENUMERATION("Blink.WindowOpen.FromAdState", state);
 
   // Log to UKM.
