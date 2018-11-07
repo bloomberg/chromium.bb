@@ -374,8 +374,7 @@ class NodeIDPlusStringBoolWrapper
 class AutomationMessageFilter : public IPC::MessageFilter {
  public:
   explicit AutomationMessageFilter(AutomationInternalCustomBindings* owner)
-      : owner_(owner),
-        removed_(false) {
+      : owner_(owner), removed_(false) {
     DCHECK(owner);
     content::RenderThread::Get()->AddFilter(this);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -390,28 +389,23 @@ class AutomationMessageFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
-            &AutomationMessageFilter::OnMessageReceivedOnRenderThread,
-            this, message));
+        base::Bind(&AutomationMessageFilter::OnMessageReceivedOnRenderThread,
+                   this, message));
 
     // Always return false in case there are multiple
     // AutomationInternalCustomBindings instances attached to the same thread.
     return false;
   }
 
-  void OnFilterRemoved() override {
-    removed_ = true;
-  }
+  void OnFilterRemoved() override { removed_ = true; }
 
-private:
+ private:
   void OnMessageReceivedOnRenderThread(const IPC::Message& message) {
     if (owner_)
       owner_->OnMessageReceived(message);
   }
 
-  ~AutomationMessageFilter() override {
-    Remove();
-  }
+  ~AutomationMessageFilter() override { Remove(); }
 
   void Remove() {
     if (!removed_) {
@@ -441,8 +435,8 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   if (context && context->extension()) {
     const GURL background_page_url =
         extensions::BackgroundInfo::GetBackgroundURL(context->extension());
-    should_ignore_context_ = background_page_url != "" &&
-        background_page_url != context->url();
+    should_ignore_context_ =
+        background_page_url != "" && background_page_url != context->url();
   }
 }
 
@@ -466,7 +460,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   ROUTE_FUNCTION(GetFocus);
   ROUTE_FUNCTION(GetHtmlAttributes);
   ROUTE_FUNCTION(GetState);
-  #undef ROUTE_FUNCTION
+#undef ROUTE_FUNCTION
 
   // Bindings that take a Tree ID and return a property of the tree.
 
@@ -1637,8 +1631,8 @@ bool AutomationInternalCustomBindings::SendTreeChangeEvent(
 
   bool has_filter = false;
   if (tree_change_observer_overall_filter_ &
-      (1 <<
-       api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
+      (1
+       << api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
     if (node->data().HasStringAttribute(
             ax::mojom::StringAttribute::kContainerLiveStatus) ||
         node->data().role == ax::mojom::Role::kAlert ||

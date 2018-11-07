@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/no_destructor.h"
 #include "chromecast/common/extensions_api/cast_extension_messages.h"
 #include "chromecast/renderer/extensions/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_node.h"
@@ -10,6 +11,12 @@ namespace extensions {
 namespace cast {
 
 namespace {
+
+std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& GetChildTreeIDReverseMap() {
+  static base::NoDestructor<std::map<ui::AXTreeID, AutomationAXTreeWrapper*>>
+      child_tree_id_reverse_map;
+  return *child_tree_id_reverse_map;
+}
 
 // Convert from ax::mojom::Event to api::automation::EventType.
 api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
@@ -193,7 +200,7 @@ api::automation::EventType ToAutomationEvent(
 AutomationAXTreeWrapper::AutomationAXTreeWrapper(
     ui::AXTreeID tree_id,
     AutomationInternalCustomBindings* owner)
-    : tree_id_(tree_id), host_node_id_(-1), owner_(owner) {
+    : tree_id_(tree_id), owner_(owner) {
   // We have to initialize AXEventGenerator here - we can't do it in the
   // initializer list because AXTree hasn't been initialized yet at that point.
   SetTree(&tree_);
@@ -205,12 +212,32 @@ AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   tree_.SetDelegate(nullptr);
 }
 
+// static
+AutomationAXTreeWrapper* AutomationAXTreeWrapper::GetParentOfTreeId(
+    ui::AXTreeID tree_id) {
+  std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
+      GetChildTreeIDReverseMap();
+  const auto& iter = child_tree_id_reverse_map.find(tree_id);
+  if (iter != child_tree_id_reverse_map.end())
+    return iter->second;
+
+  return nullptr;
+}
+
 bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
+  std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
+      GetChildTreeIDReverseMap();
+  for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
+    DCHECK_EQ(child_tree_id_reverse_map[tree_id], this);
+    child_tree_id_reverse_map.erase(tree_id);
+  }
+
   for (const auto& update : event_bundle.updates) {
     set_event_from(update.event_from);
     deleted_node_ids_.clear();
+    did_send_tree_change_during_unserialization_ = false;
 
     if (!tree_.Unserialize(update))
       return false;
@@ -218,7 +245,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
 
-      if (update.nodes.size()) {
+      if (update.nodes.size() && did_send_tree_change_during_unserialization_) {
         ui::AXNode* target = tree_.GetFromId(update.nodes[0].id);
         if (target) {
           owner_->SendTreeChangeEvent(
@@ -229,12 +256,32 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     }
   }
 
+  for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
+    DCHECK(!base::ContainsKey(child_tree_id_reverse_map, tree_id));
+    child_tree_id_reverse_map.insert(std::make_pair(tree_id, this));
+  }
+
   // Exit early if this isn't the active profile.
   if (!is_active_profile)
     return true;
 
+  // Send all blur and focus events first. This ensures we correctly dispatch
+  // these events, which gets re-targetted in the js bindings and ensures it
+  // receives the correct value for |event_from|.
+  for (const auto& event : event_bundle.events) {
+    if (event.event_type != ax::mojom::Event::kFocus &&
+        event.event_type != ax::mojom::Event::kBlur)
+      continue;
+
+    api::automation::EventType automation_event_type =
+        ToAutomationEvent(event.event_type);
+    owner_->SendAutomationEvent(event_bundle.tree_id,
+                                event_bundle.mouse_location, event,
+                                automation_event_type);
+  }
+
   // Send auto-generated AXEventGenerator events.
-  for (auto targeted_event : *this) {
+  for (const auto& targeted_event : *this) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
@@ -248,7 +295,11 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   }
   ClearEvents();
 
-  for (auto event : event_bundle.events) {
+  for (const auto& event : event_bundle.events) {
+    if (event.event_type == ax::mojom::Event::kFocus ||
+        event.event_type == ax::mojom::Event::kBlur)
+      continue;
+
     api::automation::EventType automation_event_type =
         ToAutomationEvent(event.event_type);
 
@@ -277,8 +328,8 @@ void AutomationAXTreeWrapper::OnNodeDataWillChange(
 void AutomationAXTreeWrapper::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                   ui::AXNode* node) {
   AXEventGenerator::OnNodeWillBeDeleted(tree, node);
-  owner_->SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_NODEREMOVED,
-                              tree, node);
+  did_send_tree_change_during_unserialization_ |= owner_->SendTreeChangeEvent(
+      api::automation::TREE_CHANGE_TYPE_NODEREMOVED, tree, node);
   deleted_node_ids_.push_back(node->id());
 }
 
@@ -292,16 +343,19 @@ void AutomationAXTreeWrapper::OnAtomicUpdateFinished(
     ui::AXNode* node = change.node;
     switch (change.type) {
       case NODE_CREATED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECREATED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_NODECREATED, tree, node);
         break;
       case SUBTREE_CREATED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_SUBTREECREATED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_SUBTREECREATED, tree, node);
         break;
       case NODE_CHANGED:
-        owner_->SendTreeChangeEvent(
-            api::automation::TREE_CHANGE_TYPE_NODECHANGED, tree, node);
+        did_send_tree_change_during_unserialization_ |=
+            owner_->SendTreeChangeEvent(
+                api::automation::TREE_CHANGE_TYPE_NODECHANGED, tree, node);
         break;
       // Unhandled.
       case NODE_REPARENTED:
@@ -311,8 +365,9 @@ void AutomationAXTreeWrapper::OnAtomicUpdateFinished(
   }
 
   for (int id : text_changed_node_ids_) {
-    owner_->SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_TEXTCHANGED,
-                                tree, tree->GetFromId(id));
+    did_send_tree_change_during_unserialization_ |= owner_->SendTreeChangeEvent(
+        api::automation::TREE_CHANGE_TYPE_TEXTCHANGED, tree,
+        tree->GetFromId(id));
   }
   text_changed_node_ids_.clear();
 }
@@ -324,6 +379,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ACTIVEDESCENDANTCHANGED:
     case api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED:
     case api::automation::EVENT_TYPE_CHECKEDSTATECHANGED:
+    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
@@ -332,6 +388,9 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_LIVEREGIONCREATED:
     case api::automation::EVENT_TYPE_LOADCOMPLETE:
     case api::automation::EVENT_TYPE_LOADSTART:
+    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
+    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
+    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED:
     case api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED:
       return true;
@@ -365,24 +424,20 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_MOUSEMOVED:
     case api::automation::EVENT_TYPE_MOUSEPRESSED:
     case api::automation::EVENT_TYPE_MOUSERELEASED:
+    case api::automation::EVENT_TYPE_SCROLLEDTOANCHOR:
     case api::automation::EVENT_TYPE_WINDOWACTIVATED:
     case api::automation::EVENT_TYPE_WINDOWDEACTIVATED:
-    case api::automation::EVENT_TYPE_SCROLLEDTOANCHOR:
       return false;
 
     // These events might need to be migrated to AXEventGenerator.
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
-    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:
     case api::automation::EVENT_TYPE_MENUEND:
     case api::automation::EVENT_TYPE_MENULISTITEMSELECTED:
     case api::automation::EVENT_TYPE_MENUSTART:
-    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
-    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
-    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SELECTION:
     case api::automation::EVENT_TYPE_TEXTCHANGED:
     case api::automation::EVENT_TYPE_TEXTSELECTIONCHANGED:
