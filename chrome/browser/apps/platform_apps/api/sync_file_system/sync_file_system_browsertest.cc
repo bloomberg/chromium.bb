@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
@@ -22,6 +21,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -83,8 +83,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>
         drive_service_factory(new FakeDriveServiceFactory(this));
 
-    fake_signin_manager_.reset(
-        new FakeSigninManagerForTesting(browser()->profile()));
+    identity_test_env_.reset(new identity::IdentityTestEnvironment);
 
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
@@ -93,9 +92,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         nullptr,  // task_logger
         nullptr,  // notification_manager
         extension_service,
-        fake_signin_manager_.get(),  // signin_manager
-        nullptr,                     // identity_manager
-        nullptr,                     // url_loader_factory
+        identity_test_env_->identity_manager(),  // identity_manager
+        nullptr,                                 // url_loader_factory
         std::move(drive_service_factory), in_memory_env_.get());
     remote_service_->SetSyncEnabled(true);
     factory->set_mock_remote_file_service(
@@ -121,9 +119,12 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SignIn() {
-    fake_signin_manager_->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
+    identity_test_env_->SetPrimaryAccount(kEmail);
+
+    // It's necessary to invoke this method manually as the observer callback is
+    // not triggered on ChromeOS.
     sync_engine()->OnPrimaryAccountSet(
-        fake_signin_manager_->GetAuthenticatedAccountInfo());
+        identity_test_env_->identity_manager()->GetPrimaryAccountInfo());
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -140,7 +141,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 
-  std::unique_ptr<FakeSigninManagerForTesting> fake_signin_manager_;
+  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
 
   drive_backend::SyncEngine* remote_service_;
 
