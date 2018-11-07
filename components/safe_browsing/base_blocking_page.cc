@@ -379,11 +379,12 @@ void BaseBlockingPage::set_sb_error_ui(
 
 // static
 bool BaseBlockingPage::ShouldReportThreatDetails(SBThreatType threat_type) {
-  return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+  return threat_type == SB_THREAT_TYPE_BILLING ||
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
+         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_UNWANTED;
 }
 
 }  // namespace safe_browsing
