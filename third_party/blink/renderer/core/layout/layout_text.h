@@ -398,6 +398,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   LayoutRect LocalVisualRectIgnoringVisibility() const final;
 
   bool CanOptimizeSetText() const;
+  void SetFirstTextBoxLogicalLeft(float text_width) const;
 
   // We put the bitfield first to minimize padding on 64-bit.
  protected:
