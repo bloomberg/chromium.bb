@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -179,12 +183,12 @@ void MediaRouterViewsUI::OnDefaultPresentationRemoved() {
 }
 
 void MediaRouterViewsUI::UpdateModelHeader() {
-  const std::string source_name = GetTruncatedPresentationRequestSourceName();
+  const base::string16 source_name = GetPresentationRequestSourceName();
   const base::string16 header_text =
       source_name.empty()
           ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE)
           : l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
-                                       base::UTF8ToUTF16(source_name));
+                                       source_name);
   model_.set_dialog_header(header_text);
   for (CastDialogController::Observer& observer : observers_)
     observer.OnModelUpdated(model_);

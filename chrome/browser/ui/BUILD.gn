@@ -1233,6 +1233,7 @@ jumbo_split_static_library("ui") {
       "//components/keep_alive_registry",
       "//components/network_session_configurator/common",
       "//components/ui_metrics",
+      "//components/url_formatter",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
