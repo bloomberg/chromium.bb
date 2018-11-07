@@ -152,7 +152,7 @@ public class ResourceExtractor {
         // that allows a bit of growth, but is still in the right ballpark..
         ArrayList<String> activeLocales = new ArrayList<String>(6);
         for (String locale : BuildConfig.COMPRESSED_LOCALES) {
-            if (locale.startsWith(uiLanguage)) {
+            if (LocalizationUtils.chromiumLocaleMatchesLanguage(locale, uiLanguage)) {
                 activeLocales.add(locale);
             }
         }

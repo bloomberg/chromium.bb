@@ -139,5 +139,22 @@ public class LocalizationUtils {
         }
     }
 
+    /**
+     * Return true iff a locale string matches a specific language string.
+     *
+     * @param locale Chromium locale name (e.g. "fil", or "en-US").
+     * @param lang Chromium language name (e.g. "fi", or "en").
+     * @return true iff the locale name matches the languages. E.g. should
+     *         be false for ("fil", "fi") (Filipino locale + Finish language)
+     *         but true for ("en-US", "en") (USA locale + English language).
+     */
+    public static boolean chromiumLocaleMatchesLanguage(String locale, String lang) {
+        int pos = locale.indexOf('-');
+        if (pos > 0) {
+            return locale.substring(0, pos).equals(lang);
+        }
+        return locale.equals(lang);
+    }
+
     private static native int nativeGetFirstStrongCharacterDirection(String string);
 }
