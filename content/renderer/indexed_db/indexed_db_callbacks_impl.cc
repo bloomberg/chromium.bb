@@ -109,8 +109,12 @@ WebIDBValue IndexedDBCallbacksImpl::ConvertValue(
     }
   }
 
-  return WebIDBValue(WebData(&*value->bits.begin(), value->bits.size()),
-                     std::move(local_blob_info));
+  // TODO(crbug.com/902498): Use mojom traits to map directly to WebData.
+  WebData web_data(reinterpret_cast<const char*>(value->bits.data()),
+                   value->bits.size());
+  // Release value->bits std::vector.
+  value->bits.clear();
+  return WebIDBValue(std::move(web_data), std::move(local_blob_info));
 }
 
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(

@@ -433,12 +433,20 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
     mojo::MakeRequest(&blob);
     blobs.push_back(blink::mojom::IDBBlobInfo::New(
         std::move(blob), "fakeUUID", base::string16(), 100, nullptr));
-    connection.database->Put(kTransactionId, kObjectStoreId,
-                             IDBValue::New("hello", std::move(blobs)),
-                             IndexedDBKey(base::UTF8ToUTF16("hello")),
-                             blink::kWebIDBPutModeAddOnly,
-                             std::vector<IndexedDBIndexKeys>(),
-                             put_callbacks->CreateInterfacePtrAndBind());
+
+    std::string value = "hello";
+    const char* value_data = value.data();
+    std::vector<uint8_t> value_vector(value_data, value_data + value.length());
+
+    auto new_value = blink::mojom::IDBValue::New();
+    new_value->bits = std::move(value_vector);
+    new_value->blob_or_file_info = std::move(blobs);
+
+    connection.database->Put(
+        kTransactionId, kObjectStoreId, std::move(new_value),
+        IndexedDBKey(base::UTF8ToUTF16("hello")), blink::kWebIDBPutModeAddOnly,
+        std::vector<IndexedDBIndexKeys>(),
+        put_callbacks->CreateInterfacePtrAndBind());
     connection.database->Commit(kTransactionId);
     loop.Run();
   }
@@ -1058,10 +1066,17 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
     connection1.database->CreateObjectStore(kTransactionId1, kObjectStoreId,
                                             base::UTF8ToUTF16(kObjectStoreName),
                                             blink::IndexedDBKeyPath(), false);
+
+    std::string value = "value";
+    const char* value_data = value.data();
+    std::vector<uint8_t> value_vector(value_data, value_data + value.length());
+
+    auto new_value = blink::mojom::IDBValue::New();
+    new_value->bits = std::move(value_vector);
+    new_value->blob_or_file_info = std::vector<blink::mojom::IDBBlobInfoPtr>();
+
     connection1.database->Put(
-        kTransactionId1, kObjectStoreId,
-        blink::mojom::IDBValue::New(
-            "value", std::vector<blink::mojom::IDBBlobInfoPtr>()),
+        kTransactionId1, kObjectStoreId, std::move(new_value),
         IndexedDBKey(base::UTF8ToUTF16("key")), blink::kWebIDBPutModeAddOnly,
         std::vector<IndexedDBIndexKeys>(),
         put_callbacks->CreateInterfacePtrAndBind());

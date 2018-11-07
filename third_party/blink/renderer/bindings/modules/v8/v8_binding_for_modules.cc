@@ -478,7 +478,7 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
 // the conceptual description in the spec states that the key produced by the
 // key generator is injected into the value before it is written to IndexedDB.
 //
-// We cannot implementing the spec's conceptual description. We need to assign
+// We cannot implement the spec's conceptual description. We need to assign
 // primary keys in the browser process, to ensure that multiple renderer
 // processes talking to the same database receive sequential keys. At the same
 // time, we want the value serialization code to live in the renderer process,
