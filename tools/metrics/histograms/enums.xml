@@ -29678,6 +29678,7 @@ from previous Chrome versions.
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
   <int value="-773238824" label="AutoplayWhitelistSettings:disabled"/>
   <int value="-772679248" label="MojoVideoEncodeAccelerator:enabled"/>
+  <int value="-772608284" label="MyFilesVolume:enabled"/>
   <int value="-771080109" label="GrantNotificationsToDSE:disabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
@@ -30353,6 +30354,7 @@ from previous Chrome versions.
   <int value="588333474" label="OfflineIndicator:disabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
+  <int value="594756372" label="MyFilesVolume:disabled"/>
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>

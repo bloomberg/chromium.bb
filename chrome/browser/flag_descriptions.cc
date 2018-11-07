@@ -3249,6 +3249,11 @@ const char kEnableDriveFsName[] = "Enable DriveFS";
 const char kEnableDriveFsDescription[] =
     "Enables use of the new DriveFS-based Drive sync client.";
 
+const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
+const char kEnableMyFilesVolumeDescription[] =
+    "Enables use of the MyFiles as a read/write volume. This should be only "
+    "used for testing or for trying to restore previous Downloads content.";
+
 const char kEnableEhvInputName[] =
     "Emoji, handwriting and voice input on opt-in IME menu";
 const char kEnableEhvInputDescription[] =
