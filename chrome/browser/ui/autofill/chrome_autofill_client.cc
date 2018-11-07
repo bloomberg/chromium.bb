@@ -37,6 +37,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -82,6 +84,19 @@ namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      payments_client_(std::make_unique<payments::PaymentsClient>(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->GetURLLoaderFactory(),
+          GetPrefs(),
+          GetIdentityManager(),
+          GetPersonalDataManager(),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsOffTheRecord())),
+      form_data_importer_(std::make_unique<FormDataImporter>(
+          this,
+          payments_client_.get(),
+          GetPersonalDataManager(),
+          GetPersonalDataManager()->app_locale())),
       unmask_controller_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
@@ -137,6 +152,14 @@ identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
+}
+
+payments::PaymentsClient* ChromeAutofillClient::GetPaymentsClient() {
+  return payments_client_.get();
+}
+
+FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
+  return form_data_importer_.get();
 }
 
 StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {

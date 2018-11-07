@@ -95,7 +95,8 @@ class SaveCardInfobarEGTestHelper {
     DCHECK(web_state);
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
-        ->form_data_importer_.get()
+        ->client()
+        ->GetFormDataImporter()
         ->credit_card_save_manager_.get();
   }
 
@@ -105,7 +106,8 @@ class SaveCardInfobarEGTestHelper {
     DCHECK(web_state);
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
-        ->payments_client();
+        ->client()
+        ->GetPaymentsClient();
   }
 
  private:

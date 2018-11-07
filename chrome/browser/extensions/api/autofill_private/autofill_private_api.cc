@@ -18,6 +18,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -556,19 +557,19 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded() || !web_contents)
     return RespondNow(Error(kErrorDataUnavailable));
 
-  // Get the autofill manager from the web contains. Autofill manager owns an
-  // unique_ptr of form data importer.
+  // Get the AutofillManager from the web contents. AutofillManager has a
+  // pointer to its AutofillClient which owns FormDataImporter.
   autofill::AutofillManager* autofill_manager =
       autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
           ->DriverForFrame(web_contents->GetMainFrame())
           ->autofill_manager();
-  if (!autofill_manager)
+  if (!autofill_manager || !autofill_manager->client())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  // Get the form data importer from autofill manager. Form data importer owns
-  // an unique_ptr of local card migration manager.
+  // Get the FormDataImporter from AutofillClient. FormDataImporter owns
+  // LocalCardMigrationManager.
   autofill::FormDataImporter* form_data_importer =
-      autofill_manager->form_data_importer();
+      autofill_manager->client()->GetFormDataImporter();
   if (!form_data_importer)
     return RespondNow(Error(kErrorDataUnavailable));
 

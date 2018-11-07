@@ -14,7 +14,9 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_strike_database.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -34,6 +36,8 @@ class TestAutofillClient : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
+  FormDataImporter* GetFormDataImporter() override;
+  payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -106,6 +110,16 @@ class TestAutofillClient : public AutofillClient {
     test_strike_database_ = std::move(test_strike_database);
   }
 
+  void set_test_payments_client(
+      std::unique_ptr<payments::TestPaymentsClient> payments_client) {
+    payments_client_ = std::move(payments_client);
+  }
+
+  void set_test_form_data_importer(
+      std::unique_ptr<TestFormDataImporter> form_data_importer) {
+    form_data_importer_ = std::move(form_data_importer);
+  }
+
   void set_form_origin(const GURL& url);
 
   void set_sync_service(syncer::SyncService* test_sync_service) {
@@ -143,6 +157,8 @@ class TestAutofillClient : public AutofillClient {
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<TestStrikeDatabase> test_strike_database_;
+  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;
 

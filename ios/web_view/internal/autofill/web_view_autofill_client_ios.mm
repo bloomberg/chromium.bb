@@ -8,8 +8,15 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,6 +38,19 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(identity_manager),
+      payments_client_(std::make_unique<payments::PaymentsClient>(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              web_state_->GetBrowserState()->GetURLLoaderFactory()),
+          pref_service_,
+          identity_manager_,
+          personal_data_manager_,
+          web_state_->GetBrowserState()->IsOffTheRecord())),
+      form_data_importer_(std::make_unique<FormDataImporter>(
+          this,
+          payments_client_.get(),
+          personal_data_manager_,
+          ios_web_view::ApplicationContext::GetInstance()
+              ->GetApplicationLocale())),
       strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service) {}
@@ -53,6 +73,14 @@ syncer::SyncService* WebViewAutofillClientIOS::GetSyncService() {
 
 identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
+}
+
+FormDataImporter* WebViewAutofillClientIOS::GetFormDataImporter() {
+  return form_data_importer_.get();
+}
+
+payments::PaymentsClient* WebViewAutofillClientIOS::GetPaymentsClient() {
+  return payments_client_.get();
 }
 
 StrikeDatabase* WebViewAutofillClientIOS::GetStrikeDatabase() {

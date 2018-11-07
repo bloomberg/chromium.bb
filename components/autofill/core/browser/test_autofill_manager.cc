@@ -7,9 +7,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
-#include "components/autofill/core/browser/payments/test_payments_client.h"
-#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -21,34 +18,7 @@ TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
                                          AutofillClient* client,
                                          TestPersonalDataManager* personal_data)
     : AutofillManager(driver, client, personal_data),
-      personal_data_(personal_data),
-      url_loader_factory_(driver->GetURLLoaderFactory()),
-      client_(client) {
-  set_payments_client(new payments::PaymentsClient(
-      url_loader_factory_, client->GetPrefs(), client->GetIdentityManager(),
-      personal_data));
-}
-
-TestAutofillManager::TestAutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    TestPersonalDataManager* personal_data,
-    std::unique_ptr<CreditCardSaveManager> credit_card_save_manager,
-    payments::TestPaymentsClient* payments_client,
-    std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager)
-    : AutofillManager(driver, client, personal_data),
-      personal_data_(personal_data),
-      test_form_data_importer_(
-          new TestFormDataImporter(client,
-                                   payments_client,
-                                   std::move(credit_card_save_manager),
-                                   personal_data,
-                                   "en-US",
-                                   std::move(local_card_migration_manager))),
-      client_(client) {
-  set_payments_client(payments_client);
-  set_form_data_importer(test_form_data_importer_);
-}
+      personal_data_(personal_data) {}
 
 TestAutofillManager::~TestAutofillManager() {}
 
@@ -141,7 +111,7 @@ void TestAutofillManager::AddSeenForm(
   AddSeenFormStructure(std::move(form_structure));
 
   form_interactions_ukm_logger()->OnFormsParsed(form.main_frame_origin.GetURL(),
-                                                client_->GetUkmSourceId());
+                                                client()->GetUkmSourceId());
 }
 
 void TestAutofillManager::AddSeenFormStructure(

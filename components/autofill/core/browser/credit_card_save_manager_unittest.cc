@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/test_strike_database.h"
 #include "components/autofill/core/browser/validation.h"
@@ -111,14 +112,21 @@ class CreditCardSaveManagerTest : public testing::Test {
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
         autofill_client_.GetIdentityManager(), &personal_data_);
+    autofill_client_.set_test_payments_client(
+        std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
     credit_card_save_manager_ =
         new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
                                       payments_client_, &personal_data_);
     credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+    autofill::TestFormDataImporter* test_form_data_importer =
+        new TestFormDataImporter(
+            &autofill_client_, payments_client_,
+            std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
+            &personal_data_, "en-US");
+    autofill_client_.set_test_form_data_importer(
+        std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_client_, &personal_data_,
-        std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
-        payments_client_));
+        autofill_driver_.get(), &autofill_client_, &personal_data_));
     autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -311,7 +319,7 @@ class CreditCardSaveManagerTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   TestCreditCardSaveManager* credit_card_save_manager_;
-  // Ends up getting owned (and destroyed) by TestAutofillManager:
+  // Ends up getting owned (and destroyed) by TestAutofillClient:
   payments::TestPaymentsClient* payments_client_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
   TestStrikeDatabase* strike_database_;

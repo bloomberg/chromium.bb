@@ -9,8 +9,11 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -34,6 +37,8 @@
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,6 +73,18 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       bridge_(bridge),
       identity_manager_(IdentityManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
+      payments_client_(std::make_unique<payments::PaymentsClient>(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              web_state_->GetBrowserState()->GetURLLoaderFactory()),
+          pref_service_,
+          identity_manager_,
+          personal_data_manager_,
+          web_state_->GetBrowserState()->IsOffTheRecord())),
+      form_data_importer_(std::make_unique<FormDataImporter>(
+          this,
+          payments_client_.get(),
+          personal_data_manager_,
+          GetApplicationContext()->GetApplicationLocale())),
       strike_database_(StrikeDatabaseFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
       autofill_web_data_service_(
@@ -102,6 +119,14 @@ syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
 
 identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
+}
+
+FormDataImporter* ChromeAutofillClientIOS::GetFormDataImporter() {
+  return form_data_importer_.get();
+}
+
+payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
+  return payments_client_.get();
 }
 
 StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {

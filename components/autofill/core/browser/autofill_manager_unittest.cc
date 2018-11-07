@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -41,6 +42,8 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
+#include "components/autofill/core/browser/test_credit_card_save_manager.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -61,6 +64,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -303,6 +307,24 @@ class AutofillManagerTest : public testing::Test {
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
+    payments::TestPaymentsClient* payments_client =
+        new payments::TestPaymentsClient(
+            autofill_driver_->GetURLLoaderFactory(),
+            autofill_client_.GetPrefs(), autofill_client_.GetIdentityManager(),
+            &personal_data_);
+    autofill_client_.set_test_payments_client(
+        std::unique_ptr<payments::TestPaymentsClient>(payments_client));
+    TestCreditCardSaveManager* credit_card_save_manager =
+        new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
+                                      payments_client, &personal_data_);
+    credit_card_save_manager->SetCreditCardUploadEnabled(true);
+    TestFormDataImporter* test_form_data_importer = new TestFormDataImporter(
+        &autofill_client_, payments_client,
+        std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager),
+        &personal_data_, "en-US");
+    autofill_client_.set_test_form_data_importer(
+        std::unique_ptr<autofill::TestFormDataImporter>(
+            test_form_data_importer));
     autofill_manager_ = std::make_unique<TestAutofillManager>(
         autofill_driver_.get(), &autofill_client_, &personal_data_);
     download_manager_ = new MockAutofillDownloadManager(
