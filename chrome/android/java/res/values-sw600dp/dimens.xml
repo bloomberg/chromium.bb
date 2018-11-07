@@ -40,9 +40,6 @@
     <!-- Payments UI -->
     <dimen name="payments_ui_max_dialog_width">600dp</dimen>
 
-    <!-- Clear browsing data preferences dimensions -->
-    <dimen name="clear_browsing_data_button_margin">16dp</dimen>
-
     <!-- Preferences dimensions -->
     <dimen name="pref_spinner_padding_end">16dp</dimen>
 
