@@ -53,6 +53,8 @@ namespace {
 
 const char kExpectedMimeType[] = "text/html";
 
+const char kFailedTitle[] = "failed_title";
+
 // WebStateObserverTest is parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
 enum NavigationManagerChoice {
@@ -775,7 +777,14 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
   test::LoadUrl(web_state(), url);
-  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Ensure that title is not overridden by a placeholder navigation.
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = manager->GetPendingItem();
+  item->SetTitle(base::UTF8ToUTF16(kFailedTitle));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(), "The network connection was lost."));
+  DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
 }
 
 // Tests failed navigation because URL scheme is not supported.
