@@ -372,10 +372,6 @@
       status: "experimental",
     },
     {
-      name: "DeprecationReporting",
-      status: "stable",
-    },
-    {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
     },
@@ -619,10 +615,6 @@
     },
     {
       name: "IntersectionObserverV2",
-    },
-    {
-      name: "InterventionReporting",
-      status: "stable",
     },
     {
       name: "InvisibleDOM",
@@ -1056,11 +1048,6 @@
     },
     {
       name: "RenderingPipelineThrottling",
-      status: "stable",
-    },
-    {
-      name: "ReportingObserver",
-      implied_by: ["DeprecationReporting", "InterventionReporting"],
       status: "stable",
     },
     {

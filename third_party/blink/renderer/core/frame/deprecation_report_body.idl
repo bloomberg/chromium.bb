@@ -5,8 +5,7 @@
 // https://wicg.github.io/reporting/#deprecation-report
 
 [
-    NoInterfaceObject,
-    RuntimeEnabled=DeprecationReporting
+    NoInterfaceObject
 ] interface DeprecationReportBody : ReportBody {
   readonly attribute DOMString id;
   readonly attribute Date? anticipatedRemoval;
