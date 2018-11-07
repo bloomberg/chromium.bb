@@ -125,22 +125,21 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   // and LAYER_ORDER in ax::mojom::IntAttributes.
 }
 
-const std::vector<int32_t>* AccessibilityWindowInfoDataWrapper::GetChildren() {
-  if (children_.size() != 0)
-    return &children_;
-
+void AccessibilityWindowInfoDataWrapper::GetChildren(
+    std::vector<ArcAccessibilityInfoData*>* children) const {
   // Populate the children vector by combining the child window IDs with the
   // root node ID.
   if (window_ptr_->int_list_properties) {
     auto it = window_ptr_->int_list_properties->find(
         mojom::AccessibilityWindowIntListProperty::CHILD_WINDOW_IDS);
     if (it != window_ptr_->int_list_properties->end()) {
-      children_.insert(children_.begin(), it->second.begin(), it->second.end());
+      for (int32_t id : it->second)
+        children->push_back(tree_source_->GetFromId(id));
     }
   }
+
   if (window_ptr_->root_node_id)
-    children_.push_back(window_ptr_->root_node_id);
-  return &children_;
+    children->push_back(tree_source_->GetFromId(window_ptr_->root_node_id));
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(

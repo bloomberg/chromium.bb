@@ -37,7 +37,8 @@ class ArcAccessibilityInfoData {
   virtual void PopulateAXRole(ui::AXNodeData* out_data) const = 0;
   virtual void PopulateAXState(ui::AXNodeData* out_data) const = 0;
   virtual void Serialize(ui::AXNodeData* out_data) const = 0;
-  virtual const std::vector<int32_t>* GetChildren() = 0;
+  virtual void GetChildren(
+      std::vector<ArcAccessibilityInfoData*>* children) const = 0;
 };
 
 }  // namespace arc
