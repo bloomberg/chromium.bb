@@ -88,6 +88,8 @@ class InstantService : public KeyedService,
   bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
                         const std::string& new_title);
+  // Invoked when the Instant page wants to reorder a custom link.
+  bool ReorderCustomLink(const GURL& url, int new_pos);
   // Invoked when the Instant page wants to delete a custom link.
   bool DeleteCustomLink(const GURL& url);
   // Invoked when the Instant page wants to undo the previous custom link

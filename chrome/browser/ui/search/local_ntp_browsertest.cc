@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
        ++i) {
     std::string rid = std::to_string(i + 100);
     std::string url = "https://" + rid + ".com";
-    std::string title = "url for" + rid;
+    std::string title = "url for " + rid;
     // Add most visited tiles via the EmbeddedSearch API. rid = -1 means add new
     // most visited tile.
     EXPECT_TRUE(content::ExecuteScript(
@@ -666,6 +666,86 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
       iframe, "document.querySelectorAll('.md-add-icon').length === 0",
       &no_add_button));
   EXPECT_TRUE(no_add_button);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, Reorder) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestMostVisitedObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+
+  // Fill tiles up to the maximum count.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+  for (int i = kDefaultMostVisitedItemCount; i < kDefaultCustomLinkMaxCount;
+       ++i) {
+    std::string rid = std::to_string(i + 100);
+    std::string url = "https://" + rid + ".com";
+    std::string title = "url for " + rid;
+    ASSERT_TRUE(content::ExecuteScript(
+        iframe,
+        "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, '" + url +
+            "', '" + title + "')"));
+  }
+  // Confirm that there are max number of custom link tiles.
+  observer.WaitForNumberOfItems(kDefaultCustomLinkMaxCount);
+  // Open a new tab to get the updated links.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  iframe = GetMostVisitedIframe(active_tab);
+
+  // Get the title of the tile at index 1.
+  std::string title;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      iframe, "document.querySelectorAll('.md-tile .md-title')[1].innerText",
+      &title));
+
+  // Move the tile to the front.
+  std::string tid;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      iframe,
+      "document.querySelectorAll('.md-tile')[1].getAttribute('data-tid')",
+      &tid));
+  EXPECT_TRUE(content::ExecuteScript(
+      iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
+                  tid + ", 0)"));
+  // Open a new tab to get the updated links.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  iframe = GetMostVisitedIframe(active_tab);
+
+  // Check that the first tile is the tile that was moved.
+  std::string new_title;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      iframe, "document.querySelectorAll('.md-tile .md-title')[0].innerText",
+      &new_title));
+  EXPECT_EQ(new_title, title);
+
+  // Move the tile again to the end.
+  std::string end_index = std::to_string(kDefaultCustomLinkMaxCount - 1);
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      iframe,
+      "document.querySelectorAll('.md-tile')[0].getAttribute('data-tid')",
+      &tid));
+  EXPECT_TRUE(content::ExecuteScript(
+      iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
+                  tid + ", " + end_index + ")"));
+  // Open a new tab to get the updated links.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  iframe = GetMostVisitedIframe(active_tab);
+
+  // Check that the last tile is the tile that was moved.
+  new_title = std::string();
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      iframe,
+      "document.querySelectorAll('.md-tile .md-title')[" + end_index +
+          "].innerText",
+      &new_title));
+  EXPECT_EQ(new_title, title);
 }
 
 // A minimal implementation of an interstitial page.

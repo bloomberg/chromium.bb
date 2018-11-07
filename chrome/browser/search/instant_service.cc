@@ -316,6 +316,12 @@ bool InstantService::UpdateCustomLink(const GURL& url,
   return false;
 }
 
+bool InstantService::ReorderCustomLink(const GURL& url, int new_pos) {
+  if (most_visited_sites_)
+    return most_visited_sites_->ReorderCustomLink(url, new_pos);
+  return false;
+}
+
 bool InstantService::DeleteCustomLink(const GURL& url) {
   if (most_visited_sites_)
     return most_visited_sites_->DeleteCustomLink(url);

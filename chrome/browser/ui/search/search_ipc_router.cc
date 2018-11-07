@@ -215,6 +215,18 @@ void SearchIPCRouter::UpdateCustomLink(int page_seq_no,
   std::move(callback).Run(result);
 }
 
+void SearchIPCRouter::ReorderCustomLink(int page_seq_no,
+                                        const GURL& url,
+                                        int new_pos) {
+  if (page_seq_no != commit_counter_)
+    return;
+
+  if (!policy_->ShouldProcessReorderCustomLink())
+    return;
+
+  delegate_->OnReorderCustomLink(url, new_pos);
+}
+
 void SearchIPCRouter::DeleteCustomLink(int page_seq_no,
                                        const GURL& url,
                                        DeleteCustomLinkCallback callback) {

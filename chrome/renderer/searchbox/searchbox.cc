@@ -369,6 +369,13 @@ void SearchBox::UpdateCustomLink(InstantRestrictedID link_id,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SearchBox::ReorderCustomLink(InstantRestrictedID link_id, int new_pos) {
+  GURL url = GetURLForMostVisitedItem(link_id);
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->ReorderCustomLink(page_seq_no_, url, new_pos);
+}
+
 void SearchBox::DeleteCustomLink(InstantRestrictedID most_visited_item_id) {
   GURL url = GetURLForMostVisitedItem(most_visited_item_id);
   if (!url.is_valid()) {

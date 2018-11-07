@@ -8,6 +8,17 @@
 
 
 /**
+ * Alias for document.getElementById.
+ * @param {string} id The ID of the element to find.
+ * @return {HTMLElement} The found element or null if not found.
+ */
+function $(id) {
+  // eslint-disable-next-line no-restricted-properties
+  return document.getElementById(id);
+}
+
+
+/**
  * Enum for key codes.
  * @enum {int}
  * @const
@@ -42,6 +53,8 @@ const IDS = {
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
+  REORDER: 'reorder',  // Applied to the tile being moved while reordering.
+  REORDERING: 'reordering',  // Applied while we are reordering.
   // Material Design classes.
   MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   MD_EMPTY_TILE: 'md-empty-tile',
@@ -110,6 +123,13 @@ var TileVisualType = {
  * @const {number}
  */
 const RESIZE_TIMEOUT_DELAY = 66;
+
+
+/**
+ * Timeout delay in ms before starting the reorder flow.
+ * @const {number}
+ */
+const REORDER_TIMEOUT_DELAY = 1000;
 
 
 /**
@@ -196,6 +216,21 @@ let maxNumTiles = 8;
  * @type {Object}
  */
 var queryArgs = {};
+
+
+/**
+ * True if we are currently reordering the tiles.
+ * @type {boolean}
+ */
+let reordering = false;
+
+
+/**
+ * The tile that is being moved during the reorder flow. Null if we are
+ * currently not reordering.
+ * @type {?Element}
+ */
+let elementToReorder = null;
 
 
 /**
@@ -555,6 +590,96 @@ var blacklistTile = function(tile) {
  */
 function editCustomLink(tid) {
   window.parent.postMessage({cmd: 'startEditLink', tid: tid}, DOMAIN_ORIGIN);
+}
+
+
+/**
+ * Starts the reorder flow. Updates the visual style of the held tile to
+ * indicate that it is being moved.
+ * @param {!Element} tile Tile that is being moved.
+ */
+function startReorder(tile) {
+  reordering = true;
+  elementToReorder = tile;
+
+  tile.classList.add(CLASSES.REORDER);
+  // Disable other hover/active styling for all tiles.
+  document.body.classList.add(CLASSES.REORDERING);
+
+  document.addEventListener('dragend', () => {
+    stopReorder(tile);
+  }, {once: true});
+}
+
+
+/**
+ * Stops the reorder flow. Resets the held tile's visual style and tells the
+ * EmbeddedSearchAPI that a tile has been moved.
+ * @param {!Element} tile Tile that has been moved.
+ */
+function stopReorder(tile) {
+  reordering = false;
+  elementToReorder = null;
+
+  tile.classList.remove(CLASSES.REORDER);
+  document.body.classList.remove(CLASSES.REORDERING);
+
+  // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
+  // has been moved.
+  const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+  for (let i = 0; i < allTiles.length; i++)
+    allTiles[i].setAttribute('data-pos', i);
+  chrome.embeddedSearch.newTabPage.reorderCustomLink(
+      Number(tile.firstChild.getAttribute('data-tid')),
+      Number(tile.firstChild.getAttribute('data-pos')));
+}
+
+
+/**
+ * Sets up event listeners necessary for tile reordering.
+ * @param {!Element} tile Tile on which to set the event listeners.
+ */
+function setupReorder(tile) {
+  // Starts the reorder flow after the user has held the mouse button down for
+  // |REORDER_TIMEOUT_DELAY|.
+  tile.addEventListener('mousedown', (event) => {
+    if (event.button == 0 /* LEFT CLICK */) {
+      let timeout = -1;
+
+      // Cancel the timeout if the user drags the mouse off the tile and
+      // releases.
+      let dragend = document.addEventListener('dragend', () => {
+        window.clearTimeout(timeout);
+      }, {once: true});
+
+      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
+      timeout = window.setTimeout(() => {
+        if (!reordering)
+          startReorder(tile);
+        document.removeEventListener('dragend', dragend);
+      }, REORDER_TIMEOUT_DELAY);
+    }
+  });
+
+  tile.addEventListener('dragover', (event) => {
+    // Only executed when the reorder flow is ongoing. Inserts the tile that is
+    // being moved before/after this |tile| according to order in the list.
+    if (reordering && elementToReorder && elementToReorder != tile) {
+      // Determine which side to insert the element on:
+      // - If the held tile comes after the current tile, insert behind the
+      //   current tile.
+      // - If the held tile comes before the current tile, insert in front of
+      //   the current tile.
+      let insertBefore;  // Element to insert the held tile behind.
+      if (tile.compareDocumentPosition(elementToReorder) &
+          Node.DOCUMENT_POSITION_FOLLOWING) {
+        insertBefore = tile;
+      } else {
+        insertBefore = tile.nextSibling;
+      }
+      $('mv-tiles').insertBefore(elementToReorder, insertBefore);
+    }
+  });
 }
 
 
@@ -933,6 +1058,12 @@ function renderMaterialDesignTile(data) {
     disableOutlineOnMouseClick(mdMenu);
 
     mdTileContainer.appendChild(mdMenu);
+  }
+
+  // Enable reordering.
+  if (isCustomLinksEnabled && !data.isAddButton) {
+    mdTileContainer.draggable = 'true';
+    setupReorder(mdTileContainer);
   }
 
   return mdTileContainer;
