@@ -5,6 +5,8 @@
 #include "components/offline_pages/core/background/request_queue_store.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -32,13 +34,30 @@ const GURL kUrl2("http://another-example.com");
 const ClientId kClientId("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
 const bool kUserRequested = true;
-const std::string kRequestOrigin = "abc.xyz";
+const char kRequestOrigin[] = "abc.xyz";
 
 enum class LastResult {
   RESULT_NONE,
   RESULT_FALSE,
   RESULT_TRUE,
 };
+
+SavePageRequest GetTestRequest() {
+  SavePageRequest request(kRequestId, kUrl, kClientId,
+                          base::Time::FromDeltaSinceWindowsEpoch(
+                              base::TimeDelta::FromSeconds(1000)),
+                          kUserRequested);
+  // Set fields to non-default values.
+  request.set_fail_state(offline_items_collection::FailState::FILE_NO_SPACE);
+  request.set_started_attempt_count(2);
+  request.set_completed_attempt_count(3);
+  request.set_last_attempt_time(base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromSeconds(400)));
+  request.set_request_origin("http://www.origin.com");
+  // Note: pending_state is not stored.
+  request.set_original_url(kUrl2);
+  return request;
+}
 
 void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
   sql::Database connection;
@@ -492,6 +511,23 @@ TEST_F(RequestQueueStoreTest, AddRequest) {
   ASSERT_EQ(1ul, this->last_requests().size());
 }
 
+TEST_F(RequestQueueStoreTest, AddAndGetRequestsMatch) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
+  this->InitializeStore(store.get());
+  const SavePageRequest request = GetTestRequest();
+  store->AddRequest(request,
+                    base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
+                                   base::Unretained(this)));
+  store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
+                                    base::Unretained(this)));
+  this->PumpLoop();
+
+  ASSERT_EQ(ItemActionStatus::SUCCESS, this->last_add_status());
+  ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
+  ASSERT_EQ(1ul, this->last_requests().size());
+  EXPECT_EQ(request.ToString(), this->last_requests()[0]->ToString());
+}
+
 TEST_F(RequestQueueStoreTest, UpdateRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
@@ -532,6 +568,8 @@ TEST_F(RequestQueueStoreTest, UpdateRequest) {
   EXPECT_EQ(ItemActionStatus::NOT_FOUND,
             this->last_update_result()->item_statuses[1].second);
   EXPECT_EQ(1UL, this->last_update_result()->updated_items.size());
+  EXPECT_EQ(updated_request.ToString(),
+            this->last_update_result()->updated_items.begin()->ToString());
   EXPECT_EQ(updated_request,
             *(this->last_update_result()->updated_items.begin()));
 

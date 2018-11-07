@@ -94,6 +94,10 @@ struct OfflinePageClientPolicy {
 
   FeaturePolicy feature_policy;
 
+  // Whether background fetches are deferred while the active tab matches the
+  // SavePageRequestURL.
+  bool defer_background_fetch_while_page_is_active = false;
+
   OfflinePageClientPolicy(std::string namespace_val,
                           LifetimePolicy lifetime_policy_val,
                           size_t pages_allowed_per_url_val,
@@ -181,6 +185,12 @@ class OfflinePageClientPolicyBuilder {
   OfflinePageClientPolicyBuilder& SetShouldAllowDownload(
       const bool should_allow_download) {
     policy_.feature_policy.should_allow_download = should_allow_download;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetDeferBackgroundFetchWhilePageIsActive(
+      bool defer) {
+    policy_.defer_background_fetch_while_page_is_active = defer;
     return *this;
   }
 

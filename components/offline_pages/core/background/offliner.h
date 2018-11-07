@@ -75,8 +75,10 @@ class Offliner {
     LOADING_FAILED_NET_ERROR = 19,
     // Loader failed to load page due to HTTP error.
     LOADING_FAILED_HTTP_ERROR = 20,
+    // Loading was deferred because the active tab URL matches.
+    LOADING_DEFERRED = 21,
 
-    kMaxValue = LOADING_FAILED_HTTP_ERROR,
+    kMaxValue = LOADING_DEFERRED,
   };
 
   // Reports the load progress of a request.

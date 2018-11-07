@@ -44,6 +44,8 @@ class RequestCoordinatorStubTaco {
       std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker);
   void SetOfflinePagesUkmReporter(
       std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
+  void SetRequestCoordinatorDelegate(
+      std::unique_ptr<RequestCoordinator::ActiveTabInfo> delegate);
 
   // Creates and caches an instance of RequestCoordinator, using default or
   // overridden stub dependencies.
@@ -65,6 +67,7 @@ class RequestCoordinatorStubTaco {
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
+  std::unique_ptr<RequestCoordinator::ActiveTabInfo> active_tab_info_;
 
   std::unique_ptr<RequestCoordinator> request_coordinator_;
 };

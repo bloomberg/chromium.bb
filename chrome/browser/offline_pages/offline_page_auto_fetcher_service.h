@@ -19,6 +19,31 @@ namespace offline_pages {
 class RequestCoordinator;
 class SavePageRequest;
 
+// Implementation notes for the auto-fetch-on-net-error-page feature:
+//
+// The 'auto-fetch-on-net-error-page' (auto-fetch) feature kicks in when a
+// 'dino' (offline error) page is reached. Chrome will schedule a request to
+// save the page when the device gains connectivity. Users can cancel or
+// explicitly request this behavior through UI on the dino page. Chrome attempts
+// to avoid doing a background page save if the user ends up successfully
+// navigating to the page. If the page is saved in the background, the a system
+// notification is presented.
+//
+// Background page saves are implemented through |RequestCoordinator|. The
+// |OfflinePageClientPolicy| for this feature is configured with the option
+// |defer_background_fetch_while_page_is_active|. This instructs
+// |RequestCoordinator| to first check if the page to be saved is currently
+// active. If it is, the request is deferred. If a request is deferred 5 times,
+// it is considered failed and removed. For this feature, we expect this
+// condition to be rare because |RequestCoordinator| only processes requests
+// when the device is connected, and the dino page automatically reloads when
+// the device is connected.
+//
+// Additionally, save page requests are removed upon successful navigation
+// commit. See |AutoFetchPageLoadWatcher|.
+
+// A KeyedService that provides an interface to schedule and cancel auto-fetch
+// requests.
 class OfflinePageAutoFetcherService : public KeyedService {
  public:
   using OfflinePageAutoFetcherScheduleResult =

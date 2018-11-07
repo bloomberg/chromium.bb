@@ -16,6 +16,8 @@
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/background/offliner.h"
@@ -26,12 +28,41 @@
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter.h"
+#include "content/public/browser/web_contents.h"
 
 namespace network {
 class NetworkQualityTracker;
 }
 
 namespace offline_pages {
+
+class ActiveTabInfo : public RequestCoordinator::ActiveTabInfo {
+ public:
+  explicit ActiveTabInfo(Profile* profile) : profile_(profile) {}
+  ~ActiveTabInfo() override {}
+  bool DoesActiveTabMatch(const GURL& url) override {
+    // Loop through to find the active tab and report whether the URL matches.
+    for (auto iter = TabModelList::begin(); iter != TabModelList::end();
+         ++iter) {
+      TabModel* model = *iter;
+      if (model->GetProfile() == profile_) {
+        content::WebContents* contents = model->GetActiveWebContents();
+        // Check visibility to make sure Chrome is in the foreground.
+        if (contents &&
+            contents->GetVisibility() == content::Visibility::VISIBLE) {
+          if (contents->GetVisibleURL() == url)
+            return true;
+          if (contents->GetLastCommittedURL() == url)
+            return true;
+        }
+      }
+    }
+    return false;
+  }
+
+ private:
+  Profile* profile_;
+};
 
 RequestCoordinatorFactory::RequestCoordinatorFactory()
     : BrowserContextKeyedServiceFactory(
@@ -82,7 +113,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
       new OfflinePagesUkmReporter());
   RequestCoordinator* request_coordinator = new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
-      std::move(scheduler), network_quality_tracker, std::move(ukm_reporter));
+      std::move(scheduler), network_quality_tracker, std::move(ukm_reporter),
+      std::make_unique<ActiveTabInfo>(profile));
 
   CCTRequestObserver::AttachToRequestCoordinator(request_coordinator);
 

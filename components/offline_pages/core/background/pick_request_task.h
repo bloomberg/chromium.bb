@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_PICK_REQUEST_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_PICK_REQUEST_TASK_H_
 
+#include <memory>
 #include <set>
+#include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +18,7 @@
 
 namespace offline_pages {
 
+class ClientPolicyController;
 class OfflinerPolicy;
 class PickRequestTask;
 class RequestQueueStore;
@@ -26,6 +29,8 @@ typedef bool (PickRequestTask::*RequestCompareFunction)(
 
 class PickRequestTask : public Task {
  public:
+  static const base::TimeDelta kDeferInterval;
+
   // Callback to report when a request was available.
   typedef base::OnceCallback<void(
       const SavePageRequest& request,
@@ -34,7 +39,9 @@ class PickRequestTask : public Task {
       RequestPickedCallback;
 
   // Callback to report when no request was available.
-  typedef base::OnceCallback<void(bool non_user_requests, bool cleanup_needed)>
+  typedef base::OnceCallback<void(bool non_user_requests,
+                                  bool cleanup_needed,
+                                  base::Time available_time)>
       RequestNotPickedCallback;
 
   // Callback to report available total and available queued request counts.
@@ -42,6 +49,7 @@ class PickRequestTask : public Task {
 
   PickRequestTask(RequestQueueStore* store,
                   OfflinerPolicy* policy,
+                  ClientPolicyController* policy_controller,
                   RequestPickedCallback picked_callback,
                   RequestNotPickedCallback not_picked_callback,
                   RequestCountCallback request_count_callback,
@@ -93,6 +101,7 @@ class PickRequestTask : public Task {
   // Member variables, all pointers are not owned here.
   RequestQueueStore* store_;
   OfflinerPolicy* policy_;
+  ClientPolicyController* policy_controller_;
   RequestPickedCallback picked_callback_;
   RequestNotPickedCallback not_picked_callback_;
   RequestCountCallback request_count_callback_;

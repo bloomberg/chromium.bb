@@ -19,6 +19,14 @@
 
 namespace offline_pages {
 
+namespace {
+class ActiveTabInfo : public RequestCoordinator::ActiveTabInfo {
+ public:
+  ~ActiveTabInfo() override {}
+  bool DoesActiveTabMatch(const GURL&) override { return false; }
+};
+}  // namespace
+
 std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
     content::BrowserContext* context) {
   // Use original policy.
@@ -38,7 +46,7 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
   return std::unique_ptr<RequestCoordinator>(new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
       std::move(scheduler_stub), g_browser_process->network_quality_tracker(),
-      std::move(ukm_reporter_stub)));
+      std::move(ukm_reporter_stub), std::make_unique<ActiveTabInfo>()));
 }
 
 }  // namespace offline_pages
