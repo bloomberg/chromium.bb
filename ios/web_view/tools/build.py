@@ -233,6 +233,8 @@ def main():
   else:
     extra_gn_options += 'ios_web_view_enable_autofill=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
+  # This is needed until all clients drop iOS 10 support.
+  extra_gn_options += 'ios_deployment_target="10.0" '
   # This prevents Breakpad from being included in the final binary to avoid
   # duplicate symbols with the client app.
   extra_gn_options += 'use_crash_key_stubs=true '
