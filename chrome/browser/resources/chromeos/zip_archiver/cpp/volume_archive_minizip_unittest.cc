@@ -4,6 +4,9 @@
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive_minizip.h"
 
+#include <stdlib.h>
+#include <time.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -25,6 +28,34 @@
 namespace {
 
 constexpr char kEncryptedZipPassphrase[] = "test123";
+
+struct FileInfo {
+  int64_t size;
+  bool is_directory;
+  time_t mod_time;
+  const char* md5_sum;
+};
+using FileInfoMap = std::map<std::string, FileInfo>;
+const FileInfoMap kSmallZipFiles = {
+    {"file1", {15, false, 1407920154, "b4d9b82bb1cd97aa6191843149df18e6"}},
+    {"file2", {33, false, 1407920174, "b864e9456deb246b018c49ef831f7ca7"}},
+    {"dir/", {0, true, 1407920220, nullptr}},
+    {"dir/file3", {56, false, 1407920220, "bffbca4992b32db8ed72bfc2c88e7f11"}},
+};
+
+const FileInfoMap kPkEncryptedZipFiles = {
+    {"file1", {15, false, 1407920154, "b4d9b82bb1cd97aa6191843149df18e6"}},
+    {"file2", {33, false, 1407920174, "b864e9456deb246b018c49ef831f7ca7"}},
+    {"dir/", {0, true, 1407920220, nullptr}},
+    {"dir/file3", {56, false, 1407920220, "bffbca4992b32db8ed72bfc2c88e7f11"}},
+};
+
+const FileInfoMap kAesEncryptedZipFiles = {
+    {"file1", {15, false, 1528178134, "b4d9b82bb1cd97aa6191843149df18e6"}},
+    {"file2", {33, false, 1528178134, "b864e9456deb246b018c49ef831f7ca7"}},
+    {"dir/", {0, true, 1528178134, nullptr}},
+    {"dir/file3", {56, false, 1528178134, "bffbca4992b32db8ed72bfc2c88e7f11"}},
+};
 
 class TestVolumeReader : public VolumeReader {
  public:
@@ -74,32 +105,55 @@ class VolumeArchiveMinizipTest : public testing::Test {
     return full_path;
   }
 
-  void SetUp() override {}
+  void SetUp() override {
+    // Zip files are stored as local time, but minizip will do some timezone
+    // conversion internally. Fix the time zone (to Perth, Australia) so make
+    // this test deterministic wherever it is run.
+    // NOTE: Perth is +8, but is set as -8 because of how POSIX defines the TZ
+    // variable.
+    setenv("TZ", "UTC-8", 1);
+    tzset();
+  }
 
-  void TearDown() override {}
+  void CheckFileInfo(VolumeArchiveMinizip* archive, const FileInfo& file_info) {
+    std::string file_path;
+    bool is_utf8 = false;
+    int64_t size = -1;
+    bool is_directory = false;
+    time_t mod_time = 0;
+    auto result = archive->GetCurrentFileInfo(&file_path, &is_utf8, &size,
+                                              &is_directory, &mod_time);
+    EXPECT_EQ(result, VolumeArchive::RESULT_SUCCESS);
+    EXPECT_EQ(size, file_info.size);
+    EXPECT_EQ(is_directory, file_info.is_directory);
+    EXPECT_EQ(mod_time, file_info.mod_time);
+  }
+
+  void CheckFileContents(VolumeArchiveMinizip* archive,
+                         const FileInfo& file_info) {
+    base::MD5Context ctx;
+    base::MD5Init(&ctx);
+    const char* buffer = nullptr;
+    int64_t offset = 0;
+    while (offset < file_info.size) {
+      int64_t read =
+          archive->ReadData(offset, file_info.size - offset, &buffer);
+      ASSERT_GT(read, 0);
+      EXPECT_LE(read, file_info.size - offset);
+      base::MD5Update(&ctx, base::StringPiece(buffer, read));
+      offset += read;
+    }
+    EXPECT_EQ(file_info.size, offset);
+    EXPECT_EQ(0, archive->ReadData(offset, 1, &buffer));
+
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &ctx);
+    std::string md5_sum = base::MD5DigestToBase16(digest);
+    EXPECT_EQ(md5_sum, file_info.md5_sum);
+  }
 
  private:
   std::unique_ptr<VolumeArchiveMinizip> archive_;
-};
-
-struct FileInfo {
-  int64_t size;
-  bool is_directory;
-  time_t mod_time;
-  const char* md5_sum;
-};
-const std::map<std::string, FileInfo> kSmallZipFiles = {
-    {"file1", {15, false, 1407912954, "b4d9b82bb1cd97aa6191843149df18e6"}},
-    {"file2", {33, false, 1407912974, "b864e9456deb246b018c49ef831f7ca7"}},
-    {"dir/", {0, true, 1407913020, nullptr}},
-    {"dir/file3", {56, false, 1407913020, "bffbca4992b32db8ed72bfc2c88e7f11"}},
-};
-
-const std::map<std::string, FileInfo> kEncryptedZipFiles = {
-    {"file1", {15, false, 1407912954, "b4d9b82bb1cd97aa6191843149df18e6"}},
-    {"file2", {33, false, 1407912974, "b864e9456deb246b018c49ef831f7ca7"}},
-    {"dir/", {0, true, 1407913020, nullptr}},
-    {"dir/file3", {56, false, 1407913020, "bffbca4992b32db8ed72bfc2c88e7f11"}},
 };
 
 TEST_F(VolumeArchiveMinizipTest, Basic) {
@@ -140,19 +194,7 @@ TEST_F(VolumeArchiveMinizipTest, SeekHeader) {
 
   for (auto it : kSmallZipFiles) {
     EXPECT_TRUE(archive.SeekHeader(it.first));
-
-    std::string file_path;
-    bool is_utf8 = false;
-    int64_t size = -1;
-    bool is_directory = false;
-    time_t mod_time = 0;
-    auto result = archive.GetCurrentFileInfo(&file_path, &is_utf8, &size,
-                                             &is_directory, &mod_time);
-    EXPECT_EQ(result, VolumeArchive::RESULT_SUCCESS);
-    EXPECT_EQ(file_path, it.first);
-    EXPECT_EQ(size, it.second.size);
-    EXPECT_EQ(is_directory, it.second.is_directory);
-    EXPECT_EQ(mod_time, it.second.mod_time);
+    CheckFileInfo(&archive, it.second);
   }
 }
 
@@ -178,28 +220,11 @@ TEST_F(VolumeArchiveMinizipTest, Read) {
     if (it.second.is_directory)
       continue;
 
-    base::MD5Context ctx;
-    base::MD5Init(&ctx);
-    const char* buffer = nullptr;
-    int64_t offset = 0;
-    while (offset < it.second.size) {
-      int64_t read = archive.ReadData(offset, it.second.size - offset, &buffer);
-      ASSERT_GT(read, 0);
-      EXPECT_LE(read, it.second.size - offset);
-      base::MD5Update(&ctx, base::StringPiece(buffer, read));
-      offset += read;
-    }
-    EXPECT_EQ(it.second.size, offset);
-    EXPECT_EQ(0, archive.ReadData(offset, 1, &buffer));
-
-    base::MD5Digest digest;
-    base::MD5Final(&digest, &ctx);
-    std::string md5_sum = base::MD5DigestToBase16(digest);
-    EXPECT_EQ(md5_sum, it.second.md5_sum);
+    CheckFileContents(&archive, it.second);
   }
 }
 
-TEST_F(VolumeArchiveMinizipTest, Encrypted) {
+TEST_F(VolumeArchiveMinizipTest, Encrypted_PkCrypt) {
   std::unique_ptr<TestVolumeReader> reader =
       std::make_unique<TestVolumeReader>(GetTestZipPath("encrypted.zip"));
   reader->set_passphrase(
@@ -207,42 +232,33 @@ TEST_F(VolumeArchiveMinizipTest, Encrypted) {
   VolumeArchiveMinizip archive(std::move(reader));
   ASSERT_TRUE(archive.Init(""));
 
-  for (auto it : kEncryptedZipFiles) {
+  for (auto it : kPkEncryptedZipFiles) {
     EXPECT_TRUE(archive.SeekHeader(it.first));
-    std::string file_path;
-    bool is_utf8 = false;
-    int64_t size = -1;
-    bool is_directory = false;
-    time_t mod_time = 0;
-    auto result = archive.GetCurrentFileInfo(&file_path, &is_utf8, &size,
-                                             &is_directory, &mod_time);
-    EXPECT_EQ(result, VolumeArchive::RESULT_SUCCESS);
-    EXPECT_EQ(file_path, it.first);
-    EXPECT_EQ(size, it.second.size);
-    EXPECT_EQ(is_directory, it.second.is_directory);
-    EXPECT_EQ(mod_time, it.second.mod_time);
+    CheckFileInfo(&archive, it.second);
 
     if (it.second.is_directory)
       continue;
 
-    base::MD5Context ctx;
-    base::MD5Init(&ctx);
-    const char* buffer = nullptr;
-    int64_t offset = 0;
-    while (offset < it.second.size) {
-      int64_t read = archive.ReadData(offset, it.second.size - offset, &buffer);
-      ASSERT_GT(read, 0);
-      EXPECT_LE(read, it.second.size - offset);
-      base::MD5Update(&ctx, base::StringPiece(buffer, read));
-      offset += read;
-    }
-    EXPECT_EQ(it.second.size, offset);
-    EXPECT_EQ(0, archive.ReadData(offset, 1, &buffer));
+    CheckFileContents(&archive, it.second);
+  }
+}
 
-    base::MD5Digest digest;
-    base::MD5Final(&digest, &ctx);
-    std::string md5_sum = base::MD5DigestToBase16(digest);
-    EXPECT_EQ(md5_sum, it.second.md5_sum);
+TEST_F(VolumeArchiveMinizipTest, Encrypted_AES) {
+  std::unique_ptr<TestVolumeReader> reader =
+      std::make_unique<TestVolumeReader>(GetTestZipPath("encrypted_aes.zip"));
+  reader->set_passphrase(
+      base::make_optional<std::string>(kEncryptedZipPassphrase));
+  VolumeArchiveMinizip archive(std::move(reader));
+  ASSERT_TRUE(archive.Init(""));
+
+  for (auto it : kAesEncryptedZipFiles) {
+    EXPECT_TRUE(archive.SeekHeader(it.first));
+    CheckFileInfo(&archive, it.second);
+
+    if (it.second.is_directory)
+      continue;
+
+    CheckFileContents(&archive, it.second);
   }
 }
 
