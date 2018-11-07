@@ -5,12 +5,9 @@
 #include "ui/aura/mus/gesture_recognizer_impl_mus.h"
 
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 
 namespace aura {
 
@@ -42,19 +39,10 @@ void GestureRecognizerImplMus::OnWindowMoveStarted(
   if (source != ws::mojom::MoveLoopSource::TOUCH)
     return;
   moving_window_ = window;
-  last_location_in_screen_ = cursor_location;
-  Env* env = Env::GetInstance();
-  std::set<ui::EventType> types = {
-      ui::ET_TOUCH_RELEASED, ui::ET_TOUCH_PRESSED, ui::ET_TOUCH_MOVED,
-      ui::ET_TOUCH_CANCELLED,
-  };
-  env->AddEventObserver(this, env, types);
+  cursor_offset_ = cursor_location - window->GetBoundsInScreen().origin();
 }
 
 void GestureRecognizerImplMus::OnWindowMoveEnded(bool success) {
-  if (!moving_window_)
-    return;
-  Env::GetInstance()->RemoveEventObserver(this);
   moving_window_ = nullptr;
 }
 
@@ -71,25 +59,15 @@ bool GestureRecognizerImplMus::GetLastTouchPointForTarget(
     aura::client::ScreenPositionClient* client =
         aura::client::GetScreenPositionClient(target_window->GetRootWindow());
     if (client) {
-      gfx::Point location_in_window = last_location_in_screen_;
-      client->ConvertPointFromScreen(target_window, &location_in_window);
-      point->set_x(location_in_window.x());
-      point->set_y(location_in_window.y());
+      // Use the original offset when the window move started. ui::EventObserver
+      // isn't used since its OnEvent may be called slightly later than window
+      // move (bounds change) is conducted. See crbug.com/901540.
+      point->set_x(cursor_offset_.x());
+      point->set_y(cursor_offset_.y());
       return true;
     }
   }
   return GestureRecognizerImpl::GetLastTouchPointForTarget(consumer, point);
-}
-
-void GestureRecognizerImplMus::OnEvent(const ui::Event& event) {
-  DCHECK(moving_window_);
-
-  last_location_in_screen_ = event.AsLocatedEvent()->location();
-  display::Display display;
-  if (display::Screen::GetScreen()->GetDisplayWithDisplayId(
-          moving_window_->GetHost()->GetDisplayId(), &display)) {
-    last_location_in_screen_ += display.bounds().OffsetFromOrigin();
-  }
 }
 
 }  // namespace aura

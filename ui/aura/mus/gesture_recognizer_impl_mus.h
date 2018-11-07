@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "ui/aura/mus/window_tree_client_observer.h"
-#include "ui/events/event_observer.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 
 namespace ui {
@@ -23,8 +22,7 @@ class WindowTreeClient;
 // GestureRecognizerImpl, but it handles keeping GetLastTouchPointForTarget in
 // sync with the server when the touch events are handled within the server.
 class GestureRecognizerImplMus : public ui::GestureRecognizerImpl,
-                                 public aura::WindowTreeClientObserver,
-                                 public ui::EventObserver {
+                                 public aura::WindowTreeClientObserver {
  public:
   explicit GestureRecognizerImplMus(aura::WindowTreeClient* client);
   ~GestureRecognizerImplMus() override;
@@ -41,12 +39,9 @@ class GestureRecognizerImplMus : public ui::GestureRecognizerImpl,
                            ws::mojom::MoveLoopSource source) override;
   void OnWindowMoveEnded(bool success) override;
 
-  // ui::EventObserver:
-  void OnEvent(const ui::Event& event) override;
-
   aura::WindowTreeClient* client_;
   aura::Window* moving_window_ = nullptr;
-  gfx::Point last_location_in_screen_;
+  gfx::Vector2d cursor_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImplMus);
 };
