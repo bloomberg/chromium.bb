@@ -320,10 +320,6 @@ void FrameLoader::SaveScrollState() {
     return;
 
   HistoryItem* history_item = document_loader_->GetHistoryItem();
-  // For performance reasons, we don't save scroll anchors as often as we save
-  // scroll offsets. In order to avoid keeping around a stale anchor, we clear
-  // it when the saved scroll offset changes.
-  history_item->SetScrollAnchorData(ScrollAnchorData());
   if (ScrollableArea* layout_scrollable_area = frame_->View()->LayoutViewport())
     history_item->SetScrollOffset(layout_scrollable_area->GetScrollOffset());
   history_item->SetVisualViewportScrollOffset(ToScrollOffset(
