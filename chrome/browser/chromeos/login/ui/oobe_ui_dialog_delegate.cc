@@ -22,7 +22,9 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -44,7 +46,7 @@ class OobeWebDialogView : public views::WebDialogView {
                     WebContentsHandler* handler)
       : views::WebDialogView(context, delegate, handler) {}
 
-  // views::WebDialogView:
+  // content::WebContentsDelegate:
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -60,6 +62,23 @@ class OobeWebDialogView : public views::WebDialogView {
     return MediaCaptureDevicesDispatcher::GetInstance()
         ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
   }
+
+  bool TakeFocus(content::WebContents* source, bool reverse) override {
+    LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
+    return true;
+  }
+
+  bool HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override {
+    return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+        event, GetFocusManager());
+  }
+
+ private:
+  views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(OobeWebDialogView);
 };
 
 class CaptivePortalDialogDelegate
@@ -201,8 +220,6 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
-  dialog_view_->web_contents()->SetDelegate(this);
-
   captive_portal_delegate_ = new CaptivePortalDialogDelegate(dialog_view_);
 
   GetOobeUI()->GetErrorScreen()->MaybeInitCaptivePortalWindowProxy(
@@ -313,19 +330,6 @@ OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
 
 gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
-}
-
-bool OobeUIDialogDelegate::TakeFocus(content::WebContents* source,
-                                     bool reverse) {
-  LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
-  return true;
-}
-
-bool OobeUIDialogDelegate::HandleKeyboardEvent(
-    content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
-  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
-      event, dialog_widget_->GetFocusManager());
 }
 
 void OobeUIDialogDelegate::OnDisplayMetricsChanged(
