@@ -2727,7 +2727,7 @@ public class ToolbarPhone extends ToolbarLayout
      * buttons besides the experimental button.
      */
     private boolean isMenuButtonPresent() {
-        return mMenuButton != null;
+        return getMenuButton() != null;
     }
 
     private void requestLayoutHostUpdateForExperimentalButton() {

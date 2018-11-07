@@ -61,7 +61,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * The app menu button.
      */
-    protected ImageButton mMenuButton;
+    private ImageButton mMenuButton;
     private ImageView mMenuBadge;
     private MenuButton mMenuButtonWrapper;
     private AppMenuButtonHelper mAppMenuButtonHelper;
