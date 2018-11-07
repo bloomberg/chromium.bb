@@ -17,7 +17,6 @@ extern const char kDisableOfferStoreUnmaskedWalletCards[];
 extern const char kEnableOfferStoreUnmaskedWalletCards[];
 extern const char kEnableSuggestionsWithSubstringMatch[];
 extern const char kIgnoreAutocompleteOffForAutofill[];
-extern const char kLocalHeuristicsOnlyForPasswordGeneration[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kShowAutofillSignatures[];
 extern const char kWalletServiceUseSandbox[];

@@ -63,6 +63,26 @@ class PasswordStoreResultsObserver
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
 };
 
+// Custom class is required to enable password generation.
+class CustomPasswordManagerClient : public ChromePasswordManagerClient {
+ public:
+  using ChromePasswordManagerClient::ChromePasswordManagerClient;
+
+  static void CreateForWebContentsWithAutofillClient(
+      content::WebContents* contents,
+      autofill::AutofillClient* autofill_client) {
+    ASSERT_FALSE(FromWebContents(contents));
+    contents->SetUserData(UserDataKey(),
+                          base::WrapUnique(new CustomPasswordManagerClient(
+                              contents, autofill_client)));
+  }
+
+  // PasswordManagerClient:
+  password_manager::SyncState GetPasswordSyncState() const override {
+    return password_manager::SYNCING_NORMAL_ENCRYPTION;
+  }
+};
+
 // ManagePasswordsUIController subclass to capture the UI events.
 class CustomManagePasswordsUIController : public ManagePasswordsUIController {
  public:
@@ -439,7 +459,7 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThreadAndGetNewTab(
 
   // ManagePasswordsUIController needs ChromePasswordManagerClient for logging.
   autofill::ChromeAutofillClient::CreateForWebContents(*web_contents);
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+  CustomPasswordManagerClient::CreateForWebContentsWithAutofillClient(
       *web_contents,
       autofill::ChromeAutofillClient::FromWebContents(*web_contents));
   ASSERT_TRUE(ChromePasswordManagerClient::FromWebContents(*web_contents));

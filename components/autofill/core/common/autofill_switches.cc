@@ -30,11 +30,6 @@ const char kEnableSuggestionsWithSubstringMatch[] =
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
 
-// Removes the requirement that we recieved a ping from the autofill servers
-// and that the user doesn't have the given form blacklisted. Used in testing.
-const char kLocalHeuristicsOnlyForPasswordGeneration[] =
-    "local-heuristics-only-for-password-generation";
-
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 
