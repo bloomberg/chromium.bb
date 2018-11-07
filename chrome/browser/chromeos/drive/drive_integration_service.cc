@@ -451,6 +451,7 @@ class DriveIntegrationService::PreferenceWatcher
     if (integration_service_->drivefs_holder_ &&
         integration_service_->remount_when_online_ && !is_offline) {
       integration_service_->remount_when_online_ = false;
+      integration_service_->mount_start_ = {};
       integration_service_->AddDriveMountPoint();
       return;
     }
@@ -761,6 +762,7 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
     drivefs_total_failures_count_ = 0;
     drivefs_consecutive_failures_count_ = 0;
     mount_failed_ = false;
+    mount_start_ = {};
   }
 }
 
