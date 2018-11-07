@@ -65,8 +65,7 @@
           "--enable-logging",
           "--v=1",
           "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -170,8 +169,7 @@
           "--enable-logging",
           "--v=1",
           "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -276,8 +274,7 @@
           "--enable-logging",
           "--v=1",
           "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -374,8 +371,7 @@
           "--enable-logging",
           "--v=1",
           "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -473,8 +469,7 @@
           "--enable-logging",
           "--v=1",
           "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
