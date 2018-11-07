@@ -5397,4 +5397,6 @@ crbug.com/901317 virtual/outofblink-cors-ns/external/wpt/service-workers/service
 
 #Sheriff 2018-11-06
 crbug.com/902632 [ Win Debug ] fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
+crbug.com/902645 [ Mac10.13 ] transforms/3d/point-mapping/3d-point-mapping-3.html [ Failure Pass ]
+crbug.com/902645 [ Mac10.13 ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Failure Pass ]
 
