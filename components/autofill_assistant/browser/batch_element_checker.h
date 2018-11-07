@@ -88,9 +88,6 @@ class BatchElementChecker {
            base::RepeatingCallback<void()> try_done,
            base::OnceCallback<void()> all_done);
 
-  // Makes any pending Run stop after the end of the current try.
-  void StopTrying() { stopped_ = true; }
-
   // Returns true if all element that were asked for have been found. Can be
   // called while Run is progress or afterwards.
   bool all_found() { return all_found_; }
@@ -136,7 +133,6 @@ class BatchElementChecker {
       get_field_value_callbacks_;
   int pending_checks_count_;
   bool all_found_;
-  bool stopped_;
 
   // The callback built for Try(). It is kept around while going through the
   // maps and called once all selectors in that map have been looked up once,

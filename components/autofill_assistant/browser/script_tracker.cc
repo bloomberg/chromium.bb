@@ -32,25 +32,9 @@ void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
 }
 
 void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
-  if (batch_element_checker_) {
-    // It should be possible to just call batch_element_checker_.reset() to give
-    // up on all checks. This doesn't work, however, because it ends up running
-    // multiple checks in parallel, which fails.
-    //
-    // StopTrying() tells BatchElementChecker to give up early and call
-    // OnCheckDone as soon as possible, which is a safe point for deleting the
-    // checker and starting a new check.
-    //
-    // TODO(crbug.com/806868): Figure out why checks run in parallel don't work
-    // and simplify this logic.
-    batch_element_checker_->StopTrying();
+  // In case checks are still running, terminate them.
+  TerminatePendingChecks();
 
-    // TODO(crbug.com/806868): May stop recheck if there is a script pending to
-    // run.
-    must_recheck_ = base::BindOnce(&ScriptTracker::CheckScripts,
-                                   base::Unretained(this), max_duration);
-    return;
-  }
   DCHECK(pending_runnable_scripts_.empty());
 
   batch_element_checker_ =
@@ -91,18 +75,8 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
-  // Postpone running script until finishing the current round of preconditions
-  // check.
-  if (!batch_element_checker_ && !must_recheck_) {
-    executor_->Run(std::move(run_script_callback));
-  } else {
-    pending_run_script_callback_ = std::move(run_script_callback);
-    // Do not recheck and retry when there is a script pending to run. Note
-    // that |batch_element_checker_| may take a long time to wait on retrying
-    // unsatisfied preconditions check without stop trying.
-    must_recheck_.Reset();
-    batch_element_checker_->StopTrying();
-  }
+  TerminatePendingChecks();
+  executor_->Run(std::move(run_script_callback));
 }
 
 void ScriptTracker::ClearRunnableScripts() {
@@ -114,7 +88,6 @@ void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,
     ScriptExecutor::Result result) {
-  DCHECK(!pending_run_script_callback_);
   executor_.reset();
   executed_scripts_[script_path] =
       result.success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
@@ -144,14 +117,6 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
 
 void ScriptTracker::OnCheckDone() {
   TerminatePendingChecks();
-  if (must_recheck_) {
-    std::move(must_recheck_).Run();
-    return;
-  }
-
-  // TODO(crbug.com/806868): Check whether the script is still runnable.
-  if (pending_run_script_callback_)
-    executor_->Run(std::move(pending_run_script_callback_));
 }
 
 void ScriptTracker::TerminatePendingChecks() {
