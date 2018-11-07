@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"

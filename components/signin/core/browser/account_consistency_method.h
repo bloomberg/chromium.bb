@@ -6,8 +6,8 @@
 // possible overrides from Experiements.  This is done inside chrome/common
 // because it is accessed by files through the chrome/ directory tree.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_MANAGEMENT_SWITCHES_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_MANAGEMENT_SWITCHES_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_CONSISTENCY_METHOD_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_CONSISTENCY_METHOD_H_
 
 namespace signin {
 
@@ -41,4 +41,4 @@ bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
 
 }  // namespace signin
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_MANAGEMENT_SWITCHES_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_CONSISTENCY_METHOD_H_

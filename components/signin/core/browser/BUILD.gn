@@ -53,14 +53,14 @@ static_library("signin_metrics") {
 # not add code to this target without consulting with blundell@chromium.org.
 static_library("internals") {
   sources = [
+    "account_consistency_method.cc",
+    "account_consistency_method.h",
     "account_tracker_service.cc",
     "account_tracker_service.h",
     "device_id_helper.cc",
     "device_id_helper.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
-    "profile_management_switches.cc",
-    "profile_management_switches.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
     "signin_client.cc",

@@ -9,7 +9,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 
 ChromeSigninClientFactory::ChromeSigninClientFactory()
     : BrowserContextKeyedServiceFactory(

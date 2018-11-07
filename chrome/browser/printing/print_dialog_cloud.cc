@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/browser_thread.h"
