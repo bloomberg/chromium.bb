@@ -197,9 +197,8 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
         std::move(modules), kCryptoModulePasswordListCerts,
         net::HostPortPair(),  // unused.
         nullptr,              // TODO(mattm): supply parent window.
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&CertsSourcePlatformNSS::RefreshSlotsUnlocked,
-                           weak_ptr_factory_.GetWeakPtr())));
+        base::BindOnce(&CertsSourcePlatformNSS::RefreshSlotsUnlocked,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool SetCertTrust(CERTCertificate* cert,
@@ -221,8 +220,8 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
   void RefreshSlotsUnlocked() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DVLOG(1) << "refresh listing certs...";
-    cert_db_->ListCerts(base::AdaptCallbackForRepeating(base::BindOnce(
-        &CertsSourcePlatformNSS::DidGetCerts, weak_ptr_factory_.GetWeakPtr())));
+    cert_db_->ListCerts(base::BindOnce(&CertsSourcePlatformNSS::DidGetCerts,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void DidGetCerts(net::ScopedCERTCertificateList certs) {

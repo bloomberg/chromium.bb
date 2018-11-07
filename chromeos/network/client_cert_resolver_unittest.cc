@@ -401,8 +401,7 @@ class ClientCertResolverTest : public testing::Test,
     net::ScopedCERTCertificateList certs;
     base::RunLoop run_loop;
     test_nsscertdb_->ListCertsInSlot(
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&OnListCertsDone, run_loop.QuitClosure(), &certs)),
+        base::BindOnce(&OnListCertsDone, run_loop.QuitClosure(), &certs),
         test_nsscertdb_->GetPrivateSlot().get());
     run_loop.Run();
     return certs;

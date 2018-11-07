@@ -27,7 +27,7 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
 
   // NSSCertDatabase implementation.
   ScopedCERTCertificateList ListCertsSync() override;
-  void ListCerts(const NSSCertDatabase::ListCertsCallback& callback) override;
+  void ListCerts(NSSCertDatabase::ListCertsCallback callback) override;
   void ListModules(std::vector<crypto::ScopedPK11Slot>* modules,
                    bool need_rw) const override;
   crypto::ScopedPK11Slot GetSystemSlot() const override;
