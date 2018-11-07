@@ -227,7 +227,7 @@ class CORE_EXPORT FragmentData {
   void DestroyTail();
 
   // Contains rare data that that is not needed on all fragments.
-  struct RareData {
+  struct CORE_EXPORT RareData {
     USING_FAST_MALLOC(RareData);
 
    public:

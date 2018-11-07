@@ -93,8 +93,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPaintFragment* current_;
     };
 
-    iterator begin() const { return iterator(first_); }
-    iterator end() const { return iterator(nullptr); }
+    CORE_EXPORT iterator begin() const { return iterator(first_); }
+    CORE_EXPORT iterator end() const { return iterator(nullptr); }
 
     // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
     // It is error to call |front()| for empty range.
@@ -109,7 +109,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     // Returns number of fragments in this range. The complexity is O(n) where n
     // is number of elements.
     wtf_size_t size() const;
-    bool IsEmpty() const { return !first_; }
+    CORE_EXPORT bool IsEmpty() const { return !first_; }
 
     void ToList(Vector<NGPaintFragment*, 16>*) const;
 
