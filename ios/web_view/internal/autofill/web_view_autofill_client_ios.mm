@@ -137,6 +137,12 @@ void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
   NOTIMPLEMENTED();
 }
 
+void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

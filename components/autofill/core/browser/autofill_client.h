@@ -179,6 +179,12 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) = 0;
 
+  // Will show a dialog with all the selected card migration results. Invoked
+  // when the migration process is finished.
+  virtual void ShowLocalCardMigrationResults(
+      const base::string16& tip_message,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards) = 0;
+
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                           base::OnceClosure callback) = 0;

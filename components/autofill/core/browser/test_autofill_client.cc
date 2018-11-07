@@ -102,6 +102,10 @@ void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
   std::move(start_migrating_cards_callback).Run(migration_card_selection_);
 }
 
+void TestAutofillClient::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {}
+
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

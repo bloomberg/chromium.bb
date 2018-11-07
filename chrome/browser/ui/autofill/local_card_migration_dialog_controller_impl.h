@@ -27,7 +27,7 @@ class LocalCardMigrationDialogControllerImpl
  public:
   ~LocalCardMigrationDialogControllerImpl() override;
 
-  void ShowDialog(
+  void ShowOfferDialog(
       std::unique_ptr<base::DictionaryValue> legal_message,
       LocalCardMigrationDialog* local_card_migration_dialog,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,

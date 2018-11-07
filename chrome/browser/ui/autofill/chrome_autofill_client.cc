@@ -261,10 +261,26 @@ void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
   autofill::LocalCardMigrationDialogControllerImpl* controller =
       autofill::LocalCardMigrationDialogControllerImpl::FromWebContents(
           web_contents());
-  controller->ShowDialog(
+  controller->ShowOfferDialog(
       std::move(legal_message),
       CreateLocalCardMigrationDialogView(controller, web_contents()),
       migratable_credit_cards, std::move(start_migrating_cards_callback));
+#endif
+}
+
+void ChromeAutofillClient::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+#if !defined(OS_ANDROID)
+  autofill::LocalCardMigrationDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  autofill::LocalCardMigrationDialogControllerImpl* controller =
+      autofill::LocalCardMigrationDialogControllerImpl::FromWebContents(
+          web_contents());
+  controller->ShowFeedbackDialog(
+      tip_message,
+      CreateLocalCardMigrationDialogView(controller, web_contents()),
+      migratable_credit_cards);
 #endif
 }
 

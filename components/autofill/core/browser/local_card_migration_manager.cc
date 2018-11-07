@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -216,7 +217,11 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
   // Remove cards that were successfully migrated from local storage.
   personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
 
-  // TODO(crbug.com/852904): Trigger the show result window.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationShowFeedback)) {
+    client_->ShowLocalCardMigrationResults(base::UTF8ToUTF16(display_text),
+                                           migratable_credit_cards_);
+  }
 }
 
 void LocalCardMigrationManager::OnDidGetMigrationRiskData(
