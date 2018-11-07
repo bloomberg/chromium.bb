@@ -10590,6 +10590,11 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="YouTube"/>
 </enum>
 
+<enum name="DemoModeIdleLogoutWarningEvent">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Canceled"/>
+</enum>
+
 <enum name="DemoModeResourcesRemovalReason">
   <int value="0" label="Low available disk space"/>
   <int value="1" label="Device enterprise enrolled"/>
