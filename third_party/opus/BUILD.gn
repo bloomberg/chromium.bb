@@ -35,6 +35,11 @@ config("opus_private_config") {
   defines = [
     "OPUS_BUILD",
     "OPUS_EXPORT=",
+
+    # Prefer alloca() over variable length arrays which are often inefficient;
+    # the opus code will automatically handle this correctly per-platform.
+    "USE_ALLOCA",
+    "HAVE_ALLOCA_H"
   ]
 
   include_dirs = [
@@ -47,7 +52,6 @@ config("opus_private_config") {
 
   if (is_win) {
     defines += [
-      "USE_ALLOCA",
       "inline=__inline",
     ]
 
@@ -59,7 +63,6 @@ config("opus_private_config") {
     defines += [
       "HAVE_LRINT",
       "HAVE_LRINTF",
-      "VAR_ARRAYS",
     ]
   }
 
