@@ -231,7 +231,11 @@ class SingleTestRunner(object):
             port.update_baseline(output_path, data)
         else:
             _log.info('Copying baseline to "%s"', port.relative_test_filename(output_path))
-            fs.copyfile(current_expected_path, output_path)
+            if fs.exists(current_expected_path):
+                fs.copyfile(current_expected_path, output_path)
+            else:
+                _log.error('Could not copy baseline to "%s" from "%s" because the source file does not exist',
+                           port.relative_test_filename(output_path), current_expected_path)
 
     def _handle_error(self, driver_output, reference_filename=None):
         """Returns test failures if some unusual errors happen in driver's run.
