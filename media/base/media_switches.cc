@@ -353,6 +353,10 @@ const base::Feature kExternalClearKeyForTesting{
 const base::Feature kHardwareSecureDecryption{
     "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables handling of hardware media keys for controlling media.
+const base::Feature kHardwareMediaKeyHandling{
+    "HardwareMediaKeyHandling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Limits number of media tags loading in parallel to 6. This speeds up
 // preloading of any media that requires multiple requests to preload.
 const base::Feature kLimitParallelMediaPreloading{
