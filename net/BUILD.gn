@@ -4874,7 +4874,6 @@ test("net_unittests") {
     "proxy_resolution/dhcp_pac_file_adapter_fetcher_win_unittest.cc",
     "proxy_resolution/dhcp_pac_file_fetcher_factory_unittest.cc",
     "proxy_resolution/dhcp_pac_file_fetcher_win_unittest.cc",
-    "proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
     "proxy_resolution/multi_threaded_proxy_resolver_unittest.cc",
     "proxy_resolution/network_delegate_error_observer_unittest.cc",
     "proxy_resolution/pac_file_decider_unittest.cc",
@@ -5515,17 +5514,8 @@ test("net_unittests") {
       "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
   }
-
   if (enable_net_mojo) {
-    deps += [
-      "//mojo/core/embedder",
-      "//net/dns:mojo_client",
-      "//net/dns:mojo_service",
-    ]
-  } else {
-    sources -= [
-      "proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
-    ]
+    deps += [ "//mojo/core/embedder" ]
   }
 
   if (is_ios) {

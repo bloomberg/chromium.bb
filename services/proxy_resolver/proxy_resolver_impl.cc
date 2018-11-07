@@ -8,10 +8,10 @@
 
 #include "base/macros.h"
 #include "net/base/net_errors.h"
-#include "net/proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
+#include "services/proxy_resolver/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace proxy_resolver {
@@ -80,7 +80,7 @@ void ProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
       &request_,
-      std::make_unique<net::MojoProxyResolverV8TracingBindings<
+      std::make_unique<MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverRequestClient>>(client_.get()));
   client_.set_connection_error_handler(base::Bind(
       &ProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
