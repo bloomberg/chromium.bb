@@ -128,6 +128,8 @@ void BatchElementChecker::Try(base::OnceCallback<void()> try_done_callback) {
 void BatchElementChecker::OnTryDone(int64_t remaining_attempts,
                                     base::RepeatingCallback<void()> try_done,
                                     base::OnceCallback<void()> all_done) {
+  // Warning: try_done or all_done can indirectly delete this. this must not
+  // be used after calling either of these.
   if (all_found_) {
     try_done.Run();
     std::move(all_done).Run();
@@ -143,7 +145,6 @@ void BatchElementChecker::OnTryDone(int64_t remaining_attempts,
     std::move(all_done).Run();
     return;
   }
-  try_done.Run();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -153,6 +154,10 @@ void BatchElementChecker::OnTryDone(int64_t remaining_attempts,
                          weak_ptr_factory_.GetWeakPtr(), remaining_attempts,
                          try_done, std::move(all_done))),
       kCheckPeriod);
+
+  // try_done must be called after creating the delayed task, in case
+  // try_done.Run() deletes this.
+  try_done.Run();
 }
 
 void BatchElementChecker::GiveUp() {
