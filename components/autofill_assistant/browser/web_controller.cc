@@ -147,26 +147,37 @@ void WebController::LoadURL(const GURL& url) {
 void WebController::ClickElement(const std::vector<std::string>& selectors,
                                  base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  FindElement(
-      selectors, /* strict_mode= */ true,
-      base::BindOnce(&WebController::OnFindElementForClick,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  FindElement(selectors, /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForClickOrTap,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(callback), /* is_a_click= */ true));
 }
 
-void WebController::OnFindElementForClick(
+void WebController::TapElement(const std::vector<std::string>& selectors,
+                               base::OnceCallback<void(bool)> callback) {
+  DCHECK(!selectors.empty());
+  FindElement(selectors, /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForClickOrTap,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(callback), /* is_a_click= */ false));
+}
+
+void WebController::OnFindElementForClickOrTap(
     base::OnceCallback<void(bool)> callback,
+    bool is_a_click,
     std::unique_ptr<FindElementResult> result) {
   if (result->object_id.empty()) {
-    DLOG(ERROR) << "Failed to find the element to click.";
+    DLOG(ERROR) << "Failed to find the element to click or tap.";
     OnResult(false, std::move(callback));
     return;
   }
 
-  ClickObject(result->object_id, std::move(callback));
+  ClickOrTapObject(result->object_id, is_a_click, std::move(callback));
 }
 
-void WebController::ClickObject(const std::string& object_id,
-                                base::OnceCallback<void(bool)> callback) {
+void WebController::ClickOrTapObject(const std::string& object_id,
+                                     bool is_a_click,
+                                     base::OnceCallback<void(bool)> callback) {
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
       runtime::CallArgument::Builder().SetObjectId(object_id).Build());
@@ -179,12 +190,13 @@ void WebController::ClickObject(const std::string& object_id,
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     object_id));
+                     object_id, is_a_click));
 }
 
 void WebController::OnScrollIntoView(
     base::OnceCallback<void(bool)> callback,
     std::string object_id,
+    bool is_a_click,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to scroll the element.";
@@ -194,12 +206,14 @@ void WebController::OnScrollIntoView(
 
   devtools_client_->GetDOM()->GetBoxModel(
       dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
-      base::BindOnce(&WebController::OnGetBoxModelForClick,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(&WebController::OnGetBoxModelForClickOrTap,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     is_a_click));
 }
 
-void WebController::OnGetBoxModelForClick(
+void WebController::OnGetBoxModelForClickOrTap(
     base::OnceCallback<void(bool)> callback,
+    bool is_a_click,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
     DLOG(ERROR) << "Failed to get box model.";
@@ -207,22 +221,37 @@ void WebController::OnGetBoxModelForClick(
     return;
   }
 
-  // Click at the center of the element.
+  // Click or tap at the center of the element.
   const std::vector<double>* content_box = result->GetModel()->GetContent();
   DCHECK_EQ(content_box->size(), 8u);
   double x = ((*content_box)[0] + (*content_box)[2]) * 0.5;
   double y = ((*content_box)[3] + (*content_box)[5]) * 0.5;
-  devtools_client_->GetInput()->DispatchMouseEvent(
-      input::DispatchMouseEventParams::Builder()
-          .SetX(x)
-          .SetY(y)
-          .SetClickCount(1)
-          .SetButton(input::DispatchMouseEventButton::LEFT)
-          .SetType(input::DispatchMouseEventType::MOUSE_PRESSED)
+  if (is_a_click) {
+    devtools_client_->GetInput()->DispatchMouseEvent(
+        input::DispatchMouseEventParams::Builder()
+            .SetX(x)
+            .SetY(y)
+            .SetClickCount(1)
+            .SetButton(input::DispatchMouseEventButton::LEFT)
+            .SetType(input::DispatchMouseEventType::MOUSE_PRESSED)
+            .Build(),
+        base::BindOnce(&WebController::OnDispatchPressMouseEvent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback), x,
+                       y));
+    return;
+  }
+
+  std::vector<std::unique_ptr<::autofill_assistant::input::TouchPoint>>
+      touch_points;
+  touch_points.emplace_back(
+      input::TouchPoint::Builder().SetX(x).SetY(y).Build());
+  devtools_client_->GetInput()->DispatchTouchEvent(
+      input::DispatchTouchEventParams::Builder()
+          .SetType(input::DispatchTouchEventType::TOUCH_START)
+          .SetTouchPoints(std::move(touch_points))
           .Build(),
-      base::BindOnce(&WebController::OnDispatchPressMouseEvent,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback), x,
-                     y));
+      base::BindOnce(&WebController::OnDispatchTouchEventStart,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebController::OnDispatchPressMouseEvent(
@@ -245,6 +274,33 @@ void WebController::OnDispatchPressMouseEvent(
 void WebController::OnDispatchReleaseMouseEvent(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
+  OnResult(true, std::move(callback));
+}
+
+void WebController::OnDispatchTouchEventStart(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<input::DispatchTouchEventResult> result) {
+  if (!result) {
+    DLOG(ERROR) << "Failed to dispatch touch start event.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  std::vector<std::unique_ptr<::autofill_assistant::input::TouchPoint>>
+      touch_points;
+  devtools_client_->GetInput()->DispatchTouchEvent(
+      input::DispatchTouchEventParams::Builder()
+          .SetType(input::DispatchTouchEventType::TOUCH_END)
+          .SetTouchPoints(std::move(touch_points))
+          .Build(),
+      base::BindOnce(&WebController::OnDispatchTouchEventEnd,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnDispatchTouchEventEnd(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<input::DispatchTouchEventResult> result) {
+  DCHECK(result);
   OnResult(true, std::move(callback));
 }
 
