@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 using Type = network::mojom::FetchResponseType;
 
@@ -30,7 +31,7 @@ WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
 
 Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
   Vector<String> result;
-  result.ReserveInitialCapacity(headers.size());
+  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(headers.size()));
   // WebHTTPHeaderSet stores headers using Latin1 encoding.
   for (const auto& header : headers)
     result.push_back(String(header.data(), header.size()));
