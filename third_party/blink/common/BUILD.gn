@@ -31,6 +31,7 @@ jumbo_source_set("common") {
     "feature_policy/feature_policy.cc",
     "features.cc",
     "frame/frame_policy.cc",
+    "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
     "indexeddb/indexeddb_key.cc",
     "indexeddb/indexeddb_key_path.cc",

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -150,13 +151,29 @@ DispatchEventResult EventDispatcher::Dispatch() {
   }
   event_->GetEventPath().EnsureWindowEventContext();
 
+  const bool is_click =
+      event_->IsMouseEvent() && event_->type() == event_type_names::kClick;
+
+  if (is_click && event_->isTrusted()) {
+    Document& document = node_->GetDocument();
+    LocalFrame* frame = document.GetFrame();
+    if (frame) {
+      // A genuine mouse click cannot be triggered by script so we don't expect
+      // there are any script in the stack.
+      DCHECK(!frame->GetAdTracker() ||
+             !frame->GetAdTracker()->IsAdScriptInStack());
+      if (frame->IsAdSubframe()) {
+        UseCounter::Count(document, WebFeature::kAdClick);
+      }
+    }
+  }
+
   // 6. Let isActivationEvent be true, if event is a MouseEvent object and
   // event's type attribute is "click", and false otherwise.
   //
   // We need to include non-standard textInput event for HTMLInputElement.
   const bool is_activation_event =
-      (event_->IsMouseEvent() && event_->type() == event_type_names::kClick) ||
-      event_->type() == event_type_names::kTextInput;
+      is_click || event_->type() == event_type_names::kTextInput;
 
   // 7. Let activationTarget be target, if isActivationEvent is true and target
   // has activation behavior, and null otherwise.

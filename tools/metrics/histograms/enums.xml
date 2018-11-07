@@ -20661,6 +20661,7 @@ Called by update_net_error_codes.py.-->
   <int value="2618" label="HistoryReplaceState"/>
   <int value="2619" label="GetDisplayMedia"/>
   <int value="2620" label="CursorImageGT64x64"/>
+  <int value="2621" label="AdClick"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

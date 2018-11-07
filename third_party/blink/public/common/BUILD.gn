@@ -47,6 +47,7 @@ source_set("headers") {
     "features.h",
     "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
+    "frame/from_ad_state.h",
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
     "frame/user_activation_update_source.h",
