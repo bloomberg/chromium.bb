@@ -5296,11 +5296,9 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   DCHECK(GetFrame() && GetFrame()->Owner());
   FrameOwner* owner = GetFrame()->Owner();
 
-  if (RuntimeEnabledFeatures::DisplayNoneIFrameCreatesNoLayoutObjectEnabled()) {
-    if (documentElement()) {
-      if (is_display_none != owner->IsDisplayNone())
-        documentElement()->LazyReattachIfAttached();
-    }
+  if (documentElement()) {
+    if (is_display_none != owner->IsDisplayNone())
+      documentElement()->LazyReattachIfAttached();
   }
 
   // body() may become null as a result of modification event listeners, so we
