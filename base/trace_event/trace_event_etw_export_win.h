@@ -30,6 +30,12 @@ class BASE_EXPORT TraceEventETWExport {
   // Note that this may return NULL post-AtExit processing.
   static TraceEventETWExport* GetInstance();
 
+  // Retrieves the singleton iff it was previously instantiated by a
+  // GetInstance() call. Avoids creating the instance only to check that it
+  // wasn't disabled. Note that, like GetInstance(), this may also return NULL
+  // post-AtExit processing.
+  static TraceEventETWExport* GetInstanceIfExists();
+
   // Enables/disables exporting of events to ETW. If disabled,
   // AddEvent and AddCustomEvent will simply return when called.
   static void EnableETWExport();
@@ -61,6 +67,7 @@ class BASE_EXPORT TraceEventETWExport {
  private:
   // Ensure only the provider can construct us.
   friend struct StaticMemorySingletonTraits<TraceEventETWExport>;
+
   // To have access to UpdateKeyword().
   class ETWKeywordUpdateThread;
   TraceEventETWExport();

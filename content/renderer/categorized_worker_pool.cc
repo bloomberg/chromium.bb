@@ -148,7 +148,12 @@ CategorizedWorkerPool::CategorizedWorkerPool()
       has_ready_to_run_foreground_tasks_cv_(&lock_),
       has_ready_to_run_background_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
-      shutdown_(false) {}
+      shutdown_(false) {
+  // Declare the two ConditionVariables which are used by worker threads to
+  // sleep-while-idle as such to avoid throwing off //base heuristics.
+  has_ready_to_run_foreground_tasks_cv_.declare_only_used_while_idle();
+  has_ready_to_run_background_tasks_cv_.declare_only_used_while_idle();
+}
 
 void CategorizedWorkerPool::Start(int num_threads) {
   DCHECK(threads_.empty());

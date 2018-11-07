@@ -58,6 +58,7 @@ SchedulerWorker::SchedulerWorker(
   DCHECK(task_tracker_);
   DCHECK(CanUseBackgroundPriorityForSchedulerWorker() ||
          priority_hint_ != ThreadPriority::BACKGROUND);
+  wake_up_event_.declare_only_used_while_idle();
 }
 
 bool SchedulerWorker::Start(
