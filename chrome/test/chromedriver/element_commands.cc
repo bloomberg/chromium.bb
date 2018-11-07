@@ -319,8 +319,17 @@ Status ExecuteSendKeysToElement(Session* session,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
   const base::ListValue* key_list;
-  if (!params.GetList("value", &key_list))
-    return Status(kUnknownError, "'value' must be a list");
+  base::ListValue key_list_local;
+  if (session->w3c_compliant) {
+    const base::Value* text;
+    if (!params.Get("text", &text) || !text->is_string())
+      return Status(kInvalidArgument, "'text' must be a string");
+    key_list_local.Set(0, std::make_unique<base::Value>(text->Clone()));
+    key_list = &key_list_local;
+  } else {
+    if (!params.GetList("value", &key_list))
+      return Status(kUnknownError, "'value' must be a list");
+  }
 
   bool is_input = false;
   Status status = IsElementAttributeEqualToIgnoreCase(
