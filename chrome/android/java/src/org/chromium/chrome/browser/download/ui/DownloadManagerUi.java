@@ -418,7 +418,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         for (Observer observer : mObservers) observer.onUrlChanged(url);
 
         if (mNativePage != null) {
-            mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));
+            mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter), true);
         }
 
         RecordHistogram.recordEnumeratedHistogram(
