@@ -13,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
-#include "components/gwp_asan/common/export.h"
 
 namespace gwp_asan {
 namespace internal {
@@ -23,7 +22,7 @@ namespace internal {
 // platforms.)
 unsigned CountTrailingZeroBits64(uint64_t x);
 
-class GWP_ASAN_EXPORT GuardedPageAllocator {
+class GuardedPageAllocator {
  public:
   // Maximum number of pages this class can allocate.
   static constexpr size_t kGpaMaxPages = 64;
@@ -39,13 +38,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
     kUnknown = 4,
   };
 
-  // Initialize the singleton. Used to configure the allocator to map memory
-  // for num_pages pages (excluding guard pages). num_pages must be in the range
-  // [1, kGpaMaxPages].
-  static GuardedPageAllocator& InitializeSingleton(size_t num_pages);
-
-  // Returns the global allocator singleton.
-  static GuardedPageAllocator& Get();
+  // Configures this allocator to map memory for num_pages pages (excluding
+  // guard pages). num_pages must be in the range [1, kGpaMaxPages]. Init should
+  // only be called once.
+  void Init(size_t num_pages);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -56,7 +52,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
-  // Precondition: align <= size <= page_size_
+  // Precondition: Init() must have been called, align <= size <= page_size_
   void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
@@ -68,7 +64,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   size_t GetRequestedSize(const void* ptr) const;
 
   // Returns true if ptr points to memory managed by this class.
-  bool PointerIsMine(const void* ptr) const;
+  inline bool PointerIsMine(const void* ptr) const {
+    uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+    return pages_base_addr_ <= addr && addr < pages_end_addr_;
+  }
 
  private:
   using BitMap = uint64_t;
@@ -122,16 +121,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Number of bits in the free_pages_ bitmap.
   static constexpr size_t kFreePagesNumBits = sizeof(BitMap) * 8;
 
-  // Configures this allocator to map memory for num_pages pages (excluding
-  // guard pages). num_pages must be in the range [1, kGpaMaxPages].
-  //
-  // Marked private so that the singleton Get() method is the only way to obtain
-  // an instance.
-  explicit GuardedPageAllocator(size_t num_pages);
+  // Does not allocate any memory for the allocator, to finish initializing call
+  // Init().
+  explicit GuardedPageAllocator();
 
-  // Unmaps memory allocated by this class.
-  //
-  // This method should be called only once to complete destruction.
+  // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
 
   // Maps pages into memory and sets pages_base_addr_, first_page_addr_, and
@@ -190,7 +184,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Set to true if a double free has occurred.
   std::atomic<bool> double_free_detected_{false};
 
-  // Required to access the constructor in Get().
+  // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
 
   DISALLOW_COPY_AND_ASSIGN(GuardedPageAllocator);
