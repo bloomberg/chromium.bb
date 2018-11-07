@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_animation_type.h"
@@ -131,6 +132,7 @@ std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
       /*border_thickness=*/0, kBackdropRoundingDp, kBackdropColor,
       /*initial_opacity=*/1.f, parent,
       /*stack_on_top=*/false);
+  widget->GetNativeWindow()->SetName("OverviewBackdrop");
   return widget;
 }
 
@@ -489,10 +491,6 @@ WindowSelectorItem::WindowSelectorItem(aura::Window* window,
       window_grid_(window_grid) {
   CreateWindowLabel(window->GetTitle());
   GetWindow()->AddObserver(this);
-  if (GetWindowDimensionsType() !=
-      ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
-    backdrop_widget_ = CreateBackdropWidget(window->parent());
-  }
   GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
@@ -558,15 +556,10 @@ void WindowSelectorItem::Shutdown() {
     return;
   }
 
-  // Fade out the item widget. This animation continues past the lifetime
-  // of |this|.
-  const bool slide = window_selector_->enter_exit_overview_type() ==
-                     WindowSelector::EnterExitOverviewType::kWindowsMinimized;
-  FadeOutWidgetAndMaybeSlideOnExit(
-      std::move(item_widget_),
-      slide ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
-            : OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
-      slide);
+  // Close the item widget without animation to reduce the load during exit
+  // animation.
+  ScopedAnimationDisabler(item_widget_->GetNativeWindow());
+  item_widget_.reset();
 }
 
 void WindowSelectorItem::PrepareForOverview() {
@@ -578,11 +571,8 @@ void WindowSelectorItem::PrepareForOverview() {
 void WindowSelectorItem::SlideWindowIn() {
   // |transform_window_|'s |minimized_widget| is non null because this only gets
   // called if we see the home launcher on enter (all windows are minimized).
-  DCHECK(item_widget_);
   DCHECK(transform_window_.minimized_widget());
-  FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
-                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
-                                   /*slide=*/true);
+  // The |item_widget_| will be shown when animation ends.
   FadeInWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true);
@@ -772,6 +762,7 @@ WindowSelectorItem::GetWindowDimensionsType() const {
 }
 
 void WindowSelectorItem::UpdateWindowDimensionsType() {
+  // TODO(oshima|sammiequan|xdai): Use EnableBackdropIfNeeded.
   transform_window_.UpdateWindowDimensionsType();
   if (GetWindowDimensionsType() ==
       ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
@@ -793,7 +784,10 @@ void WindowSelectorItem::EnableBackdropIfNeeded() {
     DisableBackdrop();
     return;
   }
-
+  if (!backdrop_widget_) {
+    backdrop_widget_ =
+        CreateBackdropWidget(transform_window_.window()->parent());
+  }
   UpdateBackdropBounds();
 }
 
@@ -1034,6 +1028,14 @@ void WindowSelectorItem::UpdateMaskAndShadow(bool show) {
   EnableBackdropIfNeeded();
 }
 
+void WindowSelectorItem::OnStartingAnimationComplete() {
+  DCHECK(item_widget_.get());
+  FadeInWidgetAndMaybeSlideOnEnter(
+      item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      /*slide=*/false);
+  EnableBackdropIfNeeded();
+}
+
 void WindowSelectorItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
   transform_window_.SetOpacity(opacity);
@@ -1159,9 +1161,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   item_widget_->Show();
   item_widget_->SetOpacity(0);
   item_widget_->GetLayer()->SetMasksToBounds(false);
-  FadeInWidgetAndMaybeSlideOnEnter(
-      item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-      /*slide=*/false);
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(

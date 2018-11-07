@@ -773,6 +773,10 @@ void WindowSelector::OnStartingAnimationComplete(bool canceled) {
     UpdateMaskAndShadow(!canceled);
     if (text_filter_widget_)
       text_filter_widget_->Show();
+    for (auto& grid : grid_list_) {
+      for (auto& window : grid->window_list())
+        window->OnStartingAnimationComplete();
+    }
   }
 }
 

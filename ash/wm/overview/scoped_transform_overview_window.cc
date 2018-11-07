@@ -26,6 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
@@ -184,9 +185,17 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       original_mask_layer_(window_->layer()->layer_mask_layer()),
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);
+  original_targeter_ =
+      window_->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
+  null_targeter_ = window_->targeter();
 }
 
-ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
+ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
+  if (null_targeter_ == window_->targeter())
+    window_->SetEventTargeter(std::move(original_targeter_));
+
+  StopObservingImplicitAnimations();
+}
 
 // static
 float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,

@@ -493,6 +493,9 @@ void WindowGrid::AddItem(aura::Window* window, bool reposition, bool animate) {
       window_list_.begin(),
       std::make_unique<WindowSelectorItem>(window, window_selector_, this));
   window_list_.front()->PrepareForOverview();
+  // The item is added after overview enter animation is complete, so
+  // just call OnStartingAnimationComplete.
+  window_list_.front()->OnStartingAnimationComplete();
 
   if (reposition)
     PositionWindows(animate);
