@@ -229,8 +229,6 @@ bool LayoutView::CanHaveChildren() const {
   FrameOwner* owner = GetFrame()->Owner();
   if (!owner)
     return true;
-  if (!RuntimeEnabledFeatures::DisplayNoneIFrameCreatesNoLayoutObjectEnabled())
-    return true;
   // Although it is not spec compliant, many websites intentionally call
   // Window.print() on display:none iframes. https://crbug.com/819327.
   if (GetDocument().Printing())

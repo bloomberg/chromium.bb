@@ -392,10 +392,6 @@
       name: "DisplayLocking",
     },
     {
-      name: "DisplayNoneIFrameCreatesNoLayoutObject",
-      status: "stable",
-    },
-    {
       name: "DocumentCookie",
     },
     {
