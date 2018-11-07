@@ -27,8 +27,8 @@ using ::testing::MakePolymorphicAction;
 using ::testing::PolymorphicAction;
 
 const std::string kTriggerRemoteStreamPhrase = "open sesame";
-const uint32_t kWriteBufferSize = 100 * 1024;
-const uint32_t kDelegateReadBufferSize = 100 * 1024;
+const uint32_t kTransportWriteBufferSize = 100 * 1024;
+const uint32_t kTransportDelegateReadBufferSize = 100 * 1024;
 
 // A custom gmock Action that fires the given callback. This is used in
 // conjuction with the CallbackRunLoop in order to drive the TestTaskRunner
@@ -391,7 +391,8 @@ class P2PQuicTransportTest : public testing::Test {
     client_certificates.push_back(client_cert);
     P2PQuicTransportConfig client_config(
         client_quic_transport_delegate.get(), client_packet_transport.get(),
-        client_certificates, kDelegateReadBufferSize, kWriteBufferSize);
+        client_certificates, kTransportDelegateReadBufferSize,
+        kTransportWriteBufferSize);
     client_config.is_server = false;
     client_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
@@ -418,7 +419,8 @@ class P2PQuicTransportTest : public testing::Test {
     server_certificates.push_back(server_cert);
     P2PQuicTransportConfig server_config(
         server_quic_transport_delegate.get(), server_packet_transport.get(),
-        server_certificates, kDelegateReadBufferSize, kWriteBufferSize);
+        server_certificates, kTransportDelegateReadBufferSize,
+        kTransportWriteBufferSize);
     server_config.is_server = true;
     server_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;

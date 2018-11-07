@@ -18,8 +18,8 @@ using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 
-const uint32_t kWriteBufferSize = 1024;
-const uint32_t kDelegateReadBufferSize = 1024;
+const uint32_t kDefaultStreamWriteBufferSize = 1024;
+const uint32_t kDefaultStreamDelegateReadBufferSize = 1024;
 const quic::QuicStreamId kStreamId = 5;
 const std::string kSomeData = "howdy";
 
@@ -43,8 +43,8 @@ class P2PQuicStreamTest : public testing::Test {
   ~P2PQuicStreamTest() override {}
 
   void InitializeStream(
-      uint32_t delegate_read_buffer_size = kDelegateReadBufferSize,
-      uint32_t write_buffer_size = kWriteBufferSize) {
+      uint32_t delegate_read_buffer_size = kDefaultStreamDelegateReadBufferSize,
+      uint32_t write_buffer_size = kDefaultStreamWriteBufferSize) {
     stream_ = new P2PQuicStreamImpl(
         kStreamId, &session_, delegate_read_buffer_size, write_buffer_size);
     stream_->SetDelegate(&delegate_);
