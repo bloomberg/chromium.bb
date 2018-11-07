@@ -1823,6 +1823,9 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
+# Using Skip because this is listed as a Slow test, so if Timeout is used it
+# will waste 30 or 90 seconds per run.
+crbug.com/870173 [ Mac ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Skip ]
 
 # Failing tests in dictionary order.
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
@@ -3063,7 +3066,6 @@ crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-101.svg [ Failu
 crbug.com/626703 external/wpt/clear-site-data/executionContexts.sub.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
 crbug.com/626703 [ Linux Mac Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
-crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-lists/content-property/marker-text-matches-armenian.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/content-property/marker-text-matches-upper-latin.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/content-property/marker-text-matches-disc.html [ Failure ]
