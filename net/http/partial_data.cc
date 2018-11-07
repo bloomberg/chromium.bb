@@ -37,6 +37,7 @@ PartialData::PartialData()
       cached_start_(0),
       cached_min_len_(0),
       resource_size_(0),
+      range_requested_(false),
       range_present_(false),
       final_range_(false),
       sparse_entry_(true),
@@ -48,8 +49,11 @@ PartialData::~PartialData() = default;
 
 bool PartialData::Init(const HttpRequestHeaders& headers) {
   std::string range_header;
-  if (!headers.GetHeader(HttpRequestHeaders::kRange, &range_header))
+  if (!headers.GetHeader(HttpRequestHeaders::kRange, &range_header)) {
+    range_requested_ = false;
     return false;
+  }
+  range_requested_ = true;
 
   std::vector<HttpByteRange> ranges;
   if (!HttpUtil::ParseRangeHeader(range_header, &ranges) || ranges.size() != 1)
