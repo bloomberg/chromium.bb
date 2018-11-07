@@ -295,6 +295,21 @@ TEST(PlatformThreadTest, SetCurrentThreadPriorityWithThreadModeBackground) {
       features::kWindowsThreadModeBackground);
   TestSetCurrentThreadPriority();
 }
+
+// Test changing a created thread's priority, with the
+// kWindowsThreadModeBackground feature enabled, in a IDLE_PRIORITY_CLASS
+// process (regression test for https://crbug.com/901483).
+TEST(PlatformThreadTest,
+     SetCurrentThreadPriorityWithThreadModeBackgroundIdleProcess) {
+  ::SetPriorityClass(Process::Current().Handle(), IDLE_PRIORITY_CLASS);
+
+  test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kWindowsThreadModeBackground);
+  TestSetCurrentThreadPriority();
+
+  ::SetPriorityClass(Process::Current().Handle(), NORMAL_PRIORITY_CLASS);
+}
 #endif  // defined(OS_WIN)
 
 // Ideally PlatformThread::CanIncreaseThreadPriority() would be true on all

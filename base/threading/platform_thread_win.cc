@@ -158,6 +158,31 @@ const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
                                            FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
+namespace internal {
+
+void AssertMemoryPriority(HANDLE thread, int memory_priority) {
+#if DCHECK_IS_ON()
+  static const auto get_thread_information_fn =
+      reinterpret_cast<decltype(&::GetThreadInformation)>(::GetProcAddress(
+          ::GetModuleHandle(L"Kernel32.dll"), "GetThreadInformation"));
+
+  if (!get_thread_information_fn) {
+    DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
+    return;
+  }
+
+  MEMORY_PRIORITY_INFORMATION memory_priority_information = {};
+  DCHECK(get_thread_information_fn(thread, ::ThreadMemoryPriority,
+                                   &memory_priority_information,
+                                   sizeof(memory_priority_information)));
+
+  DCHECK_EQ(memory_priority,
+            static_cast<int>(memory_priority_information.MemoryPriority));
+#endif
+}
+
+}  // namespace internal
+
 // static
 PlatformThreadId PlatformThread::CurrentId() {
   return ::GetCurrentThreadId();
@@ -290,11 +315,14 @@ void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
            : (FeatureList::GetInstance() &&
               FeatureList::IsEnabled(features::kWindowsThreadModeBackground)));
 
+  PlatformThreadHandle::Handle thread_handle =
+      PlatformThread::CurrentHandle().platform_handle();
+
   if (use_thread_mode_background && priority != ThreadPriority::BACKGROUND) {
     // Exit background mode if the new priority is not BACKGROUND. This is a
     // no-op if not in background mode.
-    ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),
-                        THREAD_MODE_BACKGROUND_END);
+    ::SetThreadPriority(thread_handle, THREAD_MODE_BACKGROUND_END);
+    internal::AssertMemoryPriority(thread_handle, MEMORY_PRIORITY_NORMAL);
   }
 
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
@@ -322,13 +350,24 @@ void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
 #if DCHECK_IS_ON()
   const BOOL success =
 #endif
-      ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),
-                          desired_priority);
+      ::SetThreadPriority(thread_handle, desired_priority);
   DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
                             << desired_priority;
 
-  // Sanity check that GetCurrentThreadPriority() is consistent with
-  // SetCurrentThreadPriority().
+  if (use_thread_mode_background && priority == ThreadPriority::BACKGROUND) {
+    // In a background process, THREAD_MODE_BACKGROUND_BEGIN lowers the memory
+    // and I/O priorities but not the CPU priority (kernel bug?). Use
+    // THREAD_PRIORITY_LOWEST to also lower the CPU priority.
+    // https://crbug.com/901483
+    if (GetCurrentThreadPriority() != ThreadPriority::BACKGROUND) {
+      ::SetThreadPriority(thread_handle, THREAD_PRIORITY_LOWEST);
+      // Make sure that using THREAD_PRIORITY_LOWEST didn't affect the memory
+      // priority set by THREAD_MODE_BACKGROUND_BEGIN. There is no practical
+      // way to verify the I/O priority.
+      internal::AssertMemoryPriority(thread_handle, MEMORY_PRIORITY_VERY_LOW);
+    }
+  }
+
   DCHECK_EQ(GetCurrentThreadPriority(), priority);
 }
 
