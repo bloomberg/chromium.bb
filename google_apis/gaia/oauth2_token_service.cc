@@ -590,12 +590,6 @@ GoogleServiceAuthError OAuth2TokenService::GetAuthError(
   return error;
 }
 
-void OAuth2TokenService::RevokeAllCredentials() {
-  CancelAllRequests();
-  ClearCache();
-  delegate_->RevokeAllCredentials();
-}
-
 void OAuth2TokenService::InvalidateAccessToken(
     const std::string& account_id,
     const ScopeSet& scopes,

@@ -378,25 +378,27 @@ void AboutSigninInternals::OnFetchAccessTokenComplete(
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+void AboutSigninInternals::OnRefreshTokenAvailableFromSource(
+    const std::string& account_id,
+    bool is_refresh_token_valid,
+    const std::string& source) {
   RefreshTokenEvent event;
   event.account_id = account_id;
-  event.type = AboutSigninInternals::RefreshTokenEventType::kUpdateToRegular;
-  GoogleServiceAuthError token_error = token_service_->GetAuthError(account_id);
-  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                             CREDENTIALS_REJECTED_BY_CLIENT)) {
-    event.type = AboutSigninInternals::RefreshTokenEventType::kUpdateToInvalid;
-  }
+  event.type =
+      is_refresh_token_valid
+          ? AboutSigninInternals::RefreshTokenEventType::kUpdateToRegular
+          : AboutSigninInternals::RefreshTokenEventType::kUpdateToInvalid;
+  event.source = source;
   signin_status_.AddRefreshTokenEvent(event);
 }
 
-void AboutSigninInternals::OnRefreshTokenRevoked(
-    const std::string& account_id) {
+void AboutSigninInternals::OnRefreshTokenRevokedFromSource(
+    const std::string& account_id,
+    const std::string& source) {
   RefreshTokenEvent event;
   event.account_id = account_id;
   event.type = AboutSigninInternals::RefreshTokenEventType::kRevokeRegular;
+  event.source = source;
   signin_status_.AddRefreshTokenEvent(event);
 }
 

@@ -145,6 +145,18 @@ class OAuth2TokenService {
     // Called when an access token was removed.
     virtual void OnAccessTokenRemoved(const std::string& account_id,
                                       const ScopeSet& scopes) {}
+
+    // Caled when a new refresh token is available. Contains diagnostic
+    // information about the source of the update credentials operation.
+    virtual void OnRefreshTokenAvailableFromSource(
+        const std::string& account_id,
+        bool is_refresh_token_valid,
+        const std::string& source) {}
+
+    // Called when a refreh token is revoked. Contains diagnostic information
+    // about the source that initiated the revokation operation.
+    virtual void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+                                                 const std::string& source) {}
   };
 
   explicit OAuth2TokenService(
@@ -211,10 +223,6 @@ class OAuth2TokenService {
   // Returns the auth error associated with |account_id|. Only persistent errors
   // will be returned.
   GoogleServiceAuthError GetAuthError(const std::string& account_id) const;
-
-  // This method cancels all token requests, revoke all refresh tokens and
-  // cached access tokens.
-  void RevokeAllCredentials();
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
@@ -330,6 +338,11 @@ class OAuth2TokenService {
                                          const std::string& client_id,
                                          const ScopeSet& scopes,
                                          const std::string& access_token);
+
+  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
+  GetDiagnicsObservers() {
+    return diagnostics_observer_list_;
+  }
 
  private:
   class Fetcher;

@@ -311,6 +311,30 @@ enum class AccountRelation : int {
   HISTOGRAM_COUNT,
 };
 
+// Various sources for refresh token operations (e.g. update or revoke
+// credentials).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SourceForRefreshTokenOperation {
+  kUnknown,
+  kTokenService_LoadCredentials,
+  kSupervisedUser_InitSync,
+  kInlineLoginHandler_Signin,
+  kSigninManager_ClearPrimaryAccount,
+  kSigninManager_LegacyPreDiceSigninFlow,
+  kUserMenu_RemoveAccount,
+  kUserMenu_SignOutAllAccounts,
+  kSettings_Signout,
+  kSettings_PauseSync,
+  kAccountReconcilor_GaiaCookiesDeletedByUser,
+  kAccountReconcilor_GaiaCookiesUpdated,
+  kAccountReconcilor_Reconcile,
+  kDiceResponseHandler_Signin,
+  kDiceResponseHandler_Signout,
+  kDiceTurnOnSyncHelper_Abort,
+  kMaxValue = kDiceTurnOnSyncHelper_Abort
+};
+
 // Different types of reporting. This is used as a histogram suffix.
 enum class ReportingType { PERIODIC, ON_CHANGE };
 
@@ -412,6 +436,13 @@ void LogAccountRelation(const AccountRelation relation,
 // Records if the best guess is that this profile is currently shared or not
 // between multiple users.
 void LogIsShared(const bool is_shared, const ReportingType type);
+
+// Records the source that updated a refresh token.
+void RecordRefreshTokenUpdatedFromSource(bool refresh_token_is_valid,
+                                         SourceForRefreshTokenOperation source);
+
+// Records the source that revoked a refresh token.
+void RecordRefreshTokenRevokedFromSource(SourceForRefreshTokenOperation source);
 
 // -----------------------------------------------------------------------------
 // User actions

@@ -394,14 +394,18 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
         // Put the account in error state.
         token_service_->UpdateCredentials(
             primary_account,
-            MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+            MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+            signin_metrics::SourceForRefreshTokenOperation::
+                kDiceResponseHandler_Signout);
       } else {
         // If Dice migration is not complete, the token for the main account
         // must not be deleted when signing out of the web.
         continue;
       }
     } else {
-      token_service_->RevokeCredentials(signed_out_account);
+      token_service_->RevokeCredentials(
+          signed_out_account, signin_metrics::SourceForRefreshTokenOperation::
+                                  kDiceResponseHandler_Signout);
     }
 
     // If a token fetch is in flight for the same account, cancel it.
@@ -448,7 +452,10 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   account_tracker_service_->SetIsAdvancedProtectionAccount(
       account_id, is_under_advanced_protection);
-  token_service_->UpdateCredentials(account_id, refresh_token);
+  token_service_->UpdateCredentials(
+      account_id, refresh_token,
+      signin_metrics::SourceForRefreshTokenOperation::
+          kDiceResponseHandler_Signin);
   about_signin_internals_->OnRefreshTokenReceived(
       base::StringPrintf("Successful (%s)", account_id.c_str()));
   if (should_enable_sync)

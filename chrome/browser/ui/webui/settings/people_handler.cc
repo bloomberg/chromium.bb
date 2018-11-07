@@ -798,7 +798,9 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
       DCHECK(!delete_profile)
           << "Deleting the profile should only be offered the user is syncing.";
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-          ->RevokeAllCredentials();
+          ->RevokeAllCredentials(
+              signin_metrics::SourceForRefreshTokenOperation::
+                  kSettings_Signout);
     }
   }
 
@@ -814,7 +816,8 @@ void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
   DCHECK(signin_manager->IsAuthenticated());
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->UpdateCredentials(
       signin_manager->GetAuthenticatedAccountId(),
-      OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      OAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      signin_metrics::SourceForRefreshTokenOperation::kSettings_PauseSync);
 }
 #endif
 

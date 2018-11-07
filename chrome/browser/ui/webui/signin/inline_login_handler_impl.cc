@@ -260,8 +260,10 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
       reason == signin_metrics::Reason::REASON_UNLOCK ||
       reason == signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-        UpdateCredentials(account_id, result.refresh_token);
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
+        ->UpdateCredentials(account_id, result.refresh_token,
+                            signin_metrics::SourceForRefreshTokenOperation::
+                                kInlineLoginHandler_Signin);
 
     if (signin::IsAutoCloseEnabledInURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the

@@ -223,7 +223,11 @@ void IdentityManager::SetPrimaryAccountSynchronously(
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
 
   if (!refresh_token.empty()) {
-    token_service_->UpdateCredentials(GetPrimaryAccountId(), refresh_token);
+    // Note: Source for the operation is |Unknown| as the method
+    // |SetPrimaryAccountSynchronously| is only used for testing.
+    token_service_->UpdateCredentials(
+        GetPrimaryAccountId(), refresh_token,
+        signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   }
 }
 
