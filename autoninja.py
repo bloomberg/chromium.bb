@@ -67,9 +67,16 @@ except IOError:
 # be called back.
 ninja_exe = 'ninja.exe' if sys.platform.startswith('win') else 'ninja'
 
+ninja_exe_path = os.path.join(SCRIPT_DIR, ninja_exe)
+
+# On Windows, fully quote the path so that the command processor doesn't think
+# the whole output is the command.
+if sys.platform.startswith('win'):
+  ninja_exe_path = '"' + ninja_exe_path + '"'
+
 # Use absolute path for ninja path,
 # or fail to execute ninja if depot_tools is not in PATH.
-args = [os.path.join(SCRIPT_DIR, ninja_exe)] + input_args[1:]
+args = [ninja_exe_path] + input_args[1:]
 
 num_cores = multiprocessing.cpu_count()
 if not j_specified and not t_specified:
