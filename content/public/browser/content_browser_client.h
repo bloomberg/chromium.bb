@@ -1380,13 +1380,14 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Asks the embedder for the PreviewsState which says which previews should
   // be enabled for the given navigation. The PreviewsState is a bitmask of
-  // potentially several Previews optimizations. It is only called for requests
-  // with an unspecified Previews state.  If previews_to_allow is set to
-  // anything other than PREVIEWS_UNSPECIFIED, it is taken as a limit on
-  // available preview states.
+  // potentially several Previews optimizations. |initial_state| is used to
+  // keep sub-frame navigation state consistent with main frame state.
+  // |current_navigation_url| is the URL that is currently being navigated to,
+  // and can differ from GetURL() in |navigation_handle| on redirects.
   virtual content::PreviewsState DetermineAllowedPreviews(
       content::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle);
+      content::NavigationHandle* navigation_handle,
+      const GURL& current_navigation_url);
 
   // Asks the embedder for the preview state that should be committed to the
   // renderer. |initial_state| was pre-determined by |DetermineAllowedPreviews|.

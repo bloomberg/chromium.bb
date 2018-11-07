@@ -4980,23 +4980,9 @@ void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
 
 content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const GURL& current_navigation_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // TODO(ryansturm): Support re-evaluation of PreviewsState for redirects.
-  // https://crbug.com/892253.
-  content::WebContents* web_contents = navigation_handle->GetWebContents();
-  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
-
-  if (delegate) {
-    delegate->AdjustPreviewsStateForNavigation(web_contents, &initial_state);
-  }
-
-  // If the embedder does not want previews, do not provide any.
-  if (initial_state & content::PREVIEWS_OFF ||
-      initial_state & content::PREVIEWS_NO_TRANSFORM) {
-    return initial_state;
-  }
 
   // If this is not a main frame, return the initial state. If there are no
   // previews in the state, return the state as is.
@@ -5004,6 +4990,13 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
       navigation_handle->IsSameDocument()) {
     return initial_state;
   }
+
+  if (!current_navigation_url.SchemeIsHTTPOrHTTPS()) {
+    return content::PREVIEWS_OFF;
+  }
+
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
 
   auto* browser_context = web_contents->GetBrowserContext();
 
@@ -5034,58 +5027,91 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
       previews_service->previews_ui_service()->previews_decider_impl();
   DCHECK(previews_decider_impl);
 
-  previews::PreviewsUserData* previews_data =
-      ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
-          navigation_handle, previews_decider_impl->GeneratePageId());
-  DCHECK(previews_data);
-
-  // Start with a completely empty state, |initial_state| will be considered at
-  // the end of the method.
+  // Start with an unspecified state.
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->GetPreviewsUserData(navigation_handle);
+
+  // Certain PreviewsStates are used within URLLoaders (Offline, server
+  // previews) and cannot re-evaluate PreviewsState during a redirect, so they
+  // should not change. Assume this is a redirect when PreviewsUserData already
+  // exists.
+  bool is_redirect = false;
+  if (previews_data) {
+    is_redirect = true;
+  } else {
+    previews_data = ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+        navigation_handle, previews_decider_impl->GeneratePageId());
+  }
+
+  DCHECK(previews_data);
 
   bool is_reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
-  // For now, treat server previews types as a single decision.
-  if (navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
-      previews_decider_impl->ShouldAllowPreviewAtECT(
-          previews_data, navigation_handle->GetURL(), is_reload,
-          previews::PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_4G,
-          std::vector<std::string>(), true) &&
-      previews_decider_impl->ShouldAllowPreviewAtECT(
-          previews_data, navigation_handle->GetURL(), is_reload,
-          previews::PreviewsType::LOFI, net::EFFECTIVE_CONNECTION_TYPE_4G,
-          std::vector<std::string>(), true)) {
-    previews_state |= content::SERVER_LOFI_ON;
-    previews_state |= content::SERVER_LITE_PAGE_ON;
+  content::PreviewsState server_previews_enabled_state =
+      content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON;
+
+  // For now, treat server previews types as a single decision, and do not
+  // re-evaluate upon redirect. Plumbing does not exist to modify the CPAT
+  // header, nor does the plumbing exist to modify the PreviewsState within the
+  // URLLoader.
+  if (is_redirect) {
+    // Copy the server state that was used before the redirect for the initial
+    // URL.
+    previews_state |= (previews_data->allowed_previews_state() &
+                       server_previews_enabled_state);
+  } else {
+    if (previews_decider_impl->ShouldAllowPreviewAtECT(
+            previews_data, current_navigation_url, is_reload,
+            previews::PreviewsType::LITE_PAGE,
+            net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
+            true) &&
+        previews_decider_impl->ShouldAllowPreviewAtECT(
+            previews_data, current_navigation_url, is_reload,
+            previews::PreviewsType::LOFI, net::EFFECTIVE_CONNECTION_TYPE_4G,
+            std::vector<std::string>(), true)) {
+      previews_state |= server_previews_enabled_state;
+    }
   }
 
   // Evaluate client LoFi, Offline, NoScript, and ResourceBlocking previews.
   previews_state |= previews::DetermineAllowedClientPreviewsState(
-      previews_data, navigation_handle->GetURL(), is_reload,
+      previews_data, current_navigation_url, is_reload, is_redirect,
       data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
       previews_decider_impl);
 
   if (previews_state & content::PREVIEWS_OFF) {
+    previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);
     return content::PREVIEWS_OFF;
   }
 
   if (previews_state & content::PREVIEWS_NO_TRANSFORM) {
+    previews_data->set_allowed_previews_state(content::PREVIEWS_NO_TRANSFORM);
     return content::PREVIEWS_NO_TRANSFORM;
   }
 
   // At this point, if no Preview is allowed, don't allow previews.
-  if (previews_state == content::PREVIEWS_UNSPECIFIED)
+  if (previews_state == content::PREVIEWS_UNSPECIFIED) {
+    previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);
     return content::PREVIEWS_OFF;
+  }
+
+  content::PreviewsState embedder_state = content::PREVIEWS_UNSPECIFIED;
+  if (delegate) {
+    delegate->AdjustPreviewsStateForNavigation(web_contents, &embedder_state);
+  }
 
   // If the allowed previews are limited by the embedder, ensure previews honors
   // those limits.
-  if (initial_state != content::PREVIEWS_UNSPECIFIED) {
-    previews_state = previews_state & initial_state;
+  if (embedder_state != content::PREVIEWS_UNSPECIFIED) {
+    previews_state = previews_state & embedder_state;
     // If no valid previews are left, set the state explicitly to PREVIEWS_OFF.
     if (previews_state == content::PREVIEWS_UNSPECIFIED)
       previews_state = content::PREVIEWS_OFF;
   }
+  previews_data->set_allowed_previews_state(previews_state);
   return previews_state;
 }
 

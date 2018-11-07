@@ -602,7 +602,8 @@ void NavigationRequest::BeginNavigation() {
     // Update PreviewsState if we are going to use the NetworkStack.
     common_params_.previews_state =
         GetContentClient()->browser()->DetermineAllowedPreviews(
-            common_params_.previews_state, navigation_handle_.get());
+            common_params_.previews_state, navigation_handle_.get(),
+            common_params_.url);
 
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
@@ -874,6 +875,14 @@ void NavigationRequest::OnRequestRedirected(
     RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
         site_instance->GetBrowserContext());
   }
+
+  // Re-evaluate the PreviewsState, but do not update the URLLoader. The
+  // URLLoader PreviewsState is considered immutable after the URLLoader is
+  // created.
+  common_params_.previews_state =
+      GetContentClient()->browser()->DetermineAllowedPreviews(
+          common_params_.previews_state, navigation_handle_.get(),
+          common_params_.url);
 
   // Check what the process of the SiteInstance is. It will be passed to the
   // NavigationHandle, and informed to expect a navigation to the redirected

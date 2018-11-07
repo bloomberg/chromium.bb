@@ -545,12 +545,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
-// Disabled on all OS types until hints are made to work with redirects.
-// TODO(jegray): https://crbug.com/891752. Re-enable when support for redirects
-// is added.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLED_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps) {
+    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
@@ -570,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(
       1);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   histogram_tester.ExpectTotalCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 1);
   // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
