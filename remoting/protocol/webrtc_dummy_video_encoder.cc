@@ -115,15 +115,6 @@ int32_t WebrtcDummyVideoEncoder::Encode(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebrtcDummyVideoEncoder::SetChannelParameters(uint32_t packet_loss,
-                                                      int64_t rtt) {
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnChannelParameters,
-                            video_channel_state_observer_, packet_loss,
-                            base::TimeDelta::FromMilliseconds(rtt)));
-  return WEBRTC_VIDEO_CODEC_OK;
-}
-
 int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
                                           uint32_t framerate) {
   main_task_runner_->PostTask(
