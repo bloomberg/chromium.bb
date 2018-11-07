@@ -392,9 +392,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DestroyCompositorForShutdown() override;
-  bool OnBrowserCompositorSurfaceIdChanged(
-      const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation)
-      override;
+  bool OnBrowserCompositorSurfaceIdChanged() override;
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
 
   // AcceleratedWidgetMacNSView implementation.
