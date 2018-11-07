@@ -115,8 +115,6 @@ void InputConnectionImpl::CommitText(const base::string16& text,
 }
 
 void InputConnectionImpl::DeleteSurroundingText(int before, int after) {
-  StartStateUpdateTimer();
-
   if (before == 0 && after == 0) {
     // This should be no-op.
     // Return the current state immediately.
@@ -175,8 +173,6 @@ void InputConnectionImpl::SetComposingText(
   // It's relative to the last character of the composing text,
   // so 0 means the cursor should be just before the last character of the text.
   new_cursor_pos += text.length() - 1;
-
-  StartStateUpdateTimer();
 
   const int selection_start = new_selection_range
                                   ? new_selection_range.value().start()
