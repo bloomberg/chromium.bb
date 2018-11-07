@@ -18,14 +18,14 @@
 namespace blink {
 
 Event* Event{{suffix}}Factory::Create(ExecutionContext* executionContext, const String& type) {
-  {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
-  {% if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
-  if (DeprecatedEqualIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
+  {% for event in events if event|name|create_event_whitelist or event|name|create_event_measure_whitelist %}
+  {% if event|name|create_event_whitelist or event|name|create_event_measure_whitelist %}
+  if (DeprecatedEqualIgnoringCase(type, "{{event|name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
   {% else %}
-  if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
+  if (type == "{{event|name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
   {% endif %}
-    {% if not event|script_name|create_event_whitelist %}
-    UseCounter::Count(executionContext, WebFeature::k{{event|script_name|measure_name}});
+    {% if not event|name|create_event_whitelist %}
+    UseCounter::Count(executionContext, WebFeature::k{{event|name|measure_name}});
     {% endif %}
     return {{event|cpp_name}}::Create();
   }

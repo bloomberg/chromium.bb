@@ -30,7 +30,6 @@
 import os
 import sys
 
-from blinkbuild.name_style_converter import NameStyleConverter
 import hasher
 import json5_generator
 import template_expander
@@ -40,16 +39,15 @@ import name_utilities
 def _symbol(entry):
     if entry['Symbol'] is not None:
         return entry['Symbol']
-    # TODO(tkent): Separate path information and interface name in
-    # event_interface_names.json5.
-    name = os.path.basename(entry['name'].original)
-    return 'k' + NameStyleConverter(name).to_upper_camel_case()
+    return 'k' + entry['name'].to_upper_camel_case()
 
 
 class MakeNamesWriter(json5_generator.Writer):
     default_parameters = {
         'Conditional': {},  # FIXME: Add support for Conditional.
         'ImplementedAs': {},
+        # This is not used in make_names,py, but used in make_event_factory.py.
+        'interfaceHeaderDir': {},
         'RuntimeEnabled': {},  # What should we do for runtime-enabled features?
         'Symbol': {},
     }
