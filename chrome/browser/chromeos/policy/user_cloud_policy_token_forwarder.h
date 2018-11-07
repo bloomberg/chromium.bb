@@ -10,11 +10,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
-class AccessTokenFetcher;
+class PrimaryAccountAccessTokenFetcher;
 }
 
 namespace policy {
@@ -28,7 +27,6 @@ class UserCloudPolicyManagerChromeOS;
 // much earlier.
 class UserCloudPolicyTokenForwarder
     : public KeyedService,
-      public identity::IdentityManager::Observer,
       public CloudPolicyService::Observer {
  public:
   // The factory of this PKS depends on the factories of these two arguments,
@@ -41,23 +39,18 @@ class UserCloudPolicyTokenForwarder
   // KeyedService:
   void Shutdown() override;
 
-  // IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
-
   // CloudPolicyService::Observer:
   void OnInitializationCompleted(CloudPolicyService* service) override;
 
  private:
   void Initialize();
-
-  void RequestAccessToken();
   void OnAccessTokenFetchCompleted(GoogleServiceAuthError error,
                                    identity::AccessTokenInfo token_info);
 
   UserCloudPolicyManagerChromeOS* manager_;
   identity::IdentityManager* identity_manager_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarder);
 };
