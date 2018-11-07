@@ -4008,4 +4008,124 @@ TEST_F(ProxyResolutionServiceTest, PacUrlSchemeHistogram) {
   pac_histogram.VerifyHistogram();
 }
 
+const char* kImplicityBypassedHosts[] = {
+    "localhost",
+    "localhost.",
+    "foo.localhost",
+    "localhost6",
+    "localhost6.localdomain6",
+    "127.0.0.1",
+    "127.100.0.2",
+    "[::1]",
+    "169.254.3.2",
+    "169.254.100.1",
+    "[FE80::8]",
+    "[feb8::1]",
+};
+
+const char* kUrlSchemes[] = {"http://", "https://", "ftp://"};
+
+TEST_F(ProxyResolutionServiceTest, ImplicitlyBypassWithManualSettings) {
+  // Use manual proxy settings that specify a single proxy for all traffic.
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString("foopy1:8080");
+  config.set_auto_detect(false);
+
+  auto service = ProxyResolutionService::CreateFixed(
+      ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // A normal request should use the proxy.
+  std::unique_ptr<ProxyResolutionService::Request> request1;
+  ProxyInfo info1;
+  TestCompletionCallback callback1;
+  int rv = service->ResolveProxy(GURL("http://www.example.com"), std::string(),
+                                 &info1, callback1.callback(), &request1,
+                                 NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("foopy1:8080", info1.proxy_server().ToURI());
+
+  // Test that localhost and link-local URLs bypass the proxy (independent of
+  // the URL scheme).
+  for (auto* host : kImplicityBypassedHosts) {
+    for (auto* scheme : kUrlSchemes) {
+      auto url = GURL(std::string(scheme) + std::string(host));
+
+      std::unique_ptr<ProxyResolutionService::Request> request;
+      ProxyInfo info;
+      TestCompletionCallback callback;
+      int rv =
+          service->ResolveProxy(url, std::string(), &info, callback.callback(),
+                                &request, NetLogWithSource());
+      EXPECT_THAT(rv, IsOk());
+      EXPECT_TRUE(info.is_direct());
+    }
+  }
+}
+
+// Test that the when using a PAC script (sourced via auto-detect) certain
+// localhost names are implicitly bypassed.
+TEST_F(ProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
+  ProxyConfig config;
+  config.set_auto_detect(true);
+
+  MockProxyConfigService* config_service = new MockProxyConfigService(config);
+  MockAsyncProxyResolver resolver;
+  MockAsyncProxyResolverFactory* factory =
+      new MockAsyncProxyResolverFactory(true);
+  ProxyResolutionService service(base::WrapUnique(config_service),
+                                 base::WrapUnique(factory), nullptr);
+
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
+
+  // Start 1 requests.
+
+  ProxyInfo info1;
+  TestCompletionCallback callback1;
+  std::unique_ptr<ProxyResolutionService::Request> request1;
+  int rv =
+      service.ResolveProxy(GURL("http://www.google.com"), std::string(), &info1,
+                           callback1.callback(), &request1, NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // This started auto-detect; complete it.
+  ASSERT_EQ(0u, factory->pending_requests().size());
+  EXPECT_TRUE(fetcher->has_pending_request());
+  EXPECT_EQ(GURL("http://wpad/wpad.dat"), fetcher->pending_request_url());
+  fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
+
+  EXPECT_EQ(ASCIIToUTF16(kValidPacScript1),
+            factory->pending_requests()[0]->script_data()->utf16());
+  factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
+
+  ASSERT_EQ(1u, resolver.pending_jobs().size());
+  EXPECT_EQ(GURL("http://www.google.com"), resolver.pending_jobs()[0]->url());
+
+  // Complete the pending request.
+  resolver.pending_jobs()[0]->results()->UseNamedProxy("request1:80");
+  resolver.pending_jobs()[0]->CompleteNow(OK);
+
+  // Verify that request ran as expected.
+  EXPECT_THAT(callback1.WaitForResult(), IsOk());
+  EXPECT_EQ("request1:80", info1.proxy_server().ToURI());
+
+  // Test that localhost and link-local URLs bypass the use of PAC script
+  // (independent of the URL scheme).
+  for (auto* host : kImplicityBypassedHosts) {
+    for (auto* scheme : kUrlSchemes) {
+      auto url = GURL(std::string(scheme) + std::string(host));
+
+      std::unique_ptr<ProxyResolutionService::Request> request;
+      ProxyInfo info;
+      TestCompletionCallback callback;
+      int rv =
+          service.ResolveProxy(url, std::string(), &info, callback.callback(),
+                               &request, NetLogWithSource());
+      EXPECT_THAT(rv, IsOk());
+      EXPECT_TRUE(info.is_direct());
+    }
+  }
+}
+
 }  // namespace net

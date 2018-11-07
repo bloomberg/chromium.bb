@@ -53,10 +53,7 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
     return;
   }
 
-  bool bypass_proxy = bypass_rules.Matches(url);
-  if (reverse_bypass)
-    bypass_proxy = !bypass_proxy;
-  if (bypass_proxy) {
+  if (bypass_rules.Matches(url, reverse_bypass)) {
     result->UseDirectWithBypassedProxy();
     return;
   }
@@ -199,8 +196,6 @@ ProxyConfig::~ProxyConfig() = default;
 ProxyConfig& ProxyConfig::operator=(const ProxyConfig& config) = default;
 
 bool ProxyConfig::Equals(const ProxyConfig& other) const {
-  // The two configs can have different IDs and sources.  We are just interested
-  // in if they have the same settings.
   return auto_detect_ == other.auto_detect_ &&
          pac_url_ == other.pac_url_ &&
          pac_mandatory_ == other.pac_mandatory_ &&

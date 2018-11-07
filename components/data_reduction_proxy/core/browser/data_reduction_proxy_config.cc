@@ -230,19 +230,13 @@ void DataReductionProxyConfig::InitializeOnIOThread(
                           base::Unretained(this)),
       ui_task_runner_));
 
-  if (ShouldAddDefaultProxyBypassRules())
-    AddDefaultProxyBypassRules();
+  AddDefaultProxyBypassRules();
 
   network_connection_tracker_->AddNetworkConnectionObserver(this);
   network_connection_tracker_->GetConnectionType(
       &connection_type_,
       base::BindOnce(&DataReductionProxyConfig::OnConnectionChanged,
                      weak_factory_.GetWeakPtr()));
-}
-
-bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
 }
 
 void DataReductionProxyConfig::OnNewClientConfigFetched() {

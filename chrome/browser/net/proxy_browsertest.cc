@@ -119,6 +119,12 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
+
+    // TODO(https://crbug.com/901896): Don't rely on proxying localhost (Relied
+    // on by BasicAuthWSConnect)
+    command_line->AppendSwitchASCII(
+        switches::kProxyBypassList,
+        net::ProxyBypassRules::GetRulesToSubtractImplicit());
   }
 
  protected:

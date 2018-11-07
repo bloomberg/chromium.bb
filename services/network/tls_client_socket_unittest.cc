@@ -893,8 +893,8 @@ class TLSCLientSocketProxyTest : public ::testing::Test,
 
 TEST_F(TLSCLientSocketProxyTest, UpgradeToTLS) {
   const char kConnectRequest[] =
-      "CONNECT 127.0.0.1:1234 HTTP/1.1\r\n"
-      "Host: 127.0.0.1:1234\r\n"
+      "CONNECT 192.168.1.1:1234 HTTP/1.1\r\n"
+      "Host: 192.168.1.1:1234\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n";
   const char kConnectResponse[] = "HTTP/1.1 200 OK\r\n\r\n";
 
@@ -912,7 +912,7 @@ TEST_F(TLSCLientSocketProxyTest, UpgradeToTLS) {
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
   SocketHandle client_socket;
-  net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
+  net::IPEndPoint server_addr(net::IPAddress(192, 168, 1, 1), 1234);
   EXPECT_EQ(net::OK,
             CreateSocketSync(MakeRequest(&client_socket), server_addr));
 

@@ -13967,18 +13967,18 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("https://[::1]:443/");
+  request.url = GURL("https://[::2]:443/");
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite("CONNECT [::1]:443 HTTP/1.1\r\n"
-                "Host: [::1]:443\r\n"
+      MockWrite("CONNECT [::2]:443 HTTP/1.1\r\n"
+                "Host: [::2]:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
 
       MockWrite("GET / HTTP/1.1\r\n"
-                "Host: [::1]\r\n"
+                "Host: [::2]\r\n"
                 "Connection: keep-alive\r\n\r\n"),
   };
 
