@@ -23,6 +23,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/profiling.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
@@ -46,6 +47,10 @@
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #include "headless/lib/renderer/headless_content_renderer_client.h"
+#endif
+
+#if defined(OS_POSIX)
+#include <signal.h>
 #endif
 
 namespace headless {
@@ -122,6 +127,8 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   // initialize GPU compositing. We disable GPU compositing here explicitly to
   // preempt this attempt.
   command_line->AppendSwitch(::switches::kDisableGpuCompositing);
+
+  content::Profiling::ProcessStarted();
 
   SetContentClient(&content_client_);
   return false;
@@ -291,7 +298,29 @@ int HeadlessContentMainDelegate::RunProcess(
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_LINUX)
+void SIGTERMProfilingShutdown(int signal) {
+  content::Profiling::Stop();
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
+  raise(signal);
+}
+
+void SetUpProfilingShutdownHandler() {
+  struct sigaction sigact;
+  sigact.sa_handler = SIGTERMProfilingShutdown;
+  sigact.sa_flags = SA_RESETHAND;
+  sigemptyset(&sigact.sa_mask);
+  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
+}
+
 void HeadlessContentMainDelegate::ZygoteForked() {
+  content::Profiling::ProcessStarted();
+  if (content::Profiling::BeingProfiled()) {
+    base::debug::RestartProfilingAfterFork();
+    SetUpProfilingShutdownHandler();
+  }
   const base::CommandLine& command_line(
       *base::CommandLine::ForCurrentProcess());
   const std::string process_type =

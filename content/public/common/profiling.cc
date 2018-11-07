@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling.h"
+#include "content/public/common/profiling.h"
 
 #include "base/at_exit.h"
 #include "base/base_switches.h"
@@ -16,8 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
+
+namespace content {
 
 namespace {
 
@@ -33,8 +34,8 @@ std::string GetProfileName() {
       profile_name = std::string("chrome-profile-{type}-{pid}");
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
-    std::string type = process_type.empty() ?
-        std::string("browser") : std::string(process_type);
+    std::string type = process_type.empty() ? std::string("browser")
+                                            : std::string(process_type);
     base::ReplaceSubstringsAfterOffset(&profile_name, 0, "{type}", type);
 
     return profile_name;
@@ -100,10 +101,10 @@ class ProfilingThreadControl {
   DISALLOW_COPY_AND_ASSIGN(ProfilingThreadControl);
 };
 
-base::LazyInstance<ProfilingThreadControl>::Leaky
-    g_flush_thread_control = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ProfilingThreadControl>::Leaky g_flush_thread_control =
+    LAZY_INSTANCE_INITIALIZER;
 
-} // namespace
+}  // namespace
 
 // static
 void Profiling::ProcessStarted() {
@@ -151,3 +152,5 @@ void Profiling::Toggle() {
   else
     Start();
 }
+
+}  // namespace content

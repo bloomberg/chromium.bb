@@ -81,6 +81,11 @@ const char kTraceToFile[]                   = "trace-to-file";
 // go to a default file name.
 const char kTraceToFileName[]               = "trace-to-file-name";
 
+// Starts the sampling based profiler for the browser process at startup. This
+// will only work if chrome has been built with the gn arg enable_profiling =
+// true. The output will go to the value of kProfilingFile.
+const char kProfilingAtStart[] = "profiling-at-start";
+
 // Specifies a location for profiling output. This will only work if chrome has
 // been built with the gyp variable profiling=1 or gn arg enable_profiling=true.
 //
@@ -90,6 +95,12 @@ const char kTraceToFileName[]               = "trace-to-file-name";
 // The default is chrome-profile-{pid} for the browser and test-profile-{pid}
 // for tests.
 const char kProfilingFile[] = "profiling-file";
+
+// Controls whether profile data is periodically flushed to a file. Normally
+// the data gets written on exit but cases exist where chromium doesn't exit
+// cleanly (especially when using single-process). A time in seconds can be
+// specified.
+const char kProfilingFlush[] = "profiling-flush";
 
 #if defined(OS_WIN)
 // Disables the USB keyboard detection for blocking the OSK on Win8+.

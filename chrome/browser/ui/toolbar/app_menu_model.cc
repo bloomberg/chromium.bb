@@ -45,7 +45,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/profiling.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -63,6 +62,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/profiling.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
@@ -629,7 +629,7 @@ bool AppMenuModel::IsCommandIdChecked(int command_id) const {
         bookmarks::prefs::kShowBookmarkBar);
   }
   if (command_id == IDC_PROFILING_ENABLED)
-    return Profiling::BeingProfiled();
+    return content::Profiling::BeingProfiled();
   if (command_id == IDC_TOGGLE_REQUEST_TABLET_SITE)
     return chrome::IsRequestingTabletSite(browser_);
 
