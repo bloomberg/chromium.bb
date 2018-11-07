@@ -41,8 +41,6 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp();
 
-    RuntimeEnabledFeatures::SetCSSEnvironmentVariablesEnabled(true);
-
     // Needed for RecordUseCounter_IgnoreMediaControls.
     RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
   }
