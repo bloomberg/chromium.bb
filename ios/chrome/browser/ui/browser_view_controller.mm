@@ -4924,13 +4924,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   };
 
-  self.inNewTabAnimation = YES;
-  if (!background) {
+  if (background) {
+    self.inNewTabAnimation = NO;
+  } else {
+    self.inNewTabAnimation = YES;
     [self animateNewTab:tab
         inForegroundWithCompletion:startVoiceSearchIfNecessary];
-  } else {
-    [self animateNewTab:tab
-        inBackgroundWithCompletion:startVoiceSearchIfNecessary];
   }
 }
 
@@ -5110,11 +5109,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.view addSubview:animatedView];
   [animatedView animateFrom:originPoint
       toTabGridButtonWithCompletion:completionBlock];
-}
-
-- (void)animateNewTab:(Tab*)tab
-    inBackgroundWithCompletion:(ProceduralBlock)completion {
-  self.inNewTabAnimation = NO;
 }
 
 #pragma mark - InfobarPositioner
