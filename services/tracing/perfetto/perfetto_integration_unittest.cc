@@ -33,7 +33,6 @@ class PerfettoIntegrationTest : public testing::Test {
   void TearDown() override { perfetto_service_.reset(); }
 
   PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
-
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
