@@ -46,7 +46,6 @@ class WebContents;
 namespace resource_coordinator {
 
 class BackgroundTabNavigationThrottle;
-class PageSignalReceiver;
 
 #if defined(OS_CHROMEOS)
 class TabManagerDelegate;
@@ -91,9 +90,7 @@ class TabManager : public LifecycleUnitObserver,
 
   class WebContentsData;
 
-  // |page_signal_receiver| might be null.
-  TabManager(PageSignalReceiver* page_signal_receiver,
-             TabLoadTracker* tab_load_tracker);
+  TabManager();
   ~TabManager() override;
 
   // Start/Stop the Tab Manager.
@@ -550,9 +547,6 @@ class TabManager : public LifecycleUnitObserver,
 
   // A clock that advances when Chrome is in use.
   UsageClock usage_clock_;
-
-  // The tab load tracker observed by this instance.
-  TabLoadTracker* const tab_load_tracker_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

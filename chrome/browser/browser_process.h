@@ -113,7 +113,6 @@ class RapporServiceImpl;
 }
 
 namespace resource_coordinator {
-class ResourceCoordinatorParts;
 class TabManager;
 }
 
@@ -280,12 +279,7 @@ class BrowserProcess {
   virtual gcm::GCMDriver* gcm_driver() = 0;
 
   // Returns the tab manager. On non-supported platforms, this returns null.
-  // TODO(sebmarchand): Update callers to
-  // resource_coordinator_parts()->tab_manager() and remove this.
   virtual resource_coordinator::TabManager* GetTabManager() = 0;
-
-  virtual resource_coordinator::ResourceCoordinatorParts*
-  resource_coordinator_parts() = 0;
 
   // Returns the default web client state of Chrome (i.e., was it the user's
   // default browser) at the time a previous check was made sometime between

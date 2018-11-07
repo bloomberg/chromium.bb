@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -37,7 +36,8 @@ IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest, ReloadBloatedTab) {
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());
 
-  auto* page_signal_receiver = resource_coordinator::GetPageSignalReceiver();
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
   resource_coordinator::PageNavigationIdentity page_id;
   page_id.navigation_id =
       page_signal_receiver->GetNavigationIDForWebContents(web_contents);

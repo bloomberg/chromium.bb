@@ -40,12 +40,12 @@ class TabLifecycleUnitSource : public BrowserListObserver,
  public:
   class TabLifecycleUnit;
 
-  // |page_signal_receiver| might be null.
-  TabLifecycleUnitSource(
+  explicit TabLifecycleUnitSource(
       InterventionPolicyDatabase* intervention_policy_database,
-      UsageClock* usage_clock,
-      PageSignalReceiver* page_signal_receiver);
+      UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
+
+  static TabLifecycleUnitSource* GetInstance();
 
   // Returns the TabLifecycleUnitExternal instance associated with
   // |web_contents|, or nullptr if |web_contents| isn't a tab.

@@ -283,9 +283,6 @@ void ExtensionServiceTestBase::ValidateStringPref(
 
 void ExtensionServiceTestBase::SetUp() {
   LoadErrorReporter::GetInstance()->ClearErrors();
-
-  // Force TabManager/TabLifecycleUnitSource creation.
-  g_browser_process->resource_coordinator_parts();
 }
 
 void ExtensionServiceTestBase::TearDown() {

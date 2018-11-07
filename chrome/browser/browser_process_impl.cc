@@ -71,7 +71,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -345,6 +345,11 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->RemoveObserver(this);
+
+  // TabLifecycleUnitSource must be deleted before TabManager because it has a
+  // raw pointer to a UsageClock owned by TabManager.
+  tab_lifecycle_unit_source_.reset();
+  tab_manager_.reset();
 #endif
 
   g_browser_process = NULL;
@@ -892,17 +897,19 @@ gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
 
 resource_coordinator::TabManager* BrowserProcessImpl::GetTabManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return resource_coordinator_parts()->tab_manager();
-}
-
-resource_coordinator::ResourceCoordinatorParts*
-BrowserProcessImpl::resource_coordinator_parts() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!resource_coordinator_parts_) {
-    resource_coordinator_parts_ =
-        std::make_unique<resource_coordinator::ResourceCoordinatorParts>();
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  if (!tab_manager_) {
+    tab_manager_ = std::make_unique<resource_coordinator::TabManager>();
+    tab_lifecycle_unit_source_ =
+        std::make_unique<resource_coordinator::TabLifecycleUnitSource>(
+            tab_manager_->intervention_policy_database(),
+            tab_manager_->usage_clock());
+    tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
   }
-  return resource_coordinator_parts_.get();
+  return tab_manager_.get();
+#endif  // defined(OS_ANDROID)
 }
 
 shell_integration::DefaultWebClientState

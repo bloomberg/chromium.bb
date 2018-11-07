@@ -36,7 +36,6 @@
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
-#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
@@ -238,7 +237,7 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
   TabLifecycleUnitSource::TabLifecycleUnit* GetTabLifecycleUnit(
       content::WebContents* content) {
-    return GetTabLifecycleUnitSource()->GetTabLifecycleUnit(content);
+    return TabLifecycleUnitSource::GetInstance()->GetTabLifecycleUnit(content);
   }
 
   bool IsTabFrozen(content::WebContents* content) {
@@ -757,14 +756,14 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
 }
 
 TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
-  TabManager tab_manager1(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager1;
   MaybeThrottleNavigations(&tab_manager1, 1);
   EXPECT_FALSE(tab_manager1.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager2(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager2;
   tab_manager2.SetLoadingSlotsForTest(2);
   MaybeThrottleNavigations(&tab_manager2, 2);
   EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle1_.get()));
@@ -772,7 +771,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_TRUE(tab_manager2.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager3(GetPageSignalReceiver(), TabLoadTracker::Get());
+  TabManager tab_manager3;
   tab_manager3.SetLoadingSlotsForTest(3);
   MaybeThrottleNavigations(&tab_manager3, 3);
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle1_.get()));
