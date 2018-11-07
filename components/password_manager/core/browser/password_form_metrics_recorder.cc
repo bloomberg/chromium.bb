@@ -168,12 +168,6 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
         showed_manual_fallback_for_saving_.value());
   }
 
-  if (form_changes_bitmask_) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.DynamicFormChanges",
-                              *form_changes_bitmask_,
-                              static_cast<uint32_t>(kMaxFormDifferencesValue));
-  }
-
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
 }
 
@@ -321,13 +315,6 @@ void PasswordFormMetricsRecorder::RecordShowManualFallbackForSaving(
     bool is_update) {
   showed_manual_fallback_for_saving_ =
       1 + (has_generated_password ? 2 : 0) + (is_update ? 4 : 0);
-}
-
-void PasswordFormMetricsRecorder::RecordFormChangeBitmask(uint32_t bitmask) {
-  if (!form_changes_bitmask_)
-    form_changes_bitmask_ = bitmask;
-  else
-    *form_changes_bitmask_ |= bitmask;
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
