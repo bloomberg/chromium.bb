@@ -45,10 +45,7 @@ void KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(
 
 KeyedServiceBaseFactory::KeyedServiceBaseFactory(const char* service_name,
                                                  DependencyManager* manager)
-    : dependency_manager_(manager) {
-#ifndef NDEBUG
-  service_name_ = service_name;
-#endif
+    : dependency_manager_(manager), service_name_(service_name) {
   dependency_manager_->AddComponent(this);
 }
 
