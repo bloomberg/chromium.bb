@@ -218,24 +218,12 @@ struct AddEntriesMessage {
 
     TestEntryInfo(EntryType type,
                   const std::string& source_file_name,
-                  const std::string& target_path,
-                  const std::string& mime_type,
-                  const std::string& team_drive_name,
-                  const std::string& computer_name,
-                  SharedOption shared_option,
-                  const base::Time& last_modified_time,
-                  const EntryCapabilities& capabilities,
-                  bool pinned)
+                  const std::string& target_path)
         : type(type),
-          shared_option(shared_option),
+          shared_option(NONE),
           source_file_name(source_file_name),
           target_path(target_path),
-          team_drive_name(team_drive_name),
-          computer_name(computer_name),
-          mime_type(mime_type),
-          last_modified_time(last_modified_time),
-          capabilities(capabilities),
-          pinned(pinned) {}
+          last_modified_time(base::Time::Now()) {}
 
     EntryType type;                  // Entry type: file or directory.
     SharedOption shared_option;      // File entry sharing option.
@@ -248,6 +236,42 @@ struct AddEntriesMessage {
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Entry permissions.
     bool pinned = false;             // Whether the file should be pinned.
+
+    TestEntryInfo& SetSharedOption(SharedOption option) {
+      shared_option = option;
+      return *this;
+    }
+
+    TestEntryInfo& SetMimeType(const std::string& type) {
+      mime_type = type;
+      return *this;
+    }
+
+    TestEntryInfo& SetTeamDriveName(const std::string& name) {
+      team_drive_name = name;
+      return *this;
+    }
+
+    TestEntryInfo& SetComputerName(const std::string& name) {
+      computer_name = name;
+      return *this;
+    }
+
+    TestEntryInfo& SetLastModifiedTime(const base::Time& time) {
+      last_modified_time = time;
+      return *this;
+    }
+
+    TestEntryInfo& SetEntryCapabilities(
+        const EntryCapabilities& new_capabilities) {
+      capabilities = new_capabilities;
+      return *this;
+    }
+
+    TestEntryInfo& SetPinned(bool is_pinned) {
+      pinned = is_pinned;
+      return *this;
+    }
 
     // Registers the member information to the given converter.
     static void RegisterJSONConverter(
@@ -589,14 +613,11 @@ class FakeTestVolume : public LocalTestVolume {
 
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
-    CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "text.txt", "hello.txt", "text/plain",
-        std::string(), std::string(), AddEntriesMessage::SharedOption::NONE,
-        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::DIRECTORY, std::string(), "A", std::string(),
-        std::string(), std::string(), AddEntriesMessage::SharedOption::NONE,
-        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "hello.txt")
+                    .SetMimeType("text/plain"));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
+                                                 std::string(), "A"));
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -605,22 +626,17 @@ class FakeTestVolume : public LocalTestVolume {
     if (!CreateRootDirectory(profile))
       return false;
 
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
+                                                 "", "DCIM"));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "image2.png", "image2.png")
+                    .SetMimeType("image/png"));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::DIRECTORY, "", "DCIM", std::string(), std::string(),
-        "", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities(), false));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "image2.png", "image2.png", std::string(),
-        std::string(), "image/png", AddEntriesMessage::SharedOption::NONE,
-        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "image3.jpg", "DCIM/image3.jpg", std::string(),
-        std::string(), "image/jpeg", AddEntriesMessage::SharedOption::NONE,
-        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "text.txt", "DCIM/hello.txt", std::string(),
-        std::string(), "text/plain", AddEntriesMessage::SharedOption::NONE,
-        base::Time::Now(), AddEntriesMessage::EntryCapabilities(), false));
+                    AddEntriesMessage::FILE, "image3.jpg", "DCIM/image3.jpg")
+                    .SetMimeType("image/png"));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "DCIM/hello.txt")
+                    .SetMimeType("text/plain"));
     base::RunLoop().RunUntilIdle();
     return true;
   }
