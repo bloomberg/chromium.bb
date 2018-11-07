@@ -24,8 +24,8 @@
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/notify_watcher_mac.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/serial_worker.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

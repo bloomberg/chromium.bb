@@ -49,7 +49,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/dns/dns_util.h"
+#include "net/dns/public/util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -117,8 +117,9 @@ void GetStubResolverConfig(
         continue;
       }
 
-      if (!net::IsValidDoHTemplate(doh_server_list[i].GetString(),
-                                   doh_server_method_list[i].GetString())) {
+      if (!net::dns_util::IsValidDoHTemplate(
+              doh_server_list[i].GetString(),
+              doh_server_method_list[i].GetString())) {
         continue;
       }
 

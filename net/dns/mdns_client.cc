@@ -8,8 +8,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client_impl.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_source.h"
 

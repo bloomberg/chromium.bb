@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"
 

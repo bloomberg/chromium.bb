@@ -4,9 +4,9 @@
 
 #include "net/dns/record_parsed.h"
 
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

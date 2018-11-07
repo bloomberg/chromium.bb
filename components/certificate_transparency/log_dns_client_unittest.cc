@@ -24,7 +24,7 @@
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
