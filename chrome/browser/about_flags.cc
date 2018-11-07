@@ -4186,6 +4186,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kDriveFs)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+    {"enable-myfiles-volume", flag_descriptions::kEnableMyFilesVolumeName,
+     flag_descriptions::kEnableMyFilesVolumeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},
+#endif  // OS_CHROMEOS
+
 #if defined(OS_ANDROID)
     {"background-task-component-update",
      flag_descriptions::kBackgroundTaskComponentUpdateName,
