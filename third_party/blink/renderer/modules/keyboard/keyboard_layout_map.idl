@@ -5,7 +5,6 @@
 // Keyboard Map specification: https://wicg.github.io/keyboard-map/
 
 [
-    RuntimeEnabled=KeyboardMap,
     SecureContext
 ] interface KeyboardLayoutMap {
     readonly maplike<DOMString, DOMString>;
