@@ -164,6 +164,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
   EXPECT_EQ("text content", fetch_result);
 }
 
+// Calling fetch() from a http(s) service worker context to a
+// chrome-extensions:// URL since the loading path in a service worker is
+// different from pages.
+// This is a regression test for https://crbug.com/901443.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionFetchTest,
+    HostCanFetchWebAccessibleExtensionResource_FetchFromServiceWorker) {
+  TestExtensionDir dir;
+  dir.WriteManifestWithSingleQuotes(
+      "{"
+      "'background': {'scripts': ['bg.js']},"
+      "'manifest_version': 2,"
+      "'name': 'HostCanFetchWebAccessibleExtensionResource_"
+      "FetchFromServiceWorker',"
+      "'version': '1',"
+      "'web_accessible_resources': ['text']"
+      "}");
+  const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
+  ASSERT_TRUE(extension);
+
+  content::WebContents* tab =
+      CreateAndNavigateTab(embedded_test_server()->GetURL(
+          "/workers/fetch_from_service_worker.html"));
+  EXPECT_EQ("ready", content::EvalJs(tab, "setup();"));
+  EXPECT_EQ("text content",
+            content::EvalJs(
+                tab, base::StringPrintf(
+                         "fetch_from_service_worker('%s');",
+                         extension->GetResourceURL("text").spec().c_str())));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
                        HostCannotFetchNonWebAccessibleExtensionResource) {
   TestExtensionDir dir;

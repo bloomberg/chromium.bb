@@ -170,32 +170,15 @@ IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, FetchFromServiceWorker) {
   const GURL url = embedded_test_server()->GetURL(
       std::string("/workers/fetch_from_service_worker.html"));
   ui_test_utils::NavigateToURL(browser(), url);
-
-  // Wait until service worker become ready.
-  const base::string16 title = base::ASCIIToUTF16("DONE");
-  {
-    content::TitleWatcher watcher(GetWebContents(), title);
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
-  ExpectPageTextEq("ready");
+  EXPECT_EQ("ready", EvalJs(GetWebContents(), "setup();"));
 
   const std::string script =
       "fetch_from_service_worker('" + fetch_url.spec() + "');";
-  ASSERT_TRUE(ExecJs(GetWebContents(), script));
-  {
-    content::TitleWatcher watcher(GetWebContents(), title);
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
-  ExpectPageTextEq("1");
+  EXPECT_EQ("1", EvalJs(GetWebContents(), script));
 
   // Updating settings should be reflected immediately.
   SetEnableDoNotTrack(false /* enabled */);
-  ASSERT_TRUE(ExecJs(GetWebContents(), script));
-  {
-    content::TitleWatcher watcher(GetWebContents(), title);
-    EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  }
-  ExpectPageTextEq("None");
+  EXPECT_EQ("None", EvalJs(GetWebContents(), script));
 }
 
 }  // namespace
