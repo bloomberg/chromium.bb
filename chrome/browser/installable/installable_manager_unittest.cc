@@ -41,7 +41,8 @@ class InstallableManagerUnitTest : public testing::Test {
   bool IsManifestValid(const blink::Manifest& manifest) {
     // Explicitly reset the error code before running the method.
     manager_->set_valid_manifest_error(NO_ERROR_DETECTED);
-    return manager_->IsManifestValidForWebApp(manifest);
+    return manager_->IsManifestValidForWebApp(
+        manifest, true /* check_webapp_manifest_display */);
   }
 
   InstallableStatusCode GetErrorCode() {
