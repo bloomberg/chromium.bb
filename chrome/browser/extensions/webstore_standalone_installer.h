@@ -171,9 +171,10 @@ class WebstoreStandaloneInstaller
   void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // WebstoreInstallHelper::Delegate interface implementation.
-  void OnWebstoreParseSuccess(const std::string& id,
-                              const SkBitmap& icon,
-                              base::DictionaryValue* parsed_manifest) override;
+  void OnWebstoreParseSuccess(
+      const std::string& id,
+      const SkBitmap& icon,
+      std::unique_ptr<base::DictionaryValue> parsed_manifest) override;
   void OnWebstoreParseFailure(const std::string& id,
                               InstallHelperResultCode result_code,
                               const std::string& error_message) override;
