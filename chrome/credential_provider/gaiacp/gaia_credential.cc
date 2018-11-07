@@ -52,6 +52,7 @@ HRESULT CGaiaCredential::FinishAuthentication(BSTR username,
     } else {
       LOGFN(INFO) << "CreateLogonToken hr=" << putHR(hrLogon)
                   << " account=" << OLE2CW(username) << " sid=" << sid;
+      *error_text = AllocErrorString(IDS_INVALID_PASSWORD);
     }
   } else if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr)

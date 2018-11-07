@@ -1016,19 +1016,21 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
       command_line, startupinfo.GetInfo(), &procinfo);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateProcessWithTokenW hr=" << putHR(hr);
+    *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
     return hr;
   }
 
   // Write account info to stdin of child process.  This buffer is read by
-  // SaveAccountInfoW() in dllmain.cpp.
+  // SaveAccountInfoW() in dllmain.cpp.  If this fails, chrome won't pick up
+  // the credentials from the credential provider and will need to sign in
+  // manually.  TODO(crbug.com/902911): Figure out how to handle this.
   std::string json;
   if (base::JSONWriter::Write(*dict, &json)) {
     DWORD written;
     if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
                      json.length() + 1, &written, /*lpOverlapped=*/nullptr)) {
-      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-      LOGFN(ERROR) << "WriteFile hr=" << putHR(hr);
-      *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
+      HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }
   } else {
     LOGFN(ERROR) << "base::JSONWriter::Write failed";
@@ -1070,6 +1072,11 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
     // If hr is E_ABORT, this is a user initiated cancel.  Don't consider this
     // an error.
     LONG sts = hr == E_ABORT ? STATUS_SUCCESS : HRESULT_CODE(hr);
+
+    // Either WaitForLoginUIImpl did not fail or there should be an error
+    // message to display.
+    DCHECK(sts > 0 || status_text != nullptr);
+
     hr = uiprocinfo->credential->ReportError(sts, STATUS_SUCCESS, status_text);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "uiprocinfo->credential->ReportError hr=" << putHR(hr);
@@ -1123,21 +1130,19 @@ HRESULT CGaiaCredentialBase::WaitForLoginUIImpl(
 
   dict->SetString(kKeySID, OLE2CA(sid));
 
-  if (SUCCEEDED(hr)) {
-    // Fire off a process to call SaveAccountInfo().
-    //
-    // The eventual call to OnUserAuthenticated() will tell winlogon that
-    // logging in is finished. It seems that winlogon will kill this process
-    // after a short time, which races with an attempt to save the account info
-    // to the registry if done here.  For this reason a child pocess is used.
-    hr = ForkSaveAccountInfoStub(dict, status_text);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
-      return hr;
-    }
-
-    *properties = std::move(dict);
+  // Fire off a process to call SaveAccountInfo().
+  //
+  // The eventual call to OnUserAuthenticated() will tell winlogon that
+  // logging in is finished. It seems that winlogon will kill this process
+  // after a short time, which races with an attempt to save the account info
+  // to the registry if done here.  For this reason a child pocess is used.
+  hr = ForkSaveAccountInfoStub(dict, status_text);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
+    return hr;
   }
+
+  *properties = std::move(dict);
 
   // When this function returns, winlogon will be told to logon to the newly
   // created account.  This is important, as the save account info process
