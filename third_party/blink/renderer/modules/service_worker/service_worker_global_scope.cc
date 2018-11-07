@@ -217,7 +217,7 @@ void ServiceWorkerGlobalScope::Dispose() {
 
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
-  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, script_size_histogram,
       ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
@@ -238,7 +238,7 @@ void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
 void ServiceWorkerGlobalScope::CountImportedScript(
     size_t script_size,
     size_t cached_metadata_size) {
-  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
   CountScriptInternal(script_size, cached_metadata_size);
 }
 
@@ -249,7 +249,7 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
   // Skip recording UMAs for module scripts because there're no ways to get the
   // number of static-imported scripts and the total size of the imported
   // scripts.
-  if (GetScriptType() == ScriptType::kModule) {
+  if (GetScriptType() == mojom::ScriptType::kModule) {
     return;
   }
 

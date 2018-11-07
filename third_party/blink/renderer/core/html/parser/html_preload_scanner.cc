@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
@@ -279,7 +280,7 @@ class TokenPreloadScanner::StartTagScanner {
 
     if ((Match(tag_impl_, kScriptTag) && type_attribute_value_ == "module") ||
         IsLinkRelModulePreload()) {
-      request->SetScriptType(ScriptType::kModule);
+      request->SetScriptType(mojom::ScriptType::kModule);
     }
 
     request->SetCrossOrigin(cross_origin_);
@@ -594,7 +595,7 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(tag_impl_, kInputTag) && !input_is_image_)
       return false;
     if (Match(tag_impl_, kScriptTag)) {
-      ScriptType script_type = ScriptType::kClassic;
+      mojom::ScriptType script_type = mojom::ScriptType::kClassic;
       if (!ScriptLoader::IsValidScriptTypeAndLanguage(
               type_attribute_value_, language_attribute_value_,
               ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {

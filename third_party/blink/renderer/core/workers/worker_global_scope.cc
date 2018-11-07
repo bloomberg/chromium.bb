@@ -146,7 +146,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
 
   // Step 1: "If worker global scope's type is "module", throw a TypeError
   // exception."
-  if (script_type_ == ScriptType::kModule) {
+  if (script_type_ == mojom::ScriptType::kModule) {
     exception_state.ThrowTypeError(
         "Module scripts don't support importScripts().");
     return;
@@ -621,7 +621,7 @@ void WorkerGlobalScope::SetWorkerSettings(
 }
 
 bool WorkerGlobalScope::IsScriptFetchedOnMainThread() {
-  if (script_type_ == ScriptType::kModule)
+  if (script_type_ == mojom::ScriptType::kModule)
     return false;
   // It's now supported only for dedicated workers to load top-level classic
   // worker script off the main thread.

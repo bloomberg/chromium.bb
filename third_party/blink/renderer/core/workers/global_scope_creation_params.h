@@ -12,6 +12,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -39,8 +40,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
  public:
   GlobalScopeCreationParams(
       const KURL& script_url,
-      // TODO(asamidoi): Replace ScriptType to mojom::ScriptType
-      ScriptType script_type,
+      mojom::ScriptType script_type,
       const String& user_agent,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
@@ -75,7 +75,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // workers.
   KURL script_url;
 
-  ScriptType script_type;
+  mojom::ScriptType script_type;
   String user_agent;
 
   // |content_security_policy_parsed_headers| and

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -101,7 +102,9 @@ class CORE_EXPORT PreloadRequest {
   }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
-  void SetScriptType(ScriptType script_type) { script_type_ = script_type; }
+  void SetScriptType(mojom::ScriptType script_type) {
+    script_type_ = script_type;
+  }
 
   // Only scripts and css stylesheets need to have integrity set on preloads.
   // This is because neither resource keeps raw data around to redo an
@@ -142,7 +145,7 @@ class CORE_EXPORT PreloadRequest {
         resource_url_(resource_url),
         base_url_(base_url),
         resource_type_(resource_type),
-        script_type_(ScriptType::kClassic),
+        script_type_(mojom::ScriptType::kClassic),
         cross_origin_(kCrossOriginAttributeNotSet),
         importance_(mojom::FetchImportanceMode::kImportanceAuto),
         defer_(FetchParameters::kNoDefer),
@@ -163,7 +166,7 @@ class CORE_EXPORT PreloadRequest {
   KURL base_url_;
   String charset_;
   ResourceType resource_type_;
-  ScriptType script_type_;
+  mojom::ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
   mojom::FetchImportanceMode importance_;
   String nonce_;

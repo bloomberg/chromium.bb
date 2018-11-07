@@ -46,7 +46,7 @@ void XMLParserScriptRunner::PendingScriptFinished(
 
   pending_script->StopWatchingForLoad();
 
-  CHECK_EQ(pending_script->GetScriptType(), ScriptType::kClassic);
+  CHECK_EQ(pending_script->GetScriptType(), mojom::ScriptType::kClassic);
 
   // <spec label="Parsing" step="4">Execute the pending parsing-blocking
   // script.</spec>
@@ -76,7 +76,7 @@ void XMLParserScriptRunner::ProcessScriptElement(
   bool success = script_loader->PrepareScript(
       script_start_position, ScriptLoader::kAllowLegacyTypeInTypeAttribute);
 
-  if (script_loader->GetScriptType() != ScriptType::kClassic) {
+  if (script_loader->GetScriptType() != mojom::ScriptType::kClassic) {
     // XMLDocumentParser does not support a module script, and thus ignores it.
     success = false;
     document.AddConsoleMessage(

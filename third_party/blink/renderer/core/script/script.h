@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_H_
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -16,10 +17,6 @@ namespace blink {
 class LocalFrame;
 class SecurityOrigin;
 
-// TODO(asamidoi, nhiroki): Remove this enum in favor of
-// blink::mojom::ScriptType.
-enum class ScriptType { kClassic, kModule };
-
 // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script
 class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
  public:
@@ -27,7 +24,7 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
 
   virtual ~Script() {}
 
-  virtual ScriptType GetScriptType() const = 0;
+  virtual mojom::ScriptType GetScriptType() const = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-classic-script
   // or

@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -202,7 +203,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   void AddPausedCall(base::OnceClosure closure);
 
-  ScriptType GetScriptType() const { return script_type_; }
+  mojom::ScriptType GetScriptType() const { return script_type_; }
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
@@ -248,7 +249,7 @@ class CORE_EXPORT WorkerGlobalScope
   void TasksWereUnpaused() override;
 
   const KURL url_;
-  const ScriptType script_type_;
+  const mojom::ScriptType script_type_;
   const String user_agent_;
   const base::UnguessableToken parent_devtools_token_;
   const V8CacheOptions v8_cache_options_;

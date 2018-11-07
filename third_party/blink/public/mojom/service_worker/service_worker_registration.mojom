@@ -4,23 +4,13 @@
 
 module blink.mojom;
 
+import "third_party/blink/public/mojom/script/script_type.mojom";
 import "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "url/mojom/url.mojom";
 
 const int64 kInvalidServiceWorkerRegistrationId = -1;
-
-// Represents ScriptType enum for ServiceWorkerRegistrationOptions:
-// https://w3c.github.io/ServiceWorker/#dom-registrationoptions-type
-// https://html.spec.whatwg.org/multipage/workers.html#workertype
-// TODO(asamidoi, nhiroki): Move this enum to blink/public/mojom/script or
-// somewhere else, and replace the duplicate enum in
-// third_party/blink/renderer/core/script/script.h.
-enum ScriptType {
-  kClassic,
-  kModule,
-};
 
 // Represents ServiceWorkerUpdateViaCache enum for ServiceWorkerRegistrationOptions:
 // https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache

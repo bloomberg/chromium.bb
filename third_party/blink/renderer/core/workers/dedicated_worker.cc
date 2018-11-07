@@ -8,6 +8,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
@@ -322,9 +323,9 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
-  ScriptType script_type = (options_->type() == "classic")
-                               ? ScriptType::kClassic
-                               : ScriptType::kModule;
+  mojom::ScriptType script_type = (options_->type() == "classic")
+                                      ? mojom::ScriptType::kClassic
+                                      : mojom::ScriptType::kModule;
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, GetExecutionContext()->UserAgent(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),

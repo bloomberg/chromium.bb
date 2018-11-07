@@ -91,7 +91,7 @@ class WorkerThreadForTest : public WorkerThread {
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, ScriptType::kClassic, "fake user agent", headers,
+        script_url, mojom::ScriptType::kClassic, "fake user agent", headers,
         kReferrerPolicyDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,

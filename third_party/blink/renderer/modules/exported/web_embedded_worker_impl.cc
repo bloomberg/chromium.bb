@@ -395,14 +395,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
 
-  // TODO(https://crbug.com/824647): Use blink::mojom::ScriptType everywhere
-  // and deprecate blink::ScriptType.
-  // Remove this line after removed all blink::ScriptType.
-  ScriptType script_type =
-      (worker_start_data_.script_type == mojom::ScriptType::kModule)
-          ? ScriptType::kModule
-          : ScriptType::kClassic;
-
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
   if (main_script_loader_) {
@@ -415,7 +407,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
           kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
     }
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, script_type,
+        worker_start_data_.script_url, worker_start_data_.script_type,
         worker_start_data_.user_agent,
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
@@ -434,7 +426,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // We don't have to set ContentSecurityPolicy and ReferrerPolicy. They're
     // served by the installed scripts manager on the worker thread.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, script_type,
+        worker_start_data_.script_url, worker_start_data_.script_type,
         worker_start_data_.user_agent, Vector<CSPHeaderAndType>(),
         kReferrerPolicyDefault, starter_origin, starter_secure_context,
         starter_https_state, worker_clients, worker_start_data_.address_space,
@@ -467,7 +459,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // > Switching on job’s worker type, run these substeps with the following
   // > options:
   // https://w3c.github.io/ServiceWorker/#update-algorithm
-  if (script_type == ScriptType::kClassic) {
+  if (worker_start_data_.script_type == mojom::ScriptType::kClassic) {
     // > "classic": Fetch a classic worker script given job’s serialized script
     // > url, job’s client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.

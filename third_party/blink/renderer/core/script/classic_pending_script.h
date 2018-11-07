@@ -55,8 +55,8 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   void Trace(blink::Visitor*) override;
 
-  blink::ScriptType GetScriptType() const override {
-    return blink::ScriptType::kClassic;
+  mojom::ScriptType GetScriptType() const override {
+    return mojom::ScriptType::kClassic;
   }
 
   void WatchForLoad(PendingScriptClient*) override;
