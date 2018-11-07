@@ -49,7 +49,9 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
@@ -342,7 +344,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   submitted_form->set_submission_source(source);
 
   CreditCard credit_card =
-      form_data_importer_->ExtractCreditCardFromForm(*submitted_form);
+      client_->GetFormDataImporter()->ExtractCreditCardFromForm(
+          *submitted_form);
   AutofillMetrics::CardNumberStatus card_number_status =
       GetCardNumberStatus(credit_card);
 
@@ -358,9 +361,9 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
 
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
-  form_data_importer_->ImportFormData(*submitted_form,
-                                      IsProfileAutofillEnabled(),
-                                      IsCreditCardAutofillEnabled());
+  client_->GetFormDataImporter()->ImportFormData(*submitted_form,
+                                                 IsProfileAutofillEnabled(),
+                                                 IsCreditCardAutofillEnabled());
 }
 
 bool AutofillManager::MaybeStartVoteUploadProcess(
@@ -899,15 +902,16 @@ bool AutofillManager::IsShowingUnmaskPrompt() {
 payments::FullCardRequest* AutofillManager::GetOrCreateFullCardRequest() {
   if (!full_card_request_) {
     full_card_request_.reset(new payments::FullCardRequest(
-        client_, payments_client_.get(), personal_data_));
+        client_, client_->GetPaymentsClient(), personal_data_));
   }
   return full_card_request_.get();
 }
 
 payments::FullCardRequest* AutofillManager::CreateFullCardRequest(
     const base::TimeTicks& form_parsed_timestamp) {
-  full_card_request_.reset(new payments::FullCardRequest(
-      client_, payments_client_.get(), personal_data_, form_parsed_timestamp));
+  full_card_request_.reset(
+      new payments::FullCardRequest(client_, client_->GetPaymentsClient(),
+                                    personal_data_, form_parsed_timestamp));
   return full_card_request_.get();
 }
 
@@ -1126,19 +1130,8 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
       client_(client),
-      payments_client_(std::make_unique<payments::PaymentsClient>(
-          driver->GetURLLoaderFactory(),
-          client->GetPrefs(),
-          client->GetIdentityManager(),
-          client->GetPersonalDataManager(),
-          driver->IsIncognito())),
       app_locale_(app_locale),
       personal_data_(personal_data),
-      form_data_importer_(
-          std::make_unique<FormDataImporter>(client,
-                                             payments_client_.get(),
-                                             personal_data,
-                                             app_locale_)),
       field_filler_(app_locale, client->GetAddressNormalizer()),
       autocomplete_history_manager_(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),

@@ -76,6 +76,14 @@ identity::IdentityManager* AwAutofillClient::GetIdentityManager() {
   return nullptr;
 }
 
+autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
+  return nullptr;
+}
+
+autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
+  return nullptr;
+}
+
 autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
   return nullptr;
 }

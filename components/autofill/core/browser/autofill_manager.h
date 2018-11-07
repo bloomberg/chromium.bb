@@ -28,10 +28,8 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
-#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_types.h"
 #include "components/autofill/core/common/form_data.h"
@@ -138,8 +136,6 @@ class AutofillManager : public AutofillHandler,
   AutofillDownloadManager* download_manager() {
     return download_manager_.get();
   }
-
-  FormDataImporter* form_data_importer() { return form_data_importer_.get(); }
 
   payments::FullCardRequest* GetOrCreateFullCardRequest();
 
@@ -275,19 +271,6 @@ class AutofillManager : public AutofillHandler,
   // Exposed for testing.
   void set_download_manager(AutofillDownloadManager* manager) {
     download_manager_.reset(manager);
-  }
-
-  // Exposed for testing.
-  payments::PaymentsClient* payments_client() { return payments_client_.get(); }
-
-  // Exposed for testing.
-  void set_payments_client(payments::PaymentsClient* payments_client) {
-    payments_client_.reset(payments_client);
-  }
-
-  // Exposed for testing.
-  void set_form_data_importer(FormDataImporter* form_data_importer) {
-    form_data_importer_.reset(form_data_importer);
   }
 
  private:
@@ -509,9 +492,6 @@ class AutofillManager : public AutofillHandler,
 
   AutofillClient* const client_;
 
-  // Handles Payments service requests.
-  std::unique_ptr<payments::PaymentsClient> payments_client_;
-
   std::string app_locale_;
 
   // The personal data manager, used to save and load personal data to/from the
@@ -519,10 +499,6 @@ class AutofillManager : public AutofillHandler,
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
-
-  // Handles importing of address and credit card data from forms.
-  // Must be initialized (and thus listed) after payments_client_.
-  std::unique_ptr<FormDataImporter> form_data_importer_;
 
   // Used to help fill data into fields.
   FieldFiller field_filler_;
@@ -608,8 +584,6 @@ class AutofillManager : public AutofillHandler,
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
   friend class GetMatchingTypesTest;
-  friend class SaveCardBubbleViewsBrowserTestBase;
-  friend class SaveCardInfobarEGTestHelper;
   FRIEND_TEST_ALL_PREFIXES(ProfileMatchingTypesTest,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

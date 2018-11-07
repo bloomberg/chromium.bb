@@ -36,6 +36,14 @@ identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
   return identity_test_env_.identity_manager();
 }
 
+FormDataImporter* TestAutofillClient::GetFormDataImporter() {
+  return form_data_importer_.get();
+}
+
+payments::PaymentsClient* TestAutofillClient::GetPaymentsClient() {
+  return payments_client_.get();
+}
+
 StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
   return test_strike_database_.get();
 }

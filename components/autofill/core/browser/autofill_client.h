@@ -50,11 +50,16 @@ class AutofillProfile;
 class AutofillWebDataService;
 class CardUnmaskDelegate;
 class CreditCard;
+class FormDataImporter;
 class FormStructure;
 class MigratableCreditCard;
 class PersonalDataManager;
 class StrikeDatabase;
 struct Suggestion;
+
+namespace payments {
+class PaymentsClient;
+}
 
 // A client interface that needs to be supplied to the Autofill component by the
 // embedder.
@@ -127,6 +132,12 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the IdentityManager associated with the client.
   virtual identity::IdentityManager* GetIdentityManager() = 0;
+
+  // Gets the FormDataImporter instance owned by the client.
+  virtual FormDataImporter* GetFormDataImporter() = 0;
+
+  // Gets the payments::PaymentsClient instance owned by the client.
+  virtual payments::PaymentsClient* GetPaymentsClient() = 0;
 
   // Gets the StrikeDatabase associated with the client.
   virtual StrikeDatabase* GetStrikeDatabase() = 0;
