@@ -34,6 +34,8 @@
         <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
     <style name="FilledButton" parent="ButtonCompatBase" tools:ignore="UnusedResources">
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
         <item name="android:textAppearance">@style/WhiteButtonText</item>
         <item name="buttonColor">@color/blue_when_enabled</item>
         <item name="rippleColor">@color/filled_button_ripple_color</item>
@@ -43,6 +45,8 @@
         <item name="buttonRaised">false</item>
     </style>
     <style name="TextButton" parent="ButtonCompatBase" tools:ignore="UnusedResources">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
         <item name="android:textAppearance">@style/BlueButtonText2</item>
         <item name="buttonColor">@android:color/transparent</item>
         <item name="rippleColor">@color/text_button_ripple_color</item>
@@ -110,7 +114,6 @@
     <style name="BlackButtonText" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
-        <item name="android:textAllCaps">true</item>
     </style>
     <style name="BlackLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_secondary_list</item>
@@ -139,9 +142,7 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="WhiteButtonText" parent="WhiteTitle2" tools:ignore="UnusedResources">
-        <item name="android:textAllCaps">true</item>
-    </style>
+    <style name="WhiteButtonText" parent="WhiteTitle2" />
     <style name="WhiteLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
@@ -152,12 +153,10 @@
     <style name="BlueButtonText1" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
-        <item name="android:textAllCaps">true</item>
     </style>
-    <style name="BlueButtonText2" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
+    <style name="BlueButtonText2" parent="RobotoMediumStyle">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
-        <item name="android:textAllCaps">true</item>
     </style>
     <style name="BlueLink1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>

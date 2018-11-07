@@ -22,11 +22,9 @@
         android:layout_gravity="end"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:minHeight="48dp"
-        android:layout_marginEnd="@dimen/clear_browsing_data_button_margin"
+        android:layout_margin="@dimen/clear_browsing_data_button_margin"
         android:focusable="true"
         android:text="@string/clear_data_delete"
-        style="@style/TextButton" />
+        style="@style/FilledButton.Flat" />
 
 </LinearLayout>
