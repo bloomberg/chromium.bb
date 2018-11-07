@@ -18,8 +18,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
-#include "net/dns/mojo_host_resolver_impl.h"
-#include "net/interfaces/host_resolver_service.mojom.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -28,6 +26,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
+#include "services/network/mojo_host_resolver_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace network {
@@ -84,7 +83,7 @@ class ClientMixin : public ClientInterface {
 
   void ResolveDns(
       std::unique_ptr<net::HostResolver::RequestInfo> request_info,
-      net::interfaces::HostResolverRequestClientPtr client) override {
+      proxy_resolver::mojom::HostResolverRequestClientPtr client) override {
     host_resolver_.Resolve(std::move(request_info), std::move(client));
   }
 
@@ -94,7 +93,7 @@ class ClientMixin : public ClientInterface {
   }
 
  private:
-  net::MojoHostResolverImpl host_resolver_;
+  MojoHostResolverImpl host_resolver_;
   net::ProxyResolverErrorObserver* const error_observer_;
   net::NetLog* const net_log_;
   const net::NetLogWithSource net_log_with_source_;
