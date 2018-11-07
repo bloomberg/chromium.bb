@@ -33,7 +33,8 @@ enum class InstallResultCode {
   kFailedUnknownReason = 2,
   kGetWebApplicationInfoFailed = 3,
   kPreviouslyUninstalled = 4,
-  kMaxValue = kPreviouslyUninstalled,
+  kWebContentsDestroyed = 5,
+  kMaxValue = kWebContentsDestroyed,
 };
 
 // Where an app was installed from. This affects what flags will be used when

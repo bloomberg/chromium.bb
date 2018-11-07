@@ -4,10 +4,17 @@
 
 #include "chrome/browser/web_applications/test/web_app_test.h"
 
+#include "content/public/test/web_contents_tester.h"
+
 namespace web_app {
 
 WebAppTest::WebAppTest() = default;
 
 WebAppTest::~WebAppTest() = default;
+
+void WebAppTest::SetUp() {
+  ChromeRenderViewHostTestHarness::SetUp();
+  SetContents(CreateTestWebContents());
+}
 
 }  // namespace web_app
