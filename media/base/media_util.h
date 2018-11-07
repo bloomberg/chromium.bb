@@ -24,6 +24,11 @@ MEDIA_EXPORT std::vector<uint8_t> EmptyExtraData();
 MEDIA_EXPORT EncryptionScheme Unencrypted();
 MEDIA_EXPORT EncryptionScheme AesCtrEncryptionScheme();
 
+// Helpers for PPAPI UMAs. There wasn't an obvious place to put them in
+// //content/renderer/pepper.
+MEDIA_EXPORT void ReportPepperVideoDecoderOutputPictureCountHW(int height);
+MEDIA_EXPORT void ReportPepperVideoDecoderOutputPictureCountSW(int height);
+
 class MEDIA_EXPORT NullMediaLog : public media::MediaLog {
  public:
   NullMediaLog() = default;
