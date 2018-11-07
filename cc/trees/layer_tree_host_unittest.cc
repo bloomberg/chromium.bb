@@ -8398,7 +8398,8 @@ class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
   SkBitmap bitmap_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
+// TODO(enne): single thread disabled until http://crbug.com/902644 is fixed
+MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecodeNonLazy);
 
 class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
  public:
