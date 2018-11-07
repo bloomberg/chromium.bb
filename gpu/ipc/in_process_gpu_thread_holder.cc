@@ -13,7 +13,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
-#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 
 namespace gpu {
 
@@ -22,8 +21,6 @@ InProcessGpuThreadHolder::InProcessGpuThreadHolder()
   DCHECK(base::CommandLine::InitializedForCurrentProcess());
   auto* command_line = base::CommandLine::ForCurrentProcess();
   gpu_preferences_ = gles2::ParseGpuPreferences(command_line);
-  gpu_preferences_.texture_target_exception_list =
-      CreateBufferUsageAndFormatExceptionList();
 
   gpu::GPUInfo gpu_info;
   gpu::CollectGraphicsInfoForTesting(&gpu_info);
