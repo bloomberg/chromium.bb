@@ -3251,8 +3251,8 @@ const char kEnableDriveFsDescription[] =
 
 const char kEnableMyFilesVolumeName[] = "Enable MyFiles as Volume";
 const char kEnableMyFilesVolumeDescription[] =
-    "Enables use of the MyFiles as a read/write volume. This should be only "
-    "used for testing or for trying to restore previous Downloads content.";
+    "Enables use of MyFiles as a read/write volume. This should be only "
+    "used for testing or for trying to restore the previous Downloads content.";
 
 const char kEnableEhvInputName[] =
     "Emoji, handwriting and voice input on opt-in IME menu";
