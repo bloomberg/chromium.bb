@@ -194,9 +194,6 @@ void ServiceWorkerNavigationLoader::StartRequest(
   ServiceWorkerVersion* active_worker =
       delegate_->GetServiceWorkerVersion(&result);
   if (!active_worker) {
-    delegate_->ReportDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination::
-            kErrorNoActiveWorkerFromDelegate);
     CommitCompleted(net::ERR_FAILED);
     return;
   }
@@ -218,7 +215,6 @@ void ServiceWorkerNavigationLoader::StartRequest(
          "there are. Add code here to clone the body before proceeding.";
 
   // Dispatch the fetch event.
-  delegate_->WillDispatchFetchEventForMainResource();
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(resource_request_to_pass),
       std::string() /* request_body_blob_uuid */,
@@ -318,11 +314,6 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
-  if (delegate_) {
-    delegate_->ReportDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination::kServiceWorker);
-  }
-
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_ || !delegate_->RequestStillValid(&result)) {

@@ -97,7 +97,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
   class ScopedDisallowSetControllerRegistration;
-  class MainResourceRequestTracker;
 
   // For main resource case.
   void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
@@ -136,9 +135,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   bool RequestStillValid(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
   void MainResourceLoadFailed() override;
-  void ReportDestination(ServiceWorkerMetrics::MainResourceRequestDestination
-                             destination) override;
-  void WillDispatchFetchEventForMainResource() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job, except for timing information.
@@ -169,8 +165,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // delivered from the network, bypassing the ServiceWorker. Cleared after the
   // next intercept opportunity, for main frame requests.
   bool use_network_;
-
-  std::unique_ptr<MainResourceRequestTracker> tracker_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
