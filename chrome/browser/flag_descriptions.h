@@ -2060,6 +2060,9 @@ extern const char kGestureTypingDescription[];
 extern const char kInputViewName[];
 extern const char kInputViewDescription[];
 
+extern const char kImeServiceName[];
+extern const char kImeServiceDescription[];
+
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 

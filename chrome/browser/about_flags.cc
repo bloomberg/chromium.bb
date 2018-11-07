@@ -2798,6 +2798,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableEncryptionMigration,
          chromeos::switches::kDisableEncryptionMigration)},
+    {"enable-cros-ime-service", flag_descriptions::kImeServiceName,
+     flag_descriptions::kImeServiceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeServiceConnectable)},
 #endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
