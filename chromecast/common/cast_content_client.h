@@ -17,6 +17,7 @@ class CastContentClient : public content::ContentClient {
   ~CastContentClient() override;
 
   // content::ContentClient implementation:
+  void SetActiveURL(const GURL& url, std::string top_origin) override;
   void AddAdditionalSchemes(Schemes* schemes) override;
   std::string GetUserAgent() const override;
   base::string16 GetLocalizedString(int message_id) const override;
