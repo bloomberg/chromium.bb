@@ -102,7 +102,7 @@ int URLFetcherFileWriter::Initialize(CompletionOnceCallback callback) {
 int URLFetcherFileWriter::Write(IOBuffer* buffer,
                                 int num_bytes,
                                 CompletionOnceCallback callback) {
-  DCHECK(file_stream_);
+  DCHECK(file_stream_) << "Call Initialize() first.";
   DCHECK(owns_file_);
   DCHECK(!callback_);
 
