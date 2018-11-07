@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ws/common/switches.h"
+#include "services/ws/common/util.h"
 #include "services/ws/embedding.h"
 #include "services/ws/event_injector.h"
 #include "services/ws/event_queue.h"
@@ -78,6 +79,10 @@ WindowService::~WindowService() {
   DCHECK(window_trees_.empty());
 }
 
+ClientSpecificId WindowService::GetFirstWindowTreeClientId() const {
+  return decrement_client_ids_ ? kInitialClientIdDecrement : kInitialClientId;
+}
+
 ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
     aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
@@ -124,6 +129,13 @@ bool WindowService::HasRemoteClient(const aura::Window* window) {
 bool WindowService::IsTopLevelWindow(const aura::Window* window) {
   const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   return server_window && server_window->IsTopLevel();
+}
+
+aura::Window* WindowService::GetWindowByClientId(Id transport_id) {
+  const ClientSpecificId client_id = ClientIdFromTransportId(transport_id);
+  WindowTree* window_tree = GetTreeById(client_id);
+  return window_tree ? window_tree->GetWindowByTransportId(transport_id)
+                     : nullptr;
 }
 
 WindowService::TreeAndWindowId
@@ -270,6 +282,14 @@ void WindowService::OnBindInterface(
                                                    remote_info)) {
     registry_.BindInterface(interface_name, std::move(handle));
   }
+}
+
+WindowTree* WindowService::GetTreeById(ClientSpecificId id) {
+  for (WindowTree* tree : window_trees_) {
+    if (tree->client_id() == id)
+      return tree;
+  }
+  return nullptr;
 }
 
 void WindowService::SetSurfaceActivationCallback(
