@@ -33,6 +33,13 @@ namespace internal {
 //         On Acquisition if the previous lock acquired on the thread is not
 //             |predecessor|. Okay if there was no previous lock acquired.
 //
+// SchedulerLock(UniversalPredecessor universal_predecessor)
+//     Constructor for a lock that will allow the acquisition of any lock after
+//     it, without needing to explicitly be named a predecessor. Can only be
+//     acquired if no locks are currently held by this thread.
+//     DCHECKs
+//         On Acquisition if any scheduler lock is acquired on this thread.
+//
 // void Acquire()
 //     Acquires the lock.
 //
@@ -51,12 +58,15 @@ class SchedulerLock : public SchedulerLockImpl {
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock* predecessor)
       : SchedulerLockImpl(predecessor) {}
+  explicit SchedulerLock(UniversalPredecessor universal_predecessor)
+      : SchedulerLockImpl(universal_predecessor) {}
 };
 #else   // DCHECK_IS_ON()
 class SchedulerLock : public Lock {
  public:
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock*) {}
+  explicit SchedulerLock(UniversalPredecessor) {}
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable() {
     return std::unique_ptr<ConditionVariable>(new ConditionVariable(this));

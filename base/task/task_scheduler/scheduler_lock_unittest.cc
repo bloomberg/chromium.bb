@@ -285,6 +285,63 @@ TEST(TaskSchedulerLock, PredecessorLongerCycle) {
   EXPECT_DCHECK_DEATH({ LockCycle cycle; });
 }
 
+TEST(TaskSchedulerLock, AcquireLockAfterUniversalPredecessor) {
+  // Acquisition of a universal-predecessor lock should not prevent acquisition
+  // of a SchedulerLock after it.
+  SchedulerLock universal_predecessor((UniversalPredecessor()));
+  SchedulerLock lock;
+
+  universal_predecessor.Acquire();
+  lock.Acquire();
+  lock.Release();
+  universal_predecessor.Release();
+}
+
+TEST(TaskSchedulerLock, AcquireMultipleLocksAfterUniversalPredecessor) {
+  // Acquisition of a universal-predecessor lock does not affect acquisition
+  // rules for locks beyond the one acquired directly after it.
+  SchedulerLock universal_predecessor((UniversalPredecessor()));
+  SchedulerLock lock;
+  SchedulerLock lock2(&lock);
+  SchedulerLock lock3;
+
+  universal_predecessor.Acquire();
+  lock.Acquire();
+  lock2.Acquire();
+  lock2.Release();
+  lock.Release();
+  universal_predecessor.Release();
+
+  EXPECT_DCHECK_DEATH({
+    universal_predecessor.Acquire();
+    lock.Acquire();
+    lock3.Acquire();
+  });
+}
+
+TEST(TaskSchedulerLock, AcquireUniversalPredecessorAfterLock) {
+  // A universal-predecessor lock may not be acquired after any other lock.
+  SchedulerLock universal_predecessor((UniversalPredecessor()));
+  SchedulerLock lock;
+
+  EXPECT_DCHECK_DEATH({
+    lock.Acquire();
+    universal_predecessor.Acquire();
+  });
+}
+
+TEST(TaskSchedulerLock, AcquireUniversalPredecessorAfterUniversalPredecessor) {
+  // A universal-predecessor lock may not be acquired after any other lock, not
+  // even another universal predecessor.
+  SchedulerLock universal_predecessor((UniversalPredecessor()));
+  SchedulerLock universal_predecessor2((UniversalPredecessor()));
+
+  EXPECT_DCHECK_DEATH({
+    universal_predecessor.Acquire();
+    universal_predecessor2.Acquire();
+  });
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace base
