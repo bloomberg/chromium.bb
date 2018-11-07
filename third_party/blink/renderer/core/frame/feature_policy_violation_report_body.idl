@@ -5,8 +5,7 @@
 // https://github.com/WICG/reporting/blob/master/EXPLAINER.md#reportingobserver---observing-reports-from-javascript
 
 [
-    NoInterfaceObject,
-    RuntimeEnabled=ReportingObserver
+    NoInterfaceObject
 ] interface FeaturePolicyViolationReportBody : ReportBody {
   readonly attribute DOMString feature;
   readonly attribute DOMString message;
