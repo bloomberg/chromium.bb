@@ -58,7 +58,7 @@ void BackgroundFetchDataManager::InitializeOnIOThread() {
   cache_manager_ =
       base::WrapRefCounted(cache_storage_context_->cache_manager());
 
-  // TODO(crbug.com/855199): Persist which registrations to cleanup on startup.
+  // Delete inactive registrations still in the DB.
   Cleanup();
 
   DCHECK(cache_manager_);
@@ -197,7 +197,7 @@ void BackgroundFetchDataManager::AddDatabaseTask(
     return;
 
   database_tasks_.push(std::move(task));
-  if (database_tasks_.size() == 1)
+  if (database_tasks_.size() == 1u)
     database_tasks_.front()->Start();
 }
 

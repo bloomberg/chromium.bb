@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 
 #include "base/guid.h"
+#include "base/stl_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
@@ -39,21 +40,15 @@ BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 void BackgroundFetchScheduler::ScheduleDownload() {
   DCHECK(!active_controller_);
 
-  if (job_controllers_.empty())
-    return;
-
-  while (controller_ids_.size() &&
-         !job_controllers_.count(controller_ids_.front())) {
-    // Remove aborted controller ids.
-    controller_ids_.pop_front();
-  }
-
   if (controller_ids_.empty())
     return;
+
+  DCHECK(!job_controllers_.empty());
 
   std::string controller_id = controller_ids_.front();
   controller_ids_.pop_front();
   active_controller_ = job_controllers_[controller_id].get();
+  DCHECK(active_controller_);
 
   data_manager_->PopNextRequest(
       active_controller_->registration_id(),
@@ -67,6 +62,8 @@ void BackgroundFetchScheduler::Abort(
     blink::mojom::BackgroundFetchService::AbortCallback callback) {
   DCHECK_EQ(failure_reason,
             BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
+
+  base::Erase(controller_ids_, registration_id.unique_id());
 
   auto it = job_controllers_.find(registration_id.unique_id());
   if (it == job_controllers_.end()) {
@@ -296,6 +293,8 @@ void BackgroundFetchScheduler::AbortFetches(
   }
 
   for (auto* controller : to_abort) {
+    // Erase it from |controller_ids_| first to avoid rescheduling.
+    base::Erase(controller_ids_, controller->registration_id().unique_id());
     controller->Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
                       base::DoNothing());
   }
