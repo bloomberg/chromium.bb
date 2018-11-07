@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
@@ -63,6 +64,8 @@ HostStatusProviderImpl::HostStatusProviderImpl(
   device_sync_client_->AddObserver(this);
 
   CheckForUpdatedStatusAndNotifyIfChanged();
+  UMA_HISTOGRAM_ENUMERATION("MultiDevice.Setup.HostStatus",
+                            current_status_and_device_.host_status());
 }
 
 HostStatusProviderImpl::~HostStatusProviderImpl() {
