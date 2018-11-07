@@ -16,6 +16,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -56,7 +57,8 @@ class WebAppInstallManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    registrar_ = std::make_unique<WebAppRegistrar>();
+    database_ = std::make_unique<TestWebAppDatabase>();
+    registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
     install_manager_ =
         std::make_unique<WebAppInstallManager>(profile(), registrar_.get());
   }
@@ -105,6 +107,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   }
 
  protected:
+  std::unique_ptr<TestWebAppDatabase> database_;
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
 };

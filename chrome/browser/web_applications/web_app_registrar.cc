@@ -4,12 +4,18 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
 
-WebAppRegistrar::WebAppRegistrar() {}
+WebAppRegistrar::WebAppRegistrar(AbstractWebAppDatabase* database)
+    : database_(database) {
+  DCHECK(database_);
+}
 
 WebAppRegistrar::~WebAppRegistrar() = default;
 
@@ -18,11 +24,15 @@ void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
   DCHECK(!app_id.empty());
   DCHECK(!GetAppById(app_id));
 
-  registry_.emplace(std::make_pair(app_id, std::move(web_app)));
+  database_->WriteWebApp(*web_app);
+
+  registry_.emplace(app_id, std::move(web_app));
 }
 
 std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
   DCHECK(!app_id.empty());
+
+  database_->DeleteWebApps({app_id});
 
   auto kv = registry_.find(app_id);
   DCHECK(kv != registry_.end());
@@ -38,7 +48,27 @@ WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) {
 }
 
 void WebAppRegistrar::UnregisterAll() {
+  std::vector<AppId> app_ids;
+  for (auto& kv : registry()) {
+    const AppId& app_id = kv.first;
+    app_ids.push_back(app_id);
+  }
+  database_->DeleteWebApps(std::move(app_ids));
+
   registry_.clear();
+}
+
+void WebAppRegistrar::Init(base::OnceClosure closure) {
+  database_->OpenDatabase(base::BindOnce(&WebAppRegistrar::OnDatabaseOpened,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         std::move(closure)));
+}
+
+void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure closure,
+                                       Registry registry) {
+  DCHECK(is_empty());
+  registry_ = std::move(registry);
+  std::move(closure).Run();
 }
 
 }  // namespace web_app

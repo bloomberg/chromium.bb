@@ -8,8 +8,13 @@ group("web_app_group") {
 
 source_set("web_applications") {
   sources = [
+    "abstract_web_app_database.h",
     "web_app.cc",
     "web_app.h",
+    "web_app_database.cc",
+    "web_app_database.h",
+    "web_app_database_factory.cc",
+    "web_app_database_factory.h",
     "web_app_install_manager.cc",
     "web_app_install_manager.h",
     "web_app_registrar.cc",
@@ -22,8 +27,13 @@ source_set("web_applications") {
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
+    "//components/sync",
     "//content/public/browser",
     "//skia",
+  ]
+
+  public_deps = [
+    "//chrome/browser/web_applications/proto",
   ]
 }
 
@@ -33,6 +43,10 @@ source_set("web_applications_test_support") {
   sources = [
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
+    "test/test_web_app_database.cc",
+    "test/test_web_app_database.h",
+    "test/test_web_app_database_factory.cc",
+    "test/test_web_app_database_factory.h",
     "test/web_app_test.cc",
     "test/web_app_test.h",
   ]
@@ -42,6 +56,7 @@ source_set("web_applications_test_support") {
     ":web_applications",
     "//chrome/browser/web_applications/components",
     "//chrome/test:test_support",
+    "//components/sync:test_support_model",
     "//testing/gtest",
   ]
 }
@@ -50,6 +65,7 @@ source_set("web_applications_unit_tests") {
   testonly = true
 
   sources = [
+    "web_app_database_unittest.cc",
     "web_app_install_manager_unittest.cc",
     "web_app_registrar_unittest.cc",
   ]

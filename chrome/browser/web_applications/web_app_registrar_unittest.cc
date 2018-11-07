@@ -6,8 +6,10 @@
 
 #include <set>
 
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -16,18 +18,26 @@ namespace web_app {
 
 namespace {
 
-std::set<AppId> RegisterAppsForTesting(const std::string& base_url,
-                                       int num_apps,
-                                       WebAppRegistrar* registrar) {
-  std::set<AppId> ids;
+Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
+  Registry registry;
 
   for (int i = 0; i < num_apps; ++i) {
     const auto url = base_url + base::IntToString(i);
     const AppId app_id = GenerateAppIdFromURL(GURL(url));
     auto web_app = std::make_unique<WebApp>(app_id);
-    registrar->RegisterApp(std::move(web_app));
+    registry.emplace(app_id, std::move(web_app));
+  }
 
-    ids.insert(app_id);
+  return registry;
+}
+
+std::set<AppId> RegisterAppsForTesting(WebAppRegistrar* registrar,
+                                       Registry&& registry) {
+  std::set<AppId> ids;
+
+  for (auto& kv : registry) {
+    ids.insert(kv.first);
+    registrar->RegisterApp(std::move(kv.second));
   }
 
   return ids;
@@ -36,7 +46,9 @@ std::set<AppId> RegisterAppsForTesting(const std::string& base_url,
 }  // namespace
 
 TEST(WebAppRegistrar, CreateRegisterUnregister) {
-  auto registrar = std::make_unique<WebAppRegistrar>();
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+
   EXPECT_EQ(nullptr, registrar->GetAppById(AppId()));
 
   const GURL launch_url = GURL("https://example.com/path");
@@ -88,7 +100,8 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
 }
 
 TEST(WebAppRegistrar, DestroyRegistrarOwningRegisteredApps) {
-  auto registrar = std::make_unique<WebAppRegistrar>();
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
 
   const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
   const AppId app_id2 = GenerateAppIdFromURL(GURL("https://example.com/path2"));
@@ -103,10 +116,11 @@ TEST(WebAppRegistrar, DestroyRegistrarOwningRegisteredApps) {
 }
 
 TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
-  auto registrar = std::make_unique<WebAppRegistrar>();
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
 
-  auto ids =
-      RegisterAppsForTesting("https://example.com/path", 100, registrar.get());
+  Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
+  auto ids = RegisterAppsForTesting(registrar.get(), std::move(registry));
   EXPECT_EQ(100UL, ids.size());
 
   for (auto& kv : registrar->registry()) {
@@ -118,6 +132,45 @@ TEST(WebAppRegistrar, ForEachAndUnregisterAll) {
 
   EXPECT_FALSE(registrar->is_empty());
   registrar->UnregisterAll();
+  EXPECT_TRUE(registrar->is_empty());
+}
+
+TEST(WebAppRegistrar, AbstractWebAppDatabase) {
+  auto database = std::make_unique<TestWebAppDatabase>();
+  auto registrar = std::make_unique<WebAppRegistrar>(database.get());
+
+  registrar->Init(base::DoNothing());
+  EXPECT_TRUE(registrar->is_empty());
+
+  // Load 100 apps.
+  Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
+  // Copy their ids.
+  std::set<AppId> ids;
+  for (auto& kv : registry)
+    ids.insert(kv.first);
+  EXPECT_EQ(100UL, ids.size());
+
+  database->TakeOpenDatabaseCallback().Run(std::move(registry));
+
+  // Add 1 app after opening.
+  const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
+  auto web_app = std::make_unique<WebApp>(app_id);
+  registrar->RegisterApp(std::move(web_app));
+  EXPECT_EQ(app_id, database->write_web_app_id());
+  EXPECT_EQ(101UL, registrar->registry().size());
+
+  // Remove 1 app after opening.
+  registrar->UnregisterApp(app_id);
+  EXPECT_EQ(100UL, registrar->registry().size());
+  EXPECT_EQ(1UL, database->delete_web_app_ids().size());
+  EXPECT_EQ(app_id, database->delete_web_app_ids()[0]);
+
+  // Remove 100 apps after opening.
+  registrar->UnregisterAll();
+  for (auto& app_id : database->delete_web_app_ids())
+    ids.erase(app_id);
+
+  EXPECT_TRUE(ids.empty());
   EXPECT_TRUE(registrar->is_empty());
 }
 

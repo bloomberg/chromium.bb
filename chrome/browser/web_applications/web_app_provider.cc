@@ -19,6 +19,8 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/web_app_database.h"
+#include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -56,9 +58,13 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   if (!AllowWebAppInstallation(profile))
     return;
 
-  registrar_ = std::make_unique<WebAppRegistrar>();
+  database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
+  database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
+  registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
   install_manager_ =
       std::make_unique<WebAppInstallManager>(profile, registrar_.get());
+
+  registrar_->Init(base::DoNothing());
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
@@ -123,6 +129,8 @@ void WebAppProvider::Reset() {
 
   install_manager_.reset();
   registrar_.reset();
+  database_.reset();
+  database_factory_.reset();
 }
 
 void WebAppProvider::Observe(int type,
