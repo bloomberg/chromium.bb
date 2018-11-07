@@ -66,10 +66,6 @@ class ScreenLocker : public AuthStatusConsumer,
     // Close any displayed error messages.
     virtual void ClearErrors() = 0;
 
-    // Run any visual effects after authentication is successful. This must call
-    // ScreenLocker::UnlockOnLoginSuccess() after all effects are done.
-    virtual void AnimateAuthenticationSuccess() = 0;
-
     // Called when the webui lock screen is ready. This gets invoked by a
     // chrome.send from the embedded webui.
     virtual void OnLockWebUIReady() = 0;
@@ -119,10 +115,6 @@ class ScreenLocker : public AuthStatusConsumer,
   // Called when an account password (not PIN/quick unlock) has been used to
   // unlock the device.
   void OnPasswordAuthSuccess(const UserContext& user_context);
-
-  // Does actual unlocking once authentication is successful and all blocking
-  // animations are done.
-  void UnlockOnLoginSuccess();
 
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context,
@@ -193,10 +185,6 @@ class ScreenLocker : public AuthStatusConsumer,
   // Values corrospond to UMA histograms, do not modify, or add or delete other
   // than directly before AUTH_COUNT.
   enum UnlockType { AUTH_PASSWORD = 0, AUTH_PIN, AUTH_FINGERPRINT, AUTH_COUNT };
-
-  struct AuthenticationParametersCapture {
-    UserContext user_context;
-  };
 
   ~ScreenLocker() override;
 
@@ -288,10 +276,6 @@ class ScreenLocker : public AuthStatusConsumer,
 
   // Callback to run, if any, when authentication is done.
   AuthenticateCallback on_auth_complete_;
-
-  // Copy of parameters passed to last call of OnLoginSuccess for usage in
-  // UnlockOnLoginSuccess().
-  std::unique_ptr<AuthenticationParametersCapture> authentication_capture_;
 
   // Provider for button icon set by the screenlockPrivate API.
   std::unique_ptr<ScreenlockIconProvider> screenlock_icon_provider_;

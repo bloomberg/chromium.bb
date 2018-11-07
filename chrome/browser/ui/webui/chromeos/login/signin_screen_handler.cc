@@ -530,8 +530,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("resyncUserData", &SigninScreenHandler::HandleResyncUserData);
   AddCallback("loginUIStateChanged",
               &SigninScreenHandler::HandleLoginUIStateChanged);
-  AddCallback("unlockOnLoginSuccess",
-              &SigninScreenHandler::HandleUnlockOnLoginSuccess);
   AddCallback("showLoadingTimeoutError",
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
@@ -1497,12 +1495,6 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
     NOTREACHED();
     return;
   }
-}
-
-void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
-  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
-  if (ScreenLocker::default_screen_locker())
-    ScreenLocker::default_screen_locker()->UnlockOnLoginSuccess();
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {

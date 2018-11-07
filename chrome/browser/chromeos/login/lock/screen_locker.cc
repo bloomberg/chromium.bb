@@ -85,11 +85,6 @@ namespace chromeos {
 
 namespace {
 
-// Timeout for unlock animation guard - some animations may be required to run
-// on successful authentication before unlocking, but we want to be sure that
-// unlock happens even if animations are broken.
-const int kUnlockGuardTimeoutMs = 400;
-
 // Returns true if fingerprint authentication is available for |user|.
 bool IsFingerprintAvailableForUser(const user_manager::User* user) {
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
@@ -311,20 +306,15 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     NOTREACHED() << "Logged in user not found.";
   }
 
-  authentication_capture_.reset(new AuthenticationParametersCapture());
-  authentication_capture_->user_context = user_context;
-
-  // Add guard for case when something get broken in call chain to unlock
-  // for sure.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ScreenLocker::UnlockOnLoginSuccess,
-                     weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
-  delegate_->AnimateAuthenticationSuccess();
-
   if (on_auth_complete_)
     std::move(on_auth_complete_).Run(true);
+
+  if (auth_status_consumer_)
+    auth_status_consumer_->OnAuthSuccess(user_context);
+  weak_factory_.InvalidateWeakPtrs();
+
+  VLOG(1) << "Hiding the lock screen.";
+  chromeos::ScreenLocker::Hide();
 }
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
@@ -335,24 +325,6 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
   SaveSyncPasswordHash(user_context);
-}
-
-void ScreenLocker::UnlockOnLoginSuccess() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-  if (!authentication_capture_.get()) {
-    LOG(WARNING) << "Call to UnlockOnLoginSuccess without previous "
-                 << "authentication success.";
-    return;
-  }
-
-  if (auth_status_consumer_) {
-    auth_status_consumer_->OnAuthSuccess(authentication_capture_->user_context);
-  }
-  authentication_capture_.reset();
-  weak_factory_.InvalidateWeakPtrs();
-
-  VLOG(1) << "Hiding the lock screen.";
-  chromeos::ScreenLocker::Hide();
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context,

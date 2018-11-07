@@ -218,16 +218,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Displays animations on successful authentication, that have to happen
-   * before login UI is dismissed.
-   */
-  Oobe.animateAuthenticationSuccess = function() {
-    login.HeaderBar.animateOut(function() {
-      chrome.send('unlockOnLoginSuccess');
-    });
-  };
-
-  /**
    * Displays animations that have to happen once login UI is fully displayed.
    */
   Oobe.animateOnceFullyDisplayed = function() {
