@@ -210,13 +210,14 @@ static_library("browser") {
   }
 }
 
-static_library("test_support") {
+# This target contains test support that backs the test support for
+# IdentityManager (and eventually likely for the Identity Service). We are
+# actively converting the codebase away from using the code in this target
+# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
+# not add code to this target without consulting with blundell@chromium.org.
+static_library("internals_test_support") {
   testonly = true
   sources = [
-    "fake_account_fetcher_service.cc",
-    "fake_account_fetcher_service.h",
-    "fake_auth_status_provider.cc",
-    "fake_auth_status_provider.h",
     "fake_gaia_cookie_manager_service.cc",
     "fake_gaia_cookie_manager_service.h",
     "fake_profile_oauth2_token_service.cc",
@@ -229,20 +230,41 @@ static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//components/prefs",
+    "//google_apis:test_support",
+  ]
+
+  public_deps = [
+    ":internals",
+    ":signin_metrics",
+    "//base",
+    "//services/network:test_support",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_account_fetcher_service.cc",
+    "fake_account_fetcher_service.h",
+    "fake_auth_status_provider.cc",
+    "fake_auth_status_provider.h",
+  ]
+
+  deps = [
     "//ui/gfx:test_support",
   ]
 
   public_deps = [
     ":browser",
+
+    # This public_dep is present to avoid requiring all consumers of this
+    # target to also depend on the below target. Once there are no direct
+    # consumers of the internals_test_support target, this dep should be
+    # removed. See https://crbug.com/796544.
+    ":internals_test_support",
     "//base",
     "//components/image_fetcher/core/",
-    "//components/prefs:test_support",
-    "//components/webdata/common",
-    "//google_apis:test_support",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//services/network/public/cpp",
-    "//testing/gtest",
   ]
 }
 
@@ -274,9 +296,14 @@ source_set("unit_tests") {
     "//components/content_settings/core/browser",
     "//components/os_crypt:test_support",
     "//components/prefs",
+    "//components/prefs:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
+    "//components/webdata/common",
+    "//google_apis:test_support",
+    "//net:test_support",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 
   if (is_chromeos) {

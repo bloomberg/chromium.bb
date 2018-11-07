@@ -82,6 +82,7 @@ source_set("unit_tests") {
     "//components/sync_sessions:test_support",
     "//components/version_info",
     "//components/version_info:generate_version_info",
+    "//components/webdata/common",
     "//components/webdata_services:test_support",
     "//google_apis",
     "//net",
