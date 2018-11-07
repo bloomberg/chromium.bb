@@ -186,7 +186,7 @@ class AndroidProfileTool(object):
   # order to keep devices tidy.
   _LEGACY_PROFILE_DIRS = ['/data/local/tmp/chrome/cyglog']
 
-  TEST_URL = 'https://www.google.com/#hl=en&q=science'
+  TEST_URL = 'http://en.m.wikipedia.org/wiki/Science'
   _WPR_ARCHIVE = os.path.join(
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
