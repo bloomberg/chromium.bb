@@ -96,6 +96,7 @@ HRESULT CReauthCredential::FinishAuthentication(BSTR username,
   hr = SetUserProperty(OLE2CW(user_sid_), kUserNeedsReauth, 0);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "SetUserProperty hr=" << putHR(hr);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
     return hr;
   }
 

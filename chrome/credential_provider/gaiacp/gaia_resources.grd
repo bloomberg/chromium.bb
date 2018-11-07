@@ -136,6 +136,9 @@
       <message name="IDS_CANT_CREATE_USER" desc="">
         A user could not be created.
       </message>
+      <message name="IDS_INVALID_PASSWORD" desc="">
+        Sorry, your password couldn't be verified. Please try again.
+      </message>
       <message name="IDS_INTERNAL_ERROR" desc="">
         An internal error occurred.
       </message>
