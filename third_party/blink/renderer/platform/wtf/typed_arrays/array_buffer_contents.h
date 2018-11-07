@@ -160,7 +160,7 @@ class WTF_EXPORT ArrayBufferContents {
   static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
 
-  class DataHolder : public ThreadSafeRefCounted<DataHolder> {
+  class WTF_EXPORT DataHolder : public ThreadSafeRefCounted<DataHolder> {
     DISALLOW_COPY_AND_ASSIGN(DataHolder);
 
    public:
