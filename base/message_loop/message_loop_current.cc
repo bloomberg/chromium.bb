@@ -40,11 +40,6 @@ bool MessageLoopCurrent::IsSet() {
   return !!GetTLSMessageLoop()->Get();
 }
 
-MessageLoopCurrent& MessageLoopCurrent::operator=(MessageLoop* message_loop) {
-  current_ = message_loop;
-  return *this;
-}
-
 void MessageLoopCurrent::AddDestructionObserver(
     DestructionObserver* destruction_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
