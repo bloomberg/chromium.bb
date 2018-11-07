@@ -191,10 +191,11 @@ static const int16_t ac_qlookup_12_Q3[QINDEX_RANGE] = {
 // underflow to 0 in the actual quantization routines.
 
 int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  const int q_clamped = clamp(qindex + delta, 0, MAXQ);
   switch (bit_depth) {
-    case AOM_BITS_8: return dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_10: return dc_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_12: return dc_qlookup_12_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return dc_qlookup_Q3[q_clamped];
+    case AOM_BITS_10: return dc_qlookup_10_Q3[q_clamped];
+    case AOM_BITS_12: return dc_qlookup_12_Q3[q_clamped];
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
@@ -202,10 +203,11 @@ int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
 }
 
 int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  const int q_clamped = clamp(qindex + delta, 0, MAXQ);
   switch (bit_depth) {
-    case AOM_BITS_8: return ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_10: return ac_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_12: return ac_qlookup_12_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return ac_qlookup_Q3[q_clamped];
+    case AOM_BITS_10: return ac_qlookup_10_Q3[q_clamped];
+    case AOM_BITS_12: return ac_qlookup_12_Q3[q_clamped];
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;

@@ -713,8 +713,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   }
 
   // Initialize errorperbit, sadperbit16 and sadperbit4.
-  rdmult = (int)av1_compute_rd_mult_based_on_qindex(cpi, ARNR_FILT_QINDEX);
-  if (rdmult < 1) rdmult = 1;
+  rdmult = av1_compute_rd_mult_based_on_qindex(cpi, ARNR_FILT_QINDEX);
   set_error_per_bit(&cpi->td.mb, rdmult);
   av1_initialize_me_consts(cpi, &cpi->td.mb, ARNR_FILT_QINDEX);
   av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);

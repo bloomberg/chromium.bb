@@ -353,19 +353,19 @@ static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = {
   128   // INTNL_ARF_UPDATE
 };
 
-int64_t av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
-  const int64_t q =
-      av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
-  int64_t rdmult = 0;
+int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
+  const int q = av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
+  int rdmult = q * q;
+  rdmult = rdmult * 3 + (rdmult * 2 / 3);
   switch (cpi->common.seq_params.bit_depth) {
-    case AOM_BITS_8: rdmult = 88 * q * q / 24; break;
-    case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 4); break;
-    case AOM_BITS_12: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 8); break;
+    case AOM_BITS_8: break;
+    case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(rdmult, 4); break;
+    case AOM_BITS_12: rdmult = ROUND_POWER_OF_TWO(rdmult, 8); break;
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-  return rdmult;
+  return rdmult > 0 ? rdmult : 1;
 }
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
@@ -378,7 +378,6 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
     rdmult = (rdmult * rd_frame_type_factor[frame_type]) >> 7;
     rdmult += ((rdmult * rd_boost_factor[boost_index]) >> 7);
   }
-  if (rdmult < 1) rdmult = 1;
   return (int)rdmult;
 }
 
