@@ -101,6 +101,13 @@ class BatchElementCheckerTest : public testing::Test {
   std::map<std::string, int> try_done_;
 };
 
+TEST_F(BatchElementCheckerTest, AllFoundIfEmpty) {
+  EXPECT_TRUE(checks_.all_found());
+  checks_.AddElementCheck(kExistenceCheck, {"exists"},
+                          ElementExistenceCallback("exists"));
+  EXPECT_FALSE(checks_.all_found());
+}
+
 TEST_F(BatchElementCheckerTest, OneElementFound) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))

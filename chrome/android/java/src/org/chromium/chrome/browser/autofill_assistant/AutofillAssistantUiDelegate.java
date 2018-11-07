@@ -377,6 +377,21 @@ class AutofillAssistantUiDelegate {
         mActivity.getSnackbarManager().dismissSnackbars(controller);
     }
 
+    /**
+     * Enters a simplified pre-shutdown state, with only a goodbye message - the current status
+     * message - and a close button.
+     */
+    public void enterGracefulShutdownMode() {
+        // TODO(crbug.com/806868): Introduce a proper, separate shutdown dialog, with enough space
+        // to display longer messages. Setting the max lines and hiding the feedback button are
+        // hacks to give enough space to display long messages.
+        mStatusMessageView.setMaxLines(4);
+        mBottomBar.findViewById(R.id.feedback_button).setVisibility(View.GONE);
+        hideProgressBar();
+        hideDetails();
+        hideChipsViewContainer();
+    }
+
     /** Called to show overlay. */
     public void showOverlay() {
         mOverlay.setVisibility(View.VISIBLE);
@@ -519,6 +534,10 @@ class AutofillAssistantUiDelegate {
 
     private void clearChipsViewContainer() {
         mChipsViewContainer.removeAllViews();
+        hideChipsViewContainer();
+    }
+
+    private void hideChipsViewContainer() {
         mChipsViewContainer.setVisibility(View.GONE);
     }
 

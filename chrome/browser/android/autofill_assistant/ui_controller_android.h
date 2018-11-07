@@ -40,6 +40,7 @@ class UiControllerAndroid : public UiController,
   void ShowOverlay() override;
   void HideOverlay() override;
   void Shutdown() override;
+  void ShutdownGracefully() override;
   void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
@@ -69,6 +70,7 @@ class UiControllerAndroid : public UiController,
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void GiveUp(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnScriptSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,

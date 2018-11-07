@@ -23,6 +23,7 @@ BatchElementChecker::BatchElementChecker(WebController* web_controller)
     : web_controller_(web_controller),
       pending_checks_count_(0),
       all_found_(false),
+      started_(false),
       weak_ptr_factory_(this) {
   DCHECK(web_controller);
 }
@@ -33,7 +34,7 @@ void BatchElementChecker::AddElementCheck(
     ElementCheckType check_type,
     const std::vector<std::string>& selectors,
     ElementCheckCallback callback) {
-  DCHECK(!try_done_callback_);
+  DCHECK(!started_);
 
   element_check_callbacks_[std::make_pair(check_type, selectors)].emplace_back(
       std::move(callback));
@@ -42,7 +43,7 @@ void BatchElementChecker::AddElementCheck(
 void BatchElementChecker::AddFieldValueCheck(
     const std::vector<std::string>& selectors,
     GetFieldValueCallback callback) {
-  DCHECK(!try_done_callback_);
+  DCHECK(!started_);
 
   get_field_value_callbacks_[selectors].emplace_back(std::move(callback));
 }
@@ -50,6 +51,7 @@ void BatchElementChecker::AddFieldValueCheck(
 void BatchElementChecker::Run(const base::TimeDelta& duration,
                               base::RepeatingCallback<void()> try_done,
                               base::OnceCallback<void()> all_done) {
+  started_ = true;
   int64_t try_count = duration / kCheckPeriod;
   if (try_count <= 0) {
     try_count = 1;
@@ -59,6 +61,14 @@ void BatchElementChecker::Run(const base::TimeDelta& duration,
       &BatchElementChecker::OnTryDone,
       // Callback is run from this class, so this is guaranteed to still exist.
       base::Unretained(this), try_count, try_done, std::move(all_done)));
+}
+
+bool BatchElementChecker::all_found() {
+  if (!started_) {
+    return element_check_callbacks_.empty() &&
+           get_field_value_callbacks_.empty();
+  }
+  return all_found_;
 }
 
 void BatchElementChecker::Try(base::OnceCallback<void()> try_done_callback) {

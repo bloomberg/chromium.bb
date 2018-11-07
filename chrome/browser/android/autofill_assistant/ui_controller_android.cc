@@ -112,6 +112,11 @@ void UiControllerAndroid::Shutdown() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::ShutdownGracefully() {
+  Java_AutofillAssistantUiController_onShutdownGracefully(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
 void UiControllerAndroid::UpdateScripts(
     const std::vector<ScriptHandle>& scripts) {
   std::vector<std::string> script_paths;
@@ -354,6 +359,12 @@ void UiControllerAndroid::InvalidateAccessToken(
 void UiControllerAndroid::Destroy(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj) {
   ui_delegate_->OnDestroy();
+}
+
+void UiControllerAndroid::GiveUp(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  ui_delegate_->OnGiveUp();
 }
 
 static jlong JNI_AutofillAssistantUiController_Init(
