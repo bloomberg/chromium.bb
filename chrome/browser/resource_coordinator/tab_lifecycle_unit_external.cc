@@ -6,31 +6,26 @@
 
 #include "base/logging.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 
 namespace resource_coordinator {
 
 // static
 TabLifecycleUnitExternal* TabLifecycleUnitExternal::FromWebContents(
     content::WebContents* web_contents) {
-  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
-  return source->GetTabLifecycleUnitExternal(web_contents);
+  return GetTabLifecycleUnitSource()->GetTabLifecycleUnitExternal(web_contents);
 }
 
 // static
 void TabLifecycleUnitExternal::AddTabLifecycleObserver(
     TabLifecycleObserver* observer) {
-  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
-  source->AddTabLifecycleObserver(observer);
+  GetTabLifecycleUnitSource()->AddTabLifecycleObserver(observer);
 }
 
 // static
 void TabLifecycleUnitExternal::RemoveTabLifecycleObserver(
     TabLifecycleObserver* observer) {
-  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
-  source->RemoveTabLifecycleObserver(observer);
+  GetTabLifecycleUnitSource()->RemoveTabLifecycleObserver(observer);
 }
 
 }  // namespace resource_coordinator
