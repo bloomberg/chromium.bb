@@ -7,11 +7,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
+#include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_fetcher_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/web/public/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -27,6 +30,8 @@ const char kCommandPrefix[] = "searchEngine";
 const char kCommandOpenSearch[] = "searchEngine.openSearch";
 const char kOpenSearchPageUrlKey[] = "pageUrl";
 const char kOpenSearchOsddUrlKey[] = "osddUrl";
+const char kCommandSearchableUrl[] = "searchEngine.searchableUrl";
+const char kSearchableUrlUrlKey[] = "url";
 
 // Returns true if the |item|'s transition type is FORM_SUBMIT.
 bool IsFormSubmit(const web::NavigationItem* item) {
@@ -35,7 +40,7 @@ bool IsFormSubmit(const web::NavigationItem* item) {
 }
 
 // Generates a keyword from |item|. This code is based on:
-// https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc?rcl=4e19b43513aa9590ae89d5c68523bc764f40067f&l=41i
+// https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc
 base::string16 GenerateKeywordFromNavigationItem(
     const web::NavigationItem* item) {
   // Don't autogenerate keywords for pages that are the result of form
@@ -85,6 +90,22 @@ void SearchEngineTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state_ = nullptr;
 }
 
+// When the page is loaded, checks if |searchable_url_| has a value generated
+// from the <form> submission before the navigation. If true, and the navigation
+// is successful, adds a TemplateURL by |searchable_url_|. |searchable_url_|
+// will be set to empty in the end.
+void SearchEngineTabHelper::DidFinishNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (!searchable_url_.is_empty()) {
+    if (!navigation_context->GetError() &&
+        !navigation_context->IsSameDocument()) {
+      AddTemplateURLBySearchableURL(searchable_url_);
+    }
+    searchable_url_ = GURL();
+  }
+}
+
 bool SearchEngineTabHelper::OnJsMessage(const base::DictionaryValue& message,
                                         const GURL& page_url,
                                         bool has_user_gesture,
@@ -104,13 +125,23 @@ bool SearchEngineTabHelper::OnJsMessage(const base::DictionaryValue& message,
       return false;
     AddTemplateURLByOSDD(GURL(document_url->GetString()),
                          GURL(osdd_url->GetString()));
+  } else if (cmd_str == kCommandSearchableUrl) {
+    const base::Value* url = message.FindKey(kSearchableUrlUrlKey);
+    if (!url || !url->is_string())
+      return false;
+    // Save |url| to |searchable_url_| when generated from <form> submission,
+    // and create the TemplateURL when the submission did lead to a successful
+    // navigation.
+    searchable_url_ = GURL(url->GetString());
+  } else {
+    return false;
   }
   return true;
 }
 
 // Creates a new TemplateURL by OSDD. The TemplateURL will be added to
 // TemplateURLService by TemplateURLFecther. This code is based on:
-// https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc?rcl=50f50d521b18ac53d05c4e159c02bcb609454b8e&l=96
+// https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc
 void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
                                                  const GURL& osdd_url) {
   // Checks to see if we should generate a keyword based on the OSDD, and if
@@ -163,4 +194,74 @@ void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
           url::Origin::Create(web_state_->GetLastCommittedURL()),
           browser_state->GetURLLoaderFactory(), MSG_ROUTING_NONE,
           /* content::ResourceType::RESOURCE_TYPE_SUB_RESOURCE */ 6);
+}
+
+// Creates a TemplateURL by |searchable_url| and adds it to TemplateURLService.
+// This code is based on:
+// https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc
+void SearchEngineTabHelper::AddTemplateURLBySearchableURL(
+    const GURL& searchable_url) {
+  if (!searchable_url.is_valid()) {
+    return;
+  }
+
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  // Don't add TemplateURL under incognito mode.
+  if (browser_state->IsOffTheRecord())
+    return;
+
+  const web::NavigationManager* manager = web_state_->GetNavigationManager();
+  int last_index = manager->GetLastCommittedItemIndex();
+  // When there was no previous page, the last index will be 0. This is
+  // normally due to a form submit that opened in a new tab.
+  if (last_index <= 0)
+    return;
+  const web::NavigationItem* item = manager->GetItemAtIndex(last_index - 1);
+
+  base::string16 keyword(GenerateKeywordFromNavigationItem(item));
+  if (keyword.empty())
+    return;
+
+  TemplateURLService* url_service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  if (!url_service)
+    return;
+
+  if (!url_service->loaded()) {
+    url_service->Load();
+    return;
+  }
+
+  const TemplateURL* current_url;
+  if (!url_service->CanAddAutogeneratedKeyword(keyword, searchable_url,
+                                               &current_url))
+    return;
+
+  if (current_url) {
+    if (current_url->originating_url().is_valid()) {
+      // The existing keyword was generated from an OpenSearch description
+      // document, don't regenerate.
+      return;
+    }
+    url_service->Remove(current_url);
+  }
+
+  TemplateURLData data;
+  data.SetShortName(keyword);
+  data.SetKeyword(keyword);
+  data.SetURL(searchable_url.spec());
+
+  const GURL& current_favicon =
+      manager->GetLastCommittedItem()->GetFavicon().url;
+  // If the favicon url isn't valid, it means there really isn't a favicon, or
+  // the favicon url wasn't obtained before the load started. This assumes the
+  // latter.
+  if (current_favicon.is_valid()) {
+    data.favicon_url = current_favicon;
+  } else if (item->GetReferrer().url.is_valid()) {
+    data.favicon_url = TemplateURL::GenerateFaviconURL(item->GetReferrer().url);
+  }
+  data.safe_for_autoreplace = true;
+  url_service->Add(std::make_unique<TemplateURL>(data));
 }
