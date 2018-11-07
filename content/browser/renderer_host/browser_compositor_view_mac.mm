@@ -216,7 +216,7 @@ void BrowserCompositorMac::UpdateState() {
 
   // If the host is visible and a compositor is required then create one.
   if (!render_widget_host_is_hidden_) {
-    TransitionToState(HasAttachedCompositor);
+    TransitionToState(HasOwnCompositor);
     return;
   }
 
@@ -225,26 +225,51 @@ void BrowserCompositorMac::UpdateState() {
 }
 
 void BrowserCompositorMac::TransitionToState(State new_state) {
-  // Note that the state enum values represent the other through which
-  // transitions must be done (see comments in State definition).
+  // Skip if there is no change to make.
+  bool is_no_op = false;
+  if (state_ == new_state) {
+    if (state_ == UseParentLayerCompositor)
+      is_no_op = parent_ui_layer_ == root_layer_->parent();
+    else
+      is_no_op = true;
+  }
+  if (is_no_op)
+    return;
 
-  // Transition UseParentLayerCompositor -> HasNoCompositor. Note that this
-  // transition will be made if we are already in UseParentLayerCompositor, but
-  // with a different parent layer.
-  if (state_ == UseParentLayerCompositor &&
-      (new_state != UseParentLayerCompositor ||
-       parent_ui_layer_ != root_layer_->parent())) {
+  // First, detach from the current compositor, if there is one.
+  delegated_frame_host_->DetachFromCompositor();
+  if (state_ == UseParentLayerCompositor) {
     DCHECK(root_layer_->parent());
     state_ = HasNoCompositor;
     root_layer_->parent()->RemoveObserver(this);
     root_layer_->parent()->Remove(root_layer_.get());
-    delegated_frame_host_->WasHidden();
-    delegated_frame_host_->DetachFromCompositor();
+  }
+  if (state_ == HasOwnCompositor) {
+    recyclable_compositor_->widget()->ResetNSView();
+    recyclable_compositor_->compositor()->SetRootLayer(nullptr);
+    recyclable_compositor_->InvalidateSurface();
+    ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
+        std::move(recyclable_compositor_));
   }
 
-  // Transition HasNoCompositor -> HasAttachedCompositor.
-  if (state_ == HasNoCompositor && new_state == HasAttachedCompositor) {
-    state_ = HasAttachedCompositor;
+  // The compositor is now detached. If this is the target state, we're done.
+  state_ = HasNoCompositor;
+  if (new_state == HasNoCompositor) {
+    // Don't transiently hide the DelegatedFrameHost because that can cause the
+    // current frame to be inappropriately evicted.
+    // https://crbug.com/897156
+    delegated_frame_host_->WasHidden();
+    return;
+  }
+
+  // Attach to the new compositor.
+  if (new_state == UseParentLayerCompositor) {
+    DCHECK(parent_ui_layer_);
+    parent_ui_layer_->Add(root_layer_.get());
+    parent_ui_layer_->AddObserver(this);
+    state_ = UseParentLayerCompositor;
+  }
+  if (new_state == HasOwnCompositor) {
     recyclable_compositor_ =
         ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
             content::GetContextFactory(), content::GetContextFactoryPrivate());
@@ -256,40 +281,13 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
         dfh_display_.color_space());
     recyclable_compositor_->widget()->SetNSView(
         accelerated_widget_mac_ns_view_);
-    delegated_frame_host_->AttachToCompositor(
-        recyclable_compositor_->compositor());
-    delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
-                                    false /* record_presentation_time */);
     recyclable_compositor_->Unsuspend();
+    state_ = HasOwnCompositor;
   }
-
-  // Transition HasAttachedCompositor -> HasNoCompositor.
-  if (state_ == HasAttachedCompositor && new_state != HasAttachedCompositor) {
-    state_ = HasNoCompositor;
-    // Marking the DelegatedFrameHost as removed from the window hierarchy is
-    // necessary to remove all connections to its old ui::Compositor.
-    delegated_frame_host_->WasHidden();
-    delegated_frame_host_->DetachFromCompositor();
-    recyclable_compositor_->widget()->ResetNSView();
-    recyclable_compositor_->compositor()->SetRootLayer(nullptr);
-    recyclable_compositor_->InvalidateSurface();
-    ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
-        std::move(recyclable_compositor_));
-  }
-
-  // Transition HasNoCompositor -> UseParentLayerCompositor.
-  if (state_ == HasNoCompositor && new_state == UseParentLayerCompositor) {
-    DCHECK(parent_ui_layer_);
-    DCHECK(parent_ui_layer_->GetCompositor());
-    DCHECK(!root_layer_->parent());
-    state_ = UseParentLayerCompositor;
-    delegated_frame_host_->AttachToCompositor(
-        parent_ui_layer_->GetCompositor());
-    delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
-                                    false /* record_presentation_time */);
-    parent_ui_layer_->Add(root_layer_.get());
-    parent_ui_layer_->AddObserver(this);
-  }
+  DCHECK_EQ(state_, new_state);
+  delegated_frame_host_->AttachToCompositor(GetCompositor());
+  delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
+                                  false /* record_presentation_time */);
 }
 
 // static

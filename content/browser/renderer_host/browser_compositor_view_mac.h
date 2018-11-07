@@ -149,26 +149,18 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
   // manage being visible, hidden, or drawn via a ui::Layer.
+  // The state of |recyclable_compositor_| and |parent_ui_layer_|.
   enum State {
-    // Effects:
-    // - |recyclable_compositor_| exists and is attached to
-    //   |delegated_frame_host_|.
-    // Happens when:
-    // - |render_widet_host_| is in the visible state.
-    HasAttachedCompositor,
-    // Effects:
-    // - |recyclable_compositor_| has been recycled and |delegated_frame_host_|
-    //   is hidden and detached from it.
-    // Happens when:
-    // - The |render_widget_host_| hidden or gone, and |cocoa_view_| is not
-    //   attached to an NSWindow.
-    // - This happens for backgrounded tabs.
+    // We are drawing using |recyclable_compositor_|. This happens when the
+    // renderer, but no parent ui::Layer has been specified. This is used by
+    // content shell, popup windows (time/date picker), and when tab capturing
+    // a backgrounded tab.
+    HasOwnCompositor,
+    // There is no compositor. This is true when the renderer is not visible
+    // and no parent ui::Layer is specified.
     HasNoCompositor,
-    // Effects:
-    // - |recyclable_compositor_| does not exist. |delegated_frame_host_| is
-    //   attached to |parent_ui_layer_|'s compositor.
-    // Happens when:
-    // - |parent_ui_layer_| is non-nullptr.
+    // We are drawing using |parent_ui_layer_|'s compositor. This happens
+    // whenever |parent_ui_layer_| is non-nullptr.
     UseParentLayerCompositor,
   };
   State state_ = HasNoCompositor;
