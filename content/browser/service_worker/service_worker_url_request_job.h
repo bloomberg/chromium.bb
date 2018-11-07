@@ -253,9 +253,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   void MaybeReportNavigationPreloadMetrics();
 
-  void ReportDestination(
-      ServiceWorkerMetrics::MainResourceRequestDestination destination);
-
   // Not owned.
   Delegate* delegate_;
 
@@ -340,9 +337,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   ServiceWorkerHeaderList cors_exposed_header_names_;
 
   std::unique_ptr<FileSizeResolver> file_size_resolver_;
-
-  bool started_fetch_dispatch_ = false;
-  bool reported_destination_ = false;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

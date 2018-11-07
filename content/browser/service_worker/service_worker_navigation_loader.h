@@ -153,9 +153,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void OnConnectionClosed();
   void DeleteIfNeeded();
 
-  void ReportDestination(
-      ServiceWorkerMetrics::MainResourceRequestDestination destination);
-
   // Records loading milestones. Called only after ForwardToServiceWorker() is
   // called and there was no error. |handled| is true when a fetch handler
   // handled the request (i.e. non network fallback case).

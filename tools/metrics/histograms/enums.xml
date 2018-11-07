@@ -45130,6 +45130,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerMainResourceRequestDestination">
+  <obsolete>
+    Not used since November 2018
+  </obsolete>
   <summary>
     Describes whether a main resource request went to service worker or network
     or errored.

@@ -51,11 +51,6 @@ class CONTENT_EXPORT ServiceWorkerURLJobWrapper {
     // Called to signal that loading failed, and that the resource being loaded
     // was a main resource.
     virtual void MainResourceLoadFailed() {}
-
-    virtual void ReportDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination destination) {}
-
-    virtual void WillDispatchFetchEventForMainResource() {}
   };
 
   // Non-S13nServiceWorker.
