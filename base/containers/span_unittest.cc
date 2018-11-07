@@ -1183,4 +1183,18 @@ TEST(SpanTest, EnsureConstexprGoodness) {
   EXPECT_EQ(kArray[size], item);
 }
 
+TEST(SpanTest, OutOfBoundsDeath) {
+  constexpr span<int, 0> kEmptySpan;
+
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan[0], "");
+
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan(0), "");
+
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.first(1), "");
+
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
+
+  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
+}
+
 }  // namespace base
