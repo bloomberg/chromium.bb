@@ -1310,7 +1310,7 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
     const SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   // |shared_image_factory_| never writes to the surface, so skip unnecessary
-  // MakeCurrent to mitigate driver bugs. https://crbug.com/457431
+  // MakeCurrent to improve performance. https://crbug.com/457431
   if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   LazyCreateSharedImageFactory();
@@ -1369,7 +1369,7 @@ void InProcessCommandBuffer::DestroySharedImageOnGpuThread(
     const Mailbox& mailbox) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   // |shared_image_factory_| never writes to the surface, so skip unnecessary
-  // MakeCurrent to mitigate driver bugs. https://crbug.com/457431
+  // MakeCurrent to improve performance. https://crbug.com/457431
   if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   if (!shared_image_factory_ ||

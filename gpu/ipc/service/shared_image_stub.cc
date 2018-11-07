@@ -149,7 +149,7 @@ bool SharedImageStub::MakeContextCurrent() {
   DCHECK(!context_state_->context_lost);
 
   // |factory_| never writes to the surface, so skip unnecessary MakeCurrent to
-  // mitigate driver bugs. https://crbug.com/457431
+  // improve performance. https://crbug.com/457431
   if (context_state_->context->IsCurrent(nullptr))
     return true;
 
