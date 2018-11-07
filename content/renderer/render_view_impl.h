@@ -304,6 +304,13 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Do not delete directly.  This class is reference counted.
   ~RenderViewImpl() override;
 
+  // Called when Page visibility is changed, with the final visibility state to
+  // be used. This is separate from the IPC handlers as they may inject logic to
+  // choose a visibility state, and tests may call this directly to skip past
+  // that logic and test a given state directly.
+  void ApplyPageVisibility(blink::mojom::PageVisibilityState visibility_state,
+                           bool initial_setting);
+
  private:
   // For unit tests.
   friend class DevToolsAgentTest;

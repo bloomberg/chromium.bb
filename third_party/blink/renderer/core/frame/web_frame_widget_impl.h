@@ -110,7 +110,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget implementation.
-  void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(SkColor) override;

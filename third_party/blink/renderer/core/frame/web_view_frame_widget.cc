@@ -141,11 +141,6 @@ WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }
 
-void WebViewFrameWidget::SetVisibilityState(
-    mojom::PageVisibilityState visibility_state) {
-  web_view_->SetVisibilityState(visibility_state, false);
-}
-
 void WebViewFrameWidget::SetBackgroundColorOverride(SkColor color) {
   web_view_->SetBackgroundColorOverride(color);
 }

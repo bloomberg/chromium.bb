@@ -200,6 +200,9 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
   blink::WebScreenInfo GetScreenInfo() override;
   blink::WebWidgetClient* WidgetClient() override;
 
+  // Exposed for our TestRunner harness.
+  using RenderViewImpl::ApplyPageVisibility;
+
  private:
   // RenderViewImpl has no public destructor.
   ~WebViewTestProxy() override;

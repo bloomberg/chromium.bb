@@ -92,11 +92,6 @@ class WebLayerTreeView {
   // Sets the background color for the viewport.
   virtual void SetBackgroundColor(SkColor) {}
 
-  // Sets whether this view is visible. In threaded mode, a view that is not
-  // visible will not composite or trigger UpdateAnimations() or Layout() calls
-  // until it becomes visible.
-  virtual void SetVisible(bool) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleFactorAndLimits(float page_scale_factor,

@@ -1869,6 +1869,17 @@ void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
   SetZoomLevel(zoom_level);
 }
 
+void RenderViewImpl::ApplyPageVisibility(
+    blink::mojom::PageVisibilityState visibility_state,
+    bool initial_setting) {
+  if (!webview())
+    return;
+  webview()->SetVisibilityState(visibility_state, initial_setting);
+  // Note: RenderWidget visibility is controlled independently by the browser,
+  // so there's no need to set visibility on the main frame's RenderWidget (or
+  // any other RenderWidget) here.
+}
+
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, webview());
@@ -1961,16 +1972,14 @@ void RenderViewImpl::OnPageWasHidden() {
   SuspendVideoCaptureDevices(true);
 #endif
 
-  if (webview()) {
-    // TODO(lfg): It's not correct to defer the page visibility to the main
-    // frame. Currently, this is done because the main frame may override the
-    // visibility of the page when prerendering. In order to fix this,
-    // prerendering must be made aware of OOPIFs. https://crbug.com/440544
-    blink::mojom::PageVisibilityState visibilityState =
-        GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
-                             : blink::mojom::PageVisibilityState::kHidden;
-    webview()->SetVisibilityState(visibilityState, false);
-  }
+  // TODO(lfg): It's not correct to defer the page visibility to the main
+  // frame. Currently, this is done because the main frame may override the
+  // visibility of the page when prerendering. In order to fix this,
+  // prerendering must be made aware of OOPIFs. https://crbug.com/440544
+  blink::mojom::PageVisibilityState visibility_state =
+      GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
+                           : blink::mojom::PageVisibilityState::kHidden;
+  ApplyPageVisibility(visibility_state, /*initial_setting=*/false);
 }
 
 void RenderViewImpl::OnPageWasShown() {
@@ -1978,12 +1987,10 @@ void RenderViewImpl::OnPageWasShown() {
   SuspendVideoCaptureDevices(false);
 #endif
 
-  if (webview()) {
-    blink::mojom::PageVisibilityState visibilityState =
-        GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
-                             : blink::mojom::PageVisibilityState::kVisible;
-    webview()->SetVisibilityState(visibilityState, false);
-  }
+  blink::mojom::PageVisibilityState visibility_state =
+      GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
+                           : blink::mojom::PageVisibilityState::kVisible;
+  ApplyPageVisibility(visibility_state, /*initial_setting=*/false);
 }
 
 void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {

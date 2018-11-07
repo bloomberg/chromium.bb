@@ -5415,10 +5415,6 @@ void RenderFrameImpl::WasHidden() {
   for (auto* plugin : active_pepper_instances_)
     plugin->PageVisibilityChanged(false);
 #endif  // ENABLE_PLUGINS
-
-  if (GetWebFrame()->FrameWidget()) {
-    GetWebFrame()->FrameWidget()->SetVisibilityState(VisibilityState());
-  }
 }
 
 void RenderFrameImpl::WasShown() {
@@ -5429,10 +5425,6 @@ void RenderFrameImpl::WasShown() {
   for (auto* plugin : active_pepper_instances_)
     plugin->PageVisibilityChanged(true);
 #endif  // ENABLE_PLUGINS
-
-  if (GetWebFrame()->FrameWidget()) {
-    GetWebFrame()->FrameWidget()->SetVisibilityState(VisibilityState());
-  }
 }
 
 void RenderFrameImpl::WidgetWillClose() {

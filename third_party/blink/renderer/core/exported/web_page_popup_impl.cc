@@ -312,7 +312,6 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
 
-  layer_tree_view_->SetVisible(true);
   page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
