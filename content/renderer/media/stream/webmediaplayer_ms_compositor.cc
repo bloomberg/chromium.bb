@@ -526,7 +526,13 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
 
   scoped_refptr<media::VideoFrame> old_frame = std::move(current_frame_);
   current_frame_ = frame;
-  CheckForFrameChanges(old_frame, frame);
+
+  // Complete the checks after |current_frame_| is accessible to avoid
+  // deadlocks, see https://crbug.com/901744.
+  video_frame_compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebMediaPlayerMSCompositor::CheckForFrameChanges, this,
+                     old_frame, frame));
 }
 
 void WebMediaPlayerMSCompositor::CheckForFrameChanges(
