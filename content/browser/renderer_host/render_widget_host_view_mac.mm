@@ -97,15 +97,7 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   Destroy();
 }
 
-bool RenderWidgetHostViewMac::OnBrowserCompositorSurfaceIdChanged(
-    const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
-  browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
-      child_local_surface_id_allocation);
-  if (auto* host = browser_compositor_->GetDelegatedFrameHost()) {
-    host->EmbedSurface(browser_compositor_->GetRendererLocalSurfaceId(),
-                       browser_compositor_->GetRendererSize(),
-                       cc::DeadlinePolicy::UseDefaultDeadline());
-  }
+bool RenderWidgetHostViewMac::OnBrowserCompositorSurfaceIdChanged() {
   return host()->SynchronizeVisualProperties();
 }
 
@@ -815,13 +807,7 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  browser_compositor_->AllocateNewRendererLocalSurfaceId();
-  if (auto* host = browser_compositor_->GetDelegatedFrameHost()) {
-    host->EmbedSurface(browser_compositor_->GetRendererLocalSurfaceId(),
-                       browser_compositor_->GetRendererSize(),
-                       cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  host()->SynchronizeVisualProperties();
+  browser_compositor_->ForceNewSurfaceId();
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -1082,7 +1068,7 @@ void RenderWidgetHostViewMac::ResetFallbackToFirstNavigationSurface() {
 }
 
 bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
-  return browser_compositor_->RequestRepaintForTesting();
+  return browser_compositor_->ForceNewSurfaceId();
 }
 
 void RenderWidgetHostViewMac::TransformPointToRootSurface(gfx::PointF* point) {

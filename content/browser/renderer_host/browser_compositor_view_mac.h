@@ -34,9 +34,7 @@ class BrowserCompositorMacClient {
   virtual void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DestroyCompositorForShutdown() = 0;
-  virtual bool OnBrowserCompositorSurfaceIdChanged(
-      const viz::LocalSurfaceIdAllocation&
-          child_local_surface_id_allocation) = 0;
+  virtual bool OnBrowserCompositorSurfaceIdChanged() = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
 
@@ -62,7 +60,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // These will not return nullptr until Destroy is called.
   DelegatedFrameHost* GetDelegatedFrameHost();
 
-  bool RequestRepaintForTesting();
+  // Force a new surface id to be allocated. Returns true if the
+  // RenderWidgetHostImpl sent the resulting surface id to the renderer.
+  bool ForceNewSurfaceId();
 
   // Return the parameters of the most recently received frame, or nullptr if
   // no valid frame is available.
@@ -115,9 +115,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
       base::OnceCallback<void()> allocation_task);
   const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
   base::TimeTicks GetRendererLocalSurfaceIdAllocationTime() const;
-  const viz::LocalSurfaceId& AllocateNewRendererLocalSurfaceId();
-  bool UpdateRendererLocalSurfaceIdFromChild(
-      const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation);
   void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future
