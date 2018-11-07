@@ -2441,7 +2441,13 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16("");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
   FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(
@@ -2473,7 +2479,13 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
   FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(
@@ -2505,7 +2517,13 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16("");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
   FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(

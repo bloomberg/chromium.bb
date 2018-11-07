@@ -186,8 +186,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   should_request_expiration_date_from_user_ = false;
   if (upload_request_.detected_values &
       DetectedValue::USER_PROVIDED_EXPIRATION_DATE) {
-    // TODO(crbug.com/899057): Update |upload_decision_metrics_| with
-    //                         USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE.
+    upload_decision_metrics_ |=
+        AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE;
     should_request_expiration_date_from_user_ = true;
   }
 
