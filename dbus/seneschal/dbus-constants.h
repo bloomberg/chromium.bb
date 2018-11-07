@@ -16,6 +16,7 @@ const char kSeneschalServiceName[] = "org.chromium.Seneschal";
 const char kStartServerMethod[] = "StartServer";
 const char kStopServerMethod[] = "StopServer";
 const char kSharePathMethod[] = "SharePath";
+const char kUnsharePathMethod[] = "UnsharePath";
 
 
 }  // namespace seneschal

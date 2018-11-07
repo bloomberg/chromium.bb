@@ -151,3 +151,23 @@ message SharePathResponse {
   // |success| is false.
   string failure_reason = 3;
 }
+
+// Information that must be included with every UnsharePath request.
+message UnsharePathRequest {
+  // The handle to the server with whom the path should be unshared.
+  uint32 handle = 1;
+
+  // The path to be unshared.  Must match a value returned from
+  // SharePathResponse.path.
+  string path = 2;
+}
+
+// Information sent back by seneschal when it receives an UnsharePath request.
+message UnsharePathResponse {
+  // If true, then the path was unshared successfully.
+  bool success = 1;
+
+  // The reason why the path could not be unshared, if any.  Only valid when
+  // |success| is false.
+  string failure_reason = 2;
+}
