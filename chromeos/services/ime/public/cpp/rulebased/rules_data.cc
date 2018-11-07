@@ -327,6 +327,14 @@ bool RulesData::Transform(const std::string& context,
   auto& re = *(std::get<0>(rule));
   const std::string& repl = std::get<1>(rule);
 
+  // Don't transform if matching happens in the middle of |appended| string.
+  if (re.Match(str, 0, str.length(), re2::RE2::Anchor::UNANCHORED,
+               matches.get(), nmatch)) {
+    size_t match_start = matches[0].data() - str.data();
+    if (match_start > str.length() - appended.length())
+      return false;
+  }
+
   re2::RE2::Replace(&str, re, repl);
   re2::RE2::Replace(&str, "\u001d", "");
   *transformed = str;
