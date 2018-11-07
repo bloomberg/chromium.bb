@@ -9,7 +9,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace policy {
 
@@ -30,14 +30,7 @@ UserCloudPolicyTokenForwarder::~UserCloudPolicyTokenForwarder() {}
 
 void UserCloudPolicyTokenForwarder::Shutdown() {
   access_token_fetcher_.reset();
-  identity_manager_->RemoveObserver(this);
   manager_->core()->service()->RemoveObserver(this);
-}
-
-void UserCloudPolicyTokenForwarder::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
-  RequestAccessToken();
 }
 
 void UserCloudPolicyTokenForwarder::OnInitializationCompleted(
@@ -49,24 +42,16 @@ void UserCloudPolicyTokenForwarder::Initialize() {
   // TODO(mnissler): Once a better way to reconfirm whether a user is on the
   // login whitelist is available, there is no reason to fetch the OAuth2 token
   // here if the client is already registered, so check and bail out here.
-
-  if (identity_manager_->HasPrimaryAccountWithRefreshToken())
-    RequestAccessToken();
-  else
-    identity_manager_->AddObserver(this);
-}
-
-void UserCloudPolicyTokenForwarder::RequestAccessToken() {
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
-  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      identity_manager_->GetPrimaryAccountId(), "policy_token_forwarder",
-      scopes,
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      "policy_token_forwarder", identity_manager_, scopes,
       base::BindOnce(
           &UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted,
           base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(
@@ -80,7 +65,7 @@ void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(
     // This should seldom happen: if the user is signing in for the first time
     // then this was an online signin and network errors are unlikely; if the
     // user had already signed in before then they should have policy cached,
-    // and RequestAccessToken() wouldn't have been invoked. Still, something
+    // and Initialize() wouldn't have been invoked. Still, something
     // just went wrong (server 500, or something). Currently we don't recover in
     // this case, and we'll just try to register for policy again on the next
     // signin.
