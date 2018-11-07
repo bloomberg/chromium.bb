@@ -1678,9 +1678,6 @@ public class AwContents implements SmartClipProvider {
             String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
         if (TRACE) Log.i(TAG, "%s loadDataWithBaseURL=%s", this, baseUrl);
         if (isDestroyedOrNoOperation(WARN)) return;
-        if (data != null && data.contains("#")) {
-            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
-        }
 
         data = fixupData(data);
         mimeType = fixupMimeType(mimeType);
@@ -1697,6 +1694,10 @@ public class AwContents implements SmartClipProvider {
         }
 
         if (baseUrl.startsWith("data:")) {
+            // We record only for this branch, because the other branch assumes unencoded content.
+            if (data != null && data.contains("#")) {
+                RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
+            }
             // For backwards compatibility with WebViewClassic, we use the value of |encoding|
             // as the charset, as long as it's not "base64".
             boolean isBase64 = isBase64Encoded(encoding);
