@@ -87,10 +87,11 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
                                     base::DoNothing());
         break;
       case BubbleType::UPLOAD_SAVE:
-        controller_->OfferUploadSave(test::GetMaskedServerCard(),
-                                     GetTestLegalMessage(),
-                                     should_request_name_from_user,
-                                     /*show_bubble=*/true, base::DoNothing());
+        controller_->OfferUploadSave(
+            test::GetMaskedServerCard(), GetTestLegalMessage(),
+            should_request_name_from_user,
+            /*should_request_expiration_date_from_user=*/false,
+            /*show_bubble=*/true, base::DoNothing());
         break;
       case BubbleType::SIGN_IN_PROMO:
         controller_->ShowBubbleForSignInPromo();

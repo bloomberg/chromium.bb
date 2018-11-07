@@ -143,8 +143,10 @@ class CreditCardSaveManagerTest : public testing::Test {
         form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
   }
 
-  void UserHasAcceptedUpload(const base::string16& cardholder_name) {
-    credit_card_save_manager_->OnUserDidAcceptUpload(cardholder_name);
+  void UserHasAcceptedUpload(
+      AutofillClient::UserProvidedCardDetails user_provided_card_details) {
+    credit_card_save_manager_->OnUserDidAcceptUpload(
+        user_provided_card_details);
   }
 
   // Populates |form| with data corresponding to a simple credit card form.
@@ -489,9 +491,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
   // modified the profile.
   histogram_tester.ExpectTotalCount(
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
-
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload(/*cardholder_name=*/base::ASCIIToUTF16(""));
+  UserHasAcceptedUpload({});
   // We should find that full addresses are included in the UploadCard request.
   EXPECT_THAT(
       payments_client_->addresses_in_upload_card(),
@@ -562,7 +563,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
 
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload(/*cardholder_name=*/base::ASCIIToUTF16(""));
+  UserHasAcceptedUpload({});
   // We should find that full addresses are included in the UploadCard request,
   // even though only countries were included in GetUploadDetails.
   EXPECT_THAT(

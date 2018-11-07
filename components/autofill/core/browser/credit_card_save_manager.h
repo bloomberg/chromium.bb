@@ -175,9 +175,12 @@ class CreditCardSaveManager {
 
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
   // the risk data is available. Sets the cardholder name on the upload request
-  // if |cardholder_name| is set.
-  void OnUserDidAcceptUpload(const base::string16& cardholder_name);
-
+  // if |user_provided_card_details.cardholder_name| is set. Sets the expiration
+  // date on the upload request if
+  // |user_provided_card_details.expiration_date_month| and
+  // |user_provided_card_details.expiration_date_year| are both set.
+  void OnUserDidAcceptUpload(const AutofillClient::UserProvidedCardDetails&
+                                 user_provided_card_details);
   // Saves risk data in |uploading_risk_data_| and calls SendUploadCardRequest
   // if the user has accepted the prompt.
   void OnDidGetUploadRiskData(const std::string& risk_data);

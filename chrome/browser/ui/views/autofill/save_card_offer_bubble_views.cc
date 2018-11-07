@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -30,6 +31,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
@@ -64,10 +66,17 @@ views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
-  if (controller())
-    controller()->OnSaveButton(cardholder_name_textfield_
-                                   ? cardholder_name_textfield_->text()
-                                   : base::string16());
+  if (controller()) {
+    controller()->OnSaveButton(
+        {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
+                                    : base::string16(),
+         month_input_dropdown_ ? month_input_dropdown_->GetTextForRow(
+                                     month_input_dropdown_->selected_index())
+                               : base::string16(),
+         year_input_dropdown_ ? year_input_dropdown_->GetTextForRow(
+                                    year_input_dropdown_->selected_index())
+                              : base::string16()});
+  }
   return true;
 }
 
@@ -85,12 +94,24 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
 
   DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
   if (cardholder_name_textfield_) {
+    // Make sure we are not requesting cardholder name and expiration date at
+    // the same time.
+    DCHECK(!month_input_dropdown_ && !year_input_dropdown_);
     // If requesting the user confirm the name, it cannot be blank.
     base::string16 trimmed_text;
     base::TrimWhitespace(cardholder_name_textfield_->text(), base::TRIM_ALL,
                          &trimmed_text);
     return !trimmed_text.empty();
   }
+  // If requesting the user select the expiration date, it cannot be unselected.
+  if (month_input_dropdown_ || year_input_dropdown_) {
+    // Make sure we are not requesting cardholder name and expiration date at
+    // the same time.
+    DCHECK(!cardholder_name_textfield_);
+    return !(month_input_dropdown_->selected_index() == 0 ||
+             year_input_dropdown_->selected_index() == 0);
+  }
+
   return true;
 }
 
@@ -108,6 +129,11 @@ void SaveCardOfferBubbleViews::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
   DCHECK_EQ(cardholder_name_textfield_, sender);
+  DialogModelChanged();
+}
+
+void SaveCardOfferBubbleViews::OnPerformAction(views::Combobox* sender) {
+  DCHECK(month_input_dropdown_ == sender || year_input_dropdown_ == sender);
   DialogModelChanged();
 }
 
@@ -191,7 +217,48 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     view->AddChildView(cardholder_name_view.release());
   }
 
+  if (controller()->ShouldRequestExpirationDateFromUser())
+    view->AddChildView(CreateRequestExpirationDateView().release());
+
   return view;
+}
+
+std::unique_ptr<views::View>
+SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
+  auto expiration_date_view = std::make_unique<views::View>();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  // Set up the month and year comboboxes.
+  month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
+  month_input_dropdown_->set_listener(this);
+  month_input_dropdown_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
+
+  year_input_dropdown_ = new views::Combobox(&year_combobox_model_);
+  year_input_dropdown_->set_listener(this);
+  year_input_dropdown_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
+
+  auto input_row = std::make_unique<views::View>();
+  input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
+  input_row->AddChildView(month_input_dropdown_);
+  input_row->AddChildView(year_input_dropdown_);
+
+  // Set up expiration date label.
+  auto expiration_date_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
+      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+  expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  expiration_date_view->AddChildView(expiration_date_label.release());
+  expiration_date_view->AddChildView(input_row.release());
+
+  return expiration_date_view;
 }
 
 }  // namespace autofill

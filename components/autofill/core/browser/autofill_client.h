@@ -93,6 +93,17 @@ class AutofillClient : public RiskDataLoader {
     UNMASK_FOR_AUTOFILL,
   };
 
+  // Used for explicitly requesting the user to enter/confirm cardholder name,
+  // expiration date month and year.
+  struct UserProvidedCardDetails {
+    base::string16 cardholder_name;
+    base::string16 expiration_date_month;
+    base::string16 expiration_date_year;
+  };
+  typedef base::OnceCallback<void(
+      const UserProvidedCardDetails& user_provided_card_details)>
+      UserAcceptedUploadCallback;
+
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
   // Callback to run if user presses the Save button in the migration dialog.
   // Will pass a vector of GUIDs of cards that the user selects to upload to
@@ -171,16 +182,19 @@ class AutofillClient : public RiskDataLoader {
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
   // contents of |legal_message| to the user. Displays a cardholder name
-  // textfield in the bubble if |should_request_name_from_user| is true. On
-  // desktop, shows the offer-to-save bubble if |show_prompt| is true; otherwise
-  // only shows the omnibox icon. On mobile, shows the offer-to-save infobar if
+  // textfield in the bubble if |should_request_name_from_user| is true.
+  // Displays a pair of expiration date dropdowns in the bubble if
+  // |should_request_expiration_date_from_user| is true. On desktop,
+  // shows the offer-to-save bubble if |show_prompt| is true; otherwise only
+  // shows the omnibox icon. On mobile, shows the offer-to-save infobar if
   // |show_prompt| is true; otherwise does not offer to save at all.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
-      base::OnceCallback<void(const base::string16&)> callback) = 0;
+      UserAcceptedUploadCallback callback) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.

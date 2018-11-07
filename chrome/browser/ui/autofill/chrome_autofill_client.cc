@@ -265,7 +265,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
               false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
               GetStrikeDatabase(),
               /*upload_save_card_callback=*/
-              base::OnceCallback<void(const base::string16&)>(),
+              UserAcceptedUploadCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
@@ -281,8 +281,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_prompt,
-    base::OnceCallback<void(const base::string16&)> callback) {
+    UserAcceptedUploadCallback callback) {
 #if defined(OS_ANDROID)
   DCHECK(show_prompt);
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
@@ -302,8 +303,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
   controller->OfferUploadSave(card, std::move(legal_message),
-                              should_request_name_from_user, show_prompt,
-                              std::move(callback));
+                              should_request_name_from_user,
+                              should_request_expiration_date_from_user,
+                              show_prompt, std::move(callback));
 #endif
 }
 
@@ -448,7 +450,7 @@ bool ChromeAutofillClient::IsContextSecure() {
   content::NavigationEntry* navigation_entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!navigation_entry)
-     return false;
+    return false;
 
   ssl_status = navigation_entry->GetSSL();
   // Note: If changing the implementation below, also change

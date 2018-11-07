@@ -97,8 +97,9 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_bubble,
-    base::OnceCallback<void(const base::string16&)> save_card_callback) {
+    AutofillClient::UserAcceptedUploadCallback save_card_callback) {
   // Don't show the bubble if it's already visible.
   if (save_card_bubble_view_)
     return;
@@ -110,6 +111,8 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
   is_upload_save_ = true;
   is_reshow_ = false;
   should_request_name_from_user_ = should_request_name_from_user;
+  should_request_expiration_date_from_user_ =
+      should_request_expiration_date_from_user;
   show_bubble_ = show_bubble;
   if (show_bubble_) {
     // Can't move this into the other "if (show_bubble_)" below because an
@@ -262,6 +265,10 @@ bool SaveCardBubbleControllerImpl::ShouldRequestNameFromUser() const {
   return should_request_name_from_user_;
 }
 
+bool SaveCardBubbleControllerImpl::ShouldRequestExpirationDateFromUser() const {
+  return should_request_expiration_date_from_user_;
+}
+
 bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
   if (is_upload_save_ || !base::FeatureList::IsEnabled(
                              features::kAutofillSaveCardSignInAfterLocalSave))
@@ -293,7 +300,7 @@ void SaveCardBubbleControllerImpl::OnSyncPromoAccepted(
 }
 
 void SaveCardBubbleControllerImpl::OnSaveButton(
-    const base::string16& cardholder_name) {
+    const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   save_card_bubble_view_ = nullptr;
 
   switch (current_bubble_type_) {
@@ -301,18 +308,19 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       DCHECK(!upload_save_card_callback_.is_null());
 
       base::string16 name_provided_by_user;
-      if (!cardholder_name.empty()) {
+      if (!user_provided_card_details.cardholder_name.empty()) {
         // Log whether the name was changed by the user or simply accepted
         // without edits.
         AutofillMetrics::LogSaveCardCardholderNameWasEdited(
-            cardholder_name != base::UTF8ToUTF16(account_info_.full_name));
+            user_provided_card_details.cardholder_name !=
+            base::UTF8ToUTF16(account_info_.full_name));
         // Trim the cardholder name provided by the user and send it in the
         // callback so it can be included in the final request.
         DCHECK(ShouldRequestNameFromUser());
-        base::TrimWhitespace(cardholder_name, base::TRIM_ALL,
-                             &name_provided_by_user);
+        base::TrimWhitespace(user_provided_card_details.cardholder_name,
+                             base::TRIM_ALL, &name_provided_by_user);
       }
-      std::move(upload_save_card_callback_).Run(name_provided_by_user);
+      std::move(upload_save_card_callback_).Run(user_provided_card_details);
       break;
     }
     case BubbleType::LOCAL_SAVE:

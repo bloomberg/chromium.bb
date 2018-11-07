@@ -32,7 +32,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     StrikeDatabase* strike_database,
-    base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
+    AutofillClient::UserAcceptedUploadCallback upload_save_card_callback,
     base::OnceClosure local_save_card_callback,
     PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
@@ -174,7 +174,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
   if (upload_)
-    std::move(upload_save_card_callback_).Run(base::string16());
+    std::move(upload_save_card_callback_).Run({});
   else
     std::move(local_save_card_callback_).Run();
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);

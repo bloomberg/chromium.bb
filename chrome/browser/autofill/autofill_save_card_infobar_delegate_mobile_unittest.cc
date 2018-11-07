@@ -50,7 +50,8 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
  private:
-  void UploadSaveCardCallback(const base::string16& cardholder_name) {
+  void UploadSaveCardCallback(const AutofillClient::UserProvidedCardDetails&
+                                  user_provided_card_details) {
     personal_data_.get()->SaveImportedCreditCard(credit_card_to_save_);
   }
 
@@ -133,7 +134,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
           is_uploading, credit_card, std::move(legal_message),
           /*strike_database=*/nullptr,
           /*upload_save_card_callback=*/
-          base::OnceCallback<void(const base::string16&)>(),
+          AutofillClient::UserAcceptedUploadCallback(),
           /*local_save_card_callback=*/
           base::Bind(base::IgnoreResult(
                          &TestPersonalDataManager::SaveImportedCreditCard),
