@@ -313,6 +313,13 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<autofill::MigratableCreditCard>&
+        migratable_credit_cards) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmCreditCardFillAssist(
     const autofill::CreditCard& card,
     const base::Closure& callback) {

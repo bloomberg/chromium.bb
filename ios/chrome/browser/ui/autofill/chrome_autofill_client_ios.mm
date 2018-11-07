@@ -216,6 +216,12 @@ void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
   NOTIMPLEMENTED();
 }
 
+void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+  NOTIMPLEMENTED();
+}
+
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,

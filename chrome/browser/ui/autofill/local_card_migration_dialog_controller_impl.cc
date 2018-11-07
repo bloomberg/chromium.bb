@@ -41,7 +41,7 @@ LocalCardMigrationDialogControllerImpl::
     local_card_migration_dialog_->CloseDialog();
 }
 
-void LocalCardMigrationDialogControllerImpl::ShowDialog(
+void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
     std::unique_ptr<base::DictionaryValue> legal_message,
     LocalCardMigrationDialog* local_card_migration_dialog,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
