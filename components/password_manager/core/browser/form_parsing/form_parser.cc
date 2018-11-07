@@ -178,25 +178,52 @@ const FormFieldData* FindFieldWithUniqueRendererId(
   return nullptr;
 }
 
-// Tries to parse |processed_fields| based on server |predictions|.
+// Tries to parse |processed_fields| based on server |predictions|. Uses |mode|
+// to decide which of two username hints are relevant, if present.
 std::unique_ptr<SignificantFields> ParseUsingPredictions(
     const std::vector<ProcessedField>& processed_fields,
-    const FormPredictions& predictions) {
+    const FormPredictions& predictions,
+    FormDataParser::Mode mode) {
   auto result = std::make_unique<SignificantFields>();
-  // Note: The code does not check whether there is at most 1 username, 1
-  // current password and at most 2 new passwords. It is assumed that server
-  // side predictions are sane.
+
+  // Following the design from https://goo.gl/Mc2KRe, this code will attempt to
+  // understand the special case when there are two usernames hinted by the
+  // server. In that case, they are considered the sign-in and sign-up
+  // usernames, in the order in which the (only) current password and the first
+  // new-password come. If there is another amount of usernames, 0 or 2+ current
+  // password fields or no new password field, then the abort switch below is
+  // set and simply the first field of each kind is used.
+  bool prevent_handling_two_usernames = false;  // the abort switch
+  // Whether the first username is for sign-in.
+  bool sign_in_username_first = true;
+  // First username is stored in |result->username|.
+  const FormFieldData* second_username = nullptr;
   for (const auto& prediction : predictions) {
     switch (DeriveFromServerFieldType(prediction.second.type)) {
       case CredentialFieldType::kUsername:
-        result->username =
-            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        if (!result->username) {
+          result->username =
+              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        } else if (!second_username) {
+          second_username =
+              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        } else {
+          prevent_handling_two_usernames = true;
+        }
         break;
       case CredentialFieldType::kCurrentPassword:
-        result->password =
-            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        if (result->password) {
+          prevent_handling_two_usernames = true;
+        } else {
+          result->password =
+              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        }
         break;
       case CredentialFieldType::kNewPassword:
+        // If any (and thus the first) new password comes before the current
+        // password, the first username is understood as sign-up, not sign-in.
+        if (!result->password)
+          sign_in_username_first = false;
         result->new_password =
             FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         break;
@@ -208,6 +235,25 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         break;
     }
   }
+
+  if (!result->new_password || !result->password)
+    prevent_handling_two_usernames = true;
+
+  if (!prevent_handling_two_usernames && second_username) {
+    // Now that there are two usernames, |sign_in_username_first| determines
+    // which is sign-in and which sign-up.
+    const FormFieldData* sign_in = result->username;
+    const FormFieldData* sign_up = second_username;
+    if (!sign_in_username_first)
+      std::swap(sign_in, sign_up);
+    // For filling, the sign-in username is relevant, because Chrome should not
+    // fill where the credentials first need to be created. For saving, the
+    // sign-up username is relevant: if both have values, then the sign-up one
+    // was not filled and hence was typed by the user.
+    result->username =
+        mode == FormDataParser::Mode::kSaving ? sign_up : sign_in;
+  }
+
   // If the server suggests there is a confirmation field but no new password,
   // something went wrong. Sanitize the result.
   if (result->confirmation_password && !result->new_password)
@@ -733,7 +779,8 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
 
   // (1) First, try to parse with server predictions.
   if (predictions_) {
-    significant_fields = ParseUsingPredictions(processed_fields, *predictions_);
+    significant_fields =
+        ParseUsingPredictions(processed_fields, *predictions_, mode);
     if (significant_fields && significant_fields->username) {
       username_detection_method =
           UsernameDetectionMethod::kServerSidePrediction;
