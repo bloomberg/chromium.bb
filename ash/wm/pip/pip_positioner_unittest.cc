@@ -20,6 +20,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace ash {
 
@@ -110,10 +111,9 @@ TEST_F(PipPositionerTest, PipMovementAreaIsInset) {
 TEST_F(PipPositionerTest, PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
   EXPECT_EQ(gfx::Rect(8, 8, 384, 284 - ShelfConstants::shelf_size()), area);
@@ -562,10 +562,9 @@ TEST_F(PipPositionerTest, AvoidObstaclesAvoidsFloatingKeyboard) {
   keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
                                         base::nullopt, base::DoNothing());
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(200, 200, 100, 100));
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   auto display = window_state()->GetDisplay();
   gfx::Rect area = PipPositioner::GetMovementArea(display);

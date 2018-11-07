@@ -26,7 +26,8 @@ class VirtualKeyboardTrayTest : public AshTestBase {
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
     keyboard_controller()->LoadKeyboardWindowInBackground();
-    keyboard_controller()->NotifyKeyboardWindowLoaded();
+    // Wait for the keyboard window to load.
+    base::RunLoop().RunUntilIdle();
     keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
                                             base::nullopt, base::DoNothing());
   }

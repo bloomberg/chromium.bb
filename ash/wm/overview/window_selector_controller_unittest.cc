@@ -8,11 +8,11 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "base/command_line.h"
 #include "ui/base/hit_test.h"
-#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
@@ -52,23 +52,19 @@ TEST_F(WindowSelectorControllerTest,
 class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
  protected:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
     WindowSelectorControllerTest::SetUp();
-
-    ws::InputDeviceClientTestApi().SetKeyboardDevices({});
-    ws::InputDeviceClientTestApi().SetTouchscreenDevices(
-        {ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
-                               "Touchscreen", gfx::Size(1024, 768), 0)});
 
     TabletModeControllerTestApi().EnterTabletMode();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
-    // TODO(https://crbug.com/849995): Change |TestKeyboardUI| so that
-    // it automatically notifies KeyboardController.
     keyboard_controller()->LoadKeyboardWindowInBackground();
     keyboard_controller()->GetKeyboardWindow()->SetBounds(
         keyboard::KeyboardBoundsFromRootBounds(
             Shell::GetPrimaryRootWindow()->bounds(), 100));
-    keyboard_controller()->NotifyKeyboardWindowLoaded();
+    // Wait for keyboard window to load.
+    base::RunLoop().RunUntilIdle();
   }
 
   keyboard::KeyboardController* keyboard_controller() {
