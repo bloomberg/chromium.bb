@@ -11,6 +11,7 @@ import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -32,7 +33,8 @@ import org.chromium.ui.R;
  *      app:cornerRadiusTopStart="8dp"
  *      app:cornerRadiusTopEnd="8dp"
  *      app:cornerRadiusBottomStart="8dp"
- *      app:cornerRadiusBottomEnd="8dp" />
+ *      app:cornerRadiusBottomEnd="8dp"
+ *      app:roundedfillColor="@android:color/white"/>
  *
  * Note : This does not properly handle padding. Padding will not be taken into account when rounded
  * corners are used.
@@ -43,6 +45,9 @@ public class RoundedCornerImageView extends ImageView {
     private Paint mPaint;
 
     private Paint mFillPaint;
+
+    // Object to avoid allocations during draw calls.
+    private final RectF mTmpRect = new RectF();
 
     // Whether or not to apply the shader, if we have one. This might be set to false if the image
     // is smaller than the view and does not need to have the corners rounded.
@@ -170,24 +175,43 @@ public class RoundedCornerImageView extends ImageView {
 
         if (drawFill || drawContent) localRoundedRect.resize(getWidth(), getHeight());
 
+        // First, fill the drawing area with the given fill paint.
         if (drawFill) localRoundedRect.draw(canvas, mFillPaint);
 
         if (!drawContent) {
+            // We probably have an unsupported drawable or we don't want rounded corners. Draw
+            // normally and return.
             super.onDraw(canvas);
             return;
         }
 
+        // We have a drawable to draw with rounded corners. Let's first set up the paint.
         if (drawable instanceof ColorDrawable) {
             ColorDrawable colorDrawable = (ColorDrawable) drawable;
             localPaint.setColor(colorDrawable.getColor());
         }
 
         if (mShader != null && mApplyShader) {
+            // Apply the matrix to the bitmap shader.
             mShader.setLocalMatrix(getImageMatrix());
             localPaint.setShader(mShader);
+
+            // Find the desired bounding box where the bitmap is to be shown.
+            mTmpRect.set(getDrawable().getBounds());
+            getImageMatrix().mapRect(mTmpRect);
         }
 
+        final int saveCount = canvas.save();
+
+        // Clip the canvas to the desired bounding box so that the shader isn't applied anywhere
+        // outside the desired area.
+        if (mApplyShader) canvas.clipRect(mTmpRect);
+
+        // Draw the rounded rectangle.
         localRoundedRect.draw(canvas, localPaint);
+
+        // Remove the clip.
+        canvas.restoreToCount(saveCount);
     }
 
     private boolean isSupportedDrawable(Drawable drawable) {

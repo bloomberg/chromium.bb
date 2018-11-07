@@ -182,6 +182,7 @@ class DateOrderedListView {
             boolean isFullWidthMedia = false;
             switch (ListUtils.getViewTypeForItem(mModel.get(position), mConfig)) {
                 case ListUtils.ViewType.IMAGE:
+                case ListUtils.ViewType.IMAGE_FULL_WIDTH:
                 case ListUtils.ViewType.IN_PROGRESS_IMAGE:
                     outRect.left = mImagePaddingPx;
                     outRect.right = mImagePaddingPx;
