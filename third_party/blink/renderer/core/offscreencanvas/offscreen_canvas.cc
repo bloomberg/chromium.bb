@@ -46,6 +46,9 @@ OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
 }
 
 OffscreenCanvas::~OffscreenCanvas() {
+  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
+      Size().Width(), Size().Height(),
+      CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -memory_usage_);
 }
@@ -423,9 +426,6 @@ FontSelector* OffscreenCanvas::GetFontSelector() {
 }
 
 void OffscreenCanvas::UpdateMemoryUsage() {
-  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
-      Size().Width(), Size().Height(), true /* OffscreenCanvas */);
-
   int bytes_per_pixel = ColorParams().BytesPerPixel();
 
   base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;

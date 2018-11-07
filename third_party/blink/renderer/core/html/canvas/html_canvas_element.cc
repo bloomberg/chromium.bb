@@ -134,8 +134,6 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
       externally_allocated_memory_(0),
       gpu_readback_invoked_in_current_frame_(false),
       gpu_readback_successive_frames_(0) {
-  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
-      size_.Width(), size_.Height(), false /* Canvas */);
   UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
 
   GetDocument().IncrementNumberOfCanvases();
@@ -147,6 +145,9 @@ intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
 unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 
 HTMLCanvasElement::~HTMLCanvasElement() {
+  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
+      size_.Width(), size_.Height(),
+      CanvasRenderingContextHost::HostType::kCanvasHost);
   if (surface_layer_bridge_ && surface_layer_bridge_->GetCcLayer())
     GraphicsLayer::UnregisterContentsLayer(surface_layer_bridge_->GetCcLayer());
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
@@ -570,9 +571,6 @@ void HTMLCanvasElement::Reset() {
 
   IntSize old_size = Size();
   IntSize new_size(w, h);
-
-  if (old_size != new_size)
-    CanvasRenderingContextHost::RecordCanvasSizeToUMA(w, h, false /* Canvas */);
 
   // If the size of an existing buffer matches, we can just clear it instead of
   // reallocating.  This optimization is only done for 2D canvases for now.

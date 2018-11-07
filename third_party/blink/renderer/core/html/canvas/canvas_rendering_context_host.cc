@@ -20,13 +20,15 @@ CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
 
 void CanvasRenderingContextHost::RecordCanvasSizeToUMA(unsigned width,
                                                        unsigned height,
-                                                       bool isOffscreen) {
-  if (isOffscreen) {
+                                                       HostType hostType) {
+  if (hostType == kCanvasHost) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
+                                std::sqrt(width * height), 1, 5000, 100);
+  } else if (hostType == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
                                 std::sqrt(width * height), 1, 5000, 100);
   } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
-                                std::sqrt(width * height), 1, 5000, 100);
+    NOTREACHED();
   }
 }
 
