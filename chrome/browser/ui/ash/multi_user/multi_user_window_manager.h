@@ -44,9 +44,6 @@ class MultiUserWindowManager {
     virtual void OnOwnerEntryAdded(aura::Window* window) {}
     // Invoked when the owner of the window tracked by the manager is changed.
     virtual void OnOwnerEntryChanged(aura::Window* window) {}
-    // Invoked when the window is destroyed and the manager stop to track its
-    // owner.
-    virtual void OnOwnerEntryRemoved(aura::Window* window) {}
     // Invoked when the user switch animation is finished.
     virtual void OnUserSwitchAnimationFinished() {}
 
