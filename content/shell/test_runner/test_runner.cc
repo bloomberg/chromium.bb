@@ -1244,8 +1244,12 @@ std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
 void TestRunnerBindings::SetBackingScaleFactor(
     double value,
     v8::Local<v8::Function> callback) {
+  // Limit backing scale factor to something "reasonable" - 100x. Without
+  // this limit, arbitrarily large values can be used, which can lead to
+  // crashes and other problems: See https://crbug.com/899482.
+  double limited_value = fmin(100.0, value);
   if (view_runner_)
-    view_runner_->SetBackingScaleFactor(value, callback);
+    view_runner_->SetBackingScaleFactor(limited_value, callback);
 }
 
 void TestRunnerBindings::EnableUseZoomForDSF(v8::Local<v8::Function> callback) {
