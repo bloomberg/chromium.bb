@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -23,10 +24,13 @@
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
+using web::test::SubmitWebViewFormWithId;
 
 namespace {
 const char kOpenSearchXmlFilePath[] =
     "/ios/testing/data/http_server_files/opensearch.xml";
+const char kPonyHtmlFilePath[] =
+    "/ios/testing/data/http_server_files/pony.html";
 
 // A BrowserStateKeyedServiceFactory::TestingFactory that creates a testing
 // TemplateURLService. The created TemplateURLService may contain some default
@@ -78,6 +82,15 @@ class SearchEngineTabHelperTest : public ChromeWebTest {
     return [result isEqual:@YES];
   }
 
+  // Sends a message that |searchable_url| is generated from <form> submission.
+  bool SendMessageOfSearchableUrl(const GURL& searchable_url) {
+    id result = ExecuteJavaScript([NSString
+        stringWithFormat:@"__gCrWeb.message.invokeOnHost({'command': "
+                         @"'searchEngine.searchableUrl', 'url' : '%s'}); true;",
+                         searchable_url.spec().c_str()]);
+    return [result isEqual:@YES];
+  }
+
   net::EmbeddedTestServer server_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineTabHelperTest);
@@ -86,7 +99,7 @@ class SearchEngineTabHelperTest : public ChromeWebTest {
 // Tests that SearchEngineTabHelper can add TemplateURL to TemplateURLService
 // when a OSDD <link> is found in web page.
 TEST_F(SearchEngineTabHelperTest, AddTemplateURLByOpenSearch) {
-  GURL page_url("https://chrooome.com");
+  GURL page_url("https://chromium.test");
   GURL osdd_url = server_.GetURL(kOpenSearchXmlFilePath);
 
   // Record the original TemplateURLs in TemplateURLService.
@@ -115,11 +128,56 @@ TEST_F(SearchEngineTabHelperTest, AddTemplateURLByOpenSearch) {
     }
   }
   ASSERT_TRUE(new_url);
-  EXPECT_EQ(base::UTF8ToUTF16("chrooome.com"), new_url->data().keyword());
+  EXPECT_EQ(base::UTF8ToUTF16("chromium.test"), new_url->data().keyword());
   EXPECT_EQ(base::UTF8ToUTF16("Chrooome"), new_url->data().short_name());
   EXPECT_EQ(
-      "https://chrooome.com/index.php?title=chrooome&search={searchTerms}",
+      "https://chromium.test/index.php?title=chrooome&search={searchTerms}",
       new_url->data().url());
+}
+
+// Tests that SearchEngineTabHelper can add TemplateURL to TemplateURLService
+// when a <form> submission generates a searchable URL and leads to a successful
+// navigation.
+TEST_F(SearchEngineTabHelperTest, AddTemplateURLBySearchableURL) {
+  GURL page_url("https://chromium.test");
+  GURL searchable_url(
+      "https://chromium.test/index.php?title=chrooome&search={searchTerms}");
+  // HTML of the search engine page, with a <form> navigates to pony.html as
+  // search result page.
+  NSString* html = [NSString
+      stringWithFormat:@"<html><form id='f' action='%s'></form></html>",
+                       server_.GetURL(kPonyHtmlFilePath).spec().c_str()];
+
+  // Record the original TemplateURLs in TemplateURLService.
+  std::vector<TemplateURL*> old_urls =
+      template_url_service()->GetTemplateURLs();
+
+  // Load an empty page, and send a message of openSearchUrl from Js.
+  LoadHtml(html, page_url);
+  SendMessageOfSearchableUrl(searchable_url);
+  SubmitWebViewFormWithId(web_state(), "f");
+
+  // Wait for TemplateURL added to TemplateURLService.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return template_url_service()->GetTemplateURLs().size() ==
+           old_urls.size() + 1;
+  }));
+
+  // TemplateURLService doesn't guarantee that newly added TemplateURL is
+  // appended, so we should check in a general way that only one TemplateURL is
+  // added and others remain untouched.
+  TemplateURL* new_url = nullptr;
+  for (TemplateURL* url : template_url_service()->GetTemplateURLs()) {
+    if (std::find(old_urls.begin(), old_urls.end(), url) == old_urls.end()) {
+      ASSERT_FALSE(new_url);
+      new_url = url;
+    }
+  }
+  ASSERT_TRUE(new_url);
+  EXPECT_EQ(base::UTF8ToUTF16("chromium.test"), new_url->data().keyword());
+  EXPECT_EQ(base::UTF8ToUTF16("chromium.test"), new_url->data().short_name());
+  EXPECT_EQ(searchable_url.spec(), new_url->data().url());
 }
 
 // Test fixture for SearchEngineTabHelper class in incognito mode.
@@ -140,7 +198,7 @@ class SearchEngineTabHelperIncognitoTest : public SearchEngineTabHelperTest {
 // mode.
 TEST_F(SearchEngineTabHelperIncognitoTest,
        NotAddTemplateURLByOpenSearchUnderIncognito) {
-  GURL page_url("https://chrooome.com");
+  GURL page_url("https://chromium.test");
   GURL osdd_url = server_.GetURL(kOpenSearchXmlFilePath);
 
   // Record the original TemplateURLs in TemplateURLService.
@@ -152,6 +210,38 @@ TEST_F(SearchEngineTabHelperIncognitoTest,
   ASSERT_TRUE(SendMessageOfOpenSearch(page_url, osdd_url));
 
   // No new TemplateURL should be added to TemplateURLService, wait for timeout.
+  ASSERT_FALSE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return template_url_service()->GetTemplateURLs().size() ==
+           old_urls.size() + 1;
+  }));
+  EXPECT_EQ(old_urls, template_url_service()->GetTemplateURLs());
+}
+
+// Tests that SearchEngineTabHelper doesn't add TemplateURL to
+// TemplateURLService when a <form> submission generates a searchable URL and
+// leads to a successful navigation under incognito mode.
+TEST_F(SearchEngineTabHelperIncognitoTest,
+       NotAddTemplateURLBySearchableURLUnderIncognito) {
+  GURL page_url("https://chromium.test");
+  GURL searchable_url(
+      "https://chromium.test/index.php?title=chrooome&search={searchTerms}");
+  // HTML of the search engine page, with a <form> navigates to pony.html as
+  // search result page.
+  NSString* html = [NSString
+      stringWithFormat:@"<html><form id='f' action='%s'></form></html>",
+                       server_.GetURL(kPonyHtmlFilePath).spec().c_str()];
+
+  // Record the original TemplateURLs in TemplateURLService.
+  std::vector<TemplateURL*> old_urls =
+      template_url_service()->GetTemplateURLs();
+
+  // Load an empty page, and send a message of openSearchUrl from Js.
+  LoadHtml(html, page_url);
+  SendMessageOfSearchableUrl(searchable_url);
+  SubmitWebViewFormWithId(web_state(), "f");
+
+  // Wait for TemplateURL added to TemplateURLService.
   ASSERT_FALSE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return template_url_service()->GetTemplateURLs().size() ==

@@ -180,6 +180,12 @@ https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/we
  *   searchableURL.
  */
 function generateSearchableUrl_(form) {
+  // Only consider <form> that navigates in current frame, because new
+  // TemplateURL will only be created from navigation in the same page:
+  // https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc?l=177&gsn=last_index
+  if (form.target && form.target != '_self')
+    return;
+
   // Only consider forms that GET data.
   if (form.method && form.method.toLowerCase() != 'get') {
     return;
