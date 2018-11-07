@@ -104,6 +104,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   bool OnUpdateCustomLink(const GURL& url,
                           const GURL& new_url,
                           const std::string& new_title) override;
+  bool OnReorderCustomLink(const GURL& url, int new_pos) override;
   bool OnDeleteCustomLink(const GURL& url) override;
   void OnUndoCustomLinkAction() override;
   void OnResetCustomLinks() override;

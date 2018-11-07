@@ -55,6 +55,9 @@ interface EmbeddedSearch {
                    url.mojom.Url new_url,
                    string new_title) => (bool success);
 
+  // Tells InstantExtended to reorder a custom link.
+  ReorderCustomLink(int32 page_seq_no, url.mojom.Url url, int32 new_pos);
+
   // Tells InstantExtended to delete a custom link. Returns true if successful.
   DeleteCustomLink(int32 page_seq_no, url.mojom.Url url) => (bool success);
 

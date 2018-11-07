@@ -62,6 +62,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                                     const GURL& new_url,
                                     const std::string& new_title) = 0;
 
+    // Called when the EmbeddedSearch wants to reorder a custom link.
+    virtual bool OnReorderCustomLink(const GURL& url, int new_pos) = 0;
+
     // Called when the EmbeddedSearch wants to delete a custom link.
     virtual bool OnDeleteCustomLink(const GURL& url) = 0;
 
@@ -132,6 +135,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
     virtual bool ShouldProcessAddCustomLink() = 0;
     virtual bool ShouldProcessUpdateCustomLink() = 0;
+    virtual bool ShouldProcessReorderCustomLink() = 0;
     virtual bool ShouldProcessDeleteCustomLink() = 0;
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
@@ -203,6 +207,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                         const GURL& new_url,
                         const std::string& new_title,
                         UpdateCustomLinkCallback callback) override;
+  void ReorderCustomLink(int page_seq_no,
+                         const GURL& url,
+                         int new_pos) override;
   void DeleteCustomLink(int page_seq_no,
                         const GURL& url,
                         DeleteCustomLinkCallback callback) override;

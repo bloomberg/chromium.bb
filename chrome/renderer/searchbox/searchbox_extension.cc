@@ -627,6 +627,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void UpdateCustomLink(int rid,
                                const std::string& url,
                                const std::string& title);
+  static void ReorderCustomLink(int rid, int new_pos);
   static void UndoCustomLinkAction();
   static void ResetCustomLinks();
   static std::string FixupAndValidateUrl(const std::string& url);
@@ -683,6 +684,7 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
       .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
+      .SetMethod("reorderCustomLink", &NewTabPageBindings::ReorderCustomLink)
       .SetMethod("undoCustomLinkAction",
                  &NewTabPageBindings::UndoCustomLinkAction)
       .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
@@ -886,6 +888,16 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
     search_box->UpdateCustomLink(rid, gurl, base::UTF16ToUTF8(truncated_title));
     search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_UPDATE);
   }
+}
+
+// static
+void NewTabPageBindings::ReorderCustomLink(int rid, int new_pos) {
+  if (!ntp_tiles::IsCustomLinksEnabled())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+  search_box->ReorderCustomLink(rid, new_pos);
 }
 
 // static

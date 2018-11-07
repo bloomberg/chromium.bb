@@ -63,6 +63,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                bool(const GURL& url,
                     const GURL& new_url,
                     const std::string& new_title));
+  MOCK_METHOD2(OnReorderCustomLink, bool(const GURL& url, int new_pos));
   MOCK_METHOD1(OnDeleteCustomLink, bool(const GURL& url));
   MOCK_METHOD0(OnUndoCustomLinkAction, void());
   MOCK_METHOD0(OnResetCustomLinks, void());

@@ -303,6 +303,13 @@ bool SearchTabHelper::OnUpdateCustomLink(const GURL& url,
   return false;
 }
 
+bool SearchTabHelper::OnReorderCustomLink(const GURL& url, int new_pos) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    return instant_service_->ReorderCustomLink(url, new_pos);
+  return false;
+}
+
 bool SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
   DCHECK(!url.is_empty());
   if (instant_service_)

@@ -130,6 +130,9 @@ class SearchBox : public content::RenderFrameObserver,
                         const GURL& new_url,
                         const std::string& new_title);
 
+  // Sends ReorderCustomLink to the browser.
+  void ReorderCustomLink(InstantRestrictedID link_id, int new_pos);
+
   // Sends DeleteCustomLink to the browser.
   void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
 
