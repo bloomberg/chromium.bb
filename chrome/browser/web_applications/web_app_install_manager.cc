@@ -37,19 +37,26 @@ bool WebAppInstallManager::CanInstallWebApp(
   return IsValidWebAppUrl(web_contents->GetURL());
 }
 
-void WebAppInstallManager::InstallWebApp(content::WebContents* web_contents,
+void WebAppInstallManager::InstallWebApp(content::WebContents* contents,
                                          bool force_shortcut_app,
                                          OnceInstallCallback install_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // No parrallel installations support.
+  DCHECK(!web_contents());
+
   force_shortcut_app_ = force_shortcut_app;
-  web_contents_ = web_contents;
   install_callback_ = std::move(install_callback);
+  Observe(contents);
 
   data_retriever_->GetWebApplicationInfo(
-      web_contents,
+      web_contents(),
       base::BindOnce(&WebAppInstallManager::OnGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppInstallManager::WebContentsDestroyed() {
+  ReturnError(InstallResultCode::kWebContentsDestroyed);
 }
 
 void WebAppInstallManager::SetDataRetrieverForTesting(
@@ -57,12 +64,15 @@ void WebAppInstallManager::SetDataRetrieverForTesting(
   data_retriever_ = std::move(data_retriever);
 }
 
+void WebAppInstallManager::ResetInstallProcessArguments() {
+  Observe(nullptr);
+  force_shortcut_app_ = false;
+  web_app_info_.reset();
+}
+
 void WebAppInstallManager::CallInstallCallback(const AppId& app_id,
                                                InstallResultCode code) {
-  // Reset current installation process arguments.
-  force_shortcut_app_ = false;
-  web_contents_ = nullptr;
-  web_app_info_.reset();
+  ResetInstallProcessArguments();
 
   DCHECK(install_callback_);
   std::move(install_callback_).Run(app_id, code);
@@ -72,22 +82,31 @@ void WebAppInstallManager::ReturnError(InstallResultCode code) {
   CallInstallCallback(AppId(), code);
 }
 
+bool WebAppInstallManager::InstallInterrupted() const {
+  // Interrupt early if WebContents is being destroyed.
+  // WebContentsDestroyed will get called eventually and the callback will be
+  // invoked at that point.
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return true;
+
+  return false;
+}
+
 void WebAppInstallManager::OnGetWebApplicationInfo(
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If interrupted, install_callback_ is already invoked or may invoke later.
+  if (InstallInterrupted())
+    return;
 
   if (!web_app_info)
     return ReturnError(InstallResultCode::kGetWebApplicationInfoFailed);
-
-  // TODO(loyso): Observe WebContents lifetime instead.
-  if (web_contents_->IsBeingDestroyed())
-    return ReturnError(InstallResultCode::kWebContentsDestroyed);
 
   web_app_info_ = std::move(web_app_info);
 
   // TODO(loyso): Consider to merge InstallableManager into WebAppDataRetriever.
   InstallableManager* installable_manager =
-      InstallableManager::FromWebContents(web_contents_);
+      InstallableManager::FromWebContents(web_contents());
   DCHECK(installable_manager);
 
   // TODO(crbug.com/829232) Unify with other calls to GetData.
@@ -106,9 +125,9 @@ void WebAppInstallManager::OnGetWebApplicationInfo(
 void WebAppInstallManager::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
-
-  if (web_contents_->IsBeingDestroyed())
-    return ReturnError(InstallResultCode::kWebContentsDestroyed);
+  // If interrupted, install_callback_ is already invoked or may invoke later.
+  if (InstallInterrupted())
+    return;
 
   const ForInstallableSite for_installable_site =
       data.error_code == NO_ERROR_DETECTED && !force_shortcut_app_
