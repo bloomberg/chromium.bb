@@ -40,7 +40,6 @@ class CSSVariableResolverTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp();
 
-    RuntimeEnabledFeatures::SetCSSEnvironmentVariablesEnabled(true);
     GetStyleEngine().EnsureEnvironmentVariables().SetVariable("test", "red");
   }
 
