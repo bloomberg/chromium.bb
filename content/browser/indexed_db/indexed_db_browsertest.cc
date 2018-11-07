@@ -447,6 +447,39 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
   EXPECT_NE(original_size, new_size);
 }
 
+// IndexedDBBrowserTestWithCrbug899446* capture IDB instances from Chrome stable
+// to verify that the current code can read those instances.  For more info on
+// a case when Chrome canary couldn't read stable's IDB instances, see
+// https://crbug.com/899446.
+
+class IndexedDBBrowserTestWithCrbug899446
+    : public IndexedDBBrowserTestWithPreexistingLevelDB {
+  std::string EnclosingLevelDBDir() override { return "crbug899446"; }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCrbug899446, StableTest) {
+  int64_t original_size = RequestUsage(kFileOrigin);
+  EXPECT_GT(original_size, 0);
+  SimpleTest(GetTestUrl("indexeddb", "crbug899446.html"));
+  int64_t new_size = RequestUsage(kFileOrigin);
+  EXPECT_GT(new_size, 0);
+  EXPECT_NE(original_size, new_size);
+}
+
+class IndexedDBBrowserTestWithCrbug899446Noai
+    : public IndexedDBBrowserTestWithPreexistingLevelDB {
+  std::string EnclosingLevelDBDir() override { return "crbug899446_noai"; }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCrbug899446Noai, StableTest) {
+  int64_t original_size = RequestUsage(kFileOrigin);
+  EXPECT_GT(original_size, 0);
+  SimpleTest(GetTestUrl("indexeddb", "crbug899446_noai.html"));
+  int64_t new_size = RequestUsage(kFileOrigin);
+  EXPECT_GT(new_size, 0);
+  EXPECT_NE(original_size, new_size);
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   // Any page that opens an IndexedDB will work here.
   SimpleTest(GetTestUrl("indexeddb", "database_test.html"));
