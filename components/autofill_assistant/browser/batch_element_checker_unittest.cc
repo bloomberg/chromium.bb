@@ -351,26 +351,5 @@ TEST_F(BatchElementCheckerTest, TryOnceGivenSmallDuration) {
   EXPECT_FALSE(checks_.all_found());
 }
 
-TEST_F(BatchElementCheckerTest, StopTrying) {
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, ElementsAre("element"), _))
-      .WillRepeatedly(RunOnceCallback<2>(false));
-
-  checks_.AddElementCheck(kExistenceCheck, {"element"}, base::DoNothing());
-  checks_.Run(base::TimeDelta::FromSeconds(1), TryCallback("try"),
-              DoneCallback("all_done"));
-
-  // The first try does not fully succeed.
-  EXPECT_THAT(try_done_, Contains(Pair("try", 1)));
-  EXPECT_THAT(all_done_, Not(Contains("all_done")));
-
-  checks_.StopTrying();
-
-  // Give up on the second try, because of StopTrying.
-  AdvanceTime();
-  EXPECT_THAT(try_done_, Contains(Pair("try", 2)));
-  EXPECT_THAT(all_done_, Contains("all_done"));
-}
-
 }  // namespace
 }  // namespace autofill_assistant

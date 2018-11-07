@@ -23,7 +23,6 @@ BatchElementChecker::BatchElementChecker(WebController* web_controller)
     : web_controller_(web_controller),
       pending_checks_count_(0),
       all_found_(false),
-      stopped_(false),
       weak_ptr_factory_(this) {
   DCHECK(web_controller);
 }
@@ -65,10 +64,6 @@ void BatchElementChecker::Run(const base::TimeDelta& duration,
 void BatchElementChecker::Try(base::OnceCallback<void()> try_done_callback) {
   DCHECK(!try_done_callback_);
 
-  if (stopped_) {
-    std::move(try_done_callback).Run();
-    return;
-  }
   try_done_callback_ = std::move(try_done_callback);
 
   DCHECK_EQ(pending_checks_count_, 0);
@@ -130,7 +125,7 @@ void BatchElementChecker::OnTryDone(int64_t remaining_attempts,
   }
 
   --remaining_attempts;
-  if (remaining_attempts <= 0 || stopped_) {
+  if (remaining_attempts <= 0) {
     // GiveUp is run before calling try_done, so its effects are visible right
     // away.
     GiveUp();

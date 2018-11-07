@@ -53,8 +53,8 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // Run the preconditions on the current set of scripts, and possibly update
   // the set of runnable scripts.
   //
-  // Calling CheckScripts() while a check is in progress cleanly cancels the
-  // previously running check and starts a new one right afterwards.
+  // Calling CheckScripts() while a check is in progress cancels the previously
+  // running check and starts a new one right away.
   void CheckScripts(const base::TimeDelta& max_duration);
 
   // Runs a script and reports, when the script has ended, whether the run was
@@ -87,7 +87,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // Overrides ScriptExecutor::Listener.
   void OnServerPayloadChanged(const std::string& server_payload) override;
 
-  // Cleans up any state use by pending checks. Stops running pending checks.
+  // Stops running pending checks and cleans up any state used by pending
+  // checks. This can safely be called at any time, including when no checks are
+  // running.
   void TerminatePendingChecks();
 
   // Returns true if |runnable_| should be updated.
@@ -120,17 +122,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // |batch_element_checker_|.
   std::vector<Script*> pending_runnable_scripts_;
 
-  // If a Check() was called while a check was in progress, run another one just
-  // afterwards, in case things have changed.
-  base::OnceCallback<void()> must_recheck_;
-
   // If a script is currently running, this is the script's executor. Otherwise,
   // this is nullptr.
   std::unique_ptr<ScriptExecutor> executor_;
-
-  // The callback of the pending run script. |executor_| must not be nullptr if
-  // |pending_run_script_callback_| is not nullptr.
-  ScriptExecutor::RunScriptCallback pending_run_script_callback_;
 
   std::string last_server_payload_;
 
