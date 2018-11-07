@@ -242,7 +242,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   DCHECK(IsMainThread());
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
-  if (isolate->GetEnteredContext().IsEmpty())
+  if (isolate->GetEnteredOrMicrotaskContext().IsEmpty())
     return;
 
   // If called during context initialization, there will be no entered context.
