@@ -6,9 +6,11 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 
 namespace resource_coordinator {
 
@@ -23,25 +25,25 @@ class TabManagerResourceCoordinatorSignalObserverHelper {
 };
 
 TabManager::ResourceCoordinatorSignalObserver::
-    ResourceCoordinatorSignalObserver() {
-  if (auto* page_signal_receiver = PageSignalReceiver::GetInstance())
-    page_signal_receiver->AddObserver(this);
+    ResourceCoordinatorSignalObserver(PageSignalReceiver* page_signal_receiver)
+    : page_signal_receiver_(page_signal_receiver) {
+  if (page_signal_receiver_)
+    page_signal_receiver_->AddObserver(this);
 }
 
 TabManager::ResourceCoordinatorSignalObserver::
     ~ResourceCoordinatorSignalObserver() {
-  if (auto* page_signal_receiver = PageSignalReceiver::GetInstance())
-    page_signal_receiver->RemoveObserver(this);
+  if (page_signal_receiver_)
+    page_signal_receiver_->RemoveObserver(this);
 }
 
 void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdle(
     content::WebContents* web_contents,
     const PageNavigationIdentity& page_navigation_id) {
-  auto* page_signal_receiver = PageSignalReceiver::GetInstance();
-  DCHECK_NE(nullptr, page_signal_receiver);
+  DCHECK_NE(nullptr, page_signal_receiver_);
 
   // Only dispatch the event if it pertains to the current navigation.
-  if (page_signal_receiver->GetNavigationIDForWebContents(web_contents) ==
+  if (page_signal_receiver_->GetNavigationIDForWebContents(web_contents) ==
       page_navigation_id.navigation_id) {
     TabManagerResourceCoordinatorSignalObserverHelper::OnPageAlmostIdle(
         web_contents);
@@ -53,10 +55,9 @@ void TabManager::ResourceCoordinatorSignalObserver::
         content::WebContents* web_contents,
         const PageNavigationIdentity& page_navigation_id,
         base::TimeDelta duration) {
-  auto* page_signal_receiver = PageSignalReceiver::GetInstance();
-  DCHECK_NE(nullptr, page_signal_receiver);
+  DCHECK_NE(nullptr, page_signal_receiver_);
 
-  if (page_signal_receiver->GetNavigationIDForWebContents(web_contents) !=
+  if (page_signal_receiver_->GetNavigationIDForWebContents(web_contents) !=
       page_navigation_id.navigation_id) {
     // |web_contents| has been re-navigated, drop this notification rather than
     // recording it against the wrong origin.

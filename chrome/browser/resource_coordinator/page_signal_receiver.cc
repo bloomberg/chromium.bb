@@ -20,16 +20,6 @@ bool PageSignalReceiver::IsEnabled() {
   return content::ServiceManagerConnection::GetForProcess() != nullptr;
 }
 
-// static
-PageSignalReceiver* PageSignalReceiver::GetInstance() {
-  if (!IsEnabled())
-    return nullptr;
-
-  static base::NoDestructor<PageSignalReceiver> page_signal_receiver;
-
-  return page_signal_receiver.get();
-}
-
 PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
 
 PageSignalReceiver::~PageSignalReceiver() = default;

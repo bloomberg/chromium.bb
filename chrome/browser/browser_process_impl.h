@@ -69,10 +69,6 @@ class ChromeBrowserPolicyConnector;
 class PolicyService;
 }  // namespace policy
 
-namespace resource_coordinator {
-class TabLifecycleUnitSource;
-}
-
 namespace webrtc_event_logging {
 class WebRtcEventLogManager;
 }  // namespace webrtc_event_logging
@@ -196,6 +192,8 @@ class BrowserProcessImpl : public BrowserProcess,
   network_time::NetworkTimeTracker* network_time_tracker() override;
   gcm::GCMDriver* gcm_driver() override;
   resource_coordinator::TabManager* GetTabManager() override;
+  resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
+      override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
@@ -411,17 +409,11 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<ChromeDeviceClient> device_client_;
 
-#if !defined(OS_ANDROID)
-  // Any change to this #ifdef must be reflected as well in
-  // chrome/browser/resource_coordinator/tab_manager_browsertest.cc
-  std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
-  std::unique_ptr<resource_coordinator::TabLifecycleUnitSource>
-      tab_lifecycle_unit_source_;
-#endif
-
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;
 
+  std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
+      resource_coordinator_parts_;
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
 
 #if !defined(OS_ANDROID)
