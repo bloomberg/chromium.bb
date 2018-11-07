@@ -40,6 +40,14 @@ void VRBrowserRendererHostWin::SetWebXRWebContents(
     StopBrowserRenderer();
 }
 
+void VRBrowserRendererHostWin::SetVRDisplayInfo(
+    device::mojom::VRDisplayInfoPtr display_info) {
+  info_ = std::move(display_info);
+  if (render_thread_) {
+    render_thread_->SetVRDisplayInfo(info_.Clone());
+  }
+}
+
 void VRBrowserRendererHostWin::AddCompositor(
     device::mojom::VRDisplayInfoPtr info,
     device::mojom::XRCompositorHostPtr compositor) {
@@ -58,9 +66,11 @@ void VRBrowserRendererHostWin::RemoveCompositor(device::mojom::XRDeviceId id) {
 
 void VRBrowserRendererHostWin::StartBrowserRenderer() {
 // Only used for testing currently.  To see an example overlay, enable the
-// following two lines.
+// following few lines.
 #if 0
   render_thread_ = std::make_unique<VRBrowserRendererThreadWin>();
+  render_thread_->Start();
+  render_thread_->SetVRDisplayInfo(info_.Clone());
   render_thread_->StartOverlay(compositor_.get());
 #endif
 }

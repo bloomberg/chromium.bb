@@ -41,7 +41,6 @@ bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
 }
 
 // TODO(crbug/895313): Provide actual implementation for the methods.
-void GlRenderer::OnResume() {}
 FovRectangles GlRenderer::GetRecommendedFovs() {
   return {{}, {}};
 }
