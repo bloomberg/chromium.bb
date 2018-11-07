@@ -72,7 +72,6 @@ Polymer({
         this.updateMaxHeight();
       this.fire('dropdown-opened', this.metricsId);
     }
-    this.cancelAnimation_();
     this.playAnimation_(this.dropdownOpen);
   },
 
@@ -83,11 +82,6 @@ Polymer({
     height = Math.max(height, MIN_DROPDOWN_HEIGHT);
     scrollContainer.style.maxHeight = height + 'px';
     this.maxHeightValid_ = true;
-  },
-
-  cancelAnimation_: function() {
-    if (this._animation)
-      this._animation.cancel();
   },
 
   /**
@@ -112,27 +106,35 @@ Polymer({
     if (maxHeight < 0)
       maxHeight = 0;
 
-    var fade = new KeyframeEffect(
-        this.$.dropdown, [{opacity: 0}, {opacity: 1}],
-        {duration: 150, easing: 'cubic-bezier(0, 0, 0.2, 1)'});
-    var slide = new KeyframeEffect(
-        this.$.dropdown,
+    this.$.dropdown.animate(
+        {
+          opacity: [0, 1],
+        },
+        {
+          duration: 150,
+          easing: 'cubic-bezier(0, 0, 0.2, 1)',
+        });
+    return this.$.dropdown.animate(
         [
           {height: '20px', transform: 'translateY(-10px)'},
-          {height: maxHeight + 'px', transform: 'translateY(0)'}
+          {height: maxHeight + 'px', transform: 'translateY(0)'},
         ],
-        {duration: 250, easing: 'cubic-bezier(0, 0, 0.2, 1)'});
-
-    return document.timeline.play(new GroupEffect([fade, slide]));
+        {
+          duration: 250,
+          easing: 'cubic-bezier(0, 0, 0.2, 1)',
+        });
   },
 
   animateExit_: function() {
     return this.$.dropdown.animate(
         [
           {transform: 'translateY(0)', opacity: 1},
-          {transform: 'translateY(-5px)', opacity: 0}
+          {transform: 'translateY(-5px)', opacity: 0},
         ],
-        {duration: 100, easing: 'cubic-bezier(0.4, 0, 1, 1)'});
+        {
+          duration: 100,
+          easing: 'cubic-bezier(0.4, 0, 1, 1)',
+        });
   }
 });
 
