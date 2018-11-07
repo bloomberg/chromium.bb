@@ -13,9 +13,6 @@
   Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
-  var pageMock = new SDKTestRunner.PageMock('mock-url.com/frame.html');
-  pageMock.turnIntoWorker();
-  var target2 = SDKTestRunner.connectToPage('mock-target-100', pageMock);
   var subframe = TestRunner.mainFrame().childFrames[0];
 
   var sourcesNavigatorView = new Sources.NetworkNavigatorView();
@@ -36,8 +33,11 @@
     uiSourceCodes.push(uiSourceCode);
   }
 
-  async function addUISourceCode2(url, isContentScript) {
-    pageMock.evalScript(url, '', isContentScript);
+  async function addUISourceCode2(url) {
+    TestRunner.evaluateInPageAnonymously(`
+      window.workers = window.workers || [];
+      window.workers.push(new Worker('${url}', {name: 'mock-target-100'}));
+    `);
     var uiSourceCode = await waitForUISourceCodeAdded(url);
     uiSourceCodes.push(uiSourceCode);
   }
@@ -84,8 +84,8 @@
 
   TestRunner.addResult('\n\n================================================');
   TestRunner.addResult('Adding resources into another target:');
-  await addUISourceCode2(rootURL + 'foo/bar/script.js?a=3', false);
-  await addUISourceCode2(rootURL + 'foo/baz/script.js', false);
+  await addUISourceCode2(TestRunner.url('resources/script1.js?a=3'));
+  await addUISourceCode2(TestRunner.url('resources/script2.js'));
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
   TestRunner.addResult('\n\n================================================');
@@ -151,7 +151,10 @@
 
   TestRunner.addResult('\n\n================================================');
   TestRunner.addResult('Removing all resources:');
-  Bindings.debuggerWorkspaceBinding._resetForTest(target2);
+  for (const target of SDK.targetManager.targets()) {
+    if (target !== TestRunner.mainTarget)
+      Bindings.debuggerWorkspaceBinding._resetForTest(target);
+  }
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
   SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 

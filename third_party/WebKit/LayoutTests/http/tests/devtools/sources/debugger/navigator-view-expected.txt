@@ -126,9 +126,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -139,10 +140,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -157,13 +160,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 localhost:8080
@@ -171,10 +175,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 localhost:8080
@@ -185,13 +191,14 @@ localhost:8080
       script.js?a=2
     baz
       script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -211,9 +218,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -233,10 +241,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -262,13 +272,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -285,10 +296,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -310,13 +323,14 @@ localhost:8080
       script.js?a=2
     baz
       script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Content Scripts:
 -------- Setting mode: [frame]
 top
@@ -370,9 +384,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -392,10 +407,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -421,13 +438,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -444,10 +462,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -469,13 +489,14 @@ localhost:8080
       script.js?a=2
     baz
       script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -496,9 +517,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -519,10 +541,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -551,13 +575,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -575,10 +600,12 @@ localhost:8080
   script.js
   script.js?a=1
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -603,13 +630,14 @@ localhost:8080
         script.js
     debugger2/foo/bar
       script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -631,9 +659,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -655,10 +684,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -688,13 +719,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -713,10 +745,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -742,13 +776,14 @@ localhost:8080
     debugger2/foo/bar
       script.js
       script.js?a=2
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -772,9 +807,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -798,10 +834,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -835,13 +873,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -862,10 +901,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -895,13 +936,14 @@ localhost:8080
         script.js?a=2
       baz
         script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -927,9 +969,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -956,10 +999,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -999,13 +1044,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -1029,10 +1075,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -1068,13 +1116,14 @@ localhost:8080
           foo.js
         foo.js
       foo.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 
 
 ================================================
@@ -1101,9 +1150,10 @@ top
   childframe (post-message-listener.html)
     script.js
     script.js?a=1
-mock-target-100
-  script.js
-  script.js?a=3
+script1.js
+  script1.js?a=3
+script2.js
+  script2.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
@@ -1130,10 +1180,12 @@ top
     localhost:8080
       script.js
       script.js?a=1
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
@@ -1173,13 +1225,14 @@ top
           script.js?a=1
         baz
           script.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Sources:
 -------- Setting mode: [domain]
 (no domain)
@@ -1203,10 +1256,12 @@ localhost:8080
   script.js?a=1
   script.js?a=2
   script.js?a=2
-mock-target-100
-  localhost:8080
-    script.js
-    script.js?a=3
+script1.js
+  127.0.0.1:8000
+    script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    script2.js
 Sources:
 -------- Setting mode: [domain/folder]
 (no domain)
@@ -1242,13 +1297,14 @@ localhost:8080
           foo.js
         foo.js
       foo.js
-mock-target-100
-  localhost:8080
-    LayoutTests/inspector/debugger/foo
-      bar
-        script.js?a=3
-      baz
-        script.js
+script1.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script1.js?a=3
+script2.js
+  127.0.0.1:8000
+    devtools/sources/debugger/resources
+      script2.js
 Content Scripts:
 -------- Setting mode: [frame]
 top

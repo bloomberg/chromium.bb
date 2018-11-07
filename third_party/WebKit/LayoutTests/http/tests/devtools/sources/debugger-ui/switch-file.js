@@ -21,7 +21,7 @@
   files = files.map(file => 'http://example.com/' + file);
 
   var page = new SDKTestRunner.PageMock('http://example.com');
-  SDKTestRunner.connectToPage('mock-page', page);
+  page.connectAsMainTarget('mock-page');
 
   var uiSourceCodes = [];
   for (var i = 0; i < files.length; ++i) {

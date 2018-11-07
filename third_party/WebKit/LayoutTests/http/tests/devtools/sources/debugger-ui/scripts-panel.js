@@ -25,10 +25,8 @@
     TestRunner.addResult('Source requested for ' + this.url());
   }
 
-  Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
-  Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
   var page = new SDKTestRunner.PageMock('http://example.com');
-  SDKTestRunner.connectToPage('mock-page', page, true /* makeMainTarget */);
+  page.connectAsMainTarget('mock-page');
 
   function addNetworkFile(url) {
     page.evalScript(url, '', false /* isContentScript */);
