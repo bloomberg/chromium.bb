@@ -385,6 +385,11 @@ class SharedIsolateFactory {
         static const char kNoOpt[] = "--noopt";
         v8::V8::SetFlagsFromString(kNoOpt, strlen(kNoOpt));
 
+        // WebAssembly isn't encountered during resolution, so reduce the
+        // potential attack surface.
+        static const char kNoExposeWasm[] = "--no-expose-wasm";
+        v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
+
         gin::IsolateHolder::Initialize(
             gin::IsolateHolder::kNonStrictMode,
             gin::IsolateHolder::kStableV8Extras,
