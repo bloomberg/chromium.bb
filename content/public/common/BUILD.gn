@@ -182,6 +182,8 @@ jumbo_source_set("common_sources") {
     "persistent_notification_status.h",
     "previews_state.h",
     "process_type.h",
+    "profiling.cc",
+    "profiling.h",
     "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",

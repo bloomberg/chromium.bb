@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/profiling.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
@@ -55,6 +54,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/profiling.h"
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request.h"
@@ -352,7 +352,7 @@ void HandleHelpSwitches(const base::CommandLine& command_line) {
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SIGTERMProfilingShutdown(int signal) {
-  Profiling::Stop();
+  content::Profiling::Stop();
   struct sigaction sigact;
   memset(&sigact, 0, sizeof(sigact));
   sigact.sa_handler = SIG_DFL;
@@ -556,7 +556,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
-  Profiling::ProcessStarted();
+  content::Profiling::ProcessStarted();
 
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::Bind(&IsTraceEventArgsWhitelisted));
@@ -1055,8 +1055,8 @@ void ChromeMainDelegate::ZygoteStarting(
 }
 
 void ChromeMainDelegate::ZygoteForked() {
-  Profiling::ProcessStarted();
-  if (Profiling::BeingProfiled()) {
+  content::Profiling::ProcessStarted();
+  if (content::Profiling::BeingProfiled()) {
     base::debug::RestartProfilingAfterFork();
     SetUpProfilingShutdownHandler();
   }
