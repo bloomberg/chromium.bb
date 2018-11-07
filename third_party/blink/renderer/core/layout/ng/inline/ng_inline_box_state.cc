@@ -80,6 +80,15 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
   }
 }
 
+LayoutUnit NGInlineBoxState::TextTop(FontBaseline baseline_type) const {
+  if (!text_metrics.IsEmpty())
+    return text_top;
+  if (const SimpleFontData* font_data = style->GetFont().PrimaryFont())
+    return -font_data->GetFontMetrics().FixedAscent(baseline_type);
+  NOTREACHED();
+  return LayoutUnit();
+}
+
 bool NGInlineBoxState::CanAddTextOfStyle(
     const ComputedStyle& text_style) const {
   if (text_style.VerticalAlign() != EVerticalAlign::kBaseline)
@@ -552,8 +561,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
         child.metrics = NGLineHeightMetrics::Zero();
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
-          DCHECK(!box->text_metrics.IsEmpty());
-          baseline_shift = child.metrics.ascent + box->text_top;
+          baseline_shift = child.metrics.ascent + box->TextTop(baseline_type);
           break;
         case EVerticalAlign::kTop:
           baseline_shift = child.metrics.ascent - max.ascent;
