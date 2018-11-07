@@ -53076,6 +53076,11 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Revoked ephemeral permission"/>
 </enum>
 
+<enum name="WebViewClientTypeEnum">
+  <int value="0" label="Regular WebViewClient"/>
+  <int value="1" label="WebViewClientCompat (via AndroidX)"/>
+</enum>
+
 <enum name="WelcomeSignInPromptOutcome">
   <int value="0" label="User navigated away from page"/>
   <int value="1" label="User clicked the No Thanks button"/>
