@@ -166,16 +166,8 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
-  bool decode_okay;
   scoped_refptr<VideoFrame> video_frame;
-  if (config_.codec() == kCodecVP9) {
-    SCOPED_UMA_HISTOGRAM_TIMER("Media.VpxVideoDecoder.Vp9DecodeTime");
-    decode_okay = VpxDecode(buffer.get(), &video_frame);
-  } else {
-    decode_okay = VpxDecode(buffer.get(), &video_frame);
-  }
-
-  if (!decode_okay) {
+  if (!VpxDecode(buffer.get(), &video_frame)) {
     state_ = kError;
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
