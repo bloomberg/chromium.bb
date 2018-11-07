@@ -43,7 +43,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void ShowErrorMessage(int error_msg_id,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
-  void AnimateAuthenticationSuccess() override;
   void OnLockWebUIReady() override;
   void OnLockBackgroundDisplayed() override;
   void OnHeaderBarVisible() override;

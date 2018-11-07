@@ -155,10 +155,6 @@ void ViewsScreenLocker::ClearErrors() {
   LoginScreenClient::Get()->login_screen()->ClearErrors();
 }
 
-void ViewsScreenLocker::AnimateAuthenticationSuccess() {
-  NOTIMPLEMENTED();
-}
-
 void ViewsScreenLocker::OnLockWebUIReady() {
   NOTIMPLEMENTED();
 }

@@ -180,11 +180,6 @@ void WebUIScreenLocker::ShowErrorMessage(
                             help_topic_id);
 }
 
-void WebUIScreenLocker::AnimateAuthenticationSuccess() {
-  GetWebUI()->CallJavascriptFunctionUnsafe(
-      "cr.ui.Oobe.animateAuthenticationSuccess");
-}
-
 void WebUIScreenLocker::ClearErrors() {
   GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
 }
