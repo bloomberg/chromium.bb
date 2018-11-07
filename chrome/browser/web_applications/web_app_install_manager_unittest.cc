@@ -171,6 +171,34 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
   EXPECT_TRUE(callback_called);
 }
 
+TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
+  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
+                        "Description");
+  CreateDefaultInstallableManager();
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+  const bool force_shortcut_app = false;
+
+  install_manager_->InstallWebApp(
+      web_contents(), force_shortcut_app,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
+            EXPECT_EQ(AppId(), installed_app_id);
+            callback_called = true;
+            run_loop.Quit();
+          }));
+
+  // Destroy WebContents.
+  DeleteContents();
+  EXPECT_EQ(nullptr, web_contents());
+
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+}
+
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
 TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";

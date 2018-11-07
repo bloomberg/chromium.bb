@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Profile;
 struct InstallableData;
@@ -24,23 +25,31 @@ namespace web_app {
 class WebAppDataRetriever;
 class WebAppRegistrar;
 
-class WebAppInstallManager final : public InstallManager {
+class WebAppInstallManager final : public InstallManager,
+                                   content::WebContentsObserver {
  public:
   WebAppInstallManager(Profile* profile, WebAppRegistrar* registrar);
   ~WebAppInstallManager() override;
 
-  // InstallManager interface implementation.
+  // InstallManager:
   bool CanInstallWebApp(const content::WebContents* web_contents) override;
-  void InstallWebApp(content::WebContents* web_contents,
+  void InstallWebApp(content::WebContents* contents,
                      bool force_shortcut_app,
                      OnceInstallCallback callback) override;
+
+  // WebContentsObserver:
+  void WebContentsDestroyed() override;
 
   void SetDataRetrieverForTesting(
       std::unique_ptr<WebAppDataRetriever> data_retriever);
 
  private:
+  void ResetInstallProcessArguments();
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
   void ReturnError(InstallResultCode code);
+
+  // Checks typical errors like WebContents destroyed.
+  bool InstallInterrupted() const;
 
   void OnGetWebApplicationInfo(
       std::unique_ptr<WebApplicationInfo> web_app_info);
@@ -52,7 +61,6 @@ class WebAppInstallManager final : public InstallManager {
 
   // Arguments, valid during installation process:
   OnceInstallCallback install_callback_;
-  content::WebContents* web_contents_;
   std::unique_ptr<WebApplicationInfo> web_app_info_;
 
   Profile* profile_;
