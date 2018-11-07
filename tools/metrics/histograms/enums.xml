@@ -20655,6 +20655,7 @@ Called by update_net_error_codes.py.-->
   <int value="2617" label="HistoryPushState"/>
   <int value="2618" label="HistoryReplaceState"/>
   <int value="2619" label="GetDisplayMedia"/>
+  <int value="2620" label="CursorImageGT64x64"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
