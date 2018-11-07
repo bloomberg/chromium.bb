@@ -292,6 +292,13 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Whether |next_download_id_| is initialized.
   bool IsNextIdInitialized() const;
 
+  // Called when a new download is created.
+  void OnDownloadCreated(std::unique_ptr<download::DownloadItemImpl> download);
+
+  // Retrieves a download from |in_progress_downloads_|.
+  std::unique_ptr<download::DownloadItemImpl> RetrieveInProgressDownload(
+      uint32_t id);
+
 #if defined(OS_ANDROID)
   // Check whether a download should be cleared from history. On Android,
   // cancelled and non-resumable interrupted download will be cleaned up to
@@ -366,6 +373,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   std::set<std::string> cleared_download_guids_on_startup_;
   int cancelled_download_cleared_from_history_;
   int interrupted_download_cleared_from_history_;
+
+  // In progress downloads returned by |in_progress_manager_| that are not yet
+  // added to |downloads_|.
+  std::unordered_map<uint32_t, std::unique_ptr<download::DownloadItemImpl>>
+      in_progress_downloads_;
 
   // Callbacks to run once download ID is determined.
   using IdCallbackVector = std::vector<std::unique_ptr<GetNextIdCallback>>;

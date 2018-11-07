@@ -521,6 +521,11 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->OnInProgressDownloadManagerInitialized();
   }
 
+  void OnHistoryDBInitialized() {
+    download_manager_->PostInitialization(
+        DownloadManager::DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB);
+  }
+
   void SetInProgressDownloadManager(
       std::unique_ptr<download::InProgressDownloadManager> manager) {
     download_manager_->in_progress_manager_ = std::move(manager);
@@ -746,8 +751,10 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
       .WillOnce(Return());
   OnInProgressDownloadManagerInitialized();
-  ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
+  ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
 
+  OnHistoryDBInitialized();
+  ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
   download::DownloadItem* download =
       download_manager_->GetDownloadByGuid(kGuid);
   download->Remove();
