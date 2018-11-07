@@ -492,6 +492,12 @@ void ArcAccessibilityHelperBridge::OnAction(
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
+  if (!instance) {
+    // This case should probably destroy all trees.
+    OnActionResult(data, false);
+    return;
+  }
+
   instance->PerformAction(
       std::move(action_data),
       base::BindOnce(&ArcAccessibilityHelperBridge::OnActionResult,
