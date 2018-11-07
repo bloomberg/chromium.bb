@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
