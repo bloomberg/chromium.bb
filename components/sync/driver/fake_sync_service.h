@@ -25,10 +25,6 @@ class FakeSyncService : public SyncService {
   FakeSyncService();
   ~FakeSyncService() override;
 
-  void set_auth_error(GoogleServiceAuthError error) {
-    error_ = std::move(error);
-  }
-
   // Dummy methods.
   // SyncService implementation.
   int GetDisableReasons() const override;
