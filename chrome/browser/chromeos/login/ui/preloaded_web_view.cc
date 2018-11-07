@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 
 #include "base/callback_helpers.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +36,9 @@ PreloadedWebView::~PreloadedWebView() {}
 void PreloadedWebView::PreloadOnIdle(PreloadCallback preload) {
   preload_function_ = std::move(preload);
   idle_detector_ = std::make_unique<chromeos::IdleDetector>(
-      base::Bind(&PreloadedWebView::RunPreloader, weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&PreloadedWebView::RunPreloader,
+                          weak_factory_.GetWeakPtr()),
+      base::DefaultTickClock::GetInstance());
   idle_detector_->Start(
       base::TimeDelta::FromSeconds(kIdleSecondsBeforePreloadingLockScreen));
 }
