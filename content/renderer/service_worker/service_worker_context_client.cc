@@ -737,12 +737,33 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 void ServiceWorkerContextClient::WillEvaluateScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
+
+  // Temporary CHECK for https://crbug.com/881100
+  int64_t t0 =
+      start_timing_->start_worker_received_time.since_origin().InMicroseconds();
+  int64_t t1 = start_timing_->script_evaluation_start_time.since_origin()
+                   .InMicroseconds();
+  base::debug::Alias(&t0);
+  base::debug::Alias(&t1);
+  CHECK_LE(start_timing_->start_worker_received_time,
+           start_timing_->script_evaluation_start_time);
+
   (*instance_host_)->OnScriptEvaluationStart();
 }
 
 void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_end_time = base::TimeTicks::Now();
+
+  // Temporary CHECK for https://crbug.com/881100
+  int64_t t0 = start_timing_->script_evaluation_start_time.since_origin()
+                   .InMicroseconds();
+  int64_t t1 =
+      start_timing_->script_evaluation_end_time.since_origin().InMicroseconds();
+  base::debug::Alias(&t0);
+  base::debug::Alias(&t1);
+  CHECK_LE(start_timing_->script_evaluation_start_time,
+           start_timing_->script_evaluation_end_time);
 
   blink::mojom::ServiceWorkerStartStatus status =
       success ? blink::mojom::ServiceWorkerStartStatus::kNormalCompletion
@@ -1367,6 +1388,21 @@ void ServiceWorkerContextClient::SendWorkerStarted(
     GetContentClient()->renderer()->DidStartServiceWorkerContextOnWorkerThread(
         service_worker_version_id_, service_worker_scope_, script_url_);
   }
+
+  // Temporary CHECK for https://crbug.com/881100
+  int64_t t0 =
+      start_timing_->start_worker_received_time.since_origin().InMicroseconds();
+  int64_t t1 = start_timing_->script_evaluation_start_time.since_origin()
+                   .InMicroseconds();
+  int64_t t2 =
+      start_timing_->script_evaluation_end_time.since_origin().InMicroseconds();
+  base::debug::Alias(&t0);
+  base::debug::Alias(&t1);
+  base::debug::Alias(&t2);
+  CHECK_LE(start_timing_->start_worker_received_time,
+           start_timing_->script_evaluation_start_time);
+  CHECK_LE(start_timing_->script_evaluation_start_time,
+           start_timing_->script_evaluation_end_time);
 
   (*instance_host_)
       ->OnStarted(status, WorkerThread::GetCurrentId(),
