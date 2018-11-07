@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_util.h"
@@ -172,6 +173,8 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
       std::unique_ptr<ModelTypeStore::RecordList> record_list,
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+    // Remove after fixing https://crbug.com/902203.
+    TRACE_EVENT0("browser", "FactoryImpl::OnReadAllMetadata");
     if (error) {
       std::move(callback).Run(error, /*store=*/nullptr,
                               /*metadata_batch=*/nullptr);
