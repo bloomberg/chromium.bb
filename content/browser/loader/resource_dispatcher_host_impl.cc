@@ -1527,7 +1527,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.is_main_frame, resource_type, info.common_params.transition,
       false,  // is download
       false,  // is stream
-      info.common_params.allow_download, info.common_params.has_user_gesture,
+      IsNavigationDownloadAllowed(info.common_params.download_policy),
+      info.common_params.has_user_gesture,
       true,   // enable_load_timing
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login

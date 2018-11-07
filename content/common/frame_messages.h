@@ -150,6 +150,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollGranularity,
                               blink::kFirstScrollGranularity,
                               blink::kLastScrollGranularity)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::NavigationDownloadPolicy,
+                              content::NavigationDownloadPolicy::kAllow,
+                              content::NavigationDownloadPolicy::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -474,7 +477,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
   IPC_STRUCT_TRAITS_MEMBER(transition)
   IPC_STRUCT_TRAITS_MEMBER(navigation_type)
-  IPC_STRUCT_TRAITS_MEMBER(allow_download)
+  IPC_STRUCT_TRAITS_MEMBER(download_policy)
   IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
   IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
   IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)

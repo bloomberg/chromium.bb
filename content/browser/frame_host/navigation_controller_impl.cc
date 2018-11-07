@@ -2797,11 +2797,14 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   // Create the NavigationParams based on |params|.
 
   bool is_view_source_mode = virtual_url.SchemeIs(kViewSourceScheme);
+  NavigationDownloadPolicy download_policy =
+      is_view_source_mode ? NavigationDownloadPolicy::kDisallowViewSource
+                          : NavigationDownloadPolicy::kAllow;
   const GURL& history_url_for_data_url =
       params.base_url_for_data_url.is_empty() ? GURL() : virtual_url;
   CommonNavigationParams common_params(
       url_to_load, params.referrer, params.transition_type, navigation_type,
-      !is_view_source_mode, should_replace_current_entry,
+      download_policy, should_replace_current_entry,
       params.base_url_for_data_url, history_url_for_data_url, previews_state,
       navigation_start,
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",

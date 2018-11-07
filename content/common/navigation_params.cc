@@ -35,6 +35,18 @@ InitiatorCSPInfo::InitiatorCSPInfo(const InitiatorCSPInfo& other) = default;
 
 InitiatorCSPInfo::~InitiatorCSPInfo() = default;
 
+bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy) {
+  switch (policy) {
+    case NavigationDownloadPolicy::kAllow:
+      return true;
+    case NavigationDownloadPolicy::kDisallowViewSource:
+    case NavigationDownloadPolicy::kDisallowInterstitial:
+      return false;
+    case NavigationDownloadPolicy::kAllowOpener:
+      return true;
+  }
+}
+
 CommonNavigationParams::CommonNavigationParams() = default;
 
 CommonNavigationParams::CommonNavigationParams(
@@ -42,7 +54,7 @@ CommonNavigationParams::CommonNavigationParams(
     const Referrer& referrer,
     ui::PageTransition transition,
     FrameMsg_Navigate_Type::Value navigation_type,
-    bool allow_download,
+    NavigationDownloadPolicy download_policy,
     bool should_replace_current_entry,
     const GURL& base_url_for_data_url,
     const GURL& history_url_for_data_url,
@@ -60,7 +72,7 @@ CommonNavigationParams::CommonNavigationParams(
       referrer(referrer),
       transition(transition),
       navigation_type(navigation_type),
-      allow_download(allow_download),
+      download_policy(download_policy),
       should_replace_current_entry(should_replace_current_entry),
       base_url_for_data_url(base_url_for_data_url),
       history_url_for_data_url(history_url_for_data_url),
