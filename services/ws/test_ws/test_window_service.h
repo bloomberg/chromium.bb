@@ -55,6 +55,8 @@ class TestWindowService : public service_manager::Service,
       std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider);
 
  private:
+  class VisibilitySynchronizer;
+
   void InitForOutOfProcess();
 
   // WindowServiceDelegate:
@@ -142,6 +144,8 @@ class TestWindowService : public service_manager::Service,
   std::unique_ptr<TestHostEventDispatcher> test_host_event_dispatcher_;
 
   std::unique_ptr<HostEventQueue> host_event_queue_;
+
+  std::unique_ptr<VisibilitySynchronizer> visibility_synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowService);
 };

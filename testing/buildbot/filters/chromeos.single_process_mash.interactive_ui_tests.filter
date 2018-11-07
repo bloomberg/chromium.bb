@@ -39,7 +39,6 @@
 
 # TabDragging: crbug.com/890071
 -TabDragging/DetachToBrowserTabDragControllerTest.DetachToOwnWindowWhileInImmersiveFullscreenMode/1
--TabDragging/DetachToBrowserTabDragControllerTestTouch.PressSecondFingerWhileDetached/0
 
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen

@@ -647,12 +647,15 @@ TEST_F(DesktopWindowTreeHostMusTest, MinimizeActivate) {
   EXPECT_TRUE(widget->IsActive());
 
   widget->Minimize();
+  aura::test::WaitForAllChangesToComplete();
   EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE(widget->IsVisible());
   EXPECT_TRUE(widget->IsMinimized());
 
   // Activate() should restore the window.
   widget->Activate();
   EXPECT_TRUE(widget->IsActive());
+  EXPECT_TRUE(widget->IsVisible());
   EXPECT_FALSE(widget->IsMinimized());
 }
 
