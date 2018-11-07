@@ -1872,8 +1872,6 @@ void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
 void RenderViewImpl::ApplyPageVisibility(
     blink::mojom::PageVisibilityState visibility_state,
     bool initial_setting) {
-  if (!webview())
-    return;
   webview()->SetVisibilityState(visibility_state, initial_setting);
   // Note: RenderWidget visibility is controlled independently by the browser,
   // so there's no need to set visibility on the main frame's RenderWidget (or
