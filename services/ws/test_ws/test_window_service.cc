@@ -19,13 +19,36 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_utils.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ws {
 namespace test {
+
+class TestWindowService::VisibilitySynchronizer : public aura::WindowTracker {
+ public:
+  VisibilitySynchronizer() = default;
+  ~VisibilitySynchronizer() override = default;
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key == aura::client::kShowStateKey) {
+      if (wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED))
+        window->Hide();
+      else
+        window->Show();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilitySynchronizer);
+};
 
 TestWindowService::TestWindowService() = default;
 
@@ -43,9 +66,11 @@ void TestWindowService::InitForInProcess(
   SetupAuraTestHelper(context_factory, context_factory_private);
 
   gpu_interface_provider_ = std::move(gpu_interface_provider);
+  visibility_synchronizer_ = std::make_unique<VisibilitySynchronizer>();
 }
 
 void TestWindowService::InitForOutOfProcess() {
+  visibility_synchronizer_ = std::make_unique<VisibilitySynchronizer>();
 #if defined(OS_CHROMEOS)
   // Use gpu service only for ChromeOS to run content_browsertests in mash.
   //
@@ -80,6 +105,7 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
                            ui::SHOW_STATE_MAXIMIZED);
     maximize_next_window_ = false;
   }
+  visibility_synchronizer_->Add(top_level.get());
   return top_level;
 }
 

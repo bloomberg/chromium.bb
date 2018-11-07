@@ -601,6 +601,8 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
     restore_window_observer_.reset();
   } else if (show_state == ui::SHOW_STATE_DEFAULT && IsMinimized()) {
     RestoreToPreminimizedState();
+  } else if (show_state == ui::SHOW_STATE_MINIMIZED && !IsMinimized()) {
+    Minimize();
   }
   // DesktopWindowTreeHostMus is unique in that it calls window()->Show() here.
   // All other implementations call window()->Show() from the constructor. This
@@ -741,7 +743,7 @@ void DesktopWindowTreeHostMus::SetShape(
 }
 
 void DesktopWindowTreeHostMus::Activate() {
-  if (!IsVisible())
+  if (!IsVisible() && !IsMinimized())
     return;
 
   // Activate() is expected to restore a minimized window.
