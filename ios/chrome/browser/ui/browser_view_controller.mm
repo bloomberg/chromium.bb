@@ -820,7 +820,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Called when either a tab finishes loading or when a tab with finished content
 // is added directly to the model via pre-rendering. The tab must be non-nil and
 // must be a member of the tab model controlled by this BrowserViewController.
-- (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
+- (void)tabLoadComplete:(Tab*)tab;
 // Adds a new tab with |url| and |postData| at the end of the model, and make it
 // the selected tab and return it.
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
@@ -2843,7 +2843,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 // Called when either a tab finishes loading or when a tab with finished content
 // is added directly to the model via pre-rendering.
-- (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success {
+- (void)tabLoadComplete:(Tab*)tab {
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
 
   // Persist the session on a delay.
@@ -3722,10 +3722,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       web::PolicyForNavigation(url, referrer));
 }
 
-- (BOOL)isTabWithIDCurrent:(NSString*)sessionID {
-  return self.visible && [sessionID isEqualToString:[_model currentTab].tabId];
-}
-
 #pragma mark - OverscrollActionsControllerDelegate methods.
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
@@ -4296,7 +4292,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
             ->DidPromotePrerenderTab();
       }
 
-      [self tabLoadComplete:newTab withSuccess:newTab.loadFinished];
+      [self tabLoadComplete:newTab];
       return;
     }
   }
@@ -4873,11 +4869,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (void)tabModel:(TabModel*)model
-    didFinishLoadingTab:(Tab*)tab
-                success:(BOOL)success {
+- (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab {
   [_toolbarUIUpdater updateState];
-  [self tabLoadComplete:tab withSuccess:success];
+  [self tabLoadComplete:tab];
   if ([self canShowTabStrip]) {
     UIUserInterfaceSizeClass sizeClass =
         self.view.window.traitCollection.horizontalSizeClass;
