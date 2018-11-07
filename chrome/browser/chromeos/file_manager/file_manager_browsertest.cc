@@ -278,12 +278,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("selectCreateFolderDownloads"),
-// Some GuestMode tests are flaky on MSAN and ASAN, crbug.com/899664
-#if !(defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
-                      TestCase("selectCreateFolderDownloads").InGuestMode(),
+    ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
+                      TestCase("selectCreateFolderDownloads"),
                       TestCase("createFolderDownloads").InGuestMode(),
-#endif
                       TestCase("createFolderDownloads"),
                       TestCase("createFolderNestedDownloads"),
                       TestCase("createFolderDrive").DisableDriveFs(),
