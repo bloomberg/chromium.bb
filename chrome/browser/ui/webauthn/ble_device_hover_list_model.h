@@ -56,6 +56,13 @@ class BleDeviceHoverListModel : public HoverListModel,
   void OnAuthenticatorPairingModeChanged(
       const AuthenticatorReference& changed_authenticator) override;
 
+  // Invoked when device address(and the corresponding authenticator id) of the
+  // connected BLE authenticator changes due to authenticator's pairing mode
+  // change.
+  void OnAuthenticatorIdChanged(
+      const AuthenticatorReference& changed_authenticator,
+      base::StringPiece previous_id) override;
+
   ObservableAuthenticatorList* const authenticator_list_;
   Delegate* const delegate_;  // Weak, may be nullptr.
 

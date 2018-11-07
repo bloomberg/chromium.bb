@@ -16,10 +16,11 @@
 
 namespace {
 
-const std::map<int, std::string>::const_iterator FindElementByValue(
-    const std::map<int, std::string>& item_map,
+std::map<int, std::string>::iterator FindElementByValue(
+    std::map<int, std::string>* item_map,
     base::StringPiece value) {
-  return std::find_if(item_map.begin(), item_map.end(),
+  DCHECK(item_map);
+  return std::find_if(item_map->begin(), item_map->end(),
                       [value](const auto& key_value_pair) {
                         return key_value_pair.second == value;
                       });
@@ -115,7 +116,7 @@ void BleDeviceHoverListModel::OnAuthenticatorAdded(
 void BleDeviceHoverListModel::OnAuthenticatorRemoved(
     const AuthenticatorReference& removed_authenticator) {
   const auto& authenticator_id = removed_authenticator.authenticator_id();
-  auto it = FindElementByValue(authenticator_tags_, authenticator_id);
+  auto it = FindElementByValue(&authenticator_tags_, authenticator_id);
   CHECK(it != authenticator_tags_.end());
   const auto item_tag = it->first;
   authenticator_tags_.erase(it);
@@ -128,7 +129,7 @@ void BleDeviceHoverListModel::OnAuthenticatorPairingModeChanged(
   if (!observer())
     return;
 
-  auto it = FindElementByValue(authenticator_tags_,
+  auto it = FindElementByValue(&authenticator_tags_,
                                changed_authenticator.authenticator_id());
   CHECK(it != authenticator_tags_.end());
   const auto changed_item_tag = it->first;
@@ -139,4 +140,12 @@ void BleDeviceHoverListModel::OnAuthenticatorPairingModeChanged(
     observer()->OnListItemChanged(changed_item_tag,
                                   ListItemChangeType::kRemoveFromViewComponent);
   }
+}
+
+void BleDeviceHoverListModel::OnAuthenticatorIdChanged(
+    const AuthenticatorReference& changed_authenticator,
+    base::StringPiece previous_id) {
+  auto it = FindElementByValue(&authenticator_tags_, previous_id);
+  CHECK(it != authenticator_tags_.end());
+  it->second = changed_authenticator.authenticator_id();
 }

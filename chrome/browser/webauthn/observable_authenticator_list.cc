@@ -40,12 +40,9 @@ void ObservableAuthenticatorList::ChangeAuthenticatorId(
   if (!authenticator)
     return;
 
-  if (observer_)
-    observer_->OnAuthenticatorRemoved(*authenticator);
-
   authenticator->SetAuthenticatorId(std::move(new_id));
   if (observer_)
-    observer_->OnAuthenticatorAdded(*authenticator);
+    observer_->OnAuthenticatorIdChanged(*authenticator, previous_id);
 }
 
 void ObservableAuthenticatorList::ChangeAuthenticatorPairingMode(
