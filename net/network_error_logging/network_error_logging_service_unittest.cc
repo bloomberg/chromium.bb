@@ -795,6 +795,17 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
   service()->OnHeader(kOriginDifferentHost_, kServerIP_, kHeader_);
   service()->OnHeader(kOriginSubdomain_, kServerIP_, kHeaderIncludeSubdomains_);
+  const std::string kHeaderWrongTypes =
+      ("{\"report_to\":\"group\","
+       "\"max_age\":86400,"
+       // We'll ignore each of these fields because they're the wrong type.
+       // We'll use a default value instead.
+       "\"include_subdomains\":\"true\","
+       "\"success_fraction\": \"1.0\","
+       "\"failure_fraction\": \"0.0\"}");
+  service()->OnHeader(
+      url::Origin::Create(GURL("https://invalid-types.example.com")),
+      kServerIP_, kHeaderWrongTypes);
 
   base::Value actual = service()->StatusAsValue();
   std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
@@ -810,6 +821,14 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
           },
           {
             "origin": "https://example2.com",
+            "includeSubdomains": false,
+            "expires": "86400000",
+            "reportTo": "group",
+            "successFraction": 0.0,
+            "failureFraction": 1.0,
+          },
+          {
+            "origin": "https://invalid-types.example.com",
             "includeSubdomains": false,
             "expires": "86400000",
             "reportTo": "group",
