@@ -156,7 +156,7 @@ struct IDBBlobInfo {
 };
 
 struct IDBValue {
-  string bits;
+  array<uint8> bits;
   array<IDBBlobInfo> blob_or_file_info;
 };
 

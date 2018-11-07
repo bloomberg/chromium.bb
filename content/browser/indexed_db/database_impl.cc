@@ -683,7 +683,10 @@ void DatabaseImpl::IDBSequenceHelper::Put(
 
   uint64_t commit_size = mojo_value->bits.size() + key.size_estimate();
   IndexedDBValue value;
-  swap(value.bits, mojo_value->bits);
+  // TODO(crbug.com/902498): Use mojom traits to map directly to std::string.
+  value.bits = std::string(mojo_value->bits.begin(), mojo_value->bits.end());
+  // Release mojo_value->bits std::vector.
+  mojo_value->bits.clear();
   swap(value.blob_info, blob_info);
   connection_->database()->Put(transaction, object_store_id, &value,
                                std::make_unique<IndexedDBKey>(key), mode,

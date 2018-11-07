@@ -123,8 +123,15 @@ blink::mojom::IDBReturnValuePtr ConvertReturnValue(
     mojo_value->primary_key = value->primary_key;
     mojo_value->key_path = value->key_path;
   }
-  if (!value->empty())
-    swap(mojo_value->value->bits, value->bits);
+  if (!value->empty()) {
+    // TODO(crbug.com/902498): Use mojom traits to map directly from
+    //                         std::string.
+    const char* value_data = value->bits.data();
+    mojo_value->value->bits =
+        std::vector<uint8_t>(value_data, value_data + value->bits.length());
+    // Release value->bits std::string.
+    value->bits.clear();
+  }
   ConvertBlobInfo(value->blob_info, &mojo_value->value->blob_or_file_info);
   return mojo_value;
 }
@@ -196,8 +203,15 @@ class IndexedDBCallbacks::IOThreadHelper {
 blink::mojom::IDBValuePtr IndexedDBCallbacks::ConvertAndEraseValue(
     IndexedDBValue* value) {
   auto mojo_value = blink::mojom::IDBValue::New();
-  if (!value->empty())
-    swap(mojo_value->bits, value->bits);
+  if (!value->empty()) {
+    // TODO(crbug.com/902498): Use mojom traits to map directly from
+    //                         std::string.
+    const char* value_data = value->bits.data();
+    mojo_value->bits =
+        std::vector<uint8_t>(value_data, value_data + value->bits.length());
+    // Release value->bits std::string.
+    value->bits.clear();
+  }
   ConvertBlobInfo(value->blob_info, &mojo_value->blob_or_file_info);
   return mojo_value;
 }

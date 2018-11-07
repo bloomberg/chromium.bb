@@ -188,13 +188,17 @@ void WebIDBDatabaseImpl::Put(
       transaction_id, nullptr);
 
   auto mojo_value = blink::mojom::IDBValue::New();
-  DCHECK(mojo_value->bits.empty());
-  mojo_value->bits.reserve(value.size());
+
+  // mojo_value->bits initialization.
   value.ForEachSegment([&mojo_value](const char* segment, size_t segment_size,
                                      size_t segment_offset) {
-    mojo_value->bits.append(segment, segment_size);
+    const auto& segment_span = base::make_span(segment, segment + segment_size);
+    mojo_value->bits.insert(mojo_value->bits.end(), segment_span.begin(),
+                            segment_span.end());
     return true;
   });
+
+  // mojo_value->blob_or_file_info initialization.
   mojo_value->blob_or_file_info.reserve(web_blob_info.size());
   for (const WebBlobInfo& info : web_blob_info) {
     auto blob_info = blink::mojom::IDBBlobInfo::New();
