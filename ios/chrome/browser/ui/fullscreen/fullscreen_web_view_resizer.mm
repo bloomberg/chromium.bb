@@ -110,6 +110,15 @@
 
   id<CRWWebViewProxy> webViewProxy = self.webState->GetWebViewProxy();
   CRWWebViewScrollViewProxy* scrollViewProxy = webViewProxy.scrollViewProxy;
+
+  if (self.webState->GetContentsMimeType() == "application/pdf") {
+    scrollViewProxy.contentInset = insets;
+    if (!CGRectEqualToRect(webView.frame, webView.superview.bounds)) {
+      webView.frame = webView.superview.bounds;
+    }
+    return;
+  }
+
   CGRect newFrame = UIEdgeInsetsInsetRect(webView.superview.bounds, insets);
 
   // Make sure the frame has changed to avoid a loop as the frame property is

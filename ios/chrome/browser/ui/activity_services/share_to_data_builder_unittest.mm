@@ -85,6 +85,8 @@ class ShareToDataBuilderTest : public PlatformTest {
     CGRect frame = {CGPointZero, CGSizeMake(300, 400)};
     UIView* view = [[UIView alloc] initWithFrame:frame];
     view.backgroundColor = [UIColor blueColor];
+    web_state_superview_ = [[UIView alloc] initWithFrame:frame];
+    [web_state_superview_ addSubview:view];
     web_state->SetView(view);
 
     // Attach SnapshotTabHelper to allow snapshot generation.
@@ -115,6 +117,8 @@ class ShareToDataBuilderTest : public PlatformTest {
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state_;
   ShareToDataBuilderTestTabMock* tab_;
+  // The webState's view needs a superview so a snapshot can be taken.
+  UIView* web_state_superview_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareToDataBuilderTest);
 };
