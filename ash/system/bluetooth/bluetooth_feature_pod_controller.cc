@@ -131,11 +131,15 @@ void BluetoothFeaturePodController::SetTooltipState(
       IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP, tooltip_state));
 }
 
-void BluetoothFeaturePodController::OnBluetoothRefresh() {
+void BluetoothFeaturePodController::OnBluetoothSystemStateChanged() {
   UpdateButton();
 }
 
-void BluetoothFeaturePodController::OnBluetoothDiscoveringChanged() {
+void BluetoothFeaturePodController::OnBluetoothScanStateChanged() {
+  UpdateButton();
+}
+
+void BluetoothFeaturePodController::OnBluetoothDeviceListChanged() {
   UpdateButton();
 }
 

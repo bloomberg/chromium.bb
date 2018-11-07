@@ -11,8 +11,14 @@ class BluetoothObserver {
  public:
   virtual ~BluetoothObserver() {}
 
-  virtual void OnBluetoothRefresh() = 0;
-  virtual void OnBluetoothDiscoveringChanged() = 0;
+  // Called when the state of Bluetooth in the system changes.
+  virtual void OnBluetoothSystemStateChanged() {}
+
+  // Called when a Bluetooth scan has started or stopped.
+  virtual void OnBluetoothScanStateChanged() {}
+
+  // Called when a device was added, removed, or changed.
+  virtual void OnBluetoothDeviceListChanged() {}
 };
 
 }  // namespace ash

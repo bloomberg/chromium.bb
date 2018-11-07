@@ -84,13 +84,13 @@ bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {
 void TrayBluetoothHelperExperimental::OnStateChanged(
     device::mojom::BluetoothSystem::State state) {
   cached_state_ = state;
-  Shell::Get()->system_tray_notifier()->NotifyRefreshBluetooth();
+  Shell::Get()->system_tray_notifier()->NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperExperimental::OnScanStateChanged(
     device::mojom::BluetoothSystem::ScanState state) {
   cached_scan_state_ = state;
-  Shell::Get()->system_tray_notifier()->NotifyBluetoothDiscoveringChanged();
+  Shell::Get()->system_tray_notifier()->NotifyBluetoothScanStateChanged();
 }
 
 }  // namespace ash
