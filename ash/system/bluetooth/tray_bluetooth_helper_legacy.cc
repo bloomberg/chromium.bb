@@ -165,34 +165,34 @@ bool TrayBluetoothHelperLegacy::HasBluetoothDiscoverySession() {
 void TrayBluetoothHelperLegacy::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
-  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+  GetSystemTrayNotifier()->NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool powered) {
-  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+  GetSystemTrayNotifier()->NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter,
     bool discovering) {
-  GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
+  GetSystemTrayNotifier()->NotifyBluetoothScanStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceAdded(device::BluetoothAdapter* adapter,
                                             device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceChanged(device::BluetoothAdapter* adapter,
                                               device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceRemoved(device::BluetoothAdapter* adapter,
                                               device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyRefreshBluetooth();
+  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::OnStartDiscoverySession(
@@ -204,7 +204,7 @@ void TrayBluetoothHelperLegacy::OnStartDiscoverySession(
     return;
   VLOG(1) << "Claiming new Bluetooth device discovery session.";
   discovery_session_ = std::move(discovery_session);
-  GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
+  GetSystemTrayNotifier()->NotifyBluetoothScanStateChanged();
 }
 
 }  // namespace ash

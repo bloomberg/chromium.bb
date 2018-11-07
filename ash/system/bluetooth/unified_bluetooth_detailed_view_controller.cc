@@ -4,6 +4,9 @@
 
 #include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 
+#include <set>
+#include <string>
+
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_detailed_view.h"
@@ -63,7 +66,6 @@ UnifiedBluetoothDetailedViewController::
   TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
   if (helper && helper->HasBluetoothDiscoverySession()) {
     helper->StopBluetoothDiscovering();
-    view_->HideLoadingIndicator();
   }
 }
 
@@ -72,59 +74,69 @@ views::View* UnifiedBluetoothDetailedViewController::CreateView() {
   view_ = new tray::BluetoothDetailedView(
       detailed_view_delegate_.get(),
       Shell::Get()->session_controller()->login_status());
-  Update();
+  OnBluetoothSystemStateChanged();
   return view_;
 }
 
-void UnifiedBluetoothDetailedViewController::OnBluetoothRefresh() {
-  Update();
-}
+void UnifiedBluetoothDetailedViewController::OnBluetoothSystemStateChanged() {
+  auto* helper = Shell::Get()->tray_bluetooth_helper();
+  const BluetoothSystem::State bluetooth_state = helper->GetBluetoothState();
 
-void UnifiedBluetoothDetailedViewController::OnBluetoothDiscoveringChanged() {
-  Update();
-}
-
-void UnifiedBluetoothDetailedViewController::Update() {
-  // Update immediately for initial device list and
-  // when bluetooth is disabled.
-  if (view_->IsDeviceScrollListEmpty() ||
-      Shell::Get()->tray_bluetooth_helper()->GetBluetoothState() !=
-          BluetoothSystem::State::kPoweredOn) {
+  if (bluetooth_state == BluetoothSystem::State::kPoweredOn) {
+    // If Bluetooth was just turned on, start discovering.
+    Shell::Get()->tray_bluetooth_helper()->StartBluetoothDiscovering();
+  } else {
+    // Otherwise stop updating the list of devices.
     timer_.Stop();
-    DoUpdate();
-    return;
   }
 
-  // Return here since an update is already queued.
-  if (timer_.IsRunning())
-    return;
-
-  // Update the detailed view after kUpdateFrequencyMs.
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs),
-               this, &UnifiedBluetoothDetailedViewController::DoUpdate);
+  UpdateDeviceListAndUI();
 }
 
-void UnifiedBluetoothDetailedViewController::DoUpdate() {
-  BluetoothStartDiscovering();
+void UnifiedBluetoothDetailedViewController::OnBluetoothScanStateChanged() {
+  // To avoid delaying showing devices, update the device list and UI
+  // immediately.
+  UpdateDeviceListAndUI();
+
+  if (Shell::Get()->tray_bluetooth_helper()->HasBluetoothDiscoverySession()) {
+    // Update the device list and UI every |kUpdateFrequencyMs|.
+    timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs), this,
+        &UnifiedBluetoothDetailedViewController::UpdateDeviceListAndUI);
+    return;
+  }
+  timer_.Stop();
+}
+
+void UnifiedBluetoothDetailedViewController::UpdateDeviceListAndUI() {
   UpdateBluetoothDeviceList();
 
-  // Update UI
-  view_->SetToggleIsOn(
-      Shell::Get()->tray_bluetooth_helper()->GetBluetoothState() ==
-      BluetoothSystem::State::kPoweredOn);
-  UpdateDeviceScrollList();
-}
+  auto* helper = Shell::Get()->tray_bluetooth_helper();
+  bool bluetooth_on =
+      helper->GetBluetoothState() == BluetoothSystem::State::kPoweredOn;
 
-void UnifiedBluetoothDetailedViewController::BluetoothStartDiscovering() {
-  TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
-  if (helper->HasBluetoothDiscoverySession()) {
+  // Update toggle.
+  view_->SetToggleIsOn(bluetooth_on);
+
+  // Update loading indicator.
+  if (helper->HasBluetoothDiscoverySession())
     view_->ShowLoadingIndicator();
+  else
+    view_->HideLoadingIndicator();
+
+  // Update scroll list or show "BT disabled" panel
+  if (bluetooth_on) {
+    view_->HideBluetoothDisabledPanel();
+    view_->UpdateDeviceScrollList(connected_devices_, connecting_devices_,
+                                  paired_not_connected_devices_,
+                                  discovered_not_paired_devices_);
+
     return;
   }
 
-  view_->HideLoadingIndicator();
-  if (helper->GetBluetoothState() == BluetoothSystem::State::kPoweredOn)
-    helper->StartBluetoothDiscovering();
+  // If Bluetooth is disabled, show a panel which only indicates that it is
+  // disabled, instead of the scroller with Bluetooth devices.
+  view_->ShowBluetoothDisabledPanel();
 }
 
 void UnifiedBluetoothDetailedViewController::UpdateBluetoothDeviceList() {
@@ -158,32 +170,6 @@ void UnifiedBluetoothDetailedViewController::UpdateBluetoothDeviceList() {
                                          new_paired_not_connected_devices);
   RemoveObsoleteBluetoothDevicesFromList(&discovered_not_paired_devices_,
                                          new_discovered_not_paired_devices);
-}
-
-void UnifiedBluetoothDetailedViewController::UpdateDeviceScrollList() {
-  const BluetoothSystem::State bluetooth_state =
-      Shell::Get()->tray_bluetooth_helper()->GetBluetoothState();
-
-  switch (bluetooth_state) {
-    case BluetoothSystem::State::kUnsupported:
-      // Bluetooth is always supported on Chrome OS.
-      NOTREACHED();
-      return;
-    case BluetoothSystem::State::kUnavailable:
-    case BluetoothSystem::State::kPoweredOff:
-    case BluetoothSystem::State::kTransitioning:
-      // If Bluetooth is disabled, show a panel which only indicates that it is
-      // disabled, instead of the scroller with Bluetooth devices.
-      view_->ShowBluetoothDisabledPanel();
-      return;
-    case BluetoothSystem::State::kPoweredOn:
-      break;
-  }
-
-  view_->HideBluetoothDisabledPanel();
-  view_->UpdateDeviceScrollList(connected_devices_, connecting_devices_,
-                                paired_not_connected_devices_,
-                                discovered_not_paired_devices_);
 }
 
 }  // namespace ash

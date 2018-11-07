@@ -32,8 +32,9 @@ class BluetoothFeaturePodController : public FeaturePodControllerBase,
   void SetTooltipState(const base::string16& tooltip_state);
 
   // BluetoothObserver:
-  void OnBluetoothRefresh() override;
-  void OnBluetoothDiscoveringChanged() override;
+  void OnBluetoothSystemStateChanged() override;
+  void OnBluetoothScanStateChanged() override;
+  void OnBluetoothDeviceListChanged() override;
 
   // Unowned.
   UnifiedSystemTrayController* const tray_controller_;

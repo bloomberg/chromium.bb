@@ -37,8 +37,9 @@ class ASH_EXPORT SystemTrayNotifier {
   // Bluetooth.
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
-  void NotifyRefreshBluetooth();
-  void NotifyBluetoothDiscoveringChanged();
+  void NotifyBluetoothSystemStateChanged();
+  void NotifyBluetoothScanStateChanged();
+  void NotifyBluetoothDeviceListChanged();
 
   // Input methods.
   void AddIMEObserver(IMEObserver* observer);

@@ -34,15 +34,12 @@ class UnifiedBluetoothDetailedViewController : public DetailedViewController,
   views::View* CreateView() override;
 
   // BluetoothObserver:
-  void OnBluetoothRefresh() override;
-  void OnBluetoothDiscoveringChanged() override;
+  void OnBluetoothSystemStateChanged() override;
+  void OnBluetoothScanStateChanged() override;
 
  private:
-  void Update();
-  void DoUpdate();
-  void BluetoothStartDiscovering();
+  void UpdateDeviceListAndUI();
   void UpdateBluetoothDeviceList();
-  void UpdateDeviceScrollList();
 
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
@@ -54,7 +51,7 @@ class UnifiedBluetoothDetailedViewController : public DetailedViewController,
   BluetoothDeviceList discovered_not_paired_devices_;
 
   // Timer used to limit the update frequency.
-  base::OneShotTimer timer_;
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBluetoothDetailedViewController);
 };

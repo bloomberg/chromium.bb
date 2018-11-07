@@ -26,14 +26,19 @@ void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::NotifyRefreshBluetooth() {
+void SystemTrayNotifier::NotifyBluetoothSystemStateChanged() {
   for (auto& observer : bluetooth_observers_)
-    observer.OnBluetoothRefresh();
+    observer.OnBluetoothSystemStateChanged();
 }
 
-void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
+void SystemTrayNotifier::NotifyBluetoothScanStateChanged() {
   for (auto& observer : bluetooth_observers_)
-    observer.OnBluetoothDiscoveringChanged();
+    observer.OnBluetoothScanStateChanged();
+}
+
+void SystemTrayNotifier::NotifyBluetoothDeviceListChanged() {
+  for (auto& observer : bluetooth_observers_)
+    observer.OnBluetoothDeviceListChanged();
 }
 
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
