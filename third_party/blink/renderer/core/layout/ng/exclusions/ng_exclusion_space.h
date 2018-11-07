@@ -207,7 +207,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // exclusion space in the copy-chain is used for answering queries. Only when
   // we trigger a (rare) re-layout case will we need to rebuild the
   // derived_geometry_ data-structure.
-  struct DerivedGeometry {
+  struct CORE_EXPORT DerivedGeometry {
     USING_FAST_MALLOC(DerivedGeometry);
 
    public:
