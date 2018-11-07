@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_ui_options.h"
 #include "third_party/blink/renderer/modules/event_interface_modules_names.h"
+#include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -43,12 +44,19 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
     const BackgroundFetchUIOptions* ui_options) {
+  if (observer_ && !observer_->IsEventActive(script_state)) {
+    // Return a rejected promise as the event is no longer active.
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "ExtendableEvent is no longer active."));
+  }
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
-    return ScriptPromise::Reject(
+    return ScriptPromise::RejectWithDOMException(
         script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "updateUI may only be called once."));
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "updateUI may only be called once."));
   }
 
   update_ui_called_ = true;

@@ -69,6 +69,10 @@ class MODULES_EXPORT WaitUntilObserver final
       PromiseSettledCallback on_promise_fulfilled = PromiseSettledCallback(),
       PromiseSettledCallback on_promise_rejected = PromiseSettledCallback());
 
+  // Whether the associated event is active.
+  // https://w3c.github.io/ServiceWorker/#extendableevent-active.
+  bool IsEventActive(ScriptState* script_state) const;
+
   virtual void Trace(blink::Visitor*);
 
  private:

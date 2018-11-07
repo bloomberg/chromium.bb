@@ -137,34 +137,13 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
                                   ExceptionState& exception_state,
                                   PromiseSettledCallback on_promise_fulfilled,
                                   PromiseSettledCallback on_promise_rejected) {
-  if (pending_promises_ == 0) {
-    switch (event_dispatch_state_) {
-      case EventDispatchState::kInitial:
-        NOTREACHED();
-        return;
-      case EventDispatchState::kDispatching:
-        if (!v8::MicrotasksScope::IsRunningMicrotasks(
-                script_state->GetIsolate())) {
-          break;
-        }
-        // didDispatchEvent() is called after both the event handler
-        // execution finished and microtasks queued by the event handler execution
-        // finished, it's hard to get the precise time point between the 2
-        // execution phases.
-        // So even in EventDispatchState::kDispatching state at this time point,
-        // running microtask indicates that event handler execution has actually
-        // finished, in such case if there aren't any outstanding extend lifetime
-        // promises, we should throw here.
-        FALLTHROUGH;
-      case EventDispatchState::kDispatched:
-      case EventDispatchState::kFailed:
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kInvalidStateError,
-            "The event handler is already finished "
-            "and no extend lifetime promises are "
-            "outstanding.");
-        return;
-    }
+  DCHECK_NE(event_dispatch_state_, EventDispatchState::kInitial);
+
+  if (!IsEventActive(script_state)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The event handler is already finished and no extend lifetime "
+        "promises are outstanding.");
   }
 
   if (!execution_context_)
@@ -192,6 +171,30 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
   script_promise.Then({}, ThenFunction::CreateFunction(
                               script_state, this, ThenFunction::kRejected,
                               std::move(on_promise_rejected)));
+}
+
+bool WaitUntilObserver::IsEventActive(ScriptState* script_state) const {
+  if (pending_promises_ > 0)
+    return true;
+
+  switch (event_dispatch_state_) {
+    case EventDispatchState::kDispatching:
+      // DidDispatchEvent() is called after both the event handler
+      // execution finished and microtasks queued by the event handler execution
+      // finished, it's hard to get the precise time point between the 2
+      // execution phases.
+      // So even in EventDispatchState::kDispatching state at this time point,
+      // running microtask indicates that event handler execution has actually
+      // finished, in such case if there aren't any outstanding extend lifetime
+      // promises.
+      return !v8::MicrotasksScope::IsRunningMicrotasks(
+          script_state->GetIsolate());
+    case EventDispatchState::kInitial:
+    case EventDispatchState::kDispatched:
+    case EventDispatchState::kFailed:
+      return false;
+  }
+  NOTREACHED();
 }
 
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
@@ -243,7 +246,7 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       // event.
       break;
     case EventDispatchState::kFailed:
-      // Dispatch had some error, complete the event immediatelly.
+      // Dispatch had some error, complete the event immediately.
       break;
   }
 
