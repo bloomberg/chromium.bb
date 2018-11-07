@@ -420,6 +420,9 @@ LockContentsView::~LockContentsView() {
 }
 
 void LockContentsView::FocusNextUser() {
+  if (users_.empty())
+    return;
+
   if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
     if (opt_secondary_big_view_) {
       SwapActiveAuthBetweenPrimaryAndSecondary(false /*is_primary*/);
@@ -456,6 +459,9 @@ void LockContentsView::FocusNextUser() {
 }
 
 void LockContentsView::FocusPreviousUser() {
+  if (users_.empty())
+    return;
+
   if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
     if (users_list_) {
       users_list_->user_view_at(users_list_->user_count() - 1)->RequestFocus();
