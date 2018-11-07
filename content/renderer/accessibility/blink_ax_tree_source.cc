@@ -443,6 +443,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
                ui::ToString(dst->role));
 
+  if (src.Equals(root()) && !root().IsLoaded())
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, true);
+
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
