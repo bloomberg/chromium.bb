@@ -99,9 +99,9 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
 
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     OnWebstoreParseSuccess(
-    const std::string& id,
-    const SkBitmap& icon,
-    base::DictionaryValue* parsed_manifest) {
+        const std::string& id,
+        const SkBitmap& icon,
+        std::unique_ptr<base::DictionaryValue> parsed_manifest) {
   CHECK_EQ(params_->details.id, id);
   CHECK(parsed_manifest);
 
@@ -110,12 +110,8 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 
   std::string error;
   dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
-      parsed_manifest,
-      Extension::FROM_WEBSTORE,
-      id,
-      localized_name,
-      std::string(),
-      &error);
+      parsed_manifest.get(), Extension::FROM_WEBSTORE, id, localized_name,
+      std::string(), &error);
 
   if (!dummy_extension_.get()) {
     OnWebstoreParseFailure(params_->details.id,

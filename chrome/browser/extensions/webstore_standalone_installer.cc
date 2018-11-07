@@ -306,7 +306,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(
 void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
-    base::DictionaryValue* manifest) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   CHECK_EQ(id_, id);
 
   if (!CheckRequestorAlive()) {
@@ -314,7 +314,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  manifest_.reset(manifest);
+  manifest_ = std::move(manifest);
   icon_ = icon;
 
   OnManifestParsed();

@@ -253,10 +253,10 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
-    base::DictionaryValue* parsed_manifest) {
+    std::unique_ptr<base::DictionaryValue> parsed_manifest) {
   CHECK_EQ(details().id, id);
   CHECK(parsed_manifest);
-  parsed_manifest_.reset(parsed_manifest);
+  parsed_manifest_ = std::move(parsed_manifest);
   icon_ = icon;
 
   std::string localized_name =

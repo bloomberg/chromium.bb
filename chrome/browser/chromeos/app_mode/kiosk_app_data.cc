@@ -221,13 +221,12 @@ class KioskAppData::WebstoreDataParser
   }
 
   // WebstoreInstallHelper::Delegate overrides:
-  void OnWebstoreParseSuccess(const std::string& id,
-                              const SkBitmap& icon,
-                              base::DictionaryValue* parsed_manifest) override {
-    // Takes ownership of |parsed_manifest|.
-    extensions::Manifest manifest(
-        extensions::Manifest::INVALID_LOCATION,
-        std::unique_ptr<base::DictionaryValue>(parsed_manifest));
+  void OnWebstoreParseSuccess(
+      const std::string& id,
+      const SkBitmap& icon,
+      std::unique_ptr<base::DictionaryValue> parsed_manifest) override {
+    extensions::Manifest manifest(extensions::Manifest::INVALID_LOCATION,
+                                  std::move(parsed_manifest));
 
     if (!IsValidKioskAppManifest(manifest)) {
       ReportFailure();
