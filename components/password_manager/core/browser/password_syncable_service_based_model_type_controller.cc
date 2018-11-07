@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_model_type_controller.h"
+#include "components/password_manager/core/browser/password_syncable_service_based_model_type_controller.h"
 
 #include <string>
 #include <utility>
@@ -81,7 +81,7 @@ class OnCryptographerStateChangedProxy
 
 // Created and constructed on any thread, but otherwise used exclusively on a
 // single sequence (the model sequence).
-class PasswordModelTypeController::ModelCryptographerImpl
+class PasswordSyncableServiceBasedModelTypeController::ModelCryptographerImpl
     : public syncer::SyncableServiceBasedBridge::ModelCryptographer {
  public:
   ModelCryptographerImpl() { DETACH_FROM_SEQUENCE(sequence_checker_); }
@@ -156,21 +156,23 @@ class PasswordModelTypeController::ModelCryptographerImpl
   std::unique_ptr<syncer::Cryptographer> cryptographer_;
 };
 
-PasswordModelTypeController::PasswordModelTypeController(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    const base::RepeatingClosure& dump_stack,
-    scoped_refptr<PasswordStore> password_store,
-    syncer::SyncClient* sync_client)
-    : PasswordModelTypeController(
+PasswordSyncableServiceBasedModelTypeController::
+    PasswordSyncableServiceBasedModelTypeController(
+        syncer::OnceModelTypeStoreFactory store_factory,
+        const base::RepeatingClosure& dump_stack,
+        scoped_refptr<PasswordStore> password_store,
+        syncer::SyncClient* sync_client)
+    : PasswordSyncableServiceBasedModelTypeController(
           std::move(store_factory),
           dump_stack,
           std::move(password_store),
           sync_client,
           base::MakeRefCounted<ModelCryptographerImpl>()) {}
 
-PasswordModelTypeController::~PasswordModelTypeController() = default;
+PasswordSyncableServiceBasedModelTypeController::
+    ~PasswordSyncableServiceBasedModelTypeController() = default;
 
-void PasswordModelTypeController::LoadModels(
+void PasswordSyncableServiceBasedModelTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
@@ -180,8 +182,9 @@ void PasswordModelTypeController::LoadModels(
   sync_client_->GetPasswordStateChangedCallback().Run();
 }
 
-void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
-                                       StopCallback callback) {
+void PasswordSyncableServiceBasedModelTypeController::Stop(
+    syncer::ShutdownReason shutdown_reason,
+    StopCallback callback) {
   DCHECK(CalledOnValidThread());
   sync_client_->GetSyncService()->RemoveObserver(this);
   NonUiSyncableServiceBasedModelTypeController::Stop(shutdown_reason,
@@ -190,7 +193,7 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
 }
 
 std::unique_ptr<syncer::SyncEncryptionHandler::Observer>
-PasswordModelTypeController::GetEncryptionObserverProxy() {
+PasswordSyncableServiceBasedModelTypeController::GetEncryptionObserverProxy() {
   DCHECK(CalledOnValidThread());
   return std::make_unique<OnCryptographerStateChangedProxy>(
       background_task_runner_,
@@ -198,17 +201,19 @@ PasswordModelTypeController::GetEncryptionObserverProxy() {
                           model_cryptographer_));
 }
 
-void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
+void PasswordSyncableServiceBasedModelTypeController::OnStateChanged(
+    syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
   sync_client_->GetPasswordStateChangedCallback().Run();
 }
 
-PasswordModelTypeController::PasswordModelTypeController(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    const base::RepeatingClosure& dump_stack,
-    scoped_refptr<PasswordStore> password_store,
-    syncer::SyncClient* sync_client,
-    scoped_refptr<ModelCryptographerImpl> model_cryptographer)
+PasswordSyncableServiceBasedModelTypeController::
+    PasswordSyncableServiceBasedModelTypeController(
+        syncer::OnceModelTypeStoreFactory store_factory,
+        const base::RepeatingClosure& dump_stack,
+        scoped_refptr<PasswordStore> password_store,
+        syncer::SyncClient* sync_client,
+        scoped_refptr<ModelCryptographerImpl> model_cryptographer)
     : NonUiSyncableServiceBasedModelTypeController(
           syncer::PASSWORDS,
           std::move(store_factory),
