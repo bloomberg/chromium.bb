@@ -338,7 +338,7 @@ cr.define('cr.login', function() {
         }
       }
 
-      return details;
+      return {};
     },
 
     /**
