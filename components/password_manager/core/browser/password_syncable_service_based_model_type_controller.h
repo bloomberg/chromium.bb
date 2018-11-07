@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_TYPE_CONTROLLER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_BASED_MODEL_TYPE_CONTROLLER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_BASED_MODEL_TYPE_CONTROLLER_H_
 
 #include <memory>
 
@@ -21,7 +21,7 @@ namespace password_manager {
 class PasswordStore;
 
 // A class that manages the startup and shutdown of password sync.
-class PasswordModelTypeController
+class PasswordSyncableServiceBasedModelTypeController
     : public syncer::NonUiSyncableServiceBasedModelTypeController,
       public syncer::SyncServiceObserver {
  public:
@@ -29,11 +29,12 @@ class PasswordModelTypeController
   // copy of sync's data and metadata, sync-ed with |password_store|.
   // |dump_stack| is called when a unrecoverable error occurs. |sync_client|
   // must not be null.
-  PasswordModelTypeController(syncer::OnceModelTypeStoreFactory store_factory,
-                              const base::RepeatingClosure& dump_stack,
-                              scoped_refptr<PasswordStore> password_store,
-                              syncer::SyncClient* sync_client);
-  ~PasswordModelTypeController() override;
+  PasswordSyncableServiceBasedModelTypeController(
+      syncer::OnceModelTypeStoreFactory store_factory,
+      const base::RepeatingClosure& dump_stack,
+      scoped_refptr<PasswordStore> password_store,
+      syncer::SyncClient* sync_client);
+  ~PasswordSyncableServiceBasedModelTypeController() override;
 
   // DataTypeController overrides.
   void LoadModels(const syncer::ConfigureContext& configure_context,
@@ -51,7 +52,7 @@ class PasswordModelTypeController
 
   // Constructor overload to make sure |ModelCryptographerImpl| gets constructed
   // before the base class.
-  PasswordModelTypeController(
+  PasswordSyncableServiceBasedModelTypeController(
       syncer::OnceModelTypeStoreFactory store_factory,
       const base::RepeatingClosure& dump_stack,
       scoped_refptr<PasswordStore> password_store,
@@ -62,9 +63,9 @@ class PasswordModelTypeController
   const scoped_refptr<ModelCryptographerImpl> model_cryptographer_;
   syncer::SyncClient* const sync_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);
+  DISALLOW_COPY_AND_ASSIGN(PasswordSyncableServiceBasedModelTypeController);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MODEL_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNCABLE_SERVICE_BASED_MODEL_TYPE_CONTROLLER_H_
