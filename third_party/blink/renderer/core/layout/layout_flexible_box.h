@@ -109,7 +109,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   enum class SizeDefiniteness { kDefinite, kIndefinite, kUnknown };
 
-  bool HasOrthogonalFlow(const LayoutBox& child) const;
+  bool MainAxisIsInlineAxis(const LayoutBox& child) const;
   bool IsColumnFlow() const;
   bool IsLeftToRightFlow() const;
   bool IsMultiline() const;
