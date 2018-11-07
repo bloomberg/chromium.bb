@@ -163,7 +163,7 @@ class GPU_EXPORT GpuChannelHost
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
   // all the contexts.
-  class Listener : public IPC::Listener {
+  class GPU_EXPORT Listener : public IPC::Listener {
    public:
     Listener(mojo::ScopedMessagePipeHandle handle,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
