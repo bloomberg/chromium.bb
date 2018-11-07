@@ -69,6 +69,14 @@ class WebController {
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
+  // Perform a touch tap on the element given by |selectors| and return the
+  // result through callback. CSS selectors in |selectors| are ordered from top
+  // frame to the frame contains the element and the element.
+  //
+  // TODO(crbug.com/806868): Add WebControllerBrowserTest for this interface.
+  virtual void TapElement(const std::vector<std::string>& selectors,
+                          base::OnceCallback<void(bool)> callback);
+
   // Fill the address form given by |selectors| with the given address
   // |profile|.
   virtual void FillAddressForm(const autofill::AutofillProfile* profile,
@@ -178,15 +186,22 @@ class WebController {
     base::string16 cvc;
   };
 
-  void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
-                             std::unique_ptr<FindElementResult> result);
-  void ClickObject(const std::string& object_id,
-                   base::OnceCallback<void(bool)> callback);
+  void OnFindElementForClickOrTap(base::OnceCallback<void(bool)> callback,
+                                  bool is_a_click,
+                                  std::unique_ptr<FindElementResult> result);
+  void OnFindElementForTap(base::OnceCallback<void(bool)> callback,
+                           std::unique_ptr<FindElementResult> result);
+  void ClickOrTapObject(const std::string& object_id,
+                        bool is_a_click,
+                        base::OnceCallback<void(bool)> callback);
   void OnScrollIntoView(base::OnceCallback<void(bool)> callback,
                         std::string object_id,
+                        bool is_a_click,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnGetBoxModelForClick(base::OnceCallback<void(bool)> callback,
-                             std::unique_ptr<dom::GetBoxModelResult> result);
+  void OnGetBoxModelForClickOrTap(
+      base::OnceCallback<void(bool)> callback,
+      bool is_a_click,
+      std::unique_ptr<dom::GetBoxModelResult> result);
   void OnDispatchPressMouseEvent(
       base::OnceCallback<void(bool)> callback,
       double x,
@@ -195,6 +210,12 @@ class WebController {
   void OnDispatchReleaseMouseEvent(
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<input::DispatchMouseEventResult> result);
+  void OnDispatchTouchEventStart(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<input::DispatchTouchEventResult> result);
+  void OnDispatchTouchEventEnd(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnFindElementForCheck(ElementCheckType check_type,
                              base::OnceCallback<void(bool)> callback,
                              std::unique_ptr<FindElementResult> result);
