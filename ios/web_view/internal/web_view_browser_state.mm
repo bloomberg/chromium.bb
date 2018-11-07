@@ -52,6 +52,7 @@
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
+#include "ios/web_view/internal/web_view_download_manager.h"
 #include "ios/web_view/internal/web_view_url_request_context_getter.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -69,7 +70,9 @@ namespace ios_web_view {
 WebViewBrowserState::WebViewBrowserState(
     bool off_the_record,
     WebViewBrowserState* recording_browser_state /* = nullptr */)
-    : web::BrowserState(), off_the_record_(off_the_record) {
+    : web::BrowserState(),
+      off_the_record_(off_the_record),
+      download_manager_(std::make_unique<WebViewDownloadManager>(this)) {
   // A recording browser state must not be associated with another recording
   // browser state. An off the record browser state must be associated with
   // a recording browser state.

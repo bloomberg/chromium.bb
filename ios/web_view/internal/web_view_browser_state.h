@@ -20,6 +20,7 @@ class PrefRegistrySyncable;
 namespace ios_web_view {
 
 class WebViewURLRequestContextGetter;
+class WebViewDownloadManager;
 
 // WebView implementation of BrowserState. Can only be used only on the UI
 // thread.
@@ -64,6 +65,9 @@ class WebViewBrowserState : public web::BrowserState {
 
   // The recording browser state associated with this browser state.
   WebViewBrowserState* recording_browser_state_;
+
+  // Handles browser downloads.
+  std::unique_ptr<WebViewDownloadManager> download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewBrowserState);
 };

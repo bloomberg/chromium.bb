@@ -65,6 +65,7 @@ ios_web_view_public_headers = [
   "public/cwv_user_script.h",
   "public/cwv_web_view.h",
   "public/cwv_web_view_configuration.h",
+  "public/cwv_download_task.h",
 ]
 if (ios_web_view_enable_sync) {
   ios_web_view_public_headers += [
@@ -215,6 +216,10 @@ ios_web_view_sources = [
   "internal/web_view_web_state_policy_decider.mm",
   "internal/webdata_services/web_view_web_data_service_wrapper_factory.cc",
   "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
+  "internal/web_view_download_manager.h",
+  "internal/web_view_download_manager.mm",
+  "internal/cwv_download_task_internal.h",
+  "internal/cwv_download_task.mm",
 ]
 ios_web_view_sources += ios_web_view_public_headers
 if (ios_web_view_enable_sync) {
@@ -382,6 +387,7 @@ test("ios_web_view_unittests") {
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
     "internal/autofill/cwv_credit_card_unittest.mm",
     "internal/autofill/cwv_credit_card_verifier_unittest.mm",
+    "internal/cwv_download_task_unittest.mm",
     "internal/cwv_favicon_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
