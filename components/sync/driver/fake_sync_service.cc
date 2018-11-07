@@ -14,18 +14,6 @@
 
 namespace syncer {
 
-void FakeSyncService::SetAuthenticatedAccountInfo(
-    const AccountInfo& account_info) {
-  account_info_ = account_info;
-}
-AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
-  return account_info_;
-}
-
-void FakeSyncService::SetConfigurationDone(bool configuration_done) {
-  configuration_done_ = configuration_done;
-}
-
 // Dummy methods
 
 FakeSyncService::FakeSyncService()
@@ -52,10 +40,11 @@ syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
   if (!IsFirstSetupComplete()) {
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
-  if (!configuration_done_) {
-    return TransportState::CONFIGURING;
-  }
   return TransportState::ACTIVE;
+}
+
+AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
+  return AccountInfo();
 }
 
 bool FakeSyncService::IsAuthenticatedAccountPrimary() const {

@@ -39,7 +39,6 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
-#include "components/autofill/core/browser/test_sync_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -51,9 +50,11 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service_utils.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/version_info/version_info.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -402,7 +403,7 @@ class PersonalDataManagerTestBase {
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<PrefService> prefs_;
   identity::IdentityTestEnvironment identity_test_env_;
-  TestSyncService sync_service_;
+  syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> profile_database_service_;
   scoped_refptr<AutofillWebDataService> account_database_service_;
   scoped_refptr<WebDatabaseService> profile_web_database_;
@@ -5988,7 +5989,8 @@ TEST_F(PersonalDataManagerTest, RemoveExpiredCreditCardsNotUsedSinceTimestamp) {
 
 TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   // Disable sync so the data gets created.
-  sync_service_.SetDataTypes(syncer::ModelTypeSet());
+  sync_service_.SetPreferredDataTypes(syncer::ModelTypeSet());
+  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
 
   // By default, the creation of test data is disabled.
   ResetPersonalDataManager(USER_MODE_NORMAL);
@@ -6108,12 +6110,14 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorMasksServerCards) {
   SetUpThreeCardTypes();
 
   // Set an auth error and inform the personal data manager.
-  sync_service_.SetInAuthError(true);
+  sync_service_.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   personal_data_->OnStateChanged(&sync_service_);
   WaitForOnPersonalDataChanged();
 
   // Remove the auth error to be able to get the server cards.
-  sync_service_.SetInAuthError(false);
+  sync_service_.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 
   // Check that cards were masked and other were untouched.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
@@ -6163,15 +6167,17 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   SetUpThreeCardTypes();
 
   // Call OnSyncServiceInitialized with a sync service in auth error.
-  TestSyncService sync_service;
+  syncer::TestSyncService sync_service;
   sync_service.SetIsAuthenticatedAccountPrimary(
       /*is_authenticated_account_primary=*/false);
-  sync_service.SetInAuthError(true);
+  sync_service.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   personal_data_->OnSyncServiceInitialized(&sync_service);
   WaitForOnPersonalDataChanged();
 
   // Remove the auth error to be able to get the server cards.
-  sync_service.SetInAuthError(false);
+  sync_service.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 
   // Check that cards were masked and other were untouched.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
@@ -6195,7 +6201,8 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorHidesServerCards) {
   SetUpThreeCardTypes();
 
   // Set a persistent auth error.
-  sync_service_.SetInAuthError(true);
+  sync_service_.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   // Check that no server cards are available for suggestion, but that the other
   // calls to get the credit cards are unaffected.
@@ -6204,8 +6211,9 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorHidesServerCards) {
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 
-  // Remove error
-  sync_service_.SetInAuthError(false);
+  // Remove error.
+  sync_service_.SetAuthError(
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 
   // Check that all cards are available.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
@@ -6452,7 +6460,8 @@ TEST_F(
   // Turn off autofill profile sync.
   auto model_type_set = sync_service_.GetActiveDataTypes();
   model_type_set.Remove(syncer::AUTOFILL_PROFILE);
-  sync_service_.SetDataTypes(model_type_set);
+  sync_service_.SetPreferredDataTypes(model_type_set);
+  sync_service_.SetActiveDataTypes(model_type_set);
 
   // The data should still exist.
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
@@ -6484,7 +6493,8 @@ TEST_F(
   auto model_type_set = sync_service_.GetActiveDataTypes();
   model_type_set.Remove(syncer::AUTOFILL_WALLET_DATA);
   model_type_set.Remove(syncer::AUTOFILL_WALLET_METADATA);
-  sync_service_.SetDataTypes(model_type_set);
+  sync_service_.SetPreferredDataTypes(model_type_set);
+  sync_service_.SetActiveDataTypes(model_type_set);
 
   // The credit card should still exist.
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());

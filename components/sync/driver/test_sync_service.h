@@ -17,6 +17,8 @@
 
 namespace syncer {
 
+// A simple test implementation of SyncService that allows direct control over
+// the returned state. By default, everything returns "enabled"/"active".
 class TestSyncService : public SyncService {
  public:
   TestSyncService();
@@ -25,11 +27,17 @@ class TestSyncService : public SyncService {
   void SetDisableReasons(int disable_reasons);
   void SetTransportState(TransportState transport_state);
   void SetLocalSyncEnabled(bool local_sync_enabled);
+  void SetAuthenticatedAccountInfo(const AccountInfo& account_info);
+  void SetIsAuthenticatedAccountPrimary(bool is_primary);
   void SetAuthError(const GoogleServiceAuthError& auth_error);
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
-  void SetCustomPassphraseEnabled(bool enabled);
+  void SetIsUsingSecondaryPassphrase(bool enabled);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
+  // Convenience versions of the above, for when the caller doesn't care about
+  // the particular values in the snapshot, just whether there is one.
+  void SetEmptyLastCycleSnapshot();
+  void SetNonEmptyLastCycleSnapshot();
 
   // SyncService implementation.
   int GetDisableReasons() const override;
@@ -102,12 +110,13 @@ class TestSyncService : public SyncService {
   TransportState transport_state_ = TransportState::ACTIVE;
   bool local_sync_enabled_ = false;
   AccountInfo account_info_;
+  bool account_is_primary_ = true;
   GoogleServiceAuthError auth_error_;
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;
 
-  bool custom_passphrase_enabled_ = false;
+  bool using_secondary_passphrase_ = false;
 
   SyncCycleSnapshot last_cycle_snapshot_;
 

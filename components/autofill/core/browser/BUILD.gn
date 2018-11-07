@@ -355,8 +355,6 @@ jumbo_static_library("test_support") {
     "test_region_data_loader.h",
     "test_strike_database.cc",
     "test_strike_database.h",
-    "test_sync_service.cc",
-    "test_sync_service.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
     "webdata/mock_autofill_webdata_backend.cc",
