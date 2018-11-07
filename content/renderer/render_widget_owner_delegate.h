@@ -45,8 +45,6 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   // ==================================
   // These methods called during closing of a RenderWidget.
   //
-  // Called when RenderWidget is closed that was "created for a frame".
-  virtual void OverrideCloseForWidget() = 0;
   // Called after closing the RenderWidget and destroying the WebView.
   virtual void DidCloseWidget() = 0;
   // ==================================

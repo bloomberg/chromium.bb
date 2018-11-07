@@ -169,7 +169,14 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // FocusController.
   void SetFocus(bool enable);
 
+  // Attaches a WebFrameWidget that will provide a WebFrameWidget interface to
+  // the WebView. Called as part of initialization or when the main frame
+  // RenderWidget is swapped in, to connect it to the new local main frame.
   void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
+  // Detaches the current WebFrameWidget, disconnecting it from the main frame.
+  // Called when the RenderWidget is being swapped out, because the local main
+  // frame is going away.
+  void DetachWebFrameWidget();
 
   // Starts a timer to send an UpdateState message on behalf of |frame|, if the
   // timer isn't already running. This allows multiple state changing events to
@@ -387,7 +394,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   bool SupportsMultipleWindowsForWidget() override;
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override;
-  void OverrideCloseForWidget() override;
   void DidCloseWidget() override;
   void ApplyNewSizeForWidget(const gfx::Size& old_size,
                              const gfx::Size& new_size) override;
