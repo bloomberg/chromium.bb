@@ -142,7 +142,8 @@ function createNewFolder(appId, initialEntrySet, selector) {
  * @return {Promise} Promise fulfilled on success.
  */
 function expandRoot(appId, selector) {
-  const expandIcon = selector + ' > .tree-row > .expand-icon';
+  const expandIcon =
+      selector + ' > .tree-row[has-children=true] > .expand-icon';
 
   return new Promise(function(resolve) {
     // Wait for the subtree expand icon to appear.
