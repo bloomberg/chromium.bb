@@ -539,8 +539,8 @@ typedef enum ATTRIBUTE_PACKED {
 #define TXFM_PARTITION_CONTEXTS ((TX_SIZES - TX_8X8) * 6 - 3)
 typedef uint8_t TXFM_CONTEXT;
 
-// An enum for various types of reference frame types (and some derived values).
-typedef enum ATTRIBUTE_PACKED {
+// An enum for single reference types (and some derived values).
+enum ATTRIBUTE_PACKED {
   NONE_FRAME = -1,
   INTRA_FRAME,
   LAST_FRAME,
@@ -567,7 +567,7 @@ typedef enum ATTRIBUTE_PACKED {
   BWD_REFS = ALTREF_FRAME - BWDREF_FRAME + 1,
 
   SINGLE_REFS = FWD_REFS + BWD_REFS,
-} MV_REFERENCE_FRAME;
+};
 
 #define REF_FRAMES_LOG2 3
 
@@ -603,6 +603,10 @@ typedef enum ATTRIBUTE_PACKED {
 //       compound prediction. The use of skip mode, on the other hand, makes it
 //       possible to have a reference pair not listed for explicit signaling.
 #define MODE_CTX_REF_FRAMES (REF_FRAMES + TOTAL_COMP_REFS)
+
+// Note: It includes single and compound references. So, it can take values from
+// NONE_FRAME to (MODE_CTX_REF_FRAMES - 1). Hence, it is not defined as an enum.
+typedef int8_t MV_REFERENCE_FRAME;
 
 typedef enum ATTRIBUTE_PACKED {
   RESTORE_NONE,

@@ -961,14 +961,13 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
 
 static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
   AV1_COMMON *const cm = &cpi->common;
-  int ref_num;
-  for (ref_num = LAST_FRAME; ref_num <= ALTREF_FRAME; ++ref_num) {
-    const MV_REFERENCE_FRAME ref_frame = (MV_REFERENCE_FRAME)ref_num;
+  MV_REFERENCE_FRAME ref_frame;
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
     if (buf_idx == INVALID_IDX) continue;
     if (frame_buf == &cm->buffer_pool->frame_bufs[buf_idx]) break;
   }
-  return (ref_num <= ALTREF_FRAME);
+  return (ref_frame <= ALTREF_FRAME);
 }
 
 // Token buffer is only used for palette tokens.
