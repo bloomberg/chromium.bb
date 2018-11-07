@@ -193,6 +193,14 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   gfx::PointF location_in_target =
       location_transformed -
       hit_test_data_[region_index].rect.OffsetFromOrigin();
+
+  if (hit_test_data_[region_index].flags & HitTestRegionFlags::kHitTestAsk) {
+    target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
+    target->location_in_target = location_in_target;
+    target->flags = hit_test_data_[region_index].flags;
+    return true;
+  }
+
   while (child_region < child_region_end) {
     if (FindTargetInRegionForLocation(event_source, location_in_target,
                                       child_region, target)) {
