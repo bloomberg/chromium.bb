@@ -55,8 +55,8 @@ FlexItem::FlexItem(LayoutBox* box,
       << "Use LayoutUnit::Max() for no max size";
 }
 
-bool FlexItem::HasOrthogonalFlow() const {
-  return algorithm->IsHorizontalFlow() != box->IsHorizontalWritingMode();
+bool FlexItem::MainAxisIsInlineAxis() const {
+  return algorithm->IsHorizontalFlow() == box->IsHorizontalWritingMode();
 }
 
 LayoutUnit FlexItem::FlowAwareMarginStart() const {
@@ -146,13 +146,14 @@ void FlexItem::ComputeStretchedSize(LayoutUnit line_cross_axis_extent) {
   // relying on legacy in this method.
   DCHECK_EQ(Alignment(), ItemPosition::kStretch);
   LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box->Parent());
-  if (!HasOrthogonalFlow() && box->StyleRef().LogicalHeight().IsAuto()) {
+  if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {
     LayoutUnit stretched_logical_height =
         std::max(box->BorderAndPaddingLogicalHeight(),
                  line_cross_axis_extent - CrossAxisMarginExtent());
     cross_axis_size = box->ConstrainLogicalHeightByMinMax(
         stretched_logical_height, box->IntrinsicContentLogicalHeight());
-  } else if (HasOrthogonalFlow() && box->StyleRef().LogicalWidth().IsAuto()) {
+  } else if (!MainAxisIsInlineAxis() &&
+             box->StyleRef().LogicalWidth().IsAuto()) {
     LayoutUnit child_width = (line_cross_axis_extent - CrossAxisMarginExtent())
                                  .ClampNegativeToZero();
     // This probably doesn't work in NG because flexbox might not yet know its

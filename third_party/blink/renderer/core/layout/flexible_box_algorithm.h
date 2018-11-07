@@ -97,7 +97,7 @@ class FlexItem {
 
   ItemPosition Alignment() const;
 
-  bool HasOrthogonalFlow() const;
+  bool MainAxisIsInlineAxis() const;
 
   LayoutUnit FlowAwareMarginStart() const;
   LayoutUnit FlowAwareMarginEnd() const;

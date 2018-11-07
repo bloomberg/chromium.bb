@@ -202,12 +202,12 @@ LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
   if (!baseline_child)
     return LayoutUnit(-1);
 
-  if (!IsColumnFlow() && HasOrthogonalFlow(*baseline_child)) {
+  if (!IsColumnFlow() && !MainAxisIsInlineAxis(*baseline_child)) {
     // TODO(cbiesinger): Should LogicalTop here be LogicalLeft?
     return CrossAxisExtentForChild(*baseline_child) +
            baseline_child->LogicalTop();
   }
-  if (IsColumnFlow() && !HasOrthogonalFlow(*baseline_child)) {
+  if (IsColumnFlow() && MainAxisIsInlineAxis(*baseline_child)) {
     return MainAxisExtentForChild(*baseline_child) +
            baseline_child->LogicalTop();
   }
@@ -408,8 +408,14 @@ LayoutUnit LayoutFlexibleBox::ClientLogicalBottomAfterRepositioning() {
                   max_child_logical_bottom + PaddingAfter());
 }
 
-bool LayoutFlexibleBox::HasOrthogonalFlow(const LayoutBox& child) const {
-  return IsHorizontalFlow() != child.IsHorizontalWritingMode();
+bool LayoutFlexibleBox::MainAxisIsInlineAxis(const LayoutBox& child) const {
+  // If we have a horizontal flow, that means the main size is the width.
+  // That's the inline size for horizontal writing modes, and the block
+  // size in vertical writing modes. For a vertical flow, main size is the
+  // height, so it's the inverse. So we need the inline size if we have a
+  // horizontal flow and horizontal writing mode, or vertical flow and vertical
+  // writing mode. Otherwise we need the block size.
+  return IsHorizontalFlow() == child.IsHorizontalWritingMode();
 }
 
 bool LayoutFlexibleBox::IsColumnFlow() const {
@@ -452,7 +458,7 @@ LayoutUnit LayoutFlexibleBox::CrossAxisExtentForChild(
 LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalHeight(
     const LayoutBox& child) const {
   // This should only be called if the logical height is the cross size
-  DCHECK(!HasOrthogonalFlow(child));
+  DCHECK(MainAxisIsInlineAxis(child));
   if (NeedToStretchChildLogicalHeight(child)) {
     LayoutUnit child_intrinsic_content_logical_height;
     if (!child.ShouldApplySizeContainment()) {
@@ -472,7 +478,7 @@ DISABLE_CFI_PERF
 LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
     const LayoutBox& child) const {
   // This should only be called if the logical width is the cross size
-  DCHECK(HasOrthogonalFlow(child));
+  DCHECK(!MainAxisIsInlineAxis(child));
   // If our height is auto, make sure that our returned height is unaffected by
   // earlier layouts by returning the max preferred logical width
   if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth()))
@@ -483,8 +489,8 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
 
 LayoutUnit LayoutFlexibleBox::CrossAxisIntrinsicExtentForChild(
     const LayoutBox& child) const {
-  return HasOrthogonalFlow(child) ? ChildIntrinsicLogicalWidth(child)
-                                  : ChildIntrinsicLogicalHeight(child);
+  return MainAxisIsInlineAxis(child) ? ChildIntrinsicLogicalHeight(child)
+                                     : ChildIntrinsicLogicalWidth(child);
 }
 
 LayoutUnit LayoutFlexibleBox::MainAxisExtentForChild(
@@ -529,13 +535,7 @@ LayoutUnit LayoutFlexibleBox::ComputeMainAxisExtentForChild(
     const LayoutBox& child,
     SizeType size_type,
     const Length& size) const {
-  // If we have a horizontal flow, that means the main size is the width.
-  // That's the logical width for horizontal writing modes, and the logical
-  // height in vertical writing modes. For a vertical flow, main size is the
-  // height, so it's the inverse. So we need the logical width if we have a
-  // horizontal flow and horizontal writing mode, or vertical flow and vertical
-  // writing mode. Otherwise we need the logical height.
-  if (IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode()) {
+  if (!MainAxisIsInlineAxis(child)) {
     // We don't have to check for "auto" here - computeContentLogicalHeight
     // will just return -1 for that case anyway. It's safe to access
     // scrollbarLogicalHeight here because ComputeNextFlexLine will have
@@ -654,10 +654,10 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
     cross_size = LayoutUnit(cross_size_length.Value());
   } else {
     DCHECK(cross_size_length.IsPercentOrCalc());
-    cross_size = HasOrthogonalFlow(child)
-                     ? AdjustBorderBoxLogicalWidthForBoxSizing(
-                           ValueForLength(cross_size_length, ContentWidth()))
-                     : child.ComputePercentageLogicalHeight(cross_size_length);
+    cross_size = MainAxisIsInlineAxis(child)
+                     ? child.ComputePercentageLogicalHeight(cross_size_length)
+                     : AdjustBorderBoxLogicalWidthForBoxSizing(
+                           ValueForLength(cross_size_length, ContentWidth()));
   }
 
   const LayoutSize& child_intrinsic_size = child.IntrinsicSize();
@@ -705,7 +705,7 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
   if (length.IsAuto())
     return false;
   if (length.IsPercentOrCalc()) {
-    if (HasOrthogonalFlow(child) ||
+    if (!MainAxisIsInlineAxis(child) ||
         has_definite_height_ == SizeDefiniteness::kDefinite)
       return true;
     if (has_definite_height_ == SizeDefiniteness::kIndefinite)
@@ -723,10 +723,10 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
 void LayoutFlexibleBox::CacheChildMainSize(const LayoutBox& child) {
   DCHECK(!child.NeedsLayout());
   LayoutUnit main_size;
-  if (HasOrthogonalFlow(child))
-    main_size = child.LogicalHeight();
-  else
+  if (MainAxisIsInlineAxis(child))
     main_size = child.MaxPreferredLogicalWidth();
+  else
+    main_size = child.LogicalHeight();
   intrinsic_size_along_main_axis_.Set(&child, main_size);
   relaid_out_children_.insert(&child);
 }
@@ -784,7 +784,11 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
   // width of the child. For the logical width axis we just use the preferred
   // width; for the height we need to lay out the child.
   LayoutUnit main_axis_extent;
-  if (HasOrthogonalFlow(child)) {
+  if (MainAxisIsInlineAxis(child)) {
+    // We don't need to add scrollbarLogicalWidth here because the preferred
+    // width includes the scrollbar, even for overflow: auto.
+    main_axis_extent = child.MaxPreferredLogicalWidth();
+  } else {
     if (child_layout_type == kNeverLayout)
       return LayoutUnit();
 
@@ -796,10 +800,6 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
       CacheChildMainSize(child);
     }
     main_axis_extent = intrinsic_size_along_main_axis_.at(&child);
-  } else {
-    // We don't need to add scrollbarLogicalWidth here because the preferred
-    // width includes the scrollbar, even for overflow: auto.
-    main_axis_extent = child.MaxPreferredLogicalWidth();
   }
   DCHECK_GE(main_axis_extent - main_axis_border_and_padding, LayoutUnit())
       << main_axis_extent << " - " << main_axis_border_and_padding;
@@ -1046,9 +1046,9 @@ bool LayoutFlexibleBox::CrossSizeIsDefiniteForPercentageResolution(
     return false;
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
-  if (HasOrthogonalFlow(child) && child.HasOverrideLogicalWidth())
+  if (!MainAxisIsInlineAxis(child) && child.HasOverrideLogicalWidth())
     return true;
-  if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalHeight())
+  if (MainAxisIsInlineAxis(child) && child.HasOverrideLogicalHeight())
     return true;
 
   // We don't currently implement the optimization from
@@ -1069,14 +1069,14 @@ bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
   if (!MainAxisLengthIsDefinite(child, Length(0, kPercent)))
     return false;
 
-  if (HasOrthogonalFlow(child))
-    return child.HasOverrideLogicalHeight();
-  return child.HasOverrideLogicalWidth();
+  if (MainAxisIsInlineAxis(child))
+    return child.HasOverrideLogicalWidth();
+  return child.HasOverrideLogicalHeight();
 }
 
 bool LayoutFlexibleBox::UseOverrideLogicalHeightForPerentageResolution(
     const LayoutBox& child) const {
-  if (!HasOrthogonalFlow(child))
+  if (MainAxisIsInlineAxis(child))
     return CrossSizeIsDefiniteForPercentageResolution(child);
   return MainSizeIsDefiniteForPercentageResolution(child);
 }
@@ -1187,11 +1187,10 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
 }
 
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
-  // child_preferred_size includes scrollbar width.
-  if (HasOrthogonalFlow(*item.box)) {
-    item.box->SetOverrideLogicalHeight(item.FlexedBorderBoxSize());
-  } else {
+  if (MainAxisIsInlineAxis(*item.box)) {
     item.box->SetOverrideLogicalWidth(item.FlexedBorderBoxSize());
+  } else {
+    item.box->SetOverrideLogicalHeight(item.FlexedBorderBoxSize());
   }
 }
 
@@ -1574,7 +1573,7 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
 
 void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
   LayoutBox& child = *flex_item.box;
-  if (!flex_item.HasOrthogonalFlow() &&
+  if (flex_item.MainAxisIsInlineAxis() &&
       child.StyleRef().LogicalHeight().IsAuto()) {
     // FIXME: Can avoid laying out here in some cases. See
     // https://webkit.org/b/87905.
@@ -1604,7 +1603,7 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
       child.SetIntrinsicContentLogicalHeight(
           child_intrinsic_content_logical_height);
     }
-  } else if (flex_item.HasOrthogonalFlow() &&
+  } else if (!flex_item.MainAxisIsInlineAxis() &&
              child.StyleRef().LogicalWidth().IsAuto()) {
     if (flex_item.cross_axis_size != child.LogicalWidth()) {
       child.SetOverrideLogicalWidth(flex_item.cross_axis_size);
