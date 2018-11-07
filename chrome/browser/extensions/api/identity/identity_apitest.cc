@@ -1998,6 +1998,9 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*user_manager_, GetLoggedInUsers())
+        .WillRepeatedly(testing::Invoke(user_manager_,
+                                        &chromeos::MockUserManager::GetUsers));
   }
 
   scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
