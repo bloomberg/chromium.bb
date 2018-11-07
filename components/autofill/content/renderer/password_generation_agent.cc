@@ -511,20 +511,15 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
   // (e.g. password saving is disabled).
   for (auto& possible_form_data : possible_account_creation_forms_) {
     PasswordForm* possible_password_form = &possible_form_data.form;
-    const PasswordFormGenerationData* generation_data = nullptr;
-
     std::vector<WebInputElement> password_elements;
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kLocalHeuristicsOnlyForPasswordGeneration)) {
-      password_elements = possible_form_data.password_elements;
-      VLOG(2) << "Bypassing additional checks.";
-    } else if (!ContainsURL(not_blacklisted_password_form_origins_,
-                            possible_password_form->origin)) {
+    if (!ContainsURL(not_blacklisted_password_form_origins_,
+                     possible_password_form->origin)) {
       LogMessage(Logger::STRING_GENERATION_RENDERER_NOT_BLACKLISTED);
       continue;
     } else {
-      generation_data = FindFormGenerationData(generation_enabled_forms_,
-                                               *possible_password_form);
+      const PasswordFormGenerationData* generation_data =
+          FindFormGenerationData(generation_enabled_forms_,
+                                 *possible_password_form);
       if (generation_data) {
         password_elements = FindPasswordElementsForGeneration(
             possible_form_data.password_elements, *generation_data);
