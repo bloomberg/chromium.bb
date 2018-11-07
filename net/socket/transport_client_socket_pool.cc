@@ -245,6 +245,7 @@ int TransportConnectJob::DoLoop(int result) {
 
   return rv;
 }
+
 int TransportConnectJob::DoResolveHost() {
   next_state_ = STATE_RESOLVE_HOST_COMPLETE;
   connect_timing_.dns_start = base::TimeTicks::Now();
@@ -437,6 +438,14 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
 int TransportConnectJob::ConnectInternal() {
   next_state_ = STATE_RESOLVE_HOST;
   return DoLoop(OK);
+}
+
+void TransportConnectJob::ChangePriorityInternal(RequestPriority priority) {
+  if (next_state_ == STATE_RESOLVE_HOST_COMPLETE) {
+    DCHECK(request_);
+    // Change the request priority in the host resolver.
+    request_->ChangeRequestPriority(priority);
+  }
 }
 
 void TransportConnectJob::CopyConnectionAttemptsFromSockets() {

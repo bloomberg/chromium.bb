@@ -68,6 +68,11 @@ std::unique_ptr<StreamSocket> ConnectJob::PassSocket() {
   return std::move(socket_);
 }
 
+void ConnectJob::ChangePriority(RequestPriority priority) {
+  set_priority(priority);
+  ChangePriorityInternal(priority);
+}
+
 int ConnectJob::Connect() {
   if (!timeout_duration_.is_zero())
     timer_.Start(FROM_HERE, timeout_duration_, this, &ConnectJob::OnTimeout);
@@ -159,7 +164,8 @@ void ClientSocketPoolBaseHelper::Request::AssignJob(ConnectJob* job) {
   DCHECK(job);
   DCHECK(!job_);
   job_ = job;
-  // TODO(chlily): Make job priority match request priority.
+  if (job_->priority() != priority_)
+    job_->ChangePriority(priority_);
 }
 
 ConnectJob* ClientSocketPoolBaseHelper::Request::ReleaseJob() {
