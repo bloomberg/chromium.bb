@@ -276,7 +276,6 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
   """
 
   MANIFEST_URL = constants.EXTERNAL_GOB_URL + '/chromiumos/manifest.git'
-  REPO_URL = constants.EXTERNAL_GOB_URL + '/external/repo.git'
   PROJECT = 'chromiumos/chromite'
   PROJECT_DIR = 'chromite'
 
@@ -302,8 +301,7 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
         self.root,
         manifest_url=self.MANIFEST_URL,
         reference=reference,
-        depth=1,
-        repo_url=self.REPO_URL)
+        depth=1)
     self.assertExists(os.path.join(self.root, '.repo'))
 
   @tests.append

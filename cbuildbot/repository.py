@@ -122,7 +122,7 @@ class RepoRepository(object):
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
-               depth=None, repo_url=config_lib.GetSiteParams().REPO_URL,
+               depth=None, repo_url=None,
                repo_branch=None, groups=None, repo_cmd='repo',
                preserve_paths=(), git_cache_dir=None):
     """Initialize.
@@ -427,8 +427,9 @@ class RepoRepository(object):
     # Use our own repo, in case android.kernel.org (the default location) is
     # down.
     init_cmd = [self.repo_cmd, 'init',
-                '--repo-url', self.repo_url,
                 '--manifest-url', self.manifest_repo_url]
+    if self.repo_url:
+      init_cmd.extend(['--repo-url', self.repo_url])
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
     if self._manifest:
