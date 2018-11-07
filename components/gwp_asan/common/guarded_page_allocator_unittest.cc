@@ -20,8 +20,9 @@ static constexpr size_t kGpaMaxPages = GuardedPageAllocator::kGpaMaxPages;
 
 class GuardedPageAllocatorTest : public testing::Test {
  protected:
-  explicit GuardedPageAllocatorTest(size_t num_pages = kGpaMaxPages)
-      : gpa_(num_pages) {}
+  explicit GuardedPageAllocatorTest(size_t num_pages = kGpaMaxPages) {
+    gpa_.Init(num_pages);
+  }
 
   // Get a left- or right- aligned allocation (or nullptr on error.)
   char* GetAlignedAllocation(bool left_aligned, size_t sz, size_t align = 0) {

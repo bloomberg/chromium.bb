@@ -22,19 +22,9 @@ constexpr size_t GuardedPageAllocator::kGpaMaxPages;
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
 constexpr size_t GuardedPageAllocator::kFreePagesNumBits;
 
-GuardedPageAllocator& GuardedPageAllocator::InitializeSingleton(
-    size_t num_pages) {
-  static base::NoDestructor<GuardedPageAllocator> gpa(num_pages);
-  return *gpa;
-}
+GuardedPageAllocator::GuardedPageAllocator() {}
 
-GuardedPageAllocator& GuardedPageAllocator::Get() {
-  // The constructor will fail if it is called with num_pages = 0, forcing
-  // InitializeSingleton() to be called first.
-  return InitializeSingleton(0);
-}
-
-GuardedPageAllocator::GuardedPageAllocator(size_t num_pages) {
+void GuardedPageAllocator::Init(size_t num_pages) {
   CHECK_GT(num_pages, 0U);
   CHECK_LE(num_pages, kFreePagesNumBits);
   num_pages_ = num_pages;
@@ -42,15 +32,21 @@ GuardedPageAllocator::GuardedPageAllocator(size_t num_pages) {
   page_size_ = base::GetPageSize();
   CHECK(MapPages());
 
-  free_pages_ =
-      (num_pages_ == kFreePagesNumBits) ? ~0ULL : (1ULL << num_pages_) - 1;
+  {
+    // Obtain this lock exclusively to satisfy the thread-safety annotations,
+    // there should be no risk of a race here.
+    base::AutoLock lock(lock_);
+    free_pages_ =
+        (num_pages_ == kFreePagesNumBits) ? ~0ULL : (1ULL << num_pages_) - 1;
+  }
 
   for (size_t i = 0; i < num_pages_; i++)
     data_[i].Init();
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
-  UnmapPages();
+  if (num_pages_)
+    UnmapPages();
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
@@ -117,11 +113,6 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   size_t slot = AddrToSlot(GetPageAddr(addr));
   DCHECK_EQ(ptr, data_[slot].alloc_ptr);
   return data_[slot].alloc_size;
-}
-
-bool GuardedPageAllocator::PointerIsMine(const void* ptr) const {
-  uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  return pages_base_addr_ <= addr && addr < pages_end_addr_;
 }
 
 // Selects a random slot in O(1) time by rotating the free_pages bitmap by a
