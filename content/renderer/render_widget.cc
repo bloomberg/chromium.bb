@@ -485,10 +485,6 @@ void RenderWidget::InitForChildLocalRoot(
 }
 
 void RenderWidget::CloseForFrame() {
-  if (owner_delegate_) {
-    owner_delegate_->OverrideCloseForWidget();
-    return;
-  }
   OnClose();
 }
 

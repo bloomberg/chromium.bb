@@ -1086,18 +1086,6 @@ void RenderViewImpl::DidHandleGestureEventForWidget(
     observer.DidHandleGestureEvent(event);
 }
 
-void RenderViewImpl::OverrideCloseForWidget() {
-  DCHECK(frame_widget_);
-  // The RenderWidget isn't actually closed here because we might need to use it
-  // again since it can't be recreated as it is part of |this|. So instead just
-  // stop the compositor.
-  // TODO(crbug.com/419087): The RenderWidget should be destroyed here along
-  // with the WebFrameWidget, then we won't have to do this.
-  GetWidget()->StopCompositor();
-  frame_widget_->Close();
-  frame_widget_ = nullptr;
-}
-
 void RenderViewImpl::DidCloseWidget() {
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.
@@ -1536,6 +1524,18 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // TODO(crbug.com/419087): The RenderWidget should be newly created here along
   // with the WebFrameWidget, then we won't have to do this.
   GetWidget()->StartCompositor();
+}
+
+void RenderViewImpl::DetachWebFrameWidget() {
+  DCHECK(frame_widget_);
+  // The RenderWidget isn't actually closed here because we might need to use it
+  // again since it can't be recreated as it is part of |this|. So instead just
+  // stop the compositor.
+  // TODO(crbug.com/419087): The RenderWidget should be destroyed here along
+  // with the WebFrameWidget, then we won't have to do this.
+  GetWidget()->StopCompositor();
+  frame_widget_->Close();
+  frame_widget_ = nullptr;
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {

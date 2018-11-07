@@ -478,7 +478,6 @@ class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
   bool SupportsMultipleWindowsForWidget() override { return true; }
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override {}
-  void OverrideCloseForWidget() override {}
   void DidCloseWidget() override {}
   void ApplyNewSizeForWidget(const gfx::Size& old_size,
                              const gfx::Size& new_size) override {}

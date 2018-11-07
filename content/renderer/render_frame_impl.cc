@@ -1,4 +1,3 @@
-
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -3994,8 +3993,17 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
 
   // Clean up the associated RenderWidget for the frame, if there is one.
   GetRenderWidget()->UnregisterRenderFrame(this);
-  if (render_widget_)
+  if (is_main_frame_) {
+    // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
+    // closed/destroyed since it is part of the RenderView. So instead it is
+    // swapped out, which we would be in the middle of here. So instead of
+    // closing the RenderWidget we only drop the WebFrameWidget in order to also
+    // drop its reference on the WebLocalFrameImpl for this detaching frame.
+    render_view_->DetachWebFrameWidget();
+  } else if (render_widget_) {
+    // This closes/deletes the RenderWidget if this frame was a local root.
     render_widget_->CloseForFrame();
+  }
 
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its
