@@ -17,12 +17,9 @@
   sourcesNavigatorView = createNavigatorView(Sources.NetworkNavigatorView);
   contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
 
-  Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
-  Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
-
   var pageMock = new SDKTestRunner.PageMock('http://example.com');
   pageMock.turnIntoWorker();
-  SDKTestRunner.connectToPage('mock-target-1', pageMock);
+  pageMock.connectAsMainTarget('mock-target-1');
 
   var uiSourceCodes = [];
   async function addUISourceCode(url, isContentScript) {
