@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_dom_media_stream_track.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "url/gurl.h"
 
 using content::V8ValueConverter;
@@ -440,11 +441,14 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   create_callback_.Reset(isolate, args[2].As<v8::Function>());
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CastStreamingNativeHandler::CallCreateCallback,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stream1),
-                 base::Passed(&stream2), base::Passed(&udp_transport)));
+  context()
+      ->web_frame()
+      ->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CastStreamingNativeHandler::CallCreateCallback,
+                         weak_factory_.GetWeakPtr(), base::Passed(&stream1),
+                         base::Passed(&stream2), base::Passed(&udp_transport)));
 }
 
 void CastStreamingNativeHandler::CallCreateCallback(
