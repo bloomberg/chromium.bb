@@ -239,6 +239,7 @@ AccessibilityManager::AccessibilityManager()
       scoped_braille_observer_(this),
       braille_ime_current_(false),
       chromevox_panel_(nullptr),
+      switch_access_panel_(nullptr),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
