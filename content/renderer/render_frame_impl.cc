@@ -531,9 +531,12 @@ CommonNavigationParams MakeCommonNavigationParams(
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.url_request.GetExtraData());
   DCHECK(extra_data);
+  NavigationDownloadPolicy download_policy =
+      info.is_opener_navigation ? NavigationDownloadPolicy::kAllowOpener
+                                : NavigationDownloadPolicy::kAllow;
   return CommonNavigationParams(
       info.url_request.Url(), referrer, extra_data->transition_type(),
-      navigation_type, true,
+      navigation_type, download_policy,
       info.frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
       GURL(), static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
@@ -4907,8 +4910,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
-  extra_data->set_allow_download(
-      navigation_state->common_params().allow_download);
+  extra_data->set_allow_download(IsNavigationDownloadAllowed(
+      navigation_state->common_params().download_policy));
   extra_data->set_transition_type(transition_type);
   extra_data->set_navigation_response_override(std::move(response_override));
   bool is_for_no_state_prefetch =

@@ -551,6 +551,11 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   if (form)
     navigation_info.form = WebFormElement(form);
 
+  navigation_info.is_opener_navigation =
+      origin_document && origin_document->GetFrame() &&
+      origin_document->GetFrame()->Client()->Opener() ==
+          ToCoreFrame(web_frame_);
+
   // The frame has navigated either by itself or by the action of the
   // |origin_document| when it is defined. |source_location| represents the
   // line of code that has initiated the navigation. It is used to let web

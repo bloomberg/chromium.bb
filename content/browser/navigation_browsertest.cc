@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -17,6 +18,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -35,6 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
@@ -583,7 +586,8 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true /* allow_download */,
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
+      NavigationDownloadPolicy::kAllow,
       false /* should_replace_current_entry */,
       file_url, /* base_url_for_data_url */
       GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
@@ -1395,6 +1399,46 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_Navigation) {
   )"));
 
   console_delegate->Wait();
+}
+
+// TODO(http://crbug.com/632514): This test currently expects opener downloads
+// go through and UMA is logged, but when the linked bug is resolved the
+// download should be disallowed.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+  ShellDownloadManagerDelegate* delegate =
+      static_cast<ShellDownloadManagerDelegate*>(
+          shell()
+              ->web_contents()
+              ->GetBrowserContext()
+              ->GetDownloadManagerDelegate());
+  delegate->SetDownloadBehaviorForTesting(download_dir.GetPath());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  WebContents* opener = shell()->web_contents();
+
+  // Open a popup.
+  bool opened = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener, "window.domAutomationController.send(!!window.open());",
+      &opened));
+  EXPECT_TRUE(opened);
+  EXPECT_EQ(2u, Shell::windows().size());
+
+  // Using the popup, navigate its opener to a download.
+  base::HistogramTester histograms;
+  WebContents* popup = Shell::windows()[1]->web_contents();
+  EXPECT_NE(popup, opener);
+  DownloadTestObserverInProgress observer(
+      BrowserContext::GetDownloadManager(opener->GetBrowserContext()),
+      1 /* wait_count */);
+  EXPECT_TRUE(ExecuteScript(
+      popup,
+      "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
+  observer.WaitForFinished();
+  histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
+                                NavigationDownloadPolicy::kAllowOpener, 1);
 }
 
 }  // namespace content

@@ -687,9 +687,12 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
     base::TimeTicks input_start) const {
+  NavigationDownloadPolicy download_policy =
+      IsViewSourceMode() ? NavigationDownloadPolicy::kDisallowViewSource
+                         : NavigationDownloadPolicy::kAllow;
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
-      !IsViewSourceMode(), should_replace_entry(), GetBaseURLForDataURL(),
+      download_policy, should_replace_entry(), GetBaseURLForDataURL(),
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(), has_started_from_context_menu(),

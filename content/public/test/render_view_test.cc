@@ -565,10 +565,10 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
 void RenderViewTest::Reload(const GURL& url) {
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
-      true, false, GURL(), GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-      "GET", nullptr, base::Optional<SourceLocation>(),
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(), std::string());
+      NavigationDownloadPolicy::kAllow, false, GURL(), GURL(),
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -707,8 +707,9 @@ void RenderViewTest::GoToOffset(int offset,
 
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT, true, false, GURL(),
-      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT,
+      NavigationDownloadPolicy::kAllow, false, GURL(), GURL(),
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   RequestNavigationParams request_params;
