@@ -7,9 +7,12 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -37,15 +40,16 @@ bool WebAppInstallManager::CanInstallWebApp(
 void WebAppInstallManager::InstallWebApp(content::WebContents* web_contents,
                                          bool force_shortcut_app,
                                          OnceInstallCallback install_callback) {
-  // TODO(loyso): Use force_shortcut_app flag during installation.
-
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  force_shortcut_app_ = force_shortcut_app;
+  web_contents_ = web_contents;
+  install_callback_ = std::move(install_callback);
 
   data_retriever_->GetWebApplicationInfo(
       web_contents,
       base::BindOnce(&WebAppInstallManager::OnGetWebApplicationInfo,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(install_callback)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppInstallManager::SetDataRetrieverForTesting(
@@ -53,34 +57,82 @@ void WebAppInstallManager::SetDataRetrieverForTesting(
   data_retriever_ = std::move(data_retriever);
 }
 
+void WebAppInstallManager::CallInstallCallback(const AppId& app_id,
+                                               InstallResultCode code) {
+  // Reset current installation process arguments.
+  force_shortcut_app_ = false;
+  web_contents_ = nullptr;
+  web_app_info_.reset();
+
+  DCHECK(install_callback_);
+  std::move(install_callback_).Run(app_id, code);
+}
+
+void WebAppInstallManager::ReturnError(InstallResultCode code) {
+  CallInstallCallback(AppId(), code);
+}
+
 void WebAppInstallManager::OnGetWebApplicationInfo(
-    OnceInstallCallback install_callback,
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!web_app_info) {
-    std::move(install_callback)
-        .Run(AppId(), InstallResultCode::kGetWebApplicationInfoFailed);
-    return;
-  }
+  if (!web_app_info)
+    return ReturnError(InstallResultCode::kGetWebApplicationInfoFailed);
+
+  // TODO(loyso): Observe WebContents lifetime instead.
+  if (web_contents_->IsBeingDestroyed())
+    return ReturnError(InstallResultCode::kWebContentsDestroyed);
+
+  web_app_info_ = std::move(web_app_info);
+
+  // TODO(loyso): Consider to merge InstallableManager into WebAppDataRetriever.
+  InstallableManager* installable_manager =
+      InstallableManager::FromWebContents(web_contents_);
+  DCHECK(installable_manager);
+
+  // TODO(crbug.com/829232) Unify with other calls to GetData.
+  InstallableParams params;
+  params.check_eligibility = true;
+  params.valid_primary_icon = true;
+  params.valid_manifest = true;
+  params.has_worker = true;
+  // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
+  installable_manager->GetData(
+      params,
+      base::BindRepeating(&WebAppInstallManager::OnDidPerformInstallableCheck,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppInstallManager::OnDidPerformInstallableCheck(
+    const InstallableData& data) {
+  DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
+
+  if (web_contents_->IsBeingDestroyed())
+    return ReturnError(InstallResultCode::kWebContentsDestroyed);
+
+  const ForInstallableSite for_installable_site =
+      data.error_code == NO_ERROR_DETECTED && !force_shortcut_app_
+          ? ForInstallableSite::kYes
+          : ForInstallableSite::kNo;
+
+  UpdateWebAppInfoFromManifest(*data.manifest, web_app_info_.get(),
+                               for_installable_site);
 
   // TODO(loyso): Implement installation logic from BookmarkAppHelper:
-  // - InstallableManager to get InstallableData.
-  // - UpdateWebAppInfoFromManifest.
   // - UpdateShareTargetInPrefs.
   // - WebAppIconDownloader.
   // etc
 
-  const AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
+  const AppId app_id = GenerateAppIdFromURL(web_app_info_->app_url);
   auto web_app = std::make_unique<WebApp>(app_id);
 
-  web_app->SetName(base::UTF16ToUTF8(web_app_info->title));
-  web_app->SetDescription(base::UTF16ToUTF8(web_app_info->description));
-  web_app->SetLaunchUrl(web_app_info->app_url.spec());
+  web_app->SetName(base::UTF16ToUTF8(web_app_info_->title));
+  web_app->SetDescription(base::UTF16ToUTF8(web_app_info_->description));
+  web_app->SetLaunchUrl(web_app_info_->app_url.spec());
 
   registrar_->RegisterApp(std::move(web_app));
 
-  std::move(install_callback).Run(app_id, InstallResultCode::kSuccess);
+  CallInstallCallback(app_id, InstallResultCode::kSuccess);
 }
 
 }  // namespace web_app

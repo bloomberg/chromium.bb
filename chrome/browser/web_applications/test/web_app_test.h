@@ -15,6 +15,8 @@ class WebAppTest : public ChromeRenderViewHostTestHarness {
   WebAppTest();
   ~WebAppTest() override;
 
+  void SetUp() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppTest);
 };

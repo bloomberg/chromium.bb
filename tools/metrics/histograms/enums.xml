@@ -52331,6 +52331,7 @@ Full version information for the fingerprint enum values:
   <int value="2" label="FailedUnknownReason"/>
   <int value="3" label="GetWebApplicationInfoFailed"/>
   <int value="4" label="PreviouslyUninstalled"/>
+  <int value="5" label="WebContentsDestroyed"/>
 </enum>
 
 <enum name="WebAppInstallSource">
