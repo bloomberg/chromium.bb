@@ -3126,6 +3126,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     self.navigationManagerImpl->CommitPendingItem();
+    web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
+    [self setDocumentURL:lastCommittedItem->GetURL() context:navigationContext];
   }
 
   if (provisionalLoad) {
