@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
+
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
@@ -81,7 +83,9 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
                                  class_name);
   }
 
-  if (!GetProperty(AXBooleanProperty::IMPORTANCE)) {
+  if (!GetProperty(AXBooleanProperty::IMPORTANCE) &&
+      !HasProperty(AXStringProperty::TEXT) &&
+      !HasProperty(AXStringProperty::CONTENT_DESCRIPTION)) {
     out_data->role = ax::mojom::Role::kIgnored;
     return;
   }
@@ -302,6 +306,12 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, name);
     else
       out_data->SetName(name);
+  } else if (GetProperty(AXBooleanProperty::CLICKABLE)) {
+    // Compute the name by joining all nodes with names.
+    std::vector<std::string> names;
+    ComputeNameFromContents(this, &names);
+    if (!names.empty())
+      out_data->SetName(base::JoinString(names, " "));
   }
 
   std::string role_description;
@@ -422,14 +432,16 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   }
 }
 
-const std::vector<int32_t>* AccessibilityNodeInfoDataWrapper::GetChildren() {
+void AccessibilityNodeInfoDataWrapper::GetChildren(
+    std::vector<ArcAccessibilityInfoData*>* children) const {
   if (!node_ptr_->int_list_properties)
-    return nullptr;
+    return;
   auto it =
       node_ptr_->int_list_properties->find(AXIntListProperty::CHILD_NODE_IDS);
   if (it == node_ptr_->int_list_properties->end())
-    return nullptr;
-  return &(it->second);
+    return;
+  for (int32_t id : it->second)
+    children->push_back(tree_source_->GetFromId(id));
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
@@ -530,6 +542,31 @@ bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(
       return true;
   }
   return false;
+}
+
+void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
+    const AccessibilityNodeInfoDataWrapper* data,
+    std::vector<std::string>* names) const {
+  // Take the name from either content description or text. It's not clear
+  // whether labelled by should be taken into account here.
+  std::string name;
+  if (!data->GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &name) ||
+      name.empty())
+    data->GetProperty(AXStringProperty::TEXT, &name);
+
+  // Stop when we get a name for this subtree.
+  if (!name.empty()) {
+    names->push_back(name);
+    return;
+  }
+
+  // Otherwise, continue looking for a name in this subtree.
+  std::vector<ArcAccessibilityInfoData*> children;
+  data->GetChildren(&children);
+  for (ArcAccessibilityInfoData* child : children) {
+    ComputeNameFromContents(
+        static_cast<AccessibilityNodeInfoDataWrapper*>(child), names);
+  }
 }
 
 }  // namespace arc

@@ -32,7 +32,8 @@ class AccessibilityNodeInfoDataWrapper : public ArcAccessibilityInfoData {
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;
-  const std::vector<int32_t>* GetChildren() override;
+  void GetChildren(
+      std::vector<ArcAccessibilityInfoData*>* children) const override;
 
   mojom::AccessibilityNodeInfoData* node() { return node_ptr_; }
 
@@ -50,6 +51,9 @@ class AccessibilityNodeInfoDataWrapper : public ArcAccessibilityInfoData {
 
   bool HasCoveringSpan(mojom::AccessibilityStringProperty prop,
                        mojom::SpanType span_type) const;
+
+  void ComputeNameFromContents(const AccessibilityNodeInfoDataWrapper* data,
+                               std::vector<std::string>* names) const;
 
   AXTreeSourceArc* tree_source_ = nullptr;
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;

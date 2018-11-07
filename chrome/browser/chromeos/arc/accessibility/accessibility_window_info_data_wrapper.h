@@ -34,7 +34,8 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;
-  const std::vector<int32_t>* GetChildren() override;
+  void GetChildren(
+      std::vector<ArcAccessibilityInfoData*>* children) const override;
 
  private:
   bool GetProperty(mojom::AccessibilityWindowBooleanProperty prop) const;
@@ -48,7 +49,6 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
 
   AXTreeSourceArc* tree_source_ = nullptr;
   mojom::AccessibilityWindowInfoData* window_ptr_ = nullptr;
-  std::vector<int32_t> children_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWindowInfoDataWrapper);
 };

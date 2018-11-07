@@ -231,6 +231,18 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 0;
   SetProperty(root, AXStringProperty::CLASS_NAME, "");
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+
+  // Child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child1 = event->node_data.back().get();
+  child1->id = 1;
+
+  // Another child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child2 = event->node_data.back().get();
+  child2->id = 2;
 
   // Populate the tree source with the data.
   CallNotifyAccessibilityEvent(event.get());
@@ -277,6 +289,36 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("label content description", name);
+
+  // Name from contents.
+
+  // Root node has no name, but has descendants with name.
+  root->string_properties->clear();
+  // Name from contents only happens if a node is clickable.
+  SetProperty(root, AXBooleanProperty::CLICKABLE, true);
+  SetProperty(child1, AXStringProperty::TEXT, "child1 label text");
+  SetProperty(child2, AXStringProperty::TEXT, "child2 label text");
+
+  CallSerializeNode(root, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child1 label text child2 label text", name);
+
+  // If the node has a name, it should override the contents.
+  SetProperty(root, AXStringProperty::TEXT, "root label text");
+
+  CallSerializeNode(root, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("root label text", name);
+
+  // Clearing both clickable and name from root, the name should not be
+  // populated.
+  root->boolean_properties->clear();
+  root->string_properties->clear();
+  CallSerializeNode(root, &data);
+  ASSERT_FALSE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
 }
 
 // TODO(katie): Maybe remove this test when adding AccessibilityWindowInfoData

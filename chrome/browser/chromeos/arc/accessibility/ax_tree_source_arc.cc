@@ -177,16 +177,14 @@ void AXTreeSourceArc::GetChildren(
     std::vector<ArcAccessibilityInfoData*>* out_children) const {
   if (!info_data)
     return;
-  const std::vector<int32_t>* children = info_data->GetChildren();
-  if (!children)
+
+  info_data->GetChildren(out_children);
+  if (out_children->empty())
     return;
 
   std::map<int32_t, size_t> id_to_index;
-  for (size_t i = 0; i < children->size(); ++i) {
-    ArcAccessibilityInfoData* child = GetFromId((*children)[i]);
-    out_children->push_back(child);
-    id_to_index[child->GetId()] = i;
-  }
+  for (size_t i = 0; i < out_children->size(); i++)
+    id_to_index[out_children->at(i)->GetId()] = i;
 
   // Sort children based on their enclosing bounding rectangles, based on their
   // descendants.
@@ -346,13 +344,12 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     computed_bounds.Union(info_data->GetBounds());
     return;
   }
-  const std::vector<int32_t>* children = info_data->GetChildren();
-  if (!children)
+  std::vector<ArcAccessibilityInfoData*> children;
+  info_data->GetChildren(&children);
+  if (children.empty())
     return;
-  for (size_t i = 0; i < children->size(); ++i) {
-    ComputeEnclosingBoundsInternal(GetFromId((*children)[i]), computed_bounds);
-  }
-
+  for (ArcAccessibilityInfoData* child : children)
+    ComputeEnclosingBoundsInternal(child, computed_bounds);
   return;
 }
 
