@@ -2514,8 +2514,23 @@ int HttpCache::Transaction::BeginCacheValidation() {
     skip_validation = !partial_->initial_validation();
   }
 
+  // If this is the first request (!reading_) of a 206 entry (is_sparse_) that
+  // doesn't actually cover the entire file (which with !reading would require
+  // partial->IsLastRange()), and the user is requesting the whole thing
+  // (!partial_->range_requested()), make sure to validate the first chunk,
+  // since afterwards it will be too late if it's actually out-of-date (or the
+  // server bungles invalidation). This is limited to the whole-file request
+  // as a targeted fix for https://crbug.com/888742 while avoiding extra
+  // requests in other cases, but the problem can occur more generally as well;
+  // it's just a lot less likely with applications actively using ranges.
+  // See https://crbug.com/902724 for the more general case.
+  bool first_read_of_full_from_partial =
+      is_sparse_ && !reading_ &&
+      (partial_ && !partial_->range_requested() && !partial_->IsLastRange());
+
   if (partial_ && (is_sparse_ || truncated_) &&
-      (!partial_->IsCurrentRangeCached() || invalid_range_)) {
+      (!partial_->IsCurrentRangeCached() || invalid_range_ ||
+       first_read_of_full_from_partial)) {
     // Force revalidation for sparse or truncated entries. Note that we don't
     // want to ignore the regular validation logic just because a byte range was
     // part of the request.

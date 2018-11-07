@@ -473,8 +473,9 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
   if (!request->extra_headers.GetHeader(HttpRequestHeaders::kRange,
                                         &range_header) ||
       !HttpUtil::ParseRangeHeader(range_header, &ranges) || bad_200_ ||
-      ranges.size() != 1) {
-    // This is not a byte range request. We return 200.
+      ranges.size() != 1 ||
+      (modified_ && request->extra_headers.HasHeader("If-Range"))) {
+    // This is not a byte range request, or a failed If-Range. We return 200.
     response_status->assign("HTTP/1.1 200 OK");
     response_headers->assign("Date: Wed, 28 Nov 2007 09:40:09 GMT");
     response_data->assign("Not a range");
@@ -1503,6 +1504,113 @@ TEST_F(HttpCacheTest, SimpleGET_ManyReaders) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+TEST_F(HttpCacheTest, RangeGET_FullAfterPartial) {
+  MockHttpCache cache;
+
+  // Request a prefix.
+  {
+    ScopedMockTransaction transaction_pre(kRangeGET_TransactionOK);
+    transaction_pre.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+    transaction_pre.data = "rg: 00-09 ";
+    MockHttpRequest request_pre(transaction_pre);
+
+    HttpResponseInfo response_pre;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction_pre,
+                                  request_pre, &response_pre);
+    ASSERT_TRUE(response_pre.headers != nullptr);
+    EXPECT_EQ(206, response_pre.headers->response_code());
+    EXPECT_EQ(1, cache.network_layer()->transaction_count());
+    EXPECT_EQ(0, cache.disk_cache()->open_count());
+    EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
+
+  {
+    // Now request the full thing, but set validation to fail. This would
+    // previously fail in the middle of data and truncate it; current behavior
+    // restarts it, somewhat wastefully but gets the data back.
+    RangeTransactionServer handler;
+    handler.set_modified(true);
+
+    ScopedMockTransaction transaction_all(kRangeGET_TransactionOK);
+    transaction_all.request_headers = EXTRA_HEADER;
+    transaction_all.data = "Not a range";
+    MockHttpRequest request_all(transaction_all);
+
+    HttpResponseInfo response_all;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction_all,
+                                  request_all, &response_all);
+    ASSERT_TRUE(response_all.headers != nullptr);
+    EXPECT_EQ(200, response_all.headers->response_code());
+    // 1 from previous test, failed validation, and re-try.
+    EXPECT_EQ(3, cache.network_layer()->transaction_count());
+    EXPECT_EQ(1, cache.disk_cache()->open_count());
+    EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
+}
+
+TEST_F(HttpCacheTest, RangeGET_FullAfterPartialReuse) {
+  MockHttpCache cache;
+
+  // Request a prefix.
+  {
+    ScopedMockTransaction transaction_pre(kRangeGET_TransactionOK);
+    transaction_pre.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+    transaction_pre.data = "rg: 00-09 ";
+    MockHttpRequest request_pre(transaction_pre);
+
+    HttpResponseInfo response_pre;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction_pre,
+                                  request_pre, &response_pre);
+    ASSERT_TRUE(response_pre.headers != nullptr);
+    EXPECT_EQ(206, response_pre.headers->response_code());
+    EXPECT_EQ(1, cache.network_layer()->transaction_count());
+    EXPECT_EQ(0, cache.disk_cache()->open_count());
+    EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
+
+  {
+    // Now request the full thing, revalidating successfully, so the full
+    // file gets stored via a sparse-entry.
+    ScopedMockTransaction transaction_all(kRangeGET_TransactionOK);
+    transaction_all.request_headers = EXTRA_HEADER;
+    transaction_all.data =
+        "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49"
+        " rg: 50-59 rg: 60-69 rg: 70-79 ";
+    MockHttpRequest request_all(transaction_all);
+
+    HttpResponseInfo response_all;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction_all,
+                                  request_all, &response_all);
+    ASSERT_TRUE(response_all.headers != nullptr);
+    EXPECT_EQ(200, response_all.headers->response_code());
+    // 1 from previous test, validation, and second chunk
+    EXPECT_EQ(3, cache.network_layer()->transaction_count());
+    EXPECT_EQ(1, cache.disk_cache()->open_count());
+    EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
+
+  {
+    // Grab it again, should not need re-validation.
+    ScopedMockTransaction transaction_all2(kRangeGET_TransactionOK);
+    transaction_all2.request_headers = EXTRA_HEADER;
+    transaction_all2.data =
+        "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49"
+        " rg: 50-59 rg: 60-69 rg: 70-79 ";
+    MockHttpRequest request_all2(transaction_all2);
+
+    HttpResponseInfo response_all2;
+    RunTransactionTestWithRequest(cache.http_cache(), transaction_all2,
+                                  request_all2, &response_all2);
+    ASSERT_TRUE(response_all2.headers != nullptr);
+    EXPECT_EQ(200, response_all2.headers->response_code());
+
+    // Only one more cache open, no new network traffic.
+    EXPECT_EQ(3, cache.network_layer()->transaction_count());
+    EXPECT_EQ(2, cache.disk_cache()->open_count());
+    EXPECT_EQ(1, cache.disk_cache()->create_count());
+  }
 }
 
 // Tests that we can have parallel validation on range requests.
