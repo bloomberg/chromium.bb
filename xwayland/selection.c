@@ -408,6 +408,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 		wm->property_source = NULL;
 		close(fd);
 		wl_array_release(&wm->source_data);
+		return 1;
 	}
 
 	weston_log("read %d (available %d, mask 0x%x) bytes: \"%.*s\"\n",
