@@ -29,10 +29,6 @@ class TestNetworkConnectionTracker : public NetworkConnectionTracker {
   // TestNetworkConnectionTracker instance when called.
   static NetworkConnectionTrackerGetter CreateGetter();
 
-  // Creates a NetworkConnectionTrackerGetter that will asynchronously return
-  // the active TestNetworkConnectionTracker instance.
-  static NetworkConnectionTrackerAsyncGetter CreateAsyncGetter();
-
   ~TestNetworkConnectionTracker() override;
 
   bool GetConnectionType(network::mojom::ConnectionType* type,
