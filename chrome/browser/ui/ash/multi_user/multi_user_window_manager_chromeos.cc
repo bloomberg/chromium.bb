@@ -424,10 +424,6 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   // Remove the window from the owners list.
   delete window_to_entry_[window];
   window_to_entry_.erase(window);
-
-  // Notify entry change.
-  for (Observer& observer : observers_)
-    observer.OnOwnerEntryRemoved(window);
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
