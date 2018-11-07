@@ -101,7 +101,8 @@ class ModelAssociationManager {
   // When this is completed, |OnModelAssociationDone| will be invoked.
   void StartAssociationAsync(const ModelTypeSet& types_to_associate);
 
-  // Stops an individual datatype |type| for |shutdown_reason|.
+  // Stops an individual datatype |type| for |shutdown_reason|. |error| must be
+  // an actual error (i.e. not UNSET).
   void StopDatatype(ModelType type,
                     ShutdownReason shutdown_reason,
                     SyncError error);

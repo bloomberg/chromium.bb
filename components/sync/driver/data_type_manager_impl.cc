@@ -123,8 +123,10 @@ void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
   if (dtc_iter->second->ReadyForStart()) {
     ForceReconfiguration();
   } else {
-    // Stop the datatype
-    model_association_manager_.StopDatatype(type, DISABLE_SYNC, SyncError());
+    model_association_manager_.StopDatatype(
+        type, DISABLE_SYNC,
+        SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                  "Data type is unready.", type));
   }
 }
 
