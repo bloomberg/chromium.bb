@@ -28,8 +28,7 @@ namespace {
 
 // Tests below will post tasks in a loop until |kPostTaskPerfTestDuration| has
 // elapsed.
-constexpr TimeDelta kPostTaskPerfTestDuration =
-    base::TimeDelta::FromSeconds(30);
+constexpr TimeDelta kPostTaskPerfTestDuration = base::TimeDelta::FromSeconds(5);
 
 }  // namespace
 
