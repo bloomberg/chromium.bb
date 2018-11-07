@@ -85,6 +85,8 @@ class PLATFORM_EXPORT CanvasColorParams {
   // Return the color space of the underlying data for the canvas.
   gfx::ColorSpace GetStorageGfxColorSpace() const;
   sk_sp<SkColorSpace> GetSkColorSpace() const;
+  static sk_sp<SkColorSpace> CanvasColorSpaceToSkColorSpace(
+      CanvasColorSpace color_space);
   SkAlphaType GetSkAlphaType() const;
   const SkSurfaceProps* GetSkSurfaceProps() const;
 

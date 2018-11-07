@@ -181,9 +181,14 @@ gfx::ColorSpace CanvasColorParams::GetStorageGfxColorSpace() const {
 }
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
+  return CanvasColorSpaceToSkColorSpace(color_space_);
+}
+
+sk_sp<SkColorSpace> CanvasColorParams::CanvasColorSpaceToSkColorSpace(
+    CanvasColorSpace color_space) {
   SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
   SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
-  switch (color_space_) {
+  switch (color_space) {
     case kSRGBCanvasColorSpace:
       break;
     case kLinearRGBCanvasColorSpace:

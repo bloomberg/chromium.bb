@@ -457,7 +457,7 @@ void LayerTreeHostImpl::CommitComplete() {
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
-  UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  UpdateTreeResourcesIfNeeded();
   sync_tree()->set_needs_update_draw_properties();
 
   // We need an update immediately post-commit to have the opportunity to create
@@ -2409,8 +2409,15 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   return true;
 }
 
-void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
-  if (!UpdateGpuRasterizationStatus())
+void LayerTreeHostImpl::UpdateTreeResourcesIfNeeded() {
+  // For simplicity, clobber all resources when the color space changes.
+  // This is mostly to clear the image decode caches, which don't handle
+  // multiple color space at once.
+  int color_space_id = GetRasterColorSpace().color_space_id;
+  bool color_space_changed = last_color_space_id_ != color_space_id;
+  last_color_space_id_ = color_space_id;
+
+  if (!UpdateGpuRasterizationStatus() && !color_space_changed)
     return;
 
   // Clean up and replace existing tile manager with another one that uses
@@ -3066,13 +3073,15 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
         viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
                                                 tile_format),
         settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
-        paint_image_generator_client_id_);
+        paint_image_generator_client_id_,
+        GetRasterColorSpace().color_space.ToSkColorSpace());
   } else {
     bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
         settings_.decoded_image_working_set_budget_bytes,
-        paint_image_generator_client_id_);
+        paint_image_generator_client_id_,
+        GetRasterColorSpace().color_space.ToSkColorSpace());
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool
@@ -3172,9 +3181,8 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
   tile_manager_.decoded_image_tracker().QueueImageDecode(
-      image, GetRasterColorSpace().color_space,
-      base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
-                 base::Unretained(this), request_id));
+      image, base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
+                        base::Unretained(this), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 

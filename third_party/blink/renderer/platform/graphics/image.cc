@@ -71,7 +71,9 @@ class CombinedImageDecodeCache {
     if (!decode_caches_[index]) {
       decode_caches_[index] = std::make_unique<cc::SoftwareImageDecodeCache>(
           CanvasColorParams::PixelFormatToSkColorType(pixel_format),
-          locked_memory_limit_bytes_, PaintImage::kDefaultGeneratorClientId);
+          locked_memory_limit_bytes_, PaintImage::kDefaultGeneratorClientId,
+          blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(
+              color_space));
     }
     return decode_caches_[index].get();
   }

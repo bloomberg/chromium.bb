@@ -778,7 +778,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
-  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  void UpdateTreeResourcesIfNeeded();
 
   Viewport* viewport() const { return viewport_.get(); }
 
@@ -1106,6 +1106,7 @@ class CC_EXPORT LayerTreeHostImpl
   base::circular_deque<FrameTokenInfo> frame_token_infos_;
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
+  int last_color_space_id_ = -1;
   bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;

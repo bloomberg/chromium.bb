@@ -818,12 +818,13 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     root_->AddChild(child_);
     child_->AddChild(grandchild_);
 
-    layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostContextTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void AttachTree() { layer_tree_host()->SetRootLayer(root_); }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeHostContextTest::DidActivateTreeOnThread(host_impl);
@@ -842,6 +843,18 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
+        // Because setting the colorspace on the first activation releases
+        // resources, don't attach the layers until the first activation.
+        // Because of single thread vs multi thread differences (i.e.
+        // commit to active tree), if this delay is not done, then the
+        // active tree layers will have a different number of resource
+        // releasing.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostContextTestLayersNotified::AttachTree,
+                           base::Unretained(this)));
+        break;
+      case 2:
         EXPECT_EQ(0u, root_picture->release_resources_count());
         EXPECT_EQ(0u, child_picture->release_resources_count());
         EXPECT_EQ(0u, grandchild_picture->release_resources_count());
@@ -850,7 +863,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
         LoseContext();
         times_to_fail_create_ = 1;
         break;
-      case 2:
+      case 3:
         EXPECT_TRUE(root_picture->release_resources_count());
         EXPECT_TRUE(child_picture->release_resources_count());
         EXPECT_TRUE(grandchild_picture->release_resources_count());

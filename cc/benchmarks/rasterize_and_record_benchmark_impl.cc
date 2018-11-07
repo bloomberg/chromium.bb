@@ -65,8 +65,8 @@ void RunBenchmark(RasterSource* raster_source,
       image_settings->images_to_skip = {};
       image_settings->image_to_current_frame_index = {};
 
-      PlaybackImageProvider image_provider(
-          image_decode_cache, gfx::ColorSpace(), std::move(image_settings));
+      PlaybackImageProvider image_provider(image_decode_cache,
+                                           std::move(image_settings));
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
 
