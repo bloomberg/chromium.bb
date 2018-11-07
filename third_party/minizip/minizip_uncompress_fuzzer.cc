@@ -11,6 +11,10 @@
 #include "third_party/minizip/src/mz_strm_mem.h"
 #include "third_party/minizip/src/mz_zip.h"
 
+namespace {
+const char kTestPassword[] = "test123";
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   void* stream = mz_stream_mem_create(nullptr);
   mz_stream_mem_set_buffer(
@@ -24,13 +28,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (result == MZ_OK) {
     result = mz_zip_goto_first_entry(zip_file);
     while (result == MZ_OK) {
-      result = mz_zip_entry_read_open(zip_file, 0, nullptr);
+      mz_zip_file* file_info = nullptr;
+      result = mz_zip_entry_get_info(zip_file, &file_info);
       if (result != MZ_OK) {
         break;
       }
 
-      mz_zip_file* file_info = nullptr;
-      result = mz_zip_entry_get_info(zip_file, &file_info);
+      bool is_encrypted = (file_info->flag & MZ_ZIP_FLAG_ENCRYPTED);
+      result = mz_zip_entry_read_open(zip_file, 0,
+                                      is_encrypted ? kTestPassword : nullptr);
       if (result != MZ_OK) {
         break;
       }
