@@ -87,6 +87,9 @@ struct NGInlineBoxState {
 
   void AccumulateUsedFonts(const ShapeResult*, FontBaseline);
 
+  // 'text-top' offset for 'vertical-align'.
+  LayoutUnit TextTop(FontBaseline baseline_type) const;
+
   // Create a box fragment for this box.
   void SetNeedsBoxFragment(const LayoutObject* inline_container);
 
