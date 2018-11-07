@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -46,7 +45,6 @@
 #include "components/drive/drive_uploader.h"
 #include "components/drive/service/drive_api_service.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -211,8 +209,6 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(context)->extension_service();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
@@ -222,7 +218,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
       GetSyncFileSystemDir(context->GetPath()), task_logger,
-      notification_manager, extension_service, signin_manager, identity_manager,
+      notification_manager, extension_service, identity_manager,
       url_loader_factory, std::make_unique<DriveServiceFactory>(),
       nullptr /* env_override */));
 
@@ -234,7 +230,6 @@ void SyncEngine::AppendDependsOnFactories(
     std::set<BrowserContextKeyedServiceFactory*>* factories) {
   DCHECK(factories);
   factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
-  factories->insert(SigninManagerFactory::GetInstance());
   factories->insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   factories->insert(IdentityManagerFactory::GetInstance());
@@ -271,7 +266,7 @@ void SyncEngine::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Reset();
 
-  if (!signin_manager_ || !signin_manager_->IsAuthenticated())
+  if (!identity_manager_ || !identity_manager_->HasPrimaryAccount())
     return;
 
   DCHECK(drive_service_factory_);
@@ -311,8 +306,9 @@ void SyncEngine::InitializeInternal(
   drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
 
   std::string account_id;
-  if (signin_manager_)
-    account_id = signin_manager_->GetAuthenticatedAccountId();
+
+  if (identity_manager_)
+    account_id = identity_manager_->GetPrimaryAccountId();
   drive_service_->Initialize(account_id);
 
   drive_uploader_ = std::move(drive_uploader);
@@ -386,7 +382,7 @@ void SyncEngine::RegisterOrigin(const GURL& origin,
   if (!sync_worker_) {
     // TODO(tzik): Record |origin| and retry the registration after late
     // sign-in.  Then, return SYNC_STATUS_OK.
-    if (!signin_manager_ || !signin_manager_->IsAuthenticated())
+    if (!identity_manager_ || !identity_manager_->HasPrimaryAccount())
       callback.Run(SYNC_STATUS_AUTHENTICATION_FAILED);
     else
       callback.Run(SYNC_STATUS_ABORT);
@@ -732,7 +728,6 @@ SyncEngine::SyncEngine(
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
     extensions::ExtensionServiceInterface* extension_service,
-    SigninManagerBase* signin_manager,
     identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
@@ -744,7 +739,6 @@ SyncEngine::SyncEngine(
       task_logger_(task_logger),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
-      signin_manager_(signin_manager),
       identity_manager_(identity_manager),
       url_loader_factory_(url_loader_factory),
       drive_service_factory_(std::move(drive_service_factory)),

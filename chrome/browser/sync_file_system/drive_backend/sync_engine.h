@@ -21,7 +21,6 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -168,7 +167,6 @@ class SyncEngine
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
              extensions::ExtensionServiceInterface* extension_service,
-             SigninManagerBase* signin_manager,
              identity::IdentityManager* identity_manager,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              std::unique_ptr<DriveServiceFactory> drive_service_factory,
@@ -199,7 +197,6 @@ class SyncEngine
   // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   extensions::ExtensionServiceInterface* extension_service_;
-  SigninManagerBase* signin_manager_;
   identity::IdentityManager* identity_manager_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
