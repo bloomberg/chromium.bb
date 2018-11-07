@@ -686,11 +686,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'stencil-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'amd'], bug=794339)
 
-    # Intel
-    # Fixed on Mesa 12.0
-    self.Fail('conformance/rendering/clipping-wide-points.html',
-        ['linux', 'intel'], bug=642822)
-
     # Linux passthrough Intel
     self.Fail('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
