@@ -124,8 +124,6 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
           << "RenderFrameHostChanged called with old host that did not exist:"
           << Format(old_host);
     }
-    CHECK(!HasAnyChildren(old_host))
-        << "All children should be detached before a parent is detached.";
   }
 
   EnsureStableParentValue(new_host);

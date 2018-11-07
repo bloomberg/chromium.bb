@@ -32,6 +32,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -40,6 +41,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
@@ -160,6 +162,8 @@
 #endif
 
 using ::testing::SizeIs;
+using ::testing::WhenSorted;
+using ::testing::ElementsAre;
 
 namespace content {
 
@@ -618,6 +622,30 @@ class UpdateViewportIntersectionMessageFilter
   gfx::Rect viewport_intersection_;
   bool occluded_or_obscured_ = false;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
+};
+
+void UnloadPrint(FrameTreeNode* node, const char* message) {
+  EXPECT_TRUE(
+      ExecJs(node, JsReplace("window.onunload = function() { "
+                             "  window.domAutomationController.send($1);"
+                             "}",
+                             message)));
+}
+
+// A BrowserMessageFilter that drops FrameHostMsg_Detach messages.
+class DetachMessageFilter : public BrowserMessageFilter {
+ public:
+  DetachMessageFilter() : BrowserMessageFilter(FrameMsgStart) {}
+
+ protected:
+  ~DetachMessageFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return message.type() == FrameHostMsg_Detach::ID;
+  }
+  DISALLOW_COPY_AND_ASSIGN(DetachMessageFilter);
 };
 
 }  // namespace
@@ -13944,6 +13972,399 @@ IN_PROC_BROWSER_TEST_F(ScrollingIntegrationTest,
   DoScroll(gfx::Point(100, 110), gfx::Vector2d(0, 500), source);
   WaitForVerticalScroll();
   EXPECT_GT(GetScrollTop(), 0);
+}
+
+// Test that unload handlers in iframes are run, even when the removed subtree
+// is complicated with nested iframes in different processes.
+//     A1                         A1
+//    / \                        / \
+//   B1  D  --- Navigate --->   E   D
+//  / \
+// C1  C2
+// |   |
+// B2  A2
+//     |
+//     C3
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlerSubframes) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c(b),c(a(c))),d)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Add a unload handler to every frames. It notifies the browser using the
+  // DomAutomationController it has been executed.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  UnloadPrint(root, "A1");
+  UnloadPrint(root->child_at(0), "B1");
+  UnloadPrint(root->child_at(0)->child_at(0), "C1");
+  UnloadPrint(root->child_at(0)->child_at(1), "C2");
+  UnloadPrint(root->child_at(0)->child_at(0)->child_at(0), "B2");
+  UnloadPrint(root->child_at(0)->child_at(1)->child_at(0), "A2");
+  UnloadPrint(root->child_at(0)->child_at(1)->child_at(0)->child_at(0), "C3");
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
+
+  // Disable the swap out timer on B1.
+  root->child_at(0)->current_frame_host()->DisableSwapOutTimerForTesting();
+
+  // Process B and C are expected to shutdown once every unload handler has
+  // run.
+  RenderProcessHostWatcher shutdown_B(
+      root->child_at(0)->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostWatcher shutdown_C(
+      root->child_at(0)->child_at(0)->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // Navigate B to E.
+  GURL e_url(embedded_test_server()->GetURL("e.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0), e_url);
+
+  // Collect unload handler messages.
+  std::string message;
+  std::vector<std::string> messages;
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    base::TrimString(message, "\"", &message);
+    messages.push_back(message);
+  }
+  EXPECT_FALSE(dom_message_queue.PopMessage(&message));
+
+  // Check every frame in the replaced subtree has executed its unload handler.
+  EXPECT_THAT(messages,
+              WhenSorted(ElementsAre("A2", "B1", "B2", "C1", "C2", "C3")));
+
+  // In every renderer process, check ancestors have executed their unload
+  // handler before their children. This is a slightly less restrictive
+  // condition than the specification which requires it to be global instead of
+  // per process.
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#unloading-documents
+  //
+  // In process B:
+  auto B1 = std::find(messages.begin(), messages.end(), "B1");
+  auto B2 = std::find(messages.begin(), messages.end(), "B2");
+  EXPECT_LT(B1, B2);
+
+  // In process C:
+  auto C2 = std::find(messages.begin(), messages.end(), "C2");
+  auto C3 = std::find(messages.begin(), messages.end(), "C3");
+  EXPECT_LT(C2, C3);
+
+  // Make sure the processes are deleted at some point.
+  shutdown_B.Wait();
+  shutdown_C.Wait();
+}
+
+// Check that unload handlers in iframe don't prevents the main frame to be
+// deleted after a timeout.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SlowUnloadHandlerInIframe) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL next_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate on a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // 2) Act as if there was an infinite unload handler in B.
+  auto filter = base::MakeRefCounted<DetachMessageFilter>();
+  RenderFrameHost* rfh_b =
+      web_contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  rfh_b->GetProcess()->AddFilter(filter.get());
+
+  // 3) Navigate and check the old frame is deleted after some time.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameDeletedObserver deleted_observer(root->current_frame_host());
+  EXPECT_TRUE(NavigateToURL(shell(), next_url));
+  deleted_observer.WaitUntilDeleted();
+}
+
+// Navigate from A(B(A(B)) to C. Check the unload handler are executed, executed
+// in the right order and the processes for A and B are removed.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, Unload_ABAB) {
+  GURL initial_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(a(b)))"));
+  GURL next_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate on a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // 2) Add unload handler on every frame.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  UnloadPrint(root, "A1");
+  UnloadPrint(root->child_at(0), "B1");
+  UnloadPrint(root->child_at(0)->child_at(0), "A2");
+  UnloadPrint(root->child_at(0)->child_at(0)->child_at(0), "B2");
+  root->current_frame_host()->DisableSwapOutTimerForTesting();
+
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
+  RenderProcessHostWatcher shutdown_A(
+      root->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostWatcher shutdown_B(
+      root->child_at(0)->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // 3) Navigate cross process.
+  EXPECT_TRUE(NavigateToURL(shell(), next_url));
+
+  // 4) Wait for unload handler messages and check they are sent in order.
+  std::vector<std::string> messages;
+  std::string message;
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    base::TrimString(message, "\"", &message);
+    messages.push_back(message);
+  }
+  EXPECT_FALSE(dom_message_queue.PopMessage(&message));
+
+  EXPECT_THAT(messages, WhenSorted(ElementsAre("A1", "A2", "B1", "B2")));
+  auto A1 = std::find(messages.begin(), messages.end(), "A1");
+  auto A2 = std::find(messages.begin(), messages.end(), "A2");
+  auto B1 = std::find(messages.begin(), messages.end(), "B1");
+  auto B2 = std::find(messages.begin(), messages.end(), "B2");
+  EXPECT_LT(A1, A2);
+  EXPECT_LT(B1, B2);
+
+  // Make sure the processes are deleted at some point.
+  shutdown_A.Wait();
+  shutdown_B.Wait();
+}
+
+// Start with A(B(C)), navigate C to D and then B to E. By emulating a slow
+// unload handler in B,C and D, the end result is C is in pending deletion in B
+// and B is in pending deletion in A.
+//   (1)     (2)     (3)
+//|       |       |       |
+//|   A   |  A    |   A   |
+//|   |   |  |    |    \  |
+//|   B   |  B    |  B  E |
+//|   |   |   \   |   \   |
+//|   C   | C  D  | C  D  |
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
+  std::string onunload_script = "window.onunload = function(){}";
+  GURL url_abc(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  GURL url_d(embedded_test_server()->GetURL("d.com", "/title1.html"));
+  GURL url_e(embedded_test_server()->GetURL("e.com", "/title1.html"));
+
+  // 1) Navigate to a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_abc));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_c = rfh_b->child_at(0)->current_frame_host();
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
+
+  // Act as if there was a slow unload handler on rfh_b and rfh_c.
+  // The navigating frames are waiting for FrameHostMsg_SwapoutACK.
+  auto swapout_ack_filter_b = base::MakeRefCounted<SwapoutACKMessageFilter>();
+  auto swapout_ack_filter_c = base::MakeRefCounted<SwapoutACKMessageFilter>();
+  rfh_b->GetProcess()->AddFilter(swapout_ack_filter_b.get());
+  rfh_c->GetProcess()->AddFilter(swapout_ack_filter_c.get());
+  EXPECT_TRUE(ExecuteScript(rfh_b->frame_tree_node(), onunload_script));
+  EXPECT_TRUE(ExecuteScript(rfh_c->frame_tree_node(), onunload_script));
+  rfh_b->DisableSwapOutTimerForTesting();
+  rfh_c->DisableSwapOutTimerForTesting();
+
+  RenderFrameDeletedObserver delete_B(rfh_b), delete_C(rfh_c);
+
+  // 2) Navigate rfh_c to D.
+  NavigateFrameToURL(rfh_c->frame_tree_node(), url_d);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
+  RenderFrameHostImpl* rfh_d = rfh_b->child_at(0)->current_frame_host();
+
+  RenderFrameDeletedObserver delete_D(rfh_d);
+
+  // Act as if there was a slow unload handler on rfh_d.
+  // The non navigating frames are waiting for FrameHostMsg_Detach.
+  auto detach_filter = base::MakeRefCounted<DetachMessageFilter>();
+  rfh_d->GetProcess()->AddFilter(detach_filter.get());
+  EXPECT_TRUE(ExecuteScript(rfh_d->frame_tree_node(), onunload_script));
+
+  // 3) Navigate rfh_b to E.
+  NavigateFrameToURL(rfh_b->frame_tree_node(), url_e);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_d->unload_state_);
+
+  // rfh_d completes its unload event. It deletes the frame, including rfh_c.
+  EXPECT_FALSE(delete_C.deleted());
+  EXPECT_FALSE(delete_D.deleted());
+  rfh_d->OnDetach();
+  EXPECT_TRUE(delete_C.deleted());
+  EXPECT_TRUE(delete_D.deleted());
+
+  // rfh_b completes its unload event.
+  EXPECT_FALSE(delete_B.deleted());
+  rfh_b->OnSwapOutACK();
+  EXPECT_TRUE(delete_B.deleted());
+}
+
+// A set of nested frames A1(B1(A2)) are pending deletion because of a
+// navigation. This tests what happens if only A2 has an unload handler.
+// If B1 receives FrameHostMsg_OnDetach before A2, it should not destroy itself
+// and its children, but rather wait for A2.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
+  GURL url_aba(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to A1(B1(A2))
+  EXPECT_TRUE(NavigateToURL(shell(), url_aba));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* a1 = root->current_frame_host();
+  RenderFrameHostImpl* b1 = a1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* a2 = b1->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_a1(a1);
+  RenderFrameDeletedObserver delete_a2(a2);
+  RenderFrameDeletedObserver delete_b1(b1);
+
+  // Disable Detach and Swapout ACK. They will be called manually.
+  auto swapout_ack_filter = base::MakeRefCounted<SwapoutACKMessageFilter>();
+  auto detach_filter_a = base::MakeRefCounted<DetachMessageFilter>();
+  auto detach_filter_b = base::MakeRefCounted<DetachMessageFilter>();
+  a1->GetProcess()->AddFilter(swapout_ack_filter.get());
+  a1->GetProcess()->AddFilter(detach_filter_a.get());
+  b1->GetProcess()->AddFilter(detach_filter_b.get());
+
+  a1->DisableSwapOutTimerForTesting();
+
+  // Add unload handler on A2, but not on the other frames.
+  UnloadPrint(a2->frame_tree_node(), "A2");
+
+  DOMMessageQueue dom_message_queue(
+      WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
+
+  // 2) Navigate cross process.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+
+  // Check that unload handlers are executed.
+  std::string message, message_unused;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+  EXPECT_FALSE(dom_message_queue.PopMessage(&message_unused));
+  EXPECT_EQ("\"A2\"", message);
+
+  // No RenderFrameHost are deleted so far.
+  EXPECT_FALSE(delete_a1.deleted());
+  EXPECT_FALSE(delete_b1.deleted());
+  EXPECT_FALSE(delete_a2.deleted());
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a1->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::Completed, b1->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a2->unload_state_);
+
+  // 3) B1 receives confirmation it has been deleted. This has no effect,
+  //    because it is still waiting on A2 to be deleted.
+  b1->OnDetach();
+  EXPECT_FALSE(delete_a1.deleted());
+  EXPECT_FALSE(delete_b1.deleted());
+  EXPECT_FALSE(delete_a2.deleted());
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a1->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::Completed, b1->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a2->unload_state_);
+
+  // 4) A2 received confirmation that it has been deleted and destroy B1 and A2.
+  a2->OnDetach();
+  EXPECT_FALSE(delete_a1.deleted());
+  EXPECT_TRUE(delete_b1.deleted());
+  EXPECT_TRUE(delete_a2.deleted());
+  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, a1->unload_state_);
+
+  // 5) A1 receives SwapOutACK and deletes itself.
+  a1->OnSwapOutACK();
+  EXPECT_TRUE(delete_a1.deleted());
+}
+
+// Test RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree.
+//
+// After a navigation commit, some children with no unload handler may be
+// eligible for immediate deletion. Several configurations are tested:
+//
+// Before navigation commit
+//
+//              0               |  N  : No unload handler
+//   ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑      | [N] : Unload handler
+//  |  |  |  |  |   |     |     |
+// [1] 2 [3] 5  7   9     12    |
+//        |  |  |  / \   / \    |
+//        4 [6] 8 10 11 13 [14] |
+//
+// After navigation commit (expected)
+//
+//              0               |  N  : No unload handler
+//   ---------------------      | [N] : Unload handler
+//  |     |  |            |     |
+// [1]   [3] 5            12    |
+//           |             \    |
+//          [6]            [14] |
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PendingDeletionCheckCompletedOnSubtree) {
+  GURL url_1(embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(a,a,a(a),a(a),a(a),a(a,a),a(a,a))"));
+  GURL url_2(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to 0(1,2,3(4),5(6),7(8),9(10,11),12(13,14));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh_0 = root->current_frame_host();
+  RenderFrameHostImpl* rfh_1 = rfh_0->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_2 = rfh_0->child_at(1)->current_frame_host();
+  RenderFrameHostImpl* rfh_3 = rfh_0->child_at(2)->current_frame_host();
+  RenderFrameHostImpl* rfh_4 = rfh_3->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_5 = rfh_0->child_at(3)->current_frame_host();
+  RenderFrameHostImpl* rfh_6 = rfh_5->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_7 = rfh_0->child_at(4)->current_frame_host();
+  RenderFrameHostImpl* rfh_8 = rfh_7->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_9 = rfh_0->child_at(5)->current_frame_host();
+  RenderFrameHostImpl* rfh_10 = rfh_9->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_11 = rfh_9->child_at(1)->current_frame_host();
+  RenderFrameHostImpl* rfh_12 = rfh_0->child_at(6)->current_frame_host();
+  RenderFrameHostImpl* rfh_13 = rfh_12->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_14 = rfh_12->child_at(1)->current_frame_host();
+
+  RenderFrameDeletedObserver delete_a0(rfh_0), delete_a1(rfh_1),
+      delete_a2(rfh_2), delete_a3(rfh_3), delete_a4(rfh_4), delete_a5(rfh_5),
+      delete_a6(rfh_6), delete_a7(rfh_7), delete_a8(rfh_8), delete_a9(rfh_9),
+      delete_a10(rfh_10), delete_a11(rfh_11), delete_a12(rfh_12),
+      delete_a13(rfh_13), delete_a14(rfh_14);
+
+  // Add the unload handlers.
+  UnloadPrint(rfh_1->frame_tree_node(), "");
+  UnloadPrint(rfh_3->frame_tree_node(), "");
+  UnloadPrint(rfh_6->frame_tree_node(), "");
+  UnloadPrint(rfh_14->frame_tree_node(), "");
+
+  // Disable Detach and Swapout ACK.
+  auto swapout_ack_filter = base::MakeRefCounted<SwapoutACKMessageFilter>();
+  auto detach_filter = base::MakeRefCounted<DetachMessageFilter>();
+  rfh_0->GetProcess()->AddFilter(swapout_ack_filter.get());
+  rfh_0->GetProcess()->AddFilter(detach_filter.get());
+  rfh_0->DisableSwapOutTimerForTesting();
+
+  // 2) Navigate cross process and check the tree. See diagram above.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  EXPECT_FALSE(delete_a0.deleted());
+  EXPECT_FALSE(delete_a1.deleted());
+  EXPECT_TRUE(delete_a2.deleted());
+  EXPECT_FALSE(delete_a3.deleted());
+  EXPECT_TRUE(delete_a4.deleted());
+  EXPECT_FALSE(delete_a5.deleted());
+  EXPECT_FALSE(delete_a6.deleted());
+  EXPECT_TRUE(delete_a7.deleted());
+  EXPECT_TRUE(delete_a8.deleted());
+  EXPECT_TRUE(delete_a9.deleted());
+  EXPECT_TRUE(delete_a10.deleted());
+  EXPECT_TRUE(delete_a11.deleted());
+  EXPECT_FALSE(delete_a12.deleted());
+  EXPECT_TRUE(delete_a13.deleted());
+  EXPECT_FALSE(delete_a14.deleted());
 }
 
 }  // namespace content

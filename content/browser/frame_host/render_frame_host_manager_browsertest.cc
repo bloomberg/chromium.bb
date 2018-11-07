@@ -2666,7 +2666,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // the old process to exit.
   RenderProcessHostWatcher exit_observer(
       shell()->web_contents()->GetMainFrame()->GetProcess(),
-      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(

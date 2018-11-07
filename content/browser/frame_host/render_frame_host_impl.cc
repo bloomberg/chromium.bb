@@ -860,6 +860,15 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  // When a RenderFrameHostImpl is deleted, it may still contain children. This
+  // can happen with the swap out timer. It causes a RenderFrameHost to delete
+  // itself even if it is still waiting for its children to complete their
+  // unload handlers.
+  //
+  // Observers expect children to be deleted first. Do it now before notifying
+  // them.
+  ResetChildren();
+
   // Destroying |navigation_request_| may call into delegates/observers,
   // so we do it early while |this| object is still in a sane state.
   ResetNavigationRequests();
@@ -1845,6 +1854,7 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
       std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
       node_to_delete.reset();
+      PendingDeletionCheckCompleted();
       return;
     }
   }
@@ -1862,7 +1872,17 @@ void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
 }
 
 void RenderFrameHostImpl::OnDetach() {
-  frame_tree_->RemoveFrame(frame_tree_node_);
+  // If this frame is pending deletion, OnDetach() is the ACK this
+  // RenderFrameHost is waiting for before going into the "Deleted" state.
+  if (!is_active() && !is_waiting_for_swapout_ack_) {
+    unload_state_ = UnloadState::Completed;
+    PendingDeletionCheckCompleted();
+    return;
+  }
+
+  // TODO(arthursonzogni): Put this frame and its children in pending deletion.
+  // Wait for every unload handler to execute before removing it.
+  parent_->RemoveChild(frame_tree_node_);
 }
 
 void RenderFrameHostImpl::OnFrameFocused() {
@@ -2196,24 +2216,30 @@ void RenderFrameHostImpl::SwapOut(
   // short-lived and will be deleted when the SwapOut ACK is received.
   CHECK(proxy);
 
+  // TODO(nasko): If the frame is not live, the RFH should just be deleted by
+  // simulating the receipt of swap out ack.
+  is_waiting_for_swapout_ack_ = true;
+  unload_state_ = UnloadState::InProgress;
+
   if (IsRenderFrameLive()) {
     FrameReplicationState replication_state =
         proxy->frame_tree_node()->current_replication_state();
     Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(), is_loading,
                               replication_state));
-
     // Remember that a RenderFrameProxy was created as part of processing the
     // SwapOut message above.
     proxy->set_render_frame_proxy_created(true);
+
+    StartPendingDeletionOnSubtree();
   }
+
+  // Some children with no unload handler may be eligible for deletion. Cut the
+  // dead branches now. This is a performance optimization.
+  PendingDeletionCheckCompletedOnSubtree();
 
   if (web_ui())
     web_ui()->RenderFrameHostSwappingOut();
-  web_bluetooth_services_.clear();
 
-  // TODO(nasko): If the frame is not live, the RFH should just be deleted by
-  // simulating the receipt of swap out ack.
-  is_waiting_for_swapout_ack_ = true;
   if (frame_tree_node_->IsMainFrame())
     render_view_host_->SetIsActive(false);
 }
@@ -2367,7 +2393,13 @@ bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
 }
 
 void RenderFrameHostImpl::OnSwapOutACK() {
-  OnSwappedOut();
+  // Ignore spurious swap out ack.
+  if (!is_waiting_for_swapout_ack_)
+    return;
+
+  DCHECK_EQ(UnloadState::InProgress, unload_state_);
+  unload_state_ = UnloadState::Completed;
+  PendingDeletionCheckCompleted();
 }
 
 void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -2423,15 +2455,18 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   sudden_termination_disabler_types_enabled_ = 0;
 
   if (!is_active()) {
-    // If the process has died, we don't need to wait for the swap out ack from
-    // this RenderFrame if it is pending deletion.  Complete the swap out to
-    // destroy it.
-    OnSwappedOut();
-  } else {
-    // If this was the current pending or speculative RFH dying, cancel and
-    // destroy it.
-    frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
+    // If the process has died, we don't need to wait for the ACK. Complete the
+    // deletion immediately.
+    unload_state_ = UnloadState::Completed;
+    DCHECK(children_.empty());
+    PendingDeletionCheckCompleted();
+    // |this| is deleted. Don't add any more code at this point in the function.
+    return;
   }
+
+  // If this was the current pending or speculative RFH dying, cancel and
+  // destroy it.
+  frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
 
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
@@ -2439,9 +2474,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
 }
 
 void RenderFrameHostImpl::OnSwappedOut() {
-  // Ignore spurious swap out ack.
-  if (!is_waiting_for_swapout_ack_)
-    return;
+  DCHECK(is_waiting_for_swapout_ack_);
 
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   if (swapout_event_monitor_timeout_)
@@ -2452,7 +2485,7 @@ void RenderFrameHostImpl::OnSwappedOut() {
   // If this is a main frame RFH that's about to be deleted, update its RVH's
   // swapped-out state here. https://crbug.com/505887.  This should only be
   // done if the RVH hasn't been already reused and marked as active by another
-  // navigation.  See https://crbug.com/823567.
+  // navigation. See https://crbug.com/823567.
   if (frame_tree_node_->IsMainFrame() && !render_view_host_->is_active())
     render_view_host_->set_is_swapped_out(true);
 
@@ -4184,6 +4217,66 @@ bool RenderFrameHostImpl::ShouldDispatchBeforeUnload(
 void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
     const base::TimeDelta& timeout) {
   beforeunload_timeout_delay_ = timeout;
+}
+
+void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
+  DCHECK_EQ(UnloadState::InProgress, unload_state_);
+  DCHECK(is_waiting_for_swapout_ack_);
+
+  std::set<RenderFrameHostImpl*> deletion_command_sent;
+  deletion_command_sent.insert(this);  // FrameMsg_SwapOut sent.
+
+  for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
+    for (FrameTreeNode* node :
+         frame_tree_node_->frame_tree()->SubtreeNodes(child_frame.get())) {
+      RenderFrameHostImpl* child = node->current_frame_host();
+      DCHECK_EQ(UnloadState::NotRun, child->unload_state_);
+
+      child->unload_state_ =
+          child->GetSuddenTerminationDisablerState(blink::kUnloadHandler)
+              ? UnloadState::InProgress
+              : UnloadState::Completed;
+
+      // Blink handles deletion of all same-process descendants, running their
+      // unload handler if necessary. So delegate sending IPC on the topmost
+      // ancestor using the same process.
+      RenderFrameHostImpl* local_ancestor = child;
+      for (auto* rfh = child->parent_; rfh != parent_; rfh = rfh->parent_) {
+        if (rfh->GetSiteInstance() == child->GetSiteInstance())
+          local_ancestor = rfh;
+      }
+
+      if (!base::ContainsKey(deletion_command_sent, local_ancestor)) {
+        deletion_command_sent.insert(local_ancestor);
+        local_ancestor->Send(new FrameMsg_Delete(local_ancestor->routing_id_));
+      }
+    }
+  }
+}
+
+void RenderFrameHostImpl::PendingDeletionCheckCompleted() {
+  if (unload_state_ == UnloadState::Completed && children_.empty()) {
+    if (is_waiting_for_swapout_ack_)
+      OnSwappedOut();
+    else
+      parent_->RemoveChild(frame_tree_node_);
+  }
+}
+
+void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
+  if (children_.empty()) {
+    PendingDeletionCheckCompleted();
+    return;
+  }
+
+  // Collect children first before calling PendingDeletionCheckCompleted() on
+  // them, because it may delete them.
+  std::vector<RenderFrameHostImpl*> children_rfh;
+  for (std::unique_ptr<FrameTreeNode>& child : children_)
+    children_rfh.push_back(child->current_frame_host());
+
+  for (RenderFrameHostImpl* child_rfh : children_rfh)
+    child_rfh->PendingDeletionCheckCompletedOnSubtree();
 }
 
 void RenderFrameHostImpl::UpdateOpener() {

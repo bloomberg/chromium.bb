@@ -608,4 +608,17 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
     render_manager()->OnDidSetFramePolicyHeaders();
 }
 
+void FrameTreeNode::PruneChildFrameNavigationEntries(
+    NavigationEntryImpl* entry) {
+  for (size_t i = 0; i < current_frame_host()->child_count(); ++i) {
+    FrameTreeNode* child = current_frame_host()->child_at(i);
+    if (child->is_created_by_script_) {
+      entry->RemoveEntryForFrame(child,
+                                 /* only_if_different_position = */ false);
+    } else {
+      child->PruneChildFrameNavigationEntries(entry);
+    }
+  }
+}
+
 }  // namespace content

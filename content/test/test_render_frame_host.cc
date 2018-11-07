@@ -248,7 +248,7 @@ void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
 }
 
 void TestRenderFrameHost::SimulateSwapOutACK() {
-  OnSwappedOut();
+  OnSwapOutACK();
 }
 
 void TestRenderFrameHost::NavigateAndCommitRendererInitiated(

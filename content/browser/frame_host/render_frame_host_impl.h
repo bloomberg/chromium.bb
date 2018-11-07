@@ -462,8 +462,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSwappedOut();
 
   // This method returns true from the time this RenderFrameHost is created
-  // until SwapOut is called, at which point it is pending deletion.
-  bool is_active() { return !is_waiting_for_swapout_ack_; }
+  // until it is pending deletion. Pending deletion starts when SwapOut is
+  // called on the frame or one of its ancestors.
+  bool is_active() { return unload_state_ == UnloadState::NotRun; }
 
   // Navigates to an interstitial page represented by the provided data URL.
   void NavigateToInterstitialURL(const GURL& data_url);
@@ -873,6 +874,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            AttemptDuplicateRenderViewHost);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            FullscreenAfterFrameSwap);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, UnloadHandlerSubframes);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, Unload_ABAB);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           UnloadNestedPendingDeletion);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, PartialUnloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           PendingDeletionCheckCompletedOnSubtree);
 
   class DroppedInterfaceRequestLogger;
 
@@ -1323,6 +1331,24 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to the Reporting API.
   void MaybeGenerateCrashReport(base::TerminationStatus status);
 
+  // Move every child frame into the pending deletion state.
+  // For each process, send the command to delete the local subtree and execute
+  // the unload handlers.
+  void StartPendingDeletionOnSubtree();
+
+  // This function checks whether a pending deletion frame and all of its
+  // subframes have completed running unload handlers. If so, this function
+  // destroys this frame. This will happen as soon as...
+  // 1) The children in other processes have been deleted.
+  // 2) The ack (FrameHostMsg_Swapout_ACK or FrameHostMsg_Detach) has been
+  //    received. It means this frame in the renderer process is gone.
+  void PendingDeletionCheckCompleted();
+
+  // Call |PendingDeletionCheckCompleted| recursively on this frame and its
+  // children. This is useful for pruning frames with no unload handlers from
+  // this frame's subtree.
+  void PendingDeletionCheckCompletedOnSubtree();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -1761,6 +1787,23 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crash. This ID will be set as a crash key in the render process.
   // https://www.w3.org/TR/reporting/#crashreportbody-crashid
   std::string web_reporting_crash_id_;
+
+  enum class UnloadState {
+    // The initial state. The frame is alive.
+    NotRun,
+
+    // An event such as a navigation happened causing the frame to start its
+    // deletion. IPC are sent to execute the unload handlers and delete the
+    // RenderFrame. The RenderFrameHost is waiting for an ACK. Either
+    // FrameHostMsg_Swapout_ACK for the navigating frame, or FrameHostMsg_Detach
+    // for its subframe.
+    InProgress,
+
+    // The unload handlers have run. Once all the descendant frames in other
+    // processes are gone, this RenderFrameHost can delete itself too.
+    Completed,
+  };
+  UnloadState unload_state_ = UnloadState::NotRun;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
