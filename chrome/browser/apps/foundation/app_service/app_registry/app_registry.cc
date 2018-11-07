@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/services/app_service/app_registry/app_registry.h"
+#include "chrome/browser/apps/foundation/app_service/app_registry/app_registry.h"
 
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"

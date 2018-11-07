@@ -4,7 +4,7 @@
 
 module apps.mojom;
 
-import "chrome/services/app_service/public/mojom/types.mojom";
+import "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom";
 
 // The interface through which clients of the App Service can query for data on
 // installed apps.
