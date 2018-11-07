@@ -50,6 +50,7 @@ class SharedImageStub : public IPC::Listener,
   void OnCreateGMBSharedImage(GpuChannelMsg_CreateGMBSharedImage_Params params);
   void OnUpdateSharedImage(const Mailbox& mailbox, uint32_t release_id);
   void OnDestroySharedImage(const Mailbox& mailbox);
+  bool MakeContextCurrent();
   bool MakeContextCurrentAndCreateFactory();
   void OnError();
 

@@ -144,6 +144,23 @@ void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
   }
 }
 
+bool SharedImageStub::MakeContextCurrent() {
+  DCHECK(context_state_);
+  DCHECK(!context_state_->context_lost);
+
+  // |factory_| never writes to the surface, so skip unnecessary MakeCurrent to
+  // mitigate driver bugs. https://crbug.com/457431
+  if (context_state_->context->IsCurrent(nullptr))
+    return true;
+
+  if (context_state_->context->MakeCurrent(context_state_->surface.get())) {
+    return true;
+  } else {
+    LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
+    return false;
+  }
+}
+
 bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
   if (!factory_) {
     auto* channel_manager = channel_->gpu_channel_manager();
@@ -156,10 +173,8 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     }
     DCHECK(context_state_);
     DCHECK(!context_state_->context_lost);
-    if (!context_state_->context->MakeCurrent(context_state_->surface.get())) {
-      LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
+    if (!MakeContextCurrent())
       return false;
-    }
     gpu::GpuMemoryBufferFactory* gmb_factory =
         channel_manager->gpu_memory_buffer_factory();
     factory_ = std::make_unique<SharedImageFactory>(
@@ -176,10 +191,9 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
       LOG(ERROR) << "SharedImageStub: context already lost";
       return false;
     } else {
-      if (context_state_->context->MakeCurrent(context_state_->surface.get()))
+      if (MakeContextCurrent())
         return true;
       context_state_->context_lost = true;
-      LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
       return false;
     }
   }
