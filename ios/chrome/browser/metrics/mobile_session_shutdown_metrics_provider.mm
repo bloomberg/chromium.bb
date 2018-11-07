@@ -40,9 +40,19 @@ bool MobileSessionShutdownMetricsProvider::HasPreviousSessionData() {
 
 void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  // If this is the first launch after an upgrade, existing crash reports may
-  // have been deleted before this code runs, so log this case in its own
-  // bucket.
+  // If app was upgraded since the last session, even if the previous session
+  // ended in an unclean shutdown (crash, may or may not be UTE), this should
+  // *not* be logged into one of the Foreground* or Background* states of
+  // MobileSessionShutdownType. The crash is really from the pre-upgraded
+  // version of app. Logging it now will incorrectly inflate the current
+  // version's crash count with a crash that happened in a previous version of
+  // the app.
+  //
+  // Not counting first run after upgrade does *not* bias the distribution of
+  // the 4 Foreground* termination states because the reason of a crash would
+  // not be affected by an imminent upgrade of Chrome app. Thus, the ratio of
+  // Foreground shutdowns w/ crash log vs. w/o crash log is expected to be the
+  // same regardless of whether First Launch after Upgrade is considered or not.
   if (IsFirstLaunchAfterUpgrade()) {
     LogShutdownType(FIRST_LAUNCH_AFTER_UPGRADE);
     return;
