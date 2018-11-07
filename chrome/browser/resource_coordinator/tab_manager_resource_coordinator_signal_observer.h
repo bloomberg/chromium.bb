@@ -18,8 +18,7 @@ namespace resource_coordinator {
 class TabManager::ResourceCoordinatorSignalObserver
     : public PageSignalObserver {
  public:
-  explicit ResourceCoordinatorSignalObserver(
-      PageSignalReceiver* page_signal_receiver);
+  ResourceCoordinatorSignalObserver();
   ~ResourceCoordinatorSignalObserver() override;
 
   // PageSignalObserver implementation.
@@ -32,8 +31,6 @@ class TabManager::ResourceCoordinatorSignalObserver
       base::TimeDelta duration) override;
 
  private:
-  PageSignalReceiver* const page_signal_receiver_;
-
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorSignalObserver);
 };
 

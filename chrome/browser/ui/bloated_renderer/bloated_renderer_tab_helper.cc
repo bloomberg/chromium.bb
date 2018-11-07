@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -16,7 +15,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class BloatedRendererHandlingInBrowser {
@@ -29,15 +27,18 @@ enum class BloatedRendererHandlingInBrowser {
 void RecordBloatedRendererHandling(BloatedRendererHandlingInBrowser handling) {
   UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInBrowser", handling);
 }
-
 }  // anonymous namespace
 
 BloatedRendererTabHelper::BloatedRendererTabHelper(
     content::WebContents* contents)
     : content::WebContentsObserver(contents) {
-  if (auto* page_signal_receiver =
-          resource_coordinator::GetPageSignalReceiver())
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
+  if (page_signal_receiver) {
+    // PageSignalReceiver is not available if the resource coordinator is not
+    // enabled.
     page_signal_receiver->AddObserver(this);
+  }
 }
 
 void BloatedRendererTabHelper::DidStartNavigation(
@@ -59,9 +60,13 @@ void BloatedRendererTabHelper::DidFinishNavigation(
 }
 
 void BloatedRendererTabHelper::WebContentsDestroyed() {
-  if (auto* page_signal_receiver =
-          resource_coordinator::GetPageSignalReceiver())
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
+  if (page_signal_receiver) {
+    // PageSignalReceiver is not available if the resource coordinator is not
+    // enabled.
     page_signal_receiver->RemoveObserver(this);
+  }
 }
 
 void BloatedRendererTabHelper::ShowInfoBar(InfoBarService* infobar_service) {
@@ -119,7 +124,8 @@ void BloatedRendererTabHelper::OnRendererIsBloated(
     // Ignore if the notification is about a different tab.
     return;
   }
-  auto* page_signal_receiver = resource_coordinator::GetPageSignalReceiver();
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
   DCHECK_NE(nullptr, page_signal_receiver);
   if (page_navigation_id.navigation_id !=
       page_signal_receiver->GetNavigationIDForWebContents(web_contents())) {

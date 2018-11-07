@@ -10,9 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -24,6 +22,10 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace resource_coordinator {
+
+namespace {
+TabLifecycleUnitSource* instance_ = nullptr;
+}  // namespace
 
 // Allows storage of a TabLifecycleUnit on a WebContents.
 class TabLifecycleUnitSource::TabLifecycleUnitHolder
@@ -52,22 +54,32 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
 
 TabLifecycleUnitSource::TabLifecycleUnitSource(
     InterventionPolicyDatabase* intervention_policy_database,
-    UsageClock* usage_clock,
-    PageSignalReceiver* page_signal_receiver)
+    UsageClock* usage_clock)
     : browser_tab_strip_tracker_(this, nullptr, this),
       page_signal_receiver_observer_(this),
       intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
+  DCHECK(!instance_);
+
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
   // instantiated. No TabLifecycleUnit is created for these tabs.
 
   DCHECK(intervention_policy_database_);
   browser_tab_strip_tracker_.Init();
-  if (page_signal_receiver)
+  instance_ = this;
+  if (auto* page_signal_receiver = PageSignalReceiver::GetInstance())
     page_signal_receiver_observer_.Add(page_signal_receiver);
 }
 
-TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
+TabLifecycleUnitSource::~TabLifecycleUnitSource() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
+}
+
+// static
+TabLifecycleUnitSource* TabLifecycleUnitSource::GetInstance() {
+  return instance_;
+}
 
 TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(
     content::WebContents* web_contents) const {

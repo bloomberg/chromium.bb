@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/sequence_checker.h"
@@ -21,7 +22,6 @@ class WebContents;
 
 namespace resource_coordinator {
 
-class ResourceCoordinatorParts;
 class ResourceCoordinatorTabHelper;
 class TabManagerResourceCoordinatorSignalObserverHelper;
 
@@ -117,7 +117,8 @@ class TabLoadTracker {
                        content::WebContents* new_contents);
 
  protected:
-  friend class ResourceCoordinatorParts;
+  // This allows the singleton constructor access to the protected constructor.
+  friend class base::NoDestructor<TabLoadTracker>;
 
   // For unittesting.
   friend class LocalSiteCharacteristicsWebContentsObserverTest;

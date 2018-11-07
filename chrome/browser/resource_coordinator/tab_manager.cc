@@ -166,8 +166,7 @@ class TabManager::TabManagerSessionRestoreObserver final
 
 constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
-TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
-                       TabLoadTracker* tab_load_tracker)
+TabManager::TabManager()
     : state_transitions_callback_(
           base::BindRepeating(&TabManager::PerformStateTransitions,
                               base::Unretained(this))),
@@ -176,7 +175,6 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       loading_slots_(kNumOfLoadingSlots),
-      tab_load_tracker_(tab_load_tracker),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
@@ -185,12 +183,12 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
   if (PageSignalReceiver::IsEnabled()) {
     resource_coordinator_signal_observer_.reset(
-        new ResourceCoordinatorSignalObserver(page_signal_receiver));
+        new ResourceCoordinatorSignalObserver());
   }
   stats_collector_.reset(new TabManagerStatsCollector());
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
-  tab_load_tracker_->AddObserver(this);
+  TabLoadTracker::Get()->AddObserver(this);
   intervention_policy_database_.reset(new InterventionPolicyDatabase());
 
   // TabManager works in the absence of DesktopSessionDurationTracker for tests.
@@ -199,7 +197,7 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 }
 
 TabManager::~TabManager() {
-  tab_load_tracker_->RemoveObserver(this);
+  TabLoadTracker::Get()->RemoveObserver(this);
   resource_coordinator_signal_observer_.reset();
   Stop();
 

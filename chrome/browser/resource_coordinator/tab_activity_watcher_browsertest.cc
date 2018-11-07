@@ -13,7 +13,6 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
-#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -426,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
   // Discard the first tab.
   content::WebContents* first_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  resource_coordinator::GetTabLifecycleUnitSource()
+  resource_coordinator::TabLifecycleUnitSource::GetInstance()
       ->GetTabLifecycleUnitExternal(first_contents)
       ->DiscardTab();
 
@@ -451,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
   // Discard the second tab.
   content::WebContents* second_content =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  resource_coordinator::GetTabLifecycleUnitSource()
+  resource_coordinator::TabLifecycleUnitSource::GetInstance()
       ->GetTabLifecycleUnitExternal(second_content)
       ->DiscardTab();
 

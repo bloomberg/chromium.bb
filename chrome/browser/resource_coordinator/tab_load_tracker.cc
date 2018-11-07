@@ -8,9 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -34,8 +32,8 @@ TabLoadTracker::~TabLoadTracker() = default;
 
 // static
 TabLoadTracker* TabLoadTracker::Get() {
-  DCHECK(g_browser_process);
-  return g_browser_process->resource_coordinator_parts()->tab_load_tracker();
+  static base::NoDestructor<TabLoadTracker> tab_load_tracker;
+  return tab_load_tracker.get();
 }
 
 TabLoadTracker::LoadingState TabLoadTracker::GetLoadingState(

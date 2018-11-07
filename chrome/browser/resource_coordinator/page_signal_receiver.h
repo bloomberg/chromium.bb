@@ -70,6 +70,8 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   ~PageSignalReceiver() override;
 
   static bool IsEnabled();
+  // Callers do not take ownership.
+  static PageSignalReceiver* GetInstance();
 
   // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(
