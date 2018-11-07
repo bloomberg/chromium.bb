@@ -45,10 +45,12 @@ def main(args):
 
   # Try in primary solution location first, with the gn binary having been
   # downloaded by cipd in the projects DEPS.
-  gn_path = os.path.join(gclient_utils.GetPrimarySolutionPath(), 'third_party',
-                         'gn', 'gn' + gclient_utils.GetExeSuffix())
-  if os.path.exists(gn_path):
-    return subprocess.call([gn_path] + args[1:])
+  primary_solution_path = gclient_utils.GetPrimarySolutionPath()
+  if primary_solution_path:
+    gn_path = os.path.join(primary_solution_path, 'third_party',
+                           'gn', 'gn' + gclient_utils.GetExeSuffix())
+    if os.path.exists(gn_path):
+      return subprocess.call([gn_path] + args[1:])
 
   # Otherwise try the old .sha1 and download_from_google_storage locations
   # inside of buildtools.
