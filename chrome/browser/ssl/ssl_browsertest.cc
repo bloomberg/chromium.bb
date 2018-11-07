@@ -2625,6 +2625,71 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestClientAuthContinueWithoutCert) {
   EXPECT_EQ("", tab->GetLastCommittedURL().ref());
 }
 
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestCertDBChangedFlushesClientAuthCache) {
+  // Make the browser use the ClientCertStoreStub instead of the regular one.
+  ProfileIOData::FromResourceContext(browser()->profile()->GetResourceContext())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateCertStore));
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url =
+      https_server.GetURL("/ssl/browser_use_client_cert_store.html");
+
+  // Add an entry into AutoSelectCertificateForUrls policy for automatic client
+  // cert selection.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(profile);
+  std::unique_ptr<base::DictionaryValue> setting =
+      std::make_unique<base::DictionaryValue>();
+  base::Value* filters = setting->SetKey("filters", base::ListValue());
+  filters->GetList().push_back(base::DictionaryValue());
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetWebsiteSettingDefaultScope(
+          https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          std::string(), std::move(setting));
+
+  // Visit a HTTPS page which requires client certs.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            https_url, 1);
+  EXPECT_EQ("pass", tab->GetLastCommittedURL().ref());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), GURL("about:blank"), 1);
+  EXPECT_EQ("", tab->GetLastCommittedURL().ref());
+
+  // Now use a ClientCertStoreStub that always returns an empty list.
+  ProfileIOData::FromResourceContext(browser()->profile()->GetResourceContext())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateEmptyCertStore));
+
+  // Visiting the page which requires client certs should still work (either
+  // due to the socket still being open, or due to the SSL client auth cache).
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            https_url, 1);
+  EXPECT_EQ("pass", tab->GetLastCommittedURL().ref());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), GURL("about:blank"), 1);
+  EXPECT_EQ("", tab->GetLastCommittedURL().ref());
+
+  // Send a CertDBChanged notification.
+  net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
+
+  // Visiting the page which requires client certs should fail, as the socket
+  // pool has been flushed and SSL client auth cache has been cleared due to
+  // the CertDBChanged observer.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            https_url, 1);
+  EXPECT_EQ("", tab->GetLastCommittedURL().ref());
+}
+
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see
