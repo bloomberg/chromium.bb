@@ -943,6 +943,7 @@ class AutofillMetrics {
 
   static void LogSaveCardWithFirstAndLastNameOffered(bool is_local);
   static void LogSaveCardWithFirstAndLastNameComplete(bool is_local);
+  static void LogSaveCardReachedPersonalDataManager(bool is_local);
 
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
