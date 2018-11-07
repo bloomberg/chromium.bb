@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 
+#include <utility>
+
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
@@ -16,6 +18,12 @@
 
 namespace offline_pages {
 
+class ActiveTabInfo : public RequestCoordinator::ActiveTabInfo {
+ public:
+  ~ActiveTabInfo() override {}
+  bool DoesActiveTabMatch(const GURL&) override { return false; }
+};
+
 RequestCoordinatorStubTaco::RequestCoordinatorStubTaco() {
   policy_ = std::make_unique<OfflinerPolicy>();
   queue_ =
@@ -25,6 +33,7 @@ RequestCoordinatorStubTaco::RequestCoordinatorStubTaco() {
   network_quality_tracker_ =
       std::make_unique<network::TestNetworkQualityTracker>();
   ukm_reporter_ = std::make_unique<OfflinePagesUkmReporterStub>();
+  active_tab_info_ = std::make_unique<ActiveTabInfo>();
 }
 
 RequestCoordinatorStubTaco::~RequestCoordinatorStubTaco() {
@@ -73,15 +82,20 @@ void RequestCoordinatorStubTaco::SetOfflinePagesUkmReporter(
   ukm_reporter_ = std::move(ukm_reporter);
 }
 
+void RequestCoordinatorStubTaco::SetRequestCoordinatorDelegate(
+    std::unique_ptr<RequestCoordinator::ActiveTabInfo> active_tab_info) {
+  active_tab_info_ = std::move(active_tab_info);
+}
+
 void RequestCoordinatorStubTaco::CreateRequestCoordinator() {
   request_coordinator_ = std::make_unique<RequestCoordinator>(
       std::move(policy_), std::move(offliner_), std::move(queue_),
       std::move(scheduler_), network_quality_tracker_.get(),
-      std::move(ukm_reporter_));
+      std::move(ukm_reporter_), std::move(active_tab_info_));
 }
 
 RequestCoordinator* RequestCoordinatorStubTaco::request_coordinator() {
   CHECK(request_coordinator_);
   return request_coordinator_.get();
 }
-}  // namespace offline_page
+}  // namespace offline_pages

@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/background/request_queue_store.h"
 
+#include <string>
 #include <unordered_set>
 #include <utility>
 
@@ -254,6 +255,7 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
       " WHERE request_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  // SET columns:
   statement.BindInt64(0, store_utils::ToDatabaseTime(request.creation_time()));
   statement.BindInt64(1, 0);
   statement.BindInt64(2,
@@ -267,6 +269,7 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
   statement.BindString(9, request.original_url().spec());
   statement.BindString(10, request.request_origin());
   statement.BindInt64(11, static_cast<int64_t>(request.fail_state()));
+  // WHERE:
   statement.BindInt64(12, request.request_id());
 
   if (!statement.Run())

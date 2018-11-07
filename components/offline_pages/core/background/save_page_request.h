@@ -53,6 +53,10 @@ class SavePageRequest {
   // loading until it has been explicitly unpaused.
   void MarkAttemptPaused();
 
+  // Mark the attempt as deferred. This counts as a failed attempt so that
+  // deferred attempts are not unlimited.
+  void MarkAttemptDeferred(const base::Time& attempt_time);
+
   int64_t request_id() const { return request_id_; }
 
   const GURL& url() const { return url_; }
@@ -99,6 +103,9 @@ class SavePageRequest {
   void set_request_origin(const std::string& request_origin) {
     request_origin_ = request_origin;
   }
+
+  // Implemented in test_util.cc.
+  std::string ToString() const;
 
  private:
   // ID of this request.

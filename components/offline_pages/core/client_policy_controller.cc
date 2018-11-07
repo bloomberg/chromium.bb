@@ -95,6 +95,7 @@ ClientPolicyController::ClientPolicyController() {
           .SetIsRemovedOnCacheReset(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .SetIsUserRequestedDownload(false)
+          .SetDeferBackgroundFetchWhilePageIsActive(true)
           .Build());
 
   // Fallback policy.

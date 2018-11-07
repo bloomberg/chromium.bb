@@ -54,6 +54,8 @@ static std::string OfflinerRequestStatusToString(
       return "LOADING_FAILED_NET_ERROR";
     case Offliner::RequestStatus::LOADING_FAILED_HTTP_ERROR:
       return "LOADING_FAILED_HTTP_ERROR";
+    case Offliner::RequestStatus::LOADING_DEFERRED:
+      return "LOADING_DEFERRED";
   }
   return "UNKNOWN";
 }

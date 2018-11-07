@@ -192,14 +192,7 @@ RequestCoordinator::SavePageLaterParams::SavePageLaterParams()
       availability(RequestAvailability::ENABLED_FOR_OFFLINER) {}
 
 RequestCoordinator::SavePageLaterParams::SavePageLaterParams(
-    const SavePageLaterParams& other) {
-  url = other.url;
-  client_id = other.client_id;
-  user_requested = other.user_requested;
-  availability = other.availability;
-  original_url = other.original_url;
-  request_origin = other.request_origin;
-}
+    const SavePageLaterParams& other) = default;
 
 RequestCoordinator::SavePageLaterParams::~SavePageLaterParams() = default;
 
@@ -209,7 +202,8 @@ RequestCoordinator::RequestCoordinator(
     std::unique_ptr<RequestQueue> queue,
     std::unique_ptr<Scheduler> scheduler,
     network::NetworkQualityTracker* network_quality_tracker,
-    std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter)
+    std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter,
+    std::unique_ptr<ActiveTabInfo> active_tab_info)
     : is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       state_(RequestCoordinatorState::IDLE),
       processing_state_(ProcessingWindowState::STOPPED),
@@ -227,6 +221,7 @@ RequestCoordinator::RequestCoordinator(
       scheduler_callback_(base::DoNothing()),
       internal_start_processing_callback_(base::DoNothing()),
       pending_state_updater_(this),
+      active_tab_info_(std::move(active_tab_info)),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   DCHECK(network_quality_tracker_);
@@ -599,6 +594,14 @@ void RequestCoordinator::TryNextRequestCallback(int64_t offline_id) {
   TryNextRequest(!kStartOfProcessing);
 }
 
+void RequestCoordinator::MarkDeferredAttemptCallback(
+    UpdateRequestsResult result) {
+  // This is called after the attempt has been marked as deferred in the
+  // database. StopProcessing() is called to resume request processing.
+  state_ = RequestCoordinatorState::IDLE;
+  StopProcessing(Offliner::RequestStatus::LOADING_DEFERRED);
+}
+
 void RequestCoordinator::ScheduleAsNeeded() {
   // Get all requests from queue (there is no filtering mechanism).
   queue_->GetRequests(
@@ -790,7 +793,7 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   // Ask request queue to make a new PickRequestTask object, then put it on
   // the task queue.
   queue_->PickNextRequest(
-      policy_.get(),
+      policy_.get(), policy_controller_.get(),
       base::BindOnce(&RequestCoordinator::RequestPicked,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&RequestCoordinator::RequestNotPicked,
@@ -826,7 +829,8 @@ void RequestCoordinator::RequestPicked(
 
 void RequestCoordinator::RequestNotPicked(
     bool non_user_requested_tasks_remaining,
-    bool cleanup_needed) {
+    bool cleanup_needed,
+    base::Time available_time) {
   DVLOG(2) << __func__;
   state_ = RequestCoordinatorState::IDLE;
 
@@ -840,6 +844,11 @@ void RequestCoordinator::RequestNotPicked(
   } else if (non_user_requested_tasks_remaining) {
     // If we don't have any of those, check for non-user-requested tasks.
     scheduler_->Schedule(GetTriggerConditions(!kUserRequest));
+  } else if (!available_time.is_null()) {
+    scheduler_->BackupSchedule(
+        GetTriggerConditions(kUserRequest),
+        (available_time - base::Time::Now()).InSeconds() +
+            1 /*Add an extra second to avoid rounding down.*/);
   }
 
   // Schedule a queue cleanup if needed.
@@ -902,6 +911,16 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   // Record start time if this is first attempt.
   if (request.started_attempt_count() == 0) {
     RecordStartTimeUMA(request);
+  }
+  const OfflinePageClientPolicy& policy =
+      policy_controller_->GetPolicy(request.client_id().name_space);
+  if (policy.defer_background_fetch_while_page_is_active &&
+      active_tab_info_->DoesActiveTabMatch(request.url())) {
+    queue_->MarkAttemptDeferred(
+        request.request_id(),
+        base::BindOnce(&RequestCoordinator::MarkDeferredAttemptCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
   }
 
   // Mark attempt started in the database and start offliner when completed.
@@ -992,7 +1011,7 @@ void RequestCoordinator::OfflinerProgressCallback(
     const SavePageRequest& request,
     int64_t received_bytes) {
   DVLOG(2) << "offliner progress, received bytes: " << received_bytes;
-  DCHECK(received_bytes >= 0);
+  DCHECK_GE(received_bytes, 0);
   NotifyNetworkProgress(request, received_bytes);
 }
 
@@ -1099,7 +1118,6 @@ void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
   // calls for a particular request_id.
   if (disabled_requests_.find(request_id) == disabled_requests_.end())
     return;
-
   // Clear from disabled list.
   disabled_requests_.erase(request_id);
 

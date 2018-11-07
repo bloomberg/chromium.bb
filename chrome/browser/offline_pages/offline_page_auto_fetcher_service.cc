@@ -4,6 +4,8 @@
 
 #include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -40,7 +42,7 @@ class OfflinePageAutoFetcherService::TaskToken {
  public:
   // The static methods should only be called by StartOrEnqueue or TaskComplete.
   static TaskToken NewToken() { return TaskToken(); }
-  static void Finalize(TaskToken& token) { token.alive_ = false; }
+  static void Finalize(TaskToken* token) { token->alive_ = false; }
 
   TaskToken(TaskToken&& other) : alive_(other.alive_) {
     DCHECK(other.alive_);
@@ -195,7 +197,7 @@ void OfflinePageAutoFetcherService::StartOrEnqueue(TaskCallback task) {
 }
 
 void OfflinePageAutoFetcherService::TaskComplete(TaskToken token) {
-  TaskToken::Finalize(token);
+  TaskToken::Finalize(&token);
   DCHECK(!task_queue_.empty());
   DCHECK(!task_queue_.front());
   task_queue_.pop();
