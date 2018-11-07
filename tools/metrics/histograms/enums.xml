@@ -29245,6 +29245,7 @@ from previous Chrome versions.
   <int value="-1533258008" label="CalculateNativeWinOcclusion:enabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
+  <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517518406" label="force-update-menu-type"/>
@@ -30456,6 +30457,7 @@ from previous Chrome versions.
   <int value="738868972" label="GdiTextPrinting:disabled"/>
   <int value="739938466"
       label="WebPaymentsPerMethodCanMakePaymentQuota:disabled"/>
+  <int value="740056959" label="ImeServiceConnectable:enabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
