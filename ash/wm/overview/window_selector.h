@@ -217,6 +217,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Shows or hides all the window selector items' mask and shadow.
   void UpdateMaskAndShadow(bool show);
 
+  // Called when the overview mode starting animation completes.
+  void OnStartingAnimationComplete(bool canceled);
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
