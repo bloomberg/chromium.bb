@@ -86,6 +86,11 @@ std::string GetUserAgent() {
 CastContentClient::~CastContentClient() {
 }
 
+void CastContentClient::SetActiveURL(const GURL& url, std::string top_origin) {
+  LOG(INFO) << "Active URL: " << url.possibly_invalid_spec() << " for origin '"
+            << top_origin << "'";
+}
+
 void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->standard_schemes.push_back(kChromeResourceScheme);
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
