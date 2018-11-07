@@ -1392,6 +1392,7 @@ WallpaperManager.prototype.toggleLayoutButtonStates_ = function(layout) {
  */
 WallpaperManager.prototype.initializeDailyRefreshStates_ = function() {
   var initializeDailyRefreshStatesImpl = dailyRefreshInfo => {
+    $('wallpaper-grid').classList.remove('daily-refresh-disabled');
     if (dailyRefreshInfo) {
       this.dailyRefreshInfo_ = dailyRefreshInfo;
     } else {

@@ -810,11 +810,13 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
   outline: none;
 }
 
-.v2 .image-picker-offline .daily-refresh-slider {
+.v2 .image-picker-offline .daily-refresh-slider,
+.v2 .daily-refresh-disabled .daily-refresh-slider {
   pointer-events: none;
 }
 
-.v2 .image-picker-offline img.slide-show {
+.v2 .image-picker-offline img.slide-show,
+.v2 .daily-refresh-disabled img.slide-show {
   -webkit-filter: grayscale(1);
 }
 
