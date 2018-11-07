@@ -162,12 +162,6 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
 bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
-#if defined(OS_ANDROID)
-  // TODO(oysteine): Support preemptive mode safely in Android.
-  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE)
-    return false;
-#endif
-
   if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
     return false;
 
