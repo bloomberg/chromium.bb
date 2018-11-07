@@ -2158,10 +2158,18 @@ void RenderFrameHostManager::CommitPending() {
       ->render_frame_delegate()
       ->FullscreenStateChanged(current_frame_host(), false);
 
-  // TODO(arthursonzogni): Stop doing this. Keep the subframes alive in pending
-  // deletion so that they can always properly execute their unload event
-  // handlers.
-  current_frame_host()->ResetChildren();
+  // If the removed frame was created by a script, then its history entry will
+  // never be reused - we can save some memory by removing the history entry.
+  // See also https://crbug.com/784356.
+  // This is done in ~FrameTreeNode, but this is needed here as well. For
+  // instance if the user navigates from A(B) to C and B is deleted after C
+  // commits, then the last committed navigation entry wouldn't match anymore.
+  NavigationEntryImpl* navigation_entry = static_cast<NavigationEntryImpl*>(
+      delegate_->GetLastCommittedNavigationEntryForRenderManager());
+  if (navigation_entry) {
+    render_frame_host_->frame_tree_node()->PruneChildFrameNavigationEntries(
+        navigation_entry);
+  }
 
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.

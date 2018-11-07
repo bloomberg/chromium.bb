@@ -1353,11 +1353,6 @@ class CONTENT_EXPORT RenderFrameImpl
   UniqueNameFrameAdapter unique_name_frame_adapter_;
   UniqueNameHelper unique_name_helper_;
 
-  // When a frame is detached in response to a message from the browser process,
-  // this RenderFrame should not be sending notifications back to it. This
-  // boolean is used to indicate this case.
-  bool in_browser_initiated_detach_;
-
   // Indicates whether the frame has been inserted into the frame tree yet or
   // not.
   //

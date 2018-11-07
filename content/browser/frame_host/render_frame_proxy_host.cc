@@ -273,7 +273,9 @@ void RenderFrameProxyHost::OnDetach() {
     bad_message::ReceivedBadMessage(GetProcess(), bad_message::RFPH_DETACH);
     return;
   }
-  frame_tree_node_->frame_tree()->RemoveFrame(frame_tree_node_);
+
+  if (frame_tree_node_->current_frame_host()->is_active())
+    frame_tree_node_->frame_tree()->RemoveFrame(frame_tree_node_);
 }
 
 void RenderFrameProxyHost::OnOpenURL(

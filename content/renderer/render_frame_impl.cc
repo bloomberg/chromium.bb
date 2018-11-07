@@ -1611,7 +1611,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       is_main_frame_(true),
       unique_name_frame_adapter_(this),
       unique_name_helper_(&unique_name_frame_adapter_),
-      in_browser_initiated_detach_(false),
       in_frame_tree_(false),
       render_view_(params.render_view),
       routing_id_(params.routing_id),
@@ -2194,32 +2193,25 @@ void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
       routing_id, proceed, before_unload_start_time, before_unload_end_time));
 }
 
+// Swap this RenderFrame out so the frame can navigate to a document rendered by
+// a different process. We also allow this process to exit if there are no other
+// active RenderFrames in it.
+// This executes the unload handlers on this frame and its local descendants.
 void RenderFrameImpl::OnSwapOut(
     int proxy_routing_id,
     bool is_loading,
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnSwapOut",
                "id", routing_id_);
-  RenderFrameProxy* proxy = nullptr;
-
-  // Swap this RenderFrame out so the frame can navigate to a page rendered by
-  // a different process.  This involves running the unload handler and
-  // clearing the page.
 
   // Send an UpdateState message before we get deleted.
   SendUpdateState();
 
-  // There should always be a proxy to replace this RenderFrame.  Create it now
+  // There should always be a proxy to replace this RenderFrame. Create it now
   // so its routing id is registered for receiving IPC messages.
   CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
-  proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+  RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
       this, proxy_routing_id, replicated_frame_state.scope);
-
-  // Synchronously run the unload handler before sending the ACK.
-  // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
-  // unload on subframes as well.
-  if (is_main_frame_)
-    frame_->DispatchUnloadEvent();
 
   // Swap out and stop sending any IPC messages that are not ACKs.
   if (is_main_frame_)
@@ -2247,6 +2239,8 @@ void RenderFrameImpl::OnSwapOut(
   // it to return false without detaching.  Catch any cases that the
   // RenderView's main_render_frame_ isn't cleared below (whether swap returns
   // false or not).
+  //
+  // This executes the unload handlers on this frame and its local descendants.
   bool success = frame_->Swap(proxy->web_frame());
 
   // For main frames, the swap should have cleared the RenderView's pointer to
@@ -2286,12 +2280,6 @@ void RenderFrameImpl::OnSwapIn() {
 }
 
 void RenderFrameImpl::OnDeleteFrame() {
-  // TODO(nasko): If this message is received right after a commit has
-  // swapped a RenderFrameProxy with this RenderFrame, the proxy needs to be
-  // recreated in addition to the RenderFrame being deleted.
-  // See https://crbug.com/569683 for details.
-  in_browser_initiated_detach_ = true;
-
   // This will result in a call to RenderFrameImpl::frameDetached, which
   // deletes the object. Do not access |this| after detach.
   frame_->Detach();
@@ -3997,8 +3985,8 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   SendUpdateState();
 
   // We only notify the browser process when the frame is being detached for
-  // removal and it was initiated from the renderer process.
-  if (!in_browser_initiated_detach_ && type == DetachType::kRemove)
+  // removal, not after a swap.
+  if (type == DetachType::kRemove)
     Send(new FrameHostMsg_Detach(routing_id_));
 
   // Clean up the associated RenderWidget for the frame, if there is one.
