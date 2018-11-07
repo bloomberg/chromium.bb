@@ -193,6 +193,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // next display frame. We will notify SurfaceObservers accordingly.
   void SurfaceWillBeDrawn(Surface* surface);
 
+  // Removes temporary reference to |surface_id| and older surfaces.
+  void DropTemporaryReference(const SurfaceId& surface_id);
+
  private:
   friend class CompositorFrameSinkSupportTest;
   friend class FrameSinkManagerTest;
@@ -248,11 +251,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // owner initially.
   void AddTemporaryReference(const SurfaceId& surface_id);
 
-  // Removes temporary reference to |surface_id|. The |reason| for removing will
-  // be recorded with UMA. If |reason| is EMBEDDED then older temporary
-  // references from the same FrameSinkId will also be removed.
-  void RemoveTemporaryReference(const SurfaceId& surface_id,
-                                RemovedReason reason);
+  // Removes temporary reference to |surface_id| and older surfaces. The
+  // |reason| for removing will be recorded with UMA.
+  void RemoveTemporaryReferenceImpl(const SurfaceId& surface_id,
+                                    RemovedReason reason);
 
   // Marks and then expires old temporary references. This function is run
   // periodically by a timer.

@@ -225,6 +225,7 @@ CompositorFrameSinkSupport::TakeCopyOutputRequests(
 void CompositorFrameSinkSupport::EvictSurface(const LocalSurfaceId& id) {
   DCHECK_GE(id.parent_sequence_number(), last_evicted_parent_sequence_number_);
   last_evicted_parent_sequence_number_ = id.parent_sequence_number();
+  surface_manager_->DropTemporaryReference(SurfaceId(frame_sink_id_, id));
   MaybeEvictSurfaces();
 }
 

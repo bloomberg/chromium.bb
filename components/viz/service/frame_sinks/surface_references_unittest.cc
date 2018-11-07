@@ -477,7 +477,7 @@ TEST_F(SurfaceReferencesTest, RemoveFirstTempReferenceOnly) {
   EXPECT_THAT(GetReferencesFrom(parent_id), ElementsAre(surface_id1));
 }
 
-TEST_F(SurfaceReferencesTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
+TEST_F(SurfaceReferencesTest, SurfaceWithTemporaryReferenceIsDeleted) {
   const SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
 
@@ -498,8 +498,8 @@ TEST_F(SurfaceReferencesTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
   // |id1| is destroyed and has no references, so it's deleted.
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id1));
 
-  // |id2| is destroyed but has a temporary reference, it's not deleted.
-  EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
+  // |id2| is destroyed and the temporary reference is dropped, so it's deleted.
+  EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 }
 
 // Checks that adding a surface reference clears the temporary reference.

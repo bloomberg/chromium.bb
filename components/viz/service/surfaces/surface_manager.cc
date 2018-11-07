@@ -329,7 +329,7 @@ void SurfaceManager::AddSurfaceReferenceImpl(
     observer.OnAddedSurfaceReference(parent_id, child_id);
 
   if (HasTemporaryReference(child_id))
-    RemoveTemporaryReference(child_id, RemovedReason::EMBEDDED);
+    RemoveTemporaryReferenceImpl(child_id, RemovedReason::EMBEDDED);
 }
 
 void SurfaceManager::RemoveSurfaceReferenceImpl(
@@ -397,27 +397,21 @@ void SurfaceManager::AddTemporaryReference(const SurfaceId& surface_id) {
   }
 }
 
-void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
-                                              RemovedReason reason) {
-  DCHECK(HasTemporaryReference(surface_id));
-
+void SurfaceManager::RemoveTemporaryReferenceImpl(const SurfaceId& surface_id,
+                                                  RemovedReason reason) {
   const FrameSinkId& frame_sink_id = surface_id.frame_sink_id();
   std::vector<LocalSurfaceId>& frame_sink_temp_refs =
       temporary_reference_ranges_[frame_sink_id];
 
-  // If the temporary reference to |surface_id| is being removed because it was
-  // embedded, then remove older temporary references with the same FrameSinkId.
-  const bool remove_older = (reason == RemovedReason::EMBEDDED);
-
   // Find the iterator to the range tracking entry for |surface_id|. Use that
-  // iterator and |remove_older| to find the right begin and end iterators for
-  // the temporary references we want to remove.
-  auto surface_id_iter =
-      std::find(frame_sink_temp_refs.begin(), frame_sink_temp_refs.end(),
-                surface_id.local_surface_id());
-  auto begin_iter =
-      remove_older ? frame_sink_temp_refs.begin() : surface_id_iter;
-  auto end_iter = surface_id_iter + 1;
+  // iterator to find the right end iterator for the temporary references we
+  // want to remove.
+  auto end_iter =
+      std::find_if(frame_sink_temp_refs.begin(), frame_sink_temp_refs.end(),
+                   [&surface_id](const LocalSurfaceId& id) {
+                     return id.IsNewerThan(surface_id.local_surface_id());
+                   });
+  auto begin_iter = frame_sink_temp_refs.begin();
 
   // Remove temporary references and range tracking information.
   for (auto iter = begin_iter; iter != end_iter; ++iter) {
@@ -498,7 +492,7 @@ void SurfaceManager::ExpireOldTemporaryReferences() {
   }
 
   for (auto& surface_id : temporary_references_to_delete)
-    RemoveTemporaryReference(surface_id, RemovedReason::EXPIRED);
+    RemoveTemporaryReferenceImpl(surface_id, RemovedReason::EXPIRED);
 }
 
 Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
@@ -647,6 +641,10 @@ bool SurfaceManager::IsMarkedForDestruction(const SurfaceId& surface_id) {
 void SurfaceManager::SurfaceWillBeDrawn(Surface* surface) {
   for (auto& observer : observer_list_)
     observer.OnSurfaceWillBeDrawn(surface);
+}
+
+void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
+  RemoveTemporaryReferenceImpl(surface_id, RemovedReason::DROPPED);
 }
 
 }  // namespace viz

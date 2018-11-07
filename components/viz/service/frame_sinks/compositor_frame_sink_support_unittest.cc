@@ -189,6 +189,10 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     return manager_.surface_manager()->GetSurfaceForId(id);
   }
 
+  bool HasTemporaryReference(const SurfaceId& id) {
+    return manager_.surface_manager()->HasTemporaryReference(id);
+  }
+
   void RefCurrentFrameResources() {
     Surface* surface = GetSurfaceForId(
         SurfaceId(support_->frame_sink_id(), local_surface_id_));
@@ -725,9 +729,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResurectAndImmediatelyEvict) {
   EXPECT_FALSE(support_->last_activated_surface_id().is_valid());
 }
 
-// Verify that a temporary reference blocks surface eviction and that when the
-// temporary reference is removed due to frame sink invalidation the surface
-// is deleted.
+// Verify that a temporary reference does not block surface eviction.
 TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
   constexpr FrameSinkId parent_frame_sink_id(1234, 5678);
 
@@ -740,16 +742,36 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
   // When CompositorFrame is submitted, a temporary reference will be created.
   support_->SubmitCompositorFrame(local_surface_id,
                                   MakeDefaultCompositorFrame());
+  EXPECT_TRUE(HasTemporaryReference(surface_id));
 
-  // Verify the temporary reference has prevented the surface from getting
+  // Verify the temporary reference has not prevented the surface from getting
   // destroyed.
   support_->EvictSurface(local_surface_id);
-  EXPECT_TRUE(GetSurfaceForId(surface_id));
-
-  // Verify the temporary reference is removed when expired.
-  ExpireAllTemporaryReferences();
   manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(surface_id));
+}
+
+// Verifies that evicting a surface destroys all older surfaces as well.
+TEST_F(CompositorFrameSinkSupportTest, EvictOlderSurfaces) {
+  constexpr FrameSinkId parent_frame_sink_id(1234, 5678);
+
+  manager_.RegisterFrameSinkId(parent_frame_sink_id,
+                               true /* report_activation */);
+
+  const LocalSurfaceId local_surface_id1(5, kArbitraryToken);
+  const LocalSurfaceId local_surface_id2(6, kArbitraryToken);
+  const SurfaceId surface_id1(support_->frame_sink_id(), local_surface_id1);
+  const SurfaceId surface_id2(support_->frame_sink_id(), local_surface_id2);
+
+  // When CompositorFrame is submitted, a temporary reference will be created.
+  support_->SubmitCompositorFrame(local_surface_id1,
+                                  MakeDefaultCompositorFrame());
+  EXPECT_TRUE(HasTemporaryReference(surface_id1));
+
+  // Evict |surface_id2|. |surface_id1| should be evicted too.
+  support_->EvictSurface(local_surface_id2);
+  manager_.surface_manager()->GarbageCollectSurfaces();
+  EXPECT_FALSE(GetSurfaceForId(surface_id1));
 }
 
 void CopyRequestTestCallback(bool* called,
