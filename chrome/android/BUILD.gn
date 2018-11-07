@@ -1015,24 +1015,70 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   variables = chrome_sync_shell_jinja_variables
 }
 
+# This template contains common code for libchrome, libchromefortest and
+# monochrome. The distinctions are the following:
+#
+# Variables:
+#    export_java_symbols: Optional. If true, export Java_* native library
+#      symbols required for lazy JNI registration.
+#    enable_compressed_relocations: Optional. If true, enable compressed
+#      ELF relocations to reduce native library size.
+template("chrome_common_shared_library") {
+  shared_library(target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "enable_compressed_relocations",
+                             "export_java_symbols",
+                           ])
+    _export_java_symbols =
+        defined(invoker.export_java_symbols) && invoker.export_java_symbols
+
+    deps += [ "//chrome:chrome_android_core" ]
+
+    public_configs = extra_chrome_shared_library_configs
+    deps += extra_chrome_shared_library_deps
+
+    if (_export_java_symbols) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+      configs += [ "//build/config/android:hide_all_but_jni" ]
+    }
+
+    # Handle VR JNI regisration and dependencies.
+    if (enable_vr) {
+      if (_export_java_symbols) {
+        # NOTE: While this is file is named *_monochrome.cc, it just contains
+        # an empty vr::RegisterJni() function that returns true.
+        sources += [ "../browser/android/vr/register_jni_monochrome.cc" ]
+      } else {
+        sources += [ "../browser/android/vr/register_jni.cc" ]
+        deps += [
+          "//chrome/browser/android/vr:jni_registration($default_toolchain)",
+        ]
+      }
+    }
+
+    # Compress relocations if needed.
+    if (defined(invoker.enable_compressed_relocations) &&
+        invoker.enable_compressed_relocations) {
+      configs += [ "//build/config/android:lld_pack_relocations" ]
+    }
+  }
+}
+
 # This template contains common code for both libchrome and libchromefortest.
 # The former is used in chrome_public_apk. The latter is used in
 # chrome_public_apk_for_test. The distinction is necessary because the latter
 # requires additional native sources for JNI shims only used by tests.
 template("chrome_shared_library") {
-  shared_library(target_name) {
+  chrome_common_shared_library(target_name) {
     forward_variables_from(invoker, "*")
-
-    deps += [ "//chrome:chrome_android_core" ]
 
     # See crbug.com/705088.
     if (target_cpu == "arm" && is_asan) {
       ldflags = [ "-Wl,--long-plt" ]
     }
 
-    if (chromium_linker_supported && use_lld) {
-      configs += [ "//build/config/android:lld_pack_relocations" ]
-    }
     if (chromium_linker_supported && target_cpu != "mipsel" &&
         target_cpu != "mipsel64") {
       # By default, the static linker will create ELF executables with both
@@ -1046,8 +1092,7 @@ template("chrome_shared_library") {
       ldflags += [ "-Wl,--hash-style=gnu" ]
     }
 
-    public_configs = extra_chrome_shared_library_configs
-    deps += extra_chrome_shared_library_deps
+    enable_compressed_relocations = chromium_linker_supported && use_lld
   }
 }
 
@@ -1059,11 +1104,6 @@ chrome_shared_library("libchrome") {
   deps = [
     ":chrome_jni_registration($default_toolchain)",
   ]
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
 }
 
 chrome_shared_library("libchromefortest") {
@@ -1082,11 +1122,6 @@ chrome_shared_library("libchromefortest") {
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
   ]
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -1247,23 +1282,16 @@ if (current_toolchain == default_toolchain) {
 # for 64-bit APK.
 if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
-  shared_library("monochrome") {
+  chrome_common_shared_library("monochrome") {
     sources = [
       "../browser/android/monochrome_entry_point.cc",
     ]
-    if (enable_vr) {
-      sources += [ "../browser/android/vr/register_jni_monochrome.cc" ]
-    }
     deps = [
       "//android_webview:common",
-      "//chrome:chrome_android_core",
     ]
 
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
-    if (use_lld) {
-      configs += [ "//build/config/android:lld_pack_relocations" ]
-    }
+    export_java_symbols = true
+    enable_compressed_relocations = use_lld
 
     if (target_cpu != "mipsel" && target_cpu != "mips64el") {
       # .gnu.hash support added in Android M. Without this flag, library will also
@@ -1272,9 +1300,6 @@ if (!android_64bit_target_cpu ||
       # support hashstyle gnu: http://crbug.com/811306
       ldflags = [ "-Wl,--hash-style=gnu" ]
     }
-
-    public_configs = extra_chrome_shared_library_configs
-    deps += extra_chrome_shared_library_deps
   }
 } else {
   group("monochrome_secondary_abi_lib") {
