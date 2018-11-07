@@ -106,10 +106,14 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
 
     /**
      * Tells the native page framework that the url should be changed.
+     * @param url The URL of the page.
+     * @param replaceLastUrl Whether the last navigation entry should be replaced with the new URL.
      */
-    public void onStateChange(String url) {
+    public void onStateChange(String url, boolean replaceLastUrl) {
         if (url.equals(mUrl)) return;
-        mHost.loadUrl(new LoadUrlParams(url), /* incognito = */ false);
+        LoadUrlParams params = new LoadUrlParams(url);
+        params.setShouldReplaceCurrentEntry(replaceLastUrl);
+        mHost.loadUrl(params, /* incognito = */ false);
     }
 
     /**
