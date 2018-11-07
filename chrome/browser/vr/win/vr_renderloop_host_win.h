@@ -32,6 +32,7 @@ class VRBrowserRendererHostWin : public BrowserXRRuntimeObserver {
   // The parameter contents indicate which page is rendering with WebXR or WebVR
   // presentation.  When null, no page is presenting.
   void SetWebXRWebContents(content::WebContents* contents) override;
+  void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
 
   void StartBrowserRenderer();
   void StopBrowserRenderer();

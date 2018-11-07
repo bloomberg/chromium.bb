@@ -115,7 +115,6 @@ class GvrGraphicsDelegate : public BaseGraphicsDelegate {
 
  private:
   // GraphicsDelegate overrides.
-  void OnResume() override;
   FovRectangles GetRecommendedFovs() override;
   float GetZNear() override;
   RenderInfo GetRenderInfo(FrameType frame_type,

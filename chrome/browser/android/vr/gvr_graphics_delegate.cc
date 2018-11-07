@@ -738,10 +738,6 @@ void GvrGraphicsDelegate::SubmitToGvr(const gfx::Transform& head_pose) {
   }
 }
 
-void GvrGraphicsDelegate::OnResume() {
-  viewports_need_updating_ = true;
-}
-
 void GvrGraphicsDelegate::BufferBoundsChanged(
     const gfx::Size& content_buffer_size,
     const gfx::Size& overlay_buffer_size) {

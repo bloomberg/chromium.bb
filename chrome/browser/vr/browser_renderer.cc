@@ -28,13 +28,13 @@ BrowserRenderer::BrowserRenderer(
     std::unique_ptr<InputDelegate> input_delegate,
     BrowserRendererBrowserInterface* browser,
     size_t sliding_time_size)
-    : ui_(std::move(ui)),
-      scheduler_delegate_(std::move(scheduler_delegate)),
+    : scheduler_delegate_(std::move(scheduler_delegate)),
       graphics_delegate_(std::move(graphics_delegate)),
       input_delegate_(std::move(input_delegate)),
       browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size),
+      ui_(std::move(ui)),
       weak_ptr_factory_(this) {
   scheduler_delegate_->SetBrowserRenderer(this);
 }
