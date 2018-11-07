@@ -1743,7 +1743,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  kb_controller->NotifyKeyboardWindowLoaded();
 
   int shift =
       work_area.height() - kb_controller->GetKeyboardWindow()->bounds().y();
@@ -1923,9 +1923,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(0, 0, 1, 1));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  keyboard_controller->NotifyKeyboardWindowLoaded();
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
@@ -1941,9 +1939,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(0, 0, 1, 1));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  keyboard_controller->NotifyKeyboardWindowLoaded();
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
@@ -1959,9 +1955,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(0, 0, 1, 1));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
+  keyboard_controller->NotifyKeyboardWindowLoaded();
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 

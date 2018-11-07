@@ -188,7 +188,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard->GetKeyboardWindow()->SetBounds(
             keyboard::KeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(), 100));
-        ASSERT_TRUE(keyboard::WaitUntilShown());
+        keyboard->NotifyKeyboardWindowLoaded();
       }
     } else {
       keyboard->HideKeyboardByUser();

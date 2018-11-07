@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/window_factory.h"
 #include "ash/wm/window_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/mock_input_method.h"
@@ -23,10 +22,8 @@ aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
   keyboard_window_ = window_factory::NewWindow(&delegate_);
   keyboard_window_->Init(ui::LAYER_NOT_DRAWN);
 
-  // Simulate an asynchronous load.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(callback));
-
+  // TODO(https://crbug.com/849995): Call |callback| instead of having tests
+  // call |NotifyKeyboardWindowLoaded|.
   return keyboard_window_.get();
 }
 

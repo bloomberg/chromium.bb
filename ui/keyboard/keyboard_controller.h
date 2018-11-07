@@ -120,6 +120,10 @@ class KEYBOARD_EXPORT KeyboardController
   // Sets the bounds of the keyboard window.
   void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);
 
+  // Called by KeyboardUI when the keyboard window has loaded. Shows
+  // the keyboard if show_on_keyboard_window_load_ is true.
+  void NotifyKeyboardWindowLoaded();
+
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.
   void Reload();
@@ -335,10 +339,6 @@ class KEYBOARD_EXPORT KeyboardController
   // Notifies observers that the visual or occluded bounds of the keyboard
   // window are changing.
   void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
-
-  // Called when the keyboard window has loaded. Shows the keyboard if
-  // |show_on_keyboard_window_load_| is true.
-  void NotifyKeyboardWindowLoaded();
 
   // Validates the state transition. Called from ChangeState.
   void CheckStateTransition(KeyboardControllerState prev,
