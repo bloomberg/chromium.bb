@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -82,7 +83,7 @@ class CORE_EXPORT PendingScript
 
   ScriptElementBase* GetElement() const;
 
-  virtual ScriptType GetScriptType() const = 0;
+  virtual mojom::ScriptType GetScriptType() const = 0;
 
   virtual void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "PendingScript"; }
@@ -107,7 +108,7 @@ class CORE_EXPORT PendingScript
 
   // Used for DCHECK()s.
   bool IsExternalOrModule() const {
-    return IsExternal() || GetScriptType() == ScriptType::kModule;
+    return IsExternal() || GetScriptType() == mojom::ScriptType::kModule;
   }
 
   void Dispose();

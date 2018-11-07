@@ -33,6 +33,7 @@
 #include <memory>
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -317,9 +318,9 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   auto worker_settings = std::make_unique<WorkerSettings>(
       shadow_page_->GetDocument()->GetFrame()->GetSettings());
 
-  // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
-  // (https://crbug.com/824646)
-  ScriptType script_type = ScriptType::kClassic;
+  // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
+  // fetch (https://crbug.com/824646).
+  mojom::ScriptType script_type = mojom::ScriptType::kClassic;
 
   const KURL script_response_url = main_script_loader_->ResponseURL();
   DCHECK(static_cast<KURL>(script_request_url_) == script_response_url ||

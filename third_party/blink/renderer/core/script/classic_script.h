@@ -39,7 +39,9 @@ class CORE_EXPORT ClassicScript final : public Script {
         script_source_code_(script_source_code),
         access_control_status_(access_control_status) {}
 
-  ScriptType GetScriptType() const override { return ScriptType::kClassic; }
+  mojom::ScriptType GetScriptType() const override {
+    return mojom::ScriptType::kClassic;
+  }
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override {
     return script_source_code_.Source().ToString();

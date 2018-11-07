@@ -170,14 +170,14 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
     LegacyTypeSupport support_legacy_types,
-    ScriptType& out_script_type) {
+    mojom::ScriptType& out_script_type) {
   if (IsValidClassicScriptTypeAndLanguage(type, language,
                                           support_legacy_types)) {
     // <spec step="7">... If the script block's type string is a JavaScript MIME
     // type essence match, the script's type is "classic". ...</spec>
     //
     // TODO(hiroshige): Annotate and/or cleanup this step.
-    out_script_type = ScriptType::kClassic;
+    out_script_type = mojom::ScriptType::kClassic;
     return true;
   }
 
@@ -185,7 +185,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     // <spec step="7">... If the script block's type string is an ASCII
     // case-insensitive match for the string "module", the script's type is
     // "module". ...</spec>
-    out_script_type = ScriptType::kModule;
+    out_script_type = mojom::ScriptType::kModule;
     return true;
   }
 
@@ -194,8 +194,9 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
   return false;
 }
 
-bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
-  return nomodule && script_type == ScriptType::kClassic;
+bool ScriptLoader::BlockForNoModule(mojom::ScriptType script_type,
+                                    bool nomodule) {
+  return nomodule && script_type == mojom::ScriptType::kClassic;
 }
 
 // Corresponds to
@@ -221,7 +222,7 @@ network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
 
 // https://github.com/WICG/feature-policy/issues/135
 bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
-                                           ScriptType script_type,
+                                           mojom::ScriptType script_type,
                                            bool parser_inserted) {
   if (element->GetDocument().GetFeaturePolicy()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSyncScript)) {
@@ -229,7 +230,7 @@ bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
   }
 
   // Module scripts never block parsing.
-  if (script_type == ScriptType::kModule || !parser_inserted)
+  if (script_type == mojom::ScriptType::kModule || !parser_inserted)
     return false;
 
   if (!element->HasSourceAttribute())
@@ -386,7 +387,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   ParserDisposition parser_state =
       IsParserInserted() ? kParserInserted : kNotParserInserted;
 
-  if (GetScriptType() == ScriptType::kModule)
+  if (GetScriptType() == mojom::ScriptType::kModule)
     UseCounter::Count(*context_document, WebFeature::kPrepareModuleScript);
 
   DCHECK(!prepared_pending_script_);
@@ -454,7 +455,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     }
 
     // <spec step="24.6">Switch on the script's type:</spec>
-    if (GetScriptType() == ScriptType::kClassic) {
+    if (GetScriptType() == mojom::ScriptType::kClassic) {
       // - "classic":
 
       // <spec step="15">If the script element has a charset attribute, then let
@@ -524,7 +525,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // <spec step="25.2">Switch on the script's type:</spec>
     switch (GetScriptType()) {
       // <spec step="25.2.A">"classic"</spec>
-      case ScriptType::kClassic: {
+      case mojom::ScriptType::kClassic: {
         // <spec step="25.2.A.1">Let script be the result of creating a classic
         // script using source text, settings object, base URL, and
         // options.</spec>
@@ -551,7 +552,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       }
 
       // <spec step="25.2.B">"module"</spec>
-      case ScriptType::kModule: {
+      case mojom::ScriptType::kModule: {
         // <spec step="25.2.B.1">Let script be the result of creating a module
         // script using source text, settings object, base URL, and
         // options.</spec>
@@ -602,10 +603,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // If the script's type is "module", and the element has been flagged as
   // "parser-inserted", and the element does not have an async attribute
   // ...</spec>
-  if ((GetScriptType() == ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::ScriptType::kClassic &&
        element_->HasSourceAttribute() && element_->DeferAttributeValue() &&
        parser_inserted_ && !element_->AsyncAttributeValue()) ||
-      (GetScriptType() == ScriptType::kModule && parser_inserted_ &&
+      (GetScriptType() == mojom::ScriptType::kModule && parser_inserted_ &&
        !element_->AsyncAttributeValue())) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestDeferredScript(), and
@@ -619,7 +620,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="26.B">If the script's type is "classic", and the element has a
   // src attribute, and the element has been flagged as "parser-inserted", and
   // the element does not have an async attribute ...</spec>
-  if (GetScriptType() == ScriptType::kClassic &&
+  if (GetScriptType() == mojom::ScriptType::kClassic &&
       element_->HasSourceAttribute() && parser_inserted_ &&
       !element_->AsyncAttributeValue()) {
     // This clause is implemented by the caller-side of prepareScript():
@@ -637,10 +638,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // If the script's type is "module", and the element does not have an async
   // attribute, and the element does not have the "non-blocking" flag set
   // ...</spec>
-  if ((GetScriptType() == ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::ScriptType::kClassic &&
        element_->HasSourceAttribute() && !element_->AsyncAttributeValue() &&
        !non_blocking_) ||
-      (GetScriptType() == ScriptType::kModule &&
+      (GetScriptType() == mojom::ScriptType::kModule &&
        !element_->AsyncAttributeValue() && !non_blocking_)) {
     // <spec step="26.C">... Add the element to the end of the list of scripts
     // that will execute in order as soon as possible associated with the node
@@ -664,9 +665,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // src attribute
   //
   // If the script's type is "module" ...</spec>
-  if ((GetScriptType() == ScriptType::kClassic &&
+  if ((GetScriptType() == mojom::ScriptType::kClassic &&
        element_->HasSourceAttribute()) ||
-      GetScriptType() == ScriptType::kModule) {
+      GetScriptType() == mojom::ScriptType::kModule) {
     // <spec step="26.D">... The element must be added to the set of scripts
     // that will execute as soon as possible of the node document of the script
     // element at the time the prepare a script algorithm started. When the
@@ -688,7 +689,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // The following clauses are executed only if the script's type is "classic"
   // and the element doesn't have a src attribute.
-  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
   DCHECK(!is_external_script_);
 
   // <spec step="26.E">If the element does not have a src attribute, and the
@@ -831,8 +832,8 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 
   // <spec step="14">If the script element has an event attribute and a for
   // attribute, and the script's type is "classic", then:</spec>
-  if (GetScriptType() != ScriptType::kClassic || event_attribute.IsNull() ||
-      for_attribute.IsNull())
+  if (GetScriptType() != mojom::ScriptType::kClassic ||
+      event_attribute.IsNull() || for_attribute.IsNull())
     return true;
 
   // <spec step="14.3">Strip leading and trailing ASCII whitespace from event

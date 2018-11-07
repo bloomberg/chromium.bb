@@ -57,7 +57,7 @@ Resource* PreloadRequest::Start(Document* document) {
                                        kCrossOriginAttributeAnonymous);
   }
 
-  if (script_type_ == ScriptType::kModule) {
+  if (script_type_ == mojom::ScriptType::kModule) {
     DCHECK_EQ(resource_type_, ResourceType::kScript);
     params.SetCrossOriginAccessControl(
         document->GetSecurityOrigin(),
@@ -77,7 +77,7 @@ Resource* PreloadRequest::Start(Document* document) {
   if (request_type_ == kRequestTypeLinkRelPreload)
     params.SetLinkPreload(true);
 
-  if (script_type_ == ScriptType::kModule) {
+  if (script_type_ == mojom::ScriptType::kModule) {
     DCHECK_EQ(resource_type_, ResourceType::kScript);
     params.SetDecoderOptions(
         TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -56,7 +57,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          document->Url(), ScriptType::kModule, document->UserAgent(),
+          document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
           csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
           document->GetHttpsState(), worker_clients, document->AddressSpace(),

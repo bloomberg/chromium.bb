@@ -81,7 +81,9 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
                                       const ScriptFetchOptions&,
                                       const TextPosition&);
 
-  ScriptType GetScriptType() const override { return ScriptType::kModule; }
+  mojom::ScriptType GetScriptType() const override {
+    return mojom::ScriptType::kModule;
+  }
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
 

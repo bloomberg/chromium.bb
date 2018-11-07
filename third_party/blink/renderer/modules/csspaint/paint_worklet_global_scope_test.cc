@@ -61,7 +61,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), ScriptType::kModule, document->UserAgent(),
+            document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
             Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
             document->GetSecurityOrigin(), document->IsSecureContext(),
             document->GetHttpsState(), clients, document->AddressSpace(),

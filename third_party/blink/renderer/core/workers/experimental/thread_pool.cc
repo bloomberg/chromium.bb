@@ -109,7 +109,7 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
       std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
 
   proxy->StartWorker(std::make_unique<GlobalScopeCreationParams>(
-      context->Url(), ScriptType::kClassic, context->UserAgent(),
+      context->Url(), mojom::ScriptType::kClassic, context->UserAgent(),
       context->GetContentSecurityPolicy()->Headers(), kReferrerPolicyDefault,
       context->GetSecurityOrigin(), context->IsSecureContext(),
       context->GetHttpsState(), WorkerClients::Create(),

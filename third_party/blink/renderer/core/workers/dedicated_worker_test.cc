@@ -133,7 +133,7 @@ class DedicatedWorkerMessagingProxyForTest
         To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, ScriptType::kClassic, "fake user agent", headers,
+            script_url, mojom::ScriptType::kClassic, "fake user agent", headers,
             kReferrerPolicyDefault, security_origin_.get(),
             false /* starter_secure_context */,
             CalculateHttpsState(security_origin_.get()),

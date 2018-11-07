@@ -71,7 +71,9 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
                       bool is_external);
 
   // PendingScript
-  ScriptType GetScriptType() const override { return ScriptType::kModule; }
+  mojom::ScriptType GetScriptType() const override {
+    return mojom::ScriptType::kModule;
+  }
   Script* GetSource(const KURL& document_url) const override;
   bool IsReady() const override { return ready_; }
   bool IsExternal() const override { return is_external_; }

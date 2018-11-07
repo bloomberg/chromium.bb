@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
@@ -172,7 +173,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
           language_attribute_value = item->Value();
         }
 
-        ScriptType script_type;
+        mojom::ScriptType script_type;
         if (ScriptLoader::IsValidScriptTypeAndLanguage(
                 type_attribute_value, language_attribute_value,
                 ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
