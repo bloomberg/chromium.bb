@@ -4145,14 +4145,10 @@ test("unit_tests") {
   }
   if (!is_mac) {
     deps += [
+      "//chrome:packed_resources",
       "//chrome/tools/convert_dict:lib",
       "//third_party/hunspell",
     ]
-    if (is_android) {
-      deps += [ "//chrome/android:chrome_apk_paks" ]
-    } else {
-      deps += [ "//chrome:packed_resources" ]
-    }
   }
   if (is_win || is_mac || is_chromeos) {
     sources += [ "../browser/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
