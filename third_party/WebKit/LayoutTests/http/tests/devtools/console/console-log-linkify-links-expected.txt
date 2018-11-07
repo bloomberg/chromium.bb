@@ -19,6 +19,7 @@ Linked url: http://www.chromium.org/
 
 Text: http://www.chromium.org/some?v=114:56:57
 Linked url: http://www.chromium.org/some?v=114
+Line: 55, Column: 56
 
 Text: http://www.example.com/düsseldorf?neighbourhood=Lörick
 Linked url: http://www.example.com/düsseldorf?neighbourhood=Lörick
@@ -79,7 +80,8 @@ Linked url: http://www.chromium.org
 
 Text: www.chromium.org?
 Linked url: http://www.chromium.org
-The string "at triggerError (http://localhost/show/:22:11) " linkifies to url: http://localhost/show/
-The lineNumber is 21
-The columnNumber is 10
+
+Text: at triggerError (http://localhost/show/:22:11)
+Linked url: http://localhost/show/
+Line: 21, Column: 10
 

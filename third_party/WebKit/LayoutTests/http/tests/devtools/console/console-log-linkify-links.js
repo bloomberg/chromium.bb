@@ -34,6 +34,7 @@
     console.log("www.chromium.org...");
     console.log("www.chromium.org!");
     console.log("www.chromium.org?");
+    console.log("at triggerError (http://localhost/show/:22:11)");
   `);
 
   TestRunner.addResult('Dump urls in messages');
@@ -46,22 +47,18 @@
     var links = element.querySelectorAll('.devtools-link');
     for (var link of links) {
       var info = Components.Linkifier._linkInfo(link);
-      if (info && info.url)
+      if (info && info.url) {
         TestRunner.addResult('Linked url: ' + info.url);
+        if (info.lineNumber !== null || info.columnNumber !== null)
+          TestRunner.addResult(`Line: ${info.lineNumber}, Column: ${info.columnNumber}`);
+      }
     }
   }
 
-  var linkifyMe = 'at triggerError (http://localhost/show/:22:11)';
-  var fragment = Console.ConsoleViewMessage._linkifyStringAsFragment(linkifyMe);
-  var anchor = fragment.querySelector('.devtools-link');
-  var info = Components.Linkifier._linkInfo(anchor);
-  TestRunner.addResult('The string "' + linkifyMe + ' " linkifies to url: ' + (info && info.url));
-  TestRunner.addResult('The lineNumber is ' + (info && info.lineNumber));
-  TestRunner.addResult('The columnNumber is ' + (info && info.columnNumber));
-
   // Ensures urls with lots of slashes does not bog down the regex.
-  Console.ConsoleViewMessage._linkifyStringAsFragment('/'.repeat(1000));
-  Console.ConsoleViewMessage._linkifyStringAsFragment('/a/'.repeat(1000));
+  const dummyMessage = viewMessages[0];
+  Console.ConsoleViewMessage.prototype._linkifyStringAsFragment.call(dummyMessage, '/'.repeat(1000));
+  Console.ConsoleViewMessage.prototype._linkifyStringAsFragment.call(dummyMessage, '/a/'.repeat(1000));
 
   TestRunner.completeTest();
 })();
