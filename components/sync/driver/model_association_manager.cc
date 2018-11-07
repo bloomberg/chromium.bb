@@ -178,6 +178,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
 void ModelAssociationManager::StopDatatype(ModelType type,
                                            ShutdownReason shutdown_reason,
                                            SyncError error) {
+  DCHECK(error.IsSet());
   DataTypeController* dtc = controllers_->find(type)->second.get();
   if (dtc->state() != DataTypeController::NOT_RUNNING &&
       dtc->state() != DataTypeController::STOPPING) {

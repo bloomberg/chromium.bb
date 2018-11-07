@@ -596,7 +596,10 @@ TEST_F(SyncModelAssociationManagerTest, StopDataType) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
 
-  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+  model_association_manager.StopDatatype(
+      BOOKMARKS, DISABLE_SYNC,
+      SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                "Data type is unready.", BOOKMARKS));
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
@@ -612,7 +615,10 @@ TEST_F(SyncModelAssociationManagerTest, StopDataType_NotRunning) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 
-  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+  model_association_manager.StopDatatype(
+      BOOKMARKS, DISABLE_SYNC,
+      SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                "Data type is unready.", BOOKMARKS));
 
   // The state should still be not running.
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
