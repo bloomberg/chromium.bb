@@ -33289,6 +33289,15 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Http Live Stream Type"/>
 </enum>
 
+<enum name="MediaVideoHeight">
+  <int value="0" label="~360 or lower"/>
+  <int value="1" label="~480"/>
+  <int value="2" label="~720"/>
+  <int value="3" label="~1080"/>
+  <int value="4" label="~1440"/>
+  <int value="5" label="~2160 or higher"/>
+</enum>
+
 <enum name="MemCacheWriteResult">
   <int value="0" label="Success"/>
   <int value="1" label="Invalid Argument"/>
