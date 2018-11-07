@@ -145,8 +145,8 @@ have any Debug build-bots, it may be more broken than Release.
 
 ## Build
 
-Currently, not all targets build on Fuchsia. You can build base\_unittests, for
-example:
+All targets included in the GN build should build successfully. You can also
+build a specific binary, for example, base\_unittests:
 
 ```shell
 $ autoninja -C out/fuchsia base_unittests
