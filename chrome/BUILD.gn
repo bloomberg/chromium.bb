@@ -1634,25 +1634,27 @@ if (is_chrome_branded && !is_android) {
   }
 }
 
-chrome_paks("packed_resources") {
-  if (is_mac) {
-    output_dir = "$root_gen_dir/repack"
-    copy_data_to_bundle = true
-  } else {
-    output_dir = root_out_dir
-  }
+if (!is_android) {
+  chrome_paks("packed_resources") {
+    if (is_mac) {
+      output_dir = "$root_gen_dir/repack"
+      copy_data_to_bundle = true
+    } else {
+      output_dir = root_out_dir
+    }
 
-  if (enable_resource_whitelist_generation) {
-    repack_whitelist = chrome_resource_whitelist
-    deps = [
-      "//chrome:resource_whitelist",
-    ]
-  }
+    if (enable_resource_whitelist_generation) {
+      repack_whitelist = chrome_resource_whitelist
+      deps = [
+        "//chrome:resource_whitelist",
+      ]
+    }
 
-  if (is_chrome_branded && !is_mac && !is_android) {
-    public_deps = [
-      ":default_apps",
-    ]
+    if (is_chrome_branded && !is_mac) {
+      public_deps = [
+        ":default_apps",
+      ]
+    }
   }
 }
 
