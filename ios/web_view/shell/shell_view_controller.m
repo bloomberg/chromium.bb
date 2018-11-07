@@ -20,7 +20,8 @@ NSString* const kWebViewShellAddressFieldAccessibilityLabel = @"Address field";
 NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
 
-@interface ShellViewController ()<CWVNavigationDelegate,
+@interface ShellViewController ()<CWVDownloadTaskDelegate,
+                                  CWVNavigationDelegate,
                                   CWVUIDelegate,
                                   CWVScriptCommandHandler,
                                   UITextFieldDelegate>
@@ -38,6 +39,13 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @property(nonatomic, strong) ShellAutofillDelegate* autofillDelegate;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) ShellTranslationDelegate* translationDelegate;
+// The on-going download task if any.
+@property(nonatomic, strong, nullable) CWVDownloadTask* downloadTask;
+// The path to a local file which the download task is writing to.
+@property(nonatomic, strong, nullable) NSString* downloadFilePath;
+// A controller to show a "Share" menu for the downloaded file.
+@property(nonatomic, strong, nullable)
+    UIDocumentInteractionController* documentInteractionController;
 
 - (void)back;
 - (void)forward;
@@ -58,6 +66,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @synthesize toolbar = _toolbar;
 @synthesize webView = _webView;
 @synthesize translationDelegate = _translationDelegate;
+@synthesize downloadTask = _downloadTask;
+@synthesize downloadFilePath = _downloadFilePath;
+@synthesize documentInteractionController = _documentInteractionController;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -518,6 +529,18 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   decisionHandler(CWVSSLErrorDecisionDoNothing);
 }
 
+- (void)webView:(CWVWebView*)webView
+    didRequestDownloadWithTask:(CWVDownloadTask*)task {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  self.downloadTask = task;
+  NSString* documentDirectoryPath = NSSearchPathForDirectoriesInDomains(
+      NSDocumentDirectory, NSUserDomainMask, YES)[0];
+  self.downloadFilePath = [documentDirectoryPath
+      stringByAppendingPathComponent:task.suggestedFileName];
+  task.delegate = self;
+  [task startDownloadToLocalFileAtPath:self.downloadFilePath];
+}
+
 #pragma mark CWVScriptCommandHandler
 
 - (BOOL)webView:(CWVWebView*)webView
@@ -525,6 +548,27 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
           fromMainFrame:(BOOL)fromMainFrame {
   NSLog(@"%@ command.content=%@", NSStringFromSelector(_cmd), command.content);
   return YES;
+}
+
+#pragma mark CWVDownloadTaskDelegate
+
+- (void)downloadTask:(CWVDownloadTask*)downloadTask
+    didFinishWithError:(nullable NSError*)error {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  if (!error) {
+    NSURL* url = [NSURL fileURLWithPath:self.downloadFilePath];
+    self.documentInteractionController =
+        [UIDocumentInteractionController interactionControllerWithURL:url];
+    [self.documentInteractionController presentOptionsMenuFromRect:CGRectZero
+                                                            inView:self.view
+                                                          animated:YES];
+  }
+  self.downloadTask = nil;
+  self.downloadFilePath = nil;
+}
+
+- (void)downloadTaskProgressDidChange:(CWVDownloadTask*)downloadTask {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
 @end

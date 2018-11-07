@@ -10,6 +10,7 @@
 #import "cwv_navigation_type.h"
 
 @protocol CRIWVTranslateDelegate;
+@class CWVDownloadTask;
 @class CWVSSLStatus;
 @class CWVWebView;
 
@@ -71,6 +72,20 @@ typedef NS_ENUM(NSInteger, CWVSSLErrorDecision) {
                       overridable:(BOOL)overridable
                   decisionHandler:
                       (void (^)(CWVSSLErrorDecision))decisionHandler;
+
+// Called when the web view requests to start downloading a file.
+//
+// The delegate can either:
+//   - call [task startDownloadToLocalFileWithPath:] to start download
+//   immediately. - call [task startDownloadToLocalFileWithPath:] later. - do
+//   nothing in the method, to ignore the request.
+// It does nothing when the method is not implemented.
+//
+// The delegate must retain a strong reference to |task| until it completes
+// downloading or is cancelled. Otherwise it is deallocated immediately after
+// exiting this method.
+- (void)webView:(CWVWebView*)webView
+    didRequestDownloadWithTask:(CWVDownloadTask*)task;
 
 // Notifies the delegate that web view process was terminated
 // (usually by crashing, though possibly by other means).
