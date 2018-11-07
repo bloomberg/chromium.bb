@@ -177,9 +177,20 @@ using web::test::ElementSelector;
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebViewContainingElement:selector];
+
   // Potentially scroll into view if below the fold.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:WebViewScrollElementToVisible(web_state, selector)];
+
+  // Calling WebViewTapElement right after WebViewScrollElement caused flaky
+  // issues with the wrong location being provided for the tap target,
+  // seemingly caused by the screen not redrawing in-between these two actions.
+  // We force a brief wait here to avoid this issue.
+  [[GREYCondition conditionWithName:@"forced wait to allow for redraw"
+                              block:^BOOL {
+                                return false;
+                              }] waitWithTimeout:0.1];
+
   // Tap on the element.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:web::WebViewTapElement(web_state, selector)];
@@ -356,7 +367,7 @@ using web::test::ElementSelector;
       [self getStringFromDictionaryWithKey:"expectedValue"]);
 
   NSString* predictionType = base::mac::ObjCCastStrict<NSString>([self
-      executeJavascript:"return target.getAttribute('placeholder');"
+      executeJavascript:"return target.placeholder;"
                onTarget:[self selectorForTarget]]);
 
   NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>(
