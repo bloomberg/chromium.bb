@@ -19,6 +19,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
+    bool is_redirect,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
@@ -34,8 +35,16 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     return previews_state;
   }
 
-  if (previews_decider->ShouldAllowPreview(previews_data, url, is_reload,
-                                           previews::PreviewsType::OFFLINE)) {
+  // Offline previews state should not be updated during a redirect. The Offline
+  // Previews URLLoader will not receive an updated PreviewsState, so the state
+  // should stay consistent throughout the navigation.
+  if (is_redirect) {
+    // Keep the same OFFLINE previews bit as the original URL.
+    previews_state |=
+        (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
+  } else if (previews_decider->ShouldAllowPreview(
+                 previews_data, url, is_reload,
+                 previews::PreviewsType::OFFLINE)) {
     previews_state |= content::OFFLINE_PAGE_ON;
   }
 

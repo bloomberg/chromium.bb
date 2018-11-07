@@ -1235,13 +1235,14 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
 
   content::PreviewsState DetermineAllowedPreviews(
       content::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle) override {
+      content::NavigationHandle* navigation_handle,
+      const GURL& current_navigation_url) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     EXPECT_FALSE(determine_allowed_previews_called_);
     determine_allowed_previews_called_ = true;
     main_frame_url_seen_ = true;
-    EXPECT_EQ(main_frame_url_, navigation_handle->GetURL());
+    EXPECT_EQ(main_frame_url_, current_navigation_url);
     return previews_state_;
   }
 

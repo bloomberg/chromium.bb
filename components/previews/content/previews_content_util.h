@@ -23,6 +23,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
+    bool is_redirect,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider);
 

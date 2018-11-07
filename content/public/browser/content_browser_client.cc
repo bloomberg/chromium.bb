@@ -864,7 +864,8 @@ void ContentBrowserClient::OnNetworkServiceDataUseUpdate(
 
 content::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const GURL& current_navigation_url) {
   return content::PREVIEWS_OFF;
 }
 

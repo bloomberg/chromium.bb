@@ -523,7 +523,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   content::PreviewsState DetermineAllowedPreviews(
       content::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle) override;
+      content::NavigationHandle* navigation_handle,
+      const GURL& current_navigation_url) override;
 
   content::PreviewsState DetermineCommittedPreviews(
       content::PreviewsState initial_state,
