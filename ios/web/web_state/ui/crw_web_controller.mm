@@ -4915,7 +4915,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (context && !IsPlaceholderUrl(context->GetUrl())) {
     [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
-    [self setNavigationItemTitle:[_webView title]];
+    if (!context->IsLoadingErrorPage()) {
+      [self setNavigationItemTitle:[_webView title]];
+    }
   }
 
   // Report cases where SSL cert is missing for a secure connection.
