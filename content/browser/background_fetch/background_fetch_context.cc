@@ -107,6 +107,8 @@ void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   data_manager_->GetDeveloperIdsForServiceWorker(service_worker_registration_id,
                                                  origin, std::move(callback));
 }
@@ -203,6 +205,7 @@ void BackgroundFetchContext::DidGetPermission(
   std::move(fetch_callbacks_[registration_id])
       .Run(blink::mojom::BackgroundFetchError::PERMISSION_DENIED,
            base::nullopt);
+  fetch_callbacks_.erase(registration_id);
 }
 
 void BackgroundFetchContext::GetIconDisplaySize(
@@ -277,10 +280,8 @@ void BackgroundFetchContext::DidGetMatchingRequests(
     std::vector<BackgroundFetchSettledFetch> settled_fetches) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(crbug.com/863016): Update to 0u once we've stopped sending an
-  // uncached response.
   if (error != blink::mojom::BackgroundFetchError::NONE)
-    DCHECK_EQ(settled_fetches.size(), 1u);
+    DCHECK(settled_fetches.empty());
 
   std::move(callback).Run(std::move(settled_fetches));
 }
