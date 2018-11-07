@@ -122,7 +122,23 @@
       consoleView._prompt.setText('Bar' + '\n'.repeat(viewportHeight));
 
       dumpAndContinue(next);
-    }
+    },
+
+    async function testShouldStickWhenEnteringCommandAndPromptIsOutOfView(next) {
+      consoleView._prompt.focus();
+      consoleView._prompt.setText('1');
+
+      // Set scrollTop such that prompt is not in visible area.
+      viewport.setStickToBottom(false);
+      viewport.element.scrollTop = 0;
+      await ConsoleTestRunner.waitForPendingViewportUpdates();
+
+      TestRunner.addResult(`Sending key: Enter`);
+      eventSender.keyDown('Enter');
+      await ConsoleTestRunner.waitForPendingViewportUpdates();
+
+      dumpAndContinue(next);
+    },
   ];
 
   function dumpAndContinue(callback) {
