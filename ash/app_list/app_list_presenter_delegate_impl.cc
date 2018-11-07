@@ -85,13 +85,6 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
           ->GetContainer(IsHomeLauncherEnabledInTabletMode()
                              ? kShellWindowId_AppListTabletModeContainer
                              : kShellWindowId_AppListContainer);
-
-  // Snap the window bounds to fit the screen size (See
-  // https://crbug.com/884889).
-  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
-      parent_window->GetBoundsInScreen(), parent_window);
-  parent_window->SetBoundsInScreen(
-      bounds, Shell::Get()->display_manager()->GetDisplayForId(display_id));
   params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = Shell::Get()
@@ -101,6 +94,7 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
 
   view->Initialize(params);
 
+  SnapAppListBoundsToDisplayEdge();
   wm::GetWindowState(view->GetWidget()->GetNativeWindow())
       ->set_ignored_by_shelf(true);
   Shell::Get()->AddPreTargetHandler(this);
@@ -192,13 +186,8 @@ void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
   if (!presenter_->GetWindow())
     return;
 
-  // Snap the window bounds to fit the screen size (See
-  // https://crbug.com/884889).
-  aura::Window* parent_window = presenter_->GetWindow()->parent();
-  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
-      parent_window->GetBoundsInScreen(), parent_window);
-  parent_window->SetBoundsInScreen(bounds, display);
   view_->OnParentWindowBoundsChanged();
+  SnapAppListBoundsToDisplayEdge();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,6 +258,14 @@ void AppListPresenterDelegateImpl::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_PRESS) {
     ProcessLocatedEvent(event);
   }
+}
+
+void AppListPresenterDelegateImpl::SnapAppListBoundsToDisplayEdge() {
+  CHECK(view_ && view_->GetWidget());
+  aura::Window* window = view_->GetWidget()->GetNativeView();
+  const gfx::Rect bounds =
+      ash::screen_util::SnapBoundsToDisplayEdge(window->bounds(), window);
+  window->SetBounds(bounds);
 }
 
 }  // namespace ash

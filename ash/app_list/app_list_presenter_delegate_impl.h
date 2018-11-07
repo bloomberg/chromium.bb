@@ -75,6 +75,10 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // Snaps the app list window bounds to fit the screen size. (See
+  // https://crbug.com/884889).
+  void SnapAppListBoundsToDisplayEdge();
+
   // Whether the app list is visible (or in the process of being shown).
   bool is_visible_ = false;
 
