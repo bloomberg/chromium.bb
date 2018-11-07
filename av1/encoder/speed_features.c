@@ -280,6 +280,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 4) {
+    sf->use_intra_txb_hash = 0;
+    sf->use_inter_txb_hash = 0;
+    sf->use_mb_rd_hash = 0;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
     sf->use_square_partition_only_threshold =
