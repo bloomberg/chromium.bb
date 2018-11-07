@@ -30,9 +30,6 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
 
-using base::Time;
-using namespace signin_internals_util;
-
 namespace {
 
 // The maximum number of the refresh token events. Only the last
@@ -76,15 +73,16 @@ void AddCookieEntry(base::ListValue* accounts_list,
   accounts_list->Append(std::move(entry));
 }
 
-std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
+std::string SigninStatusFieldToLabel(
+    signin_internals_util::UntimedSigninStatusField field) {
   switch (field) {
-    case ACCOUNT_ID:
+    case signin_internals_util::ACCOUNT_ID:
       return "Account Id";
-    case GAIA_ID:
+    case signin_internals_util::GAIA_ID:
       return "Gaia Id";
-    case USERNAME:
+    case signin_internals_util::USERNAME:
       return "Username";
-    case UNTIMED_FIELDS_END:
+    case signin_internals_util::UNTIMED_FIELDS_END:
       NOTREACHED();
       return std::string();
   }
@@ -119,17 +117,18 @@ std::string TokenServiceLoadCredentialsStateToLabel(
 }
 
 #if !defined (OS_CHROMEOS)
-std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
+std::string SigninStatusFieldToLabel(
+    signin_internals_util::TimedSigninStatusField field) {
   switch (field) {
-    case AUTHENTICATION_RESULT_RECEIVED:
+    case signin_internals_util::AUTHENTICATION_RESULT_RECEIVED:
       return "Gaia Authentication Result";
-    case REFRESH_TOKEN_RECEIVED:
+    case signin_internals_util::REFRESH_TOKEN_RECEIVED:
       return "RefreshToken Received";
-    case SIGNIN_STARTED:
+    case signin_internals_util::SIGNIN_STARTED:
       return "SigninManager Started";
-    case SIGNIN_COMPLETED:
+    case signin_internals_util::SIGNIN_COMPLETED:
       return "SigninManager Completed";
-    case TIMED_FIELDS_END:
+    case signin_internals_util::TIMED_FIELDS_END:
       NOTREACHED();
       return "Error";
   }
@@ -139,7 +138,7 @@ std::string SigninStatusFieldToLabel(TimedSigninStatusField field) {
 #endif  // !defined (OS_CHROMEOS)
 
 void SetPref(PrefService* prefs,
-             TimedSigninStatusField field,
+             signin_internals_util::TimedSigninStatusField field,
              const std::string& time,
              const std::string& value) {
   std::string value_pref = SigninStatusFieldToString(field) + ".value";
@@ -149,7 +148,7 @@ void SetPref(PrefService* prefs,
 }
 
 void GetPref(PrefService* prefs,
-             TimedSigninStatusField field,
+             signin_internals_util::TimedSigninStatusField field,
              std::string* time,
              std::string* value) {
   std::string value_pref = SigninStatusFieldToString(field) + ".value";
@@ -158,7 +157,8 @@ void GetPref(PrefService* prefs,
   *time = prefs->GetString(time_pref);
 }
 
-void ClearPref(PrefService* prefs, TimedSigninStatusField field) {
+void ClearPref(PrefService* prefs,
+               signin_internals_util::TimedSigninStatusField field) {
   std::string value_pref = SigninStatusFieldToString(field) + ".value";
   std::string time_pref = SigninStatusFieldToString(field) + ".time";
   prefs->ClearPref(value_pref);
@@ -202,6 +202,19 @@ AboutSigninInternals::AboutSigninInternals(
 
 AboutSigninInternals::~AboutSigninInternals() {}
 
+signin_internals_util::UntimedSigninStatusField& operator++(
+    signin_internals_util::UntimedSigninStatusField& field) {
+  field =
+      static_cast<signin_internals_util::UntimedSigninStatusField>(field + 1);
+  return field;
+}
+
+signin_internals_util::TimedSigninStatusField& operator++(
+    signin_internals_util::TimedSigninStatusField& field) {
+  field = static_cast<signin_internals_util::TimedSigninStatusField>(field + 1);
+  return field;
+}
+
 // static
 void AboutSigninInternals::RegisterPrefs(PrefRegistrySimple* user_prefs) {
   // SigninManager information for about:signin-internals.
@@ -209,19 +222,18 @@ void AboutSigninInternals::RegisterPrefs(PrefRegistrySimple* user_prefs) {
   // TODO(rogerta): leaving untimed fields here for now because legacy
   // profiles still have these prefs.  In three or four version from M43
   // we can probably remove them.
-  for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
-    const std::string pref_path =
-        SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
+  for (signin_internals_util::UntimedSigninStatusField i =
+           signin_internals_util::UNTIMED_FIELDS_BEGIN;
+       i < signin_internals_util::UNTIMED_FIELDS_END; ++i) {
+    const std::string pref_path = SigninStatusFieldToString(i);
     user_prefs->RegisterStringPref(pref_path, std::string());
   }
 
-  for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
-    const std::string value =
-        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
-        ".value";
-    const std::string time =
-        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
-        ".time";
+  for (signin_internals_util::TimedSigninStatusField i =
+           signin_internals_util::TIMED_FIELDS_BEGIN;
+       i < signin_internals_util::TIMED_FIELDS_END; ++i) {
+    const std::string value = SigninStatusFieldToString(i) + ".value";
+    const std::string time = SigninStatusFieldToString(i) + ".time";
     user_prefs->RegisterStringPref(value, std::string());
     user_prefs->RegisterStringPref(time, std::string());
   }
@@ -238,13 +250,13 @@ void AboutSigninInternals::RemoveSigninObserver(
 }
 
 void AboutSigninInternals::NotifySigninValueChanged(
-    const TimedSigninStatusField& field,
+    const signin_internals_util::TimedSigninStatusField& field,
     const std::string& value) {
-  unsigned int field_index = field - TIMED_FIELDS_BEGIN;
+  unsigned int field_index = field - signin_internals_util::TIMED_FIELDS_BEGIN;
   DCHECK(field_index >= 0 &&
          field_index < signin_status_.timed_signin_fields.size());
 
-  Time now = Time::NowFromSystemTime();
+  base::Time now = base::Time::NowFromSystemTime();
   std::string time_as_str =
       base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(now));
   TimedSigninStatusValue timed_value(value, time_as_str);
@@ -256,10 +268,11 @@ void AboutSigninInternals::NotifySigninValueChanged(
 
   // If the user is restarting a sign in process, clear the fields that are
   // to come.
-  if (field == AUTHENTICATION_RESULT_RECEIVED) {
-    ClearPref(client_->GetPrefs(), REFRESH_TOKEN_RECEIVED);
-    ClearPref(client_->GetPrefs(), SIGNIN_STARTED);
-    ClearPref(client_->GetPrefs(), SIGNIN_COMPLETED);
+  if (field == signin_internals_util::AUTHENTICATION_RESULT_RECEIVED) {
+    ClearPref(client_->GetPrefs(),
+              signin_internals_util::REFRESH_TOKEN_RECEIVED);
+    ClearPref(client_->GetPrefs(), signin_internals_util::SIGNIN_STARTED);
+    ClearPref(client_->GetPrefs(), signin_internals_util::SIGNIN_COMPLETED);
   }
 
   NotifyObservers();
@@ -271,13 +284,16 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     return;
 
   PrefService* pref_service = client_->GetPrefs();
-  for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
+  for (signin_internals_util::TimedSigninStatusField i =
+           signin_internals_util::TIMED_FIELDS_BEGIN;
+       i < signin_internals_util::TIMED_FIELDS_END; ++i) {
     std::string time_str;
     std::string value_str;
-    GetPref(pref_service, static_cast<TimedSigninStatusField>(i),
-            &time_str, &value_str);
+    GetPref(pref_service, i, &time_str, &value_str);
     TimedSigninStatusValue value(value_str, time_str);
-    signin_status_.timed_signin_fields[i - TIMED_FIELDS_BEGIN] = value;
+    signin_status_
+        .timed_signin_fields[i - signin_internals_util::TIMED_FIELDS_BEGIN] =
+        value;
   }
 
   // TODO(rogerta): Get status and timestamps for oauth2 tokens.
@@ -408,12 +424,14 @@ void AboutSigninInternals::OnAccessTokenRemoved(
 }
 
 void AboutSigninInternals::OnRefreshTokenReceived(const std::string& status) {
-  NotifySigninValueChanged(REFRESH_TOKEN_RECEIVED, status);
+  NotifySigninValueChanged(signin_internals_util::REFRESH_TOKEN_RECEIVED,
+                           status);
 }
 
 void AboutSigninInternals::OnAuthenticationResultReceived(
     const std::string& status) {
-  NotifySigninValueChanged(AUTHENTICATION_RESULT_RECEIVED, status);
+  NotifySigninValueChanged(
+      signin_internals_util::AUTHENTICATION_RESULT_RECEIVED, status);
 }
 
 void AboutSigninInternals::OnErrorChanged() {
@@ -527,7 +545,7 @@ AboutSigninInternals::TokenInfo::ToValue() const {
 }
 
 AboutSigninInternals::RefreshTokenEvent::RefreshTokenEvent()
-    : timestamp(Time::Now()){};
+    : timestamp(base::Time::Now()){};
 
 std::string AboutSigninInternals::RefreshTokenEvent::GetTypeAsString() const {
   switch (type) {
@@ -543,7 +561,7 @@ std::string AboutSigninInternals::RefreshTokenEvent::GetTypeAsString() const {
 }
 
 AboutSigninInternals::SigninStatus::SigninStatus()
-    : timed_signin_fields(TIMED_FIELDS_COUNT) {}
+    : timed_signin_fields(signin_internals_util::TIMED_FIELDS_COUNT) {}
 
 AboutSigninInternals::SigninStatus::~SigninStatus() {}
 
@@ -595,16 +613,13 @@ AboutSigninInternals::SigninStatus::ToValue(
   if (signin_manager->IsAuthenticated()) {
     std::string account_id = signin_manager->GetAuthenticatedAccountId();
     AddSectionEntry(basic_info,
-                    SigninStatusFieldToLabel(
-                        static_cast<UntimedSigninStatusField>(ACCOUNT_ID)),
+                    SigninStatusFieldToLabel(signin_internals_util::ACCOUNT_ID),
                     account_id);
     AddSectionEntry(basic_info,
-                    SigninStatusFieldToLabel(
-                        static_cast<UntimedSigninStatusField>(GAIA_ID)),
+                    SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
                     account_tracker->GetAccountInfo(account_id).gaia);
     AddSectionEntry(basic_info,
-                    SigninStatusFieldToLabel(
-                        static_cast<UntimedSigninStatusField>(USERNAME)),
+                    SigninStatusFieldToLabel(signin_internals_util::USERNAME),
                     signin_manager->GetAuthenticatedAccountInfo().email);
     if (signin_error_controller->HasError()) {
       const std::string error_account_id =
@@ -625,21 +640,25 @@ AboutSigninInternals::SigninStatus::ToValue(
   base::ListValue* detailed_info =
       AddSection(signin_info.get(), "Last Signin Details");
   signin_status->Set("signin_info", std::move(signin_info));
-  for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
-    const std::string status_field_label =
-        SigninStatusFieldToLabel(static_cast<TimedSigninStatusField>(i));
+  for (signin_internals_util::TimedSigninStatusField i =
+           signin_internals_util::TIMED_FIELDS_BEGIN;
+       i < signin_internals_util::TIMED_FIELDS_END; ++i) {
+    const std::string status_field_label = SigninStatusFieldToLabel(i);
 
-    AddSectionEntry(detailed_info,
-                    status_field_label,
-                    timed_signin_fields[i - TIMED_FIELDS_BEGIN].first,
-                    timed_signin_fields[i - TIMED_FIELDS_BEGIN].second);
+    AddSectionEntry(
+        detailed_info, status_field_label,
+        timed_signin_fields[i - signin_internals_util::TIMED_FIELDS_BEGIN]
+            .first,
+        timed_signin_fields[i - signin_internals_util::TIMED_FIELDS_BEGIN]
+            .second);
   }
 
   const net::BackoffEntry* cookie_manager_backoff_entry =
       cookie_manager_service->GetBackoffEntry();
 
   if (cookie_manager_backoff_entry->ShouldRejectRequest()) {
-    Time next_retry_time = Time::NowFromSystemTime() +
+    base::Time next_retry_time =
+        base::Time::NowFromSystemTime() +
         cookie_manager_backoff_entry->GetTimeUntilRelease();
 
     std::string next_retry_time_as_str =
@@ -657,7 +676,8 @@ AboutSigninInternals::SigninStatus::ToValue(
 
   if (token_service_backoff_entry &&
       token_service_backoff_entry->ShouldRejectRequest()) {
-    Time next_retry_time = Time::NowFromSystemTime() +
+    base::Time next_retry_time =
+        base::Time::NowFromSystemTime() +
         token_service_backoff_entry->GetTimeUntilRelease();
 
     std::string next_retry_time_as_str =

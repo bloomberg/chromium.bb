@@ -24,8 +24,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 
-using namespace signin_internals_util;
-
 SigninManagerBase::SigninManagerBase(
     SigninClient* client,
     AccountTrackerService* account_tracker_service,
@@ -249,17 +247,17 @@ void SigninManagerBase::RemoveObserver(Observer* observer) {
 }
 
 void SigninManagerBase::AddSigninDiagnosticsObserver(
-    SigninDiagnosticsObserver* observer) {
+    signin_internals_util::SigninDiagnosticsObserver* observer) {
   signin_diagnostics_observers_.AddObserver(observer);
 }
 
 void SigninManagerBase::RemoveSigninDiagnosticsObserver(
-    SigninDiagnosticsObserver* observer) {
+    signin_internals_util::SigninDiagnosticsObserver* observer) {
   signin_diagnostics_observers_.RemoveObserver(observer);
 }
 
 void SigninManagerBase::NotifyDiagnosticsObservers(
-    const TimedSigninStatusField& field,
+    const signin_internals_util::TimedSigninStatusField& field,
     const std::string& value) {
   for (auto& observer : signin_diagnostics_observers_)
     observer.NotifySigninValueChanged(field, value);
