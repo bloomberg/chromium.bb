@@ -1493,6 +1493,126 @@ TEST(FormParserTest, NoEmptyValues) {
   });
 }
 
+// Check that multiple usernames in server hints are handled properly.
+TEST(FormParserTest, MultipleUsernames) {
+  CheckTestData({
+      {
+          "More than two usernames are ignored.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+      {
+          "No current passwod -> ignore additional usernames.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+      {
+          "2 current passwods -> ignore additional usernames.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+          },
+      },
+      {
+          "No new passwod -> ignore additional usernames.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+          },
+      },
+      {
+          "Two usernames in sign-in, sign-up order.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+      {
+          "Two usernames in sign-up, sign-in order.",
+          {
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+          },
+      },
+      {
+          "Two usernames in sign-in, sign-up order; sign-in is pre-filled.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .properties_mask = FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
+               .prediction = {.type = autofill::USERNAME}},
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::PASSWORD}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+  });
+}
+
 TEST(FormParserTest, HistogramsForUsernameDetectionMethod) {
   struct HistogramTestCase {
     FormParsingTestCase parsing_data;
