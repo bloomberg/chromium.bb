@@ -103,13 +103,11 @@
 
   function dumpUserTimings() {
     var model = PerformanceTestRunner.timelineModel();
-    var asyncEvents;
     for (const track of model.tracks()) {
-      if (track.type === TimelineModel.TimelineModel.TrackType.Timings) {
-        for (const event of track.asyncEvents) {
-          if (event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming))
-            TestRunner.addResult(event.name);
-        }
+      if (track.type !== TimelineModel.TimelineModel.TrackType.Timings) continue;
+      for (const event of track.asyncEvents) {
+        if (event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming))
+          TestRunner.addResult(event.name);
       }
     }
   }
