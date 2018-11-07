@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 
 class GrContext;
+typedef unsigned int GLenum;
 
 namespace gpu {
 namespace gles2 {
@@ -66,7 +67,8 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
   }
 };
 
-class SharedImageRepresentationGLTexture : public SharedImageRepresentation {
+class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
+    : public SharedImageRepresentation {
  public:
   SharedImageRepresentationGLTexture(SharedImageManager* manager,
                                      SharedImageBacking* backing,
@@ -74,9 +76,14 @@ class SharedImageRepresentationGLTexture : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual gles2::Texture* GetTexture() = 0;
+
+  // TODO(ericrk): Make these pure virtual and ensure real implementations
+  // exist.
+  virtual bool BeginAccess(GLenum mode);
+  virtual void EndAccess() {}
 };
 
-class SharedImageRepresentationGLTexturePassthrough
+class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
     : public SharedImageRepresentation {
  public:
   SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
@@ -86,6 +93,11 @@ class SharedImageRepresentationGLTexturePassthrough
 
   virtual const scoped_refptr<gles2::TexturePassthrough>&
   GetTexturePassthrough() = 0;
+
+  // TODO(ericrk): Make these pure virtual and ensure real implementations
+  // exist.
+  virtual bool BeginAccess(GLenum mode);
+  virtual void EndAccess() {}
 };
 
 class SharedImageRepresentationSkia : public SharedImageRepresentation {

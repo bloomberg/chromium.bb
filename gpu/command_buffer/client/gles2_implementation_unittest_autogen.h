@@ -3194,4 +3194,15 @@ TEST_F(GLES2ImplementationTest, FramebufferTextureMultiviewLayeredANGLE) {
   gl_->FramebufferTextureMultiviewLayeredANGLE(1, 2, 3, 4, 5, 6);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, EndSharedImageAccessDirectCHROMIUM) {
+  struct Cmds {
+    cmds::EndSharedImageAccessDirectCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->EndSharedImageAccessDirectCHROMIUM(1);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

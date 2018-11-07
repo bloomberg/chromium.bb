@@ -271,6 +271,12 @@ class ShaderTypeValidator {
 };
 ShaderTypeValidator shader_type;
 
+class SharedImageAccessModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+SharedImageAccessModeValidator shared_image_access_mode;
+
 ValueValidator<GLenum> src_blend_factor;
 class StencilOpValidator {
  public:

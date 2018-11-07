@@ -827,10 +827,6 @@ error::Error DoProduceTextureDirectCHROMIUM(GLuint texture_client_id,
                                             const volatile GLbyte* mailbox);
 error::Error DoCreateAndConsumeTextureINTERNAL(GLuint texture_client_id,
                                                const volatile GLbyte* mailbox);
-error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
-    GLuint client_id,
-    GLenum internal_format,
-    const volatile GLbyte* mailbox);
 error::Error DoBindUniformLocationCHROMIUM(GLuint program,
                                            GLint location,
                                            const char* name);
@@ -1075,4 +1071,11 @@ error::Error DoInitializeDiscardableTextureCHROMIUM(
     ServiceDiscardableHandle&& discardable_handle);
 error::Error DoUnlockDiscardableTextureCHROMIUM(GLuint texture_id);
 error::Error DoLockDiscardableTextureCHROMIUM(GLuint texture_id);
+error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint client_id,
+    GLenum internal_format,
+    const volatile GLbyte* mailbox);
+error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
+                                                    GLenum mode);
+error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

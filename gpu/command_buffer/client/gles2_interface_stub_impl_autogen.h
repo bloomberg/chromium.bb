@@ -969,11 +969,6 @@ GLuint GLES2InterfaceStub::CreateAndConsumeTextureCHROMIUM(
     const GLbyte* /* mailbox */) {
   return 0;
 }
-GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum /* internalFormat */,
-    const GLbyte* /* mailbox */) {
-  return 0;
-}
 void GLES2InterfaceStub::BindUniformLocationCHROMIUM(GLuint /* program */,
                                                      GLint /* location */,
                                                      const char* /* name */) {}
@@ -1250,4 +1245,14 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
     GLint /* baseViewIndex */,
     GLsizei /* numViews */) {}
 void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
+GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum /* internalFormat */,
+    const GLbyte* /* mailbox */) {
+  return 0;
+}
+void GLES2InterfaceStub::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint /* texture */,
+    GLenum /* mode */) {}
+void GLES2InterfaceStub::EndSharedImageAccessDirectCHROMIUM(
+    GLuint /* texture */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

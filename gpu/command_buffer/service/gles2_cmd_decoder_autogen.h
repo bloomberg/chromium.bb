@@ -4754,38 +4754,6 @@ error::Error GLES2DecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   return error::kNoError;
 }
 
-error::Error
-GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate&
-      c = *static_cast<const volatile gles2::cmds::
-                           CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
-          cmd_data);
-  GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
-    return error::kOutOfBounds;
-  }
-  if (data_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
-  if (!validators_->texture_internal_format.IsValid(internalFormat)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(
-        "glCreateAndTexStorage2DSharedImageINTERNAL", internalFormat,
-        "internalFormat");
-    return error::kNoError;
-  }
-  if (mailbox == nullptr) {
-    return error::kOutOfBounds;
-  }
-  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalFormat, mailbox);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleBindTexImage2DCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5402,6 +5370,68 @@ error::Error GLES2DecoderImpl::HandleMaxShaderCompilerThreadsKHR(
 
   GLuint count = static_cast<GLuint>(c.count);
   api()->glMaxShaderCompilerThreadsKHRFn(count);
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate&
+      c = *static_cast<const volatile gles2::cmds::
+                           CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  uint32_t data_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
+      c, data_size, immediate_data_size);
+  if (!validators_->texture_internal_format.IsValid(internalFormat)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glCreateAndTexStorage2DSharedImageINTERNAL", internalFormat,
+        "internalFormat");
+    return error::kNoError;
+  }
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
+  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalFormat, mailbox);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBeginSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  if (!validators_->shared_image_access_mode.IsValid(mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBeginSharedImageAccessDirectCHROMIUM",
+                                    mode, "mode");
+    return error::kNoError;
+  }
+  DoBeginSharedImageAccessDirectCHROMIUM(texture, mode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEndSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  DoEndSharedImageAccessDirectCHROMIUM(texture);
   return error::kNoError;
 }
 

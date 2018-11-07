@@ -2023,6 +2023,12 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8AF4, "GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM",
     },
     {
+        0x8AF5, "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM",
+    },
+    {
+        0x8AF6, "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM",
+    },
+    {
         0x8B30, "GL_FRAGMENT_SHADER",
     },
     {
@@ -5916,6 +5922,17 @@ std::string GLES2Util::GetStringShaderType(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_VERTEX_SHADER, "GL_VERTEX_SHADER"},
       {GL_FRAGMENT_SHADER, "GL_FRAGMENT_SHADER"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           base::size(string_table), value);
+}
+
+std::string GLES2Util::GetStringSharedImageAccessMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+       "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM"},
+      {GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,
+       "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            base::size(string_table), value);

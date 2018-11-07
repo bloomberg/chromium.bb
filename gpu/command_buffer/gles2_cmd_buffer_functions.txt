@@ -293,8 +293,6 @@ GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GL
 GL_APICALL void         GL_APIENTRY glProduceTextureDirectCHROMIUM (GLidBindTexture texture, GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureCHROMIUM (const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glCreateAndConsumeTextureINTERNAL (GLuint texture, const GLbyte* mailbox);
-GL_APICALL GLuint       GL_APIENTRY glCreateAndTexStorage2DSharedImageCHROMIUM (GLenumTextureInternalFormat internalFormat, const GLbyte* mailbox);
-GL_APICALL void         GL_APIENTRY glCreateAndTexStorage2DSharedImageINTERNAL (GLuint texture, GLenumTextureInternalFormat internalFormat, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glBindUniformLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
 GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
 GL_APICALL void         GL_APIENTRY glBindTexImage2DWithInternalformatCHROMIUM (GLenumTextureBindTarget target, GLenumTextureInternalFormat internalformat, GLint imageId);
@@ -408,3 +406,9 @@ GL_APICALL void         GL_APIENTRY glFramebufferTextureMultiviewLayeredANGLE (G
 
 // Extension KHR_parallel_shader_compile
 GL_APICALL void         GL_APIENTRY glMaxShaderCompilerThreadsKHR (GLuint count);
+
+// Extension CHROMIUM_shared_image
+GL_APICALL GLuint       GL_APIENTRY glCreateAndTexStorage2DSharedImageCHROMIUM (GLenumTextureInternalFormat internalFormat, const GLbyte* mailbox);
+GL_APICALL void         GL_APIENTRY glCreateAndTexStorage2DSharedImageINTERNAL (GLuint texture, GLenumTextureInternalFormat internalFormat, const GLbyte* mailbox);
+GL_APICALL void         GL_APIENTRY glBeginSharedImageAccessDirectCHROMIUM (GLuint texture, GLenumSharedImageAccessMode mode);
+GL_APICALL void         GL_APIENTRY glEndSharedImageAccessDirectCHROMIUM (GLuint texture);
