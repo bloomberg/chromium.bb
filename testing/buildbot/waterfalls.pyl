@@ -2593,6 +2593,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'args': [
+          '--qemu-require-kvm',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -2608,6 +2611,9 @@
         'additional_compile_targets': [
           'cast_shell',
           'cast_test_lists',
+        ],
+        'args': [
+          '--qemu-require-kvm',
         ],
       },
       'Leak Detection Linux': {

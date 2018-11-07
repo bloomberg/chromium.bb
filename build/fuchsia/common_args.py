@@ -60,6 +60,10 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--qemu-cpu-cores', type=int, default=4,
                            help='Sets the number of CPU cores to provide if '
                            'launching in a VM with QEMU.'),
+  common_args.add_argument('--qemu-require-kvm', action='store_true',
+                           help='Disables fall-back to emulated CPU if the '
+                           'host system does not support KVM acceleration.'),
+
 
 def ConfigureLogging(args):
   """Configures the logging level based on command line |args|."""
@@ -91,7 +95,8 @@ def GetDeploymentTargetForArgs(args):
 
   if not args.device:
     return QemuTarget(args.output_directory, args.target_cpu,
-                      args.qemu_cpu_cores, system_log_file)
+                      args.qemu_cpu_cores, system_log_file,
+                      args.qemu_require_kvm)
   else:
     return DeviceTarget(args.output_directory, args.target_cpu, args.host,
                         args.port, args.ssh_config, system_log_file)

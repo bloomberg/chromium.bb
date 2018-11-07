@@ -119,7 +119,7 @@ class _TargetHost(object):
         try:
             self._target = None
             self._target = qemu_target.QemuTarget(
-                build_path, 'x64', ram_size_mb=8192)
+                build_path, 'x64', require_kvm=True, ram_size_mb=8192)
             self._target.Start()
             self._setup_target(build_path, ports_to_forward)
         except:
