@@ -544,10 +544,15 @@ class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
     AshTestBase::SetUp();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
+    keyboard_controller()->LoadKeyboardWindowInBackground();
+    // Wait for the keyboard window to load.
+    base::RunLoop().RunUntilIdle();
+
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
+    const gfx::Rect keyboard_bounds(0, 0, 1, 1);
     keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
-                                            base::nullopt, base::DoNothing());
+                                            keyboard_bounds, base::DoNothing());
   }
 
   keyboard::KeyboardController* keyboard_controller() {
@@ -557,8 +562,7 @@ class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
-  keyboard_controller()->NotifyKeyboardWindowLoaded();
-  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->set_current_location(
@@ -571,8 +575,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
-  keyboard_controller()->NotifyKeyboardWindowLoaded();
-  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->set_current_location(
@@ -585,8 +588,7 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
 
 TEST_F(ShelfWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(true /* locked */);
-  keyboard_controller()->NotifyKeyboardWindowLoaded();
-  ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->set_current_location(

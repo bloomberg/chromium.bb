@@ -1064,11 +1064,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickDoesNotFocusKeyboard) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
-  EXPECT_TRUE(keyboard_window->IsVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
   EXPECT_FALSE(keyboard_window->HasFocus());
 
   // Click on the keyboard. Make sure the keyboard receives the event, but does
