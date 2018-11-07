@@ -66,8 +66,7 @@ UiControllerAndroid::UiControllerAndroid(
     jobject jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues,
-    const JavaParamRef<jstring>& initialUrlString)
+    const JavaParamRef<jobjectArray>& parameterValues)
     : ui_delegate_(nullptr) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
@@ -75,16 +74,21 @@ UiControllerAndroid::UiControllerAndroid(
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
   browser_context_ = web_contents->GetBrowserContext();
-  GURL initialUrl =
-      GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
-  Controller::CreateAndStartForWebContents(
+  Controller::CreateForWebContents(
       web_contents, base::WrapUnique(this),
-      BuildParametersFromJava(env, parameterNames, parameterValues),
-      initialUrl);
+      BuildParametersFromJava(env, parameterNames, parameterValues));
   DCHECK(ui_delegate_);
 }
 
 UiControllerAndroid::~UiControllerAndroid() {}
+
+void UiControllerAndroid::Start(JNIEnv* env,
+                                const JavaParamRef<jobject>& jcaller,
+                                const JavaParamRef<jstring>& initialUrlString) {
+  GURL initialUrl =
+      GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
+  ui_delegate_->Start(initialUrl);
+}
 
 void UiControllerAndroid::SetUiDelegate(UiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
@@ -372,11 +376,9 @@ static jlong JNI_AutofillAssistantUiController_Init(
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues,
-    const JavaParamRef<jstring>& initialUrlString) {
+    const JavaParamRef<jobjectArray>& parameterValues) {
   auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
-      env, jcaller, webContents, parameterNames, parameterValues,
-      initialUrlString);
+      env, jcaller, webContents, parameterNames, parameterValues);
   return reinterpret_cast<intptr_t>(ui_controller_android);
 }
 

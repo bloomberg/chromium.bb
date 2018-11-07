@@ -30,8 +30,7 @@ class UiControllerAndroid : public UiController,
       jobject jcaller,
       const base::android::JavaParamRef<jobject>& webContents,
       const base::android::JavaParamRef<jobjectArray>& parameterNames,
-      const base::android::JavaParamRef<jobjectArray>& parameterValues,
-      const base::android::JavaParamRef<jstring>& initialUrlString);
+      const base::android::JavaParamRef<jobjectArray>& parameterValues);
   ~UiControllerAndroid() override;
 
   // Overrides UiController:
@@ -69,6 +68,9 @@ class UiControllerAndroid : public UiController,
   void InvalidateAccessToken(const std::string& access_token) override;
 
   // Called by Java.
+  void Start(JNIEnv* env,
+             const base::android::JavaParamRef<jobject>& jcaller,
+             const base::android::JavaParamRef<jstring>& initialUrlString);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void GiveUp(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnScriptSelected(

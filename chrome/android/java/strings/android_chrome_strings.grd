@@ -3926,8 +3926,20 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
 
       <!-- Autofill Assistant -->
+       <message name="IDS_AUTOFILL_ASSISTANT_ONBOARDING_TITLE" desc="Onboarding title for the autofill assistant.">
+        Fast checkout
+      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant. DURATION_SECONDS is a number representing a duration in seconds, which is why it is appended with 's'.">
         Autofill Assistant will stop in <ph name="DURATION_SECONDS">%1$s<ex>3</ex></ph>s…
+      </message>
+      <message name="IDS_INIT_OK" desc="Init screen confirmation text.">
+        Let's go
+      </message>
+      <message name="IDS_DONT_DISPLAY_AGAIN" desc="Description for the checkbox that prevents the screen to be displayed again.">
+        Don't display again
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
+        Google Assistant can help you get things done faster and easier on the web
       </message>
       <!-- Autofill Assistant preferences -->
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
@@ -3936,7 +3948,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SWITCH" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
         Automate
       </message>
-
     </messages>
   </release>
 </grit>

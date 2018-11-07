@@ -39,11 +39,10 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver,
                    private content::WebContentsDelegate {
  public:
-  static void CreateAndStartForWebContents(
+  static void CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<Client> client,
-      std::unique_ptr<std::map<std::string, std::string>> parameters,
-      const GURL& initialUrl);
+      std::unique_ptr<std::map<std::string, std::string>> parameters);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -61,8 +60,7 @@ class Controller : public ScriptExecutorDelegate,
              std::unique_ptr<Client> client,
              std::unique_ptr<WebController> web_controller,
              std::unique_ptr<Service> service,
-             std::unique_ptr<std::map<std::string, std::string>> parameters,
-             const GURL& initialUrl);
+             std::unique_ptr<std::map<std::string, std::string>> parameters);
   ~Controller() override;
 
   void GetOrCheckScripts(const GURL& url);
@@ -81,6 +79,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnPeriodicScriptCheck();
 
   // Overrides content::UiDelegate:
+  void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
   void OnDestroy() override;
   void OnGiveUp() override;
@@ -131,6 +130,8 @@ class Controller : public ScriptExecutorDelegate,
   // Whether we should hide the overlay and show an error message after a first
   // unsuccessful round of preconditions checking.
   bool should_fail_after_checking_scripts_ = false;
+
+  bool started_ = false;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 

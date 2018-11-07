@@ -13,6 +13,9 @@ class UiDelegate {
  public:
   virtual ~UiDelegate() = default;
 
+  // Called when autofill assistant can start executing scripts.
+  virtual void Start(const GURL& initialUrl) = 0;
+
   // Called when the overlay has been clicked.
   virtual void OnClickOverlay() = 0;
 
