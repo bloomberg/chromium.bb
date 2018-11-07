@@ -961,7 +961,8 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
   // TODO(pkotwicz): Figure out if we need any special handling when the
   // keyboard is visible.
-  return show_shelf_region_in_screen;
+  return screen_util::SnapBoundsToDisplayEdge(show_shelf_region_in_screen,
+                                              shelf_widget_->GetNativeWindow());
 }
 
 bool ShelfLayoutManager::HasVisibleWindow() const {
