@@ -21,6 +21,7 @@
 #include "android_webview/browser/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
+#include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
@@ -837,6 +838,11 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
                      std::move(proxied_request), std::move(target_factory_info),
                      nullptr /* AwInterceptedRequestHandler */));
   return true;
+}
+
+content::SpeechRecognitionManagerDelegate*
+AwContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
+  return new AwSpeechRecognitionManagerDelegate();
 }
 
 // static
