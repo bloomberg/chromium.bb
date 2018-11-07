@@ -661,7 +661,7 @@ def _GetBinaryPath(command):
   if _IsIOSCommand(command):
     # For a given application bundle, the binary resides in the bundle and has
     # the same name with the application without the .app extension.
-    app_path = command_parts[-1].rstrip(os.path.sep)
+    app_path = command_parts[1].rstrip(os.path.sep)
     app_name = os.path.splitext(os.path.basename(app_path))[0]
     return os.path.join(app_path, app_name)
 
