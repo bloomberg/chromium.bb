@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
 }
 
-INSTANTIATE_TEST_CASE_P(All,
+INSTANTIATE_TEST_CASE_P(,
                         CapturedSitesPasswordManagerBrowserTest,
                         testing::ValuesIn(GetCapturedSites()),
                         GetParamAsString());

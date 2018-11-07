@@ -1489,6 +1489,16 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
     }
   }
 
+  // Skip this step if autofill profile is empty.
+  // Only Autofill Captured Sites test recipes will have non-empty autofill
+  // profiles. Recipes for other captured sites tests will have empty autofill
+  // profiles. This block prevents these other tests from failing because
+  // the test feature action executor does not know how to setup the autofill
+  // profile.
+  if (profile_entries_list.size() == 0) {
+    return true;
+  }
+
   return feature_action_executor()->SetupAutofillProfile();
 }
 
