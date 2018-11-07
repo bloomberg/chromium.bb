@@ -70,7 +70,6 @@ component("gpu_thread_holder") {
     "//base",
     "//gpu/command_buffer/service",
     "//gpu/command_buffer/service:gles2",
-    "//gpu/ipc/host",
     "//gpu/ipc/service",
   ]
 }

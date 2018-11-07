@@ -66,6 +66,8 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
     gpu_memory_buffer_factory_ = GpuMemoryBufferFactory::CreateNativeType();
     gpu_memory_buffer_manager_ =
         std::make_unique<viz::TestGpuMemoryBufferManager>();
+    gpu_thread_holder_.GetGpuPreferences()->texture_target_exception_list =
+        CreateBufferUsageAndFormatExceptionList();
     context_ = CreateRasterInProcessContext();
     ri_ = context_->GetImplementation();
   }
