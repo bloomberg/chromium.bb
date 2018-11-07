@@ -89,10 +89,6 @@ YAPF_CONFIG_FILENAME = '.style.yapf'
 # Buildbucket master name prefix.
 MASTER_PREFIX = 'master.'
 
-# TODO(crbug.com/881860): Remove
-# Log gerrit failures to a gerrit_util.GERRIT_ERR_LOG_FILE.
-GERRIT_ERR_LOGGER = logging.getLogger('GerritErrorLogs')
-
 # Shortcut since it quickly becomes redundant.
 Fore = colorama.Fore
 
@@ -2958,69 +2954,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
     try:
-      # TODO(crbug.com/881860): Remove.
-      # Clear the log after each git-cl upload run by setting mode='w'.
-      handler = logging.FileHandler(gerrit_util.GERRIT_ERR_LOG_FILE, mode='w')
-      handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-
-      GERRIT_ERR_LOGGER.addHandler(handler)
-      GERRIT_ERR_LOGGER.setLevel(logging.INFO)
-      # Don't propagate to root logger, so that logs are not printed.
-      GERRIT_ERR_LOGGER.propagate = 0
-
-      # Get interesting headers from git push, to be displayed to the user if
-      # subsequent Gerrit RPC calls fail.
-      env = os.environ.copy()
-      env['GIT_CURL_VERBOSE'] = '1'
-      class FilterHeaders(object):
-        """Filter git push headers and store them in a file.
-
-        Regular git push output is printed directly.
-        """
-
-        def __init__(self):
-          # The output from git push that we want to store in a file.
-          self._output = ''
-          # Keeps track of whether the current line is part of a request header.
-          self._on_header = False
-          # Keeps track of repeated empty lines, which mark the end of a request
-          # header.
-          self._last_line_empty = False
-
-        def __call__(self, line):
-          """Handle a single line of git push output."""
-          if not line:
-            # Two consecutive empty lines mark the end of a header.
-            if self._last_line_empty:
-              self._on_header = False
-            self._last_line_empty = True
-            return
-
-          self._last_line_empty = False
-          # A line starting with '>' marks the beggining of a request header.
-          if line[0] == '>':
-            self._on_header = True
-            GERRIT_ERR_LOGGER.info(line)
-          # Lines not starting with '*' or '<', and not part of a request header
-          # should be displayed to the user.
-          elif line[0] not in '*<' and not self._on_header:
-            print(line)
-            # Flush after every line: useful for seeing progress when running as
-            # recipe.
-            sys.stdout.flush()
-          # Filter out the cookie and authorization headers.
-          elif ('cookie: ' not in line.lower()
-                and 'authorization: ' not in line.lower()):
-            GERRIT_ERR_LOGGER.info(line)
-
-      filter_fn = FilterHeaders()
       before_push = time_time()
-      push_returncode = 0
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
           print_stdout=False,
-          filter_fn=filter_fn,
-          env=env)
+          # Flush after every line: useful for seeing progress when running as
+          # recipe.
+          filter_fn=lambda _: sys.stdout.flush())
+      push_returncode = 0
     except subprocess2.CalledProcessError as e:
       push_returncode = e.returncode
       DieWithError('Failed to create a change. Please examine output above '
