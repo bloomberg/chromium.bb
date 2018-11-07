@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 
@@ -115,6 +116,24 @@ LayoutUnit NGLineTruncator::TruncateLine(
 // Hide this child from being painted.
 void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   DCHECK(child->HasInFlowFragment());
+
+  // If this child has self painting layer, not producing fragments will not
+  // suppress painting because layers are painted separately. Move it out of the
+  // clipping area.
+  const NGPhysicalFragment* fragment = child->PhysicalFragment();
+  DCHECK(fragment);
+  if (const NGPhysicalBoxFragment* box_fragment =
+          ToNGPhysicalBoxFragmentOrNull(fragment)) {
+    if (box_fragment->HasSelfPaintingLayer()) {
+      // |avilable_width_| may not be enough when the contaning block has
+      // paddings, because clipping is at the content box but ellipsizing is at
+      // the padding box. Just move to the max because we don't know paddings,
+      // and max should do what we need.
+      child->offset.inline_offset = LayoutUnit::NearlyMax();
+      return;
+    }
+  }
+
   // TODO(kojii): Not producing fragments is the most clean and efficient way to
   // hide them, but we may want to revisit how to do this to reduce special
   // casing in other code.
