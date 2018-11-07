@@ -233,8 +233,7 @@ Object.freeze(DriveMetadataSearchContentScanner.SearchType);
 DriveMetadataSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
   chrome.fileManagerPrivate.searchDriveMetadata(
-      {query: '', types: this.searchType_, maxResults: 500},
-      function(results) {
+      {query: '', types: this.searchType_, maxResults: 100}, function(results) {
         if (this.cancelled_) {
           errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
           return;
