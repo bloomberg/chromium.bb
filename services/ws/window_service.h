@@ -87,6 +87,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                 aura::Env* env = nullptr);
   ~WindowService() override;
 
+  // Returns the id of the first WindowTreeClient.
+  ClientSpecificId GetFirstWindowTreeClientId() const;
+
   // Gets the ServerWindow for |window|, creating if necessary.
   ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
 
@@ -109,6 +112,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Returns true if |window| hosts a remote client and is a toplevel window.
   static bool IsTopLevelWindow(const aura::Window* window);
+
+  // Returns the window representing the specified id.
+  aura::Window* GetWindowByClientId(Id transport_id);
 
   struct TreeAndWindowId {
     ClientWindowId id;
@@ -189,6 +195,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
  private:
   friend class WindowServerTestImpl;
   friend class WindowServiceTestHelper;
+
+  WindowTree* GetTreeById(ClientSpecificId id);
 
   // Sets a callback to be called whenever a surface is activated. This
   // corresponds to a client submitting a new CompositorFrame for a Window. This
