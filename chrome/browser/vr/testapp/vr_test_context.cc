@@ -119,7 +119,6 @@ VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
                           base::Unretained(keyboard_delegate.get())));
 
   UiInitialState ui_initial_state;
-  ui_initial_state.create_tabs_view = true;
   ui_instance_ = std::make_unique<Ui>(
       this, nullptr, std::move(keyboard_delegate),
       std::move(text_input_delegate), nullptr, ui_initial_state);
@@ -147,17 +146,6 @@ VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
                                 potential_capturing);
   ui_instance_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
-  for (size_t i = 0; i < 5; i++) {
-    browser_ui->AddOrUpdateTab(
-        tab_id_++, false,
-        base::UTF8ToUTF16("Wikipedia, the free encyclopedia"));
-    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16("New tab"));
-    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16(""));
-    browser_ui->AddOrUpdateTab(tab_id_++, true,
-                               base::UTF8ToUTF16("Home - YouTube"));
-    browser_ui->AddOrUpdateTab(tab_id_++, true,
-                               base::UTF8ToUTF16("VR - Google Search"));
-  }
 
   InitializeGl();
 }
@@ -605,10 +593,8 @@ void VrTestContext::OpenNewTab(bool incognito) {
   incognito_ = incognito;
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetIncognito(incognito);
-  browser_ui->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
+  model_->incognito_tabs_open = model_->incognito_tabs_open || incognito;
 }
-
-void VrTestContext::SelectTab(int id, bool incognito) {}
 
 void VrTestContext::OpenBookmarks() {}
 void VrTestContext::OpenRecentTabs() {}
@@ -617,21 +603,10 @@ void VrTestContext::OpenDownloads() {}
 void VrTestContext::OpenShare() {}
 void VrTestContext::OpenSettings() {}
 
-void VrTestContext::CloseTab(int id, bool incognito) {
-  ui_->GetBrowserUiWeakPtr()->RemoveTab(id, incognito);
-}
-
-void VrTestContext::CloseAllTabs() {
-  incognito_ = false;
-  ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
-  model_->incognito_tabs.clear();
-  model_->regular_tabs.clear();
-}
-
 void VrTestContext::CloseAllIncognitoTabs() {
   incognito_ = false;
   ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
-  model_->incognito_tabs.clear();
+  model_->incognito_tabs_open = false;
 }
 
 void VrTestContext::OpenFeedback() {}

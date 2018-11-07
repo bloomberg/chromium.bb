@@ -56,7 +56,6 @@ class UiSceneCreator {
   void CreateController();
   void CreateKeyboard();
   void Create2dBrowsingHostedUi();
-  void CreateTabsViews();
 
   UiBrowserInterface* browser_;
   UiScene* scene_;

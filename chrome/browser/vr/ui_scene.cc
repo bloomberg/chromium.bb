@@ -93,15 +93,8 @@ void InitializeElementRecursive(UiElement* e, SkiaSurfaceProvider* provider) {
 
 void UiScene::AddUiElement(UiElementName parent,
                            std::unique_ptr<UiElement> element) {
-  auto* parent_element = GetUiElementByName(parent);
-  DCHECK(parent_element);
-  AddUiElement(parent_element, std::move(element));
-}
-
-void UiScene::AddUiElement(UiElement* parent,
-                           std::unique_ptr<UiElement> element) {
   InitializeElement(element.get());
-  parent->AddChild(std::move(element));
+  GetUiElementByName(parent)->AddChild(std::move(element));
   is_dirty_ = true;
 }
 

@@ -2391,10 +2391,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWebXrRenderPath,
                                     kWebXrRenderPathVariations,
                                     "WebXrRenderPath")},
-    // TODO(crbug.com/731802): Only these should be #if defined(OS_ANDROID).
-    {"vr-browsing-tabs-view", flag_descriptions::kVrBrowsingTabsViewName,
-     flag_descriptions::kVrBrowsingTabsViewDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kVrBrowsingTabsView)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_OCULUS_VR)
     {"oculus-vr", flag_descriptions::kOculusVRName,

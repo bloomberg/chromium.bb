@@ -19,7 +19,6 @@
 #include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
-#include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/model/ui_mode.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
@@ -54,12 +53,10 @@ struct VR_UI_EXPORT Model {
   bool supports_selection = true;
   bool needs_keyboard_update = false;
   bool overflow_menu_enabled = false;
+  bool regular_tabs_open = false;
+  bool incognito_tabs_open = false;
   bool standalone_vr_device = false;
   bool menu_button_long_pressed = false;
-  std::vector<TabModel> regular_tabs;
-  std::vector<TabModel> incognito_tabs;
-  bool incognito_tabs_view_selected = false;
-  bool create_tabs_view = false;
   float floor_height = 0.0f;
   bool use_new_incognito_strings = false;
 

@@ -175,7 +175,6 @@ void Ui::SetLocationBarState(const LocationBarState& state) {
 
 void Ui::SetIncognito(bool enabled) {
   model_->incognito = enabled;
-  model_->incognito_tabs_view_selected = enabled;
 }
 
 void Ui::SetLoading(bool loading) {
@@ -308,29 +307,6 @@ void Ui::UpdateWebInputIndices(int selection_start,
             *model = new_state;
           },
           base::Unretained(&model_->web_input_text_field_info.current)));
-}
-
-void Ui::AddOrUpdateTab(int id, bool incognito, const base::string16& title) {
-  auto* tabs = incognito ? &model_->incognito_tabs : &model_->regular_tabs;
-  auto tab_iter = FindTab(id, tabs);
-  if (tab_iter == tabs->end()) {
-    tabs->push_back(TabModel(id, title));
-  } else {
-    tab_iter->title = title;
-  }
-}
-
-void Ui::RemoveTab(int id, bool incognito) {
-  auto* tabs = incognito ? &model_->incognito_tabs : &model_->regular_tabs;
-  auto tab_iter = FindTab(id, tabs);
-  if (tab_iter != tabs->end()) {
-    tabs->erase(tab_iter);
-  }
-}
-
-void Ui::RemoveAllTabs() {
-  model_->regular_tabs.clear();
-  model_->incognito_tabs.clear();
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
@@ -555,6 +531,14 @@ void Ui::WaitForAssets() {
   model_->waiting_for_background = true;
 }
 
+void Ui::SetRegularTabsOpen(bool open) {
+  model_->regular_tabs_open = open;
+}
+
+void Ui::SetIncognitoTabsOpen(bool open) {
+  model_->incognito_tabs_open = open;
+}
+
 void Ui::SetOverlayTextureEmpty(bool empty) {
   model_->content_overlay_texture_non_empty = !empty;
 }
@@ -587,7 +571,6 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
-  model_->create_tabs_view = ui_initial_state.create_tabs_view;
   model_->use_new_incognito_strings =
       ui_initial_state.use_new_incognito_strings;
 }
@@ -679,12 +662,6 @@ void Ui::SetContentUsesQuadLayer(bool uses_quad_layer) {
 
 gfx::Transform Ui::GetContentWorldSpaceTransform() {
   return GetContentElement()->world_space_transform();
-}
-
-std::vector<TabModel>::iterator Ui::FindTab(int id,
-                                            std::vector<TabModel>* tabs) {
-  return std::find_if(tabs->begin(), tabs->end(),
-                      [id](const TabModel& tab) { return tab.id == id; });
 }
 
 bool Ui::OnBeginFrame(base::TimeTicks current_time,

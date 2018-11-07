@@ -54,6 +54,8 @@ class VR_EXPORT BrowserUiInterface {
                               const base::Version& component_version) = 0;
   virtual void OnAssetsUnavailable() = 0;
   virtual void WaitForAssets() = 0;
+  virtual void SetRegularTabsOpen(bool open) = 0;
+  virtual void SetIncognitoTabsOpen(bool open) = 0;
   virtual void SetOverlayTextureEmpty(bool empty) = 0;
   virtual void ShowSoftInput(bool show) = 0;
   virtual void UpdateWebInputIndices(int selection_start,
@@ -66,11 +68,6 @@ class VR_EXPORT BrowserUiInterface {
   virtual void ShowPlatformToast(const base::string16& text) = 0;
   virtual void CancelPlatformToast() = 0;
   virtual void OnContentBoundsChanged(int width, int height) = 0;
-  virtual void AddOrUpdateTab(int id,
-                              bool incognito,
-                              const base::string16& title) = 0;
-  virtual void RemoveTab(int id, bool incognito) = 0;
-  virtual void RemoveAllTabs() = 0;
   virtual void PerformKeyboardInputForTesting(
       KeyboardTestInput keyboard_input) = 0;
 };

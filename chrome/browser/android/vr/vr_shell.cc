@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/android_ui_gesture_target.h"
 #include "chrome/browser/android/vr/autocomplete_controller.h"
@@ -371,11 +370,6 @@ void VrShell::OpenNewTab(bool incognito) {
   Java_VrShell_openNewTab(env, j_vr_shell_, incognito);
 }
 
-void VrShell::SelectTab(int id, bool incognito) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_selectTab(env, j_vr_shell_, id, incognito);
-}
-
 void VrShell::OpenBookmarks() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShell_openBookmarks(env, j_vr_shell_);
@@ -404,16 +398,6 @@ void VrShell::OpenShare() {
 void VrShell::OpenSettings() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShell_openSettings(env, j_vr_shell_);
-}
-
-void VrShell::CloseTab(int id, bool incognito) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_closeTab(env, j_vr_shell_, id, incognito);
-}
-
-void VrShell::CloseAllTabs() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_closeAllTabs(env, j_vr_shell_);
 }
 
 void VrShell::CloseAllIncognitoTabs() {
@@ -595,21 +579,24 @@ void VrShell::OnTabListCreated(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jobjectArray tabs,
                                jobjectArray incognito_tabs) {
-  ui_->RemoveAllTabs();
+  incognito_tab_ids_.clear();
+  regular_tab_ids_.clear();
   size_t len = env->GetArrayLength(incognito_tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(
         env, env->GetObjectArrayElement(incognito_tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    ui_->AddOrUpdateTab(tab->GetAndroidId(), true, tab->GetTitle());
+    incognito_tab_ids_.insert(tab->GetAndroidId());
   }
 
   len = env->GetArrayLength(tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(env, env->GetObjectArrayElement(tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    ui_->AddOrUpdateTab(tab->GetAndroidId(), false, tab->GetTitle());
+    regular_tab_ids_.insert(tab->GetAndroidId());
   }
+  ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
 }
 
 void VrShell::OnTabUpdated(JNIEnv* env,
@@ -617,16 +604,26 @@ void VrShell::OnTabUpdated(JNIEnv* env,
                            jboolean incognito,
                            jint id,
                            jstring jtitle) {
-  base::string16 title;
-  base::android::ConvertJavaStringToUTF16(env, jtitle, &title);
-  ui_->AddOrUpdateTab(id, incognito, title);
+  if (incognito) {
+    incognito_tab_ids_.insert(id);
+    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.insert(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
+  }
 }
 
 void VrShell::OnTabRemoved(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            jboolean incognito,
                            jint id) {
-  ui_->RemoveTab(id, incognito);
+  if (incognito) {
+    incognito_tab_ids_.erase(id);
+    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.erase(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
+  }
 }
 
 void VrShell::SetAlertDialog(JNIEnv* env,
@@ -1372,8 +1369,6 @@ jlong JNI_VrShell_Init(JNIEnv* env,
       has_or_can_request_audio_permission;
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
-  ui_initial_state.create_tabs_view =
-      base::FeatureList::IsEnabled(chrome::android::kVrBrowsingTabsView);
   ui_initial_state.use_new_incognito_strings =
       base::FeatureList::IsEnabled(features::kIncognitoStrings);
 

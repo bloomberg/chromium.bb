@@ -2715,10 +2715,6 @@ const char kUpdateMenuTypeNone[] = "None";
 const char kUpdateMenuTypeUpdateAvailable[] = "Update Available";
 const char kUpdateMenuTypeUnsupportedOSVersion[] = "Unsupported OS Version";
 
-const char kVrBrowsingTabsViewName[] = "VR browsing tabs view";
-const char kVrBrowsingTabsViewDescription[] =
-    "Enable tab overview (tab switcher) in VR.";
-
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";
 const char kThirdPartyDoodlesDescription[] =

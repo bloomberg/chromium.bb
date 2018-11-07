@@ -34,15 +34,12 @@ class VR_EXPORT UiBrowserInterface {
   virtual void NavigateForward() = 0;
   virtual void ReloadTab() = 0;
   virtual void OpenNewTab(bool incognito) = 0;
-  virtual void SelectTab(int id, bool incognito) = 0;
   virtual void OpenBookmarks() = 0;
   virtual void OpenRecentTabs() = 0;
   virtual void OpenHistory() = 0;
   virtual void OpenDownloads() = 0;
   virtual void OpenShare() = 0;
   virtual void OpenSettings() = 0;
-  virtual void CloseTab(int id, bool incognito) = 0;
-  virtual void CloseAllTabs() = 0;
   virtual void CloseAllIncognitoTabs() = 0;
   virtual void OpenFeedback() = 0;
   virtual void CloseHostedDialog() = 0;

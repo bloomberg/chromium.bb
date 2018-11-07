@@ -135,15 +135,12 @@ class VrShell : device::GvrGamepadDataProvider,
   void NavigateForward();
   void ReloadTab();
   void OpenNewTab(bool incognito);
-  void SelectTab(int id, bool incognito);
   void OpenBookmarks();
   void OpenRecentTabs();
   void OpenHistory();
   void OpenDownloads();
   void OpenShare();
   void OpenSettings();
-  void CloseTab(int id, bool incognito);
-  void CloseAllTabs();
   void CloseAllIncognitoTabs();
   void OpenFeedback();
   void CloseHostedDialog();
@@ -394,6 +391,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::WaitableEvent gl_surface_created_event_;
   gfx::AcceleratedWidget surface_window_ = nullptr;
+
+  std::set<int> regular_tab_ids_;
+  std::set<int> incognito_tab_ids_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 
