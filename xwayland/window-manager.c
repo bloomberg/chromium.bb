@@ -2661,10 +2661,15 @@ static void
 send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 {
 	struct weston_wm_window *window = get_wm_window(surface);
-	struct weston_wm *wm = window->wm;
-	struct theme *t = window->wm->theme;
+	struct weston_wm *wm;
+	struct theme *t;
 	int new_width, new_height;
 	int vborder, hborder;
+
+	if (!window || !window->wm)
+		return;
+	wm = window->wm;
+	t = wm->theme;
 
 	if (window->decorate && !window->fullscreen) {
 		hborder = 2 * t->width;
