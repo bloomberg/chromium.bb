@@ -1129,7 +1129,6 @@ test("content_browsertests") {
     sources -= [
       "../browser/keyboard_lock_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
-      "../browser/network_service_restart_browsertest.cc",
       "../browser/pointer_lock_browsertest.cc",
       "../browser/pointer_lock_browsertest.h",
     ]

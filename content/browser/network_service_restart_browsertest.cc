@@ -22,6 +22,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -30,12 +31,15 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/test/ppapi_test_utils.h"
@@ -875,8 +879,14 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   service_worker_context->RemoveObserver(&observer);
 }
 
+// TODO(crbug.com/154571): Shared workers are not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker DISABLED_SharedWorker
+#else
+#define MAYBE_SharedWorker SharedWorker
+#endif
 // Make sure shared workers terminate after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SharedWorker) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -1083,5 +1093,31 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
       EvalJs(web_contents, fetch_script));
 }
 #endif
+
+// TODO(crbug.com/901026): Fix deadlock on process startup on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SyncCallDuringRestart DISABLED_SyncCallDuringRestart
+#else
+#define MAYBE_SyncCallDuringRestart SyncCallDuringRestart
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       MAYBE_SyncCallDuringRestart) {
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  base::RunLoop run_loop;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  // Crash the network service, but do not wait for full startup.
+  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+  network_service_test->SimulateCrash();
+  run_loop.Run();
+
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  // Sync call should be fine, even though network process is still starting up.
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  network_service_test->AddRules({});
+}
 
 }  // namespace content
