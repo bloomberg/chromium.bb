@@ -2360,6 +2360,57 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
               kHitTestTolerance);
 }
 
+// This test tests that browser process can successfully hit test on nested
+// OOPIFs that are partially occluded by main frame elements.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       HitTestNestedOccludedOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_nested_frames_and_occluding_div.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* parent = root->child_at(0);
+
+  GURL site_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_EQ(site_url, parent->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            parent->current_frame_host()->GetSiteInstance());
+
+  ASSERT_EQ(1U, parent->child_count());
+  FrameTreeNode* child = parent->child_at(0);
+  GURL child_site_url(
+      embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(child_site_url, child->current_url());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+
+  // Target input event to the overlapping region of main frame's div and child
+  // frame.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents, root_view,
+                                         gfx::PointF(75, 75), root_view,
+                                         gfx::PointF(75, 75));
+
+  // Target input event to the non overlapping region of child frame.
+  // The div has a bound of (0, 0, 100, 100) with a border-radius of 5px, so
+  // point (99, 99) should not hit test the div but reach the nested child
+  // frame.
+  // The parent frame and child frame both have a default offset of (2, 2) and
+  // child frame's top and left properties are set to be (50, 50), so there is
+  // an offset of (54, 54) in total.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents, root_view,
+                                         gfx::PointF(99, 99), child_view,
+                                         gfx::PointF(45, 45));
+}
+
 // Verify that an event is properly retargeted to the main frame when an
 // asynchronous hit test to the child frame times out.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
