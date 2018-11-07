@@ -105,7 +105,6 @@ static unsigned long HashHash(unsigned long key)
 drm_public void *drmHashCreate(void)
 {
     HashTablePtr table;
-    int          i;
 
     table           = drmMalloc(sizeof(*table));
     if (!table) return NULL;
