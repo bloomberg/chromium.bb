@@ -2734,6 +2734,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     const NavigationEntryImpl& entry,
     FrameNavigationEntry* frame_entry) {
   DCHECK_EQ(-1, GetIndexOfEntry(&entry));
+  // TODO(https://crbug.com/896028): Turn this CHECK into a DCHECK once the bug
+  // is fixed.
+  CHECK(frame_entry);
+
   GURL url_to_load;
   GURL virtual_url;
   // For main frames, rewrite the URL if necessary and compute the virtual URL
