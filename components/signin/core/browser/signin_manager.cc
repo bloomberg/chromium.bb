@@ -24,8 +24,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
-using namespace signin_internals_util;
-
 SigninManager::SigninManager(
     SigninClient* client,
     ProfileOAuth2TokenService* token_service,
@@ -91,7 +89,8 @@ bool SigninManager::PrepareForSignin(SigninType type,
   password_.assign(password);
   signin_manager_signed_in_ = false;
   user_info_fetched_by_account_tracker_ = false;
-  NotifyDiagnosticsObservers(SIGNIN_STARTED, SigninTypeToString(type));
+  NotifyDiagnosticsObservers(signin_internals_util::SIGNIN_STARTED,
+                             SigninTypeToString(type));
   return true;
 }
 
@@ -404,7 +403,8 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
 }
 
 void SigninManager::CompletePendingSignin() {
-  NotifyDiagnosticsObservers(SIGNIN_COMPLETED, "Successful");
+  NotifyDiagnosticsObservers(signin_internals_util::SIGNIN_COMPLETED,
+                             "Successful");
   DCHECK(!possibly_invalid_account_id_.empty());
   OnSignedIn();
 
