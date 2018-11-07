@@ -64,11 +64,10 @@ class ControllerTest : public content::RenderViewHostTestHarness {
       std::unique_ptr<Client> client,
       std::unique_ptr<WebController> web_controller,
       std::unique_ptr<Service> service,
-      std::unique_ptr<std::map<std::string, std::string>> parameters,
-      const GURL& initialUrl) {
+      std::unique_ptr<std::map<std::string, std::string>> parameters) {
     return new Controller(web_contents, std::move(client),
                           std::move(web_controller), std::move(service),
-                          std::move(parameters), initialUrl);
+                          std::move(parameters));
   }
 
   static void DestroyController(Controller* controller) {
@@ -90,8 +89,9 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
     controller_ = new Controller(
         web_contents(), std::make_unique<FakeClient>(std::move(ui_controller)),
-        std::move(web_controller), std::move(service), std::move(parameters),
-        initialUrl);
+        std::move(web_controller), std::move(service), std::move(parameters));
+
+    GetUiDelegate()->Start(initialUrl);
 
     // Fetching scripts succeeds for all URLs, but return nothing.
     ON_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
@@ -364,6 +364,22 @@ TEST_F(ControllerTest, LoadProgressChanged) {
   SimulateProgressChanged(0.4);
 }
 
+TEST_F(ControllerTest, InitialUrlLoadsDoesntStartByDefault) {
+  GURL initialUrl("http://a.example.com/path");
+  auto service = std::make_unique<NiceMock<MockService>>();
+
+  EXPECT_CALL(*service.get(), OnGetScriptsForUrl(Eq(initialUrl), _, _))
+      .Times(0);
+
+  Controller* controller = ControllerTest::CreateController(
+      web_contents(),
+      std::make_unique<FakeClient>(
+          std::make_unique<NiceMock<MockUiController>>()),
+      std::make_unique<NiceMock<MockWebController>>(), std::move(service),
+      std::make_unique<std::map<std::string, std::string>>());
+  ControllerTest::DestroyController(controller);
+}
+
 TEST_F(ControllerTest, InitialUrlLoads) {
   GURL initialUrl("http://a.example.com/path");
   auto service = std::make_unique<NiceMock<MockService>>();
@@ -376,7 +392,8 @@ TEST_F(ControllerTest, InitialUrlLoads) {
       std::make_unique<FakeClient>(
           std::make_unique<NiceMock<MockUiController>>()),
       std::make_unique<NiceMock<MockWebController>>(), std::move(service),
-      std::make_unique<std::map<std::string, std::string>>(), initialUrl);
+      std::make_unique<std::map<std::string, std::string>>());
+  dynamic_cast<UiDelegate*>(controller)->Start(initialUrl);
   ControllerTest::DestroyController(controller);
 }
 

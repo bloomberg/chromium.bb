@@ -20,6 +20,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,6 +59,7 @@ class AutofillAssistantUiDelegate {
 
     private final ChromeActivity mActivity;
     private final Client mClient;
+    private final ViewGroup mCoordinatorView;
     private final View mFullContainer;
     private final View mOverlay;
     private final LinearLayout mBottomBar;
@@ -109,6 +111,11 @@ class AutofillAssistantUiDelegate {
          * @param guid The GUID of the selected card.
          */
         void onCardSelected(String guid);
+
+        /**
+         * Called when the init was successful.
+         */
+        void onInitOk();
     }
 
     /**
@@ -210,9 +217,9 @@ class AutofillAssistantUiDelegate {
         mActivity = activity;
         mClient = client;
 
+        mCoordinatorView = (ViewGroup) mActivity.findViewById(R.id.coordinator);
         mFullContainer = LayoutInflater.from(mActivity)
-                                 .inflate(R.layout.autofill_assistant_sheet,
-                                         ((ViewGroup) mActivity.findViewById(R.id.coordinator)))
+                                 .inflate(R.layout.autofill_assistant_sheet, mCoordinatorView)
                                  .findViewById(R.id.autofill_assistant);
         // TODO(crbug.com/806868): Set hint text on overlay.
         mOverlay = mFullContainer.findViewById(R.id.overlay);
@@ -579,6 +586,39 @@ class AutofillAssistantUiDelegate {
 
         setChipViewContainerGravity(false);
         show();
+    }
+
+    /**
+     * Starts the init screen unless it has been marked to be skipped.
+     */
+    public void startOrSkipInitScreen() {
+        if (InitScreenController.skip()) {
+            mClient.onInitOk();
+            return;
+        }
+        showInitScreen(new InitScreenController(mClient));
+    }
+
+    /**
+     * Shows the init screen and launch the autofill assistant when it succeeds.
+     */
+    public void showInitScreen(InitScreenController controller) {
+        View initView = LayoutInflater.from(mActivity)
+                                .inflate(R.layout.init_screen, mCoordinatorView)
+                                .findViewById(R.id.init_screen);
+
+        initView.findViewById(R.id.close_button)
+                .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
+        initView.findViewById(R.id.chip_init_ok)
+                .setOnClickListener(unusedView -> onInitClicked(controller, true, initView));
+        initView.findViewById(R.id.chip_init_not_ok)
+                .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
+    }
+
+    private void onInitClicked(InitScreenController controller, Boolean initOk, View initView) {
+        CheckBox checkBox = initView.findViewById(R.id.checkbox_dont_show_init_again);
+        controller.onInitFinished(initOk, checkBox.isChecked());
+        mCoordinatorView.removeView(initView);
     }
 
     private Promise<Bitmap> downloadImage(String url) {

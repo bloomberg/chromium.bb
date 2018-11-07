@@ -66,8 +66,13 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private static final String RFC_3339_FORMAT = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ";
 
     private final WebContents mWebContents;
-    private final long mUiControllerAndroid;
     private final UiDelegateHolder mUiDelegateHolder;
+    private final String mInitialUrl;
+
+    /**
+     * Native pointer to the UIController.
+     */
+    private final long mUiControllerAndroid;
 
     private AutofillAssistantPaymentRequest mAutofillAssistantPaymentRequest;
 
@@ -97,7 +102,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 && !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
                             .isEmpty()
                 && ContextUtils.getAppSharedPreferences().getBoolean(
-                           AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, false);
+                           AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
+    }
+
+    @Override
+    public void onInitOk() {
+        nativeStart(mUiControllerAndroid, mInitialUrl);
     }
 
     /**
@@ -122,10 +132,13 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
         Tab activityTab = activity.getActivityTab();
         mWebContents = activityTab.getWebContents();
+        mInitialUrl = activity.getInitialIntent().getDataString();
+
         mUiControllerAndroid =
                 nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
-                        parameters.values().toArray(new String[parameters.size()]),
-                        activity.getInitialIntent().getDataString());
+                        parameters.values().toArray(new String[parameters.size()]));
+
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.startOrSkipInitScreen());
 
         // Shut down Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
@@ -557,8 +570,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     // native methods.
-    private native long nativeInit(WebContents webContents, String[] parameterNames,
-            String[] parameterValues, String initialUrl);
+    private native long nativeInit(
+            WebContents webContents, String[] parameterNames, String[] parameterValues);
+    private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeGiveUp(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);

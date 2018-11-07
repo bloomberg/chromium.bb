@@ -40,11 +40,10 @@ static const char* const kCallerScriptParameterName = "CALLER";
 }  // namespace
 
 // static
-void Controller::CreateAndStartForWebContents(
+void Controller::CreateForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,
-    std::unique_ptr<std::map<std::string, std::string>> parameters,
-    const GURL& initialUrl) {
+    std::unique_ptr<std::map<std::string, std::string>> parameters) {
   // Get the key early since |client| will be invalidated when moved below.
   GURL server_url(client->GetServerUrl());
   DCHECK(server_url.is_valid());
@@ -53,7 +52,7 @@ void Controller::CreateAndStartForWebContents(
       client->GetAccessTokenFetcher());
   new Controller(web_contents, std::move(client),
                  WebController::CreateForWebContents(web_contents),
-                 std::move(service), std::move(parameters), initialUrl);
+                 std::move(service), std::move(parameters));
 }
 
 Service* Controller::GetService() {
@@ -89,8 +88,7 @@ Controller::Controller(
     std::unique_ptr<Client> client,
     std::unique_ptr<WebController> web_controller,
     std::unique_ptr<Service> service,
-    std::unique_ptr<std::map<std::string, std::string>> parameters,
-    const GURL& initialUrl)
+    std::unique_ptr<std::map<std::string, std::string>> parameters)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
@@ -113,6 +111,16 @@ Controller::Controller(
   }
 
   GetUiController()->SetUiDelegate(this);
+}
+
+Controller::~Controller() {
+  if (clear_web_contents_delegate_) {
+    web_contents()->SetDelegate(nullptr);
+  }
+}
+
+void Controller::Start(const GURL& initialUrl) {
+  started_ = true;
   if (initialUrl.is_valid())
     GetOrCheckScripts(initialUrl);
 
@@ -127,18 +135,15 @@ Controller::Controller(
       // domain in the "Loading..." message.
       GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
           IDS_AUTOFILL_ASSISTANT_LOADING,
-          base::UTF8ToUTF16(web_contents->GetVisibleURL().host())));
+          base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
     }
   }
 }
 
-Controller::~Controller() {
-  if (clear_web_contents_delegate_) {
-    web_contents()->SetDelegate(nullptr);
-  }
-}
-
 void Controller::GetOrCheckScripts(const GURL& url) {
+  if (!started_) {
+    return;
+  }
   if (script_tracker_->running())
     return;
 
