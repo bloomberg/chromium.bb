@@ -46,8 +46,6 @@ crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.
 crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
 crbug.com/891427 fast/overflow/scrollRevealButton.html [ Crash Pass ]
 crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
-## Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng/114099
-crbug.com/891427 [ Win Mac10.12 ] external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 
 ### Flaky on trybots:
 ### Note: this list includes anything that flaked even once during my (many)
@@ -3137,7 +3135,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-crbug.com/626703 [ Mac10.12 Win7 ] virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
@@ -3246,15 +3243,6 @@ crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
-
-# Grouped frame-policy gunk (flaky copypasta).
-crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/846472 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
-crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/626703 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
 
 crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
