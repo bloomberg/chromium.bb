@@ -58,10 +58,6 @@ class BASE_EXPORT MessageLoopCurrent {
   MessageLoopCurrent(MessageLoopCurrent&& other) = default;
   MessageLoopCurrent& operator=(const MessageLoopCurrent& other) = default;
 
-  // TODO(altimin): Remove this. Currently it's used in places where the caller
-  // has access to MessageLoop due to owning it.
-  MessageLoopCurrent& operator=(MessageLoop* message_loop);
-
   bool operator==(const MessageLoopCurrent& other) const;
 
   // Returns a proxy object to interact with the MessageLoop running the
@@ -209,7 +205,6 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class Thread;
   friend class sequence_manager::LazyThreadControllerForTest;
   friend class sequence_manager::internal::SequenceManagerImpl;
-  friend struct std::hash<MessageLoopCurrent>;
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
 
@@ -331,16 +326,5 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 };
 
 }  // namespace base
-
-namespace std {
-
-template <>
-struct hash<base::MessageLoopCurrent> {
-  size_t operator()(const base::MessageLoopCurrent& loop) {
-    return std::hash<void*>()(loop.current_);
-  }
-};
-
-}  // namespace std
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
