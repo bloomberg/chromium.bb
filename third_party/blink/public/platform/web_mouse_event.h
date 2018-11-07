@@ -75,7 +75,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                                       base::TimeTicks time_stamp_param,
                                       PointerId id_param = kMousePointerId);
 
-  BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|

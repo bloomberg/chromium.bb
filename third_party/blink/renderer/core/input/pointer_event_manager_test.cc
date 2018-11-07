@@ -66,6 +66,8 @@ class PointerEventCoordinateListenerCallback final : public EventListener {
     last_screen_y_ = pointer_event->screenY();
     last_width_ = pointer_event->width();
     last_height_ = pointer_event->height();
+    last_movement_x_ = pointer_event->movementX();
+    last_movement_y_ = pointer_event->movementY();
   }
 
   double last_client_x_ = 0;
@@ -76,6 +78,8 @@ class PointerEventCoordinateListenerCallback final : public EventListener {
   double last_screen_y_ = 0;
   double last_width_ = 0;
   double last_height_ = 0;
+  double last_movement_x_ = 0;
+  double last_movement_y_ = 0;
 
  private:
   PointerEventCoordinateListenerCallback()
@@ -199,6 +203,8 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
   ASSERT_EQ(callback->last_screen_y_, 50);
   ASSERT_EQ(callback->last_width_, 8);
   ASSERT_EQ(callback->last_height_, 12);
+  ASSERT_EQ(callback->last_movement_x_, 10);
+  ASSERT_EQ(callback->last_movement_y_, 10);
 }
 
 }  // namespace blink
