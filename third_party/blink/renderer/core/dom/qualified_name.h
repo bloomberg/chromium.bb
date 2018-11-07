@@ -52,7 +52,7 @@ class CORE_EXPORT QualifiedName {
   USING_FAST_MALLOC(QualifiedName);
 
  public:
-  class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
+  class CORE_EXPORT QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
    public:
     static scoped_refptr<QualifiedNameImpl> Create(
         const AtomicString& prefix,
