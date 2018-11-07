@@ -214,13 +214,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
-  supervised_user_service_->Init();
-  EXPECT_TRUE(supervised_user_service_->IncludesSyncSessionsType());
-  profile_->GetPrefs()->SetBoolean(prefs::kForceSessionSync, false);
-  EXPECT_FALSE(supervised_user_service_->IncludesSyncSessionsType());
-}
-
 #if !defined(OS_ANDROID)
 // Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
 // DCHECK is hit when the service is destroyed, this test passed.
