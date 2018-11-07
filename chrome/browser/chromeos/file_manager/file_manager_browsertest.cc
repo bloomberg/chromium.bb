@@ -253,14 +253,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("imageOpenGalleryOpenDrive").DisableDriveFs(),
                       TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
 
-// NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ZipFiles DISABLED_ZipFiles
-#else
-#define MAYBE_ZipFiles ZipFiles
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ZipFiles, /* zip_files.js */
+    ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
                       ZipCase("zipFileOpenDownloads"),
