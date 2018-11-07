@@ -25,7 +25,6 @@
 namespace tracing {
 
 class PerfettoTracingCoordinator;
-class PerfettoService;
 
 class TracingService : public service_manager::Service {
  public:
@@ -51,7 +50,6 @@ class TracingService : public service_manager::Service {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
 #if defined(PERFETTO_SERVICE_AVAILABLE)
-  std::unique_ptr<tracing::PerfettoService> perfetto_service_;
   std::unique_ptr<PerfettoTracingCoordinator> perfetto_tracing_coordinator_;
 #endif
 

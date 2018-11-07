@@ -35,10 +35,6 @@ TracingService::~TracingService() {
     task_runner_->DeleteSoon(FROM_HERE,
                              std::move(perfetto_tracing_coordinator_));
   }
-
-  if (perfetto_service_) {
-    task_runner_->DeleteSoon(FROM_HERE, std::move(perfetto_service_));
-  }
 #endif
 }
 
@@ -47,13 +43,13 @@ void TracingService::OnStart() {
 
   bool enable_legacy_tracing = true;
 
-  if (TracingUsesPerfettoBackend()) {
 #if defined(PERFETTO_SERVICE_AVAILABLE)
-    perfetto_service_ = std::make_unique<tracing::PerfettoService>();
-    task_runner_ = perfetto_service_->task_runner();
-    registry_.AddInterface(
-        base::BindRepeating(&tracing::PerfettoService::BindRequest,
-                            base::Unretained(perfetto_service_.get())));
+  registry_.AddInterface(base::BindRepeating(
+      &tracing::PerfettoService::BindRequest,
+      base::Unretained(tracing::PerfettoService::GetInstance())));
+
+  if (TracingUsesPerfettoBackend()) {
+    task_runner_ = tracing::PerfettoService::GetInstance()->task_runner();
 
     auto perfetto_coordinator = std::make_unique<PerfettoTracingCoordinator>(
         tracing_agent_registry_.get());
@@ -61,9 +57,15 @@ void TracingService::OnStart() {
         base::BindRepeating(&PerfettoTracingCoordinator::BindCoordinatorRequest,
                             base::Unretained(perfetto_coordinator.get())));
     perfetto_tracing_coordinator_ = std::move(perfetto_coordinator);
+
     enable_legacy_tracing = false;
-#endif
   }
+#else
+  if (TracingUsesPerfettoBackend()) {
+    LOG(ERROR) << "Perfetto is not yet available for this platform; falling "
+                  "back to using legacy TraceLog";
+  }
+#endif
 
   // Use legacy tracing if we're on an unsupported platform or the feature flag
   // is disabled.

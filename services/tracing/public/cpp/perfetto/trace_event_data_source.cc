@@ -379,7 +379,6 @@ TraceEventDataSource* TraceEventDataSource::GetInstance() {
 
 TraceEventDataSource::TraceEventDataSource()
     : DataSourceBase(mojom::kTraceEventDataSourceName) {
-  RegisterTracedValueProtoWriter();
 }
 
 TraceEventDataSource::~TraceEventDataSource() = default;
@@ -394,6 +393,8 @@ void TraceEventDataSource::StartTracing(
     producer_client_ = producer_client;
     target_buffer_ = data_source_config.target_buffer;
   }
+
+  RegisterTracedValueProtoWriter(true);
 
   TraceLog::GetInstance()->SetAddTraceEventOverride(
       &TraceEventDataSource::OnAddTraceEvent,
@@ -414,6 +415,7 @@ void TraceEventDataSource::StopTracing(
           return;
         }
 
+        RegisterTracedValueProtoWriter(false);
         TraceLog::GetInstance()->SetAddTraceEventOverride(nullptr, nullptr);
 
         // TraceLog::CancelTracing will cause metadata events to be written;
