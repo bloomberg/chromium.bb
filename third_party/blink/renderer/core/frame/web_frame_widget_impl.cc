@@ -1081,8 +1081,6 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
     TRACE_EVENT0("blink",
                  "WebViewImpl::setIsAcceleratedCompositingActive(true)");
     layer_tree_view_->SetRootLayer(root_layer_);
-
-    layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
     UpdateLayerTreeBackgroundColor();
     UpdateLayerTreeViewport();
     is_accelerated_compositing_active_ = true;
@@ -1141,14 +1139,6 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
   IntPoint point_in_root_frame = view->ViewportToFrame(point_in_viewport);
   return HitTestResultForRootFramePos(point_in_root_frame);
-}
-
-void WebFrameWidgetImpl::SetVisibilityState(
-    mojom::PageVisibilityState visibility_state) {
-  if (layer_tree_view_) {
-    layer_tree_view_->SetVisible(visibility_state ==
-                                 mojom::PageVisibilityState::kVisible);
-  }
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(

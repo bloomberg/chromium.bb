@@ -2236,6 +2236,8 @@ void RenderWidget::SetHidden(bool hidden) {
 
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
+
+  layer_tree_view_->SetVisible(!is_hidden_);
 }
 
 void RenderWidget::DidToggleFullscreen() {

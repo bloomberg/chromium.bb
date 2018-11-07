@@ -3317,24 +3317,9 @@ void WebViewImpl::SetVisibilityState(
     mojom::PageVisibilityState visibility_state,
     bool is_initial_state) {
   DCHECK(GetPage());
-  const bool visible = visibility_state == mojom::PageVisibilityState::kVisible;
-
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
-
-  // There is no frame yet during creation, but we set visibility on the page.
-  // The creator of the LayerTreeView is responsible for setting up its
-  // visibility.
-  if (GetPage()->MainFrame()) {
-    // The compositor for the main frame should be marked as visible or not only
-    // when the main frame is local. A remote main frame is not composited from
-    // this WebView, it would never be visible even if the Page is.
-    if (GetPage()->MainFrame()->IsLocalFrame()) {
-      if (does_composite_)
-        layer_tree_view_->SetVisible(visible);
-    }
-  }
-
-  GetPage()->GetPageScheduler()->SetPageVisible(visible);
+  GetPage()->GetPageScheduler()->SetPageVisible(
+      visibility_state == mojom::PageVisibilityState::kVisible);
 }
 
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {

@@ -77,6 +77,7 @@ class CONTENT_EXPORT LayerTreeView
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
   void SetNeverVisible();
+  void SetVisible(bool visible);
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
@@ -131,7 +132,6 @@ class CONTENT_EXPORT LayerTreeView
   cc::AnimationHost* CompositorAnimationHost() override;
   gfx::Size GetViewportSize() const override;
   void SetBackgroundColor(SkColor color) override;
-  void SetVisible(bool visible) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;

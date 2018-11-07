@@ -138,7 +138,11 @@ void ProxyWebWidgetClient::StartDragging(network::mojom::ReferrerPolicy policy,
 WebViewTestProxyBase::WebViewTestProxyBase()
     : accessibility_controller_(new AccessibilityController(this)),
       text_input_controller_(new TextInputController(this)),
-      view_test_runner_(new TestRunnerForSpecificView(this)) {
+      // TODO(danakj): We should collapse WebViewTestProxy and
+      // WebViewTestProxyBase into one class really. They are both
+      // concrete types now.
+      view_test_runner_(
+          new TestRunnerForSpecificView(static_cast<WebViewTestProxy*>(this))) {
   WebWidgetTestProxyBase::set_web_view_test_proxy_base(this);
 }
 

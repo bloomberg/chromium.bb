@@ -74,7 +74,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
-  void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(SkColor) override;

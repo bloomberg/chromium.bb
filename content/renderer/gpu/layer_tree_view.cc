@@ -204,6 +204,16 @@ void LayerTreeView::SetNeverVisible() {
   never_visible_ = true;
 }
 
+void LayerTreeView::SetVisible(bool visible) {
+  if (never_visible_)
+    return;
+
+  layer_tree_host_->SetVisible(visible);
+
+  if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
+    DidFailToInitializeLayerTreeFrameSink();
+}
+
 const base::WeakPtr<cc::InputHandler>& LayerTreeView::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
 }
@@ -305,16 +315,6 @@ gfx::Size LayerTreeView::GetViewportSize() const {
 
 void LayerTreeView::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
-}
-
-void LayerTreeView::SetVisible(bool visible) {
-  if (never_visible_)
-    return;
-
-  layer_tree_host_->SetVisible(visible);
-
-  if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
-    DidFailToInitializeLayerTreeFrameSink();
 }
 
 void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
