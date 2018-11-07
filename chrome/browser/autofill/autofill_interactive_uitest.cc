@@ -2173,6 +2173,64 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
   ExpectFieldValue("phone_form1", "");
 }
 
+// Test that a page with 2 forms with no name and id containing fields with no
+// name or if get filled properly.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       FillFormAndFieldWithNoNameOrId) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/forms_without_identifiers.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Focus on the first field of the second form.
+  bool result = false;
+  std::string script =
+      R"( function onFocusHandler(e) {
+          e.target.removeEventListener(e.type, arguments.callee);
+          domAutomationController.send(true);
+        }
+        if (document.readyState === 'complete') {
+          var target = document.forms[1].elements[0];
+          target.addEventListener('focus', onFocusHandler);
+          target.focus();
+        } else {
+          domAutomationController.send(false);
+        })";
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractBool(GetWebContents(), script, &result));
+  ASSERT_TRUE(result);
+
+  // Start filling the first name field with "M" and wait for the popup to be
+  // shown.
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M, {ObservedUiEvents::kSuggestionShown});
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+
+  // Press Enter to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
+
+  // Make sure that the form was filled.
+  std::string value;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(),
+      "window.domAutomationController.send("
+      "    document.forms[1].elements[0].value);",
+      &value));
+  EXPECT_EQ("Milton C. Waddams", value) << "for first field";
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetWebContents(),
+      "window.domAutomationController.send("
+      "    document.forms[1].elements[1].value);",
+      &value));
+  EXPECT_EQ("red.swingline@initech.com", value) << "for second field";
+}
+
 // Test that we can Autofill forms where some fields name change during the
 // fill.
 IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {

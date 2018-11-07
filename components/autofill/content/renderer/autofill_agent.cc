@@ -450,7 +450,9 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
 
   was_last_action_fill_ = true;
 
-  if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
+  // If this is a re-fill, replace the triggering element if it's invalid.
+  if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
+      id == kNoQueryId)
     ReplaceElementIfNowInvalid(form);
 
   query_node_autofill_state_ = element_.GetAutofillState();
@@ -1129,6 +1131,8 @@ bool AutofillAgent::FindTheUniqueNewVersionOfOldElement(
   return true;
 }
 
+// TODO(crbug.com/896689): Update this method to use the unique ids once they
+// are implemented.
 void AutofillAgent::ReplaceElementIfNowInvalid(const FormData& original_form) {
   // If the document is invalid, bail out.
   if (element_.GetDocument().IsNull())
