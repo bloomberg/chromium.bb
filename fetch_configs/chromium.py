@@ -19,9 +19,15 @@ class Chromium(config_util.Config):
                  'url'    : url,
                  'managed'   : False,
                  'custom_deps': {},
+                 'custom_vars': {},
     }
     if props.get('webkit_revision', '') == 'ToT':
-      solution['custom_vars'] = {'webkit_revision': ''}
+      solution['custom_vars']['webkit_revision'] = ''
+    if bool(props.get('internal', False)):
+      solution['custom_vars']['checkout_src_internal'] = True
+      # TODO(jbudorick): Remove this once crbug.com/803846 and
+      # crbug.com/856278 are complete.
+      solution['custom_vars']['checkout_mobile_internal'] = True
     spec = {
       'solutions': [solution],
     }
@@ -29,6 +35,7 @@ class Chromium(config_util.Config):
       spec['target_os'] = props['target_os'].split(',')
     if props.get('target_os_only'):
       spec['target_os_only'] = props['target_os_only']
+
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,
