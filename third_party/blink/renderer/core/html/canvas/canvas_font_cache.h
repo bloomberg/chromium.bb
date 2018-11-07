@@ -28,8 +28,10 @@ class CORE_EXPORT CanvasFontCache final
 
  public:
   static CanvasFontCache* Create(Document& document) {
-    return new CanvasFontCache(document);
+    return MakeGarbageCollected<CanvasFontCache>(document);
   }
+
+  explicit CanvasFontCache(Document&);
 
   MutableCSSPropertyValueSet* ParseFont(const String&);
   void PruneAll();
@@ -53,7 +55,6 @@ class CORE_EXPORT CanvasFontCache final
   ~CanvasFontCache() override;
 
  private:
-  explicit CanvasFontCache(Document&);
   void Dispose();
   void SchedulePruningIfNeeded();
   typedef HeapHashMap<String, Member<MutableCSSPropertyValueSet>>

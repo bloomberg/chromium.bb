@@ -32,14 +32,6 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
       std::unique_ptr<WebCanvasCaptureHandler>,
       double frame_rate);
 
-  HTMLCanvasElement* canvas() const;
-  void requestFrame();
-
-  CanvasCaptureMediaStreamTrack* clone(ScriptState*) override;
-
-  void Trace(blink::Visitor*) override;
-
- private:
   CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&,
                                 MediaStreamComponent*);
   CanvasCaptureMediaStreamTrack(MediaStreamComponent*,
@@ -52,6 +44,14 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
                                 std::unique_ptr<WebCanvasCaptureHandler>,
                                 double frame_rate);
 
+  HTMLCanvasElement* canvas() const;
+  void requestFrame();
+
+  CanvasCaptureMediaStreamTrack* clone(ScriptState*) override;
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   Member<HTMLCanvasElement> canvas_element_;
   Member<CanvasDrawListener> draw_listener_;
 };

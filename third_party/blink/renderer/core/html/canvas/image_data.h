@@ -108,6 +108,10 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                                   DOMArrayBufferView*,
                                   const ImageDataColorSettings* = nullptr);
 
+  ImageData(const IntSize&,
+            DOMArrayBufferView*,
+            const ImageDataColorSettings* = nullptr);
+
   ImageData* CropRect(const IntRect&, bool flip_y = false);
 
   ImageDataStorageFormat GetImageDataStorageFormat();
@@ -172,10 +176,6 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
       ExceptionState* = nullptr);
 
  private:
-  ImageData(const IntSize&,
-            DOMArrayBufferView*,
-            const ImageDataColorSettings* = nullptr);
-
   IntSize size_;
   Member<ImageDataColorSettings> color_settings_;
   ImageDataArray data_union_;

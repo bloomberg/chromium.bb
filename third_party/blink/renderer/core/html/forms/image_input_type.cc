@@ -47,7 +47,7 @@ inline ImageInputType::ImageInputType(HTMLInputElement& element)
     : BaseButtonInputType(element), use_fallback_content_(false) {}
 
 InputType* ImageInputType::Create(HTMLInputElement& element) {
-  return new ImageInputType(element);
+  return MakeGarbageCollected<ImageInputType>(element);
 }
 
 const AtomicString& ImageInputType::FormControlType() const {

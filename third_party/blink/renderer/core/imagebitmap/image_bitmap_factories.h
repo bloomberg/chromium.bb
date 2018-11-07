@@ -109,8 +109,14 @@ class ImageBitmapFactories final
                                      base::Optional<IntRect> crop_rect,
                                      const ImageBitmapOptions* options,
                                      ScriptState* script_state) {
-      return new ImageBitmapLoader(factory, crop_rect, script_state, options);
+      return MakeGarbageCollected<ImageBitmapLoader>(factory, crop_rect,
+                                                     script_state, options);
     }
+
+    ImageBitmapLoader(ImageBitmapFactories&,
+                      base::Optional<IntRect> crop_rect,
+                      ScriptState*,
+                      const ImageBitmapOptions*);
 
     void LoadBlobAsync(Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
@@ -120,11 +126,6 @@ class ImageBitmapFactories final
     ~ImageBitmapLoader() override = default;
 
    private:
-    ImageBitmapLoader(ImageBitmapFactories&,
-                      base::Optional<IntRect> crop_rect,
-                      ScriptState*,
-                      const ImageBitmapOptions*);
-
     enum ImageBitmapRejectionReason {
       kUndecodableImageBitmapRejectionReason,
       kAllocationFailureImageBitmapRejectionReason,
