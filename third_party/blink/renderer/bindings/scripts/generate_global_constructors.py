@@ -153,14 +153,14 @@ def write_global_constructors_partial_interface(interface_name, idl_filename, co
 def main():
     options, args = parse_options()
 
-    # Input IDL files are passed in a file, due to OS command line length
-    # limits. This is generated at GYP time, which is ok b/c files are static.
+    # File paths of input IDL files are passed in a file, which is generated at
+    # GN time. It is OK because the target IDL files are static.
     idl_files = read_file_to_list(options.idl_files_list)
 
     # Output IDL files (to generate) are passed at the command line, since
     # these are in the build directory, which is determined at build time, not
-    # GYP time.
-    # These are passed as pairs of GlobalObjectName, GlobalObject.idl
+    # GN time.
+    # These are passed as pairs of GlobalObjectName, global_object.idl
     interface_name_idl_filename = [(args[i], args[i + 1])
                                    for i in range(0, len(args), 2)]
 
