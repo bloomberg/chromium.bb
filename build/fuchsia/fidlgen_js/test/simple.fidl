@@ -31,6 +31,8 @@ struct StuffAndThings {
   BasicStruct basic;
   string later_string;
   array<int32>:ARRRR_SIZE arrrr;
+  vector<string>? nullable_vector_of_string0;
+  vector<string>? nullable_vector_of_string1;
 };
 
 struct StructWithBool {

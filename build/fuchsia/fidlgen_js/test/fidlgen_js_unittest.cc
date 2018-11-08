@@ -174,6 +174,10 @@ class BindingsSetupHelper {
     return result;
   }
 
+  bool IsNull(const std::string& name) {
+    return runner_.global()->Get(gin::StringToV8(isolate_, name))->IsNull();
+  }
+
   void DestroyBindingsForTesting() { zx_bindings_.reset(); }
 
   zx::channel& server() { return server_; }
@@ -255,6 +259,11 @@ class TestolaImpl : public fidljstest::Testola {
     for (uint64_t i = 0; i < fidljstest::ARRRR_SIZE; ++i) {
       sat.arrrr[i] = static_cast<int32_t>(i * 5) - 10;
     }
+    sat.nullable_vector_of_string0 = nullptr;
+    fidl::VectorPtr<fidl::StringPtr> vector_of_str;
+    vector_of_str.push_back("passed_str0");
+    vector_of_str.push_back("passed_str1");
+    sat.nullable_vector_of_string1 = std::move(vector_of_str);
 
     resp(std::move(sat));
   }
@@ -758,6 +767,8 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
              this.result_basic_u32 = sat.basic.u32;
              this.result_later_string = sat.later_string;
              this.result_arrrr = sat.arrrr;
+             this.result_vs0 = sat.nullable_vector_of_string0;
+             this.result_vs1 = sat.nullable_vector_of_string1;
            })
            .catch((e) => log('FAILED: ' + e));
     )";
@@ -790,6 +801,12 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
   for (uint64_t i = 0; i < fidljstest::ARRRR_SIZE; ++i) {
     EXPECT_EQ(result_arrrr[i], static_cast<int32_t>(i * 5) - 10);
   }
+  EXPECT_TRUE(helper.IsNull("result_vs0"));
+  EXPECT_FALSE(helper.IsNull("result_vs1"));
+  auto result_vs1 = helper.Get<std::vector<std::string>>("result_vs1");
+  ASSERT_EQ(result_vs1.size(), 2u);
+  EXPECT_EQ(result_vs1[0], "passed_str0");
+  EXPECT_EQ(result_vs1[1], "passed_str1");
 }
 
 TEST_F(FidlGenJsTest, HandlePassing) {
