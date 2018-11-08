@@ -205,6 +205,13 @@ if (use_system_harfbuzz) {
       # correctly.
       ":harfbuzz_warnings",
     ]
+
+    # This allows the compiler to do further optimizations in the code.
+    if (!is_debug) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_speed" ]
+    }
+
     public_configs = [ ":harfbuzz_config" ]
 
     deps = [
