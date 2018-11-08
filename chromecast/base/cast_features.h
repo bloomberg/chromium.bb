@@ -17,7 +17,8 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
+class Value;
+}  // namespace base
 
 namespace chromecast {
 
@@ -57,7 +58,7 @@ bool IsFeatureEnabled(const base::Feature& feature);
 // to disk. Encodes all values as strings,  which is how the FieldTrial
 // classes expect the param data.
 base::DictionaryValue GetOverriddenFeaturesForStorage(
-    const base::DictionaryValue& features);
+    const base::Value& features);
 
 // Query the set of experiment ids set for this run. Intended only for metrics
 // reporting. Must be called after InitializeFeatureList(). May be called on any
