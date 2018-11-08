@@ -457,9 +457,7 @@ public class ContentSuggestionsNotifier {
         if (prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return false;
 
         ChannelsInitializer initializer = new ChannelsInitializer(
-                new NotificationManagerProxyImpl(
-                        (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.NOTIFICATION_SERVICE)),
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext()),
                 ContextUtils.getApplicationContext().getResources());
         if (enabled) {
             initializer.ensureInitialized(ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
@@ -482,9 +480,8 @@ public class ContentSuggestionsNotifier {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         if (!prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return;
 
-        NotificationManagerProxy manager = new NotificationManagerProxyImpl(
-                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.NOTIFICATION_SERVICE));
+        NotificationManagerProxy manager =
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
         manager.deleteNotificationChannel(ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS);
         prefs.edit().remove(PREF_CHANNEL_CREATED).apply();
     }

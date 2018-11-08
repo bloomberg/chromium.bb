@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.app.NotificationManager;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
@@ -30,8 +29,8 @@ public class NotificationBuilderFactory {
             boolean preferCompat, String channelId) {
         Context context = ContextUtils.getApplicationContext();
 
-        NotificationManagerProxyImpl notificationManagerProxy = new NotificationManagerProxyImpl(
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        NotificationManagerProxyImpl notificationManagerProxy =
+                new NotificationManagerProxyImpl(context);
 
         ChannelsInitializer channelsInitializer =
                 new ChannelsInitializer(notificationManagerProxy, context.getResources());

@@ -20,6 +20,10 @@ import java.util.List;
  *     https://developer.android.com/reference/android/app/NotificationManager.html</a>
  */
 public interface NotificationManagerProxy {
+    // Implemented by NotificationManagerCompat and thus available on all API levels.
+    // Note that on < Kitkat, this always returns true.
+    boolean areNotificationsEnabled();
+
     void cancel(int id);
     void cancel(String tag, int id);
     void cancelAll();
