@@ -9,6 +9,9 @@
         "browse:media:pinterest": {
             "DEFAULT": "system_health_desktop_035.wprgo"
         },
+        "browse:media:pinterest:2018": {
+            "DEFAULT": "system_health_desktop_939ec7010c.wprgo"
+        },
         "browse:media:tumblr": {
             "DEFAULT": "system_health_desktop_036.wprgo"
         },

@@ -663,6 +663,7 @@ class TumblrDesktopStory2018(_MediaBrowsingStory):
     action_runner.Wait(1)  # To make browsing more realistic.
 
 
+
 class PinterestDesktopStory(_MediaBrowsingStory):
   NAME = 'browse:media:pinterest'
   URL = 'https://pinterest.com'
@@ -699,6 +700,51 @@ class PinterestDesktopStory(_MediaBrowsingStory):
                           '".Button.borderless.close.visible")')
     action_runner.ClickElement(element_function=x_element_function)
     action_runner.Wait(1)  # Wait to make navigation realistic.
+
+
+class PinterestDesktopStory2018(_MediaBrowsingStory):
+  NAME = 'browse:media:pinterest:2018'
+  URL = 'https://pinterest.com'
+  ITEM_SELECTOR = '.pinWrapper a[data-force-refresh="1"]'
+  ITEM_VIEW_TIME = 5
+  IS_SINGLE_PAGE_APP = True
+  ITEMS_TO_VISIT = 8
+  INCREMENT_INDEX_AFTER_EACH_ITEM = True
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+  # SKIP_LOGIN = False
+
+  def _Login(self, action_runner):
+    pinterest_login.LoginDesktopAccount(action_runner, 'googletest')
+
+  def _ViewMediaItem(self, action_runner, index):
+    super(PinterestDesktopStory2018, self)._ViewMediaItem(action_runner, index)
+    # 1. click on item
+    # 2. pin every other item
+    # 3. go back to the main page
+    action_runner.Wait(1)  # Wait to make navigation realistic.
+    if index % 2 == 0:
+      if not self.SKIP_LOGIN:
+        action_runner.Wait(2)
+      action_runner.WaitForElement(selector='.SaveButton')
+      action_runner.ClickElement(selector='.SaveButton')
+      if not self.SKIP_LOGIN:
+        action_runner.Wait(2)
+      action_runner.Wait(2.5)
+      action_runner.WaitForElement(
+                  selector='div[data-test-id=BoardPickerSaveButton]')
+      action_runner.ClickElement(
+                  selector='div[data-test-id=BoardPickerSaveButton]')
+      action_runner.Wait(1.5)
+    action_runner.Wait(1)
+    if not self.SKIP_LOGIN:
+      action_runner.Wait(2)
+    action_runner.NavigateBack()
+
+    action_runner.WaitForElement(selector='input[name=searchBoxInput]')
+    action_runner.Wait(1)
+    if not self.SKIP_LOGIN:
+      action_runner.Wait(2)
 
 
 ##############################################################################
