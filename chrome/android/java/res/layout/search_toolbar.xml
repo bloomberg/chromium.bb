@@ -6,13 +6,16 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/search_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:visibility="gone" >
 
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
     <EditText
+        tools:ignore="Autofill,LabelFor"
         android:id="@+id/search_text"
         android:layout_width="0dp"
         android:layout_height="match_parent"

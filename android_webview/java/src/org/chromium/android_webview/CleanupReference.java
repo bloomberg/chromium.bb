@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -81,6 +82,7 @@ public class CleanupReference extends WeakReference<Object> {
      * This is lazily initialized as ThreadUtils.getUiThreadLooper() may not be
      * set yet early in startup.
      */
+    @SuppressLint("HandlerLeak")
     private static class LazyHolder {
         static final Handler sHandler = new Handler(ThreadUtils.getUiThreadLooper()) {
             @Override
