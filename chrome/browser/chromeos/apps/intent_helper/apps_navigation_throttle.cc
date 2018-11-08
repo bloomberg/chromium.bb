@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
+#include "chrome/browser/chromeos/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
@@ -165,17 +166,19 @@ AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
 // static
 void AppsNavigationThrottle::ShowIntentPickerBubble(
     content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url) {
   arc::ArcNavigationThrottle::GetArcAppsForPicker(
       web_contents, url,
       base::BindOnce(
           &AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps,
-          web_contents, url));
+          web_contents, ui_auto_display_service, url));
 }
 
 // static
 void AppsNavigationThrottle::OnIntentPickerClosed(
     content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
     const std::string& launch_name,
     apps::mojom::AppType app_type,
@@ -214,7 +217,13 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
             /*should_persist=*/true);
       }
       // We reach here if the picker was closed without an app being chosen,
-      // e.g. due to the tab being closed. We don't want to do anything.
+      // e.g. due to the tab being closed. Keep count of this scenario so we can
+      // stop the UI from showing after 2+ dismissals.
+      if (close_reason ==
+          chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED) {
+        if (ui_auto_display_service)
+          ui_auto_display_service->IncrementCounter(url);
+      }
       break;
     case apps::mojom::AppType::kCrostini:
       NOTREACHED();
@@ -256,7 +265,16 @@ AppsNavigationThrottle::AppsNavigationThrottle(
     : content::NavigationThrottle(navigation_handle),
       arc_enabled_(arc_enabled),
       ui_displayed_(false),
-      weak_factory_(this) {}
+      ui_auto_display_service_(
+          IntentPickerAutoDisplayService::Get(Profile::FromBrowserContext(
+              navigation_handle->GetWebContents()->GetBrowserContext()))),
+      weak_factory_(this) {
+  // |ui_auto_display_service_| can be null iff the call is coming from
+  // IntentPickerView. Since the pointer to our service is never modified
+  // (in case it is successfully created here) this check covers all the
+  // non-static methods in this class.
+  DCHECK(ui_auto_display_service_);
+}
 
 AppsNavigationThrottle::~AppsNavigationThrottle() = default;
 
@@ -354,12 +372,14 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
 // static
 void AppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
     content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
   std::vector<IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
 
-  ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps_for_picker));
+  ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service, url,
+                                std::move(apps_for_picker));
 }
 
 // static
@@ -392,6 +412,7 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
 // static
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps) {
   if (apps.empty())
@@ -408,7 +429,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       std::move(apps),
       /*disable_stay_in_chrome=*/false,
       base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed,
-                     web_contents, url));
+                     web_contents, ui_auto_display_service, url));
 }
 
 // static
@@ -458,17 +479,14 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
   // until "Remember my choice" is available for desktop PWAs.
   // TODO(crbug.com/826982): show the intent picker when the app registry is
   // available to persist "Remember my choice" for PWAs.
-  if (std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
-                  [](const IntentPickerAppInfo& app_info) {
-                    return app_info.type == apps::mojom::AppType::kWeb;
-                  })) {
+  if (ShouldAutoDisplayUi(apps_for_picker, web_contents, url)) {
+    ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service_, url,
+                                  std::move(apps_for_picker));
+  } else {
     ui_displayed_ = false;
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     if (browser)
       browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
-  } else {
-    ShowIntentPickerBubbleForApps(web_contents, url,
-                                  std::move(apps_for_picker));
   }
 
   // We are about to resume the navigation, which may destroy this object.
@@ -537,7 +555,8 @@ AppsNavigationThrottle::HandleRequest() {
     if (!apps.empty())
       ui_displayed_ = true;
 
-    ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps));
+    ShowIntentPickerBubbleForApps(web_contents, ui_auto_display_service_, url,
+                                  std::move(apps));
   }
 
   return content::NavigationThrottle::PROCEED;
@@ -548,6 +567,23 @@ void AppsNavigationThrottle::CloseTab() {
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   if (web_contents)
     web_contents->ClosePage();
+}
+
+bool AppsNavigationThrottle::ShouldAutoDisplayUi(
+    const std::vector<IntentPickerAppInfo>& apps_for_picker,
+    content::WebContents* web_contents,
+    const GURL& url) {
+  // Check if all the app candidates are PWAs.
+  bool only_pwa_apps =
+      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
+                  [](const IntentPickerAppInfo& app_info) {
+                    return app_info.type == apps::mojom::AppType::kWeb;
+                  });
+  if (only_pwa_apps)
+    return false;
+
+  DCHECK(ui_auto_display_service_);
+  return ui_auto_display_service_->ShouldAutoDisplayUi(url);
 }
 
 }  // namespace chromeos

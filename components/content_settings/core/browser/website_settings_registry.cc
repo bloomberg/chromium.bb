@@ -187,6 +187,13 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::SYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
            WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
            DESKTOP, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  // Set to keep track of dismissals without user's interaction for intent
+  // picker UI.
+  Register(CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY,
+           "intent-picker-auto-display", nullptr,
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
+           DESKTOP, WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings

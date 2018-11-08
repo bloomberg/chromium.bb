@@ -763,6 +763,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         CONTENT_SETTINGS_TYPE_APP_BANNER, base::Time(), base::Time::Max(),
         website_settings_filter);
 
+#if !defined(OS_ANDROID)
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, delete_begin_, delete_end_,
+        website_settings_filter);
+#endif
+
     PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(
         filter);
 
