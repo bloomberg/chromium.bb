@@ -60,6 +60,22 @@ def _GetUnderlyingPrimitiveType(t):
         'type, but got ' + str(t.kind))
 
 
+def _InlineSizeOfPrimitiveType(primitive_type):
+  return {
+      'bool': 1,
+      'float32': 4,
+      'float64': 8,
+      'int16': 2,
+      'int32': 4,
+      'int64': 8,
+      'int8': 1,
+      'uint16': 2,
+      'uint32': 4,
+      'uint64': 8,
+      'uint8': 1,
+  }[primitive_type]
+
+
 def _JsTypeForPrimitiveType(t):
   mapping = {
       fidl.IntegerType.INT16: 'number',
@@ -105,19 +121,7 @@ class Compiler(object):
 
   def _InlineSizeOfType(self, t):
     if t.kind == fidl.TypeKind.PRIMITIVE:
-      return {
-          'bool': 1,
-          'float32': 4,
-          'float64': 8,
-          'int16': 2,
-          'int32': 4,
-          'int64': 8,
-          'int8': 1,
-          'uint16': 2,
-          'uint32': 4,
-          'uint64': 8,
-          'uint8': 1,
-      }[t.subtype]
+      return _InlineSizeOfPrimitiveType(t.subtype)
     elif t.kind == fidl.TypeKind.STRING:
       return 16
     elif t.kind == fidl.TypeKind.IDENTIFIER:
@@ -183,6 +187,8 @@ const %(name)s = %(value)s;
     self.resolved_constant_name[const.name] = name
 
   def _CompileEnum(self, enum):
+    self.type_inline_size_by_name[enum.name] = _InlineSizeOfPrimitiveType(
+        enum.type.value)
     compound = _ParseCompoundIdentifier(enum.name)
     name = _CompileCompoundIdentifier(compound)
     js_type = _JsTypeForPrimitiveType(enum.type)

@@ -264,6 +264,12 @@ class TestolaImpl : public fidljstest::Testola {
     vector_of_str.push_back("passed_str0");
     vector_of_str.push_back("passed_str1");
     sat.nullable_vector_of_string1 = std::move(vector_of_str);
+    fidl::VectorPtr<fidljstest::Blorp> vector_of_blorp;
+    vector_of_blorp->push_back(fidljstest::Blorp::GAMMA);
+    vector_of_blorp->push_back(fidljstest::Blorp::BETA);
+    vector_of_blorp->push_back(fidljstest::Blorp::BETA);
+    vector_of_blorp->push_back(fidljstest::Blorp::ALPHA);
+    sat.vector_of_blorp = std::move(vector_of_blorp);
 
     resp(std::move(sat));
   }
@@ -769,6 +775,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
              this.result_arrrr = sat.arrrr;
              this.result_vs0 = sat.nullable_vector_of_string0;
              this.result_vs1 = sat.nullable_vector_of_string1;
+             this.result_vblorp = sat.vector_of_blorp;
            })
            .catch((e) => log('FAILED: ' + e));
     )";
@@ -807,6 +814,15 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
   ASSERT_EQ(result_vs1.size(), 2u);
   EXPECT_EQ(result_vs1[0], "passed_str0");
   EXPECT_EQ(result_vs1[1], "passed_str1");
+
+  // This is a vector of enum class fidljstest::Blorp, but gin can't retrieve
+  // those, so just get it as int, and cast to check values.
+  auto result_vblorp = helper.Get<std::vector<int>>("result_vblorp");
+  ASSERT_EQ(result_vblorp.size(), 4u);
+  EXPECT_EQ(result_vblorp[0], static_cast<int>(fidljstest::Blorp::GAMMA));
+  EXPECT_EQ(result_vblorp[1], static_cast<int>(fidljstest::Blorp::BETA));
+  EXPECT_EQ(result_vblorp[2], static_cast<int>(fidljstest::Blorp::BETA));
+  EXPECT_EQ(result_vblorp[3], static_cast<int>(fidljstest::Blorp::ALPHA));
 }
 
 TEST_F(FidlGenJsTest, HandlePassing) {
