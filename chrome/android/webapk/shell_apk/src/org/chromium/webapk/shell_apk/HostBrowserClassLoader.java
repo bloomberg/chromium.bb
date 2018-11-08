@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.util.Log;
 
-import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkVersionUtils;
 
 import java.io.File;
@@ -24,18 +23,6 @@ public class HostBrowserClassLoader {
     public static final String DEX_DIR_NAME = "dex";
 
     private static final String TAG = "cr_HostBrowserClassLoader";
-
-    /**
-     * Name of the shared preference for Chrome's version code.
-     */
-    private static final String REMOTE_VERSION_CODE_PREF =
-            "org.chromium.webapk.shell_apk.version_code";
-
-    /**
-     * Name of the shared preference for the version number of the dynamically loaded dex.
-     */
-    private static final String RUNTIME_DEX_VERSION_PREF =
-            "org.chromium.webapk.shell_apk.dex_version";
 
     /*
      * ClassLoader for WebAPK dex. Static so that the same ClassLoader is used for app's lifetime.
@@ -75,10 +62,10 @@ public class HostBrowserClassLoader {
      */
     public static ClassLoader createClassLoader(
             Context context, Context remoteContext, DexLoader dexLoader, String canaryClassName) {
-        SharedPreferences preferences =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
+        SharedPreferences preferences = WebApkSharedPreferences.getPrefs(context);
 
-        int runtimeDexVersion = preferences.getInt(RUNTIME_DEX_VERSION_PREF, -1);
+        int runtimeDexVersion =
+                preferences.getInt(WebApkSharedPreferences.PREF_RUNTIME_DEX_VERSION, -1);
         int newRuntimeDexVersion = checkForNewRuntimeDexVersion(preferences, remoteContext);
         if (newRuntimeDexVersion == -1) {
             newRuntimeDexVersion = runtimeDexVersion;
@@ -102,9 +89,9 @@ public class HostBrowserClassLoader {
     public static boolean canReuseClassLoaderInstance(Context context, Context remoteContext) {
         // WebAPK may still be running when the host browser gets upgraded. Prevent ClassLoader from
         // getting reused in this scenario.
-        SharedPreferences preferences =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        int cachedRemoteVersionCode = preferences.getInt(REMOTE_VERSION_CODE_PREF, -1);
+        SharedPreferences preferences = WebApkSharedPreferences.getPrefs(context);
+        int cachedRemoteVersionCode =
+                preferences.getInt(WebApkSharedPreferences.PREF_REMOTE_VERSION_CODE, -1);
         int remoteVersionCode = getVersionCode(remoteContext);
         return remoteVersionCode == cachedRemoteVersionCode;
     }
@@ -122,15 +109,16 @@ public class HostBrowserClassLoader {
         // changes. Checking the APK's version code is less expensive than reading from the APK's
         // assets.
         int remoteVersionCode = getVersionCode(remoteContext);
-        int cachedRemoteVersionCode = preferences.getInt(REMOTE_VERSION_CODE_PREF, -1);
+        int cachedRemoteVersionCode =
+                preferences.getInt(WebApkSharedPreferences.PREF_REMOTE_VERSION_CODE, -1);
         if (cachedRemoteVersionCode == remoteVersionCode) {
             return -1;
         }
 
         int runtimeDexVersion = readAssetContentsToInt(remoteContext, "webapk_dex_version.txt");
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(REMOTE_VERSION_CODE_PREF, remoteVersionCode);
-        editor.putInt(RUNTIME_DEX_VERSION_PREF, runtimeDexVersion);
+        editor.putInt(WebApkSharedPreferences.PREF_REMOTE_VERSION_CODE, remoteVersionCode);
+        editor.putInt(WebApkSharedPreferences.PREF_RUNTIME_DEX_VERSION, runtimeDexVersion);
         editor.apply();
         return runtimeDexVersion;
     }
