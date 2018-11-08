@@ -156,9 +156,7 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
 }
 
 gfx::Insets GetInkDropInsets() {
-  // Slight insets are required for older layouts as they use a slightly smaller
-  // 24dp inkdrop.
-  return gfx::Insets(ui::MaterialDesignController::IsNewerMaterialUi() ? 0 : 2);
+  return gfx::Insets();
 }
 
 int GetInkDropCornerRadius(const views::View* host_view) {

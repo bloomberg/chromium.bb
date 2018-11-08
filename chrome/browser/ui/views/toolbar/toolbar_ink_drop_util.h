@@ -71,9 +71,6 @@ std::unique_ptr<views::InkDropRipple> CreateToolbarInkDropRipple(
     const BaseInkDropHostView* host_view,
     const gfx::Point& center_point,
     const gfx::Insets& margin_insets) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
-    return host_view->BaseInkDropHostView::CreateInkDropRipple();
-
   return std::make_unique<views::FloodFillInkDropRipple>(
       host_view->size(), GetToolbarInkDropInsets(host_view, margin_insets),
       center_point, host_view->GetInkDropBaseColor(),
@@ -89,9 +86,6 @@ template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
     const BaseInkDropHostView* host_view,
     const gfx::Point& center_point) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
-    return host_view->BaseInkDropHostView::CreateInkDropHighlight();
-
   const int highlight_dimensions = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   const gfx::Size highlight_size(highlight_dimensions, highlight_dimensions);
 
