@@ -66,7 +66,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   proto->set_app_id(web_app.app_id());
   proto->set_name(web_app.name());
   proto->set_description(web_app.description());
-  proto->set_launch_url(web_app.launch_url());
+  proto->set_launch_url(web_app.launch_url().spec());
 
   return proto;
 }
@@ -75,9 +75,16 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   auto web_app = std::make_unique<WebApp>(proto.app_id());
 
+  GURL launch_url(proto.launch_url());
+  if (launch_url.is_empty() || !launch_url.is_valid()) {
+    LOG(ERROR) << "WebApp proto launch_url parse error: "
+               << launch_url.possibly_invalid_spec();
+    return nullptr;
+  }
+
+  web_app->SetLaunchUrl(launch_url);
   web_app->SetName(proto.name());
   web_app->SetDescription(proto.description());
-  web_app->SetLaunchUrl(proto.launch_url());
 
   return web_app;
 }

@@ -4,6 +4,7 @@
 
 #include <ostream>
 
+#include "base/logging.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
@@ -20,7 +21,8 @@ void WebApp::SetDescription(const std::string& description) {
   description_ = description;
 }
 
-void WebApp::SetLaunchUrl(const std::string& launch_url) {
+void WebApp::SetLaunchUrl(const GURL& launch_url) {
+  DCHECK(!launch_url.is_empty() && launch_url.is_valid());
   launch_url_ = launch_url;
 }
 
