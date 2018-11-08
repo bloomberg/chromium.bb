@@ -436,7 +436,8 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
     return false;
 
   return IsEnableFlagSet(KeyboardEnableFlag::kExtensionEnabled) ||
-         IsEnableFlagSet(KeyboardEnableFlag::kTouchEnabled);
+         IsEnableFlagSet(KeyboardEnableFlag::kTouchEnabled) ||
+         IsEnableFlagSet(KeyboardEnableFlag::kTemporarilyEnabled);
 }
 
 bool KeyboardController::IsKeyboardOverscrollEnabled() const {
@@ -527,6 +528,10 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       ui_->HideKeyboardWindow();
       ChangeState(KeyboardControllerState::HIDDEN);
+
+      // Clear the temporary enabled flag when the keyboard is hidden.
+      // Note: This does not actually disable the keyboard.
+      ClearEnableFlag(mojom::KeyboardEnableFlag::kTemporarilyEnabled);
 
       for (KeyboardControllerObserver& observer : observer_list_)
         observer.OnKeyboardHidden(reason == HIDE_REASON_SYSTEM_TEMPORARY);
