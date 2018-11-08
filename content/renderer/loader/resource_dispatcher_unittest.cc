@@ -395,6 +395,10 @@ class CompletionTimeConversionTest : public ResourceDispatcherTest {
         base::Time() + base::TimeDelta::FromSeconds(99);
     client->OnReceiveResponse(response_head);
 
+    mojo::DataPipe pipe;
+    client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+    pipe.producer_handle.reset();  // The response is empty.
+
     network::URLLoaderCompletionStatus status;
     status.completion_time = completion_time;
 

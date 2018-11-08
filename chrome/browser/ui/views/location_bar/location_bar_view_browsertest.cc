@@ -228,6 +228,9 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
     resource_response.mime_type = "text/html";
     resource_response.ssl_info = ssl_info;
     params->client->OnReceiveResponse(resource_response);
+    // Send an empty response's body. This pipe is not filled with data.
+    mojo::DataPipe pipe;
+    params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     network::URLLoaderCompletionStatus completion_status;
     completion_status.ssl_info = ssl_info;
     params->client->OnComplete(completion_status);
