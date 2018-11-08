@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments;
+package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.os.Handler;
@@ -15,13 +15,21 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.autofill_assistant.ui.PaymentRequestUI;
+import org.chromium.chrome.browser.payments.AddressEditor;
+import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.payments.AutofillContact;
+import org.chromium.chrome.browser.payments.AutofillPaymentApp;
+import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
+import org.chromium.chrome.browser.payments.BasicCardUtils;
+import org.chromium.chrome.browser.payments.CardEditor;
+import org.chromium.chrome.browser.payments.ContactEditor;
+import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.Client;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
@@ -43,7 +51,7 @@ import java.util.Map;
  * TODO(crbug.com/806868): Refactor shared codes with PaymentRequestImpl to a common place when the
  * UX is fixed.
  */
-public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client {
+public class AutofillAssistantPaymentRequest implements Client {
     private static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
@@ -188,15 +196,6 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
         // This payment request is embedded in another flow, so update the 'Pay' button text to
         // 'Confirm'.
         mUI.updatePayButtonText(R.string.autofill_assistant_payment_info_confirm);
-
-        final FaviconHelper faviconHelper = new FaviconHelper();
-        faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
-                mWebContents.getLastCommittedUrl(),
-                activity.getResources().getDimensionPixelSize(R.dimen.payments_favicon_size),
-                (bitmap, iconUrl) -> {
-                    if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
-                    faviconHelper.destroy();
-                });
 
         mAddressEditor.setEditorDialog(mUI.getEditorDialog());
         mCardEditor.setEditorDialog(mUI.getCardEditorDialog());
