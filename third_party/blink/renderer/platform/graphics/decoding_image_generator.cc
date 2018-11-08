@@ -196,9 +196,7 @@ bool DecodingImageGenerator::QueryYUVA8(
     SkYUVASizeInfo* size_info,
     SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
     SkYUVColorSpace* color_space) const {
-  // YUV decoding does not currently support progressive decoding. See comment
-  // in ImageFrameGenerator.h.
-  if (!can_yuv_decode_ || !all_data_received_)
+  if (!can_yuv_decode_)
     return false;
 
   TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA8");

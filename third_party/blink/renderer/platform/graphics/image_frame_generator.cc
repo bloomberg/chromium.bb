@@ -41,8 +41,7 @@ namespace blink {
 static bool UpdateYUVComponentSizes(ImageDecoder* decoder,
                                     SkISize component_sizes[4],
                                     size_t component_width_bytes[4]) {
-  if (!decoder->CanDecodeToYUV())
-    return false;
+  DCHECK(decoder->CanDecodeToYUV());
 
   for (int yuv_index = 0; yuv_index < 3; ++yuv_index) {
     IntSize size = decoder->DecodedYUVSize(yuv_index);
@@ -151,6 +150,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
                                       void* planes[3],
                                       const size_t row_bytes[3]) {
   MutexLocker lock(generator_mutex_);
+  DCHECK_EQ(index, 0u);
 
   // TODO (scroggo): The only interesting thing this uses from the
   // ImageFrameGenerator is m_decodeFailed. Move this into
