@@ -43,8 +43,7 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
   //  https://html.spec.whatwg.org/multipage/links.html#linkTypes
   if (GetElement().HasTagName(html_names::kLinkTag)) {
     if (SupportedTokensLink().Contains(token_value) ||
-        (RuntimeEnabledFeatures::ModulePreloadEnabled() &&
-         token_value == "modulepreload")) {
+        token_value == "modulepreload") {
       return true;
     }
   } else if ((GetElement().HasTagName(html_names::kATag) ||
