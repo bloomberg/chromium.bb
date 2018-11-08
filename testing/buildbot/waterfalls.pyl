@@ -1276,6 +1276,10 @@
         'additional_compile_targets': [
           'all',
         ],
+        # TODO(https://crbug.com/900790): Logging via SSH breaks things.
+        'args': [
+          '--exclude-system-logs',
+        ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
         },
