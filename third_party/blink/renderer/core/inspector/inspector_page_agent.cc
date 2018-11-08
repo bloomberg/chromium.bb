@@ -371,8 +371,8 @@ InspectorPageAgent* InspectorPageAgent::Create(
     Client* client,
     InspectorResourceContentLoader* resource_content_loader,
     v8_inspector::V8InspectorSession* v8_session) {
-  return new InspectorPageAgent(inspected_frames, client,
-                                resource_content_loader, v8_session);
+  return MakeGarbageCollected<InspectorPageAgent>(
+      inspected_frames, client, resource_content_loader, v8_session);
 }
 
 String InspectorPageAgent::ResourceTypeJson(

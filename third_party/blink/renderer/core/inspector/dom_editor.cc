@@ -225,7 +225,7 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
         next_sibling_(node->nextSibling()),
         html_(html),
         new_node_(nullptr),
-        history_(new InspectorHistory()),
+        history_(MakeGarbageCollected<InspectorHistory>()),
         dom_editor_(new DOMEditor(history_.Get())) {}
 
   bool Perform(ExceptionState& exception_state) override {

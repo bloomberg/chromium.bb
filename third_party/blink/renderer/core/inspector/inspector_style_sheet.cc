@@ -723,7 +723,8 @@ InspectorStyle* InspectorStyle::Create(
     CSSStyleDeclaration* style,
     CSSRuleSourceData* source_data,
     InspectorStyleSheetBase* parent_style_sheet) {
-  return new InspectorStyle(style, source_data, parent_style_sheet);
+  return MakeGarbageCollected<InspectorStyle>(style, source_data,
+                                              parent_style_sheet);
 }
 
 InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
@@ -960,8 +961,9 @@ InspectorStyleSheet* InspectorStyleSheet::Create(
     const String& document_url,
     InspectorStyleSheetBase::Listener* listener,
     InspectorResourceContainer* resource_container) {
-  return new InspectorStyleSheet(network_agent, page_style_sheet, origin,
-                                 document_url, listener, resource_container);
+  return MakeGarbageCollected<InspectorStyleSheet>(
+      network_agent, page_style_sheet, origin, document_url, listener,
+      resource_container);
 }
 
 InspectorStyleSheet::InspectorStyleSheet(
@@ -1897,7 +1899,8 @@ bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {
 InspectorStyleSheetForInlineStyle* InspectorStyleSheetForInlineStyle::Create(
     Element* element,
     Listener* listener) {
-  return new InspectorStyleSheetForInlineStyle(element, listener);
+  return MakeGarbageCollected<InspectorStyleSheetForInlineStyle>(element,
+                                                                 listener);
 }
 
 InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(

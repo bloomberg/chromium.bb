@@ -33,8 +33,10 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Trace(blink::Visitor*) override;
 
   static InspectorPerformanceAgent* Create(InspectedFrames* inspected_frames) {
-    return new InspectorPerformanceAgent(inspected_frames);
+    return MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames);
   }
+
+  explicit InspectorPerformanceAgent(InspectedFrames*);
   ~InspectorPerformanceAgent() override;
 
   void Restore() override;
@@ -66,7 +68,6 @@ class CORE_EXPORT InspectorPerformanceAgent final
                       base::TimeTicks end_time) override;
 
  private:
-  explicit InspectorPerformanceAgent(InspectedFrames*);
   void ScriptStarts();
   void ScriptEnds();
   void InnerEnable();

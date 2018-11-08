@@ -41,7 +41,8 @@ InspectorDatabaseResource* InspectorDatabaseResource::Create(
     const String& domain,
     const String& name,
     const String& version) {
-  return new InspectorDatabaseResource(database, domain, name, version);
+  return MakeGarbageCollected<InspectorDatabaseResource>(database, domain, name,
+                                                         version);
 }
 
 InspectorDatabaseResource::InspectorDatabaseResource(Database* database,

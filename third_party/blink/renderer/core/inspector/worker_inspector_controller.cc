@@ -73,7 +73,8 @@ WorkerInspectorController::WorkerInspectorController(
       thread_(thread),
       inspected_frames_(nullptr),
       probe_sink_(new CoreProbeSink()) {
-  probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
+  probe_sink_->addInspectorTraceEvents(
+      MakeGarbageCollected<InspectorTraceEvents>());
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
     worker_devtools_token_ = devtools_params->devtools_worker_token;
     parent_devtools_token_ = scope->GetParentDevToolsToken();
@@ -107,13 +108,13 @@ void WorkerInspectorController::AttachSession(DevToolsSession* session,
     thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
   session->ConnectToV8(debugger_->GetV8Inspector(),
                        debugger_->ContextGroupId(thread_));
-  session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
-                                        nullptr, session->V8Session()));
+  session->Append(MakeGarbageCollected<InspectorLogAgent>(
+      thread_->GetConsoleMessageStorage(), nullptr, session->V8Session()));
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
     DCHECK(scope->EnsureFetcher());
-    session->Append(new InspectorNetworkAgent(inspected_frames_.Get(), scope,
-                                              session->V8Session()));
-    session->Append(new InspectorEmulationAgent(nullptr));
+    session->Append(MakeGarbageCollected<InspectorNetworkAgent>(
+        inspected_frames_.Get(), scope, session->V8Session()));
+    session->Append(MakeGarbageCollected<InspectorEmulationAgent>(nullptr));
   }
   ++session_count_;
 }

@@ -46,6 +46,10 @@ class InspectorDatabaseResource
                                            const String& domain,
                                            const String& name,
                                            const String& version);
+  InspectorDatabaseResource(Database*,
+                            const String& domain,
+                            const String& name,
+                            const String& version);
   void Trace(blink::Visitor*);
 
   void Bind(protocol::Database::Frontend*);
@@ -54,11 +58,6 @@ class InspectorDatabaseResource
   String Id() const { return id_; }
 
  private:
-  InspectorDatabaseResource(Database*,
-                            const String& domain,
-                            const String& name,
-                            const String& version);
-
   Member<Database> database_;
   String id_;
   String domain_;
