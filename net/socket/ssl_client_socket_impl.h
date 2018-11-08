@@ -27,7 +27,6 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_bio_adapter.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config.h"
@@ -102,8 +101,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   void DumpMemoryStats(SocketMemoryStats* stats) const override;
   void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) const override;
-  ChannelIDService* GetChannelIDService() const override;
-  crypto::ECPrivateKey* GetChannelIDKey() const override;
 
   void ApplySocketTag(const SocketTag& tag) override;
 
@@ -142,8 +139,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   int DoHandshake();
   int DoHandshakeComplete(int result);
-  int DoChannelIDLookup();
-  int DoChannelIDLookupComplete(int result);
   int DoVerifyCert(int result);
   int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
@@ -218,9 +213,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // in a UMA histogram.
   void RecordNegotiatedProtocol() const;
 
-  // Returns whether TLS channel ID is enabled.
-  bool IsChannelIDEnabled() const;
-
   // Returns the net error corresponding to the most recent OpenSSL
   // error. ssl_error is the output of SSL_get_error.
   int MapLastOpenSSLError(int ssl_error,
@@ -271,9 +263,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   ct::CTVerifyResult ct_verify_result_;
   CTVerifier* cert_transparency_verifier_;
 
-  // The service for retrieving Channel ID keys.  May be NULL.
-  ChannelIDService* channel_id_service_;
-
   // OpenSSL stuff
   bssl::UniquePtr<SSL> ssl_;
 
@@ -290,8 +279,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
     STATE_NONE,
     STATE_HANDSHAKE,
     STATE_HANDSHAKE_COMPLETE,
-    STATE_CHANNEL_ID_LOOKUP,
-    STATE_CHANNEL_ID_LOOKUP_COMPLETE,
     STATE_VERIFY_CERT,
     STATE_VERIFY_CERT_COMPLETE,
   };
@@ -304,10 +291,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool disconnected_;
 
   NextProto negotiated_protocol_;
-  // Written by the |channel_id_service_|.
-  std::unique_ptr<crypto::ECPrivateKey> channel_id_key_;
-  // True if a channel ID was sent.
-  bool channel_id_sent_;
   // If non-null, the newly-established to be inserted into the session cache
   // once certificate verification is done.
   bssl::UniquePtr<SSL_SESSION> pending_session_;
@@ -315,8 +298,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool certificate_verified_;
   // Set to true if a CertificateRequest was received.
   bool certificate_requested_;
-  // The request handle for |channel_id_service_|.
-  ChannelIDService::Request channel_id_request_;
 
   int signature_result_;
   std::vector<uint8_t> signature_;
