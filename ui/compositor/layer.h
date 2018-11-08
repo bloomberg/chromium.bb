@@ -314,6 +314,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // display compositor, the fallback surface will be used.
   void SetOldestAcceptableFallback(const viz::SurfaceId& surface_id);
 
+  // Begins mirroring content from a reflected surface, e.g. a software mirrored
+  // display. |surface_id| should be the root surface for a display.
+  void SetShowReflectedSurface(const viz::SurfaceId& surface_id,
+                               const gfx::Size& frame_size_in_pixels);
+
   // Returns the primary SurfaceId set by SetShowSurface.
   const viz::SurfaceId* GetSurfaceId() const;
 

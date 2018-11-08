@@ -15,6 +15,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
@@ -162,7 +163,10 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       }
     }
 
-    if (context_provider->ContextCapabilities().surfaceless) {
+    if (surface_handle == gpu::kNullSurfaceHandle) {
+      output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
+          std::move(context_provider), synthetic_begin_frame_source);
+    } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
