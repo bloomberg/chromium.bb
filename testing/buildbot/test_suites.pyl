@@ -1852,6 +1852,16 @@
           '--enable-features=Mash',
         ],
       },
+      'mash_fyi_interactive_ui_tests': {
+        'test': 'interactive_ui_tests',
+        'args': [
+          '--enable-features=Mash',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.fyi.interactive_ui_tests.filter',
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+      }
     },
 
     'memory_infra_isolated_scripts': {
