@@ -1006,7 +1006,7 @@ void Tab::UpdateForegroundColors() {
   } else if (mouse_hovered_) {
     expected_opacity = GetHoverOpacity();
   }
-  SkColor tab_bg_color = color_utils::AlphaBlend(
+  const SkColor tab_bg_color = color_utils::AlphaBlend(
       controller_->GetTabBackgroundColor(TAB_ACTIVE),
       controller_->GetTabBackgroundColor(TAB_INACTIVE),
       gfx::ToRoundedInt(expected_opacity * SK_AlphaOPAQUE));
@@ -1014,6 +1014,8 @@ void Tab::UpdateForegroundColors() {
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE);
   tab_title_color =
       color_utils::GetColorWithMinimumContrast(tab_title_color, tab_bg_color);
+
+  icon_->SetBackgroundColor(tab_bg_color);
 
   title_->SetEnabledColor(tab_title_color);
 
