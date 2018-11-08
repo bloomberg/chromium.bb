@@ -28,6 +28,8 @@ aggregate_vector_icons("components_vector_icons") {
     "lightbulb_outline.icon",
     "location_on.icon",
     "lock.icon",
+    "media_next_track.icon",
+    "media_previous_track.icon",
     "media_router_active.icon",
     "media_router_error.icon",
     "media_router_idle.icon",

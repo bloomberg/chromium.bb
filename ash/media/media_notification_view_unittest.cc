@@ -31,7 +31,9 @@ using media_session::test::TestMediaController;
 
 namespace {
 
-const int kMediaButtonIconSize = 32;
+// The icons size is 32 and INSETS_VECTOR_IMAGE_BUTTON will add padding around
+// the image.
+const int kMediaButtonIconSize = 40;
 
 }  // namespace
 
@@ -104,7 +106,6 @@ class MediaNotificationViewTest : public AshTestBase {
   }
 
   views::View* button_row() const { return view_->button_row_; }
-  views::View* play_pause_button() const { return view_->play_pause_button_; }
 
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
@@ -150,21 +151,55 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   EXPECT_GT(button_row()->width(), 0);
   EXPECT_GT(button_row()->height(), 0);
 
-  EXPECT_TRUE(play_pause_button()->visible());
-  EXPECT_EQ(kMediaButtonIconSize, play_pause_button()->width());
-  EXPECT_EQ(kMediaButtonIconSize, play_pause_button()->height());
+  EXPECT_EQ(3, button_row()->child_count());
+
+  for (int i = 0; i < button_row()->child_count(); ++i) {
+    const views::Button* child =
+        views::Button::AsButton(button_row()->child_at(i));
+
+    EXPECT_TRUE(child->visible());
+    EXPECT_EQ(kMediaButtonIconSize, child->width());
+    EXPECT_EQ(kMediaButtonIconSize, child->height());
+  }
+}
+
+TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
+  EXPECT_EQ(0, media_controller()->next_track_count());
+
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(button_row()->child_at(2),
+                                    &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  GetEventGenerator()->ClickLeftButton();
+  Shell::Get()->media_notification_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->next_track_count());
 }
 
 TEST_F(MediaNotificationViewTest, PlayPauseButtonClick) {
   EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
 
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToScreen(play_pause_button(), &cursor_location);
+  views::View::ConvertPointToScreen(button_row()->child_at(1),
+                                    &cursor_location);
   GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
   GetEventGenerator()->ClickLeftButton();
   Shell::Get()->media_notification_controller()->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->toggle_suspend_resume_count());
+}
+
+TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
+  EXPECT_EQ(0, media_controller()->previous_track_count());
+
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(button_row()->child_at(0),
+                                    &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  GetEventGenerator()->ClickLeftButton();
+  Shell::Get()->media_notification_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->previous_track_count());
 }
 
 TEST_F(MediaNotificationViewTest, ClickNotification) {

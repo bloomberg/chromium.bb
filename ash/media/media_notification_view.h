@@ -51,6 +51,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
+  // Creates an image button with |icon| and adds it to |button_row_|.
+  void CreateMediaButton(const gfx::VectorIcon& icon);
+
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>
       control_buttons_view_;
