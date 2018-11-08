@@ -293,7 +293,10 @@ class LocalCardMigrationOfferView : public views::View,
 LocalCardMigrationDialogView::LocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents)
-    : controller_(controller), web_contents_(web_contents) {}
+    : controller_(controller), web_contents_(web_contents) {
+  set_close_on_deactivate(false);
+  set_margins(gfx::Insets());
+}
 
 LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
 
@@ -317,10 +320,6 @@ ui::ModalType LocalCardMigrationDialogView::GetModalType() const {
   // This should be a modal dialog since we don't want users to lose progress
   // in the migration workflow until they are done.
   return ui::MODAL_TYPE_CHILD;
-}
-
-void LocalCardMigrationDialogView::AddedToWidget() {
-  GetWidget()->AddObserver(this);
 }
 
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
@@ -370,9 +369,8 @@ bool LocalCardMigrationDialogView::Cancel() {
   }
 }
 
-void LocalCardMigrationDialogView::OnWidgetClosing(views::Widget* widget) {
+void LocalCardMigrationDialogView::WindowClosing() {
   controller_->OnDialogClosed();
-  widget->RemoveObserver(this);
 }
 
 // TODO(crbug/867194): Add button pressed logic for kDeleteCardButtonTag.
