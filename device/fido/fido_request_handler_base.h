@@ -180,6 +180,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     return transport_availability_info_;
   }
 
+  const AuthenticatorMap& AuthenticatorsForTesting() {
+    return active_authenticators_;
+  }
+
  protected:
   // Subclasses implement this method to dispatch their request onto the given
   // FidoAuthenticator. The FidoAuthenticator is owned by this

@@ -21,9 +21,6 @@ namespace device {
 // Users must check the result of |IsAvailable| on the instance to verify that
 // the native library was loaded successfully before invoking any of the other
 // methods.
-//
-// TODO(martinkr): Add a ScopedFakeWinWebAuthnApi that overrides
-// |GetDefault| for testing.
 class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
  public:
   // ScopedCredentialAttestation is a scoped deleter for a
@@ -84,6 +81,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
 
   // See WebAuthNGetErrorName in <webauthn.h>.
   virtual const wchar_t* GetErrorName(HRESULT hr) = 0;
+
+ private:
+  friend class ScopedFakeWinWebAuthnApi;
+  static void SetDefaultForTesting(WinWebAuthnApi* api);
+  static void ClearDefaultForTesting();
 };
 
 }  // namespace device

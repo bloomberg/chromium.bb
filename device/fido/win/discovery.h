@@ -16,7 +16,8 @@ namespace device {
 
 // Instantiates the authenticator subclass for forwarding requests to external
 // authenticators via the Windows WebAuthn API.
-class WinNativeCrossPlatformAuthenticatorDiscovery : public FidoDiscoveryBase {
+class COMPONENT_EXPORT(DEVICE_FIDO) WinNativeCrossPlatformAuthenticatorDiscovery
+    : public FidoDiscoveryBase {
  public:
   WinNativeCrossPlatformAuthenticatorDiscovery(
       WinWebAuthnApi* const win_webauthn_api,
