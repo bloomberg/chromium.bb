@@ -8,6 +8,7 @@
 #include "chrome/browser/resource_coordinator/browser_child_process_watcher.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -34,7 +35,7 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::PreBrowserStart() {
   if (base::FeatureList::IsEnabled(features::kPerformanceMeasurement)) {
     DCHECK(resource_coordinator::RenderProcessProbe::IsEnabled());
     resource_coordinator::PageSignalReceiver* page_signal_receiver =
-        resource_coordinator::PageSignalReceiver::GetInstance();
+        resource_coordinator::GetPageSignalReceiver();
 
     DCHECK(resource_coordinator::PageSignalReceiver::IsEnabled());
     resource_coordinator::RenderProcessProbe* render_process_probe =

@@ -4,11 +4,15 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 
+#include "base/task/post_task.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace resource_coordinator {
@@ -103,8 +107,18 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   // of a non-mock version of a data store when browser_context() gets
   // initialized.
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
+  content::ServiceManagerConnection::SetForProcess(
+      content::ServiceManagerConnection::Create(
+          mojo::MakeRequest(&service_),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO})));
 
   ChromeRenderViewHostTestHarness::SetUp();
+}
+
+void ChromeTestHarnessWithLocalDB::TearDown() {
+  content::ServiceManagerConnection::DestroyForProcess();
+  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 }  // namespace testing
