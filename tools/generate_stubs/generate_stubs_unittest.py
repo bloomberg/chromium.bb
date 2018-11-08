@@ -167,7 +167,8 @@ class PosixStubWriterUnittest(unittest.TestCase):
     self.module_name = 'my_module-1'
     self.signatures = [sig[1] for sig in SIMPLE_SIGNATURES]
     self.out_dir = 'out_dir'
-    self.writer = gs.PosixStubWriter(self.module_name, '', self.signatures)
+    self.writer = gs.PosixStubWriter(self.module_name, '', self.signatures,
+                                     'VLOG(1)', 'base/logging.h')
 
   def testEnumName(self):
     self.assertEqual('kModuleMy_module1',
@@ -259,7 +260,7 @@ int  ferda(char **argv[]) {
     # Make the header.
     outfile = StringIO.StringIO()
     self.writer.WriteHeaderContents(module_names, 'my_namespace', 'GUARD_',
-                                    outfile)
+                                    outfile, 'base/logging.h')
     contents = outfile.getvalue()
 
     # Check for namespace and header guard.
@@ -293,7 +294,8 @@ int  ferda(char **argv[]) {
 
     # Make the header.
     outfile = StringIO.StringIO()
-    self.writer.WriteUmbrellaInitializer(module_names, 'my_namespace', outfile)
+    self.writer.WriteUmbrellaInitializer(module_names, 'my_namespace', outfile,
+                                         'VLOG(1)')
     contents = outfile.getvalue()
 
     # Check for umbrella initializer declaration.
