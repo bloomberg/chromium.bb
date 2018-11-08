@@ -326,6 +326,7 @@ PlaybackParams& PlaybackParams::operator=(const PlaybackParams& other) =
 PaintOp::SerializeOptions::SerializeOptions(
     ImageProvider* image_provider,
     TransferCacheSerializeHelper* transfer_cache,
+    ClientPaintCache* paint_cache,
     SkCanvas* canvas,
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
@@ -336,6 +337,7 @@ PaintOp::SerializeOptions::SerializeOptions(
     const SkMatrix& original_ctm)
     : image_provider(image_provider),
       transfer_cache(transfer_cache),
+      paint_cache(paint_cache),
       canvas(canvas),
       strike_server(strike_server),
       color_space(color_space),
@@ -352,8 +354,11 @@ PaintOp::SerializeOptions& PaintOp::SerializeOptions::operator=(
 
 PaintOp::DeserializeOptions::DeserializeOptions(
     TransferCacheDeserializeHelper* transfer_cache,
+    ServicePaintCache* paint_cache,
     SkStrikeClient* strike_client)
-    : transfer_cache(transfer_cache), strike_client(strike_client) {}
+    : transfer_cache(transfer_cache),
+      paint_cache(paint_cache),
+      strike_client(strike_client) {}
 
 size_t AnnotateOp::Serialize(const PaintOp* base_op,
                              void* memory,

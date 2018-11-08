@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "cc/paint/paint_cache.h"
 #include "gpu/command_buffer/client/client_font_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
@@ -256,6 +257,10 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   void RunIfContextNotLost(base::OnceClosure callback);
 
+  cc::ClientPaintCache* GetOrCreatePaintCache();
+  void FlushPaintCachePurgedEntries();
+  void ClearPaintCache();
+
   const std::string& GetLogPrefix() const;
 
 // Set to 1 to have the client fail when a GL error is generated.
@@ -333,6 +338,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   size_t max_inlined_entry_size_;
   ClientTransferCache transfer_cache_;
   std::string last_active_url_;
+
+  cc::ClientPaintCache::PurgedData temp_paint_cache_purged_data_;
+  std::unique_ptr<cc::ClientPaintCache> paint_cache_;
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;

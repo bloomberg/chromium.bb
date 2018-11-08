@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/color_space_transfer_cache_entry.h"
+#include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -308,6 +309,9 @@ bool PermitsInconsistentContextState(CommandId command) {
     case kWaitSyncTokenCHROMIUM:
     case kTraceBeginCHROMIUM:
     case kTraceEndCHROMIUM:
+    case kDeletePaintCacheTextBlobsINTERNALImmediate:
+    case kDeletePaintCachePathsINTERNALImmediate:
+    case kClearPaintCacheINTERNAL:
       return true;
     case kGetIntegerv:
     case kLoseContextCHROMIUM:
@@ -712,6 +716,13 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoBindVertexArrayOES(GLuint array);
   void EmulateVertexArrayState();
   void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
+  void DeletePaintCacheTextBlobsINTERNALHelper(
+      GLsizei n,
+      const volatile GLuint* paint_cache_ids);
+  void DeletePaintCachePathsINTERNALHelper(
+      GLsizei n,
+      const volatile GLuint* paint_cache_ids);
+  void DoClearPaintCacheINTERNAL();
 
 #if defined(NDEBUG)
   void LogClientServiceMapping(const char* /* function_name */,
@@ -833,6 +844,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<ServiceFontManager> font_manager_;
   std::unique_ptr<SharedImageRepresentationSkia> shared_image_;
   sk_sp<SkSurface> sk_surface_;
+  std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
   std::unique_ptr<SkCanvas> raster_canvas_;
@@ -1050,6 +1062,8 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     supports_oop_raster_ = !!raster_decoder_context_state_->gr_context;
+    if (supports_oop_raster_)
+      paint_cache_ = std::make_unique<cc::ServicePaintCache>();
     use_ddl_ = group_->gpu_preferences().enable_oop_rasterization_ddl;
   }
 
@@ -3006,6 +3020,42 @@ class TransferCacheDeserializeHelperImpl final
 
 }  // namespace
 
+void RasterDecoderImpl::DeletePaintCacheTextBlobsINTERNALHelper(
+    GLsizei n,
+    const volatile GLuint* paint_cache_ids) {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDeletePaintCacheEntriesINTERNAL",
+                       "No chromium raster support");
+    return;
+  }
+
+  paint_cache_->Purge(cc::PaintDataType::kTextBlob, n, paint_cache_ids);
+}
+
+void RasterDecoderImpl::DeletePaintCachePathsINTERNALHelper(
+    GLsizei n,
+    const volatile GLuint* paint_cache_ids) {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDeletePaintCacheEntriesINTERNAL",
+                       "No chromium raster support");
+    return;
+  }
+
+  paint_cache_->Purge(cc::PaintDataType::kPath, n, paint_cache_ids);
+}
+
+void RasterDecoderImpl::DoClearPaintCacheINTERNAL() {
+  if (!supports_oop_raster_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glClearPaintCacheINTERNAL",
+                       "No chromium raster support");
+    return;
+  }
+
+  paint_cache_->PurgeAll();
+}
+
 void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
@@ -3166,7 +3216,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   SkCanvas* canvas = raster_canvas_.get();
   cc::PlaybackParams playback_params(nullptr, SkMatrix::I());
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
-  cc::PaintOp::DeserializeOptions options(&impl,
+  cc::PaintOp::DeserializeOptions options(&impl, paint_cache_.get(),
                                           font_manager_->strike_client());
 
   int op_idx = 0;

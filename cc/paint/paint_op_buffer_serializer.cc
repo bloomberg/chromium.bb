@@ -66,6 +66,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     SerializeCallback serialize_cb,
     ImageProvider* image_provider,
     TransferCacheSerializeHelper* transfer_cache,
+    ClientPaintCache* paint_cache,
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
     bool can_use_lcd_text,
@@ -75,6 +76,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     : serialize_cb_(std::move(serialize_cb)),
       image_provider_(image_provider),
       transfer_cache_(transfer_cache),
+      paint_cache_(paint_cache),
       strike_server_(strike_server),
       color_space_(color_space),
       can_use_lcd_text_(can_use_lcd_text),
@@ -385,8 +387,8 @@ void PaintOpBufferSerializer::RestoreToCount(
 
 PaintOp::SerializeOptions PaintOpBufferSerializer::MakeSerializeOptions() {
   return PaintOp::SerializeOptions(
-      image_provider_, transfer_cache_, canvas_, strike_server_, color_space_,
-      can_use_lcd_text_, context_supports_distance_field_text_,
+      image_provider_, transfer_cache_, paint_cache_, canvas_, strike_server_,
+      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
       max_texture_size_, max_texture_bytes_, canvas_->getTotalMatrix());
 }
 
@@ -395,6 +397,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     size_t size,
     ImageProvider* image_provider,
     TransferCacheSerializeHelper* transfer_cache,
+    ClientPaintCache* paint_cache,
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
     bool can_use_lcd_text,
@@ -406,6 +409,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
                      base::Unretained(this)),
           image_provider,
           transfer_cache,
+          paint_cache,
           strike_server,
           color_space,
           can_use_lcd_text,

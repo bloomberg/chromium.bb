@@ -7,6 +7,7 @@
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
@@ -170,19 +171,17 @@ void PaintOpWriter::Write(const SkPath& path) {
   if (!valid_)
     return;
 
-  auto locked =
-      options_.transfer_cache->LockEntry(TransferCacheEntryType::kPath, id);
-  uint64_t bytes_written = 0u;
-  if (!locked) {
-    // Note that it is not necessary to pass the remaining size for |memory_|
-    // here because the transfer cache implementation (in RasterImplementation)
-    // should have this information about the memory being written to here.
-    bytes_written = options_.transfer_cache->CreateEntry(
-        ClientPathTransferCacheEntry(path), memory_);
-    options_.transfer_cache->AssertLocked(TransferCacheEntryType::kPath, id);
+  if (options_.paint_cache->Get(PaintDataType::kPath, id))
+    return;
+  uint64_t bytes_required = path.writeToMemory(nullptr);
+  if (bytes_required > remaining_bytes_) {
+    valid_ = false;
+    return;
   }
 
-  DCHECK_LE(bytes_written, remaining_bytes_);
+  size_t bytes_written = path.writeToMemory(memory_);
+  DCHECK_EQ(bytes_written, bytes_required);
+  options_.paint_cache->Put(PaintDataType::kPath, id, bytes_written);
   *bytes_to_skip = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
@@ -309,9 +308,11 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   AlignMemory(4);
   uint32_t blob_id = blob->uniqueID();
   Write(blob_id);
-
   uint64_t* size_memory = WriteSize(0u);
   if (!valid_)
+    return;
+
+  if (options_.paint_cache->Get(PaintDataType::kTextBlob, blob_id))
     return;
 
   auto encodeTypeface = [](SkTypeface* tf, void* ctx) -> sk_sp<SkData> {
@@ -328,6 +329,8 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
     valid_ = false;
     return;
   }
+
+  options_.paint_cache->Put(PaintDataType::kTextBlob, blob_id, bytes_written);
   *size_memory = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
@@ -772,9 +775,10 @@ void PaintOpWriter::Write(const PaintRecord* record,
   const bool can_use_lcd_text = false;
   SimpleBufferSerializer serializer(
       memory_, remaining_bytes_, options_.image_provider,
-      options_.transfer_cache, options_.strike_server, options_.color_space,
-      can_use_lcd_text, options_.context_supports_distance_field_text,
-      options_.max_texture_size, options_.max_texture_bytes);
+      options_.transfer_cache, options_.paint_cache, options_.strike_server,
+      options_.color_space, can_use_lcd_text,
+      options_.context_supports_distance_field_text, options_.max_texture_size,
+      options_.max_texture_bytes);
   serializer.Serialize(record, playback_rect, post_scale,
                        post_matrix_for_analysis);
 
