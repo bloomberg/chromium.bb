@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#if (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 class PictureInPicturePixelComparisonBrowserTest
     : public PictureInPictureWindowControllerBrowserTest {
  public:
@@ -232,23 +233,12 @@ class PictureInPicturePixelComparisonBrowserTest
             base::BindOnce(
                 &PictureInPicturePixelComparisonBrowserTest::ReadbackResult,
                 base::Unretained(this), run_loop.QuitClosure()));
-    overlay_window_views->GetLayer()->RequestCopyOfOutput(std::move(request));
-    run_loop.Run();
-  }
-
-  void Wait(base::TimeDelta timeout) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), timeout);
+    overlay_window_views->GetNativeWindow()->layer()->RequestCopyOfOutput(
+        std::move(request));
     run_loop.Run();
   }
 
   bool CompareImages(const SkBitmap& actual_bmp) {
-    // Allowable error and thresholds because of small color shift by
-    // video to image conversion and GPU issues.
-    const int allowable_error = 2;
-    const unsigned high_threshold = 0xff - allowable_error;
-    const unsigned low_threshold = 0x00 + allowable_error;
     // Number of pixels with an error
     int error_pixels_count = 0;
     gfx::Rect error_bounding_rect;
@@ -256,12 +246,12 @@ class PictureInPicturePixelComparisonBrowserTest
     for (int x = 0; x < actual_bmp.width(); ++x) {
       for (int y = 0; y < actual_bmp.height(); ++y) {
         SkColor actual_color = actual_bmp.getColor(x, y);
-        // Check color is Yellow and is within the tolerance range.
+        // Check color is Yellow. The difference is caused by video conversion.
         // TODO(cliffordcheng): Compare with an expected image instead of just
         // checking pixel RGB color.
-        if (SkColorGetR(actual_color) < high_threshold &&
-            SkColorGetG(actual_color) < high_threshold &&
-            SkColorGetB(actual_color) > low_threshold) {
+        if (SkColorGetR(actual_color) != 254 &&
+            SkColorGetG(actual_color) != 253 &&
+            SkColorGetB(actual_color) != 0) {
           ++error_pixels_count;
           error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
         }
@@ -281,7 +271,8 @@ class PictureInPicturePixelComparisonBrowserTest
   std::unique_ptr<SkBitmap> result_bitmap_;
 };
 
-// TODO(cliffordcheng): enable on Windows when compile errors are resolved.
+// TODO(cliffordcheng): enable this tests on other platforms when
+// Windows and Mac capture screen problem is solved.
 // Plays a video and then trigger Picture-in-Picture. Grabs a screenshot of
 // Picture-in-Picture window and verifies it's as expected.
 IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
@@ -329,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
   EXPECT_TRUE(CompareImages(GetResultBitmap()));
 }
-#endif  // (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
