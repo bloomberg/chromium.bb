@@ -185,6 +185,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
           new_content_layer_clients,
       Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers);
 
+  bool PropertyTreeStateChanged(const PropertyTreeState&) const;
+
   const TransformPaintPropertyNode& ScrollTranslationForPendingLayer(
       const PaintArtifact&,
       const PendingLayer&);

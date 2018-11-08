@@ -2588,9 +2588,15 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       // Notify the controller that the artifact has been pushed and some
       // lifecycle state can be freed (such as raster invalidations).
       paint_controller_->FinishCycle();
+
       // PaintController for BlinkGenPropertyTrees is transient.
       if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
           !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        // Property tree changed state is typically cleared through
+        // |PaintController::FinishCycle| but that will be a no-op because
+        // the paint controller is transient, so force the changed state to be
+        // updated here.
+        paint_controller_->ClearPropertyTreeChangedState();
         paint_controller_ = nullptr;
       }
     }

@@ -562,6 +562,16 @@ void PaintController::FinishCycle() {
 #endif
 }
 
+void PaintController::ClearPropertyTreeChangedState() {
+  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
+  DCHECK(usage_ == kTransient);
+
+  // Calling |ClearChangedToRoot| for every chunk is O(|property nodes|^2) and
+  // could be optimized by caching which nodes that have already been cleared.
+  for (const auto& chunk : current_paint_artifact_->PaintChunks())
+    chunk.properties.ClearChangedToRoot();
+}
+
 size_t PaintController::ApproximateUnsharedMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 

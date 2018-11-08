@@ -173,6 +173,13 @@ class PLATFORM_EXPORT PaintController {
   // there FinishCycle() at the same time to ensure consistent caching status.
   void FinishCycle();
 
+  // |FinishCycle| clears the property tree changed state but only does this for
+  // non-transient controllers. The root paint controller is transient with
+  // BlinkGenPropertyTrees and this function provides a hook for clearing
+  // the property tree changed state after paint.
+  // TODO(pdr): Remove this when BlinkGenPropertyTrees ships.
+  void ClearPropertyTreeChangedState();
+
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebPaintController.
   // Should only be called after a full document life cycle update.
