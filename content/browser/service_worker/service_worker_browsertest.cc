@@ -3526,21 +3526,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
                          "!!navigator.serviceWorker.controller"));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // The injected header should be present.
-    EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
-                                       "document.body.textContent"));
-  } else {
-    // S13nServiceWorker: the injected header is not present. Throttle-modified
-    // headers are not propagated to network requests through
-    // ResourceDispatcherHost, because the legacy network code has its own code
-    // path that applies the same throttling independent from the navigation's
-    // URLLoaderThrottles.
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kServiceWorkerServicification));
-    EXPECT_EQ("None", EvalJs(shell()->web_contents()->GetMainFrame(),
-                             "document.body.textContent"));
-  }
+  // The injected header should be present.
+  EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
+                                     "document.body.textContent"));
 
   SetBrowserClientForTesting(old_content_browser_client);
 }
