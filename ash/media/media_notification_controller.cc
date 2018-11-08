@@ -8,6 +8,7 @@
 #include "ash/media/media_notification_view.h"
 #include "base/strings/string16.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -50,6 +51,8 @@ MediaNotificationController::MediaNotificationController(
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&audio_focus_ptr));
+  connector->BindInterface(media_session::mojom::kServiceName,
+                           mojo::MakeRequest(&media_controller_ptr_));
 
   media_session::mojom::AudioFocusObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
@@ -99,9 +102,14 @@ void MediaNotificationController::OnFocusLost(
       kMediaSessionNotificationId, false);
 }
 
+void MediaNotificationController::FlushForTesting() {
+  media_controller_ptr_.FlushForTesting();
+}
+
 void MediaNotificationController::OnNotificationClicked(
     base::Optional<int> button_id) {
-  NOTIMPLEMENTED();
+  DCHECK_EQ(0, *button_id);
+  media_controller_ptr_->ToggleSuspendResume();
 }
 
 }  // namespace ash

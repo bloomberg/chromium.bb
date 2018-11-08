@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "ui/message_center/message_center.h"
 
 namespace service_manager {
@@ -34,8 +35,16 @@ class ASH_EXPORT MediaNotificationController
   void OnFocusLost(
       media_session::mojom::MediaSessionInfoPtr media_session) override;
 
+  void FlushForTesting();
+  void SetMediaControllerForTesting(
+      media_session::mojom::MediaControllerPtr controller) {
+    media_controller_ptr_ = std::move(controller);
+  }
+
  private:
   void OnNotificationClicked(base::Optional<int> button_id);
+
+  media_session::mojom::MediaControllerPtr media_controller_ptr_;
 
   mojo::Binding<media_session::mojom::AudioFocusObserver> binding_{this};
 

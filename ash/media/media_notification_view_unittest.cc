@@ -17,6 +17,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -25,6 +26,14 @@
 #include "ui/message_center/views/notification_control_buttons_view.h"
 
 namespace ash {
+
+using media_session::test::TestMediaController;
+
+namespace {
+
+const int kMediaButtonIconSize = 32;
+
+}  // namespace
 
 class MediaNotificationViewTest : public AshTestBase {
  public:
@@ -37,6 +46,10 @@ class MediaNotificationViewTest : public AshTestBase {
         features::kMediaSessionNotification);
 
     AshTestBase::SetUp();
+
+    media_controller_ = std::make_unique<TestMediaController>();
+    Shell::Get()->media_notification_controller()->SetMediaControllerForTesting(
+        media_controller_->CreateMediaControllerPtr());
 
     // Set a custom view factory to create and capture the notification view.
     message_center::MessageViewFactory::
@@ -86,6 +99,13 @@ class MediaNotificationViewTest : public AshTestBase {
 
   MediaNotificationView* view() const { return view_; }
 
+  TestMediaController* media_controller() const {
+    return media_controller_.get();
+  }
+
+  views::View* button_row() const { return view_->button_row_; }
+  views::View* play_pause_button() const { return view_->play_pause_button_; }
+
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
       const message_center::Notification& notification) {
@@ -96,6 +116,7 @@ class MediaNotificationViewTest : public AshTestBase {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  std::unique_ptr<TestMediaController> media_controller_;
   std::unique_ptr<views::Widget> widget_;
   MediaNotificationView* view_ = nullptr;
 
@@ -122,6 +143,40 @@ TEST_F(MediaNotificationViewTest, ShowControlsOnHover) {
   }
 
   EXPECT_FALSE(IsControlButtonsViewVisible());
+}
+
+TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
+  EXPECT_TRUE(button_row()->visible());
+  EXPECT_GT(button_row()->width(), 0);
+  EXPECT_GT(button_row()->height(), 0);
+
+  EXPECT_TRUE(play_pause_button()->visible());
+  EXPECT_EQ(kMediaButtonIconSize, play_pause_button()->width());
+  EXPECT_EQ(kMediaButtonIconSize, play_pause_button()->height());
+}
+
+TEST_F(MediaNotificationViewTest, PlayPauseButtonClick) {
+  EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
+
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(play_pause_button(), &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  GetEventGenerator()->ClickLeftButton();
+  Shell::Get()->media_notification_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->toggle_suspend_resume_count());
+}
+
+TEST_F(MediaNotificationViewTest, ClickNotification) {
+  EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
+
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToScreen(view(), &cursor_location);
+  GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+  GetEventGenerator()->ClickLeftButton();
+  Shell::Get()->media_notification_controller()->FlushForTesting();
+
+  EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
 }
 
 }  // namespace ash

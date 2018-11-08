@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/video_util.h"
@@ -426,14 +427,14 @@ void OverlayWindowViews::UpdateCustomControlsSize(
   if (control_button == first_custom_controls_view_.get()) {
     first_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kPlayArrowIcon, button_size_.width() / 2,
-                              kControlIconColor));
+        gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
+                              button_size_.width() / 2, kControlIconColor));
   }
   if (control_button == second_custom_controls_view_.get()) {
     second_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kPauseIcon, button_size_.width() / 2,
-                              kControlIconColor));
+        gfx::CreateVectorIcon(vector_icons::kPauseIcon,
+                              button_size_.width() / 2, kControlIconColor));
   }
   const gfx::ImageSkia control_background = gfx::CreateVectorIcon(
       kPictureInPictureControlBackgroundIcon, button_size_.width(), kBgColor);
@@ -446,10 +447,10 @@ void OverlayWindowViews::UpdatePlayPauseControlsSize() {
   play_pause_controls_view_->SetSize(button_size_);
   play_pause_controls_view_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kPlayArrowIcon, button_size_.width() / 2,
-                            kControlIconColor));
+      gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
+                            button_size_.width() / 2, kControlIconColor));
   gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
-      kPauseIcon, button_size_.width() / 2, kControlIconColor);
+      vector_icons::kPauseIcon, button_size_.width() / 2, kControlIconColor);
   play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
                                              &pause_icon);
   const gfx::ImageSkia play_pause_background = gfx::CreateVectorIcon(

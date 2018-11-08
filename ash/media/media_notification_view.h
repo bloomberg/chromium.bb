@@ -8,10 +8,16 @@
 #include "ash/ash_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace message_center {
 class NotificationHeaderView;
 }  // namespace message_center
+
+namespace views {
+class ToggleImageButton;
+class View;
+}  // namespace views
 
 namespace ash {
 
@@ -40,6 +46,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  friend class MediaNotificationViewTest;
+
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
@@ -49,6 +57,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
+  views::View* button_row_ = nullptr;
+  views::ToggleImageButton* play_pause_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };
