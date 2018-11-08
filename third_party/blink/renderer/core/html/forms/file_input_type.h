@@ -54,8 +54,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   static InputType* Create(HTMLInputElement&);
   void Trace(blink::Visitor*) override;
   using InputType::GetElement;
-  static FileChooserFileInfoList FilesFromFormControlState(
-      const FormControlState&);
+  static Vector<String> FilesFromFormControlState(const FormControlState&);
   static FileList* CreateFileList(const FileChooserFileInfoList& files,
                                   bool has_webkit_directory_attr);
 

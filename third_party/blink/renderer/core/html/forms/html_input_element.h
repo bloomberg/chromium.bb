@@ -268,7 +268,7 @@ class CORE_EXPORT HTMLInputElement
 
   void EndEditing();
 
-  static FileChooserFileInfoList FilesFromFileInputFormControlState(
+  static Vector<String> FilesFromFileInputFormControlState(
       const FormControlState&);
 
   bool MatchesReadOnlyPseudoClass() const final;

@@ -85,16 +85,27 @@ InputTypeView* FileInputType::CreateView() {
   return this;
 }
 
-FileChooserFileInfoList FileInputType::FilesFromFormControlState(
-    const FormControlState& state) {
-  FileChooserFileInfoList files;
-  for (wtf_size_t i = 0; i < state.ValueSize(); i += 2) {
-    if (!state[i + 1].IsEmpty())
-      files.push_back(CreateFileChooserFileInfoNative(state[i], state[i + 1]));
-    else
-      files.push_back(CreateFileChooserFileInfoNative(state[i]));
+template <typename ItemType, typename VectorType>
+VectorType CreateFilesFrom(const FormControlState& state,
+                           ItemType (*factory)(const String&,
+                                               const String&,
+                                               const String&)) {
+  VectorType files;
+  files.ReserveInitialCapacity(state.ValueSize() / 3);
+  for (wtf_size_t i = 0; i < state.ValueSize(); i += 3) {
+    const String& path = state[i];
+    const String& name = state[i + 1];
+    const String& relative_path = state[i + 2];
+    files.push_back(factory(path, name, relative_path));
   }
   return files;
+}
+
+Vector<String> FileInputType::FilesFromFormControlState(
+    const FormControlState& state) {
+  return CreateFilesFrom<String, Vector<String>>(
+      state,
+      [](const String& path, const String&, const String&) { return path; });
 }
 
 const AtomicString& FileInputType::FormControlType() const {
@@ -110,6 +121,7 @@ FormControlState FileInputType::SaveFormControlState() const {
     if (file_list_->item(i)->HasBackingFile()) {
       state.Append(file_list_->item(i)->GetPath());
       state.Append(file_list_->item(i)->name());
+      state.Append(file_list_->item(i)->webkitRelativePath());
     }
     // FIXME: handle Blob-backed File instances, see http://crbug.com/394948
   }
@@ -117,9 +129,20 @@ FormControlState FileInputType::SaveFormControlState() const {
 }
 
 void FileInputType::RestoreFormControlState(const FormControlState& state) {
-  if (state.ValueSize() % 2)
+  if (state.ValueSize() % 3)
     return;
-  FilesChosen(FilesFromFormControlState(state));
+  HeapVector<Member<File>> file_vector =
+      CreateFilesFrom<File*, HeapVector<Member<File>>>(
+          state, [](const String& path, const String& name,
+                    const String& relative_path) {
+            if (relative_path.IsEmpty())
+              return File::CreateForUserProvidedFile(path, name);
+            return File::CreateWithRelativePath(path, relative_path);
+          });
+  FileList* file_list = FileList::Create();
+  for (const auto& file : file_vector)
+    file_list->Append(file);
+  SetFiles(file_list);
 }
 
 void FileInputType::AppendToFormData(FormData& form_data) const {

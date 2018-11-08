@@ -25,7 +25,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -297,13 +296,9 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
       continue;
     const Deque<FormControlState>& queue = form_control.value;
     for (const FormControlState& form_control_state : queue) {
-      const FileChooserFileInfoList& selected_files =
+      to_return.AppendVector(
           HTMLInputElement::FilesFromFileInputFormControlState(
-              form_control_state);
-      for (const auto& file : selected_files) {
-        to_return.push_back(
-            FilePathToString(file->get_native_file()->file_path));
-      }
+              form_control_state));
     }
   }
   return to_return;
@@ -429,7 +424,7 @@ static String FormStateSignature() {
   // attribute value of a form control. The following string literal should
   // contain some characters which are rarely used for name attribute values.
   DEFINE_STATIC_LOCAL(String, signature,
-                      ("\n\r?% Blink serialized form state version 9 \n\r=&"));
+                      ("\n\r?% Blink serialized form state version 10 \n\r=&"));
   return signature;
 }
 
