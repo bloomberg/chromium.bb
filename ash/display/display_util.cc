@@ -13,6 +13,7 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -152,7 +153,7 @@ void ShowDisplayErrorNotification(const base::string16& message,
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
           base::string16(),  // title
           message,

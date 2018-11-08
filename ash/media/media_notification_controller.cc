@@ -6,6 +6,7 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "base/strings/string16.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -68,7 +69,7 @@ void MediaNotificationController::OnFocusGained(
     return;
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NotificationType::NOTIFICATION_TYPE_CUSTOM,
           kMediaSessionNotificationId, base::string16(), base::string16(),
           base::string16(), GURL(),

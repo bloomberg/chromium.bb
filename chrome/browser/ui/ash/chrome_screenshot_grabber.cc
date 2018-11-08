@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/base64.h"
@@ -686,7 +687,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           image.IsEmpty() ? message_center::NOTIFICATION_TYPE_SIMPLE
                           : message_center::NOTIFICATION_TYPE_IMAGE,
           kNotificationId,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -78,7 +79,7 @@ void ShowErrorNotification(const std::string& service_path,
   NET_LOG(ERROR) << "ShowErrorNotification: " << service_path << ": "
                  << base::UTF16ToUTF8(title);
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
@@ -285,7 +286,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
 
   cellular_activating_.erase(cellular->path());
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
@@ -331,7 +332,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
     return;
   }
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),

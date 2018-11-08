@@ -156,60 +156,6 @@ gfx::Image Notification::GenerateMaskedSmallIcon(int dip_size,
 }
 
 // static
-std::unique_ptr<Notification> Notification::CreateSystemNotification(
-    const std::string& notification_id,
-    const base::string16& title,
-    const base::string16& message,
-    const std::string& system_component_id,
-    const base::RepeatingClosure& click_callback) {
-  DCHECK(!click_callback.is_null());
-  std::unique_ptr<Notification> notification = CreateSystemNotification(
-      NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
-      base::string16() /* display_source */, GURL(),
-      NotifierId(NotifierType::SYSTEM_COMPONENT, system_component_id),
-      RichNotificationData(),
-      new HandleNotificationClickDelegate(click_callback), gfx::kNoneIcon,
-      SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->SetSystemPriority();
-  return notification;
-}
-
-// static
-std::unique_ptr<Notification> Notification::CreateSystemNotification(
-    NotificationType type,
-    const std::string& id,
-    const base::string16& title,
-    const base::string16& message,
-    const base::string16& display_source,
-    const GURL& origin_url,
-    const NotifierId& notifier_id,
-    const RichNotificationData& optional_fields,
-    scoped_refptr<NotificationDelegate> delegate,
-    const gfx::VectorIcon& small_image,
-    SystemNotificationWarningLevel color_type) {
-  DCHECK_EQ(NotifierType::SYSTEM_COMPONENT, notifier_id.type);
-  SkColor color = kSystemNotificationColorNormal;
-  switch (color_type) {
-    case SystemNotificationWarningLevel::NORMAL:
-      color = kSystemNotificationColorNormal;
-      break;
-    case SystemNotificationWarningLevel::WARNING:
-      color = kSystemNotificationColorWarning;
-      break;
-    case SystemNotificationWarningLevel::CRITICAL_WARNING:
-      color = kSystemNotificationColorCriticalWarning;
-      break;
-  }
-  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      type, id, title, message, gfx::Image(), display_source, origin_url,
-      notifier_id, optional_fields, delegate);
-  notification->set_accent_color(color);
-  if (!small_image.is_empty())
-    notification->set_vector_small_image(small_image);
-  return notification;
-}
-
-// static
 void RegisterVectorIcons(
     const std::vector<const gfx::VectorIcon*>& vector_icons) {
   for (const gfx::VectorIcon* icon : vector_icons) {

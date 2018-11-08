@@ -4,6 +4,7 @@
 
 #include "ash/system/screen_security/screen_security_notification_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -63,18 +64,16 @@ void ScreenSecurityNotificationController::CreateNotification(
               },
               weak_ptr_factory_.GetWeakPtr(), is_capture));
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          is_capture ? kScreenCaptureNotificationId
-                     : kScreenShareNotificationId,
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
-          message, base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
-          data, std::move(delegate), kNotificationScreenshareIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      is_capture ? kScreenCaptureNotificationId : kScreenShareNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
+      message, base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT,
+          is_capture ? kNotifierScreenCapture : kNotifierScreenShare),
+      data, std::move(delegate), kNotificationScreenshareIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   notification->set_pinned(true);
   message_center::MessageCenter::Get()->AddNotification(

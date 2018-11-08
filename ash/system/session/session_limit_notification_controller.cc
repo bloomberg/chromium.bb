@@ -4,6 +4,7 @@
 
 #include "ash/system/session/session_limit_notification_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -86,7 +87,7 @@ void SessionLimitNotificationController::UpdateNotification() {
   data.should_make_spoken_feedback_for_popup_updates =
       (model_->limit_state() != last_limit_state_);
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           ComposeNotificationTitle(),
           l10n_util::GetStringUTF16(

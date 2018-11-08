@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -41,7 +42,7 @@ void ShowNotification(TimeLimitNotifier::LimitType limit_type,
           ? IDS_SCREEN_TIME_NOTIFICATION_TITLE
           : IDS_BED_TIME_NOTIFICATION_TITLE);
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kTimeLimitNotificationId,
           title,
           ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,

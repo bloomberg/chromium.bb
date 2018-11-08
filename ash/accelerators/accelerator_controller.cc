@@ -31,6 +31,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -159,16 +160,14 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
               Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
           }));
 
-  std::unique_ptr<Notification> notification =
-      message_center::Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
-          base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierAccelerator),
-          message_center::RichNotificationData(), std::move(delegate),
-          kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
+      base::string16(), GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierAccelerator),
+      message_center::RichNotificationData(), std::move(delegate),
+      kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
@@ -812,18 +811,15 @@ bool CanHandleToggleOverview() {
 void CreateAndShowStickyNotification(const int title_id,
                                      const int message_id,
                                      const std::string& notification_id) {
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          l10n_util::GetStringUTF16(title_id),
-          l10n_util::GetStringUTF16(message_id),
-          base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierAccelerator),
-          message_center::RichNotificationData(), nullptr,
-          kNotificationAccessibilityIcon,
-          SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      l10n_util::GetStringUTF16(title_id),
+      l10n_util::GetStringUTF16(message_id),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierAccelerator),
+      message_center::RichNotificationData(), nullptr,
+      kNotificationAccessibilityIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
