@@ -3303,6 +3303,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3310,7 +3313,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
+          "--exclude-system-logs"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -3318,30 +3322,45 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cronet_tests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "fidlgen_js_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3349,7 +3368,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter",
+          "--exclude-system-logs"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -3357,6 +3377,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3364,7 +3387,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
+          "--exclude-system-logs"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -3372,18 +3396,27 @@
         "test": "mojo_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "service_manager_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -3391,7 +3424,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
+          "--exclude-system-logs"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -3399,12 +3433,18 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "webrunner_browsertests"
       },
       {
+        "args": [
+          "--exclude-system-logs"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
