@@ -4,6 +4,7 @@
 
 #include "chromecast/media/cma/backend/audio_output_redirector.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -69,31 +70,33 @@ void AudioOutputRedirector::InputImpl::Redirect(::media::AudioBus* const buffer,
                                                 RenderingDelay rendering_delay,
                                                 bool redirected) {
   if (!temp_buffer_ || temp_buffer_->frames() < num_frames) {
-    temp_buffer_ =
-        ::media::AudioBus::Create(mixer_input_->num_channels(), num_frames);
+    temp_buffer_ = ::media::AudioBus::Create(mixer_input_->num_channels(),
+                                             std::max(num_frames, 256));
   }
 
-  if (previous_ended_in_silence_ && redirected) {
-    // Previous buffer ended in silence, and the current buffer was redirected
-    // by a previous output splitter, so maintain silence.
-    num_frames = 0;
-  } else {
-    buffer->CopyPartialFramesTo(0, num_frames, 0, temp_buffer_.get());
-  }
-
-  if (previous_ended_in_silence_) {
-    if (!redirected) {
-      // Smoothly fade in from previous silence.
-      AudioFader::FadeInHelper(temp_buffer_.get(), num_frames, 0, num_frames,
-                               num_frames);
+  if (num_frames != 0) {
+    if (previous_ended_in_silence_ && redirected) {
+      // Previous buffer ended in silence, and the current buffer was redirected
+      // by a previous output splitter, so maintain silence.
+      num_frames = 0;
+    } else {
+      buffer->CopyPartialFramesTo(0, num_frames, 0, temp_buffer_.get());
     }
-  } else if (redirected) {
-    // Smoothly fade out to silence, since output is now being redirected by a
-    // previous output splitter.
-    AudioFader::FadeOutHelper(temp_buffer_.get(), num_frames, 0, num_frames,
-                              num_frames);
+
+    if (previous_ended_in_silence_) {
+      if (!redirected) {
+        // Smoothly fade in from previous silence.
+        AudioFader::FadeInHelper(temp_buffer_.get(), num_frames, 0, num_frames,
+                                 num_frames);
+      }
+    } else if (redirected) {
+      // Smoothly fade out to silence, since output is now being redirected by a
+      // previous output splitter.
+      AudioFader::FadeOutHelper(temp_buffer_.get(), num_frames, 0, num_frames,
+                                num_frames);
+    }
+    previous_ended_in_silence_ = redirected;
   }
-  previous_ended_in_silence_ = redirected;
 
   output_redirector_->MixInput(mixer_input_, temp_buffer_.get(), num_frames,
                                rendering_delay);
