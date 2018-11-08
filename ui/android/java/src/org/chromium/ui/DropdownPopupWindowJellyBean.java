@@ -6,12 +6,14 @@ package org.chromium.ui;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
@@ -32,6 +34,7 @@ import java.lang.reflect.Method;
 class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
     private static final String TAG = "AutofillPopup";
     private final View mAnchorView;
+    private final Context mContext;
     private boolean mRtl;
     private int mInitialSelection = -1;
     private OnLayoutChangeListener mLayoutChangeListener;
@@ -52,6 +55,8 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
 
         mAnchorView.setId(R.id.dropdown_popup_window);
         mAnchorView.setTag(this);
+
+        mContext = context;
 
         mLayoutChangeListener = new OnLayoutChangeListener() {
             @Override
@@ -196,13 +201,18 @@ class DropdownPopupWindowJellyBean implements DropdownPopupWindowInterface {
 
     @Override
     public void setFooterView(View footerView) {
-        mFooterView = footerView;
+        mListPopupWindow.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
         if (footerView != null) {
             footerView.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            mFooterView = LayoutInflater.from(mContext).inflate(
+                    R.layout.dropdown_footer_wrapper_jellybean, null);
+            FrameLayout container = (FrameLayout) mFooterView.findViewById(R.id.dropdown_footer);
+            container.addView(footerView);
+        } else {
+            mFooterView = null;
         }
-        mListPopupWindow.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
-        mListPopupWindow.setPromptView(footerView);
+        mListPopupWindow.setPromptView(mFooterView);
     }
 
     /**
