@@ -663,11 +663,10 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
   if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
-    pending_visual_properties_.local_surface_id_allocation_time =
-        parent_local_surface_id_allocator_.allocation_time();
+    pending_visual_properties_.local_surface_id_allocation =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
-  viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
   if (enable_surface_synchronization_) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
     // everything is synchronized.
@@ -675,6 +674,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
         capture_sequence_number_changed
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
+    viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
     compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
   }
 
@@ -695,7 +695,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
   // Let the browser know about the updated view rect.
   Send(new FrameHostMsg_SynchronizeVisualProperties(
-      routing_id_, surface_id, pending_visual_properties_));
+      routing_id_, frame_sink_id_, pending_visual_properties_));
   sent_visual_properties_ = pending_visual_properties_;
 
   // The visible rect that the OOPIF needs to raster depends partially on

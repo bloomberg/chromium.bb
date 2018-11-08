@@ -351,7 +351,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnUnlockMouseAck(int instance_id);
   void OnSynchronizeVisualProperties(
       int instance_id,
-      const viz::LocalSurfaceId& local_surface_id,
       const FrameVisualProperties& visual_properties);
 
   void OnImeSetComposition(

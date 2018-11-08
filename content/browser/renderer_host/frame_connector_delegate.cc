@@ -26,13 +26,11 @@ FrameConnectorDelegate::GetRootRenderWidgetHostView() {
 }
 
 void FrameConnectorDelegate::SynchronizeVisualProperties(
-    const viz::SurfaceId& surface_id,
+    const viz::FrameSinkId& frame_sink_id,
     const FrameVisualProperties& visual_properties) {
   screen_info_ = visual_properties.screen_info;
-  local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation(
-      surface_id.local_surface_id(),
-      visual_properties.local_surface_id_allocation_time.value_or(
-          base::TimeTicks()));
+  local_surface_id_allocation_ = visual_properties.local_surface_id_allocation;
+
   capture_sequence_number_ = visual_properties.capture_sequence_number;
 
   SetScreenSpaceRect(visual_properties.screen_space_rect);
@@ -41,7 +39,7 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
   if (!view_)
     return;
 #if defined(USE_AURA)
-  view_->SetFrameSinkId(surface_id.frame_sink_id());
+  view_->SetFrameSinkId(frame_sink_id);
 #endif  // defined(USE_AURA)
 
   RenderWidgetHostImpl* render_widget_host = view_->host();

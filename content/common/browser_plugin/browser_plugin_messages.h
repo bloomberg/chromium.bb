@@ -156,9 +156,8 @@ IPC_MESSAGE_CONTROL1(BrowserPluginHostMsg_UnlockMouse_ACK,
                      int /* browser_plugin_instance_id */)
 
 // Sent when plugin's position has changed.
-IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_SynchronizeVisualProperties,
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SynchronizeVisualProperties,
                      int /* browser_plugin_instance_id */,
-                     viz::LocalSurfaceId /* local_surface_id */,
                      content::FrameVisualProperties /* resize_params */)
 
 // -----------------------------------------------------------------------------

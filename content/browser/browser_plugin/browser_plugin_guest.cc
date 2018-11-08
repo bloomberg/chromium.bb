@@ -1071,14 +1071,15 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
 
 void BrowserPluginGuest::OnSynchronizeVisualProperties(
     int browser_plugin_instance_id,
-    const viz::LocalSurfaceId& local_surface_id,
     const FrameVisualProperties& visual_properties) {
-  if (local_surface_id_allocation_.local_surface_id() > local_surface_id ||
+  if ((local_surface_id_allocation_.local_surface_id() >
+       visual_properties.local_surface_id_allocation.local_surface_id()) ||
       ((frame_rect_.size() != visual_properties.screen_space_rect.size() ||
         screen_info_ != visual_properties.screen_info ||
         capture_sequence_number_ != visual_properties.capture_sequence_number ||
         zoom_level_ != visual_properties.zoom_level) &&
-       local_surface_id_allocation_.local_surface_id() == local_surface_id)) {
+       local_surface_id_allocation_.local_surface_id() ==
+           visual_properties.local_surface_id_allocation.local_surface_id())) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
         owner_site_instance->GetProcess(),
@@ -1091,10 +1092,7 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
   zoom_level_ = visual_properties.zoom_level;
 
   GetWebContents()->SendScreenRects();
-  local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation(
-      local_surface_id,
-      visual_properties.local_surface_id_allocation_time.value_or(
-          base::TimeTicks()));
+  local_surface_id_allocation_ = visual_properties.local_surface_id_allocation;
   bool capture_sequence_number_changed =
       capture_sequence_number_ != visual_properties.capture_sequence_number;
   capture_sequence_number_ = visual_properties.capture_sequence_number;
