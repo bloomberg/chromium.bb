@@ -4,8 +4,11 @@
 
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+#include "net/base/ip_address.h"
 #include "net/http/http_response_headers.h"
 
 constexpr char kApplicationUrlHeaderName[] = "Application-URL";
@@ -62,9 +65,12 @@ void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
   // Section 5.4 of the DIAL spec implies that the Application URL should not
   // have path, query or fragment...unsure if that can be enforced.
   GURL app_url(app_url_header);
-  if (!app_url.is_valid() || !app_url.SchemeIs("http") ||
-      !app_url.HostIsIPAddress() ||
-      app_url.host() != device_description_url_.host()) {
+
+  // TODO(crbug.com/679432): Get the device IP from the SSDP response.
+  net::IPAddress device_ip;
+  if (!device_ip.AssignFromIPLiteral(
+          device_description_url_.HostNoBracketsPiece()) ||
+      !DialDeviceData::IsValidDialAppUrl(app_url, device_ip)) {
     ReportError(net::Error::OK,
                 base::StringPrintf("Invalid Application-URL: %s",
                                    app_url_header.c_str()));
