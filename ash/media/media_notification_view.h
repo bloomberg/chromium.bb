@@ -6,6 +6,7 @@
 #define ASH_MEDIA_MEDIA_NOTIFICATION_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -44,6 +45,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  void UpdateWithMediaSessionInfo(
+      const media_session::mojom::MediaSessionInfoPtr& session_info);
 
  private:
   friend class MediaNotificationViewTest;

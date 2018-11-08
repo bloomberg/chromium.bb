@@ -35,6 +35,12 @@ namespace {
 // the image.
 const int kMediaButtonIconSize = 40;
 
+// Checks if the view class name is used by a media button.
+bool IsMediaButtonType(const char* class_name) {
+  return class_name == views::ImageButton::kViewClassName ||
+         class_name == views::ToggleImageButton::kViewClassName;
+}
+
 }  // namespace
 
 class MediaNotificationViewTest : public AshTestBase {
@@ -53,6 +59,14 @@ class MediaNotificationViewTest : public AshTestBase {
     Shell::Get()->media_notification_controller()->SetMediaControllerForTesting(
         media_controller_->CreateMediaControllerPtr());
 
+    ShowNotificationAndCaptureView(
+        media_session::mojom::MediaSessionInfo::New());
+  }
+
+  void ShowNotificationAndCaptureView(
+      media_session::mojom::MediaSessionInfoPtr session_info) {
+    view_ = nullptr;
+
     // Set a custom view factory to create and capture the notification view.
     message_center::MessageViewFactory::
         ClearCustomNotificationViewFactoryForTest(
@@ -65,8 +79,7 @@ class MediaNotificationViewTest : public AshTestBase {
 
     // Show the notification.
     Shell::Get()->media_notification_controller()->OnFocusGained(
-        media_session::mojom::MediaSessionInfo::New(),
-        media_session::mojom::AudioFocusType::kGain);
+        std::move(session_info), media_session::mojom::AudioFocusType::kGain);
 
     message_center::Notification* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -77,6 +90,7 @@ class MediaNotificationViewTest : public AshTestBase {
     auto* unified_system_tray =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()
             ->unified_system_tray();
+    unified_system_tray->SetTrayEnabled(true);
     unified_system_tray->ShowBubble(false /* show_by_click */);
     unified_system_tray->ActivateBubble();
 
@@ -156,6 +170,7 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   for (int i = 0; i < button_row()->child_count(); ++i) {
     const views::Button* child =
         views::Button::AsButton(button_row()->child_at(i));
+    ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
 
     EXPECT_TRUE(child->visible());
     EXPECT_EQ(kMediaButtonIconSize, child->width());
@@ -212,6 +227,72 @@ TEST_F(MediaNotificationViewTest, ClickNotification) {
   Shell::Get()->media_notification_controller()->FlushForTesting();
 
   EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
+}
+
+TEST_F(MediaNotificationViewTest, PlayToggle_FromFocusGain) {
+  {
+    views::ToggleImageButton* button =
+        static_cast<views::ToggleImageButton*>(button_row()->child_at(1));
+    ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
+    EXPECT_FALSE(button->toggled_for_testing());
+  }
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      media_session::mojom::MediaSessionInfo::New());
+
+  // Disable the tray and run the loop to make sure that the existing view is
+  // destroyed.
+  StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+      ->unified_system_tray()
+      ->SetTrayEnabled(false);
+  base::RunLoop().RunUntilIdle();
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+
+  ShowNotificationAndCaptureView(std::move(session_info));
+
+  {
+    views::ToggleImageButton* button =
+        static_cast<views::ToggleImageButton*>(button_row()->child_at(1));
+    ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
+    EXPECT_TRUE(button->toggled_for_testing());
+  }
+}
+
+TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
+  views::ToggleImageButton* button =
+      static_cast<views::ToggleImageButton*>(button_row()->child_at(1));
+  ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
+  EXPECT_FALSE(button->toggled_for_testing());
+
+  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfo::New());
+  EXPECT_FALSE(button->toggled_for_testing());
+}
+
+TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
+  views::ToggleImageButton* button =
+      static_cast<views::ToggleImageButton*>(button_row()->child_at(1));
+  ASSERT_EQ(views::ToggleImageButton::kViewClassName, button->GetClassName());
+  EXPECT_FALSE(button->toggled_for_testing());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
+      session_info.Clone());
+  EXPECT_TRUE(button->toggled_for_testing());
+
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPaused;
+  Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
+      session_info.Clone());
+  EXPECT_FALSE(button->toggled_for_testing());
 }
 
 }  // namespace ash

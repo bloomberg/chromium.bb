@@ -5,6 +5,8 @@
 #include "ash/media/media_notification_view.h"
 
 #include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_controller.h"
+#include "ash/shell.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -74,16 +76,18 @@ MediaNotificationView::MediaNotificationView(
 
   CreateMediaButton(vector_icons::kMediaNextTrackIcon);
 
-  // TODO(beccahughes): Update |play_pause_button_| based on state.
-
   // TODO(beccahughes): Add remaining UI for notification.
 
   UpdateControlButtonsVisibilityWithNotification(notification);
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
+
+  Shell::Get()->media_notification_controller()->SetView(this);
 }
 
-MediaNotificationView::~MediaNotificationView() = default;
+MediaNotificationView::~MediaNotificationView() {
+  Shell::Get()->media_notification_controller()->SetView(nullptr);
+}
 
 void MediaNotificationView::UpdateWithNotification(
     const message_center::Notification& notification) {
@@ -127,6 +131,13 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
     message_center::MessageCenter::Get()->ClickOnNotificationButton(
         notification_id(), sender->parent()->GetIndexOf(sender));
   }
+}
+
+void MediaNotificationView::UpdateWithMediaSessionInfo(
+    const media_session::mojom::MediaSessionInfoPtr& session_info) {
+  play_pause_button_->SetToggled(
+      session_info->playback_state ==
+      media_session::mojom::MediaPlaybackState::kPlaying);
 }
 
 void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(

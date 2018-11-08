@@ -21,6 +21,10 @@ void TestMediaController::ToggleSuspendResume() {
   ++toggle_suspend_resume_count_;
 }
 
+void TestMediaController::AddObserver(mojom::MediaSessionObserverPtr observer) {
+  ++add_observer_count_;
+}
+
 void TestMediaController::PreviousTrack() {
   ++previous_track_count_;
 }
