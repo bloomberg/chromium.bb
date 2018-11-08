@@ -493,6 +493,8 @@ class PaintOpHelper {
 
   static std::string EnumToString(PaintShader::Type type) {
     switch (type) {
+      case PaintShader::Type::kEmpty:
+        return "kEmpty";
       case PaintShader::Type::kColor:
         return "kColor";
       case PaintShader::Type::kLinearGradient:

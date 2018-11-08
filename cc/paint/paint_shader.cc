@@ -52,6 +52,13 @@ bool CompareMatrices(const SkMatrix& a,
 
 const PaintShader::RecordShaderId PaintShader::kInvalidRecordShaderId = -1;
 
+sk_sp<PaintShader> PaintShader::MakeEmpty() {
+  sk_sp<PaintShader> shader(new PaintShader(Type::kEmpty));
+
+  shader->CreateSkShader();
+  return shader;
+}
+
 sk_sp<PaintShader> PaintShader::MakeColor(SkColor color) {
   sk_sp<PaintShader> shader(new PaintShader(Type::kColor));
 
@@ -373,6 +380,9 @@ void PaintShader::CreateSkShader(const gfx::SizeF* raster_scale,
   DCHECK(!cached_shader_);
 
   switch (shader_type_) {
+    case Type::kEmpty:
+      cached_shader_ = SkShader::MakeEmptyShader();
+      break;
     case Type::kColor:
       // This will be handled by the fallback check below.
       break;
@@ -487,6 +497,7 @@ bool PaintShader::IsValid() const {
     return true;
 
   switch (shader_type_) {
+    case Type::kEmpty:
     case Type::kColor:
       return true;
     case Type::kSweepGradient:
@@ -545,6 +556,7 @@ bool PaintShader::operator==(const PaintShader& other) const {
 
   // Variables that only some shaders use.
   switch (shader_type_) {
+    case Type::kEmpty:
     case Type::kColor:
       break;
     case Type::kSweepGradient:
