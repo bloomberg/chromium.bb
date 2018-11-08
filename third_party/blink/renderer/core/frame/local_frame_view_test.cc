@@ -81,7 +81,7 @@ TEST_F(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
                                                   "color: green");
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 
@@ -100,7 +100,7 @@ TEST_F(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
       ->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(GetAnimationMockChromeClient().has_scheduled_animation_);
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 

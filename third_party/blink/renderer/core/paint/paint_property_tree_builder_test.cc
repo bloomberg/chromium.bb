@@ -366,7 +366,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   EXPECT_EQ(FloatRoundedRect(10, 10, 85, 85), overflow_clip->ClipRect());
 
   scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
   EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
@@ -420,7 +420,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
   EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
 
   scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
   EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
@@ -478,7 +478,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRLMulticol) {
   ToLayoutBox(GetLayoutObjectByElementId("scroller"))
       ->GetScrollableArea()
       ->ScrollBy(ScrollOffset(-100, 200), kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   check_fragments();
 }
 
@@ -559,7 +559,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
                           GetDocument().View()->GetLayoutView());
 
   perspective->setAttribute(html_names::kStyleAttr, "perspective: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(200),
             perspective_properties->Perspective()->Matrix());
   EXPECT_EQ(FloatPoint3D(250, 250, 0),
@@ -576,7 +576,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
 
   perspective->setAttribute(html_names::kStyleAttr,
                             "perspective-origin: 5% 20%");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(100),
             perspective_properties->Perspective()->Matrix());
   EXPECT_EQ(FloatPoint3D(70, 160, 0),
@@ -628,7 +628,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
   transform->setAttribute(
       html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(nullptr,
             transform->GetLayoutObject()->FirstFragment().PaintProperties());
 
@@ -636,7 +636,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
       html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
       "transform: translate3d(123px, 456px, 789px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TransformationMatrix().Translate3d(123, 456, 789),
             transform->GetLayoutObject()
                 ->FirstFragment()
@@ -755,7 +755,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
   transform->setAttribute(
       html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(nullptr,
             transform->GetLayoutObject()->FirstFragment().PaintProperties());
 
@@ -763,7 +763,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
       html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
       "will-change: transform");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TransformationMatrix(), transform->GetLayoutObject()
                                         ->FirstFragment()
                                         .PaintProperties()
@@ -3256,7 +3256,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // value, and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
   b->setAttribute(html_names::kStyleAttr, "transform: translate(111px, 222px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(a_properties,
             a->GetLayoutObject()->FirstFragment().PaintProperties());
@@ -3285,7 +3285,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // tree, and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
   b->setAttribute(html_names::kStyleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(a_properties,
             a->GetLayoutObject()->FirstFragment().PaintProperties());
@@ -3309,7 +3309,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
   b->setAttribute(html_names::kStyleAttr, "transform: translate(4px, 5px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(a_properties,
             a->GetLayoutObject()->FirstFragment().PaintProperties());
@@ -3718,7 +3718,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
   Element* overflow_hidden = GetDocument().getElementById("overflowHidden");
   overflow_hidden->setScrollTop(37);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const ObjectPaintProperties* overflow_hidden_scroll_properties =
       overflow_hidden->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3751,7 +3751,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameOverflowHiddenScrollProperties) {
 
   GetDocument().domWindow()->scrollTo(0, 37);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             DocScrollTranslation()->Matrix());
@@ -3800,7 +3800,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   Element* overflow_b = GetDocument().getElementById("overflowB");
   overflow_b->setScrollTop(41);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const ObjectPaintProperties* overflow_a_scroll_properties =
       overflow_a->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3896,7 +3896,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   Element* fixed_overflow = GetDocument().getElementById("fixedOverflow");
   fixed_overflow->setScrollTop(43);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // The frame should scroll due to the "forceScroll" element.
   EXPECT_NE(nullptr, DocScroll());
@@ -3987,7 +3987,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   Element* overflow_b = GetDocument().getElementById("overflowB");
   overflow_b->setScrollTop(41);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const ObjectPaintProperties* overflow_a_scroll_properties =
       overflow_a->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -4115,7 +4115,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
   ToLayoutBox(scroller)->GetScrollableArea()->ScrollBy(ScrollOffset(0, 300),
                                                        kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
                                  .PaintProperties()
@@ -4206,7 +4206,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
@@ -4611,7 +4611,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
   )HTML");
 
   // This should not crash on duplicated subsequences in the iframe.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
 }
@@ -4635,7 +4635,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
   )HTML");
 
   // This should not crash on duplicated subsequences in the iframe.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
 }
@@ -4662,7 +4662,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   Element* target_element = GetDocument().getElementById("target");
 
   target_element->setAttribute(html_names::kStyleAttr, "position: absolute");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutPoint(0, 0), target->FirstFragment().PaginationOffset());
   EXPECT_EQ(LayoutUnit(), target->FirstFragment().LogicalTopInFlowThread());
 }
@@ -4821,7 +4821,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
 
   ToElement(ancestor->GetNode())
       ->setAttribute(html_names::kStyleAttr, "position: static");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 }
@@ -5246,7 +5246,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(42);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const ObjectPaintProperties* scroll_properties =
       scroller->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -5276,7 +5276,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
 
   scroller->setAttribute(html_names::kStyleAttr, "border: 20px solid black;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   // The paint offset node should be offset by the margin.
   EXPECT_EQ(FloatSize(7, 11),
             paint_offset_translation->Matrix().To2DTranslation());
@@ -5286,7 +5286,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   scroller->setAttribute(html_names::kStyleAttr,
                          "border: 20px solid black;"
                          "transform: translate(20px, 30px);");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   // The scroll node's offset should not include margin if it has already been
   // included in a paint offset node.
   EXPECT_EQ(IntRect(20, 20, 100, 100), scroll_node->ContainerRect());
@@ -5330,7 +5330,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   }
 
   ToElement(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
 }
@@ -5405,7 +5405,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
 TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   SetBodyInnerHTML("<iframe></iframe>");
   SetChildFrameHTML("");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // When not printing, both main and child frame views have content clip.
   auto* const main_frame_doc = &GetDocument();
@@ -5427,7 +5427,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
             DocContentClip(child_frame_doc)->ClipRect().Rect());
 
   GetFrame().EndPrinting();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // When only the child frame is printing, it should not have content clip but
   // the main frame still have (which doesn't matter though).
@@ -5654,7 +5654,7 @@ TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
   SetChildFrameHTML(R"HTML(
     <div id='forceInnerScroll' style='height: 2000px'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     EXPECT_TRUE(DocScrollTranslation()->HasDirectCompositingReasons());
@@ -5745,7 +5745,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {
     </html>
   )HTML");
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* child_layer = ToLayoutBox(GetLayoutObjectByElementId("child"))->Layer();
   EXPECT_FALSE(child_layer->NeedsRepaint());
@@ -5770,7 +5770,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipPathInheritanceWithoutMutation) {
       child->FirstFragment().LocalBorderBoxProperties().Clip();
 
   child->SetNeedsPaintPropertyUpdate();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto* new_clip_state =
       child->FirstFragment().LocalBorderBoxProperties().Clip();
@@ -5824,7 +5824,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
     <div id="normal" style="height: 1000px"></div>
   )HTML");
   GetDocument().domWindow()->scrollTo(0, 200);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
@@ -5863,7 +5863,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   EXPECT_EQ(1u, NumFragments(normal));
 
   GetFrame().EndPrinting();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
@@ -5881,7 +5881,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
     <div id="normal" style="height: 1000px"></div>
   )HTML");
   GetDocument().domWindow()->scrollTo(0, 200);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
@@ -5921,7 +5921,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   }
 
   GetFrame().EndPrinting();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
@@ -5995,7 +5995,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   ASSERT_EQ(1u, NumFragments(&painting_layer_object));
 
   GetFrame().EndPrinting();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(head->IsRepeatingHeaderGroup());
   EXPECT_EQ(1u, NumFragments(head));
   EXPECT_EQ(1u, NumFragments(head->FirstRow()));
@@ -6095,7 +6095,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
 
   GetDocument().getElementById("target")->setAttribute(
       html_names::kStyleAttr, "padding: 1px 2px 3px 4px;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   {
     const auto* properties = PaintPropertiesForElement("target");
@@ -6205,7 +6205,7 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
     </div>
   )HTML");
   GetDocument().getElementById("scroller")->setScrollTop(50);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto* outer_properties = PaintPropertiesForElement("outer");
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
@@ -6274,7 +6274,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
     </div>
   )HTML");
   GetDocument().getElementById("scroller")->setScrollTop(50);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto* outer_properties = PaintPropertiesForElement("outer");
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());

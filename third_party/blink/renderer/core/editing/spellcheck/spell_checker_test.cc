@@ -40,7 +40,7 @@ void SpellCheckerTest::ForceLayout() {
 
 TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {
   SetBodyContent("<input placeholder='placeholder'>abc");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Element* input = GetDocument().QuerySelector("input");
   input->focus();
   // Do not crash in advanceToNextMisspelling.
@@ -57,7 +57,7 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithImageInTableNoCrash) {
       "zz zz zz"
       "</div>");
   GetDocument().QuerySelector("div")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Do not crash in advanceToNextMisspelling.
   GetSpellChecker().AdvanceToNextMisspelling(false);
@@ -73,7 +73,7 @@ TEST_F(SpellCheckerTest, AdvancedToNextMisspellingWrapSearchNoCrash) {
       SelectionInDOMTree::Builder()
           .Collapse(Position::LastPositionInNode(*div))
           .Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   GetSpellChecker().AdvanceToNextMisspelling(false);
 }

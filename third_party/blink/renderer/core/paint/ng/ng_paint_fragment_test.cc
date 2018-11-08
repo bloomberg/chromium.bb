@@ -271,7 +271,7 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(LayoutRect(), box2.SelectionVisualRect());
 
   GetDocument().GetFrame()->Selection().SelectAll();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.VisualRect());
   EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), box1.VisualRect());

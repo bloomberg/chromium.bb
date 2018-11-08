@@ -48,13 +48,13 @@ TEST_F(ScrollTimelineTest,
   // Now attach an animation. This should require a compositing update.
   scroll_timeline->AttachAnimation();
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(scroller->Layer()->GetCompositingState(), kNotComposited);
 
   // Now detach an animation. This should again require a compositing update.
   scroll_timeline->DetachAnimation();
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scroller->Layer()->GetCompositingState(), kNotComposited);
 }
 

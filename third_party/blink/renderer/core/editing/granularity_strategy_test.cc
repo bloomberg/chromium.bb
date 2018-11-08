@@ -93,7 +93,7 @@ Text* GranularityStrategyTest::AppendTextNode(const String& data) {
 void GranularityStrategyTest::SetInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 void GranularityStrategyTest::ParseText(Text* text) {
@@ -156,7 +156,7 @@ Text* GranularityStrategyTest::SetupTranslateZ(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -181,7 +181,7 @@ Text* GranularityStrategyTest::SetupTransform(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -206,7 +206,7 @@ Text* GranularityStrategyTest::SetupRotate(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -227,7 +227,7 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
   span->AppendChild(text2);
   div->AppendChild(text3);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Vector<IntPoint> letter_pos;
   Vector<IntPoint> word_middle_pos;

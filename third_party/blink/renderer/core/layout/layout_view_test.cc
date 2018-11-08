@@ -20,14 +20,14 @@ TEST_F(LayoutViewTest, UpdateCountersLayout) {
     <div id=inc></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Element* inc = GetDocument().getElementById("inc");
 
   inc->setAttribute("class", "incX");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_FALSE(GetDocument().View()->NeedsLayout());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   inc->setAttribute("class", "incY");
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_TRUE(GetDocument().View()->NeedsLayout());

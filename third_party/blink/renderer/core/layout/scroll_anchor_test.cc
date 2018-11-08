@@ -29,7 +29,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   void Update() {
     // TODO(skobes): Use SimTest instead of RenderingTest and move into
     // Source/web?
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 
   ScrollableArea* LayoutViewport() {
@@ -470,7 +470,7 @@ TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
 
   NonThrowableExceptionState non_throw;
   GetDocument().setRootScroller(root_scroller_element, non_throw);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ScrollableArea* scroller = ScrollerForElement(root_scroller_element);
 

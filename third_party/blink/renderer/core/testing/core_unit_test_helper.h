@@ -103,7 +103,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 
   LayoutObject* GetLayoutObjectByElementId(const char* id) const {

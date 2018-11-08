@@ -27,7 +27,7 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
     </style>
     <div id='target' style='touch-action: pinch-zoom'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = ChildDocument().getElementById("target");
   EXPECT_EQ(TouchAction::kTouchActionNone,
@@ -35,7 +35,7 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
 
   Element* owner = GetDocument().getElementById("owner");
   owner->setAttribute(html_names::kStyleAttr, "touch-action: auto");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TouchAction::kTouchActionPinchZoom,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
@@ -49,7 +49,7 @@ TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
     <div id='ancestor'><div id='scroller'><div id='target'>
     </div></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
   EXPECT_EQ(TouchAction::kTouchActionManipulation,
@@ -65,7 +65,7 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
     <div id='ancestor'><div id='potential-scroller'><div id='target'>
     </div></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
   EXPECT_EQ(TouchAction::kTouchActionPanX,
@@ -73,14 +73,14 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
 
   Element* ancestor = GetDocument().getElementById("ancestor");
   ancestor->setAttribute(html_names::kStyleAttr, "touch-action: pan-y");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TouchAction::kTouchActionPanY,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 
   Element* potential_scroller =
       GetDocument().getElementById("potential-scroller");
   potential_scroller->setAttribute(html_names::kStyleAttr, "overflow: scroll");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TouchAction::kTouchActionPan,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }
@@ -93,7 +93,7 @@ TEST_F(StyleAdjusterTest, TouchActionRestrictedByLowerAncestor) {
     <div id='target' style='touch-action: pan-x'>
     </div></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
   EXPECT_EQ(TouchAction::kTouchActionPanRight,
@@ -101,7 +101,7 @@ TEST_F(StyleAdjusterTest, TouchActionRestrictedByLowerAncestor) {
 
   Element* parent = GetDocument().getElementById("parent");
   parent->setAttribute(html_names::kStyleAttr, "touch-action: auto");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(TouchAction::kTouchActionPanX,
             target->GetComputedStyle()->GetEffectiveTouchAction());
 }

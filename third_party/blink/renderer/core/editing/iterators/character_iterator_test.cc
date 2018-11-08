@@ -42,7 +42,7 @@ TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
   static const char* body_content =
       "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* div_node = GetDocument().getElementById("div");
   Range* entire_range = Range::Create(GetDocument(), div_node, 0, div_node, 3);
@@ -58,7 +58,7 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   static const char* body_content =
       "<div id='div' contenteditable='true'>hello</div>";
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* text_node = GetDocument().getElementById("div")->lastChild();
   Range* entire_range =

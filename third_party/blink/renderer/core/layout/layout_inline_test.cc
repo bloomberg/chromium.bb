@@ -99,7 +99,7 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
     </span></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutInline* lots_of_boxes =
       ToLayoutInline(GetLayoutObjectByElementId("lotsOfBoxes"));

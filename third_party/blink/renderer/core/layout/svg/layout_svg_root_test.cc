@@ -61,7 +61,7 @@ TEST_F(LayoutSVGRootTest, VisualOverflowExpandsLayer) {
   EXPECT_EQ(graphics_layer->Size(), gfx::Size(100, 100));
 
   GetDocument().getElementById("rect")->setAttribute("height", "200");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(graphics_layer->Size(), gfx::Size(100, 200));
 }

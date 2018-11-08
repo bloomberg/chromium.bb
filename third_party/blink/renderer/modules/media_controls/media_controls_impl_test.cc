@@ -1334,7 +1334,7 @@ class ModernMediaControlsImplTest : public MediaControlsImplTest {
 };
 
 TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   {
     const ComputedStyle* style = MediaControls().GetComputedStyle();
     EXPECT_EQ(0.0, style->MarginTop().Pixels());
@@ -1353,7 +1353,7 @@ TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
       "safe-area-inset-right", "4px");
 
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   {
     const ComputedStyle* style = MediaControls().GetComputedStyle();

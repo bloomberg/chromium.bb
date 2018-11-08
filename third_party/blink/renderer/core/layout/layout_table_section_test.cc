@@ -28,7 +28,7 @@ class LayoutTableSectionTest : public RenderingTest {
       for (unsigned i = 0; i < columns; ++i)
         row->appendChild(GetDocument().CreateRawElement(html_names::kTdTag));
     }
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     return ToLayoutTableSection(section->GetLayoutObject());
   }
 };
@@ -347,7 +347,7 @@ TEST_F(LayoutTableSectionTest, OverflowingCells) {
 
   SetCellsOverflowInRow(small_section->FirstRow());
   SetCellsOverflowInRow(big_section->FirstRow());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Small sections with overflowing cells always use the full paint path.
   EXPECT_TRUE(small_section->HasOverflowingCell());
@@ -367,7 +367,7 @@ TEST_F(LayoutTableSectionTest, OverflowingCells) {
     SetCellsOverflowInRow(row);
   for (auto* row = big_section->FirstRow(); row; row = row->NextRow())
     SetCellsOverflowInRow(row);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Small sections with overflowing cells always use the full paint path.
   EXPECT_TRUE(small_section->HasOverflowingCell());

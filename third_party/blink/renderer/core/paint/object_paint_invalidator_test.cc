@@ -116,7 +116,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_FALSE(span_layer->NeedsRepaint());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Traversing from span should mark needsRepaint on correct layers for target.
   EXPECT_FALSE(containing_block_layer->NeedsRepaint());
@@ -128,7 +128,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(composited_container_layer->NeedsRepaint());
   EXPECT_TRUE(span_layer->NeedsRepaint());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Traversing from compositedContainer should reach target.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -286,7 +286,7 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_EQ(LayoutRect(18, 18, 80, 100),
             target->PartialInvalidationVisualRect());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationVisualRect());
 
@@ -319,7 +319,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   // Add selection.
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().GetFrame()->Selection().SelectAll();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const auto* graphics_layer = GetLayoutView().Layer()->GraphicsLayerBacking();
   const auto* invalidations =
       &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
@@ -332,7 +332,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   // Simulate a change without full invalidation or selection change.
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->SetShouldCheckForPaintInvalidation();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(graphics_layer->GetRasterInvalidationTracking()
                   ->Invalidations()
                   .IsEmpty());
@@ -342,7 +342,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   // Remove selection.
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().GetFrame()->Selection().Clear();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   invalidations =
       &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(1u, invalidations->size());

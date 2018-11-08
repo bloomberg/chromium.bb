@@ -109,7 +109,7 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement) {
   html->AppendChild(three);
   html->AppendChild(four);
   one->appendChild(html);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(Position(),
             CanonicalPositionOf(Position(GetDocument().documentElement(), 0)));
@@ -288,7 +288,7 @@ TEST_F(VisibleUnitsTest, IsVisuallyEquivalentCandidateWithHTMLHtmlElement) {
   html->AppendChild(three);
   html->AppendChild(four);
   one->appendChild(html);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(
       Position(GetDocument().documentElement(), 0)));
@@ -354,7 +354,7 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLBodyElement) {
 }
 
 TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithDocument) {
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(&GetDocument(), 0)));
 }
@@ -421,7 +421,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit) {
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
   Text* remaining = ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(Position(sample, 0),
             MostBackwardCaretPosition(Position(first_letter, 0)));
@@ -445,7 +445,7 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor) {
       "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* host = GetDocument().getElementById("host");
   Element* one = GetDocument().getElementById("one");

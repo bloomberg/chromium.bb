@@ -21,7 +21,7 @@ TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {
   Node* sample = GetDocument().getElementById("sample");
   Text* text = ToText(sample->firstChild());
   text->setData(" ");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(text->GetLayoutObject()->IsTextFragment());
 }
@@ -34,14 +34,14 @@ TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter) {
 
   Range* range = Range::Create(GetDocument(), text, 0, text, 2);
   range->deleteContents(ASSERT_NO_EXCEPTION);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(text->GetLayoutObject()->IsTextFragment());
 }
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_CannotHaveChildren) {
   SetBodyContent("<img id=image>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* img = GetDocument().getElementById("image");
   ASSERT_TRUE(img);
@@ -61,7 +61,7 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_CannotHaveChildren) {
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_EditingText) {
   SetBodyContent("<span id=parent></span>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* parent = GetDocument().getElementById("parent");
   ASSERT_TRUE(parent);
@@ -91,7 +91,7 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_EditingText) {
 
 TEST_F(TextTest, TextLayoutObjectIsNeeded_Empty) {
   SetBodyContent("<span id=parent></span>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* parent = GetDocument().getElementById("parent");
   ASSERT_TRUE(parent);
@@ -112,7 +112,7 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_Whitespace) {
   SetBodyContent(
       "<div id=block></div>Ends with whitespace "
       "<span id=inline></span>Nospace<br id=br>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject* block =
       GetDocument().getElementById("block")->GetLayoutObject();
@@ -180,7 +180,7 @@ TEST_F(TextTest, TextLayoutObjectIsNeeded_PreserveNewLine) {
     <div id=pre-line style='white-space:pre-line'></div>
     <div id=pre-wrap style='white-space:pre-wrap'></div>
   )HTML");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Text* text = Text::Create(GetDocument(), " ");
 

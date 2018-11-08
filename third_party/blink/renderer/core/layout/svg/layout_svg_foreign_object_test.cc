@@ -98,7 +98,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
     </style>
     <div id='div' style='margin: 70px; width: 100px; height: 50px'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto& svg = *GetDocument().getElementById("svg");
   const auto& foreign = *GetDocument().getElementById("foreign");

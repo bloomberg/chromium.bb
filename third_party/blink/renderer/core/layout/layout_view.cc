@@ -129,7 +129,7 @@ bool LayoutView::HitTest(const HitTestLocation& location,
   // hit test recurses into a child document, it could trigger a layout on the
   // parent document, which can destroy PaintLayer that are higher up in the
   // call stack, leading to crashes.
-  // Note that Document::updateLayout calls its parent's updateLayout.
+  // Note that Document::UpdateLayout calls its parent's UpdateLayout.
   // Note that if an iframe has its render pipeline throttled, it will not
   // update layout here, and it will also not propagate the hit test into the
   // iframe's inner document.

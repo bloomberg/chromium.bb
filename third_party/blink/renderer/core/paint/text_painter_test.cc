@@ -55,7 +55,7 @@ class TextPainterTest : public RenderingTest {
 
 TEST_F(TextPainterTest, TextPaintingStyle_Simple) {
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -79,7 +79,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
       CSSPrimitiveValue::UnitType::kPixels);
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
                                                "1px 2px 3px yellow");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -109,7 +109,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
       CSSPrimitiveValue::UnitType::kPixels);
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
                                                "1px 2px 3px yellow");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -134,7 +134,7 @@ TEST_F(TextPainterTest,
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
   FloatSize page_size(500, 800);
   GetFrame().StartPrinting(page_size, page_size, 1);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),

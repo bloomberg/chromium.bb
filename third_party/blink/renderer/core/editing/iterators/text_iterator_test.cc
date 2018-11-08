@@ -456,7 +456,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements) {
   static const char* body_content =
       "<div id='div' contenteditable='true'>1<img src='foo.png'>3</div>";
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* div_node = GetDocument().getElementById("div");
   const EphemeralRange range(Position(div_node, 0), Position(div_node, 3));
@@ -477,7 +477,7 @@ TEST_F(TextIteratorTest, RangeLengthInMultilineSpan) {
       "</table>";
 
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* span_node = GetDocument().getElementById("span1");
   Node* text_node = span_node->firstChild();

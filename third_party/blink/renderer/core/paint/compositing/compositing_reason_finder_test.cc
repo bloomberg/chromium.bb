@@ -206,14 +206,14 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
 
   // Change the parent to have a transform.
   parent->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to have no transform again.
   parent->removeAttribute(html_names::kStyleAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
@@ -221,7 +221,7 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
 
   // Apply a transform to the fixed directly.
   fixed->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
@@ -254,14 +254,14 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
 
   // Change the parent to be partially translucent.
   parent->setAttribute(html_names::kStyleAttr, "opacity: 0.5;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to be opaque again.
   parent->setAttribute(html_names::kStyleAttr, "opacity: 1;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
@@ -269,7 +269,7 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
 
   // Make the fixed translucent.
   fixed->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
@@ -402,7 +402,7 @@ TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
     <!DOCTYPE html>
     <iframe style="width:0; height:0; border: 0;" srcdoc="<!DOCTYPE html>"></iframe>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LocalFrame* child_frame =
       ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild());

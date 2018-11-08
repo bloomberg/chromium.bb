@@ -152,7 +152,7 @@ TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
   )HTML");
 
   GetFrame().DomWindow()->scrollBy(0, 100);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto scrolling_properties =
@@ -225,7 +225,7 @@ TEST_P(ViewPainterTestWithPaintTouchAction,
   )HTML");
 
   GetFrame().DomWindow()->scrollBy(0, 100);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* view = &GetLayoutView();
   auto non_scrolling_properties =

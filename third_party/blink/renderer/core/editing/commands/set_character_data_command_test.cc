@@ -125,7 +125,7 @@ TEST_F(SetCharacterDataCommandTest, CombinedText) {
 
   Text* text_node = ToText(GetDocument().body()->firstChild()->appendChild(
       GetDocument().CreateEditingTextNode("")));
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(text_node->GetLayoutObject());
   ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());
@@ -134,14 +134,14 @@ TEST_F(SetCharacterDataCommandTest, CombinedText) {
   SimpleEditCommand* command =
       SetCharacterDataCommand::Create(text_node, 0, 0, "text");
   command->DoReapply();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(text_node->GetLayoutObject());
   ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());
   EXPECT_TRUE(ToLayoutTextCombine(text_node->GetLayoutObject())->IsCombined());
 
   command->DoUnapply();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(text_node->GetLayoutObject());
   ASSERT_TRUE(text_node->GetLayoutObject()->IsCombineText());

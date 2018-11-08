@@ -50,7 +50,7 @@ TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
   list_element->style()->setCSSText(&GetDocument(), "width:150px;height:100px;",
                                     exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_EQ(list_box->VerticalScrollbarWidth(), 0);
   ASSERT_EQ(item_element->OffsetWidth(), 150);
 }

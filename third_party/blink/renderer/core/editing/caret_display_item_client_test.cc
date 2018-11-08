@@ -63,10 +63,10 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
     return block;
   }
 
-  void UpdateAllLifecyclePhases() {
+  void UpdateAllLifecyclePhasesForCaretTest() {
     // Partial lifecycle updates should not affect caret paint invalidation.
     GetDocument().View()->UpdateLifecycleToLayoutClean();
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     // Partial lifecycle updates should not affect caret paint invalidation.
     GetDocument().View()->UpdateLifecycleToLayoutClean();
   }
@@ -80,13 +80,13 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
 
   Text* text = AppendTextNode("Hello, World!");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
 
   // Focus the body. Should invalidate the new caret.
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().body()->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_TRUE(block->ShouldPaintCursorCaret());
 
   LayoutRect caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
@@ -108,7 +108,7 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(block->ShouldPaintCursorCaret());
 
   LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
@@ -134,7 +134,7 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   LayoutRect old_caret_visual_rect = new_caret_visual_rect;
   GetDocument().View()->SetTracksPaintInvalidations(true);
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_FALSE(block->ShouldPaintCursorCaret());
   EXPECT_EQ(LayoutRect(), GetCaretDisplayItemClient().VisualRect());
 
@@ -155,13 +155,13 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   auto* block_element1 = AppendBlock("Block1");
   auto* block_element2 = AppendBlock("Block2");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto* block1 = ToLayoutBlockFlow(block_element1->GetLayoutObject());
   auto* block2 = ToLayoutBlockFlow(block_element2->GetLayoutObject());
 
   // Focus the body.
   GetDocument().body()->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   LayoutRect caret_visual_rect1 = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(1, caret_visual_rect1.Width());
   EXPECT_EQ(block1->FirstFragment().VisualRect().Location(),
@@ -175,7 +175,7 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element2, 0))
           .Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutRect caret_visual_rect2 = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(1, caret_visual_rect2.Width());
@@ -204,7 +204,7 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element1, 0))
           .Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
 
   EXPECT_EQ(caret_visual_rect1, GetCaretDisplayItemClient().VisualRect());
   EXPECT_TRUE(block1->ShouldPaintCursorCaret());
@@ -231,7 +231,7 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   auto* block_element1 = AppendBlock("Block1");
   auto* block_element2 = AppendBlock("Block2");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   auto* block1 = ToLayoutBlock(block_element1->GetLayoutObject());
   auto* block2 = ToLayoutBlock(block_element2->GetLayoutObject());
 
@@ -280,7 +280,7 @@ TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element1, 0))
           .Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   // Remove selection.
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
   GetDocument().View()->UpdateLifecycleToLayoutClean();
@@ -294,7 +294,7 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
 
   Text* text = AppendTextNode("Hello, World!");
   GetDocument().body()->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
 
   LayoutRect caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
@@ -309,7 +309,7 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
       SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
   // Simulate that the cursor blinking is restarted.
   Selection().SetCaretVisible(true);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
 
   LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
   EXPECT_EQ(caret_visual_rect.Size(), new_caret_visual_rect.Size());
@@ -348,7 +348,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   auto* editor_block = ToLayoutBlock(editor->GetLayoutObject());
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(editor, 0)).Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
 
   EXPECT_TRUE(editor_block->ShouldPaintCursorCaret());
   EXPECT_EQ(editor_block, CaretLayoutBlock());
@@ -357,7 +357,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
 
   // Composite container.
   container->setAttribute(html_names::kStyleAttr, "will-change: transform");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   // TODO(wangxianzhu): Why will-change:transform doens't trigger compositing
   // in SPv2?
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
@@ -367,7 +367,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
 
   // Uncomposite container.
   container->setAttribute(html_names::kStyleAttr, "");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_EQ(LayoutRect(116, 105, 1, 1),
             GetCaretDisplayItemClient().VisualRect());
 }

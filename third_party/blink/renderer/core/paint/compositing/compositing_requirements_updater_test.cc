@@ -42,7 +42,7 @@ TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
                                                    kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // No longer overlaps the first div.
   EXPECT_EQ(CompositingReason::kNone, fixed->Layer()->GetCompositingReasons());
@@ -71,7 +71,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   // Now make |target| self-painting.
   GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(CompositingReason::kOverlap, target->GetCompositingReasons());
 }
@@ -98,7 +98,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   // Now make |target| self-painting.
   GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CompositingReason::kAssumedOverlap,
             target->GetCompositingReasons());
 }
@@ -125,7 +125,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   // Now make |target| self-painting.
   GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
             target->GetCompositingReasons());
 }
@@ -162,7 +162,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
 
   GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(kNotComposited, squashed->GetCompositingState());
   auto* tracking = GetDocument()

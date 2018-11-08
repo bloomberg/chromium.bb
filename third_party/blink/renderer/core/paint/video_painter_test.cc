@@ -88,7 +88,7 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   test::RunPendingTasks();
 
   // Force the page to paint.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Fetch the layer associated with the <video>, and check that it was
   // correctly configured in the layer tree.

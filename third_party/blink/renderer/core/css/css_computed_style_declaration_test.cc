@@ -19,7 +19,7 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanAncestorsNoRecalc) {
       <div id=target style='color:green'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
 
   GetDocument().getElementById("dirty")->setAttribute("style", "color:pink");
@@ -48,7 +48,7 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanShadowAncestorsNoRecalc) {
     <div id=target style='color:green'></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
 
   GetDocument().getElementById("dirty")->setAttribute("style", "color:pink");

@@ -33,7 +33,7 @@ class AffectedByPseudoTest : public PageTestBase {
 void AffectedByPseudoTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 void AffectedByPseudoTest::CheckElementsForFocus(
@@ -168,12 +168,12 @@ TEST_F(AffectedByPseudoTest, AffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -201,12 +201,12 @@ TEST_F(AffectedByPseudoTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -234,12 +234,12 @@ TEST_F(AffectedByPseudoTest, InvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -269,12 +269,12 @@ TEST_F(AffectedByPseudoTest, NoInvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -296,12 +296,12 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("focusme1")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -311,7 +311,7 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
   start_count += element_count;
 
   GetElementById("focusme2")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   element_count = GetStyleEngine().StyleForElementCount() - start_count;
 
@@ -325,7 +325,7 @@ TEST_F(AffectedByPseudoTest, HoverScrollbar) {
       "<style>div::-webkit-scrollbar:hover { color: pink; }</style>"
       "<div id=div1></div>");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetElementById("div1")->GetComputedStyle()->AffectedByHover());
 }
 

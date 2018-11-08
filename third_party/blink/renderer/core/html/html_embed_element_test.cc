@@ -46,7 +46,7 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
   ASSERT_TRUE(embed_element);
   HTMLEmbedElement* embed = ToHTMLEmbedElement(embed_element);
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // We should get |true| as a result and don't trigger a DCHECK.
   EXPECT_TRUE(static_cast<Element*>(embed)->LayoutObjectIsNeeded(
@@ -59,7 +59,7 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
   EXPECT_TRUE(object->UseFallbackContent());
   EXPECT_TRUE(object->WillUseFallbackContentAtLayout());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(static_cast<Element*>(embed)->LayoutObjectIsNeeded(
       ComputedStyle::InitialStyle()));
 }

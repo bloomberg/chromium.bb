@@ -552,7 +552,7 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0.0, 50),
                                                           kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50,
             GetDocument().View()->LayoutViewport()->ScrollOffsetInt().Height());
 
@@ -585,7 +585,7 @@ TEST_F(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0.0, 50),
                                                           kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50,
             GetDocument().View()->LayoutViewport()->ScrollOffsetInt().Height());
 
@@ -612,7 +612,7 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0.0, 50),
                                                           kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50,
             GetDocument().View()->LayoutViewport()->ScrollOffsetInt().Height());
 
@@ -651,7 +651,7 @@ TEST_F(MapCoordinatesTest, FixedPosInContainPaint) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0.0, 50),
                                                           kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50,
             GetDocument().View()->LayoutViewport()->ScrollOffsetInt().Height());
 
@@ -694,7 +694,7 @@ TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
@@ -721,7 +721,7 @@ TEST_F(MapCoordinatesTest, IFrameTransformed) {
       "<style>body { margin: 0; } #target { width: 200px; "
       "height: 8000px}</style><div id=target></div>");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
@@ -758,10 +758,10 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
     <div style='width: 200; height: 8000px'></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
