@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
@@ -145,10 +144,6 @@ ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
 // |connection_type|.
 PageloadMetrics_ConnectionType ProtoConnectionTypeFromConnectionType(
     net::NetworkChangeNotifier::ConnectionType connection_type);
-
-// Returns the RequestInfo_Protocol equivalent of |protocol|.
-RequestInfo_Protocol ProtoRequestInfoProtocolFromRequestInfoProtocol(
-    DataReductionProxyData::RequestInfo::Protocol protocol);
 
 // Returns the |net::ProxyServer::Scheme| for a ProxyServer_ProxyScheme.
 net::ProxyServer::Scheme SchemeFromProxyScheme(

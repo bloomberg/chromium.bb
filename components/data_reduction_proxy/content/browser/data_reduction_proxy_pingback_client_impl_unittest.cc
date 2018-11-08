@@ -58,19 +58,6 @@ static const int kCrashProcessId = 1;
 static const int64_t kRendererMemory = 1024;
 static const int64_t kTouchCount = 10;
 static const int64_t kScrollCount = 20;
-static const int kNumRequestInfo = 2;
-static const DataReductionProxyData::RequestInfo first_request_info(
-    DataReductionProxyData::RequestInfo::Protocol::HTTP,
-    false,
-    base::TimeDelta::FromMilliseconds(1000),
-    base::TimeDelta::FromMilliseconds(1100),
-    base::TimeDelta::FromMilliseconds(1200));
-static const DataReductionProxyData::RequestInfo second_request_info(
-    DataReductionProxyData::RequestInfo::Protocol::HTTPS,
-    true,
-    base::TimeDelta::FromMilliseconds(1300),
-    base::TimeDelta::FromMilliseconds(1400),
-    base::TimeDelta::FromMilliseconds(1500));
 
 }  // namespace
 
@@ -197,8 +184,6 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     request_data.set_client_lofi_requested(client_lofi_requested);
     request_data.set_lite_page_received(lite_page_received);
     request_data.set_page_id(page_id_);
-    request_data.add_request_info(first_request_info);
-    request_data.add_request_info(second_request_info);
     static_cast<DataReductionProxyPingbackClient*>(pingback_client())
         ->SendPingback(request_data, *timing_);
     page_id_++;
@@ -325,37 +310,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
   EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
   EXPECT_EQ(data_page_id, pageload_metrics.page_id());
-  EXPECT_EQ(kNumRequestInfo,
-            pageload_metrics.main_frame_network_request_size());
-  EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                first_request_info.protocol),
-            pageload_metrics.main_frame_network_request(0).protocol());
-  EXPECT_EQ(first_request_info.proxy_bypass,
-            pageload_metrics.main_frame_network_request(0).proxy_bypass());
-  EXPECT_EQ(first_request_info.dns_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).dns_time()));
-  EXPECT_EQ(first_request_info.connect_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).connect_time()));
-  EXPECT_EQ(first_request_info.http_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).http_time()));
-
-  EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                second_request_info.protocol),
-            pageload_metrics.main_frame_network_request(1).protocol());
-  EXPECT_EQ(second_request_info.proxy_bypass,
-            pageload_metrics.main_frame_network_request(1).proxy_bypass());
-  EXPECT_EQ(second_request_info.dns_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).dns_time()));
-  EXPECT_EQ(second_request_info.connect_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).connect_time()));
-  EXPECT_EQ(second_request_info.http_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).http_time()));
 
   EXPECT_EQ(PageloadMetrics_PreviewsType_NONE,
             pageload_metrics.previews_type());
@@ -496,39 +450,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
     EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
     EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
-    EXPECT_EQ(kNumRequestInfo,
-              pageload_metrics.main_frame_network_request_size());
-    EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                  first_request_info.protocol),
-              pageload_metrics.main_frame_network_request(0).protocol());
-    EXPECT_EQ(first_request_info.proxy_bypass,
-              pageload_metrics.main_frame_network_request(0).proxy_bypass());
-    EXPECT_EQ(first_request_info.dns_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(0).dns_time()));
-    EXPECT_EQ(
-        first_request_info.connect_time,
-        protobuf_parser::DurationToTimeDelta(
-            pageload_metrics.main_frame_network_request(0).connect_time()));
-    EXPECT_EQ(first_request_info.http_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(0).http_time()));
-
-    EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                  second_request_info.protocol),
-              pageload_metrics.main_frame_network_request(1).protocol());
-    EXPECT_EQ(second_request_info.proxy_bypass,
-              pageload_metrics.main_frame_network_request(1).proxy_bypass());
-    EXPECT_EQ(second_request_info.dns_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(1).dns_time()));
-    EXPECT_EQ(
-        second_request_info.connect_time,
-        protobuf_parser::DurationToTimeDelta(
-            pageload_metrics.main_frame_network_request(1).connect_time()));
-    EXPECT_EQ(second_request_info.http_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(1).http_time()));
 
     EXPECT_EQ(page_ids.front(), pageload_metrics.page_id());
     page_ids.pop_front();

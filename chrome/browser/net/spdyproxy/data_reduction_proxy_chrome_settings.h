@@ -26,6 +26,7 @@ class NavigationHandle;
 }
 
 namespace data_reduction_proxy {
+class DataReductionProxyData;
 class DataReductionProxyIOData;
 class DataStore;
 }
