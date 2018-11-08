@@ -206,14 +206,9 @@ void InterceptedRequest::OnReceiveResponse(
 
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(
-            &OnReceivedHttpErrorOnUiThread, process_id_,
-            request_.render_frame_id,
-            AwWebResourceRequest(
-                request_.url.spec(), request_.method,
-                request_.resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-                request_.has_user_gesture, request_.headers),
-            std::move(error_info)));
+        base::BindOnce(&OnReceivedHttpErrorOnUiThread, process_id_,
+                       request_.render_frame_id, AwWebResourceRequest(request_),
+                       std::move(error_info)));
   }
 
   if (request_.resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
@@ -332,20 +327,11 @@ void InterceptedRequest::OnRequestError(
 }
 
 void InterceptedRequest::OnReceivedErrorToCallback(int error_code) {
-  // TODO(timvolodine): add constructor for direct creation from
-  // network::ResourceRequest.
-  AwWebResourceRequest aw_request(
-      request_.url.spec(), request_.method,
-      request_.resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-      request_.has_user_gesture, request_.headers);
-  // Error callback now requires for |is_renderer_intiated| to be set.
-  aw_request.is_renderer_initiated = ui::PageTransitionIsWebTriggerable(
-      static_cast<ui::PageTransition>(request_.transition_type));
-
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&OnReceivedErrorOnUiThread,
-                                          process_id_, request_.render_frame_id,
-                                          std::move(aw_request), error_code));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
+                     request_.render_frame_id, AwWebResourceRequest(request_),
+                     error_code));
 }
 
 }  // namespace
