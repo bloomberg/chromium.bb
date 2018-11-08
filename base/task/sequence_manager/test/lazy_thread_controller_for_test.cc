@@ -119,7 +119,10 @@ void LazyThreadControllerForTest::SetDefaultTaskRunner(
 
 void LazyThreadControllerForTest::RestoreDefaultTaskRunner() {
   pending_default_task_runner_ = nullptr;
-  if (HasMessageLoop() && message_loop_->IsBoundToCurrentThread())
+  // We can't use message_loop_->IsBoundToCurrentThread as |message_loop_|
+  // might be deleted.
+  if (HasMessageLoop() &&
+      MessageLoopCurrent::Get()->ToMessageLoopDeprecated() == message_loop_)
     ThreadControllerImpl::RestoreDefaultTaskRunner();
 }
 
