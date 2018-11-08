@@ -55,18 +55,25 @@ MediaNotificationController::MediaNotificationController(
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&media_controller_ptr_));
 
-  media_session::mojom::AudioFocusObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-  audio_focus_ptr->AddObserver(std::move(observer));
+  media_session::mojom::AudioFocusObserverPtr audio_focus_observer;
+  audio_focus_observer_binding_.Bind(mojo::MakeRequest(&audio_focus_observer));
+  audio_focus_ptr->AddObserver(std::move(audio_focus_observer));
+
+  media_session::mojom::MediaSessionObserverPtr media_session_observer;
+  media_session_observer_binding_.Bind(
+      mojo::MakeRequest(&media_session_observer));
+  media_controller_ptr_->AddObserver(std::move(media_session_observer));
 }
 
 MediaNotificationController::~MediaNotificationController() = default;
 
 void MediaNotificationController::OnFocusGained(
-    media_session::mojom::MediaSessionInfoPtr media_session,
+    media_session::mojom::MediaSessionInfoPtr session_info,
     media_session::mojom::AudioFocusType type) {
   if (IsMediaSessionNotificationVisible())
     return;
+
+  session_info_ = std::move(session_info);
 
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
@@ -95,7 +102,7 @@ void MediaNotificationController::OnFocusGained(
 }
 
 void MediaNotificationController::OnFocusLost(
-    media_session::mojom::MediaSessionInfoPtr media_session) {
+    media_session::mojom::MediaSessionInfoPtr session_info) {
   if (!IsMediaSessionNotificationVisible())
     return;
 
@@ -103,8 +110,27 @@ void MediaNotificationController::OnFocusLost(
       kMediaSessionNotificationId, false);
 }
 
+void MediaNotificationController::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  session_info_ = std::move(session_info);
+
+  if (view_)
+    view_->UpdateWithMediaSessionInfo(session_info_);
+}
+
 void MediaNotificationController::FlushForTesting() {
   media_controller_ptr_.FlushForTesting();
+}
+
+void MediaNotificationController::SetView(MediaNotificationView* view) {
+  DCHECK(view_ || view);
+
+  view_ = view;
+
+  if (view) {
+    DCHECK(!session_info_.is_null());
+    view_->UpdateWithMediaSessionInfo(session_info_);
+  }
 }
 
 void MediaNotificationController::OnNotificationClicked(

@@ -20,20 +20,27 @@ class Connector;
 
 namespace ash {
 
+class MediaNotificationView;
+
 // MediaNotificationController will show/hide a media notification when a media
 // session is active. This notification will show metadata and playback
 // controls.
 class ASH_EXPORT MediaNotificationController
-    : public media_session::mojom::AudioFocusObserver {
+    : public media_session::mojom::AudioFocusObserver,
+      public media_session::mojom::MediaSessionObserver {
  public:
   explicit MediaNotificationController(service_manager::Connector* connector);
   ~MediaNotificationController() override;
 
-  // AudioFocusObserver implementation.
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr media_session,
+  // media_session::mojom::AudioFocusObserver:
+  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr session_info,
                      media_session::mojom::AudioFocusType type) override;
   void OnFocusLost(
-      media_session::mojom::MediaSessionInfoPtr media_session) override;
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
+
+  // media_session::mojom::MediaSessionObserver:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
 
   void FlushForTesting();
   void SetMediaControllerForTesting(
@@ -41,12 +48,23 @@ class ASH_EXPORT MediaNotificationController
     media_controller_ptr_ = std::move(controller);
   }
 
+  void SetView(MediaNotificationView* view);
+
  private:
+  // Weak reference to the view of the currently shown media notification.
+  MediaNotificationView* view_ = nullptr;
+
   void OnNotificationClicked(base::Optional<int> button_id);
 
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
 
-  mojo::Binding<media_session::mojom::AudioFocusObserver> binding_{this};
+  media_session::mojom::MediaSessionInfoPtr session_info_;
+
+  mojo::Binding<media_session::mojom::AudioFocusObserver>
+      audio_focus_observer_binding_{this};
+
+  mojo::Binding<media_session::mojom::MediaSessionObserver>
+      media_session_observer_binding_{this};
 
   base::WeakPtrFactory<MediaNotificationController> weak_ptr_factory_{this};
 
