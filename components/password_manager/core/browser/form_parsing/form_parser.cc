@@ -224,8 +224,16 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         // password, the first username is understood as sign-up, not sign-in.
         if (!result->password)
           sign_in_username_first = false;
-        result->new_password =
-            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+
+        // If multiple hints for new-password fields are given (e.g., because
+        // of more fields having the same signature), the first one should be
+        // marked as new-password. That way the generation can be offered
+        // before the user has thought of and typed their new password
+        // elsewhere. See https://crbug.com/902700 for more details.
+        if (!result->new_password) {
+          result->new_password =
+              FindFieldWithUniqueRendererId(processed_fields, prediction.first);
+        }
         break;
       case CredentialFieldType::kConfirmationPassword:
         result->confirmation_password =
