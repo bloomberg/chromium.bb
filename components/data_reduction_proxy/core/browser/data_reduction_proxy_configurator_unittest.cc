@@ -290,7 +290,7 @@ TEST_F(DataReductionProxyConfiguratorTest, TestBypassList) {
   expected.AddRuleFromString("http://www.google.com");
   expected.AddRuleFromString("fefe:13::abc/33");
 
-  EXPECT_TRUE(expected.Equals(config_->bypass_rules_));
+  EXPECT_EQ(expected, config_->bypass_rules_);
 }
 
 TEST_F(DataReductionProxyConfiguratorTest,

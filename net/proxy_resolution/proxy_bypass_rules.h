@@ -83,8 +83,10 @@ class NET_EXPORT ProxyBypassRules {
   // Note: This class supports copy constructor and assignment.
   ProxyBypassRules();
   ProxyBypassRules(const ProxyBypassRules& rhs);
+  ProxyBypassRules(ProxyBypassRules&& rhs);
   ~ProxyBypassRules();
   ProxyBypassRules& operator=(const ProxyBypassRules& rhs);
+  ProxyBypassRules& operator=(ProxyBypassRules&& rhs);
 
   // Returns the current list of rules. The rules list contains pointers
   // which are owned by this class, callers should NOT keep references
@@ -100,9 +102,8 @@ class NET_EXPORT ProxyBypassRules {
   // Matches(), except for implicit matches).
   bool Matches(const GURL& url, bool reverse = false) const;
 
-  // Returns true if |*this| is equal to |other|; in other words, whether they
-  // describe the same set of rules.
-  bool Equals(const ProxyBypassRules& other) const;
+  // Returns true if |*this| has the same serialized list of rules as |other|.
+  bool operator==(const ProxyBypassRules& other) const;
 
   // Initializes the list of rules by parsing the string |raw|. |raw| is a
   // comma separated or semi-colon separated list of rules. See
@@ -208,9 +209,6 @@ class NET_EXPORT ProxyBypassRules {
 
   // Removes all the rules.
   void Clear();
-
-  // Sets |*this| to |other|.
-  void AssignFrom(const ProxyBypassRules& other);
 
   // Returns true if |url| matches one of the implicit proxy bypass rules
   // (localhost or link local).
