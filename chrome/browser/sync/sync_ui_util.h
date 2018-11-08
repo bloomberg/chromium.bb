@@ -11,6 +11,10 @@
 class Profile;
 class SigninManagerBase;
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
@@ -69,7 +73,7 @@ MessageType GetStatusLabels(Profile* profile,
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    const SigninManagerBase& signin,
+    const identity::IdentityManager& identity_manager,
     int* content_string_id,
     int* button_string_id);
 #endif
