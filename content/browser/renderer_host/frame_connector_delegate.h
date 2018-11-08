@@ -80,8 +80,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const blink::WebIntrinsicSizingInfo&) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
-  void SynchronizeVisualProperties(const viz::SurfaceId& surface_id,
-                                   const FrameVisualProperties& resize_params);
+  void SynchronizeVisualProperties(
+      const viz::FrameSinkId& frame_sink_id,
+      const FrameVisualProperties& visual_properties);
 
   // Return the size of the CompositorFrame to use in the child renderer.
   const gfx::Size& local_frame_size_in_pixels() const {

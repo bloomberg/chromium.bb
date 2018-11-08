@@ -3121,33 +3121,30 @@ SynchronizeVisualPropertiesMessageFilter::
 
 void SynchronizeVisualPropertiesMessageFilter::
     OnSynchronizeFrameHostVisualProperties(
-        const viz::SurfaceId& surface_id,
-        const FrameVisualProperties& resize_params) {
-  OnSynchronizeVisualProperties(surface_id.local_surface_id(),
-                                surface_id.frame_sink_id(), resize_params);
+        const viz::FrameSinkId& frame_sink_id,
+        const FrameVisualProperties& visual_properties) {
+  OnSynchronizeVisualProperties(frame_sink_id, visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::
     OnSynchronizeBrowserPluginVisualProperties(
         int browser_plugin_guest_instance_id,
-        viz::LocalSurfaceId surface_id,
-        FrameVisualProperties resize_params) {
-  OnSynchronizeVisualProperties(surface_id, viz::FrameSinkId(), resize_params);
+        FrameVisualProperties visual_properties) {
+  OnSynchronizeVisualProperties(viz::FrameSinkId(), visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
-    const viz::LocalSurfaceId& local_surface_id,
     const viz::FrameSinkId& frame_sink_id,
-    const FrameVisualProperties& resize_params) {
-  gfx::Rect screen_space_rect_in_dip = resize_params.screen_space_rect;
+    const FrameVisualProperties& visual_properties) {
+  gfx::Rect screen_space_rect_in_dip = visual_properties.screen_space_rect;
   if (IsUseZoomForDSFEnabled()) {
     screen_space_rect_in_dip =
         gfx::Rect(gfx::ScaleToFlooredPoint(
-                      resize_params.screen_space_rect.origin(),
-                      1.f / resize_params.screen_info.device_scale_factor),
+                      visual_properties.screen_space_rect.origin(),
+                      1.f / visual_properties.screen_info.device_scale_factor),
                   gfx::ScaleToCeiledSize(
-                      resize_params.screen_space_rect.size(),
-                      1.f / resize_params.screen_info.device_scale_factor));
+                      visual_properties.screen_space_rect.size(),
+                      1.f / visual_properties.screen_info.device_scale_factor));
   }
   // Track each rect updates.
   base::PostTaskWithTraits(
@@ -3161,7 +3158,8 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
-          this, local_surface_id));
+          this,
+          visual_properties.local_surface_id_allocation.local_surface_id()));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block

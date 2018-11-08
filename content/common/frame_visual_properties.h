@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,7 +48,7 @@ struct CONTENT_EXPORT FrameVisualProperties {
 
   // The time at which the viz::LocalSurfaceId used to submit this was
   // allocated.
-  base::Optional<base::TimeTicks> local_surface_id_allocation_time;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation;
 };
 
 }  // namespace content

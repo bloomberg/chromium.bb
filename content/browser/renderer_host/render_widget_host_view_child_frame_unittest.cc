@@ -287,8 +287,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
   viz::LocalSurfaceIdAllocation local_surface_id_allocation =
       allocator.GetCurrentLocalSurfaceIdAllocation();
   constexpr viz::FrameSinkId frame_sink_id(1, 1);
-  const viz::SurfaceId surface_id(
-      frame_sink_id, local_surface_id_allocation.local_surface_id());
 
   process->sink().ClearMessages();
 
@@ -296,9 +294,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
   visual_properties.screen_space_rect = screen_space_rect;
   visual_properties.local_frame_size = compositor_viewport_pixel_size;
   visual_properties.capture_sequence_number = 123u;
-  visual_properties.local_surface_id_allocation_time =
-      local_surface_id_allocation.allocation_time();
-  test_frame_connector_->SynchronizeVisualProperties(surface_id,
+  visual_properties.local_surface_id_allocation = local_surface_id_allocation;
+  test_frame_connector_->SynchronizeVisualProperties(frame_sink_id,
                                                      visual_properties);
 
   ASSERT_EQ(1u, process->sink().message_count());

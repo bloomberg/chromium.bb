@@ -267,8 +267,8 @@ void BrowserPlugin::SynchronizeVisualProperties() {
 
   if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
-    pending_visual_properties_.local_surface_id_allocation_time =
-        parent_local_surface_id_allocator_.allocation_time();
+    pending_visual_properties_.local_surface_id_allocation =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   if (frame_sink_id_.is_valid()) {
@@ -294,8 +294,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_SynchronizeVisualProperties(
-            browser_plugin_instance_id_, GetLocalSurfaceId(),
-            pending_visual_properties_));
+            browser_plugin_instance_id_, pending_visual_properties_));
   }
 
   if (delegate_ && size_changed)

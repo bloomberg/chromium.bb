@@ -341,7 +341,7 @@ void CrossProcessFrameConnector::UnlockMouse() {
 }
 
 void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
-    const viz::SurfaceId& surface_id,
+    const viz::FrameSinkId& frame_sink_id,
     const FrameVisualProperties& visual_properties) {
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
@@ -350,7 +350,7 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
        capture_sequence_number() != visual_properties.capture_sequence_number ||
        last_received_zoom_level_ != visual_properties.zoom_level) &&
       local_surface_id_allocation_.local_surface_id() ==
-          surface_id.local_surface_id()) {
+          visual_properties.local_surface_id_allocation.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
         bad_message::CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
@@ -359,7 +359,7 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 
   last_received_zoom_level_ = visual_properties.zoom_level;
   last_received_local_frame_size_ = visual_properties.local_frame_size;
-  SynchronizeVisualProperties(surface_id, visual_properties);
+  SynchronizeVisualProperties(frame_sink_id, visual_properties);
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(

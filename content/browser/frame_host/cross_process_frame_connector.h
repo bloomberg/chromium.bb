@@ -176,7 +176,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
 
   // Handlers for messages received from the parent frame.
   void OnSynchronizeVisualProperties(
-      const viz::SurfaceId& surface_id,
+      const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                     const gfx::Rect& compositor_visible_rect,

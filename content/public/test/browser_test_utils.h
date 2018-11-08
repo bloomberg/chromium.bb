@@ -1589,14 +1589,12 @@ class SynchronizeVisualPropertiesMessageFilter
 
  private:
   void OnSynchronizeFrameHostVisualProperties(
-      const viz::SurfaceId& surface_id,
+      const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
   void OnSynchronizeBrowserPluginVisualProperties(
       int browser_plugin_guest_instance_id,
-      viz::LocalSurfaceId surface_id,
       FrameVisualProperties visual_properties);
   void OnSynchronizeVisualProperties(
-      const viz::LocalSurfaceId& surface_id,
       const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
   // |rect| is in DIPs.
