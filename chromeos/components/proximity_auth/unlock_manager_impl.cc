@@ -331,9 +331,8 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
     RemoteDeviceLifeCycle* life_cycle,
     ProximityAuthPrefManager* pref_manager) {
-  return std::make_unique<ProximityMonitorImpl>(life_cycle->GetRemoteDevice(),
-                                                life_cycle->GetChannel(),
-                                                nullptr, pref_manager);
+  return std::make_unique<ProximityMonitorImpl>(
+      life_cycle->GetRemoteDevice(), life_cycle->GetChannel(), pref_manager);
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {
