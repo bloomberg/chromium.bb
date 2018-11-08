@@ -300,17 +300,28 @@ document.addEventListener('submit', function(event) {
  * found, sends a message containing the page's URL and OSDD's URL to native
  * side. If the page has multiple OSDD <links>s (which should never happen on a
  * sane web site), only send the first <link>.
+ * @return {undefined}
  */
-var links = document.getElementsByTagName('link');
-for (var i = 0; i < links.length; ++i) {
-  if (links[i].type == 'application/opensearchdescription+xml') {
-    __gCrWeb.message.invokeOnHost({
-      'command': 'searchEngine.openSearch',
-      'pageUrl': document.URL,
-      'osddUrl': links[i].href
-    });
-    break;
-  }
-};
+function findOpenSearchLink() {
+  var links = document.getElementsByTagName('link');
+  for (var i = 0; i < links.length; ++i) {
+    if (links[i].type == 'application/opensearchdescription+xml') {
+      __gCrWeb.message.invokeOnHost({
+        'command': 'searchEngine.openSearch',
+        'pageUrl': document.URL,
+        'osddUrl': links[i].href
+      });
+      return;
+    }
+  };
+}
+
+// If document is loaded, finds the Open Search <link>, otherwise waits until
+// it's loaded and then starts finding.
+if (document.readyState == 'complete') {
+  findOpenSearchLink();
+} else {
+  window.addEventListener('load', findOpenSearchLink);
+}
 
 }());  // End of anonymous object
