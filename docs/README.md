@@ -282,6 +282,8 @@ used when committed.
 *   [Autoplay of HTMLMediaElements](media/autoplay.md) - How HTMLMediaElements
     are autoplayed.
 *   [Piranha Plant](piranha_plant.md) - Future architecture of MediaStreams
+*   [Video Decode/Encode Accelerator Tests](media/gpu/vdatest_usage.md) - How to
+    use the accelerated video decoder/encoder test programs.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of
