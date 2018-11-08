@@ -10,6 +10,8 @@
 #include "base/optional.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -61,7 +63,7 @@ NavigationPredictor::NavigationPredictor(
       is_same_host_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kRecordAnchorMetricsVisible,
           "is_same_host_scale",
-          0)),
+          100)),
       contains_image_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kRecordAnchorMetricsVisible,
           "contains_image_scale",
@@ -140,6 +142,11 @@ SiteEngagementService* NavigationPredictor::GetEngagementService() const {
   return service;
 }
 
+TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
+  return TemplateURLServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context_));
+}
+
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -193,6 +200,17 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioSameHost_DiffHost",
         (number_of_anchors_same_host_ * 100) / number_of_anchors);
+  }
+
+  bool source_is_search_results_page =
+      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
+          metrics->source_url);
+  if (source_is_search_results_page) {
+    UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.OnDSE.SameHost",
+                          metrics->is_same_host);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.OnNonDSE.SameHost",
+                          metrics->is_same_host);
   }
 
   // Check if the clicked anchor element contains image or if any other anchor
@@ -289,6 +307,7 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
           prev_metric->is_in_iframe && metric->is_in_iframe;
       prev_metric->contains_image =
           prev_metric->contains_image || metric->contains_image;
+      DCHECK_EQ(prev_metric->is_same_host, metric->is_same_host);
     }
   }
 
@@ -451,12 +470,25 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   DCHECK_LE(0, area_rank_score);
   DCHECK_GE(1, area_rank_score);
 
+  bool source_is_search_results_page =
+      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
+          metrics.source_url);
+
+  double host_score = 0.0;
+  // On pages from default search engine, give higher weight to target URLs that
+  // link to a different host. On non-default search engine pages, give higher
+  // weight to target URLs that link to the same host.
+  if (!source_is_search_results_page && metrics.is_same_host) {
+    host_score = is_same_host_scale_;
+  } else if (source_is_search_results_page && !metrics.is_same_host) {
+    host_score = is_same_host_scale_;
+  }
+
   // TODO(chelu): https://crbug.com/850624/. Experiment with other heuristic
   // algorithms for computing the anchor elements score.
   double score = ratio_area_scale_ * metrics.ratio_visible_area +
                  is_in_iframe_scale_ * metrics.is_in_iframe +
-                 is_same_host_scale_ * metrics.is_same_host +
-                 contains_image_scale_ * metrics.contains_image +
+                 contains_image_scale_ * metrics.contains_image + host_score +
                  is_url_incremented_scale_ * metrics.is_url_incremented_by_one +
                  source_engagement_score_scale_ * document_engagement_score +
                  target_engagement_score_scale_ * target_engagement_score +

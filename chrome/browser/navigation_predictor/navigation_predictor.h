@@ -21,6 +21,7 @@ class RenderFrameHost;
 }
 
 class SiteEngagementService;
+class TemplateURLService;
 
 // This class gathers metrics of anchor elements from both renderer process
 // and browser process. Then it uses these metrics to make predictions on what
@@ -55,6 +56,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Returns site engagement service, which can be used to get site engagement
   // score. Return value is guaranteed to be non-null.
   SiteEngagementService* GetEngagementService() const;
+
+  // Returns template URL service. Guaranteed to be non-null.
+  TemplateURLService* GetTemplateURLService() const;
 
   // Merge anchor element metrics that have the same target url (href).
   void MergeMetricsSameTargetUrl(
