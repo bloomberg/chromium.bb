@@ -303,6 +303,15 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
     GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
 
+void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
+    base::TimeTicks frame_begin_time) {
+  if (!LocalRootImpl())
+    return;
+
+  LocalRootImpl()->GetFrame()->View()->RecordEndOfFrameMetrics(
+      frame_begin_time);
+}
+
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
   if (!LocalRootImpl())
