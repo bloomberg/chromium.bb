@@ -1495,9 +1495,9 @@ void ResourceFetcher::ReloadImagesIfNotDeferred() {
 }
 
 FetchContext& ResourceFetcher::Context() const {
-  return context_ ? *context_.Get()
-                  : FetchContext::NullInstance(
-                        Platform::Current()->CurrentThread()->GetTaskRunner());
+  return context_
+             ? *context_.Get()
+             : FetchContext::NullInstance(Thread::Current()->GetTaskRunner());
 }
 
 void ResourceFetcher::ClearContext() {

@@ -100,7 +100,7 @@ V8PerIsolateData::V8PerIsolateData(
 // the main thread.
 V8PerIsolateData::V8PerIsolateData()
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(Platform::Current()->MainThread()->GetTaskRunner(),
+      isolate_holder_(Thread::Current()->GetTaskRunner(),
                       gin::IsolateHolder::kSingleThread,
                       gin::IsolateHolder::kAllowAtomicsWait,
                       gin::IsolateHolder::IsolateType::kBlinkMainThread,

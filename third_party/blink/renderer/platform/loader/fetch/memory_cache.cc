@@ -47,8 +47,8 @@ static const float kCTargetPrunePercentage = .95f;
 MemoryCache* GetMemoryCache() {
   DCHECK(WTF::IsMainThread());
   if (!g_memory_cache) {
-    g_memory_cache = new Persistent<MemoryCache>(MemoryCache::Create(
-        Platform::Current()->MainThread()->GetTaskRunner()));
+    g_memory_cache = new Persistent<MemoryCache>(
+        MemoryCache::Create(Thread::MainThread()->GetTaskRunner()));
   }
   return g_memory_cache->Get();
 }

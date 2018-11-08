@@ -411,7 +411,7 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
     logger_->ReportHibernationEvent(kHibernationScheduled);
     hibernation_scheduled_ = true;
     if (dont_use_idle_scheduling_for_testing_) {
-      Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+      Thread::Current()->GetTaskRunner()->PostTask(
           FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
                                weak_ptr_factory_.GetWeakPtr()));
     } else {

@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 
 ThreadScheduler* ThreadScheduler::Current() {
-  return Platform::Current()->CurrentThread()->Scheduler();
+  return Thread::Current()->Scheduler();
 }
 
 }  // namespace blink

@@ -66,8 +66,8 @@ base::FilePath LayoutTestsFilePath() {
 }  // namespace
 
 void RunPendingTasks() {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&ExitRunLoop));
+  Thread::Current()->GetTaskRunner()->PostTask(FROM_HERE,
+                                               WTF::Bind(&ExitRunLoop));
 
   // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
   // to run GC with NoHeapPointerOnStack.
@@ -77,7 +77,7 @@ void RunPendingTasks() {
 }
 
 void RunDelayedTasks(TimeDelta delay) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
+  Thread::Current()->GetTaskRunner()->PostDelayedTask(
       FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();
 }

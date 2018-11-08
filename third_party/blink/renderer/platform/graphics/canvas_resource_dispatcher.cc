@@ -125,15 +125,14 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
     scoped_refptr<CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
 
   // After this point, |canvas_resource| can only be used on the main thread,
   // until it is returned.
   canvas_resource->Transfer();
 
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
-      FROM_HERE,
+      *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
       CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
                       WTF::Passed(std::move(dispatcher_task_runner)),
                       placeholder_canvas_id_, std::move(canvas_resource),
