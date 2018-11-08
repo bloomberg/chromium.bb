@@ -775,10 +775,8 @@ void RenderWidget::OnEnableDeviceEmulation(
     visual_properties.new_size = size_;
     visual_properties.compositor_viewport_pixel_size =
         compositor_viewport_pixel_size_;
-    visual_properties.local_surface_id =
-        local_surface_id_allocation_from_parent_.local_surface_id();
-    visual_properties.local_surface_id_allocation_time =
-        local_surface_id_allocation_from_parent_.allocation_time();
+    visual_properties.local_surface_id_allocation =
+        local_surface_id_allocation_from_parent_;
     visual_properties.visible_viewport_size = visible_viewport_size_;
     visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
     visual_properties.display_mode = display_mode_;
@@ -1347,11 +1345,10 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
           ? gfx::ScaleToCeiledSize(size_,
                                    params.screen_info.device_scale_factor)
           : params.compositor_viewport_pixel_size;
-  UpdateSurfaceAndScreenInfo(
-      viz::LocalSurfaceIdAllocation(
-          params.local_surface_id.value_or(viz::LocalSurfaceId()),
-          params.local_surface_id_allocation_time.value_or(base::TimeTicks())),
-      new_compositor_viewport_pixel_size, params.screen_info);
+  UpdateSurfaceAndScreenInfo(params.local_surface_id_allocation.value_or(
+                                 viz::LocalSurfaceIdAllocation()),
+                             new_compositor_viewport_pixel_size,
+                             params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
   if (layer_tree_view_) {
     layer_tree_view_->SetBrowserControlsHeight(
@@ -1939,10 +1936,8 @@ void RenderWidget::SetWindowRectSynchronously(
   visual_properties.visible_viewport_size = new_window_rect.size();
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id =
-      local_surface_id_allocation_from_parent_.local_surface_id();
-  visual_properties.local_surface_id_allocation_time =
-      local_surface_id_allocation_from_parent_.allocation_time();
+  visual_properties.local_surface_id_allocation =
+      local_surface_id_allocation_from_parent_;
   visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
@@ -3139,10 +3134,8 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id =
-      local_surface_id_allocation_from_parent_.local_surface_id();
-  visual_properties.local_surface_id_allocation_time =
-      local_surface_id_allocation_from_parent_.allocation_time();
+  visual_properties.local_surface_id_allocation =
+      local_surface_id_allocation_from_parent_;
   visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
@@ -3165,10 +3158,8 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   visual_properties.top_controls_height = 0.f;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id =
-      local_surface_id_allocation_from_parent_.local_surface_id();
-  visual_properties.local_surface_id_allocation_time =
-      local_surface_id_allocation_from_parent_.allocation_time();
+  visual_properties.local_surface_id_allocation =
+      local_surface_id_allocation_from_parent_;
   visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   // We are changing the device color space from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
@@ -3188,9 +3179,11 @@ void RenderWidget::EnableAutoResizeForTesting(const gfx::Size& min_size,
   visual_properties.auto_resize_enabled = true;
   visual_properties.min_size_for_auto_resize = min_size;
   visual_properties.max_size_for_auto_resize = max_size;
-  visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
-      viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-  visual_properties.local_surface_id_allocation_time = base::TimeTicks::Now();
+  visual_properties.local_surface_id_allocation =
+      base::Optional<viz::LocalSurfaceIdAllocation>(
+          viz::LocalSurfaceIdAllocation(
+              viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
+              base::TimeTicks::Now()));
   visual_properties.page_scale_factor = page_scale_factor_from_mainframe_;
   OnSynchronizeVisualProperties(visual_properties);
 }

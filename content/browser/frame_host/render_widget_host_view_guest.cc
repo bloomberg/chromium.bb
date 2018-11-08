@@ -546,18 +546,11 @@ viz::FrameSinkId RenderWidgetHostViewGuest::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-const viz::LocalSurfaceId& RenderWidgetHostViewGuest::GetLocalSurfaceId()
-    const {
+const viz::LocalSurfaceIdAllocation&
+RenderWidgetHostViewGuest::GetLocalSurfaceIdAllocation() const {
   if (guest_)
-    return guest_->local_surface_id();
-  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
-}
-
-base::TimeTicks RenderWidgetHostViewGuest::GetLocalSurfaceIdAllocationTime()
-    const {
-  if (guest_)
-    return guest_->local_surface_id_allocation_time();
-  return base::TimeTicks();
+    return guest_->local_surface_id_allocation();
+  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(

@@ -3043,8 +3043,9 @@ bool TestChildOrGuestAutoresize(bool is_guest,
     embedder_rph_impl->AddFilter(filter.get());
   }
 
-  viz::LocalSurfaceId current_id =
-      guest_rwh_impl->GetView()->GetLocalSurfaceId();
+  viz::LocalSurfaceId current_id = guest_rwh_impl->GetView()
+                                       ->GetLocalSurfaceIdAllocation()
+                                       .local_surface_id();
   // The guest may not yet be fully attached / initted. If not, |current_id|
   // will be invalid, and we should wait for an ID before proceeding.
   if (!current_id.is_valid())

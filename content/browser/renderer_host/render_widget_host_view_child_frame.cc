@@ -722,18 +722,11 @@ const viz::FrameSinkId& RenderWidgetHostViewChildFrame::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
-const viz::LocalSurfaceId& RenderWidgetHostViewChildFrame::GetLocalSurfaceId()
-    const {
+const viz::LocalSurfaceIdAllocation&
+RenderWidgetHostViewChildFrame::GetLocalSurfaceIdAllocation() const {
   if (frame_connector_)
-    return frame_connector_->local_surface_id();
-  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
-}
-
-base::TimeTicks
-RenderWidgetHostViewChildFrame::GetLocalSurfaceIdAllocationTime() const {
-  if (frame_connector_)
-    return frame_connector_->local_surface_id_allocation_time();
-  return base::TimeTicks();
+    return frame_connector_->local_surface_id_allocation();
+  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
@@ -758,7 +751,8 @@ viz::FrameSinkId RenderWidgetHostViewChildFrame::GetRootFrameSinkId() {
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
   return enable_surface_synchronization_
-             ? viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId())
+             ? viz::SurfaceId(frame_sink_id_,
+                              GetLocalSurfaceIdAllocation().local_surface_id())
              : last_activated_surface_info_.id();
 }
 

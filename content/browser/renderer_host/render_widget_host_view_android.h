@@ -181,8 +181,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       viz::EventSource source = viz::EventSource::ANY) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
-  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override;
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;

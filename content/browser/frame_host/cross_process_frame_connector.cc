@@ -349,7 +349,8 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
        screen_info_ != visual_properties.screen_info ||
        capture_sequence_number() != visual_properties.capture_sequence_number ||
        last_received_zoom_level_ != visual_properties.zoom_level) &&
-      local_surface_id_ == surface_id.local_surface_id()) {
+      local_surface_id_allocation_.local_surface_id() ==
+          surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
         bad_message::CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
@@ -520,7 +521,7 @@ void CrossProcessFrameConnector::SetScreenSpaceRect(
 }
 
 void CrossProcessFrameConnector::ResetScreenSpaceRect() {
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
   // TODO(lfg): Why do we need to reset the screen_space_rect_ that comes from
   // the parent when setting the child? https://crbug.com/809275
   screen_space_rect_in_pixels_ = gfx::Rect();

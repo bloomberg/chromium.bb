@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -57,11 +57,8 @@ struct CONTENT_EXPORT VisualProperties {
   // The height of the bottom controls.
   float bottom_controls_height = 0.f;
 
-  // The local surface ID to use (if valid).
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
-
-  // The time at which |local_surface_id| was allocated.
-  base::Optional<base::TimeTicks> local_surface_id_allocation_time;
+  // The local surface ID to use (if valid) and its allocation time.
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
 
   // The size of the visible viewport, which may be smaller than the view if the
   // view is partially occluded (e.g. by a virtual keyboard).  The size is in
