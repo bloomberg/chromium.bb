@@ -3230,6 +3230,10 @@ const char kEnableContinueReadingDescription[] =
     "seamlessly continue reading a web page when they switch devices from "
     "phones or tablets to Chromebooks.";
 
+const char kEnableDiscoverAppName[] = "Enable Discover App";
+const char kEnableDiscoverAppDescription[] =
+    "Enable Discover App icon in launcher.";
+
 const char kEnableDragAppsInTabletModeName[] =
     "Enable dragging apps in tablet mode";
 const char kEnableDragAppsInTabletModeDescription[] =

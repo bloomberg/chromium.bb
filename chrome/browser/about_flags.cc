@@ -4448,6 +4448,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(data_reduction_proxy::features::
                             kDataReductionProxyEnabledWithNetworkService)},
+#if defined(OS_CHROMEOS)
+    {"discover-app", flag_descriptions::kEnableDiscoverAppName,
+     flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDiscoverApp)},
+#endif  // defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {
