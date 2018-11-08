@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_syncable_service.h"
+#include "components/password_manager/core/browser/sync/password_syncable_service.h"
 
 #include <algorithm>
 #include <iterator>
@@ -126,8 +126,7 @@ struct PasswordSyncableService::SyncEntries {
 
 PasswordSyncableService::PasswordSyncableService(
     PasswordStoreSync* password_store)
-    : password_store_(password_store), is_processing_sync_changes_(false) {
-}
+    : password_store_(password_store), is_processing_sync_changes_(false) {}
 
 PasswordSyncableService::~PasswordSyncableService() = default;
 
@@ -204,9 +203,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   syncer::SyncChangeList updated_db_entries;
   for (auto sync_iter = initial_sync_data.begin();
        sync_iter != initial_sync_data.end(); ++sync_iter) {
-    CreateOrUpdateEntry(*sync_iter,
-                        &new_local_entries,
-                        &sync_entries,
+    CreateOrUpdateEntry(*sync_iter, &new_local_entries, &sync_entries,
                         &updated_db_entries);
   }
 
@@ -308,10 +305,11 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
     return;
   syncer::SyncChangeList sync_changes;
   for (auto it = local_changes.begin(); it != local_changes.end(); ++it) {
-    syncer::SyncData data = (it->type() == PasswordStoreChange::REMOVE ?
-        syncer::SyncData::CreateLocalDelete(MakePasswordSyncTag(it->form()),
-                                            syncer::PASSWORDS) :
-        SyncDataFromPassword(it->form()));
+    syncer::SyncData data =
+        (it->type() == PasswordStoreChange::REMOVE
+             ? syncer::SyncData::CreateLocalDelete(
+                   MakePasswordSyncTag(it->form()), syncer::PASSWORDS)
+             : SyncDataFromPassword(it->form()));
     sync_changes.push_back(
         syncer::SyncChange(FROM_HERE, GetSyncChangeType(it->type()), data));
   }
@@ -388,10 +386,10 @@ void PasswordSyncableService::CreateOrUpdateEntry(
   auto existing_local_entry_iter = unmatched_data_from_password_db->find(tag);
   base::Time time_now = base::Time::Now();
   if (existing_local_entry_iter == unmatched_data_from_password_db->end()) {
-      // The sync data is not in the password store, so we need to create it in
-      // the password store. Add the entry to the new_entries list.
-      AppendPasswordFromSpecifics(password_specifics, time_now,
-                                  &sync_entries->new_entries);
+    // The sync data is not in the password store, so we need to create it in
+    // the password store. Add the entry to the new_entries list.
+    AppendPasswordFromSpecifics(password_specifics, time_now,
+                                &sync_entries->new_entries);
   } else {
     // The entry is in password store. If the entries are not identical, then
     // the entries need to be merged.
@@ -402,8 +400,7 @@ void PasswordSyncableService::CreateOrUpdateEntry(
       if (base::Time::FromInternalValue(password_specifics.date_created()) <
           password_form.date_created) {
         updated_db_entries->push_back(
-            syncer::SyncChange(FROM_HERE,
-                               syncer::SyncChange::ACTION_UPDATE,
+            syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
                                SyncDataFromPassword(password_form)));
       } else {
         AppendPasswordFromSpecifics(password_specifics, time_now,
@@ -423,8 +420,7 @@ void PasswordSyncableService::WriteEntriesToDatabase(
     PasswordStoreChangeList* all_changes) {
   for (const std::unique_ptr<autofill::PasswordForm>& form : entries) {
     PasswordStoreChangeList new_changes = (password_store_->*operation)(*form);
-    all_changes->insert(all_changes->end(),
-                        new_changes.begin(),
+    all_changes->insert(all_changes->end(), new_changes.begin(),
                         new_changes.end());
   }
 }
