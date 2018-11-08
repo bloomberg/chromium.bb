@@ -122,69 +122,6 @@ const uint8_t kIPv6ProbeAddress[] =
     { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
 
-// We use a separate histogram name for each platform to facilitate the
-// display of error codes by their symbolic name (since each platform has
-// different mappings).
-const char kOSErrorsForGetAddrinfoHistogramName[] =
-#if defined(OS_WIN)
-    "Net.OSErrorsForGetAddrinfo_Win";
-#elif defined(OS_MACOSX)
-    "Net.OSErrorsForGetAddrinfo_Mac";
-#elif defined(OS_LINUX)
-    "Net.OSErrorsForGetAddrinfo_Linux";
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    "Net.OSErrorsForGetAddrinfo";
-#endif
-
-// Gets a list of the likely error codes that getaddrinfo() can return
-// (non-exhaustive). These are the error codes that we will track via
-// a histogram.
-std::vector<int> GetAllGetAddrinfoOSErrors() {
-  int os_errors[] = {
-#if defined(OS_WIN)
-    // See: http://msdn.microsoft.com/en-us/library/ms738520(VS.85).aspx
-    WSA_NOT_ENOUGH_MEMORY,
-    WSAEAFNOSUPPORT,
-    WSAEINVAL,
-    WSAESOCKTNOSUPPORT,
-    WSAHOST_NOT_FOUND,
-    WSANO_DATA,
-    WSANO_RECOVERY,
-    WSANOTINITIALISED,
-    WSATRY_AGAIN,
-    WSATYPE_NOT_FOUND,
-    // The following are not in doc, but might be to appearing in results :-(.
-    WSA_INVALID_HANDLE,
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-#if !defined(OS_FREEBSD)
-#if !defined(OS_ANDROID)
-    // EAI_ADDRFAMILY has been declared obsolete in Android's and
-    // FreeBSD's netdb.h.
-    EAI_ADDRFAMILY,
-#endif
-    // EAI_NODATA has been declared obsolete in FreeBSD's netdb.h.
-    EAI_NODATA,
-#endif
-    EAI_AGAIN,
-    EAI_BADFLAGS,
-    EAI_FAIL,
-    EAI_FAMILY,
-    EAI_MEMORY,
-    EAI_NONAME,
-    EAI_SERVICE,
-    EAI_SOCKTYPE,
-    EAI_SYSTEM,
-#endif
-  };
-
-  // Ensure all errors are positive, as histogram only tracks positive values.
-  for (size_t i = 0; i < arraysize(os_errors); ++i) {
-    os_errors[i] = std::abs(os_errors[i]);
-  }
-
-  return base::CustomHistogram::ArrayToCustomEnumRanges(os_errors);
-}
-
 enum DnsResolveStatus {
   RESOLVE_STATUS_DNS_SUCCESS = 0,
   RESOLVE_STATUS_PROC_SUCCESS,
@@ -979,13 +916,8 @@ class HostResolverImpl::ProcTask {
     if (error != OK && NetworkChangeNotifier::IsOffline())
       error = ERR_INTERNET_DISCONNECTED;
 
-    RecordAttemptHistograms(start_time, attempt_number, error, os_error,
-                            tick_clock);
-
-    if (!proc_task) {
-      RecordDiscardedAttemptHistograms(attempt_number);
+    if (!proc_task)
       return;
-    }
 
     proc_task->OnLookupComplete(results, start_time, attempt_number, error,
                                 os_error);
@@ -1002,8 +934,6 @@ class HostResolverImpl::ProcTask {
     // Invalidate WeakPtrs to cancel handling of all outstanding lookup attempts
     // and retries.
     weak_ptr_factory_.InvalidateWeakPtrs();
-
-    RecordTaskHistograms(start_time, error, os_error, attempt_number);
 
     NetLogParametersCallback net_log_callback;
     NetLogParametersCallback attempt_net_log_callback;
@@ -1023,47 +953,6 @@ class HostResolverImpl::ProcTask {
                       attempt_net_log_callback);
 
     std::move(callback_).Run(error, results);
-  }
-
-  void RecordTaskHistograms(const base::TimeTicks& start_time,
-                            const int error,
-                            const int os_error,
-                            const uint32_t attempt_number) const {
-    DCHECK(network_task_runner_->BelongsToCurrentThread());
-    base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
-    if (error == OK) {
-      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.SuccessTime", duration);
-      UMA_HISTOGRAM_ENUMERATION("DNS.AttemptFirstSuccess", attempt_number, 100);
-    } else {
-      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.FailureTime", duration);
-      UMA_HISTOGRAM_ENUMERATION("DNS.AttemptFirstFailure", attempt_number, 100);
-    }
-
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(kOSErrorsForGetAddrinfoHistogramName,
-                                     std::abs(os_error),
-                                     GetAllGetAddrinfoOSErrors());
-  }
-
-  static void RecordAttemptHistograms(const base::TimeTicks& start_time,
-                                      const uint32_t attempt_number,
-                                      const int error,
-                                      const int os_error,
-                                      const base::TickClock* tick_clock) {
-    base::TimeDelta duration = tick_clock->NowTicks() - start_time;
-    if (error == OK) {
-      UMA_HISTOGRAM_ENUMERATION("DNS.AttemptSuccess", attempt_number, 100);
-      UMA_HISTOGRAM_LONG_TIMES_100("DNS.AttemptSuccessDuration", duration);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("DNS.AttemptFailure", attempt_number, 100);
-      UMA_HISTOGRAM_LONG_TIMES_100("DNS.AttemptFailDuration", duration);
-    }
-  }
-
-  static void RecordDiscardedAttemptHistograms(const uint32_t attempt_number) {
-    // Count those attempts which completed after the job was already canceled
-    // OR after the job was already completed by an earlier attempt (so
-    // cancelled in effect).
-    UMA_HISTOGRAM_ENUMERATION("DNS.AttemptDiscarded", attempt_number, 100);
   }
 
   Key key_;
@@ -1386,8 +1275,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         num_occupied_job_slots_(0),
         dns_task_error_(OK),
         tick_clock_(tick_clock),
-        creation_time_(tick_clock_->NowTicks()),
-        priority_change_time_(creation_time_),
         net_log_(
             NetLogWithSource::Make(source_net_log.net_log(),
                                    NetLogSourceType::HOST_RESOLVER_IMPL_JOB)),
@@ -1631,11 +1518,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   void UpdatePriority() {
-    if (is_queued()) {
-      if (priority() != static_cast<RequestPriority>(handle_.priority()))
-        priority_change_time_ = tick_clock_->NowTicks();
+    if (is_queued())
       handle_ = resolver_->dispatcher_->ChangePriority(handle_, priority());
-    }
   }
 
   // PriorityDispatch::Job:
@@ -1655,13 +1539,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_STARTED);
 
     start_time_ = tick_clock_->NowTicks();
-    base::TimeDelta queue_time = start_time_ - creation_time_;
-    base::TimeDelta queue_time_after_change =
-        start_time_ - priority_change_time_;
-
-    DNS_HISTOGRAM_BY_PRIORITY("Net.DNS.JobQueueTime", priority(), queue_time);
-    DNS_HISTOGRAM_BY_PRIORITY("Net.DNS.JobQueueTimeAfterChange", priority(),
-                              queue_time_after_change);
 
     switch (key_.host_resolver_source) {
       case HostResolverSource::ANY:
@@ -2119,8 +1996,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   int dns_task_error_;
 
   const base::TickClock* tick_clock_;
-  const base::TimeTicks creation_time_;
-  base::TimeTicks priority_change_time_;
   base::TimeTicks start_time_;
 
   NetLogWithSource net_log_;
