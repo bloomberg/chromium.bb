@@ -251,6 +251,10 @@ void CloseWidgetForWindow(aura::Window* window) {
 
 void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
   window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeter>());
+  // For Mash, ServerWindows will override the event targeter with a
+  // ServerWindowTargeter, so make sure it knows about the resize insets.
+  window->SetProperty(aura::client::kResizeHandleInset,
+                      kResizeInsideBoundsSize);
 }
 
 bool IsDraggingTabs(const aura::Window* window) {
