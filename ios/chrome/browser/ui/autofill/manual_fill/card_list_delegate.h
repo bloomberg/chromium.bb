@@ -13,7 +13,7 @@ class CreditCard;
 @protocol CardListDelegate
 
 // Dismisses the presented view controller and continues as pop over on iPads
-// or above the keyboard else.
+// or above the keyboard elsewhere.
 - (void)dismissPresentedViewController;
 
 // Opens cards settings.
