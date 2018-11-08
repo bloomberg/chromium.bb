@@ -35,6 +35,7 @@ enum class WindowPinType;
 }
 
 namespace wm {
+class InitialStateTestState;
 class WindowState;
 class WindowStateDelegate;
 class WindowStateObserver;
@@ -352,6 +353,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
  private:
   friend class BaseState;
   friend class DefaultState;
+  friend class InitialStateTestState;
   friend class ash::wm::ClientControlledState;
   friend class ash::LockWindowState;
   friend class ash::TabletModeWindowState;
@@ -359,6 +361,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
+  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
+
+  // Class to host the rounded mask for PIP windows.
+  class PipMask;
 
   explicit WindowState(aura::Window* window);
 
@@ -447,7 +453,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool allow_set_bounds_direct_ = false;
 
   // Mask layer for PIP windows.
-  std::unique_ptr<ui::LayerOwner> pip_mask_ = nullptr;
+  std::unique_ptr<PipMask> pip_mask_;
 
   // A property to save the ratio between snapped window width and display
   // workarea width. It is used to update snapped window width on

@@ -28,25 +28,6 @@ namespace ash {
 namespace wm {
 namespace {
 
-class InitialStateTestState : public WindowState::State {
- public:
-  explicit InitialStateTestState(WindowStateType initial_state_type)
-      : state_type_(initial_state_type) {}
-  ~InitialStateTestState() override = default;
-
-  // WindowState::State overrides:
-  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {}
-  WindowStateType GetType() const override { return state_type_; }
-  void AttachState(WindowState* window_state,
-                   WindowState::State* previous_state) override {}
-  void DetachState(WindowState* window_state) override {}
-
- private:
-  WindowStateType state_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
-};
-
 class AlwaysMaximizeTestState : public WindowState::State {
  public:
   explicit AlwaysMaximizeTestState(WindowStateType initial_state_type)
@@ -75,6 +56,31 @@ class AlwaysMaximizeTestState : public WindowState::State {
 };
 
 }  // namespace
+
+class InitialStateTestState : public WindowState::State {
+ public:
+  explicit InitialStateTestState(WindowStateType initial_state_type)
+      : state_type_(initial_state_type) {}
+  ~InitialStateTestState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
+    if (event->type() == WM_EVENT_SET_BOUNDS) {
+      const SetBoundsEvent* set_bounds_event =
+          static_cast<const SetBoundsEvent*>(event);
+      window_state->SetBoundsDirect(set_bounds_event->requested_bounds());
+    }
+  }
+  WindowStateType GetType() const override { return state_type_; }
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
+
+ private:
+  WindowStateType state_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
+};
 
 using WindowStateTest = AshTestBase;
 
@@ -165,6 +171,40 @@ TEST_F(WindowStateTest, PipWindowCannotSnap) {
   window_state->SetStateObject(std::unique_ptr<WindowState::State>(
       new InitialStateTestState(mojom::WindowStateType::PIP)));
   EXPECT_FALSE(window_state->CanSnap());
+}
+
+// Test that a PIP window cannot be snapped.
+TEST_F(WindowStateTest, PipWindowHasMaskLayer) {
+  // Prepare a PIP window.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  WindowState* window_state = GetWindowState(window.get());
+  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
+      new InitialStateTestState(mojom::WindowStateType::PIP)));
+  EXPECT_TRUE(window->layer());
+
+  // No mask layer exist at this time.
+  EXPECT_FALSE(window->layer()->layer_mask_layer());
+
+  // Install a mask layer.
+  window_state->UpdatePipRoundedCorners();
+
+  // Mask layer exists at this time.
+  EXPECT_TRUE(window->layer()->layer_mask_layer());
+
+  // Make sure the layer has the same bounds.
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(),
+            window->bounds().ToString());
+  EXPECT_EQ(window->layer()->layer_mask_layer()->bounds().ToString(),
+            window->bounds().ToString());
+
+  // Change the bounds of the window.
+  window->SetBounds(gfx::Rect(0, 0, 150, 150));
+
+  // Make sure the layer's bounds is also changed.
+  EXPECT_EQ(gfx::Rect(0, 0, 150, 150).ToString(), window->bounds().ToString());
+  EXPECT_EQ(window->layer()->layer_mask_layer()->bounds().ToString(),
+            window->bounds().ToString());
 }
 
 // Test that modal window dialogs can be snapped.
