@@ -173,9 +173,13 @@ void MediaControlsOrientationLockDelegate::ChangeLockToAnyOrientation() {
   DCHECK_NE(locked_orientation_, kWebScreenOrientationLockDefault);
 
   locked_orientation_ = kWebScreenOrientationLockAny;
-  ScreenOrientationController::From(*GetDocument().GetFrame())
-      ->lock(locked_orientation_,
-             std::make_unique<DummyScreenOrientationCallback>());
+
+  // The document could have been detached from the frame.
+  if (LocalFrame* frame = GetDocument().GetFrame()) {
+    ScreenOrientationController::From(*frame)->lock(
+        locked_orientation_,
+        std::make_unique<DummyScreenOrientationCallback>());
+  }
 }
 
 void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
