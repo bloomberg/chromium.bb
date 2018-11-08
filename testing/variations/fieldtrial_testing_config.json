@@ -4652,7 +4652,6 @@
                     "enable_features": [
                         "PageLifecycle",
                         "ProactiveTabFreezeAndDiscard",
-                        "SiteCharacteristicsDatabase",
                         "stop-non-timers-in-background"
                     ]
                 }

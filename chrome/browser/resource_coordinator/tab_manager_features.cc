@@ -35,7 +35,7 @@ const base::Feature kProactiveTabFreezeAndDiscard{
 
 // Enables the site characteristics database.
 const base::Feature kSiteCharacteristicsDatabase{
-    "SiteCharacteristicsDatabase", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SiteCharacteristicsDatabase", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables delaying the navigation of background tabs in order to improve
 // foreground tab's user experience.
