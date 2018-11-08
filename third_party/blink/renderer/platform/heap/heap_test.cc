@@ -1900,6 +1900,7 @@ TEST(HeapTest, SimplePersistent) {
 }
 
 TEST(HeapTest, SimpleFinalization) {
+  ClearOutOldGarbage();
   {
     SimpleFinalizedObject::destructor_calls_ = 0;
     Persistent<SimpleFinalizedObject> finalized =
@@ -2114,6 +2115,7 @@ TEST(HeapTest, NoAllocation) {
 }
 
 TEST(HeapTest, Members) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Persistent<Baz> h1;
@@ -2137,6 +2139,7 @@ TEST(HeapTest, Members) {
 }
 
 TEST(HeapTest, MarkTest) {
+  ClearOutOldGarbage();
   {
     Bar::live_ = 0;
     Persistent<Bar> bar = Bar::Create();
@@ -2164,6 +2167,7 @@ TEST(HeapTest, MarkTest) {
 }
 
 TEST(HeapTest, DeepTest) {
+  ClearOutOldGarbage();
   const unsigned kDepth = 100000;
   Bar::live_ = 0;
   {
@@ -2193,6 +2197,7 @@ TEST(HeapTest, DeepTest) {
 }
 
 TEST(HeapTest, WideTest) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Bars* bars = Bars::Create();
@@ -2210,10 +2215,9 @@ TEST(HeapTest, WideTest) {
 }
 
 TEST(HeapTest, HashMapOfMembers) {
+  ClearOutOldGarbage();
   ThreadHeap& heap = ThreadState::Current()->Heap();
   IntWrapper::destructor_calls_ = 0;
-
-  ClearOutOldGarbage();
   size_t initial_object_payload_size = heap.ObjectPayloadSizeForTesting();
   {
     typedef HeapHashMap<Member<IntWrapper>, Member<IntWrapper>,
@@ -3908,6 +3912,7 @@ TEST(HeapTest, RefCountedGarbageCollected) {
 }
 
 TEST(HeapTest, WeakMembers) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Persistent<Bar> h1 = Bar::Create();
@@ -5755,6 +5760,7 @@ int ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
 // Regression test for out of bounds call through vtable.
 // Passes if it doesn't crash.
 TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
+  ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
   ClassWithGarbageCollectingMixinConstructor* a =
       new ClassWithGarbageCollectingMixinConstructor();
   a->Verify();
@@ -6383,6 +6389,7 @@ class TestMixinAllocatingObject final
 };
 
 TEST(HeapTest, MixinConstructionNoGC) {
+  ClearOutOldGarbage();
   Persistent<ClassWithMember> object = ClassWithMember::Create();
   EXPECT_EQ(0, object->TraceCount());
   TestMixinAllocatingObject* mixin =
@@ -6802,6 +6809,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapHashSet) {
 }
 
 TEST(HeapTest, PromptlyFreeStackAllocatedHeapListHashSet) {
+  ClearOutOldGarbage();
   NormalPageArena* normal_arena = static_cast<NormalPageArena*>(
       ThreadState::Current()->Heap().Arena(BlinkGC::kHashTableArenaIndex));
   CHECK(normal_arena);
