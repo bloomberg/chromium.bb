@@ -32,6 +32,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -148,6 +149,72 @@ void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
 }
 
 }  // namespace
+
+class WindowState::PipMask : public ui::LayerDelegate,
+                             public aura::WindowObserver {
+ public:
+  explicit PipMask(aura::Window* window)
+      : layer_(ui::LAYER_TEXTURED), window_(window) {
+    DCHECK(window);
+    DCHECK(window->layer());
+
+    window_->AddObserver(this);
+    layer_.set_delegate(this);
+    layer_.SetFillsBoundsOpaquely(false);
+    layer_.SetBounds(window->layer()->bounds());
+  }
+
+  ~PipMask() override {
+    if (window_)
+      window_->RemoveObserver(this);
+    layer_.set_delegate(nullptr);
+  }
+
+  ui::Layer* layer() { return &layer_; }
+  const aura::Window* window() const { return window_; }
+
+ private:
+  // ui::LayerDelegate overridden:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    cc::PaintFlags flags;
+    flags.setAlpha(255);
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+
+    const int radius = kPipRoundedCornerRadius;
+    SkScalar radii[8] = {radius, radius,   // top-left
+                         radius, radius,   // top-right
+                         radius, radius,   // bottom-right
+                         radius, radius};  // bottom-left
+
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(gfx::Rect(layer()->size())), radii);
+
+    ui::PaintRecorder recorder(context, layer()->size());
+    recorder.canvas()->DrawPath(path, flags);
+  }
+
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
+
+  // aura::WindowObserver overridden:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
+    layer_.SetBounds(new_bounds);
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+  ui::Layer layer_;
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(PipMask);
+};
 
 constexpr base::TimeDelta WindowState::kBoundsChangeSlideDuration;
 
@@ -681,11 +748,8 @@ void WindowState::UpdatePipRoundedCorners() {
   gfx::Rect bounds = window()->bounds();
   if (layer && (!pip_mask_ || pip_mask_->layer()->size() != bounds.size())) {
     layer->SetMaskLayer(nullptr);
-    pip_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    kPipRoundedCornerRadius));
-    pip_mask_->layer()->SetBounds(bounds);
-    pip_mask_->layer()->SetFillsBoundsOpaquely(false);
+    if (!pip_mask_ || window() != pip_mask_->window())
+      pip_mask_ = std::make_unique<PipMask>(window());
     layer->SetFillsBoundsOpaquely(false);
     layer->SetMaskLayer(pip_mask_->layer());
   }
