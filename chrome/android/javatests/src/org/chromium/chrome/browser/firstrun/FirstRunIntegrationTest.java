@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -185,6 +186,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest // https://crbug.com/901488
     public void testAbortFirstRun() throws Exception {
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         final ActivityMonitor launcherActivityMonitor =

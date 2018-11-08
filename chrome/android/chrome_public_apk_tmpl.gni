@@ -61,7 +61,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
   assert(defined(invoker.target_type), "target_type is required!")
   assert(
       invoker.target_type == "android_apk" ||
-          invoker.target_type == "android_app_bundle_module",
+          invoker.target_type == "android_app_bundle_module" ||
+          invoker.target_type == "instrumentation_test_apk",
       "Invalid target_type definition, should be 'android_apk' or 'android_app_bundle_module'")
 
   # Adds unwind table asset to the chrome apk for the given library target. This

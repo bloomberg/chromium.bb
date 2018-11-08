@@ -30,6 +30,7 @@ import android.text.style.ForegroundColorSpan;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -147,7 +148,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
 
         getActivity().setTitle(R.string.sign_in_sync);
-        addPreferencesFromResource(R.xml.sync_customization_preferences);
+        try (StrictModeContext ctx = StrictModeContext.allowDiskReads()) {
+            addPreferencesFromResource(R.xml.sync_customization_preferences);
+        }
         mSyncEverything = (SwitchPreference) findPreference(PREFERENCE_SYNC_EVERYTHING);
         mSyncAutofill = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_AUTOFILL);
         mSyncBookmarks = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_BOOKMARKS);

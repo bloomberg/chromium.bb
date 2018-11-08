@@ -105,10 +105,9 @@ public class SyncCustomizationFragmentTest {
         UI_DATATYPES.put(ModelType.BOOKMARKS, SyncCustomizationFragment.PREFERENCE_SYNC_BOOKMARKS);
         UI_DATATYPES.put(ModelType.TYPED_URLS, SyncCustomizationFragment.PREFERENCE_SYNC_OMNIBOX);
         UI_DATATYPES.put(ModelType.PASSWORDS, SyncCustomizationFragment.PREFERENCE_SYNC_PASSWORDS);
-        UI_DATATYPES.put(ModelType.PROXY_TABS,
-                SyncCustomizationFragment.PREFERENCE_SYNC_RECENT_TABS);
-        UI_DATATYPES.put(ModelType.PREFERENCES,
-                SyncCustomizationFragment.PREFERENCE_SYNC_SETTINGS);
+        UI_DATATYPES.put(
+                ModelType.PROXY_TABS, SyncCustomizationFragment.PREFERENCE_SYNC_RECENT_TABS);
+        UI_DATATYPES.put(ModelType.PREFERENCES, SyncCustomizationFragment.PREFERENCE_SYNC_SETTINGS);
     }
 
     private Preferences mPreferences;
@@ -458,8 +457,8 @@ public class SyncCustomizationFragmentTest {
 
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
-        togglePreference(syncAutofill);  // Disable autofill sync.
-        togglePreference(syncAutofill);  // Re-enable autofill sync again.
+        togglePreference(syncAutofill); // Disable autofill sync.
+        togglePreference(syncAutofill); // Re-enable autofill sync again.
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);

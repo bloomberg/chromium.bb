@@ -89,6 +89,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         // * ProGuard disabled =>
         //      Under-test apk might be multidex
         //      Test apk does not duplicate classes, so does not need multidex.
+        // When there is no under-test apk, then Application.onCreate() should trigger multidex
+        // installation.
         // https://crbug.com/824523
         if (!BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(

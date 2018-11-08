@@ -347,7 +347,6 @@ group("gn_all") {
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
-        "//chrome/android:chrome_sync_shell_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",
         "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
@@ -936,7 +935,8 @@ if (!is_ios) {
   # To run the full layout test suite you need to use
   # :webkit_layout_tests_exparchive, above, instead.
   generated_script_test("webkit_layout_tests") {
-    generator_script = "//testing/scripts/generators/gen_run_web_tests_script.py"
+    generator_script =
+        "//testing/scripts/generators/gen_run_web_tests_script.py"
     extra_args = []
     if (is_debug) {
       extra_args += [

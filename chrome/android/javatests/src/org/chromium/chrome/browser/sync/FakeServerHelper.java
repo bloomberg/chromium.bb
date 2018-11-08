@@ -76,8 +76,7 @@ public class FakeServerHelper {
      * Deletes the existing FakeServer.
      */
     public static void deleteFakeServer() {
-        checkFakeServerInitialized(
-                "useFakeServer must be called before calling deleteFakeServer.");
+        checkFakeServerInitialized("useFakeServer must be called before calling deleteFakeServer.");
         ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
@@ -145,15 +144,14 @@ public class FakeServerHelper {
      *
      * @return whether the number of specified entities exist
      */
-    public boolean verifyEntityCountByTypeAndName(final int count, final int modelType,
-            final String name) {
-        checkFakeServerInitialized(
-                "useFakeServer must be called before data verification.");
+    public boolean verifyEntityCountByTypeAndName(
+            final int count, final int modelType, final String name) {
+        checkFakeServerInitialized("useFakeServer must be called before data verification.");
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return nativeVerifyEntityCountByTypeAndName(mNativeFakeServerHelperAndroid,
-                        sNativeFakeServer, count, modelType, name);
+                return nativeVerifyEntityCountByTypeAndName(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, count, modelType, name);
             }
         });
     }
@@ -166,13 +164,12 @@ public class FakeServerHelper {
      * @return whether the sessions on the server match the given urls.
      */
     public boolean verifySessions(final String[] urls) {
-        checkFakeServerInitialized(
-                "useFakeServer must be called before data verification.");
+        checkFakeServerInitialized("useFakeServer must be called before data verification.");
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return nativeVerifySessions(mNativeFakeServerHelperAndroid, sNativeFakeServer,
-                        urls);
+                return nativeVerifySessions(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, urls);
             }
         });
     }
@@ -277,8 +274,8 @@ public class FakeServerHelper {
         ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
-                nativeInjectBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, title,
-                        url, parentId);
+                nativeInjectBookmarkEntity(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, title, url, parentId);
                 return null;
             }
         });
@@ -379,8 +376,8 @@ public class FakeServerHelper {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
             public String call() {
-                return nativeGetBookmarkBarFolderId(mNativeFakeServerHelperAndroid,
-                        sNativeFakeServer);
+                return nativeGetBookmarkBarFolderId(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer);
             }
         });
     }
@@ -411,23 +408,20 @@ public class FakeServerHelper {
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteFakeServer(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
-    private native boolean nativeVerifyEntityCountByTypeAndName(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, int modelType,
-            String name);
+    private native boolean nativeVerifyEntityCountByTypeAndName(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, int count, int modelType, String name);
     private native boolean nativeVerifySessions(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String[] urlArray);
     private native byte[][] nativeGetSyncEntitiesByModelType(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, int modelType);
-    private native void nativeInjectUniqueClientEntity(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, String name,
-            byte[] serializedEntitySpecifics);
+    private native void nativeInjectUniqueClientEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String name, byte[] serializedEntitySpecifics);
     private native void nativeSetWalletData(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, byte[] serializedEntity);
     private native void nativeModifyEntitySpecifics(long nativeFakeServerHelperAndroid,
             long nativeFakeServer, String id, byte[] serializedEntitySpecifics);
-    private native void nativeInjectBookmarkEntity(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, String title, String url,
-            String parentId);
+    private native void nativeInjectBookmarkEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String title, String url, String parentId);
     private native void nativeInjectBookmarkFolderEntity(long nativeFakeServerHelperAndroid,
             long nativeFakeServer, String title, String parentId);
     private native void nativeModifyBookmarkEntity(long nativeFakeServerHelperAndroid,

@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -83,7 +84,6 @@ public class FirstRunTest {
                     freMonitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
             instrumentation.removeMonitor(freMonitor);
 
-            Assert.assertTrue(activity instanceof FirstRunActivity);
             mActivity = (FirstRunActivity) activity;
 
             try {
@@ -126,7 +126,6 @@ public class FirstRunTest {
 
     private final TestObserver mTestObserver = new TestObserver();
     private FirstRunActivity mActivity;
-
 
     @After
     public void tearDown() throws Exception {
@@ -182,6 +181,7 @@ public class FirstRunTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest // https://crbug.com/901488
     public void testNoSignIn() throws Exception {
         SigninTestUtil.addTestAccount();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
@@ -204,14 +204,14 @@ public class FirstRunTest {
 
         Preferences prefActivity = null;
         if (showSettings == ShowSettings.YES) {
-            prefActivity = ActivityUtils.waitForActivity(
-                    InstrumentationRegistry.getInstrumentation(), Preferences.class,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            processFirstRunOnUiThread();
-                        }
-                    });
+            prefActivity =
+                    ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
+                            Preferences.class, new Runnable() {
+                                @Override
+                                public void run() {
+                                    processFirstRunOnUiThread();
+                                }
+                            });
             Assert.assertNotNull("Could not find the preferences activity", prefActivity);
         } else {
             processFirstRunOnUiThread();

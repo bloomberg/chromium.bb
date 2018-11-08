@@ -294,7 +294,6 @@
           'shards': 2,
         },
       },
-      'chrome_sync_shell_test_apk': {},
       'gl_tests': {
         # TODO(kbr): these are actually run on many of the GPU bots, which have
         # physical hardware for several of the desktop OSs. Once the GPU JSON

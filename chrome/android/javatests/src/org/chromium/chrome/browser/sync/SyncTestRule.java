@@ -247,7 +247,8 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                             public String getUniqueId(String salt) {
                                 return CLIENT_ID;
                             }
-                        }, true);
+                        },
+                        true);
                 statement.evaluate();
             }
         }, desc);
@@ -284,5 +285,4 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         SigninTestUtil.resetSigninState();
         SigninTestUtil.tearDownAuthForTest();
     }
-
 }
