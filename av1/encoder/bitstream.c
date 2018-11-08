@@ -2222,19 +2222,19 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   //     shifted and become the new virtual indexes for LAST2_FRAME and
   //     LAST3_FRAME.
   refresh_mask |=
-      (cpi->refresh_last_frame << cpi->remapped_ref_idx[LAST3_FRAME - 1]);
+      (cpi->refresh_last_frame << get_ref_frame_map_idx(cpi, LAST3_FRAME));
+
 #if USE_SYMM_MULTI_LAYER
-  refresh_mask |= (cpi->new_bwdref_update_rule == 1)
-                      ? (cpi->refresh_bwd_ref_frame
-                         << cpi->remapped_ref_idx[EXTREF_FRAME - 1])
-                      : (cpi->refresh_bwd_ref_frame
-                         << cpi->remapped_ref_idx[BWDREF_FRAME - 1]);
+  const int bwd_ref_frame =
+      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
 #else
-  refresh_mask |=
-      (cpi->refresh_bwd_ref_frame << cpi->remapped_ref_idx[BWDREF_FRAME - 1]);
+  const int bwd_ref_frame = BWDREF_FRAME;
 #endif
   refresh_mask |=
-      (cpi->refresh_alt2_ref_frame << cpi->remapped_ref_idx[ALTREF2_FRAME - 1]);
+      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cpi, bwd_ref_frame));
+
+  refresh_mask |= (cpi->refresh_alt2_ref_frame
+                   << get_ref_frame_map_idx(cpi, ALTREF2_FRAME));
 
   if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
@@ -2252,13 +2252,13 @@ static int get_refresh_mask(AV1_COMP *cpi) {
       return refresh_mask;
     } else {
       return refresh_mask | (cpi->refresh_golden_frame
-                             << cpi->remapped_ref_idx[ALTREF_FRAME - 1]);
+                             << get_ref_frame_map_idx(cpi, ALTREF_FRAME));
     }
   } else {
-    const int arf_idx = cpi->remapped_ref_idx[ALTREF_FRAME - 1];
+    const int arf_idx = get_ref_frame_map_idx(cpi, ALTREF_FRAME);
     return refresh_mask |
            (cpi->refresh_golden_frame
-            << cpi->remapped_ref_idx[GOLDEN_FRAME - 1]) |
+            << get_ref_frame_map_idx(cpi, GOLDEN_FRAME)) |
            (cpi->refresh_alt_ref_frame << arf_idx);
   }
 }

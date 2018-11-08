@@ -3249,8 +3249,8 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     cpi->rc.is_src_frame_alt_ref = 1;
     cpi->existing_fb_idx_to_show =
         (next_frame_update_type == OVERLAY_UPDATE)
-            ? cpi->remapped_ref_idx[ALTREF_FRAME - 1]
-            : cpi->remapped_ref_idx[bwdref_to_show - 1];
+            ? get_ref_frame_map_idx(cpi, ALTREF_FRAME)
+            : get_ref_frame_map_idx(cpi, bwdref_to_show);
 #if USE_SYMM_MULTI_LAYER
     if (cpi->new_bwdref_update_rule == 0)
 #endif
@@ -3541,13 +3541,13 @@ static void update_reference_frames(AV1_COMP *cpi) {
     if (!cpi->preserve_arf_as_gld) {
       assign_frame_buffer(
           pool->frame_bufs,
-          &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]],
+          &cm->ref_frame_map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)],
           cm->new_fb_idx);
     }
 
-    tmp = cpi->remapped_ref_idx[ALTREF_FRAME - 1];
+    tmp = get_ref_frame_map_idx(cpi, ALTREF_FRAME);
     cpi->remapped_ref_idx[ALTREF_FRAME - 1] =
-        cpi->remapped_ref_idx[GOLDEN_FRAME - 1];
+        get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
     cpi->remapped_ref_idx[GOLDEN_FRAME - 1] = tmp;
 
     // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
@@ -3566,11 +3566,11 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // Deal with the special case for showing existing internal ALTREF_FRAME
     // Refresh the LAST_FRAME with the ALTREF_FRAME and retire the LAST3_FRAME
     // by updating the virtual indices.
-    const int last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
+    const int last3_remapped_idx = get_ref_frame_map_idx(cpi, LAST3_FRAME);
     shift_last_ref_frames(cpi);
 
     cpi->remapped_ref_idx[LAST_FRAME - 1] =
-        cpi->remapped_ref_idx[bwdref_to_show - 1];
+        get_ref_frame_map_idx(cpi, bwdref_to_show);
 
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[bwdref_to_show],
@@ -3590,7 +3590,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
   } else { /* For non key/golden frames */
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
-      int arf_idx = cpi->remapped_ref_idx[ALTREF_FRAME - 1];
+      int arf_idx = get_ref_frame_map_idx(cpi, ALTREF_FRAME);
       assign_frame_buffer(pool->frame_bufs, &cm->ref_frame_map[arf_idx],
                           cm->new_fb_idx);
 
@@ -3603,7 +3603,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     if (cpi->refresh_golden_frame) {
       assign_frame_buffer(
           pool->frame_bufs,
-          &cm->ref_frame_map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]],
+          &cm->ref_frame_map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)],
           cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
@@ -3619,7 +3619,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
         // BWDREF -> ALTREF2 -> EXTREF
         // and assign the newly coded frame to BWDREF so that it always
         // keeps the nearest future frame
-        int tmp = cpi->remapped_ref_idx[EXTREF_FRAME - 1];
+        int tmp = get_ref_frame_map_idx(cpi, EXTREF_FRAME);
         assign_frame_buffer(pool->frame_bufs, &cm->ref_frame_map[tmp],
                             cm->new_fb_idx);
 
@@ -3629,7 +3629,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
 #endif  // USE_SYMM_MULTI_LAYER
         assign_frame_buffer(
             pool->frame_bufs,
-            &cm->ref_frame_map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]],
+            &cm->ref_frame_map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)],
             cm->new_fb_idx);
 #if USE_SYMM_MULTI_LAYER
       }
@@ -3643,7 +3643,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     if (cpi->refresh_alt2_ref_frame) {
       assign_frame_buffer(
           pool->frame_bufs,
-          &cm->ref_frame_map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]],
+          &cm->ref_frame_map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)],
           cm->new_fb_idx);
 
       memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
@@ -3685,10 +3685,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // remapped_ref_idx[2],   remapped_ref_idx[0],     remapped_ref_idx[1]
     assign_frame_buffer(
         pool->frame_bufs,
-        &cm->ref_frame_map[cpi->remapped_ref_idx[LAST3_FRAME - 1]],
+        &cm->ref_frame_map[get_ref_frame_map_idx(cpi, LAST3_FRAME)],
         cm->new_fb_idx);
 
-    int last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
+    int last3_remapped_idx = get_ref_frame_map_idx(cpi, LAST3_FRAME);
 
     shift_last_ref_frames(cpi);
     cpi->remapped_ref_idx[LAST_FRAME - 1] = last3_remapped_idx;
@@ -3714,11 +3714,11 @@ static void update_reference_frames(AV1_COMP *cpi) {
       //       virtual index reshuffling for BWDREF, the encoder always
       //       specifies a LAST_BIPRED right before BWDREF and completes the
       //       reshuffling job accordingly.
-      last3_remapped_idx = cpi->remapped_ref_idx[LAST3_FRAME - 1];
+      last3_remapped_idx = get_ref_frame_map_idx(cpi, LAST3_FRAME);
 
       shift_last_ref_frames(cpi);
       cpi->remapped_ref_idx[LAST_FRAME - 1] =
-          cpi->remapped_ref_idx[BWDREF_FRAME - 1];
+          get_ref_frame_map_idx(cpi, BWDREF_FRAME);
       cpi->remapped_ref_idx[BWDREF_FRAME - 1] = last3_remapped_idx;
 
       memcpy(cpi->interp_filter_selected[LAST_FRAME],
@@ -4733,54 +4733,54 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
       map[cpi->remapped_ref_idx[1]] == map[cpi->remapped_ref_idx[0]];
   const int last3_is_last =
       map[cpi->remapped_ref_idx[2]] == map[cpi->remapped_ref_idx[0]];
-  const int gld_is_last = map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]] ==
+  const int gld_is_last = map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)] ==
                           map[cpi->remapped_ref_idx[0]];
-  const int bwd_is_last = map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]] ==
+  const int bwd_is_last = map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)] ==
                           map[cpi->remapped_ref_idx[0]];
-  const int alt2_is_last = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
+  const int alt2_is_last = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
                            map[cpi->remapped_ref_idx[0]];
-  const int alt_is_last = map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]] ==
+  const int alt_is_last = map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)] ==
                           map[cpi->remapped_ref_idx[0]];
 
   // No.2 Priority: ALTREF_FRAME
   const int last2_is_alt = map[cpi->remapped_ref_idx[1]] ==
-                           map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]];
+                           map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)];
   const int last3_is_alt = map[cpi->remapped_ref_idx[2]] ==
-                           map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]];
-  const int gld_is_alt = map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]] ==
-                         map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]];
-  const int bwd_is_alt = map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]] ==
-                         map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]];
-  const int alt2_is_alt = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
-                          map[cpi->remapped_ref_idx[ALTREF_FRAME - 1]];
+                           map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)];
+  const int gld_is_alt = map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)] ==
+                         map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)];
+  const int bwd_is_alt = map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)] ==
+                         map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)];
+  const int alt2_is_alt = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
+                          map[get_ref_frame_map_idx(cpi, ALTREF_FRAME)];
 
   // No.3 Priority: LAST2_FRAME
   const int last3_is_last2 =
       map[cpi->remapped_ref_idx[2]] == map[cpi->remapped_ref_idx[1]];
-  const int gld_is_last2 = map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]] ==
+  const int gld_is_last2 = map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)] ==
                            map[cpi->remapped_ref_idx[1]];
-  const int bwd_is_last2 = map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]] ==
+  const int bwd_is_last2 = map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)] ==
                            map[cpi->remapped_ref_idx[1]];
-  const int alt2_is_last2 = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
+  const int alt2_is_last2 = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
                             map[cpi->remapped_ref_idx[1]];
 
   // No.4 Priority: LAST3_FRAME
-  const int gld_is_last3 = map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]] ==
+  const int gld_is_last3 = map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)] ==
                            map[cpi->remapped_ref_idx[2]];
-  const int bwd_is_last3 = map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]] ==
+  const int bwd_is_last3 = map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)] ==
                            map[cpi->remapped_ref_idx[2]];
-  const int alt2_is_last3 = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
+  const int alt2_is_last3 = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
                             map[cpi->remapped_ref_idx[2]];
 
   // No.5 Priority: GOLDEN_FRAME
-  const int bwd_is_gld = map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]] ==
-                         map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]];
-  const int alt2_is_gld = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
-                          map[cpi->remapped_ref_idx[GOLDEN_FRAME - 1]];
+  const int bwd_is_gld = map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)] ==
+                         map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)];
+  const int alt2_is_gld = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
+                          map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)];
 
   // No.6 Priority: BWDREF_FRAME
-  const int alt2_is_bwd = map[cpi->remapped_ref_idx[ALTREF2_FRAME - 1]] ==
-                          map[cpi->remapped_ref_idx[BWDREF_FRAME - 1]];
+  const int alt2_is_bwd = map[get_ref_frame_map_idx(cpi, ALTREF2_FRAME)] ==
+                          map[get_ref_frame_map_idx(cpi, BWDREF_FRAME)];
 
   // No.7 Priority: ALTREF2_FRAME
 
