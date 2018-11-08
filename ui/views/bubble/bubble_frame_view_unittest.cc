@@ -139,13 +139,7 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
 }
 
-// TODO(crbug.com/903003): We should not mark RemoveFootnoteView flaky.
-#if defined(OS_MACOSX)
-#define MAYBE_RemoveFootnoteView DISABLED_RemoveFootnoteView
-#else
-#define MAYBE_RemoveFootnoteView RemoveFootnoteView
-#endif
-TEST_F(BubbleFrameViewTest, MAYBE_RemoveFootnoteView) {
+TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
   TestBubbleFrameView frame(this);
   EXPECT_EQ(nullptr, frame.footnote_container_);
   View* footnote_dummy_view = new StaticSizedView(gfx::Size(200, 200));
