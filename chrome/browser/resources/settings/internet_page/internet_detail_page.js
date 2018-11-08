@@ -1045,10 +1045,16 @@ Polymer({
    */
   showPreferNetwork_: function(
       networkProperties, globalPolicy, managedNetworkAvailable) {
-    // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
-    // networkProperties.Type == CrOnc.Type.ETHERNET.
+    if (!networkProperties)
+      return false;
+
+    const type = networkProperties.Type;
+    if (type == CrOnc.Type.ETHERNET || type == CrOnc.Type.CELLULAR ||
+        this.isArcVpn_(networkProperties)) {
+      return false;
+    }
+
     return this.isRemembered_(networkProperties) &&
-        !this.isArcVpn_(networkProperties) &&
         !this.isBlockedByPolicy_(
             networkProperties, globalPolicy, managedNetworkAvailable);
   },
