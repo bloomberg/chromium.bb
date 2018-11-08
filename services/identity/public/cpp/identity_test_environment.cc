@@ -294,9 +294,12 @@ void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         const std::string& account_id,
         const std::string& token,
-        const base::Time& expiration) {
+        const base::Time& expiration,
+        const std::string& id_token) {
   WaitForAccessTokenRequestIfNecessary(account_id);
-  token_service_->IssueAllTokensForAccount(account_id, token, expiration);
+  token_service_->IssueAllTokensForAccount(
+      account_id,
+      OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
 
 void IdentityTestEnvironment::
@@ -397,6 +400,11 @@ void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
   requesters_.back().account_id = std::move(account_id);
   requesters_.back().on_available = run_loop.QuitClosure();
   run_loop.Run();
+}
+
+void IdentityTestEnvironment::UpdateAccountInfoForAccount(
+    AccountInfo account_info) {
+  identity::UpdateAccountInfoForAccount(account_tracker_service_, account_info);
 }
 
 }  // namespace identity

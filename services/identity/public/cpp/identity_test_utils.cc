@@ -326,4 +326,13 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
   run_loop.Run();
 }
 
+void UpdateAccountInfoForAccount(AccountTrackerService* account_tracker_service,
+                                 AccountInfo account_info) {
+  // Make sure the account being updated is a known account.
+  DCHECK(!account_tracker_service->GetAccountInfo(account_info.account_id)
+              .account_id.empty());
+
+  account_tracker_service->SeedAccountInfo(account_info);
+}
+
 }  // namespace identity
