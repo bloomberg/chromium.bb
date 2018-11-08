@@ -61,6 +61,8 @@ class HWTestList(object):
     installer_kwargs = kwargs.copy()
     # Force au suite to run first.
     installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
+    installer_kwargs['blocking'] = True
+    installer_kwargs['async'] = False
 
     async_kwargs = kwargs.copy()
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
@@ -83,7 +85,7 @@ class HWTestList(object):
                                 **bvt_inline_kwargs),
         self.TastConfig(constants.HWTEST_TAST_CQ_SUITE, **bvt_inline_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                blocking=True, **installer_kwargs),
+                                **installer_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                 **async_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
@@ -101,6 +103,8 @@ class HWTestList(object):
     # the suite job for canary builds.
     kwargs.setdefault('minimum_duts', 4)
     kwargs.setdefault('file_bugs', True)
+    kwargs['blocking'] = False
+    kwargs['async'] = True
     return self.DefaultList(**kwargs)
 
   def AFDOList(self, **kwargs):

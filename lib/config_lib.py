@@ -522,7 +522,8 @@ class HWTestConfig(object):
                offload_failures_only=False,
                enable_skylab=True):
     """Constructor -- see members above."""
-    assert not async or not blocking
+
+    assert not async or not blocking, "%s is async and blocking" % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool
