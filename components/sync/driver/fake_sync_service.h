@@ -7,19 +7,16 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
-#include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "url/gurl.h"
 
 namespace syncer {
 
-class BaseTransaction;
-struct UserShare;
-
-// Fake implementation of SyncService, used for testing.
+// Minimal fake implementation of SyncService. All methods return inactive/
+// empty/null etc. Tests can subclass this to override the parts they need, but
+// should consider using TestSyncService instead.
 class FakeSyncService : public SyncService {
  public:
   FakeSyncService();
@@ -87,7 +84,6 @@ class FakeSyncService : public SyncService {
  private:
   GoogleServiceAuthError error_;
   GURL sync_service_url_;
-  std::string unrecoverable_error_message_;
   std::unique_ptr<UserShare> user_share_;
 };
 
