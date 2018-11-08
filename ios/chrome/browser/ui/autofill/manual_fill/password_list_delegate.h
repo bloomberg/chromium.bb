@@ -9,7 +9,7 @@
 @protocol PasswordListDelegate
 
 // Dismisses the presented view controller and continues as pop over on iPads
-// or above the keyboard elsewhere.
+// or above the keyboard else.
 - (void)dismissPresentedViewController;
 
 // Requests to open the list of all passwords.
