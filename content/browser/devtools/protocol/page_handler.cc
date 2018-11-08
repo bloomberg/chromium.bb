@@ -25,6 +25,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
+#include "content/browser/devtools/protocol/devtools_mhtml_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -66,6 +67,7 @@ namespace protocol {
 
 namespace {
 
+constexpr const char* kMhtml = "mhtml";
 constexpr const char* kPng = "png";
 constexpr const char* kJpeg = "jpeg";
 constexpr int kDefaultScreenshotQuality = 80;
@@ -587,6 +589,17 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   }
 
   return Response::InvalidParams("No entry with passed id");
+}
+
+void PageHandler::CaptureSnapshot(
+    Maybe<std::string> format,
+    std::unique_ptr<CaptureSnapshotCallback> callback) {
+  std::string snapshot_format = format.fromMaybe(kMhtml);
+  if (snapshot_format != kMhtml) {
+    callback->sendFailure(Response::Error("Unsupported snapshot format"));
+    return;
+  }
+  DevToolsMHTMLHelper::Capture(weak_factory_.GetWeakPtr(), std::move(callback));
 }
 
 void PageHandler::CaptureScreenshot(
