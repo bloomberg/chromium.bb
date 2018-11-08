@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import demangle
 import logging
 import os
 import re
@@ -320,6 +321,11 @@ class MapFileParserLld(object):
 #     600      600       14     4         obj/...:(.text.OUTLINED_FUNCTION_0)
 #     600      600        0     1                 $x.3
 #     600      600       14     1                 OUTLINED_FUNCTION_0
+#  123800   123800    20000   256 .rodata
+#  123800   123800       4      4         ...:o:(.rodata._ZN3fooE.llvm.1234)
+#  123800   123800       4      1                 foo (.llvm.1234)
+#  123804   123804       4      4         ...:o:(.rodata.bar.llvm.1234)
+#  123804   123804       4      1                 bar.llvm.1234
 # Older format:
 # Address          Size             Align Out     In      Symbol
 # 00000000002002a8 000000000000001c     1 .interp
@@ -343,6 +349,7 @@ class MapFileParserLld(object):
     sym_maker = _SymbolMaker()
     cur_section = None
     cur_section_is_useful = None
+    promoted_name_count = 0
 
     for line in lines:
       m = pattern.match(line)
@@ -399,12 +406,17 @@ class MapFileParserLld(object):
             # renaming them to '** outlined function'.
             if tok.startswith('OUTLINED_FUNCTION_'):
               tok = '** outlined function'
+            stripped_tok = demangle.StripLlvmPromotedGlobalNames(tok)
+            if len(tok) != len(stripped_tok):
+              promoted_name_count += 1
+              tok = stripped_tok
             sym_maker.cur_sym.full_name = tok
-
         else:
           logging.error('Problem line: %r', line)
 
     sym_maker.Flush()
+    if promoted_name_count:
+      logging.info('Found %d promoted global names', promoted_name_count)
     return self._section_sizes, sym_maker.syms
 
 
