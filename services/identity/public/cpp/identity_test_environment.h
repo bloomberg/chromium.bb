@@ -170,7 +170,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       const std::string& account_id,
       const std::string& token,
-      const base::Time& expiration);
+      const base::Time& expiration,
+      const std::string& id_token = std::string());
 
   // Issues |error| in response to any access token request that either has (a)
   // already occurred and has not been matched by a previous call to this or
@@ -203,6 +204,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // either wait for the callback to get called, or explicitly reset it by
   // passing in a null callback, before the Wait* methods can be used again.
   void SetCallbackForNextAccessTokenRequest(base::OnceClosure callback);
+
+  // Updates the info for |account_info.account_id|, which must be a known
+  // account.
+  void UpdateAccountInfoForAccount(AccountInfo account_info);
 
  private:
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;

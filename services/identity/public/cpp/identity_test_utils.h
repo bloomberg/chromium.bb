@@ -143,6 +143,11 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
                        IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts);
 
+// Updates the info for |account_info.account_id|, which must be a known
+// account.
+void UpdateAccountInfoForAccount(AccountTrackerService* account_tracker_service,
+                                 AccountInfo account_info);
+
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_
