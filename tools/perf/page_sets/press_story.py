@@ -34,12 +34,19 @@ class PressStory(page_module.Page):
         make_javascript_deterministic=self.DETERMINISTIC_JS,
         name=self.NAME if self.NAME else self.URL)
     self._values = []
+    self._summary_values = []
 
   def GetJavascriptMetricValues(self):
     return self._values
 
   def AddJavascriptMetricValue(self, value):
     self._values.append(value)
+
+  def GetJavascriptMetricSummaryValues(self):
+    return self._summary_values
+
+  def AddJavascriptMetricSummaryValue(self, value):
+    self._summary_values.append(value)
 
   def ExecuteTest(self, action_runner):
     pass
