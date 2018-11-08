@@ -12266,6 +12266,8 @@ Called by update_net_error_codes.py.-->
   <int value="315" label="osax"/>
   <int value="316" label="settingcontent-ms"/>
   <int value="317" label="oxt"/>
+  <int value="318" label="pyd"/>
+  <int value="319" label="pyo"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -44538,6 +44540,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="315" label="OSAX"/>
   <int value="316" label="SETTINGCONTENT-MS"/>
   <int value="317" label="OXT"/>
+  <int value="318" label="PYD"/>
+  <int value="319" label="PYO"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
