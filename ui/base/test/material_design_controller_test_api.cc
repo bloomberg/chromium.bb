@@ -19,6 +19,10 @@ MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
   MaterialDesignController::mode_ = previous_mode_;
 }
 
+void MaterialDesignControllerTestAPI::SetDynamicRefreshUi(bool enabled) {
+  MaterialDesignController::is_refresh_dynamic_ui_ = enabled;
+}
+
 void MaterialDesignControllerTestAPI::Uninitialize() {
   MaterialDesignController::Uninitialize();
 }

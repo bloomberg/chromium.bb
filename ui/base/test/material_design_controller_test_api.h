@@ -20,6 +20,7 @@ class MaterialDesignControllerTestAPI {
   ~MaterialDesignControllerTestAPI();
 
   // Wrapper functions for MaterialDesignController internal functions.
+  static void SetDynamicRefreshUi(bool enabled);
   static void Uninitialize();
 
  private:
