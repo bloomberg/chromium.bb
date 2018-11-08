@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -51,9 +52,11 @@ class AutofillAssistantUiDelegate {
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
     private static final int PROGRESS_BAR_INITIAL_PROGRESS = 10;
 
-    // TODO(crbug.com/806868): Use correct user locale.
+    // TODO(crbug.com/806868): Use correct user locale and remove suppressions.
+    @SuppressLint("ConstantLocale")
     private static final SimpleDateFormat sDetailsTimeFormat =
             new SimpleDateFormat("H:mma", Locale.getDefault());
+    @SuppressLint("ConstantLocale")
     private static final SimpleDateFormat sDetailsDateFormat =
             new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
 

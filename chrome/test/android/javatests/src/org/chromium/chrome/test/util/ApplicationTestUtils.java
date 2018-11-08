@@ -59,7 +59,8 @@ public class ApplicationTestUtils {
         // Make sure the screen is on during test runs.
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         sWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
-                | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, TAG);
+                        | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
+                "Chromium:" + TAG);
         sWakeLock.acquire();
 
         // Disable Omaha related activities.

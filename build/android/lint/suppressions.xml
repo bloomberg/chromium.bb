@@ -32,6 +32,11 @@ Still reading?
   <issue id="AuthLeak" severity="Error">
     <ignore regexp="chrome/android/javatests"/>
   </issue>
+  <issue id="Autofill">
+    <!-- Please do not add any additional suppressions here with the exception of the 1 file below -->
+    <!-- These should be added as tools:ignore="Autofill" in individual files with a bug to fix -->
+    <ignore regexp="chrome/android/java/res/layout/autofill_card_unmask_prompt.xml"/>
+  </issue>
   <issue id="BadHostnameVerifier" severity="Error">
   </issue>
   <issue id="ButtonOrder" severity="Error">
@@ -185,6 +190,12 @@ Still reading?
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
   <issue id="MissingApplicationIcon" severity="ignore"/>
+  <issue id="MissingDefaultResource">
+    <!-- Only used by ToolbarControlContainer guarded by tablet form-factor. -->
+    <ignore regexp="toolbar_background.9.png"/>
+    <!-- Only used by FirstRunFlowSequencer guarded by tablet form-factor. -->
+    <ignore regexp="window_background.xml"/>
+  </issue>
   <issue id="MissingPermission" severity="ignore"/>
   <!-- TODO(yolandyan) remove this once all tests are converted to junit4 -->
   <issue id="MissingPrefix" severity="ignore"/>
@@ -254,11 +265,17 @@ Still reading?
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
   </issue>
   <issue id="PrivateApi" severity="ignore"/>
+  <!-- Chrome is a system app. -->
+  <issue id="ProtectedPermissions" severity="ignore"/>
   <issue id="Recycle" severity="ignore"/>
   <issue id="Registered" severity="ignore"/>
   <issue id="ResourceAsColor" severity="ignore"/>
   <issue id="ResourceType" severity="Error">
     <ignore regexp="/javatests/"/>
+  </issue>
+  <issue id="RedundantNamespace">
+    <!-- Please do not add any additional suppressions here with the exception of the 1 file below -->
+    <ignore regexp="chrome/android/java/res_autofill_assistant/layout/init_screen.xml"/>
   </issue>
   <!-- TODO(crbug.com/831774): Play Services starts complaining about RestrictedApi. Needs investigation -->
   <issue id="RestrictedApi" severity="ignore"/>
