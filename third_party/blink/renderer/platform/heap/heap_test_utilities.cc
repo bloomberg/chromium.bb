@@ -25,6 +25,7 @@ void ConservativelyCollectGarbage(BlinkGC::SweepingType sweeping_type) {
 // Do several GCs to make sure that later GCs don't free up old memory from
 // previously run tests in this process.
 void ClearOutOldGarbage() {
+  PreciselyCollectGarbage();
   ThreadHeap& heap = ThreadState::Current()->Heap();
   while (true) {
     size_t used = heap.ObjectPayloadSizeForTesting();
