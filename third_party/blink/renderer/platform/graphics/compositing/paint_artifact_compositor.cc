@@ -264,6 +264,16 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   return cc_layer;
 }
 
+bool PaintArtifactCompositor::PropertyTreeStateChanged(
+    const PropertyTreeState& state) const {
+  const PropertyTreeState root = PropertyTreeState::Root();
+  bool changed = false;
+  changed = changed || state.Transform()->Changed(*root.Transform());
+  changed = changed || state.Clip()->Changed(root, state.Transform());
+  changed = changed || state.Effect()->Changed(root, state.Transform());
+  return changed;
+}
+
 PaintArtifactCompositor::PendingLayer::PendingLayer(
     const PaintChunk& first_paint_chunk,
     size_t chunk_index,
@@ -793,12 +803,19 @@ void PaintArtifactCompositor::Update(
     layer->SetScrollTreeIndex(scroll_id);
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
-    bool backface_hidden =
-        pending_layer.property_tree_state.Transform()->IsBackfaceHidden();
+    bool backface_hidden = property_state.Transform()->IsBackfaceHidden();
     layer->SetDoubleSided(!backface_hidden);
     // TODO(wangxianzhu): cc::PropertyTreeBuilder has a more sophisticated
     // condition for this. Do we need to do the same here?
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
+
+    // If the property tree state has changed between the layer and the root, we
+    // need to inform the compositor so damage can be calculated.
+    // Calling |PropertyTreeStateChanged| for every pending layer is
+    // O(|property nodes|^2) and could be optimized by caching the lookup of
+    // nodes known to be changed/unchanged.
+    if (PropertyTreeStateChanged(property_state))
+      layer->SetSubtreePropertyChanged();
   }
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);

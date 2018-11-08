@@ -12999,6 +12999,198 @@ TEST_P(SlimmingPaintWebFrameSimTest, NoopChangeDoesNotCauseFullTreeSync) {
   EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
 }
 
+// When a property tree change occurs that affects layer position, all layers
+// associated with the changed property tree node, and all layers associated
+// with a descendant of the changed property tree node need to have
+// |subtree_property_changed| set for damage tracking. In non-layer-list mode,
+// this occurs in BuildPropertyTreesInternal (see:
+// SetLayerPropertyChangedForChild).
+TEST_P(SlimmingPaintWebFrameSimTest, LayerSubtreeTransformPropertyChanged) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          transform: translate(10px, 10px);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(outer_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                outer_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Modifying the transform style should set |subtree_property_changed| on
+  // both layers.
+  outer_element->setAttribute(html_names::kStyleAttr,
+                              "transform: translate(20px, 20px)");
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
+// This test is similar to |LayerSubtreeTransformPropertyChanged| but for
+// effect property node changes.
+TEST_P(SlimmingPaintWebFrameSimTest, LayerSubtreeEffectPropertyChanged) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          filter: blur(10px);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(outer_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                outer_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kEffectFilter));
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Modifying the filter style should set |subtree_property_changed| on
+  // both layers.
+  outer_element->setAttribute(html_names::kStyleAttr, "filter: blur(20px)");
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
+// This test is similar to |LayerSubtreeTransformPropertyChanged| but for
+// clip property node changes.
+TEST_P(SlimmingPaintWebFrameSimTest, LayerSubtreeClipPropertyChanged) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          position: absolute;
+          clip: rect(10px, 80px, 70px, 40px);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Modifying the clip style should set |subtree_property_changed| on
+  // both layers.
+  outer_element->setAttribute(html_names::kStyleAttr,
+                              "clip: rect(1px, 8px, 7px, 4px);");
+  WebView().UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
 static void TestFramePrinting(WebLocalFrameImpl* frame) {
   WebPrintParams print_params;
   WebSize page_size(500, 500);
