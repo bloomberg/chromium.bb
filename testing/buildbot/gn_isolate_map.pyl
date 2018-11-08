@@ -171,6 +171,17 @@
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
   },
+  "base_perftests": {
+    "label": "//base:base_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "args": [
+      "base_perftests",
+      "--test-launcher-print-test-stdio=always",
+      "--test-launcher-jobs=1",
+      "--test-launcher-retry-limit=0",
+    ],
+  },
   "blink_common_unittests": {
     "label": "//third_party/blink/common:blink_common_unittests",
     "type": "console_test_launcher",

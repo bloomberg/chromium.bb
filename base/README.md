@@ -31,3 +31,35 @@ under components/ instead.
 
 Owners are added when a contributor has shown the above qualifications and
 when they express interest. There isn't an upper bound on the number of OWNERS.
+
+## Performance testing
+
+Since the primitives provided by //base are used very widely, it is important to
+ensure they scale to the necessary workloads and perform well under all
+supported platforms. The `base_perftests` target is a suite of
+synthetic microbenchmarks that measure performance in various scenarios:
+
+  * BasicPostTaskPerfTest: Exercises MessageLoopTaskRunner's multi-threaded
+    queue in isolation.
+  * ConditionVariablePerfTest: Measures thread switching cost of condition
+    variables.
+  * IntegratedPostTaskPerfTest: Exercises the full MessageLoop/RunLoop
+    machinery.
+  * JSONPerfTest: Tests JSONWriter and JSONReader performance.
+  * MessageLoopPerfTest: Measures the speed of task posting in various
+    configurations.
+  * ObserverListPerfTest: Exercises adding, removing and signalling observers.
+  * PthreadEventPerfTest: Establishes the baseline thread switching cost using
+    pthreads.
+  * ScheduleWorkTest: Measures the overhead of MessagePump::ScheduleWork.
+  * SequenceManagerPerfTest: Benchmarks SequenceManager scheduling with various
+    underlying task runners.
+  * TaskObserverPerfTest: Measures the incremental cost of adding task
+    observers.
+  * TaskPerfTest: Checks the cost of posting tasks between threads.
+  * WaitableEvent{Thread,}PerfTest: Measures waitable events in single and
+    multithreaded scenarios.
+
+Regressions in these benchmarks can generally by caused by 1) operating system
+changes, 2) compiler version or flag changes or 3) changes in //base code
+itself.

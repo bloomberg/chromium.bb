@@ -812,6 +812,47 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "base_perftests",
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "base_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "base_perftests",
+        "override_compile_targets": [
+          "base_perftests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_flavor": "google",
+              "device_type": "bullhead",
+              "os": "Android",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 25200,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "components_perftests",
           "--non-telemetry=true",
           "--migrated-test=true"
@@ -1032,6 +1073,45 @@
   },
   "linux-perf": {
     "isolated_scripts": [
+      {
+        "args": [
+          "--gtest-benchmark-name",
+          "base_perftests",
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "base_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "base_perftests",
+        "override_compile_targets": [
+          "base_perftests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu-14.04",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 25200,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
       {
         "args": [
           "--gtest-benchmark-name",
@@ -1359,6 +1439,45 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "base_perftests",
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "base_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "base_perftests",
+        "override_compile_targets": [
+          "base_perftests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "os": "Mac-10.13",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 25200,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "media_perftests",
           "--non-telemetry=true",
           "--migrated-test=true"
@@ -1523,6 +1642,45 @@
   },
   "win-10-perf": {
     "isolated_scripts": [
+      {
+        "args": [
+          "--gtest-benchmark-name",
+          "base_perftests",
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "base_perftests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "base_perftests",
+        "override_compile_targets": [
+          "base_perftests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Windows-10",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 25200,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
       {
         "args": [
           "--gtest-benchmark-name",
