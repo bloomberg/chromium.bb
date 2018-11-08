@@ -54,8 +54,6 @@ var BluetoothDevice = function() {
 Polymer({
   is: 'bluetooth-settings',
 
-  behaviors: [Polymer.NeonAnimatableBehavior],
-
   properties: {
     /**
      * A set of bluetooth devices.

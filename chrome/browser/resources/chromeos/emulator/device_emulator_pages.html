@@ -6,10 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/web-animations.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="audio_settings.html">
 <link rel="import" href="battery_settings.html">
@@ -28,12 +25,12 @@
         flex-direction: column;
       }
 
-      neon-animated-pages {
+      iron-pages {
         max-width: 70%;
         min-width: 70%;
       }
 
-      neon-animated-pages > * {
+      iron-pages > * {
         @apply(--shadow-elevation-2dp);
         background-color: white;
         display: block;
@@ -103,15 +100,12 @@
       </div>
     </cr-drawer>
     <div id="container" class="no-outline">
-      <neon-animated-pages  selected="[[selectedPage]]"
-          entry-animation="fade-in-animation"
-          exit-animation="fade-out-animation">
+      <iron-pages selected="[[selectedPage]]">
         <audio-settings id="audioSettings"></audio-settings>
         <battery-settings id="batterySettings"></battery-settings>
         <bluetooth-settings id="bluetoothSettings"></bluetooth-settings>
-        <input-device-settings id="inputDeviceSettings">
-        </input-device-settings>
-      </neon-animated-pages>
+        <input-device-settings id="inputDeviceSettings"></input-device-settings>
+      </iron-pages>
     </div>
   </template>
   <script src="device_emulator_pages.js"></script>
