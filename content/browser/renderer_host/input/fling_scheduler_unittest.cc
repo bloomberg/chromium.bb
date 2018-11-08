@@ -103,7 +103,12 @@ class FlingSchedulerTest : public testing::Test,
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {}
   void SendGeneratedGestureScrollEvents(
-      const GestureEventWithLatencyInfo& gesture_event) override {}
+      const GestureEventWithLatencyInfo& gesture_event) override {
+    if (gesture_event.event.GetType() ==
+        blink::WebInputEvent::kGestureScrollEnd) {
+      fling_controller_->UnregisterFlingSchedulerObserver();
+    }
+  }
 
   std::unique_ptr<FlingController> fling_controller_;
   std::unique_ptr<FakeFlingScheduler> fling_scheduler_;
