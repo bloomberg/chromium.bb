@@ -395,30 +395,30 @@ const _kTT_%(ttname)s = {
     elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
       ttname = ('VEC_' + ('Nullable_' if t.nullable else '') + element_ttname)
-      pointer_set = '''    if (v === null || v === undefined) {
+      if t.nullable:
+        handle_null_enc = '''e.data.setUint32(o, 0, $fidl__kLE);
+      e.data.setUint32(o + 4, 0, $fidl__kLE);
       e.data.setUint32(o + 8, 0, $fidl__kLE);
       e.data.setUint32(o + 12, 0, $fidl__kLE);
-    } else {
-      e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
-      e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);
-    }'''
-      if not t.nullable:
-        throw_if_null_enc = ('if (v === null || v === undefined) '
-                             'throw "non-null vector required";')
-        throw_if_null_dec = ('if (pointer === 0) '
-                             'throw "non-null vector required";')
-        pointer_set = '''    e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
-    e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);'''
+      return;
+'''
+        handle_null_dec = 'return null;'
+      else:
+        handle_null_enc = 'throw "non-null vector required";'
+        handle_null_dec = 'throw "non-null vector required";'
 
       if ttname not in self.type_table_defined:
         self.type_table_defined.add(ttname)
         self.output_deferred_to_eof += ('''\
 const _kTT_%(ttname)s = {
   enc: function(e, o, v) {
-    %(throw_if_null_enc)s
+    if (v === null || v === undefined) {
+      %(handle_null_enc)s
+    }
     e.data.setUint32(o, v.length, $fidl__kLE);
     e.data.setUint32(o + 4, 0, $fidl__kLE);
-%(pointer_set)s
+    e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
+    e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);
     var start = e.alloc(v.length * %(element_size)s);
     for (var i = 0; i < v.length; i++) {
       _kTT_%(element_ttname)s.enc(e, start + (i * %(element_size)s), v[i]);
@@ -427,7 +427,9 @@ const _kTT_%(ttname)s = {
   dec: function(d, o) {
     var len = d.data.getUint32(o, $fidl__kLE);
     var pointer = d.data.getUint32(o + 8, $fidl__kLE);
-    %(throw_if_null_dec)s
+    if (pointer === 0) {
+      %(handle_null_dec)s
+    }
     var dataOffset = d.claimMemory(len * %(element_size)s);
     var result = [];
     for (var i = 0; i < len; i++) {
@@ -442,9 +444,8 @@ const _kTT_%(ttname)s = {
             'ttname': ttname,
             'element_ttname': element_ttname,
             'element_size': self._InlineSizeOfType(t.element_type),
-            'pointer_set': pointer_set,
-            'throw_if_null_enc': throw_if_null_enc,
-            'throw_if_null_dec': throw_if_null_dec
+            'handle_null_enc': handle_null_enc,
+            'handle_null_dec': handle_null_dec,
         })
       return ttname
     else:
