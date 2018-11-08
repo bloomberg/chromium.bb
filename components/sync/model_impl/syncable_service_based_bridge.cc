@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_change.h"
@@ -324,7 +325,7 @@ void SyncableServiceBasedBridge::OnSyncStarting(
     // initialized because stopping of the datatype cannot be completed before
     // ModelReadyToSync().
     DCHECK(store_);
-    MaybeStartSyncableService();
+    ReportErrorIfSet(MaybeStartSyncableService());
     return;
   }
 
@@ -347,38 +348,19 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
       store_->CreateWriteBatch();
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
 
-  SyncChangeList sync_change_list;
-  const base::Optional<ModelError> error = StoreAndConvertRemoteChanges(
-      std::move(batch), std::move(entity_change_list), &sync_change_list);
-  if (error) {
-    return error;
+  {
+    SyncChangeList sync_change_list;
+    const base::Optional<ModelError> error = StoreAndConvertRemoteChanges(
+        std::move(batch), std::move(entity_change_list), &sync_change_list);
+    if (error) {
+      return error;
+    }
   }
 
-  SyncDataList initial_sync_data;
-  initial_sync_data.reserve(sync_change_list.size());
-  for (const SyncChange& change : sync_change_list) {
-    initial_sync_data.push_back(change.sync_data());
-  }
-
-  auto error_callback =
-      base::BindRepeating(&SyncableServiceBasedBridge::ReportErrorIfSet,
-                          weak_ptr_factory_.GetWeakPtr());
-  auto local_change_processor = std::make_unique<LocalChangeProcessor>(
-      type_, error_callback, store_.get(), &in_memory_store_, cryptographer_,
-      change_processor());
-
-  const base::Optional<ModelError> merge_error = ConvertToModelError(
-      syncable_service_
-          ->MergeDataAndStartSyncing(
-              type_, initial_sync_data, std::move(local_change_processor),
-              std::make_unique<SyncErrorFactoryImpl>(type_))
-          .error());
-
-  if (!merge_error) {
-    syncable_service_started_ = true;
-  }
-
-  return merge_error;
+  // We ignore |sync_change_list| at this point and let
+  // MaybeStartSyncableService() read from |in_memory_store_|, which has been
+  // updated above as part of StoreAndConvertRemoteChanges().
+  return MaybeStartSyncableService();
 }
 
 base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
@@ -595,18 +577,21 @@ void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
 
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
 
-  MaybeStartSyncableService();
+  ReportErrorIfSet(MaybeStartSyncableService());
 }
 
-void SyncableServiceBasedBridge::MaybeStartSyncableService() {
+base::Optional<ModelError>
+SyncableServiceBasedBridge::MaybeStartSyncableService() {
   DCHECK(!syncable_service_started_);
   DCHECK(store_);
 
   // If sync wasn't enabled according to the loaded metadata, let's wait until
   // MergeSyncData() is called before starting the SyncableService.
   if (!change_processor()->IsTrackingMetadata()) {
-    return;
+    return base::nullopt;
   }
+
+  const base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Sync enabled, so exercise MergeDataAndStartSyncing() immediately, since
   // this function is reached only if sync is starting already.
@@ -621,8 +606,7 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
       const base::Optional<ModelError> error =
           cryptographer_->Decrypt(&specifics);
       if (error) {
-        change_processor()->ReportError(*error);
-        return;
+        return error;
       }
     }
 
@@ -646,11 +630,13 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
               std::make_unique<SyncErrorFactoryImpl>(type_))
           .error());
 
-  if (merge_error) {
-    change_processor()->ReportError(*merge_error);
-  } else {
+  RecordAssociationTime(base::TimeTicks::Now() - start_time);
+
+  if (!merge_error) {
     syncable_service_started_ = true;
   }
+
+  return merge_error;
 }
 
 base::Optional<ModelError>
@@ -822,6 +808,15 @@ SyncableServiceBasedBridge::ApplySyncChangesWithBatch(
 
   return ConvertToModelError(
       syncable_service_->ProcessSyncChanges(FROM_HERE, sync_change_list));
+}
+
+void SyncableServiceBasedBridge::RecordAssociationTime(
+    base::TimeDelta time) const {
+// This mimics the implementation in SharedChangeProcessor.
+#define PER_DATA_TYPE_MACRO(type_str) \
+  UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
+  SYNC_DATA_TYPE_HISTOGRAM(type_);
+#undef PER_DATA_TYPE_MACRO
 }
 
 }  // namespace syncer
