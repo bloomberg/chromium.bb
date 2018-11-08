@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Called when CWVCreditCardVerifier could not verify the credit card.
 // |error| nil if successful, non-nil if unsuccessful. User info will contain
-// key CWVCreditCardVerifierErrorMessageKey indicating the reason and
 // CWVCreditCardVerifierRetryAllowedKey indicating if user can try again.
+// |error|'s |localizedDescription| indicates reason for failure.
 - (void)creditCardVerifier:(CWVCreditCardVerifier*)creditCardVerifier
     didFinishVerificationWithError:(nullable NSError*)error;
 

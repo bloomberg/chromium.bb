@@ -18,12 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 // The error domain for credit card verification errors.
 FOUNDATION_EXPORT CWV_EXPORT
     NSErrorDomain const CWVCreditCardVerifierErrorDomain;
-// The key for the error message value in the error's |userInfo| dictionary.
-FOUNDATION_EXPORT CWV_EXPORT
-    NSString* const CWVCreditCardVerifierErrorMessageKey;
 // The key for the retry allowed value in the error's |userInfo| dictionary.
 FOUNDATION_EXPORT CWV_EXPORT
-    NSString* const CWVCreditCardVerifierRetryAllowedKey;
+    NSErrorUserInfoKey const CWVCreditCardVerifierRetryAllowedKey;
 
 // Possible error codes during credit card verification.
 typedef NS_ENUM(NSInteger, CWVCreditCardVerificationError) {
@@ -70,18 +67,19 @@ CWV_EXPORT
 // e.g. 3 for Visa and 4 for American Express.
 @property(nonatomic, readonly) NSInteger expectedCVCLength;
 
-// YES if |creditCard|'s current expiration date has expired and needs updating.
-@property(nonatomic, readonly) BOOL needsUpdateForExpirationDate;
+// YES if |creditCard|'s current expiration date has expired and needs updating,
+// or if |requestUpdateForExpirationDate| was invoked.
+@property(nonatomic, readonly) BOOL shouldRequestUpdateForExpirationDate;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // Attempts |creditCard| verification.
 // |CVC| Card verification code. e.g. 3 digit code on the back of Visa cards or
 // 4 digit code in the front of American Express cards.
-// |month| 1 or 2 digit expiration month. e.g. 8 or 08 for August. Can be nil if
-// |needsUpdateForExpirationDate| is NO.
-// |year| 2 or 4 digit expiration year. e.g. 19 or 2019. Can be nil if
-// |needsUpdateForExpirationDate| is NO.
+// |month| 1 or 2 digit expiration month. e.g. 8 or 08 for August. Only used if
+// |shouldRequestUpdateForExpirationDate| is YES. Ignored otherwise.
+// |year| 2 or 4 digit expiration year. e.g. 19 or 2019. Only used if
+// |shouldRequestUpdateForExpirationDate| is YES. Ignored otherwise.
 // |storeLocally| Whether or not to save |creditCard| locally. If YES, user will
 // not be asked again to verify this card. Ignored if |canSaveLocally| is NO.
 // |dataSource| will be asked to return risk data needed for verification.
@@ -103,6 +101,11 @@ CWV_EXPORT
 // |month| 1 or 2 digit. e.g. 8 or 08 for August.
 // |year| 2 or 4 digit. e.g. 20 or 2020.
 - (BOOL)isExpirationDateValidForMonth:(NSString*)month year:(NSString*)year;
+
+// Call to allow updating expiration date, even if it hasn't expired yet.
+// This can happen if a new card was issued with a new expiration and CVC and
+// the user would like to update this card.
+- (void)requestUpdateForExpirationDate;
 
 @end
 
