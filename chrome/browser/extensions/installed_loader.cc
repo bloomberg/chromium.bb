@@ -364,6 +364,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int eventless_event_pages_count = 0;
   int off_store_item_count = 0;
   int web_request_blocking_count = 0;
+  int web_request_count = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
   for (ExtensionSet::const_iterator iter = extensions.begin();
@@ -418,6 +419,11 @@ void InstalledLoader::RecordExtensionsMetrics() {
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kWebRequestBlocking)) {
       web_request_blocking_count++;
+    }
+
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kWebRequest)) {
+      web_request_count++;
     }
 
     // From now on, don't count component extensions, since they are only
@@ -668,6 +674,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            off_store_item_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.WebRequestBlockingCount",
                            web_request_blocking_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.WebRequestCount", web_request_count);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
