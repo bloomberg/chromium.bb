@@ -64,7 +64,7 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
 
   web_app->SetName(name);
   web_app->SetDescription(description);
-  web_app->SetLaunchUrl(launch_url.spec());
+  web_app->SetLaunchUrl(launch_url);
 
   EXPECT_EQ(nullptr, registrar->GetAppById(app_id));
   EXPECT_EQ(nullptr, registrar->GetAppById(app_id2));

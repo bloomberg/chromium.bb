@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -22,18 +23,18 @@ class WebApp {
 
   const std::string& name() const { return name_; }
   const std::string& description() const { return description_; }
-  const std::string& launch_url() const { return launch_url_; }
+  const GURL& launch_url() const { return launch_url_; }
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
-  void SetLaunchUrl(const std::string& launch_url);
+  void SetLaunchUrl(const GURL& launch_url);
 
  private:
   const AppId app_id_;
 
   std::string name_;
   std::string description_;
-  std::string launch_url_;
+  GURL launch_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);
 };

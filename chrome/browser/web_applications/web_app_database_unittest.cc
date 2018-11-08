@@ -79,7 +79,7 @@ class WebAppDatabaseTest : public testing::Test {
 
     app->SetName(name);
     app->SetDescription(description);
-    app->SetLaunchUrl(launch_url);
+    app->SetLaunchUrl(GURL(launch_url));
 
     return app;
   }
