@@ -1993,4 +1993,64 @@ __gCrWeb.fill.autofillSubmissionData = function(form) {
   return __gCrWeb.stringify([formData]);
 }
 
+/**
+ * Returns the coalesced child text of the elements who's ids are found in
+ * the |atrtribute| of |element|.
+ *
+ * For example, given this document...
+ *
+ *      <div id="billing">Billing</div>
+ *      <div>
+ *        <div id="name">Name</div>
+ *        <input id="field1" type="text" aria-labelledby="billing name"/>
+ *     </div>
+ *     <div>
+ *       <div id="address">Address</div>
+ *       <input id="field2" type="text" aria-labelledby="billing address"/>
+ *     </div>
+ *
+ * The coalesced text by the id_list found in the aria-labelledby attribute
+ * of the field1 input element would be "Billing Name" and for field2 it would
+ * be "Billing Address".
+ */
+function coalesceTextByIdList(element, attribute) {
+  if (!element) {
+    return '';
+  }
+
+  var ids = element.getAttribute(attribute);
+  if (!ids) {
+    return '';
+  }
+
+  return ids.trim()
+            .split(/\s+/)
+            .map(function(i) { return document.getElementById(i); })
+            .filter(function(e) { return e !== null; })
+            .map(function (n) { return __gCrWeb.fill.findChildText(n); })
+            .filter(function (s) { return s.length > 0; })
+            .join(' ')
+            .trim();
+}
+
+/**
+ * Returns the coalesced text referenced by the aria-labelledby attribute
+ * or the value of the aria-label attribute, with priority given to the
+ * aria-labelledby text.
+ */
+__gCrWeb.fill.getAriaLabel = function(element) {
+  var label = coalesceTextByIdList(element, 'aria-labelledby');
+  if (!label) {
+    label = element.getAttribute('aria-label') || '';
+  }
+  return label.trim();
+}
+
+/**
+ * Returns the coalesced text referenced by the aria-describedby attribute.
+ */
+__gCrWeb.fill.getAriaDescription = function(element) {
+  return coalesceTextByIdList(element, 'aria-describedby');
+}
+
 }());  // End of anonymous object
