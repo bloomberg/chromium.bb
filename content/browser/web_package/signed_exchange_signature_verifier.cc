@@ -54,8 +54,8 @@ constexpr uint8_t kMessageHeader[] =
     // 5.3. "A single 0 byte which serves as a separator." [spec text]
     "HTTP Exchange 1 b2";
 
-constexpr int kFourWeeksInSeconds = base::TimeDelta::FromDays(28).InSeconds();
-constexpr int kOneWeekInSeconds = base::TimeDelta::FromDays(7).InSeconds();
+constexpr base::TimeDelta kOneWeek = base::TimeDelta::FromDays(7);
+constexpr base::TimeDelta kFourWeeks = base::TimeDelta::FromDays(4 * 7);
 
 base::Optional<crypto::SignatureVerifier::SignatureAlgorithm>
 GetSignatureAlgorithm(scoped_refptr<net::X509Certificate> cert,
@@ -206,7 +206,7 @@ bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
 
   // 3. "If expires is more than 7 days (604800 seconds) after date, return
   // "invalid"." [spec text]
-  if ((expires_time - creation_time).InSeconds() > kOneWeekInSeconds)
+  if ((expires_time - creation_time).InSeconds() > kOneWeek.InSeconds())
     return false;
 
   // 4. "If the current time is before date or after expires, return
@@ -214,21 +214,21 @@ bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
   if (verification_time < creation_time) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "SignedExchange.SignatureVerificationError.NotYetValid",
-        (creation_time - verification_time).InSeconds(), 1, kFourWeeksInSeconds,
-        50);
+        (creation_time - verification_time).InSeconds(), 1,
+        kFourWeeks.InSeconds(), 50);
     return false;
   }
   if (expires_time < verification_time) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "SignedExchange.SignatureVerificationError.Expired",
-        (verification_time - expires_time).InSeconds(), 1, kFourWeeksInSeconds,
-        50);
+        (verification_time - expires_time).InSeconds(), 1,
+        kFourWeeks.InSeconds(), 50);
     return false;
   }
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("SignedExchange.TimeUntilExpiration",
                               (expires_time - verification_time).InSeconds(), 1,
-                              kOneWeekInSeconds, 50);
+                              kOneWeek.InSeconds(), 50);
   return true;
 }
 
