@@ -597,7 +597,7 @@
     },
     {
       name: "ImplicitRootScroller",
-      status: "experimental",
+      status: "stable",
       settable_from_internals: true,
     },
     {
