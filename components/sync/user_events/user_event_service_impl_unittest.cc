@@ -11,8 +11,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -70,35 +70,6 @@ MATCHER_P(HasFieldTrialVariationIds, expected_variation_id, "") {
              expected_variation_id;
 }
 
-// TODO(vitaliii): Merge this into FakeSyncService and use it instead.
-class TestSyncService : public FakeSyncService {
- public:
-  TestSyncService(bool is_engine_initialized,
-                  bool is_using_secondary_passphrase,
-                  ModelTypeSet preferred_data_types)
-      : is_engine_initialized_(is_engine_initialized),
-        is_using_secondary_passphrase_(is_using_secondary_passphrase),
-        preferred_data_types_(preferred_data_types) {}
-
-  TransportState GetTransportState() const override {
-    return is_engine_initialized_ ? TransportState::ACTIVE
-                                  : TransportState::INITIALIZING;
-  }
-
-  bool IsUsingSecondaryPassphrase() const override {
-    return is_using_secondary_passphrase_;
-  }
-
-  ModelTypeSet GetPreferredDataTypes() const override {
-    return preferred_data_types_;
-  }
-
- private:
-  bool is_engine_initialized_;
-  bool is_using_secondary_passphrase_;
-  ModelTypeSet preferred_data_types_;
-};
-
 class TestGlobalIdMapper : public GlobalIdMapper {
   void AddGlobalIdChangeObserver(GlobalIdChange callback) override {}
   int64_t GetLatestGlobalId(int64_t global_id) override { return global_id; }
@@ -106,9 +77,8 @@ class TestGlobalIdMapper : public GlobalIdMapper {
 
 class UserEventServiceImplTest : public testing::Test {
  protected:
-  UserEventServiceImplTest()
-      : field_trial_list_(nullptr),
-        sync_service_(true, false, {HISTORY_DELETE_DIRECTIVES}) {
+  UserEventServiceImplTest() : field_trial_list_(nullptr) {
+    sync_service_.SetPreferredDataTypes({HISTORY_DELETE_DIRECTIVES});
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
   }
@@ -124,13 +94,13 @@ class UserEventServiceImplTest : public testing::Test {
                                        new_value);
   }
 
-  TestSyncService* sync_service() { return &sync_service_; }
+  syncer::TestSyncService* sync_service() { return &sync_service_; }
   MockModelTypeChangeProcessor* mock_processor() { return &mock_processor_; }
 
  private:
   base::MessageLoop message_loop_;
   base::FieldTrialList field_trial_list_;
-  TestSyncService sync_service_;
+  syncer::TestSyncService sync_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper mapper_;
 
@@ -164,8 +134,8 @@ TEST_F(UserEventServiceImplTest, ShouldRecord) {
 TEST_F(UserEventServiceImplTest, ShouldRecordNoHistory) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
-  TestSyncService no_history_sync_service(true, false, ModelTypeSet());
-  UserEventServiceImpl service(&no_history_sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes({});
+  UserEventServiceImpl service(sync_service(), MakeBridge());
 
   // Only record events without navigation ids when history sync is off.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -177,8 +147,8 @@ TEST_F(UserEventServiceImplTest, ShouldRecordNoHistory) {
 TEST_F(UserEventServiceImplTest, ShouldRecordUserConsentNoHistory) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
-  TestSyncService no_history_sync_service(true, false, ModelTypeSet());
-  UserEventServiceImpl service(&no_history_sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes({});
+  UserEventServiceImpl service(sync_service(), MakeBridge());
 
   // UserConsent recording doesn't need history sync to be enabled.
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
@@ -188,9 +158,8 @@ TEST_F(UserEventServiceImplTest, ShouldRecordUserConsentNoHistory) {
 TEST_F(UserEventServiceImplTest, ShouldRecordPassphrase) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
-  TestSyncService passphrase_sync_service(true, true,
-                                          {HISTORY_DELETE_DIRECTIVES});
-  UserEventServiceImpl service(&passphrase_sync_service, MakeBridge());
+  sync_service()->SetIsUsingSecondaryPassphrase(true);
+  UserEventServiceImpl service(sync_service(), MakeBridge());
 
   // Only record events without navigation ids when a passphrase is used.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -203,10 +172,9 @@ TEST_F(UserEventServiceImplTest, ShouldRecordPassphrase) {
 TEST_F(UserEventServiceImplTest, ShouldRecordEngineOff) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
-  TestSyncService engine_not_initialized_sync_service(
-      false, false, {HISTORY_DELETE_DIRECTIVES});
-  UserEventServiceImpl service(&engine_not_initialized_sync_service,
-                               MakeBridge());
+  sync_service()->SetTransportState(
+      syncer::SyncService::TransportState::INITIALIZING);
+  UserEventServiceImpl service(sync_service(), MakeBridge());
 
   // Only record events without navigation ids when the engine is off.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -288,12 +256,9 @@ TEST_F(
     WithConsentsTypeShouldRecordWhenBothHistoryAndEventsDatatypesAreEnabled) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
-  TestSyncService sync_service(
-      /*is_engine_initialized=*/true,
-      /*is_using_secondary_passphrase=*/false,
-      /*preferred_data_types=*/{HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
-
-  UserEventServiceImpl service(&sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes(
+      {HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
+  UserEventServiceImpl service(sync_service(), MakeBridge());
   EXPECT_CALL(*mock_processor(), Put(_, _, _));
   service.RecordUserEvent(AsTest(Event()));
 }
@@ -302,12 +267,7 @@ TEST_F(UserEventServiceImplTest,
        WithConsentsTypeShouldNotRecordWhenEventsDatatypeIsDisabled) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
-  TestSyncService sync_service(
-      /*is_engine_initialized=*/true,
-      /*is_using_secondary_passphrase=*/false,
-      /*preferred_data_types=*/{HISTORY_DELETE_DIRECTIVES});
-
-  UserEventServiceImpl service(&sync_service, MakeBridge());
+  UserEventServiceImpl service(sync_service(), MakeBridge());
   // USER_EVENTS type is disabled, thus, they should not be recorded.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
   service.RecordUserEvent(AsTest(Event()));
@@ -317,12 +277,8 @@ TEST_F(UserEventServiceImplTest,
        WithConsentsTypeShouldNotRecordWhenHistoryDatatypeIsDisabled) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
-  TestSyncService sync_service(
-      /*is_engine_initialized=*/true,
-      /*is_using_secondary_passphrase=*/false,
-      /*preferred_data_types=*/{USER_EVENTS});
-
-  UserEventServiceImpl service(&sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes({USER_EVENTS});
+  UserEventServiceImpl service(sync_service(), MakeBridge());
   // Even though USER_EVENTS type is enabled, events cannot be recorded when
   // history sync is disabled.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -334,12 +290,11 @@ TEST_F(UserEventServiceImplTest,
        WithConsentsTypeShouldNotRecordWhenEngineIsNotInitialized) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
-  TestSyncService sync_service(
-      /*is_engine_initialized=*/false,
-      /*is_using_secondary_passphrase=*/false,
-      /*preferred_data_types=*/{HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
-
-  UserEventServiceImpl service(&sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes(
+      {HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
+  sync_service()->SetTransportState(
+      syncer::SyncService::TransportState::INITIALIZING);
+  UserEventServiceImpl service(sync_service(), MakeBridge());
   // Even though USER_EVENTS type is enabled, events cannot be recorded because
   // we can't trust uninitialized engine.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
@@ -350,12 +305,10 @@ TEST_F(UserEventServiceImplTest,
        WithConsentsTypeShouldNotRecordWhenPassphraseIsUsed) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
-  TestSyncService sync_service(
-      /*is_engine_initialized=*/true,
-      /*is_using_secondary_passphrase=*/true,
-      /*preferred_data_types=*/{HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
-
-  UserEventServiceImpl service(&sync_service, MakeBridge());
+  sync_service()->SetPreferredDataTypes(
+      {HISTORY_DELETE_DIRECTIVES, USER_EVENTS});
+  sync_service()->SetIsUsingSecondaryPassphrase(true);
+  UserEventServiceImpl service(sync_service(), MakeBridge());
   // Even though USER_EVENTS type is enabled, events cannot be recorded
   // because custom passphrase is used.
   EXPECT_CALL(*mock_processor(), Put(_, _, _)).Times(0);
