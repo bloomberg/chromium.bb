@@ -54,6 +54,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const override;
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
+  MessagePump* GetBoundMessagePump() const override;
 
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;

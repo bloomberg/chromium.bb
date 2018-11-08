@@ -314,6 +314,10 @@ bool ThreadControllerImpl::IsTaskExecutionAllowed() const {
   return true;
 }
 
+MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
+  return nullptr;
+}
+
 }  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

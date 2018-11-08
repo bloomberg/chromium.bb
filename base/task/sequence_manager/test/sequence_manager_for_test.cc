@@ -39,7 +39,8 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
 
 SequenceManagerForTest::SequenceManagerForTest(
     std::unique_ptr<internal::ThreadController> thread_controller)
-    : SequenceManagerImpl(std::move(thread_controller)) {}
+    : SequenceManagerImpl(std::move(thread_controller),
+                          MessageLoop::Type::TYPE_DEFAULT) {}
 
 // static
 std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(

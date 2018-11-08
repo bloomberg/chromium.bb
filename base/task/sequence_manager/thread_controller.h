@@ -84,6 +84,9 @@ class ThreadController {
 
   virtual bool IsTaskExecutionAllowed() const = 0;
 
+  // Returns the MessagePump we're bound to if any.
+  virtual MessagePump* GetBoundMessagePump() const = 0;
+
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager
   // with MessageLoop.

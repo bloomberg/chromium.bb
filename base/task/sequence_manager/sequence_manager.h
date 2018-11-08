@@ -92,8 +92,6 @@ class SequenceManager {
   virtual void SetObserver(Observer* observer) = 0;
 
   // Must be called on the main thread.
-  virtual void AddTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
   virtual void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
   virtual void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
 
@@ -143,18 +141,6 @@ class SequenceManager {
   // after this call due to tasks posting tasks from destructor.
   virtual void DeletePendingTasks() = 0;
 
-  // Explicitly allow execution in the nested loops.
-  // TODO(altimin,crbug.com/901362): This method exists in the current form
-  // to facilitate MessageLoop deprecation. Rethink this after MessageLoopImpl
-  // is gone.
-  virtual void SetTaskExecutionAllowed(bool allowed) = 0;
-
-  // Whether task execution is allowed (it is disallowed in the nested loops
-  // unless allowed explicitly by SetTaskExecutionAllowed(true).
-  // TODO(altimin): This method exists in the current form to facilitate
-  // MessageLoop deprecation. Rethink this after MessageLoopImpl is gone.
-  virtual bool IsTaskExecutionAllowed() const = 0;
-
   // Whether at least one queue associated with this SequenceManager has
   // at least one task, either delayed or immediate.
   virtual bool HasTasks() = 0;
@@ -174,9 +160,8 @@ class SequenceManager {
   // expired delay are not).
   virtual bool IsIdleForTesting() const = 0;
 
-  // When this functionality is enabled, the queue time will be recorded for
-  // posted tasks.
-  virtual void SetAddQueueTimeToTasks(bool enable) = 0;
+  // The total number of posted tasks that haven't executed yet.
+  virtual size_t GetPendingTaskCountForTesting() const = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
@@ -185,10 +170,13 @@ class SequenceManager {
 
 // Create SequenceManager using MessageLoop on the current thread.
 // Implementation is located in sequence_manager_impl.cc.
-// TODO(scheduler-dev): Rename to TakeOverCurrentThread when we'll stop using
-// MessageLoop and will actually take over a thread.
+// TODO(scheduler-dev): Remove after every thread has a SequenceManager.
 BASE_EXPORT std::unique_ptr<SequenceManager>
 CreateSequenceManagerOnCurrentThread();
+
+// Create a SequenceManager for a MessagePump on the current thread.
+BASE_EXPORT std::unique_ptr<SequenceManager>
+CreateSequenceManagerOnCurrentThreadWithPump(MessageLoop::Type type);
 
 // Create a SequenceManager for a future thread using the provided MessageLoop.
 // The SequenceManager can be initialized on the current thread and then needs
@@ -198,14 +186,9 @@ CreateSequenceManagerOnCurrentThread();
 //
 // Implementation is located in sequence_manager_impl.cc. TODO(scheduler-dev):
 // Remove when we get rid of MessageLoop.
+// TODO(scheduler-dev): Change this to CreateUnboundSequenceManagerWithPump.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
     MessageLoop* message_loop);
-
-// Create a SequenceManager for a future use which would bound directly
-// to a message pump. BindToMessagePump() call is expected before this
-// SequenceManager can be used.
-BASE_EXPORT std::unique_ptr<SequenceManager>
-CreateUnboundSequenceManagerWithPump();
 
 }  // namespace sequence_manager
 }  // namespace base

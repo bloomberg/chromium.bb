@@ -185,13 +185,14 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
             std::make_unique<MessagePumpDefault>(), &mock_clock_));
     // ThreadControllerWithMessagePumpImpl doesn't provide
     // a default task runner.
-    scoped_refptr<TestTaskQueue> default_task_queue =
+    default_task_queue_ =
         manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
-    manager_->SetDefaultTaskRunner(default_task_queue->task_runner());
+    manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
   }
 
   const TickClock* GetTickClock() { return &mock_clock_; }
 
+  scoped_refptr<TestTaskQueue> default_task_queue_;
   std::unique_ptr<MessageLoop> message_loop_;
   SimpleTestTickClock mock_clock_;
 };
@@ -3466,7 +3467,11 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
        SequenceManagerCreatedBeforeMessageLoop) {
   std::unique_ptr<SequenceManager> manager =
       CreateUnboundSequenceManager(nullptr);
+  EXPECT_FALSE(static_cast<SequenceManagerImpl*>(manager.get())
+                   ->IsBoundToCurrentThread());
   manager->BindToCurrentThread();
+  EXPECT_TRUE(static_cast<SequenceManagerImpl*>(manager.get())
+                  ->IsBoundToCurrentThread());
   scoped_refptr<TaskQueue> default_task_queue =
       manager->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
   EXPECT_THAT(default_task_queue.get(), testing::NotNull());
@@ -3729,6 +3734,139 @@ TEST_P(SequenceManagerTest, RecordsQueueTimeIfSettingTrue) {
             start_time_ + TimeDelta::FromMilliseconds(99));
 
   manager_->RemoveTaskObserver(&observer);
+}
+
+namespace {
+// Inject a test point for recording the destructor calls for Closure objects
+// send to PostTask(). It is awkward usage since we are trying to hook the
+// actual destruction, which is not a common operation.
+class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
+ public:
+  DestructionObserverProbe(bool* task_destroyed,
+                           bool* destruction_observer_called)
+      : task_destroyed_(task_destroyed),
+        destruction_observer_called_(destruction_observer_called) {}
+  virtual void Run() {
+    // This task should never run.
+    ADD_FAILURE();
+  }
+
+ private:
+  friend class RefCounted<DestructionObserverProbe>;
+
+  virtual ~DestructionObserverProbe() {
+    EXPECT_FALSE(*destruction_observer_called_);
+    *task_destroyed_ = true;
+  }
+
+  bool* task_destroyed_;
+  bool* destruction_observer_called_;
+};
+
+class SMDestructionObserver : public MessageLoopCurrent::DestructionObserver {
+ public:
+  SMDestructionObserver(bool* task_destroyed, bool* destruction_observer_called)
+      : task_destroyed_(task_destroyed),
+        destruction_observer_called_(destruction_observer_called),
+        task_destroyed_before_message_loop_(false) {}
+  void WillDestroyCurrentMessageLoop() override {
+    task_destroyed_before_message_loop_ = *task_destroyed_;
+    *destruction_observer_called_ = true;
+  }
+  bool task_destroyed_before_message_loop() const {
+    return task_destroyed_before_message_loop_;
+  }
+
+ private:
+  bool* task_destroyed_;
+  bool* destruction_observer_called_;
+  bool task_destroyed_before_message_loop_;
+};
+
+}  // namespace
+
+TEST_P(SequenceManagerTestWithMessageLoop, DestructionObserverTest) {
+  CreateTaskQueues(1u);
+
+  // Verify that the destruction observer gets called at the very end (after
+  // all the pending tasks have been destroyed).
+  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
+
+  bool task_destroyed = false;
+  bool destruction_observer_called = false;
+
+  SMDestructionObserver observer(&task_destroyed, &destruction_observer_called);
+  manager_->AddDestructionObserver(&observer);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&DestructionObserverProbe::Run,
+               base::MakeRefCounted<DestructionObserverProbe>(
+                   &task_destroyed, &destruction_observer_called)),
+      kDelay);
+
+  manager_.reset();
+
+  EXPECT_TRUE(observer.task_destroyed_before_message_loop());
+  // The task should have been destroyed when we deleted the loop.
+  EXPECT_TRUE(task_destroyed);
+  EXPECT_TRUE(destruction_observer_called);
+}
+
+TEST_P(SequenceManagerTestWithMessageLoop, GetMessagePump) {
+  switch (GetParam()) {
+    default:
+      EXPECT_THAT(manager_->GetMessagePump(), testing::IsNull());
+      break;
+    case TestType::kUseMessagePump:
+      EXPECT_THAT(manager_->GetMessagePump(), testing::NotNull());
+      break;
+  }
+}
+
+TEST_P(SequenceManagerTest, ThreadName) {
+  std::string kThreadName1("foo");
+  PlatformThread::SetName(kThreadName1);
+  EXPECT_EQ(kThreadName1, manager_->GetThreadName());
+}
+
+TEST_P(SequenceManagerTest, GetPendingTaskCountForTesting) {
+  CreateTaskQueues(3u);
+
+  EXPECT_EQ(0u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(1u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(2u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(3u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[1]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(4u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[2]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(5u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[1]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(6u, manager_->GetPendingTaskCountForTesting());
+
+  runners_[2]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               TimeDelta::FromMilliseconds(20));
+  EXPECT_EQ(7u, manager_->GetPendingTaskCountForTesting());
+
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, manager_->GetPendingTaskCountForTesting());
+
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(10));
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, manager_->GetPendingTaskCountForTesting());
+
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(10));
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, manager_->GetPendingTaskCountForTesting());
 }
 
 }  // namespace sequence_manager_impl_unittest
