@@ -933,18 +933,35 @@ TEST_F(FidlGenJsTest, UnionReceive) {
   EXPECT_EQ(helper.Get<uint32_t>("result_optional_num"), 987654u);
 }
 
-TEST_F(FidlGenJsTest, DefaultUsingIdentifier) {
+TEST_F(FidlGenJsTest, VariousDefaults) {
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
   std::string source = R"(
-    var temp = new DefaultUsingIdentifier();
-    this.result = temp.blorp_defaulting_to_beta;
+    var temp = new VariousDefaults();
+    this.result_blorp = temp.blorp_defaulting_to_beta;
+    this.result_timestamp = temp.int64_defaulting_to_no_timestamp;
+    this.result_another_copy = ANOTHER_COPY;
+    this.result_int64_const = temp.int64_defaulting_to_const;
+    this.result_string_in_struct = temp.string_with_default;
+    this.result_string_const = SOME_STRING;
   )";
   helper.runner().Run(source, "test.js");
 
-  EXPECT_EQ(helper.Get<int>("result"),
+  EXPECT_EQ(helper.Get<int>("result_blorp"),
             static_cast<int>(fidljstest::Blorp::BETA));
+  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
+                gin::StringToV8(isolate, "result_timestamp"))),
+            fidljstest::NO_TIMESTAMP);
+  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
+                gin::StringToV8(isolate, "result_another_copy"))),
+            fidljstest::ANOTHER_COPY);
+  EXPECT_EQ(helper.FromV8BigInt<int64_t>(helper.runner().global()->Get(
+                gin::StringToV8(isolate, "result_int64_const"))),
+            0x7fffffffffffff11LL);
+  EXPECT_EQ(helper.Get<std::string>("result_string_const"),
+            "a 你好 thing\" containing ' quotes");
+  EXPECT_EQ(helper.Get<std::string>("result_string_in_struct"), "stuff");
 }
 
 TEST_F(FidlGenJsTest, VectorOfStrings) {

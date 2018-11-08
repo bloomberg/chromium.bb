@@ -44,6 +44,22 @@ def _CompileIdentifier(ident):
   return _ChangeIfReserved(ident)
 
 
+def _GetUnderlyingPrimitiveType(t):
+  """Returns the underlying FIDL primitive type for a higher level type."""
+  if t.kind == fidl.TypeKind.PRIMITIVE:
+    return t.subtype
+  elif t.kind == fidl.TypeKind.STRING:
+    return 'string'
+  elif t.kind == fidl.TypeKind.IDENTIFIER:
+    # No underlying type is required because it will be implied by the type of
+    # the value that the identifer represents.
+    return None
+  else:
+    raise Exception(
+        'expected primitive or identifier representing primitive underlying '
+        'type, but got ' + str(t.kind))
+
+
 def _JsTypeForPrimitiveType(t):
   mapping = {
       fidl.IntegerType.INT16: 'number',
@@ -58,40 +74,6 @@ def _JsTypeForPrimitiveType(t):
   return mapping[t]
 
 
-def _CompileConstant(val, assignment_type):
-  """|assignment_type| is the TypeClass to which |val| will be assigned. This is
-  is currently used to scope identifiers to their enum."""
-  if val.kind == fidl.ConstantKind.IDENTIFIER:
-    if not assignment_type:
-      raise Exception('Need assignment_type for IDENTIFIER constant')
-    type_compound = _ParseCompoundIdentifier(assignment_type.identifier)
-    type_name = _CompileCompoundIdentifier(type_compound)
-    val_compound = _ParseCompoundIdentifier(val.identifier)
-    return type_name + '.' + val_compound.name
-  elif val.kind == fidl.ConstantKind.LITERAL:
-    return _CompileLiteral(val.literal)
-  else:
-    raise Exception('unexpected kind')
-
-
-def _CompileLiteral(val):
-  if val.kind == fidl.LiteralKind.STRING:
-    # TODO(crbug.com/883496): This needs to encode the string in an escaped
-    # form suitable to JS. Currently using the escaped Python representation,
-    # which is passably compatible, but surely has differences in edge cases.
-    return repr(val.value)
-  elif val.kind == fidl.LiteralKind.NUMERIC:
-    return val.value
-  elif val.kind == fidl.LiteralKind.TRUE:
-    return 'true'
-  elif val.kind == fidl.LiteralKind.FALSE:
-    return 'false'
-  elif val.kind == fidl.LiteralKind.DEFAULT:
-    return 'default'
-  else:
-    raise Exception('unexpected kind')
-
-
 class Compiler(object):
 
   def __init__(self, fidl, output_file):
@@ -100,6 +82,11 @@ class Compiler(object):
     self.output_deferred_to_eof = ''
     self.type_table_defined = set()
     self.type_inline_size_by_name = {}
+    # Used to hold the JS name for constants and enumerants. In particular,
+    # enums aren't scoped by name to their enum in the fidl json, but the JS
+    # bindings emit them as Enum.Something. So this maps from Something ->
+    # Enum.Something.
+    self.resolved_constant_name = {}
 
   def Compile(self):
     self._EmitHeader()
@@ -144,6 +131,32 @@ class Compiler(object):
     else:
       raise NotImplementedError(t.kind)
 
+  def _CompileConstant(self, val, primitive_type):
+    """primitive_type is the string representation of the underlying FIDL type
+    of the constant's value. Note that this is not a type object, but rather
+    the string name of a basic primitive type, e.g. 'int8' or 'uint64'."""
+    if val.kind == fidl.ConstantKind.IDENTIFIER:
+      js_name = self.resolved_constant_name.get(val.identifier)
+      if not js_name:
+        raise Exception('expected ' + val.identifer +
+                        ' to be in self.resolved_constant_name')
+      return js_name
+    elif val.kind == fidl.ConstantKind.LITERAL:
+      lit_kind = val.literal.kind
+      if lit_kind == fidl.LiteralKind.STRING:
+        return json.dumps(val.literal.value)
+      elif lit_kind == fidl.LiteralKind.NUMERIC:
+        suffix = 'n' if primitive_type in ('int64', 'uint64') else ''
+        return val.literal.value + suffix
+      elif lit_kind == fidl.LiteralKind.TRUE:
+        return 'true'
+      elif lit_kind == fidl.LiteralKind.FALSE:
+        return 'false'
+      elif lit_kind == fidl.LiteralKind.DEFAULT:
+        return 'default'
+      else:
+        raise Exception('unexpected kind')
+
   def _EmitHeader(self):
     self.f.write('''// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -156,7 +169,8 @@ class Compiler(object):
   def _CompileConst(self, const):
     compound = _ParseCompoundIdentifier(const.name)
     name = _CompileCompoundIdentifier(compound)
-    value = _CompileConstant(const.value, None)
+    value = self._CompileConstant(const.value,
+                                  _GetUnderlyingPrimitiveType(const.type))
     self.f.write('''/**
  * @const
  */
@@ -166,6 +180,7 @@ const %(name)s = %(value)s;
         'name': name,
         'value': value
     })
+    self.resolved_constant_name[const.name] = name
 
   def _CompileEnum(self, enum):
     compound = _ParseCompoundIdentifier(enum.name)
@@ -178,8 +193,15 @@ const %(name)s = %(value)s;
 const %(name)s = {
 ''' % data)
     for member in enum.members:
-      self.f.write('''  %s: %s,\n''' % (member.name,
-                                        _CompileConstant(member.value, None)))
+      # The 'type' of an enum isn't a real Type like most other places, but
+      # instead just a simple 'int8' or similar.
+      underlying_type = enum.type.value
+      self.f.write(
+          '''  %s: %s,\n''' %
+          (member.name, self._CompileConstant(member.value, underlying_type)))
+      fidl_constant_name = '.'.join(compound.library) + '/' + member.name
+      javascript_name = name + '.' + member.name
+      self.resolved_constant_name[fidl_constant_name] = javascript_name
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
@@ -303,8 +325,10 @@ function %(name)s(%(param_names)s) {
       member_name = _ChangeIfReserved(member.name)
       value = '%(member_name)s'
       if member.maybe_default_value:
-        value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' +
-                 _CompileConstant(member.maybe_default_value, member.type))
+        underlying_type = _GetUnderlyingPrimitiveType(member.type)
+        value = (
+            '(%(member_name)s !== undefined) ? %(member_name)s : ' +
+            self._CompileConstant(member.maybe_default_value, underlying_type))
       elif self.fidl.declarations.get(member.type.identifier) == \
           fidl.DeclarationsMap.UNION:
         union_compound = _ParseCompoundIdentifier(member.type.identifier)
