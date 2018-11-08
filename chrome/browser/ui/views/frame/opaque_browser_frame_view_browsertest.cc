@@ -27,6 +27,8 @@ class HostedAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
 
   static GURL GetAppURL() { return GURL("https://test.org"); }
 
+  void SetUpOnMainThread() override { SetThemeMode(ThemeMode::kDefault); }
+
   bool InstallAndLaunchHostedApp(
       base::Optional<SkColor> theme_color = base::nullopt) {
     WebApplicationInfo web_app_info;
@@ -71,6 +73,22 @@ class HostedAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
     return opaque_browser_frame_view_->layout()->NonClientTopHeight(true);
   }
 
+  enum class ThemeMode {
+    kSystem,
+    kDefault,
+  };
+
+  void SetThemeMode(ThemeMode theme_mode) {
+    ThemeService* theme_service =
+        ThemeServiceFactory::GetForProfile(browser()->profile());
+    if (theme_mode == ThemeMode::kSystem)
+      theme_service->UseSystemTheme();
+    else
+      theme_service->UseDefaultTheme();
+    ASSERT_EQ(theme_service->UsingDefaultTheme(),
+              theme_mode == ThemeMode::kDefault);
+  }
+
   OpaqueBrowserFrameView* opaque_browser_frame_view_ = nullptr;
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
@@ -87,10 +105,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, NoThemeColor) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(browser()->profile());
-  theme_service->UseSystemTheme();
-  ASSERT_TRUE(theme_service->UsingSystemTheme());
+  SetThemeMode(ThemeMode::kSystem);
   ASSERT_TRUE(InstallAndLaunchHostedApp(SK_ColorBLACK));
 
   EXPECT_EQ(hosted_app_button_container_->active_color_for_testing(),
