@@ -330,6 +330,9 @@ const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 // Touchscreen-specific interactions of the Files app.
 const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
 
+// Enabled Discover app.
+const char kEnableDiscoverApp[] = "enable-discover-app";
+
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
