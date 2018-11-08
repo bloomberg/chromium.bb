@@ -145,29 +145,8 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
 
   ~TestableRemoteDeviceLifeCycleImpl() override {}
 
-  FakeConnectionFinder* connection_finder() { return connection_finder_; }
-  FakeAuthenticator* authenticator() { return authenticator_; }
-
  private:
-  std::unique_ptr<cryptauth::ConnectionFinder> CreateConnectionFinder()
-      override {
-    std::unique_ptr<FakeConnectionFinder> scoped_connection_finder(
-        new FakeConnectionFinder(remote_device_));
-    connection_finder_ = scoped_connection_finder.get();
-    return std::move(scoped_connection_finder);
-  }
-
-  std::unique_ptr<cryptauth::Authenticator> CreateAuthenticator() override {
-    EXPECT_TRUE(connection_finder_);
-    std::unique_ptr<FakeAuthenticator> scoped_authenticator(
-        new FakeAuthenticator(connection_finder_->connection()));
-    authenticator_ = scoped_authenticator.get();
-    return std::move(scoped_authenticator);
-  }
-
   const cryptauth::RemoteDeviceRef remote_device_;
-  FakeConnectionFinder* connection_finder_;
-  FakeAuthenticator* authenticator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestableRemoteDeviceLifeCycleImpl);
 };
@@ -271,42 +250,6 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
     EXPECT_EQ(nullptr, life_cycle_.GetMessenger());
 
     EXPECT_EQ(expected_life_cycle_state, life_cycle_.GetState());
-  }
-
-  cryptauth::FakeConnection* OnConnectionFound() {
-    EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
-              life_cycle_.GetState());
-
-    EXPECT_CALL(*this, OnLifeCycleStateChanged(
-                           RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
-                           RemoteDeviceLifeCycle::State::AUTHENTICATING));
-    life_cycle_.connection_finder()->OnConnectionFound();
-    Mock::VerifyAndClearExpectations(this);
-
-    EXPECT_EQ(RemoteDeviceLifeCycle::State::AUTHENTICATING,
-              life_cycle_.GetState());
-    return life_cycle_.connection_finder()->connection();
-  }
-
-  void Authenticate(cryptauth::Authenticator::Result result) {
-    EXPECT_EQ(RemoteDeviceLifeCycle::State::AUTHENTICATING,
-              life_cycle_.GetState());
-
-    RemoteDeviceLifeCycle::State expected_state =
-        (result == cryptauth::Authenticator::Result::SUCCESS)
-            ? RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED
-            : RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED;
-
-    EXPECT_CALL(*this, OnLifeCycleStateChanged(
-                           RemoteDeviceLifeCycle::State::AUTHENTICATING,
-                           expected_state));
-    life_cycle_.authenticator()->OnAuthenticationResult(result);
-
-    if (result == cryptauth::Authenticator::Result::SUCCESS)
-      task_runner_->RunUntilIdle();
-
-    EXPECT_EQ(expected_state, life_cycle_.GetState());
-    Mock::VerifyAndClearExpectations(this);
   }
 
   MOCK_METHOD2(OnLifeCycleStateChanged,
