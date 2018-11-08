@@ -1944,6 +1944,150 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Tests use counter for implicit root scroller. Ensure it's not counted on a
+// page without an implicit root scroller.
+TEST_F(ImplicitRootScrollerSimTest, UseCounterNegative) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            div {
+              width: 100%;
+              height: 100%;
+            }
+          </style>
+          <div id="container"></div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_NE(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+
+  container->style()->setProperty(&GetDocument(), "height", "150%", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+}
+
+// Tests use counter for implicit root scroller. Ensure it's counted on a
+// page that loads with an implicit root scroller.
+TEST_F(ImplicitRootScrollerSimTest, UseCounterPositive) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #spacer {
+              height: 2000px;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+
+  container->style()->setProperty(&GetDocument(), "height", "150%", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  ASSERT_NE(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+}
+
+// Tests use counter for implicit root scroller. Ensure it's counted on a
+// page that loads without an implicit root scroller but later gets one.
+TEST_F(ImplicitRootScrollerSimTest, UseCounterPositiveAfterLoad) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            #container {
+              width: 100%;
+              height: 40%;
+              overflow: auto;
+            }
+            #spacer {
+              height: 2000px;
+            }
+          </style>
+          <div id="container">
+            <div id="spacer"></div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_NE(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+
+  container->style()->setProperty(&GetDocument(), "height", "100%", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+}
+
 // Tests that if we have multiple valid candidates for implicit promotion, we
 // don't promote either.
 TEST_F(ImplicitRootScrollerSimTest, DontPromoteWhenMultipleAreValid) {

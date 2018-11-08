@@ -20681,6 +20681,7 @@ Called by update_net_error_codes.py.-->
   <int value="2622" label="UpdateWithoutShippingOptionOnShippingAddressChange"/>
   <int value="2623" label="UpdateWithoutShippingOptionOnShippingOptionChange"/>
   <int value="2624" label="CSSSelectorEmptyWhitespaceOnlyFail"/>
+  <int value="2625" label="ActivatedImplicitRootScroller"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

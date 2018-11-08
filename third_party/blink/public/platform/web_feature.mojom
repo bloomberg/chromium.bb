@@ -2074,6 +2074,7 @@ enum WebFeature {
   kUpdateWithoutShippingOptionOnShippingAddressChange = 2622,
   kUpdateWithoutShippingOptionOnShippingOptionChange = 2623,
   kCSSSelectorEmptyWhitespaceOnlyFail = 2624,
+  kActivatedImplicitRootScroller = 2625,
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in
