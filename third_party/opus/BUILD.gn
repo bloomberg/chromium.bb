@@ -39,7 +39,7 @@ config("opus_private_config") {
     # Prefer alloca() over variable length arrays which are often inefficient;
     # the opus code will automatically handle this correctly per-platform.
     "USE_ALLOCA",
-    "HAVE_ALLOCA_H"
+    "HAVE_ALLOCA_H",
   ]
 
   include_dirs = [
@@ -51,9 +51,7 @@ config("opus_private_config") {
   cflags = []
 
   if (is_win) {
-    defines += [
-      "inline=__inline",
-    ]
+    defines += [ "inline=__inline" ]
 
     cflags += [
       "/wd4305",  # Disable truncation warning in celt/pitch.c .
@@ -171,6 +169,7 @@ if (use_opus_x86_optimization) {
       "src/celt/x86/pitch_sse4_1.c",
       "src/silk/x86/NSQ_del_dec_sse.c",
       "src/silk/x86/NSQ_sse.c",
+      "src/silk/x86/VAD_sse.c",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -384,7 +383,6 @@ static_library("opus") {
       "src/celt/x86/x86cpu.c",
       "src/celt/x86/x86cpu.h",
       "src/silk/x86/SigProc_FIX_sse.h",
-      "src/silk/x86/VAD_sse.c",
       "src/silk/x86/main_sse.h",
       "src/silk/x86/x86_silk_map.c",
     ]
