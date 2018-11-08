@@ -5,23 +5,23 @@
 package org.chromium.chrome.browser.download;
 
 /**
- * A DownloadForegroundServiceObservers.Observer implementation for DownloadNotificationService2.
+ * A DownloadForegroundServiceObservers.Observer implementation for DownloadNotificationService.
  */
 public class DownloadNotificationServiceObserver
         implements DownloadForegroundServiceObservers.Observer {
     @Override
     public void onForegroundServiceRestarted(int pinnedNotificationId) {
-        DownloadNotificationService2.getInstance().onForegroundServiceRestarted(
+        DownloadNotificationService.getInstance().onForegroundServiceRestarted(
                 pinnedNotificationId);
     }
 
     @Override
     public void onForegroundServiceTaskRemoved() {
-        DownloadNotificationService2.getInstance().onForegroundServiceTaskRemoved();
+        DownloadNotificationService.getInstance().onForegroundServiceTaskRemoved();
     }
 
     @Override
     public void onForegroundServiceDestroyed() {
-        DownloadNotificationService2.getInstance().onForegroundServiceDestroyed();
+        DownloadNotificationService.getInstance().onForegroundServiceDestroyed();
     }
 }

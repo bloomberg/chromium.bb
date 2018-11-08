@@ -61,7 +61,7 @@ public class DownloadManagerServiceTest {
      * The MockDownloadNotifier. Currently there is no support for creating mock objects this is a
      * simple mock object that provides testing support for checking a sequence of calls.
      */
-    static class MockDownloadNotifier extends SystemDownloadNotifier2 {
+    static class MockDownloadNotifier extends SystemDownloadNotifier {
         /**
          * The Ids of different methods in this mock object.
          */

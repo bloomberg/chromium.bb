@@ -82,12 +82,12 @@ public class DownloadResumptionScheduler {
     }
 
     /**
-     * Kicks off the download resumption process through {@link DownloadNotificationService2},
+     * Kicks off the download resumption process through {@link DownloadNotificationService},
      * which handles actually resuming the individual downloads.
      *
      * It is assumed that native is loaded at the time of this call.
      */
     public void resume() {
-            DownloadNotificationService2.getInstance().resumeAllPendingDownloads();
+        DownloadNotificationService.getInstance().resumeAllPendingDownloads();
     }
 }

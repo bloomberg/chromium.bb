@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Mock class to DownloadNotificationService for testing purpose.
  */
-public class MockDownloadNotificationService2 extends DownloadNotificationService2 {
+public class MockDownloadNotificationService extends DownloadNotificationService {
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
     private boolean mPaused;
     private int mLastNotificationId = DEFAULT_NOTIFICATION_ID;
@@ -68,7 +68,7 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
             final long totalBytes) {
         return ThreadUtils.runOnUiThreadBlockingNoException(
                 ()
-                        -> MockDownloadNotificationService2.super.notifyDownloadSuccessful(id,
+                        -> MockDownloadNotificationService.super.notifyDownloadSuccessful(id,
                                 filePath, fileName, systemDownloadId, isOffTheRecord,
                                 isSupportedMimeType, isOpenable, icon, originalUrl,
                                 shouldPromoteOrigin, referrer, totalBytes));
@@ -82,7 +82,7 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
             final String originalUrl, final boolean shouldPromoteOrigin) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> MockDownloadNotificationService2.super.notifyDownloadProgress(id,
+                        -> MockDownloadNotificationService.super.notifyDownloadProgress(id,
                                 fileName, progress, bytesReceived, timeRemainingInMillis, startTime,
                                 isOffTheRecord, canDownloadWhileMetered, isTransient, icon,
                                 originalUrl, shouldPromoteOrigin));
@@ -95,7 +95,7 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
             boolean forceRebuild, @PendingState int pendingState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> MockDownloadNotificationService2.super.notifyDownloadPaused(id, fileName,
+                        -> MockDownloadNotificationService.super.notifyDownloadPaused(id, fileName,
                                 isResumable, isAutoResumable, isOffTheRecord, isTransient, icon,
                                 originalUrl, shouldPromoteOrigin, hasUserGesture, forceRebuild,
                                 pendingState));
@@ -107,7 +107,7 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
             @FailState int failState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> MockDownloadNotificationService2.super.notifyDownloadFailed(id, fileName,
+                        -> MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName,
                                 icon, originalUrl, shouldPromoteOrigin, isOffTheRecord, failState));
     }
 
@@ -115,7 +115,7 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
     public void notifyDownloadCanceled(final ContentId id, boolean hasUserGesture) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> MockDownloadNotificationService2.super.notifyDownloadCanceled(
+                        -> MockDownloadNotificationService.super.notifyDownloadCanceled(
                                 id, hasUserGesture));
     }
 

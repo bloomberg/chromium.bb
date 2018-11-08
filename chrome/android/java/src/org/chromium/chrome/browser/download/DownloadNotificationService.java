@@ -49,7 +49,7 @@ import java.util.List;
  *  - Create notifications for downloads using DownloadNotificationFactory.
  *  - Update DownloadForegroundServiceManager about downloads, allowing it to start/stop service.
  */
-public class DownloadNotificationService2 {
+public class DownloadNotificationService {
     @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.PAUSED, DownloadStatus.COMPLETED,
             DownloadStatus.CANCELLED, DownloadStatus.FAILED})
     @Retention(RetentionPolicy.SOURCE)
@@ -99,19 +99,19 @@ public class DownloadNotificationService2 {
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
 
     private static class LazyHolder {
-        private static final DownloadNotificationService2 INSTANCE =
-                new DownloadNotificationService2();
+        private static final DownloadNotificationService INSTANCE =
+                new DownloadNotificationService();
     }
 
     /**
      * Creates DownloadNotificationService.
      */
-    public static DownloadNotificationService2 getInstance() {
+    public static DownloadNotificationService getInstance() {
         return LazyHolder.INSTANCE;
     }
 
     @VisibleForTesting
-    DownloadNotificationService2() {
+    DownloadNotificationService() {
         mNotificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
