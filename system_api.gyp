@@ -392,6 +392,29 @@
       ],
     },
     {
+      'target_name': 'system_api-runtime_probe-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/runtime_probe',
+        'proto_out_dir': 'include/runtime_probe/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/runtime_probe.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-runtime_probe-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-runtime_probe-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/runtime_probe/proto_bindings/runtime_probe.pb.cc',
+      ],
+    },
+    {
       'target_name': 'system_api-update_engine-protos-gen',
       'type': 'none',
       'variables': {

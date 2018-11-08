@@ -1,0 +1,61 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// The messages in this file comprise the DBus/Protobuf interface for
+// Runtime Probe.
+syntax = "proto3";
+
+package runtime_probe;
+
+// Defined error code.
+enum ErrorCode {
+  // 0 is the default value of ProbeResult::error. It should never be used.
+  RUNTIME_PROBE_ERROR_NOT_SET = 0;
+
+  // Not able to read the ProbeResult as DBus signature indicated.
+  RUNTIME_PROBE_ERROR_PROBE_REQUEST_INVALID = 1;
+}
+
+// Request from client that indicates what categories to probe. Category must
+// be existed on the per-board probe statement in rootfs.
+message ProbeRequest {
+  enum SupportCategory {
+    // The name style here is on purposely align with factory probe output.
+    audio_codec = 0;
+    battery = 1;
+  }
+  // repeated string categories = 1;
+  repeated SupportCategory categories = 1;
+}
+
+// Things about audio_codec
+message AudioCodec {
+  message Fields {
+    // The name of the codec presents in sysfs.
+    string name = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about battery
+message Battery {
+  // TODO(itspeter): Add more fileds for battery.
+  message Fields {
+    // Index number of this battery, starts from 1.
+    int32 index = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// A ProbeResult contains all potential probe results. For category not existed
+// or not requested for probing, field is expected to be empty.
+message ProbeResult {
+  // If a call was successful, error will not be defined.
+  // If a call failed, it must set an error code.
+  ErrorCode error = 1;
+  repeated AudioCodec audio_codec = 2;
+  repeated Battery battery = 3;
+}
