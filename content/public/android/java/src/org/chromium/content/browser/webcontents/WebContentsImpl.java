@@ -292,11 +292,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public WindowAndroid getTopLevelNativeWindow() {
+        checkNotDestroyed();
         return nativeGetTopLevelNativeWindow(mNativeWebContentsAndroid);
     }
 
     @Override
     public void setTopLevelNativeWindow(WindowAndroid windowAndroid) {
+        checkNotDestroyed();
         nativeSetTopLevelNativeWindow(mNativeWebContentsAndroid, windowAndroid);
         WindowEventObserverManager.from(this).onWindowAndroidChanged(windowAndroid);
     }
@@ -309,6 +311,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     public void setViewAndroidDelegate(ViewAndroidDelegate viewDelegate) {
+        checkNotDestroyed();
         WebContentsInternals internals = mInternalsHolder.get();
         assert internals != null;
         WebContentsInternalsImpl impl = (WebContentsInternalsImpl) internals;
@@ -341,36 +344,43 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public RenderFrameHost getMainFrame() {
+        checkNotDestroyed();
         return nativeGetMainFrame(mNativeWebContentsAndroid);
     }
 
     @Override
     public String getTitle() {
+        checkNotDestroyed();
         return nativeGetTitle(mNativeWebContentsAndroid);
     }
 
     @Override
     public String getVisibleUrl() {
+        checkNotDestroyed();
         return nativeGetVisibleURL(mNativeWebContentsAndroid);
     }
 
     @Override
     public String getEncoding() {
+        checkNotDestroyed();
         return nativeGetEncoding(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isLoading() {
+        checkNotDestroyed();
         return nativeIsLoading(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isLoadingToDifferentDocument() {
+        checkNotDestroyed();
         return nativeIsLoadingToDifferentDocument(mNativeWebContentsAndroid);
     }
 
     @Override
     public void stop() {
+        checkNotDestroyed();
         nativeStop(mNativeWebContentsAndroid);
     }
 
@@ -378,6 +388,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Cut the selected content.
      */
     public void cut() {
+        checkNotDestroyed();
         nativeCut(mNativeWebContentsAndroid);
     }
 
@@ -385,6 +396,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Copy the selected content.
      */
     public void copy() {
+        checkNotDestroyed();
         nativeCopy(mNativeWebContentsAndroid);
     }
 
@@ -392,6 +404,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Paste content from the clipboard.
      */
     public void paste() {
+        checkNotDestroyed();
         nativePaste(mNativeWebContentsAndroid);
     }
 
@@ -399,6 +412,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Paste content from the clipboard without format.
      */
     public void pasteAsPlainText() {
+        checkNotDestroyed();
         nativePasteAsPlainText(mNativeWebContentsAndroid);
     }
 
@@ -406,6 +420,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Replace the selected text with the {@code word}.
      */
     public void replace(String word) {
+        checkNotDestroyed();
         nativeReplace(mNativeWebContentsAndroid, word);
     }
 
@@ -413,6 +428,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Select all content.
      */
     public void selectAll() {
+        checkNotDestroyed();
         nativeSelectAll(mNativeWebContentsAndroid);
     }
 
@@ -429,6 +445,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void onHide() {
+        checkNotDestroyed();
         SelectionPopupControllerImpl controller = getSelectionPopupController();
         if (controller != null) controller.hidePopupsAndPreserveSelection();
         nativeOnHide(mNativeWebContentsAndroid);
@@ -436,6 +453,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void onShow() {
+        checkNotDestroyed();
         WebContentsAccessibilityImpl wcax = WebContentsAccessibilityImpl.fromWebContents(this);
         if (wcax != null) wcax.refreshState();
         SelectionPopupControllerImpl controller = getSelectionPopupController();
@@ -449,46 +467,55 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void setImportance(@ChildProcessImportance int mainFrameImportance) {
+        checkNotDestroyed();
         nativeSetImportance(mNativeWebContentsAndroid, mainFrameImportance);
     }
 
     @Override
     public void suspendAllMediaPlayers() {
+        checkNotDestroyed();
         nativeSuspendAllMediaPlayers(mNativeWebContentsAndroid);
     }
 
     @Override
     public void setAudioMuted(boolean mute) {
+        checkNotDestroyed();
         nativeSetAudioMuted(mNativeWebContentsAndroid, mute);
     }
 
     @Override
     public int getBackgroundColor() {
+        checkNotDestroyed();
         return nativeGetBackgroundColor(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isShowingInterstitialPage() {
+        checkNotDestroyed();
         return nativeIsShowingInterstitialPage(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean focusLocationBarByDefault() {
+        checkNotDestroyed();
         return nativeFocusLocationBarByDefault(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isReady() {
+        checkNotDestroyed();
         return nativeIsRenderWidgetHostViewReady(mNativeWebContentsAndroid);
     }
 
     @Override
     public void exitFullscreen() {
+        checkNotDestroyed();
         nativeExitFullscreen(mNativeWebContentsAndroid);
     }
 
     @Override
     public void scrollFocusedEditableNodeIntoView() {
+        checkNotDestroyed();
         // The native side keeps track of whether the zoom and scroll actually occurred. It is
         // more efficient to do it this way and sometimes fire an unnecessary message rather
         // than synchronize with the renderer and always have an additional message.
@@ -497,6 +524,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void selectWordAroundCaret() {
+        checkNotDestroyed();
         nativeSelectWordAroundCaret(mNativeWebContentsAndroid);
     }
 
@@ -509,16 +537,19 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public String getLastCommittedUrl() {
+        checkNotDestroyed();
         return nativeGetLastCommittedURL(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isIncognito() {
+        checkNotDestroyed();
         return nativeIsIncognito(mNativeWebContentsAndroid);
     }
 
     @Override
     public void resumeLoadingCreatedWebContents() {
+        checkNotDestroyed();
         nativeResumeLoadingCreatedWebContents(mNativeWebContentsAndroid);
     }
 
@@ -532,11 +563,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     @VisibleForTesting
     public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
         if (script == null) return;
+        checkNotDestroyed();
         nativeEvaluateJavaScriptForTests(mNativeWebContentsAndroid, script, callback);
     }
 
     @Override
     public void addMessageToDevToolsConsole(int level, String message) {
+        checkNotDestroyed();
         nativeAddMessageToDevToolsConsole(mNativeWebContentsAndroid, level, message);
     }
 
@@ -569,6 +602,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public boolean hasAccessedInitialDocument() {
+        checkNotDestroyed();
         return nativeHasAccessedInitialDocument(mNativeWebContentsAndroid);
     }
 
@@ -580,12 +614,14 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public int getThemeColor() {
+        checkNotDestroyed();
         return nativeGetThemeColor(mNativeWebContentsAndroid);
     }
 
     @Override
     public void requestSmartClipExtract(int x, int y, int width, int height) {
         if (mSmartClipCallback == null) return;
+        checkNotDestroyed();
         RenderCoordinatesImpl coordinateSpace = getRenderCoordinates();
         float dpi = coordinateSpace.getDeviceScaleFactor();
         y = y - (int) coordinateSpace.getContentOffsetYPix();
@@ -610,6 +646,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
+        checkNotDestroyed();
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
@@ -658,6 +695,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     public EventForwarder getEventForwarder() {
         assert mNativeWebContentsAndroid != 0;
         if (mEventForwarder == null) {
+            checkNotDestroyed();
             mEventForwarder = nativeGetOrCreateEventForwarder(mNativeWebContentsAndroid);
         }
         return mEventForwarder;
@@ -678,23 +716,27 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {
+        checkNotDestroyed();
         nativeSetOverscrollRefreshHandler(mNativeWebContentsAndroid, handler);
     }
 
     @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
+        checkNotDestroyed();
         nativeWriteContentBitmapToDisk(mNativeWebContentsAndroid, width, height, path, callback);
     }
 
     @Override
     public void reloadLoFiImages() {
+        checkNotDestroyed();
         nativeReloadLoFiImages(mNativeWebContentsAndroid);
     }
 
     @Override
     public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback) {
+        checkNotDestroyed();
         return nativeDownloadImage(mNativeWebContentsAndroid,
                 url, isFavicon, maxBitmapSize, bypassCache, callback);
     }
@@ -717,41 +759,49 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Shows paste popup menu at the touch handle at specified location.
      */
     public void showContextMenuAtTouchHandle(int x, int y) {
+        checkNotDestroyed();
         nativeShowContextMenuAtTouchHandle(mNativeWebContentsAndroid, x, y);
     }
 
     @Override
     public void setHasPersistentVideo(boolean value) {
+        checkNotDestroyed();
         nativeSetHasPersistentVideo(mNativeWebContentsAndroid, value);
     }
 
     @Override
     public boolean hasActiveEffectivelyFullscreenVideo() {
+        checkNotDestroyed();
         return nativeHasActiveEffectivelyFullscreenVideo(mNativeWebContentsAndroid);
     }
 
     @Override
     public boolean isPictureInPictureAllowedForFullscreenVideo() {
+        checkNotDestroyed();
         return nativeIsPictureInPictureAllowedForFullscreenVideo(mNativeWebContentsAndroid);
     }
 
     @Override
     public @Nullable Rect getFullscreenVideoSize() {
+        checkNotDestroyed();
         return nativeGetFullscreenVideoSize(mNativeWebContentsAndroid);
     }
 
     @Override
     public void setSize(int width, int height) {
+        checkNotDestroyed();
         nativeSetSize(mNativeWebContentsAndroid, width, height);
     }
 
     @Override
     public int getWidth() {
+        checkNotDestroyed();
         return nativeGetWidth(mNativeWebContentsAndroid);
     }
 
     @Override
     public int getHeight() {
+        checkNotDestroyed();
         return nativeGetHeight(mNativeWebContentsAndroid);
     }
 
@@ -882,6 +932,11 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (mNativeWebContentsAndroid == 0) return;
         nativeSetDisplayCutoutSafeArea(
                 mNativeWebContentsAndroid, insets.top, insets.left, insets.bottom, insets.right);
+    }
+
+    private void checkNotDestroyed() {
+        if (mNativeWebContentsAndroid != 0) return;
+        throw new IllegalStateException("Native WebContents already destroyed");
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
