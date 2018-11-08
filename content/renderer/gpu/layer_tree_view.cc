@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
@@ -58,12 +59,23 @@ namespace {
 
 using ReportTimeCallback = blink::WebLayerTreeView::ReportTimeCallback;
 
-// Enables using presentation times instead of swap times in swap promises.
-// Currently, these promises are only used by Paint Timing, but they will be
-// used by other APIs such as Event Timing.
-const base::Feature kUsePresentationTimeInSwapPromise = {
-    "UsePresentationTimeInSwapPromise", base::FEATURE_DISABLED_BY_DEFAULT};
+void RecordSwapTimeToPresentationTime(base::TimeTicks swap_time,
+                                      base::TimeTicks presentation_time) {
+  DCHECK(!swap_time.is_null());
+  bool presentation_time_is_valid =
+      !presentation_time.is_null() && (presentation_time > swap_time);
+  UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Renderer.PresentationTime.Valid",
+                        presentation_time_is_valid);
+  if (presentation_time_is_valid) {
+    // This measures from 1ms to 10seconds.
+    UMA_HISTOGRAM_TIMES(
+        "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
+        presentation_time - swap_time);
+  }
+}
 
+// Enables measuring and reporting both presentation times and swap times in
+// swap promises.
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
   ReportTimeSwapPromise(ReportTimeCallback callback,
@@ -81,6 +93,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   ReportTimeCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<LayerTreeView> layer_tree_view_;
+  uint32_t frame_token_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
@@ -97,31 +110,30 @@ ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
 void ReportTimeSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   DCHECK_GT(metadata->frame_token, 0u);
+  // Request a presentation timestamp for this frame. The interval between the
+  // current swap and its presentation time is reported in UMA (see
+  // corresponding code in DidSwap() below).
   metadata->request_presentation_feedback = true;
-  if (!base::FeatureList::IsEnabled(kUsePresentationTimeInSwapPromise))
-    return;
-
-  // If using presentation timestamp, post task here calling
-  // LayerTreeView::AddPresentationCallback.
-  auto* task_runner = task_runner_.get();
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &LayerTreeView::AddPresentationCallback, layer_tree_view_,
-          metadata->frame_token,
-          base::BindOnce(std::move(callback_),
-                         blink::WebLayerTreeView::SwapResult::kDidSwap)));
+  frame_token_ = metadata->frame_token;
 }
 
 void ReportTimeSwapPromise::DidSwap() {
-  if (base::FeatureList::IsEnabled(kUsePresentationTimeInSwapPromise))
-    return;
-
-  // If using swap timestamp, the swap promise should return the current time.
+  DCHECK_GT(frame_token_, 0u);
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_),
-                                blink::WebLayerTreeView::SwapResult::kDidSwap,
-                                base::TimeTicks::Now()));
+      FROM_HERE,
+      base::BindOnce(
+          [](base::TimeTicks timestamp, ReportTimeCallback callback,
+             base::WeakPtr<LayerTreeView> layer_tree_view, int frame_token) {
+            std::move(callback).Run(
+                blink::WebLayerTreeView::SwapResult::kDidSwap, timestamp);
+            if (layer_tree_view) {
+              layer_tree_view->AddPresentationCallback(
+                  frame_token,
+                  base::BindOnce(&RecordSwapTimeToPresentationTime, timestamp));
+            }
+          },
+          base::TimeTicks::Now(), std::move(callback_), layer_tree_view_,
+          frame_token_));
 }
 
 void ReportTimeSwapPromise::DidNotSwap(

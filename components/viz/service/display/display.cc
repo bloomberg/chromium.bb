@@ -528,6 +528,7 @@ void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());
   auto& callbacks = pending_presented_callbacks_.front().second;
+  auto copy_feedback = feedback;
 #if defined(OS_ANDROID)
   // Temporary to investigate large presentation times.
   // https://crbug.com/894440
@@ -545,6 +546,9 @@ void Display::DidReceivePresentationFeedback(
       base::debug::DumpWithoutCrashing();
       // In debug builds, just crash immediately.
       DCHECK(false);
+
+      // Invalidate the feedback.
+      copy_feedback = gfx::PresentationFeedback::Failure();
     }
 
     const auto difference = feedback.timestamp - swap_time;
@@ -556,7 +560,7 @@ void Display::DidReceivePresentationFeedback(
   }
 #endif
   for (auto& callback : callbacks) {
-    std::move(callback).Run(feedback);
+    std::move(callback).Run(copy_feedback);
   }
   pending_presented_callbacks_.pop_front();
 }
