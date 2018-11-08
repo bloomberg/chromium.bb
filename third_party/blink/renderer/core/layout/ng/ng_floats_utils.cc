@@ -118,25 +118,15 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
     case CSSBoxType::kBorder:
       break;
     case CSSBoxType::kPadding:
-      shape_insets =
-          ComputeBorders(CreateConstraintSpaceForFloat(
-                             float_available_size, float_percentage_size,
-                             float_replaced_percentage_size, unpositioned_float,
-                             parent_space),
-                         style)
-              .ConvertToPhysical(style.GetWritingMode(), style.Direction())
-              .ConvertToLogical(parent_space.GetWritingMode(),
-                                TextDirection::kLtr);
-      break;
     case CSSBoxType::kContent:
       const NGConstraintSpace space = CreateConstraintSpaceForFloat(
           float_available_size, float_percentage_size,
           float_replaced_percentage_size, unpositioned_float, parent_space);
-      NGBoxStrut border_padding =
-          ComputeBorders(space, style) + ComputePadding(space, style);
+      NGBoxStrut strut = ComputeBorders(space, style);
+      if (style.ShapeOutside()->CssBox() == CSSBoxType::kContent)
+        strut += ComputePadding(space, style);
       shape_insets =
-          border_padding
-              .ConvertToPhysical(style.GetWritingMode(), style.Direction())
+          strut.ConvertToPhysical(style.GetWritingMode(), style.Direction())
               .ConvertToLogical(parent_space.GetWritingMode(),
                                 TextDirection::kLtr);
       break;
