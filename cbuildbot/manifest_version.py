@@ -65,6 +65,64 @@ class BuildSpecsValueError(Exception):
   """Exception gets thrown when a encountering invalid values."""
 
 
+def ResolveBuildspec(manifest_dir, buildspec):
+  """Look up a buildspec, and return an absolute path to it's manifest.
+
+  A buildspec is a relative path to a pinned manifest in an instance of
+  manifest-versions. The trailing '.xml' is optional.
+
+  Formal versions are defined with paths of the form:
+    buildspecs/65/10294.0.0.xml
+
+  Other buildsspecs tend to have forms like:
+    full/buildspecs/71/11040.0.0-rc3.xml
+    paladin/buildspecs/26/3560.0.0-rc5.xml
+
+  Args:
+    manifest_dir: Path to a manifest-versions instance (internal or external).
+    buildspec: buildspec defining which manifest to use.
+
+  Returns:
+    Absolute path to pinned manifest file matching the buildspec.
+
+  Raises:
+    BuildSpecsValueError if no pinned manifest matches.
+  """
+  candidate = os.path.join(manifest_dir, buildspec)
+  if not candidate.endswith('.xml'):
+    candidate += '.xml'
+
+  if not os.path.exists(candidate):
+    raise BuildSpecsValueError('buildspec %s does not exist.' % buildspec)
+
+  return candidate
+
+
+def ResolveBuildspecVersion(manifest_dir, version):
+  """Resolve a version '1.2.3' to the pinned manifest matching it.
+
+  Args:
+    manifest_dir: Path to a manifest-versions instance (internal or external).
+    version: ChromeOS version number, of the form 11040.0.0.
+
+  Returns:
+    Absolute path to pinned manifest file matching the version number.
+
+  Raises:
+    BuildSpecsValueError if no pinned manifest matches.
+  """
+  chrome_branches = os.listdir(os.path.join(manifest_dir, 'buildspecs'))
+
+  for cb in chrome_branches:
+    candidate = os.path.join(
+        manifest_dir, 'buildspecs', cb, '%s.xml' % version)
+
+    if os.path.exists(candidate):
+      return candidate
+
+  raise BuildSpecsValueError('No buildspec for version %s found.' % version)
+
+
 def RefreshManifestCheckout(manifest_dir, manifest_repo):
   """Checks out manifest-versions into the manifest directory.
 
