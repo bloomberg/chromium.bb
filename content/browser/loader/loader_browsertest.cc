@@ -1146,6 +1146,7 @@ class URLModifyingThrottle : public URLLoaderThrottle {
     GURL::Replacements replacements;
     replacements.SetQueryStr("foo=bar");
     request->url = request->url.ReplaceComponents(replacements);
+    request->headers.SetHeader("Foo", "Bar");
   }
 
  private:
@@ -1182,10 +1183,12 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleModifyURL) {
       SetBrowserClientForTesting(&content_browser_client);
 
   std::set<GURL> urls_requested;
+  std::map<GURL, net::test_server::HttpRequest::HeaderMap> header_map;
   embedded_test_server()->RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
         base::AutoLock auto_lock(lock);
         urls_requested.insert(request.GetURL());
+        header_map[request.GetURL()] = request.headers;
       }));
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1197,6 +1200,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleModifyURL) {
     GURL expected_url(url.spec() + "?foo=bar");
     base::AutoLock auto_lock(lock);
     ASSERT_TRUE(urls_requested.find(expected_url) != urls_requested.end());
+    ASSERT_TRUE(header_map[expected_url]["Foo"] == "Bar");
   }
 
   SetBrowserClientForTesting(old_content_browser_client);
