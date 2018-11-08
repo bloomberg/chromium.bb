@@ -5,8 +5,6 @@
 var BatterySettings = Polymer({
   is: 'battery-settings',
 
-  behaviors: [Polymer.NeonAnimatableBehavior],
-
   properties: {
     /** The system's battery percentage. */
     batteryPercent: Number,

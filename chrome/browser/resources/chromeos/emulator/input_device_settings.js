@@ -5,8 +5,6 @@
 Polymer({
   is: 'input-device-settings',
 
-  behaviors: [Polymer.NeonAnimatableBehavior],
-
   /**
    * @param {!Event} e
    * Callback when the user toggles the touchpad.
