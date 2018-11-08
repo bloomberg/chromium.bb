@@ -11,12 +11,6 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
-  "easyUnlockPrivate": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "location": "component",
-    "platforms": ["chromeos"]
-  },
   "mediaGalleries": {
     "channel": "stable",
     "extension_types": [ "platform_app" ]

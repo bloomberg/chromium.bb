@@ -1472,8 +1472,7 @@
         'content/browser/browsing_instance',
     },
     'smartlock': {
-      'filepath': 'chrome/browser/apps/platform_apps/api/easy_unlock_private/'\
-                  '|chrome/browser/chromeos/login/easy_unlock/'\
+      'filepath': 'chrome/browser/chromeos/login/easy_unlock/'\
                   '|chrome/browser/resources/easy_unlock/'\
                   '|chromeos/components/proximity_auth/'
     },

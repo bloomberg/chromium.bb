@@ -96,7 +96,7 @@ class APIPermission {
     kDownloadsInternal = 52,
     kDownloadsOpen = 53,
     kDownloadsShelf = 54,
-    kEasyUnlockPrivate = 55,
+    kDeleted_EasyUnlockPrivate = 55,
     kEchoPrivate = 56,
     kEmbeddedExtensionOptions = 57,
     kEnterprisePlatformKeys = 58,
