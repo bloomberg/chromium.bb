@@ -175,6 +175,7 @@ class SchemaVersionedMySQLConnection(object):
       if 'ssl' not in self._ssl_args:
         self._ssl_args['ssl'] = {}
       self._ssl_args['ssl'][key] = file_path
+      self._ssl_args['ssl']['check_hostname'] = False
 
   def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
