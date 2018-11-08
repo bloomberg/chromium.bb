@@ -1,15 +1,11 @@
 charliea@chromium.org
-nednguyen@google.com
+crouleau@chromium.org
+eyaich@chromium.org
 sullivan@chromium.org
+nednguyen@google.com
 
 # For changes related to ChromeOS.
 achuith@chromium.org
-
-# For changes related to generate_perf_json.
-eyaich@chromium.org
-
-# Simple rubberstamp-only oilpan-related changes.
-peria@chromium.org
 
 # For system health memory benchmarks & memory-infra related changes.
 perezju@chromium.org
