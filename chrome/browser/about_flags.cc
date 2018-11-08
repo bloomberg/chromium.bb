@@ -3563,11 +3563,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSoundContentSettingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSoundContentSetting)},
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
     {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
      flag_descriptions::kDcheckIsFatalDescription, kOsWin,
      FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 #if defined(OS_CHROMEOS)
     {"slide-top-chrome-with-page-scrolls",

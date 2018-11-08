@@ -63,7 +63,7 @@ config("feature_flags") {
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON=1" ]
     if (dcheck_is_configurable) {
-      defines += [ "DCHECK_IS_CONFIGURABLE=1" ]
+      defines += [ "DCHECK_IS_CONFIGURABLE" ]
     }
   }
   if (use_udev) {

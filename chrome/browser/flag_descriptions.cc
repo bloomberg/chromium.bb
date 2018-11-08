@@ -273,12 +273,12 @@ const char kDatasaverPromptDescription[] =
     "Store.";
 const char kDatasaverPromptDemoMode[] = "Demo mode";
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
 const char kDcheckIsFatalName[] = "DCHECKs are fatal";
 const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 const char kDebugPackedAppName[] = "Debugging for packed apps";
 const char kDebugPackedAppDescription[] =
