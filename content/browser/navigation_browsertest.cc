@@ -1138,11 +1138,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HistoryBackInBeforeUnload) {
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_1));
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "onbeforeunload = function() {"
-                            "  history.pushState({}, null, '/');"
-                            "  history.back();"
-                            "};"));
+  EXPECT_TRUE(
+      ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                      "onbeforeunload = function() {"
+                                      "  history.pushState({}, null, '/');"
+                                      "  history.back();"
+                                      "};"));
   EXPECT_TRUE(NavigateToURL(shell(), url_2));
 }
 
@@ -1156,11 +1157,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_1));
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "onbeforeunload = function() {"
-                            "  history.pushState({}, null, '/');"
-                            "  setTimeout(()=>history.back());"
-                            "};"));
+  EXPECT_TRUE(
+      ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                      "onbeforeunload = function() {"
+                                      "  history.pushState({}, null, '/');"
+                                      "  setTimeout(()=>history.back());"
+                                      "};"));
   TestNavigationManager navigation(shell()->web_contents(), url_2);
   auto ipc_observer = base::MakeRefCounted<BrowserMessageObserver>(
       ViewMsgStart, ViewHostMsg_GoToEntryAtOffset::ID);
