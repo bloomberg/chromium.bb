@@ -44,7 +44,7 @@ def InstallPrereqs(robo_configuration):
                 media_directory)
 
     if robo_configuration.host_operating_system() == "linux":
-      InstallUbuntuPackage(robo_configuration, "yasm")
+      InstallUbuntuPackage(robo_configuration, "nasm")
       InstallUbuntuPackage(robo_configuration, "gcc-aarch64-linux-gnu")
     else:
       raise Exception("I don't know how to install deps for host os %s" %

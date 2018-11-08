@@ -382,10 +382,10 @@ class SourceSet(object):
       stanza += indent(GN_SOURCE_END)
 
     # Write out all assembly sources.
-    yasm_sources = filter(IsNasmFile, sources)
-    if yasm_sources:
+    nasm_sources = filter(IsNasmFile, sources)
+    if nasm_sources:
       stanza += indent(GN_NASM_SOURCES_BEGIN)
-      for name in yasm_sources:
+      for name in nasm_sources:
         stanza += indent(GN_SOURCE_ITEM % (name))
       stanza += indent(GN_SOURCE_END)
 
