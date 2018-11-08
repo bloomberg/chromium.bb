@@ -998,10 +998,6 @@
       status: "stable",
     },
     {
-      name: "PreloadDefaultIsMetadata",
-      status: "stable",
-    },
-    {
       name: "PreloadImageSrcSet",
       status: "experimental",
     },
