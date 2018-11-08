@@ -73,19 +73,24 @@ void CallSeneschalSharePath(
   vm_tools::seneschal::SharePathRequest request;
   base::FilePath drivefs_path;
   base::FilePath relative_path;
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+  drive::DriveIntegrationService* integration_service = nullptr;
+  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+    integration_service =
+        drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+  }
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
 
-  // Allow download directory and subdirs.
+  // Allow MyFiles|Downloads directory and subdirs.
   bool allowed_path = false;
-  base::FilePath downloads =
-      file_manager::util::GetDownloadsFolderForProfile(profile);
-  if (downloads == path || downloads.AppendRelativePath(path, &relative_path)) {
+  base::FilePath my_files =
+      file_manager::util::GetMyFilesFolderForProfile(profile);
+  if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
     allowed_path = true;
     request.set_storage_location(
-        vm_tools::seneschal::SharePathRequest::DOWNLOADS);
+        base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)
+            ? vm_tools::seneschal::SharePathRequest::MY_FILES
+            : vm_tools::seneschal::SharePathRequest::DOWNLOADS);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
              integration_service &&
