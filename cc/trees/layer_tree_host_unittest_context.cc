@@ -1630,14 +1630,19 @@ class TileResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    auto* context_provider = static_cast<viz::TestContextProvider*>(
+        impl->layer_tree_frame_sink()->worker_context_provider());
+    viz::TestSharedImageInterface* sii =
+        context_provider->SharedImageInterface();
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // The PicturLayer has a texture for a tile, that has been exported to
         // the display compositor now.
         EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
         EXPECT_EQ(1u, impl->resource_pool()->resource_count());
-        // Shows that the tile texture is allocated with the current context.
-        num_textures_ = gl_->NumTextures();
+        // Shows that the tile texture is allocated with the current worker
+        // context.
+        num_textures_ = sii->shared_image_count();
         EXPECT_GT(num_textures_, 0u);
 
         // Lose the LayerTreeFrameSink connection. The tile resource should
@@ -1651,8 +1656,8 @@ class TileResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
         EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
         EXPECT_EQ(1u, impl->resource_pool()->resource_count());
         // Shows that the replacement tile texture is re-allocated with the
-        // current context, not just the previous one.
-        EXPECT_EQ(num_textures_, gl_->NumTextures());
+        // current worker context, not just the previous one.
+        EXPECT_EQ(num_textures_, sii->shared_image_count());
         EndTest();
     }
   }
