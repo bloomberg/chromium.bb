@@ -2,10 +2,10 @@ This test ensures that touch gesture scrolls the right amount pixels in high dpi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 first gesture
 PASS document.scrollingElement.scrollTop is 1
 PASS document.scrollingElement.scrollLeft is 1

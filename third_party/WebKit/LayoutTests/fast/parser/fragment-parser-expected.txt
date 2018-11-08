@@ -2,7 +2,6 @@ Test that fragment parsing does not affect the host document.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS parse('<span><body bgcolor=red>') is ['<span></span>','<html><body></body></html>']
 PASS parse('<span><html bgcolor=red>') is ['<span></span>','<html><body></body></html>']
 PASS parse('<span><meta>') is ['<span><meta></span>','<html><body></body></html>']

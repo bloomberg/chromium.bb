@@ -2,7 +2,6 @@ This test checks String.localeCompare().
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS "a".localeCompare("aa") < 0 is true
 PASS "a".localeCompare("b") < 0 is true
 PASS "a".localeCompare("a") === 0 is true

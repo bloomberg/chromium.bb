@@ -3,7 +3,6 @@ Tests webkitGetUserMedia.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.isUseCounted(document, GetUserMediaPrefixed) is false
 PASS internals.isUseCounted(document, GetUserMediaLegacy) is false
 PASS navigator.webkitGetUserMedia({audio:false, video:false}, error, error); threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.

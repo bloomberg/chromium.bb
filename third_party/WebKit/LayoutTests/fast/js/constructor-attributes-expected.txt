@@ -2,7 +2,6 @@ This test checks that constructor properties are not enumeratable, but are writa
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS (function () { }).prototype.hasOwnProperty('constructor') is true
 PASS canEnum((function () { }).prototype, 'constructor') is false
 PASS x = (function () { }).prototype; x.constructor = 4; x.constructor is 4

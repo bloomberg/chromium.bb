@@ -2,7 +2,6 @@ Test deprectaed list style types
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS CSS.supports("list-style-type", "decimal") is true
 PASS CSS.supports("list-style-type", "binary") is false
 PASS CSS.supports("list-style-type", "lower-hexadecimal") is false

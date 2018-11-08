@@ -4,7 +4,6 @@ This test documents our set of global constructors we expose on the window objec
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

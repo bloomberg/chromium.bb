@@ -16,6 +16,7 @@ PASS importLinkDynamic.import.styleSheets.length is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 These elements should be styled appropriately:
 Should be blue.
 Should be white.

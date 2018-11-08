@@ -2,6 +2,6 @@ Test that a fixed positioned object inside a transform inside a multicol isn't p
 
 The word "YO" should be seen below, with large letter spacing.
 
-Y 
+Y
 O
 PASS

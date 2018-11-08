@@ -2,7 +2,6 @@ Test for handling of line breaks following the pre element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS roundTrip('<pre></pre>') is '<pre></pre>'
 PASS roundTrip('<pre>\n</pre>') is '<pre></pre>'
 PASS roundTrip('<pre>\n\n</pre>') is '<pre>\n</pre>'

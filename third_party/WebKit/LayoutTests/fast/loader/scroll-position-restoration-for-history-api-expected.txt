@@ -2,7 +2,6 @@ This test verifies that navigating to entries created by pushState or replaceSta
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 verifying #6
 PASS history.state.key is "#6"
 PASS document.scrollingElement.scrollLeft is 0

@@ -2,7 +2,6 @@ Test adding and removing tracks.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS stream1.getAudioTracks().length is 1
 PASS stream1.getVideoTracks().length is 1
 PASS stream1.getTracks().length is 2

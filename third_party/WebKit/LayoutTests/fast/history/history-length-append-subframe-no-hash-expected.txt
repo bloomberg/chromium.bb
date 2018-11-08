@@ -2,7 +2,6 @@ Tests that appending iframe with with no URL and setting its URL later (without 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

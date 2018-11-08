@@ -2,7 +2,6 @@ This test checks that EventHandler attributes only accept JS functions as input.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS div.onkeydown is null
 PASS div.onkeydown = callback did not throw exception.
 PASS div.onkeydown is callback

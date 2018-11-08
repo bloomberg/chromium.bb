@@ -5,7 +5,7 @@ Turn the spanner into a table-column
 Insert an inline child into the previously inserted inline
 Set column-span:none on the ex-spanner (now table-column)
 Insert a block into the previously inserted inline child
+
 The word 'PASS' should be seen below.
 
 PASS
-

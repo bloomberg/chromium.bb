@@ -6,6 +6,7 @@ This tests that changing the "reversed" property updates markers.
 2 Two
 1 One
 
+
 This tests that changing the "reversed" attribute updates markers.
 
 5 Five
@@ -13,6 +14,7 @@ This tests that changing the "reversed" attribute updates markers.
 3 Three
 2 Two
 1 One
+
 
 This tests that adding new items to a reversed list updates markers.
 
@@ -23,6 +25,7 @@ This tests that adding new items to a reversed list updates markers.
 3 Three
 2 Two
 1 One
+
 
 This tests that removing existing tems from a reversed list updates markers.
 

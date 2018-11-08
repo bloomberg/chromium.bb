@@ -1,7 +1,7 @@
 The following table shows how URLs are parsed and canonicalized. The base URI for this document is file:///BASE/.
 
 URL	href	host	pathname
-file:///BASE/		/BASE/
+	file:///BASE/		/BASE/
 test	file:///BASE/test		/BASE/test
 /	file:///		/
 /test	file:///test		/test

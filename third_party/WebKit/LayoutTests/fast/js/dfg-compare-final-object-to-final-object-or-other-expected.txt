@@ -2,7 +2,6 @@ Tests that CompareEq for the case where one side is predicted final object and t
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS foo({f:42}, null) is false
 PASS foo(o, o) is true
 PASS foo({f:42}, null) is false

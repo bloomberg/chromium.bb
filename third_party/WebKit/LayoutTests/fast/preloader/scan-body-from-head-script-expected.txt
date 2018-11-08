@@ -6,4 +6,5 @@ resources are loaded.
 <script src=resources/script1.js></script>
 </body>
 </html>
+
 PASS

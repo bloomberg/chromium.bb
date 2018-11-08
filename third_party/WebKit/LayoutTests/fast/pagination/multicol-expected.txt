@@ -6,7 +6,12 @@ Below there should be a blue square above a papayawhip square above some spacing
 
 
 
+
+
+
+
 X
 X
 X
+
 PASS

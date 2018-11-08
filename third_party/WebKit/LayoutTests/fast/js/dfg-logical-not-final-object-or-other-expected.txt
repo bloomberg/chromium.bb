@@ -2,7 +2,6 @@ Tests that logical not of an object where it is predicted either final object or
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS foo(null) is false
 PASS foo(o) is true
 PASS foo(null) is false

@@ -6,4 +6,6 @@ There should be a blue rectangle below.
 
 
 
+
+
 PASS

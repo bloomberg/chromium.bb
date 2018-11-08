@@ -2,7 +2,6 @@ Test clamping of overflowing media query lengths
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS matchMedia('(min-width: 9999999999px)').matches is false
 PASS matchMedia('(max-width: 9999999999px)').matches is true
 PASS matchMedia('(min-device-width: 9999999999px)').matches is false

@@ -1,18 +1,20 @@
 webkit.org/p/114311: The text should be inside the input controls.
 
-Input 
+Input
 PASS
-Input 
-PASS
-Input 
-PASS
-Input 
+Input
 PASS
 Input
 PASS
 Input
 PASS
-Input 
+Input
 PASS
-Input 
+Input
+PASS
+Input
+
+PASS
+Input
+
 PASS

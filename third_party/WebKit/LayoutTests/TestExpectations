@@ -642,6 +642,12 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
 
+# Element.innerText doesn't work with multicol.
+crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/float-not-removed-crash.html [ Failure ]
+crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/anonymous-before-child-parent-crash.html [ Failure ]
+crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/anonymous-split-block-crash.html [ Failure ]
+crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/clone-anonymous-block-non-inline-child-crash.html [ Failure ]
+
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
 

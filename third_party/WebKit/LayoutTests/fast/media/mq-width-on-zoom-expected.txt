@@ -31,4 +31,6 @@ PASS window.matchMedia('(max-width: 322px)').matches is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 Tests that width MQ feature is correct on zoom.

@@ -3,10 +3,13 @@ PASS document.documentElement.scrollWidth is document.documentElement.clientWidt
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be two identical boxes below.
 
 line
 line
 line
+
 line
 

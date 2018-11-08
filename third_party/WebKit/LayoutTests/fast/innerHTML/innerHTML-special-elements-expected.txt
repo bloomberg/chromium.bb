@@ -2,7 +2,6 @@ Tests that accessing the innerHTML property of a text node encodes harmful entit
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS innerHTML("script") is "/*&quot;&apos;&amp;&lt;&gt;&nbsp;&#34;&#39;&#38;&#60;&#62;&#160;\"'&<> */"
 PASS innerHTML("style") is "/*&quot;&apos;&amp;&lt;&gt;&nbsp;&#34;&#39;&#38;&#60;&#62;&#160;\"'&<> */"
 PASS innerHTML("textarea") is "/*\"'&amp;&lt;&gt;&nbsp;\"'&amp;&lt;&gt;&nbsp;\"'&amp;&lt;&gt; */"

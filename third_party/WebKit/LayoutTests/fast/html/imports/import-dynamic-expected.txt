@@ -3,7 +3,6 @@ This test ensures that script-added import doesn't block scripts
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 In onload handler - This should be called later.
 PASS importIsLoaded is true
 FAIL scriptIsExecuted should be true. Was false.

@@ -2,7 +2,6 @@ This test case checks that months greater than 11 are handled correctly when pas
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS d.getFullYear() + "-" + d.getMonth(); is "2005-0"
 PASS d.getFullYear() + "-" + d.getMonth(); is "2005-1"
 PASS d.getFullYear() + "-" + d.getMonth(); is "2005-2"

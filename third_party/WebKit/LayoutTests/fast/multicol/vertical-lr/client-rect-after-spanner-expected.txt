@@ -2,7 +2,6 @@ Test that getBoundingClientRect works as expected on content after a spanner, wr
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.getElementById('elm1').getBoundingClientRect().left is 200
 PASS document.getElementById('elm1').getBoundingClientRect().top is 100
 PASS document.getElementById('elm2').getBoundingClientRect().left is 250
@@ -16,6 +15,12 @@ PASS document.getElementById('elm5').getBoundingClientRect().top is 332
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
+
+
+
+
 
 
 

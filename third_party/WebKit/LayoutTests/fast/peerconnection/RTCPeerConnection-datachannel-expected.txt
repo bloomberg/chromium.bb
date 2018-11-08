@@ -3,7 +3,6 @@ Tests RTCDataChannel.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS dc = pc.createDataChannel("label1"); did not throw exception.
 PASS dc.reliable is true
 PASS dc = pc.createDataChannel("label2", {}); did not throw exception.

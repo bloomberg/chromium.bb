@@ -2,7 +2,6 @@ Test parsing of entity-escaped </style> tag for Bug 7931: Escaped elements withi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.getElementById("mystyle").textContent is expectedResult
 PASS successfullyParsed is true
 

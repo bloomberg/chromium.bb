@@ -2,7 +2,6 @@ Test that setting innerHTML and outerHTML properties works on SVG elements
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS svg.innerHTML is "<rect></rect>"
 PASS svg.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
 PASS svg.innerHTML is "<foreignObject><svg></svg></foreignObject>"
