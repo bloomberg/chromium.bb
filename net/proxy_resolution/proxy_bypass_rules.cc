@@ -193,7 +193,89 @@ bool IsIPAddress(const std::string& domain) {
 
 std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     const std::string& raw_untrimmed,
-    ProxyBypassRules::ParseFormat format);
+    ProxyBypassRules::ParseFormat format) {
+  std::string raw;
+  base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
+
+  // <local> and <-loopback> are special syntax used by WinInet's bypass list
+  // -- we allow it on all platforms and interpret it the same way.
+  if (base::LowerCaseEqualsASCII(raw, kWinLocal))
+    return std::make_unique<WinLocalRule>();
+  if (base::LowerCaseEqualsASCII(raw, kSubtractImplicitBypasses))
+    return std::make_unique<SubtractImplicitBypassesRule>();
+
+  // Extract any scheme-restriction.
+  std::string::size_type scheme_pos = raw.find("://");
+  std::string scheme;
+  if (scheme_pos != std::string::npos) {
+    scheme = raw.substr(0, scheme_pos);
+    raw = raw.substr(scheme_pos + 3);
+    if (scheme.empty())
+      return nullptr;
+  }
+
+  if (raw.empty())
+    return nullptr;
+
+  // If there is a forward slash in the input, it is probably a CIDR style
+  // mask.
+  if (raw.find('/') != std::string::npos) {
+    IPAddress ip_prefix;
+    size_t prefix_length_in_bits;
+
+    if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))
+      return nullptr;
+
+    return std::make_unique<IPBlockRule>(raw, scheme, ip_prefix,
+                                         prefix_length_in_bits);
+  }
+
+  // Check if we have an <ip-address>[:port] input. We need to treat this
+  // separately since the IP literal may not be in a canonical form.
+  std::string host;
+  int port;
+  if (ParseHostAndPort(raw, &host, &port)) {
+    // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
+    // embedded NULL.
+    if (host.find('\0') != std::string::npos)
+      return nullptr;
+
+    // Note that HostPortPair is used to merely to convert any IPv6 literals to
+    // a URL-safe format that can be used by canonicalization below.
+    std::string bracketed_host = HostPortPair(host, 80).HostForURL();
+    if (IsIPAddress(bracketed_host)) {
+      // Canonicalize the IP literal before adding it as a string pattern.
+      GURL tmp_url("http://" + bracketed_host);
+      return std::make_unique<HostnamePatternRule>(scheme, tmp_url.host(),
+                                                   port);
+    }
+  }
+
+  // Otherwise assume we have <hostname-pattern>[:port].
+  std::string::size_type pos_colon = raw.rfind(':');
+  port = -1;
+  if (pos_colon != std::string::npos) {
+    if (!ParseInt32(base::StringPiece(raw.begin() + pos_colon + 1, raw.end()),
+                    ParseIntFormat::NON_NEGATIVE, &port) ||
+        port > 0xFFFF) {
+      return nullptr;  // Port was invalid.
+    }
+    raw = raw.substr(0, pos_colon);
+  }
+
+  // Special-case hostnames that begin with a period.
+  // For example, we remap ".google.com" --> "*.google.com".
+  if (base::StartsWith(raw, ".", base::CompareCase::SENSITIVE))
+    raw = "*" + raw;
+
+  // If suffix matching was asked for, make sure the pattern starts with a
+  // wildcard.
+  if (format == ProxyBypassRules::ParseFormat::kHostnameSuffixMatching &&
+      !base::StartsWith(raw, "*", base::CompareCase::SENSITIVE))
+    raw = "*" + raw;
+
+  return std::make_unique<HostnamePatternRule>(scheme, raw, port);
+}
 
 }  // namespace
 
@@ -279,6 +361,16 @@ bool ProxyBypassRules::operator==(const ProxyBypassRules& other) const {
   return true;
 }
 
+void ProxyBypassRules::ParseFromString(const std::string& raw,
+                                       ParseFormat format) {
+  Clear();
+
+  base::StringTokenizer entries(raw, ",;");
+  while (entries.GetNext()) {
+    AddRuleFromString(entries.token(), format);
+  }
+}
+
 bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
                                           const std::string& hostname_pattern,
                                           int optional_port) {
@@ -328,105 +420,6 @@ std::string ProxyBypassRules::ToString() const {
 void ProxyBypassRules::Clear() {
   rules_.clear();
 }
-
-void ProxyBypassRules::ParseFromString(const std::string& raw,
-                                       ParseFormat format) {
-  Clear();
-
-  base::StringTokenizer entries(raw, ",;");
-  while (entries.GetNext()) {
-    AddRuleFromString(entries.token(), format);
-  }
-}
-
-// TODO(eroman): Move this up in file.
-namespace {
-std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
-    const std::string& raw_untrimmed,
-    ProxyBypassRules::ParseFormat format) {
-  std::string raw;
-  base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
-
-  // <local> and <-loopback> are special syntax used by WinInet's bypass list
-  // -- we allow it on all platforms and interpret it the same way.
-  if (base::LowerCaseEqualsASCII(raw, kWinLocal))
-    return std::make_unique<WinLocalRule>();
-  if (base::LowerCaseEqualsASCII(raw, kSubtractImplicitBypasses))
-    return std::make_unique<SubtractImplicitBypassesRule>();
-
-  // Extract any scheme-restriction.
-  std::string::size_type scheme_pos = raw.find("://");
-  std::string scheme;
-  if (scheme_pos != std::string::npos) {
-    scheme = raw.substr(0, scheme_pos);
-    raw = raw.substr(scheme_pos + 3);
-    if (scheme.empty())
-      return nullptr;
-  }
-
-  if (raw.empty())
-    return nullptr;
-
-  // If there is a forward slash in the input, it is probably a CIDR style
-  // mask.
-  if (raw.find('/') != std::string::npos) {
-    IPAddress ip_prefix;
-    size_t prefix_length_in_bits;
-
-    if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))
-      return nullptr;
-
-    return std::make_unique<IPBlockRule>(raw, scheme, ip_prefix,
-                                         prefix_length_in_bits);
-  }
-
-  // Check if we have an <ip-address>[:port] input. We need to treat this
-  // separately since the IP literal may not be in a canonical form.
-  std::string host;
-  int port;
-  if (ParseHostAndPort(raw, &host, &port)) {
-    // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
-    // embedded NULL.
-    if (host.find('\0') != std::string::npos)
-      return nullptr;
-
-    // Note that HostPortPair is used to merely to convert any IPv6 literals to
-    // a URL-safe format that can be used by canonicalization below.
-    std::string bracketed_host = HostPortPair(host, 80).HostForURL();
-    if (IsIPAddress(bracketed_host)) {
-      // Canonicalize the IP literal before adding it as a string pattern.
-      GURL tmp_url("http://" + bracketed_host);
-      return std::make_unique<HostnamePatternRule>(scheme, tmp_url.host(),
-                                                   port);
-    }
-  }
-
-  // Otherwise assume we have <hostname-pattern>[:port].
-  std::string::size_type pos_colon = raw.rfind(':');
-  port = -1;
-  if (pos_colon != std::string::npos) {
-    if (!ParseInt32(base::StringPiece(raw.begin() + pos_colon + 1, raw.end()),
-                    ParseIntFormat::NON_NEGATIVE, &port) ||
-        port > 0xFFFF) {
-      return nullptr;  // Port was invalid.
-    }
-    raw = raw.substr(0, pos_colon);
-  }
-
-  // Special-case hostnames that begin with a period.
-  // For example, we remap ".google.com" --> "*.google.com".
-  if (base::StartsWith(raw, ".", base::CompareCase::SENSITIVE))
-    raw = "*" + raw;
-
-  // If suffix matching was asked for, make sure the pattern starts with a
-  // wildcard.
-  if (format == ProxyBypassRules::ParseFormat::kHostnameSuffixMatching &&
-      !base::StartsWith(raw, "*", base::CompareCase::SENSITIVE))
-    raw = "*" + raw;
-
-  return std::make_unique<HostnamePatternRule>(scheme, raw, port);
-}
-}  // namespace
 
 bool ProxyBypassRules::MatchesImplicitRules(const GURL& url) {
   // On Windows the implict rules are:
