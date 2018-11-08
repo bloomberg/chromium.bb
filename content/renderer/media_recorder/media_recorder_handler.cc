@@ -133,10 +133,11 @@ MediaRecorderHandler::MediaRecorderHandler(
 MediaRecorderHandler::~MediaRecorderHandler() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Send a |last_in_slice| to our |client_|.
-  if (client_)
+  if (client_) {
     client_->WriteData(
         nullptr, 0u, true,
         (TimeTicks::Now() - TimeTicks::UnixEpoch()).InMillisecondsF());
+  }
 }
 
 bool MediaRecorderHandler::CanSupportMimeType(
