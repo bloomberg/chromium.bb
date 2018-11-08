@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
@@ -389,6 +390,7 @@ TEST(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved) {
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(), "foo"));
 }
 
@@ -405,6 +407,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(), "NotPaymentDetails"));
 }
 
@@ -420,11 +423,13 @@ TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     scope.GetScriptState()->GetContext(), "{\"total\": {}}",
-                     scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
+      ScriptValue::From(
+          scope.GetScriptState(),
+          FromJSONString(scope.GetScriptState()->GetIsolate(),
+                         scope.GetScriptState()->GetContext(),
+                         "{\"total\": {}}", scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 }
 
@@ -450,11 +455,13 @@ TEST(PaymentRequestTest,
       "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": "
       "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
       "\"5.00\"}, \"selected\": true}]}";
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     scope.GetScriptState()->GetContext(),
-                     detail_with_shipping_options, scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
+      ScriptValue::From(scope.GetScriptState(),
+                        FromJSONString(scope.GetScriptState()->GetIsolate(),
+                                       scope.GetScriptState()->GetContext(),
+                                       detail_with_shipping_options,
+                                       scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ("standardShippingOption", request->shippingOption());
   String detail_without_shipping_options =
@@ -462,6 +469,7 @@ TEST(PaymentRequestTest,
       "\"value\": \"5.00\"}}}";
 
   request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -495,6 +503,7 @@ TEST(
       "\"USD\", \"value\": \"50.00\"}}]}";
 
   request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -525,6 +534,7 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
       "\"USD\", \"value\": \"50.00\"}, \"selected\": true}]}";
 
   request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -550,11 +560,13 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
       "\"value\": \"5.00\"}},"
       "\"error\": \"This is an error message.\"}";
 
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     scope.GetScriptState()->GetContext(),
-                     detail_with_error_msg, scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(
+      event_type_names::kShippingaddresschange,
+      ScriptValue::From(
+          scope.GetScriptState(),
+          FromJSONString(scope.GetScriptState()->GetIsolate(),
+                         scope.GetScriptState()->GetContext(),
+                         detail_with_error_msg, scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 }
 

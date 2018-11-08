@@ -62,6 +62,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kCursorImageGT32x32, WebFeature::kCursorImageLE32x32,
           WebFeature::kHistoryPushState, WebFeature::kHistoryReplaceState,
           WebFeature::kCursorImageGT64x64, WebFeature::kAdClick,
+          WebFeature::kUpdateWithoutShippingOptionOnShippingAddressChange,
+          WebFeature::kUpdateWithoutShippingOptionOnShippingOptionChange,
       }));
   return opt_in_features->count(feature);
 }
