@@ -1942,11 +1942,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="614662973812186053">Chính sách này cũng kiểm soát việc thu thập dữ liệu chẩn đoán và sử dụng Android.</translation>
 <translation id="6153048425064249648">Chính sách này kiểm soát tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" />. Tính năng này tải thông tin về hoạt động của trình duyệt lên Bảng điều khiển dành cho quản trị viên của Google.
 
-      Khi không đặt chính sách này hoặc đặt thành False, không có dữ liệu nào được thu thập hoặc tải lên.
-      Khi đặt chính sách này thành True, dữ liệu sẽ được thu thập và tải lên Bảng điều khiển dành cho quản trị viên của Google.
+      Khi bạn không đặt chính sách này hoặc đặt thành False, không có dữ liệu nào được thu thập hoặc tải lên.
+      Khi bạn đặt chính sách này thành True, dữ liệu sẽ được thu thập và tải lên Bảng điều khiển dành cho quản trị viên của Google.
       Để kiểm soát loại dữ liệu nào được tải lên, hãy sử dụng các chính sách trong nhóm Tiện ích báo cáo của Chrome.
 
-      Chính sách này chỉ có hiệu lực khi máy được đăng ký với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+      Chính sách này chỉ có hiệu lực khi thiết bị được đăng ký bằng <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Chính sách này sẽ buộc cài đặt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> để sử dụng tính năng báo cáo, cũng như sẽ ghi đè mọi chính sách về tiện ích liên quan đến tiện ích đó.</translation>
 <translation id="6155936611791017817">Đặt trạng thái của con trỏ lớn mặc định trên màn hình đăng nhập</translation>

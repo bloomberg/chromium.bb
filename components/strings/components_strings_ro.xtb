@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Examinează plata</translation>
 <translation id="4116663294526079822">Permiteți întotdeauna pe acest site</translation>
 <translation id="4117700440116928470">Domeniul politicii nu este acceptat.</translation>
-<translation id="4119109454650683048">Verifică informațiile de mai jos și remediază eventualele erori</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{încă 1}few{încă #}other{încă #}}</translation>
 <translation id="4130226655945681476">să verifici cablurile de rețea, modemul și routerul;</translation>
 <translation id="413544239732274901">Află mai multe</translation>
@@ -967,7 +966,6 @@ Detalii suplimentare:
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7662298039739062396">Setare controlată de o extensie</translation>
 <translation id="7663736086183791259">Certificat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Salvezi cardurile în Google?</translation>
 <translation id="7667346355482952095">Indicativul returnat pentru politică este gol sau nu corespunde cu indicativul actual</translation>
 <translation id="7668654391829183341">Dispozitiv necunoscut</translation>
 <translation id="7669271284792375604">Atacatorii de pe acest site pot încerca să te înșele pentru a instala programe care dăunează experienței de navigare (de exemplu, schimbând pagina de pornire sau afișând anunțuri suplimentare pe site-urile pe care le accesezi).</translation>
@@ -1180,7 +1178,6 @@ Detalii suplimentare:
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>
 <translation id="9114524666733003316">Se confirmă cardul…</translation>
-<translation id="9117895703580314323">Serviciul nu este disponibil. Încearcă din nou mai târziu.</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9137248913990643158">Pornește și conectează-te la Chrome înainte de a folosi această aplicație.</translation>

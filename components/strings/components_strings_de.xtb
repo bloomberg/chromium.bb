@@ -472,7 +472,6 @@
 <translation id="4110652170750985508">Zahlung überprüfen</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
-<translation id="4119109454650683048">Lesen Sie sich die Informationen unten durch und beheben Sie falls nötig die vorhandenen Fehler</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 weiterer}other{# weitere}}</translation>
 <translation id="4130226655945681476">Netzwerkkabel, Modem und Router prüfen</translation>
 <translation id="413544239732274901">Weitere Informationen</translation>
@@ -966,7 +965,6 @@ Weitere Details:
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7662298039739062396">Einstellung wird von einer Erweiterung gesteuert</translation>
 <translation id="7663736086183791259">Zertifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Ihre Karten bei Google speichern?</translation>
 <translation id="7667346355482952095">Zurückgegebenes Token der Richtlinie ist leer oder entspricht nicht dem aktuellen Token</translation>
 <translation id="7668654391829183341">Unbekanntes Gerät</translation>
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
@@ -1180,7 +1178,6 @@ Weitere Details:
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9106062320799175032">Rechnungsadresse hinzufügen</translation>
 <translation id="9114524666733003316">Karte wird bestätigt…</translation>
-<translation id="9117895703580314323">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9137248913990643158">Melden Sie sich in Chrome an, bevor Sie diese App nutzen.</translation>

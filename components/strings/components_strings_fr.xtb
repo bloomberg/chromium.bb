@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Vérifier votre paiement</translation>
 <translation id="4116663294526079822">Toujours autoriser sur ce site</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
-<translation id="4119109454650683048">Veuillez vérifier les informations ci-dessous et corriger les erreurs éventuelles</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
 <translation id="4130226655945681476">Vérifiez les câbles réseau, le modem et le routeur.</translation>
 <translation id="413544239732274901">En savoir plus</translation>
@@ -967,7 +966,6 @@ Informations supplémentaires :
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7662298039739062396">Paramètre contrôlé par une extension</translation>
 <translation id="7663736086183791259">Certificat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vous souhaitez enregistrer vos cartes dans votre compte Google ?</translation>
 <translation id="7667346355482952095">Le jeton de règle renvoyé est vide ou ne correspond pas au jeton actuel.</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="7669271284792375604">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à installer des programmes qui nuisent à votre confort de navigation (par exemple, en changeant votre page d'accueil ou en affichant des annonces supplémentaires sur les sites que vous consultez.</translation>
@@ -1179,7 +1177,6 @@ Informations supplémentaires :
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>
-<translation id="9117895703580314323">Service indisponible. Réessayez plus tard.</translation>
 <translation id="9128870381267983090">Se connecter au réseau</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9137248913990643158">Veuillez démarrer Chrome et vous connecter à votre compte avant d'utiliser cette application</translation>

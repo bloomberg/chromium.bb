@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Gjennomgå betalingen</translation>
 <translation id="4116663294526079822">Tillat alltid på dette nettstedet</translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
-<translation id="4119109454650683048">Gå gjennom informasjonen nedenfor, og løs eventuelle feil</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 til}other{# til}}</translation>
 <translation id="4130226655945681476">Sjekk nettverkskablene, modemet og ruteren</translation>
 <translation id="413544239732274901">Finn ut mer</translation>
@@ -966,7 +965,6 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7662298039739062396">Innstillingen kontrolleres av en utvidelse</translation>
 <translation id="7663736086183791259">Sertifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vil du lagre kortene dine i Google?</translation>
 <translation id="7667346355482952095">Det returnerte regeltokenet er tomt eller samsvarer ikke med det nåværende tokenet</translation>
 <translation id="7668654391829183341">Ukjent enhet</translation>
 <translation id="7669271284792375604">Angripere på dette nettstedet kan forsøke å lure deg til å installere programmer som ødelegger surfeopplevelsen din (for eksempel ved å endre startsiden din eller vise ekstra annonser på nettstedene du besøker).</translation>
@@ -1178,7 +1176,6 @@ Mer informasjon:
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
-<translation id="9117895703580314323">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9137248913990643158">Du må starte og logge på Chrome før du bruker denne appen.</translation>

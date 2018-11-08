@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Kagua malipo yako</translation>
 <translation id="4116663294526079822">Ruhusu mara kwa mara kwenye tovuti hii</translation>
 <translation id="4117700440116928470">Upeo wa sera hauwezi kutumika.</translation>
-<translation id="4119109454650683048">Tafadhali kagua maelezo yaliyo hapa chini na urekebishe hitilafu zozote, panapohitajika</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Nyingine 1 }other{Nyingine #}}</translation>
 <translation id="4130226655945681476">Kukagua kebo za mtandao, modemu au kisambaza data</translation>
 <translation id="413544239732274901">Pata maelezo zaidi</translation>
@@ -965,7 +964,6 @@
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7662298039739062396">Mipangilio inadhibitiwa na kiendelezi</translation>
 <translation id="7663736086183791259">Cheti <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Ungependa kuhifadhi kadi zako kwenye Google?</translation>
 <translation id="7667346355482952095">Tokeni ya sera iliyoletwa haina chochote au hailingani na tokeni ya sasa</translation>
 <translation id="7668654391829183341">Kifaa kisichojulikana</translation>
 <translation id="7669271284792375604">Wavamizi kwenye tovuti hii wanaweza kujaribu kukulaghai kusakinisha programu zinazoathiri hali yako ya kuvinjari (kwa mfano, kwa kubadilisha ukurasa wako wa kwanza au kwa kuonyesha matangazo ya ziada kwenye tovuti unazotembelea).</translation>
@@ -1176,7 +1174,6 @@
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>
-<translation id="9117895703580314323">Huduma haipatikani. Jaribu tena baadaye.</translation>
 <translation id="9128870381267983090">Unganisha kwenye mtandao</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>
 <translation id="9137248913990643158">Tafadhali anza na uingie katika Chrome kabla ya kutumia programu hii.</translation>

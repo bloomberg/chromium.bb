@@ -437,7 +437,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Contenido dañino bloqueado.</translation>
-<translation id="3810973564298564668">Administrar</translation>
+<translation id="3810973564298564668">Gestionar</translation>
 <translation id="382518646247711829">Si utilizas un servidor proxy...</translation>
 <translation id="3828924085048779000">La frase de contraseña no puede estar vacía.</translation>
 <translation id="385051799172605136">Atrás</translation>
@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Revisa tu pago</translation>
 <translation id="4116663294526079822">Permitir siempre en este sitio</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
-<translation id="4119109454650683048">Comprueba la información que aparece más abajo y corrige los errores si es necesario</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Uno más}other{# más}}</translation>
 <translation id="4130226655945681476">Comprobar los cables de red, el módem y el router</translation>
 <translation id="413544239732274901">Más información</translation>
@@ -967,7 +966,6 @@ Más información:
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Opción controlada por una extensión</translation>
 <translation id="7663736086183791259">Certificado <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">¿Quieres guardar tus tarjetas en Google?</translation>
 <translation id="7667346355482952095">El token de política devuelto está vacío o no coincide con el token actual</translation>
 <translation id="7668654391829183341">Dispositivo desconocido</translation>
 <translation id="7669271284792375604">Es posible que los atacantes que se encuentren en este sitio web intenten engañarte para que instales programas que empeoren tu experiencia de navegación (por ejemplo, que cambien tu página principal o muestren anuncios adicionales en los sitios web a los que accedas).</translation>
@@ -1179,7 +1177,6 @@ Más información:
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9106062320799175032">Añade una dirección de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarjeta...</translation>
-<translation id="9117895703580314323">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="9128870381267983090">Conectarse a la red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Abre Chrome e inicia sesión en el navegador para usar esta aplicación.</translation>

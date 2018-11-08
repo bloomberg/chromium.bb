@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Suriin ang iyong pagbabayad</translation>
 <translation id="4116663294526079822">Palaging payagan sa site na ito</translation>
 <translation id="4117700440116928470">Hindi sinusuportahan ang saklaw ng patakaran.</translation>
-<translation id="4119109454650683048">Pakitingnan ang impormasyon sa ibaba at ayusin ang anumang error, kung kinakailangan</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 pa}one{# pa}other{# pa}}</translation>
 <translation id="4130226655945681476">Suriin ang mga cable, modem at router ng network</translation>
 <translation id="413544239732274901">Matuto pa</translation>
@@ -967,7 +966,6 @@ Mga karagdagang detalye:
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7662298039739062396">Kinokontrol ng isang extension ang setting</translation>
 <translation id="7663736086183791259">Certificate <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">I-save ang iyong mga card sa Google?</translation>
 <translation id="7667346355482952095">Walang laman ang ibinalik na token ng patakaran o hindi tumutugma sa kasalukuyang token</translation>
 <translation id="7668654391829183341">Hindi kilalang device</translation>
 <translation id="7669271284792375604">Maaaring subukan ng mga attacker sa site na ito na linlangin ka upang mag-install ng mga program na makakasama sa iyong karanasan sa pag-browse (halimbawa, sa pamamagitan ng pagbabago ng iyong homepage o pagpapakita ng mga karagdagang ad sa mga site na binibisita mo).</translation>
@@ -1179,7 +1177,6 @@ Mga karagdagang detalye:
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="9106062320799175032">Magdagdag ng Billing Address</translation>
 <translation id="9114524666733003316">Kinukumpirma ang card...</translation>
-<translation id="9117895703580314323">Hindi available ang serbisyo. Subukang muli sa ibang pagkakataon.</translation>
 <translation id="9128870381267983090">Kumonekta sa network</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9137248913990643158">Magsimula at mag-sign in sa Chrome bago gamitin ang app na ito.</translation>

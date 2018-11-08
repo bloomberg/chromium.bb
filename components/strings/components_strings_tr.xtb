@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Ödemenizi inceleyin</translation>
 <translation id="4116663294526079822">Bu sitede her zaman izin ver</translation>
 <translation id="4117700440116928470">Politika kapsamı desteklenmiyor.</translation>
-<translation id="4119109454650683048">Lütfen aşağıdaki bilgileri kontrol edin ve gerekiyorsa hataları düzeltin</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 öğe daha}other{# öğe daha}}</translation>
 <translation id="4130226655945681476">Ağ kabloları, modem ve yönlendirici kontrol ediliyor</translation>
 <translation id="413544239732274901">Daha fazla bilgi</translation>
@@ -967,7 +966,6 @@ Ek ayrıntılar:
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7662298039739062396">Ayar bir uzantının kontrolü altında</translation>
 <translation id="7663736086183791259">Sertifika <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Kartlarınız Google'a kaydedilsin mi?</translation>
 <translation id="7667346355482952095">Döndürülen politika jetonu boş veya mevcut jetonla eşleşmiyor</translation>
 <translation id="7668654391829183341">Bilinmeyen cihaz</translation>
 <translation id="7669271284792375604">Bu sitedeki saldırganlar web'e göz atma deneyiminize zarar veren programlar yüklemeniz için sizi kandırmayı (örneğin ana sayfanızı değiştirerek ya da ziyaret ettiğiniz sitelerde ek reklamlar görüntüleyerek) deneyebilir.</translation>
@@ -1180,7 +1178,6 @@ Ek ayrıntılar:
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9106062320799175032">Fatura Adresi Ekleyin</translation>
 <translation id="9114524666733003316">Kart onaylanıyor...</translation>
-<translation id="9117895703580314323">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="9128870381267983090">Ağa bağlan</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9137248913990643158">Lütfen bu uygulamayı kullanmadan önce Chrome'u başlatıp oturum açın.</translation>

@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Xem xét thanh toán của bạn</translation>
 <translation id="4116663294526079822">Luôn cho phép trên trang web này</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
-<translation id="4119109454650683048">Vui lòng kiểm tra thông tin bên dưới và sửa lỗi nếu cần thiết</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
 <translation id="4130226655945681476">Kiểm tra cáp mạng, modem và bộ định tuyến</translation>
 <translation id="413544239732274901">Tìm hiểu thêm</translation>
@@ -967,7 +966,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7662298039739062396">Cài đặt được một tiện ích kiểm soát</translation>
 <translation id="7663736086183791259">Chứng chỉ <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Bạn muốn lưu thẻ vào Google?</translation>
 <translation id="7667346355482952095">Mã thông báo chính sách trả về trống hoặc không khớp với mã thông báo hiện tại</translation>
 <translation id="7668654391829183341">Thiết bị không xác định</translation>
 <translation id="7669271284792375604">Những kẻ tấn công trên trang web này có thể đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ của bạn hoặc hiển thị thêm quảng cáo trên các trang web bạn truy cập).</translation>
@@ -1180,7 +1178,6 @@ Thông tin chi tiết bổ sung:
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9106062320799175032">Thêm địa chỉ thanh toán</translation>
 <translation id="9114524666733003316">Đang xác nhận thẻ...</translation>
-<translation id="9117895703580314323">Chưa sử dụng được dịch vụ. Hãy thử lại sau.</translation>
 <translation id="9128870381267983090">Kết nối đến mạng</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9137248913990643158">Vui lòng khởi động và đăng nhập vào Chrome trước khi sử dụng ứng dụng này.</translation>

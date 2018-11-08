@@ -474,7 +474,6 @@
 <translation id="4110652170750985508">Revisar el pago</translation>
 <translation id="4116663294526079822">Permitir siempre en este sitio</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
-<translation id="4119109454650683048">Comprueba la información que se muestra a continuación y, si es necesario, soluciona los errores</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 más}other{# más}}</translation>
 <translation id="4130226655945681476">Comprobar los cables de red, el módem y el router</translation>
 <translation id="413544239732274901">Más información</translation>
@@ -968,7 +967,6 @@ Detalles adicionales:
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Configuración controlada por una extensión</translation>
 <translation id="7663736086183791259">Certificado <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">¿Quieres guardar tus tarjetas en Google?</translation>
 <translation id="7667346355482952095">El token de política mostrado está vacío o no coincide con el token actual</translation>
 <translation id="7668654391829183341">Dispositivo desconocido</translation>
 <translation id="7669271284792375604">Es posible que los atacantes de este sitio intenten engañarte para que instales programas que pueden afectar tu experiencia de navegación (p. ej., podrían cambiar la página principal o mostrar más anuncios en los sitios que visitas).</translation>
@@ -1181,7 +1179,6 @@ Detalles adicionales:
 <translation id="9103872766612412690"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="9106062320799175032">Agregar dirección de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarjeta…</translation>
-<translation id="9117895703580314323">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="9128870381267983090">Conectarse a una red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Abre Chrome y accede a tu cuenta antes de usar esta app.</translation>

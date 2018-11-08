@@ -469,7 +469,6 @@
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4116663294526079822">Povolit vždy na tomto webu</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
-<translation id="4119109454650683048">Zkontrolujte níže uvedené údaje a v případě potřeby opravte chyby</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 další}few{# další}many{# další}other{# dalších}}</translation>
 <translation id="4130226655945681476">Zkontrolovat síťové kabely, modem a směrovač</translation>
 <translation id="413544239732274901">Další informace</translation>
@@ -961,7 +960,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7662298039739062396">Nastavení je spravováno rozšířením</translation>
 <translation id="7663736086183791259">Certifikát <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Uložit karty do Googlu?</translation>
 <translation id="7667346355482952095">Vrácený klíč zásady je prázdný nebo neodpovídá aktuálnímu klíči.</translation>
 <translation id="7668654391829183341">Neznámé zařízení</translation>
 <translation id="7669271284792375604">Útočníci na tomto webu by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy).</translation>
@@ -1174,7 +1172,6 @@ Další podrobnosti:
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>
-<translation id="9117895703580314323">Služba není k dispozici. Zkuste to znovu později.</translation>
 <translation id="9128870381267983090">Připojit k síti</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9137248913990643158">Chcete-li tuto aplikaci použít, přihlaste se do Chromu.</translation>

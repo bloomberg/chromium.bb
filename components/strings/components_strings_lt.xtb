@@ -474,7 +474,6 @@
 <translation id="4110652170750985508">Mokėjimo peržiūra</translation>
 <translation id="4116663294526079822">Visada leisti šioje svetainėje</translation>
 <translation id="4117700440116928470">Politikos aprėptis nepalaikoma.</translation>
-<translation id="4119109454650683048">Patikrinkite toliau pateiktą informaciją ir prireikus ištaisykite klaidas</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Dar 1}one{Dar #}few{Dar #}many{Dar #}other{Dar #}}</translation>
 <translation id="4130226655945681476">Patikrinti tinklo laidus, modemą ir maršruto parinktuvą</translation>
 <translation id="413544239732274901">Sužinokite daugiau</translation>
@@ -968,7 +967,6 @@ Papildoma išsami informacija:
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7662298039739062396">Nustatymas valdomas pagal plėtinį</translation>
 <translation id="7663736086183791259">Sertifikatas <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Išsaugoti korteles sistemoje „Google“?</translation>
 <translation id="7667346355482952095">Sugrąžintas politikos prieigos raktas yra tuščias arba neatitinka dabartinio prieigos rakto</translation>
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7669271284792375604">Šios svetainės užgrobėjai gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>
@@ -1181,7 +1179,6 @@ Papildoma išsami informacija:
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9106062320799175032">Atsiskaitymo adreso pridėjimas</translation>
 <translation id="9114524666733003316">Kortelė patvirtinama...</translation>
-<translation id="9117895703580314323">Paslauga nepasiekiama. Vėliau bandykite dar kartą.</translation>
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9137248913990643158">Prieš naudodami šią programą prisijunkite prie „Chrome“.</translation>

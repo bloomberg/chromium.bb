@@ -1926,7 +1926,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Keď toto pravidlo ponecháte nenastavené alebo nastavené na možnosť false, nezhromažďujú sa ani sa nenahrávajú žiadne údaje.
       Keď ho nastavíte na hodnotu true, údaje sa zhromažďujú a nahrávajú do konzoly Google Admin.
-      Ak chcete ovládať, ktoré údaje sa nahrávajú, použite pravidlá pre rozšírenie nahlasovania údajov o Chrome skupiny.
+      Ak chcete ovládať, ktoré údaje sa nahrávajú, použite pravidlá v skupine rozšírenia na nahlasovanie údajov o Chrome.
 
 
 

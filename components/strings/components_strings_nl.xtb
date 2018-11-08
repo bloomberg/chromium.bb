@@ -469,7 +469,6 @@
 <translation id="4110652170750985508">Je betaling controleren</translation>
 <translation id="4116663294526079822">Altijd toestaan op deze site</translation>
 <translation id="4117700440116928470">Beleidsbereik wordt niet ondersteund.</translation>
-<translation id="4119109454650683048">Controleer de onderstaande informatie en los eventuele fouten op</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 andere persoon}other{# andere mensen}}</translation>
 <translation id="4130226655945681476">Controleer de netwerkkabels, modem en router</translation>
 <translation id="413544239732274901">Meer informatie</translation>
@@ -962,7 +961,6 @@ Aanvullende informatie:
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7662298039739062396">Instelling beheerd door een extensie</translation>
 <translation id="7663736086183791259">Certificaat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Je kaarten opslaan in Google?</translation>
 <translation id="7667346355482952095">Geretourneerde beleidstoken is leeg of komt niet overeen met huidige token</translation>
 <translation id="7668654391829183341">Onbekend apparaat</translation>
 <translation id="7669271284792375604">Cybercriminelen op deze site proberen je mogelijk over te halen om programma's te installeren die schadelijk zijn voor de browsefunctionaliteit (door bijvoorbeeld je homepage te wijzigen of extra advertenties weer te geven op sites die je bezoekt).</translation>
@@ -1174,7 +1172,6 @@ Aanvullende informatie:
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
 <translation id="9114524666733003316">Creditcard bevestigen...</translation>
-<translation id="9117895703580314323">Service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9137248913990643158">Start Chrome en log in voordat je deze app gebruikt.</translation>

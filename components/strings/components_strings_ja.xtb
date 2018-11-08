@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">お支払いの確認</translation>
 <translation id="4116663294526079822">このサイトでは常に許可</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
-<translation id="4119109454650683048">下記の情報を確認し、間違いがあれば修正してください</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{他 1 件}other{他 # 件}}</translation>
 <translation id="4130226655945681476">ネットワーク ケーブル、モデム、ルーターを確認する</translation>
 <translation id="413544239732274901">詳細</translation>
@@ -967,7 +966,6 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7662298039739062396">拡張機能によって指定される設定</translation>
 <translation id="7663736086183791259">証明書 <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Google にカードを保存しますか？</translation>
 <translation id="7667346355482952095">返されたポリシーのトークンが空であるか、現在のトークンと一致しません</translation>
 <translation id="7668654391829183341">不明なデバイス</translation>
 <translation id="7669271284792375604">このサイトを利用すると、悪意のあるユーザーによって、閲覧時のエクスペリエンスを損なうプログラム（ホームページを改ざんする、アクセス先のサイトに追加の広告を表示するなどのプログラム）をインストールするよう誘導される可能性があります。</translation>
@@ -1180,7 +1178,6 @@
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9106062320799175032">請求先住所の追加</translation>
 <translation id="9114524666733003316">カードを確認しています…</translation>
-<translation id="9117895703580314323">サービスをご利用いただけません。しばらくしてからもう一度お試しください。</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>

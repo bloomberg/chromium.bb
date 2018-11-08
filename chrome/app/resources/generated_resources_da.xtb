@@ -1578,7 +1578,7 @@
 <translation id="3399432415385675819">Underretninger deaktiveres</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">Der er ikke gemt nogen adgangskoder til dette website</translation>
-<translation id="340485819826776184">Brug en forudsigelsestjeneste til at hjælpe med udfyldning af søgninger og webadresser, som indtastes i adresselinjen</translation>
+<translation id="340485819826776184">Brug en forudsigelsestjeneste til at hjælpe med udfyldning af søgninger og webadresser, som angives i adresselinjen</translation>
 <translation id="3405664148539009465">Tilpas skriftstørrelser</translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">&amp;Vis bogmærkelinjen</translation>
@@ -3651,7 +3651,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="654233263479157500">Brug en webtjeneste til at hjælpe med at løse navigationsfejl</translation>
 <translation id="6544215763872433504">Googles webbrowser til dig</translation>
 <translation id="6545665334409411530">Gentagelseshastighed</translation>
-<translation id="6545834809683560467">Brug en forslagstjeneste til at færdiggøre søgninger og webadresser, der indtastes i adresselinjen eller søgefeltet i applisten</translation>
+<translation id="6545834809683560467">Brug en forslagstjeneste til at færdiggøre søgninger og webadresser, der angives i adresselinjen eller søgefeltet i applisten</translation>
 <translation id="6547316139431024316">Advar ikke om denne udvidelse igen</translation>
 <translation id="6547354035488017500">Din enhed holder op med at svare, hvis du ikke frigør mindst 512 MB. Slet filer fra lageret på enheden for at frigøre plads.</translation>
 <translation id="6549689063733911810">Seneste</translation>

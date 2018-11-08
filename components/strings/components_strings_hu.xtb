@@ -471,7 +471,6 @@
 <translation id="4110652170750985508">Befizetés áttekintése</translation>
 <translation id="4116663294526079822">Mindig engedélyezze ezen az oldalon</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
-<translation id="4119109454650683048">Ellenőrizze az alábbi adatokat, és ha szükséges, javítsa ki a hibákat</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 egyéb}other{# egyéb}}</translation>
 <translation id="4130226655945681476">A hálózati kábelek, a modem és a router ellenőrzése</translation>
 <translation id="413544239732274901">További információ</translation>
@@ -965,7 +964,6 @@ További részletek:
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7662298039739062396">A beállítást bővítmény vezérli</translation>
 <translation id="7663736086183791259"><ph name="CERTIFICATE_VALIDITY" /> tanúsítvány</translation>
-<translation id="7665886282480776333">Menti a kártyákat a Google rendszerébe?</translation>
 <translation id="7667346355482952095">A visszaadott irányelvtoken üres vagy nem egyezik az aktuális tokennel</translation>
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="7669271284792375604">A webhelyen lévő támadók megpróbálhatják csellel rávenni Önt olyan programok telepítésére, amelyek károsak a böngészési élmény szempontjából (például módosítják a kezdőlapot, vagy plusz hirdetéseket jelenítenek meg a felkeresett webhelyeken).</translation>
@@ -1178,7 +1176,6 @@ További részletek:
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>
 <translation id="9114524666733003316">Kártya ellenőrzése…</translation>
-<translation id="9117895703580314323">A szolgáltatás jelenleg nem hozzáférhető. Próbálja újra később.</translation>
 <translation id="9128870381267983090">Csatlakozás hálózathoz</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9137248913990643158">Indítsa el a Chrome böngészőt és jelentkezzen be az alkalmazás használata előtt.</translation>

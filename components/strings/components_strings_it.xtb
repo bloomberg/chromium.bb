@@ -470,7 +470,6 @@
 <translation id="4110652170750985508">Verifica il pagamento</translation>
 <translation id="4116663294526079822">Consenti sempre su questo sito</translation>
 <translation id="4117700440116928470">L'ambito della norma non è supportato.</translation>
-<translation id="4119109454650683048">Controlla le informazioni riportate di seguito e correggi gli eventuali errori</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 altro}other{# altri}}</translation>
 <translation id="4130226655945681476">Controllare i cavi di rete, il modem e il router</translation>
 <translation id="413544239732274901">Ulteriori informazioni</translation>
@@ -963,7 +962,6 @@ Ulteriori dettagli:
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7662298039739062396">Impostazione controllata da un'estensione</translation>
 <translation id="7663736086183791259">Certificato <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vuoi salvare le tue schede su Google?</translation>
 <translation id="7667346355482952095">Il token della norma restituito è vuoto o non corrisponde al token corrente</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7669271284792375604">I malintenzionati su questo sito potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>
@@ -1175,7 +1173,6 @@ Ulteriori dettagli:
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="9106062320799175032">Aggiungi indirizzo di fatturazione</translation>
 <translation id="9114524666733003316">Conferma della carta...</translation>
-<translation id="9117895703580314323">Il servizio non è disponibile. Riprova più tardi.</translation>
 <translation id="9128870381267983090">Collegati alla rete</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9137248913990643158">Accedi a Chrome prima di usare questa app.</translation>
