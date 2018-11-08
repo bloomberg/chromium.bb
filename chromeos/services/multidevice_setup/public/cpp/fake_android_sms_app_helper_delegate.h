@@ -17,15 +17,18 @@ class FakeAndroidSmsAppHelperDelegate : public AndroidSmsAppHelperDelegate {
   ~FakeAndroidSmsAppHelperDelegate() override;
   bool HasInstalledApp();
   bool HasLaunchedApp();
+  bool IsDefaultToPersistCookieSet();
   void Reset();
 
   // AndroidSmsAppHelperDelegate:
-  void InstallAndroidSmsApp() override;
-  void InstallAndLaunchAndroidSmsApp() override;
+  void SetUpAndroidSmsApp() override;
+  void SetUpAndLaunchAndroidSmsApp() override;
+  void TearDownAndroidSmsApp() override;
 
  private:
   bool has_installed_ = false;
   bool has_launched_ = false;
+  bool is_default_to_persist_cookie_set_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppHelperDelegate);
 };

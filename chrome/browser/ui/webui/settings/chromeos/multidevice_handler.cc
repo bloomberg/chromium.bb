@@ -214,7 +214,7 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
   DCHECK(args->empty());
-  android_sms_app_helper_->InstallAndLaunchAndroidSmsApp();
+  android_sms_app_helper_->SetUpAndLaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(
