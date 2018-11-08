@@ -17,6 +17,10 @@ class HttpRequestHeaders;
 class URLRequest;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace android_webview {
 
 // A passive data structure only used to carry request information. This
@@ -25,6 +29,7 @@ namespace android_webview {
 // https://developer.android.com/reference/android/webkit/WebResourceRequest.html
 struct AwWebResourceRequest final {
   explicit AwWebResourceRequest(const net::URLRequest& request);
+  explicit AwWebResourceRequest(const network::ResourceRequest& request);
   AwWebResourceRequest(const std::string& in_url,
                        const std::string& in_method,
                        bool in_is_main_frame,
