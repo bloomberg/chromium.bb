@@ -2827,15 +2827,20 @@ test("unit_tests") {
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/enums.xml",
   ]
-  if (is_android || is_linux || is_win) {
+  if (is_android) {
     data += [
-      "$root_out_dir/chrome_100_percent.pak",
-      "$root_out_dir/locales/en-US.pak",
-      "$root_out_dir/resources.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
+      "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
     ]
   }
   if (is_linux || is_win) {
-    data += [ "$root_out_dir/chrome_200_percent.pak" ]
+    data += [
+      "$root_out_dir/chrome_100_percent.pak",
+      "$root_out_dir/chrome_200_percent.pak",
+      "$root_out_dir/locales/en-US.pak",
+      "$root_out_dir/resources.pak",
+    ]
   }
   if (is_win) {
     data_deps += [ "//chrome" ]
@@ -4145,10 +4150,14 @@ test("unit_tests") {
   }
   if (!is_mac) {
     deps += [
-      "//chrome:packed_resources",
       "//chrome/tools/convert_dict:lib",
       "//third_party/hunspell",
     ]
+    if (is_android) {
+      deps += [ "//chrome/android:chrome_apk_paks" ]
+    } else {
+      deps += [ "//chrome:packed_resources" ]
+    }
   }
   if (is_win || is_mac || is_chromeos) {
     sources += [ "../browser/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
