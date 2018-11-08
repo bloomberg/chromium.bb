@@ -273,8 +273,8 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync is paused'));
-      // Not embedded in a subpage, so there is no sync-paused button.
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      // The sync-paused button is shown to resolve the error.
+      assertVisible(testElement.$$('#sync-paused-button'), true);
 
       testElement.syncStatus = {
         signedIn: true,
