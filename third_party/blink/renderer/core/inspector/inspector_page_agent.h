@@ -106,6 +106,11 @@ class CORE_EXPORT InspectorPageAgent final
   static ResourceType ToResourceType(const blink::ResourceType);
   static String CachedResourceTypeJson(const Resource&);
 
+  InspectorPageAgent(InspectedFrames*,
+                     Client*,
+                     InspectorResourceContentLoader*,
+                     v8_inspector::V8InspectorSession*);
+
   // Page API for frontend
   protocol::Response enable() override;
   protocol::Response disable() override;
@@ -209,11 +214,6 @@ class CORE_EXPORT InspectorPageAgent final
   void Trace(blink::Visitor*) override;
 
  private:
-  InspectorPageAgent(InspectedFrames*,
-                     Client*,
-                     InspectorResourceContentLoader*,
-                     v8_inspector::V8InspectorSession*);
-
   void GetResourceContentAfterResourcesContentLoaded(
       const String& frame_id,
       const String& url,

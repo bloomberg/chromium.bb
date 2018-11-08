@@ -44,11 +44,13 @@ class CORE_EXPORT InspectorMemoryAgent final
     : public InspectorBaseAgent<protocol::Memory::Metainfo> {
  public:
   static InspectorMemoryAgent* Create(InspectedFrames* frames) {
-    return new InspectorMemoryAgent(frames);
+    return MakeGarbageCollected<InspectorMemoryAgent>(frames);
   }
-  ~InspectorMemoryAgent() override;
 
+  explicit InspectorMemoryAgent(InspectedFrames*);
+  ~InspectorMemoryAgent() override;
   void Trace(blink::Visitor*) override;
+
   void Restore() override;
 
   protocol::Response getDOMCounters(int* documents,
@@ -66,8 +68,6 @@ class CORE_EXPORT InspectorMemoryAgent final
       std::unique_ptr<protocol::Memory::SamplingProfile>*) override;
 
  private:
-  explicit InspectorMemoryAgent(InspectedFrames*);
-
   std::vector<std::string> Symbolize(const std::vector<void*>& addresses);
   std::unique_ptr<protocol::Memory::SamplingProfile> GetSamplingProfileById(
       uint32_t id);

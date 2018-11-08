@@ -1280,9 +1280,9 @@ Response InspectorCSSAgent::setStyleSheetText(
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  dom_agent_->History()->Perform(
-      new SetStyleSheetTextAction(inspector_style_sheet, text),
-      exception_state);
+  dom_agent_->History()->Perform(MakeGarbageCollected<SetStyleSheetTextAction>(
+                                     inspector_style_sheet, text),
+                                 exception_state);
   response = InspectorDOMAgent::ToResponse(exception_state);
   if (!response.isSuccess())
     return response;
@@ -1339,9 +1339,9 @@ Response InspectorCSSAgent::setRuleSelector(
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  ModifyRuleAction* action =
-      new ModifyRuleAction(ModifyRuleAction::kSetRuleSelector,
-                           inspector_style_sheet, selector_range, selector);
+  ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
+      ModifyRuleAction::kSetRuleSelector, inspector_style_sheet, selector_range,
+      selector);
   bool success = dom_agent_->History()->Perform(action, exception_state);
   if (success) {
     CSSStyleRule* rule = InspectorCSSAgent::AsCSSStyleRule(action->TakeRule());
@@ -1372,9 +1372,9 @@ Response InspectorCSSAgent::setKeyframeKey(
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  ModifyRuleAction* action =
-      new ModifyRuleAction(ModifyRuleAction::kSetKeyframeKey,
-                           inspector_style_sheet, key_range, key_text);
+  ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
+      ModifyRuleAction::kSetKeyframeKey, inspector_style_sheet, key_range,
+      key_text);
   bool success = dom_agent_->History()->Perform(action, exception_state);
   if (success) {
     CSSKeyframeRule* rule = ToCSSKeyframeRule(action->TakeRule());
@@ -1422,10 +1422,11 @@ Response InspectorCSSAgent::MultipleStyleTextsActions(
           static_cast<InspectorStyleSheetForInlineStyle*>(
               inspector_style_sheet);
       SetElementStyleAction* action =
-          new SetElementStyleAction(inline_style_sheet, edit->getText());
+          MakeGarbageCollected<SetElementStyleAction>(inline_style_sheet,
+                                                      edit->getText());
       actions->push_back(action);
     } else {
-      ModifyRuleAction* action = new ModifyRuleAction(
+      ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
           ModifyRuleAction::kSetStyleText,
           static_cast<InspectorStyleSheet*>(inspector_style_sheet), range,
           edit->getText());
@@ -1484,14 +1485,14 @@ Response InspectorCSSAgent::SetStyleText(
     InspectorStyleSheetForInlineStyle* inline_style_sheet =
         static_cast<InspectorStyleSheetForInlineStyle*>(inspector_style_sheet);
     SetElementStyleAction* action =
-        new SetElementStyleAction(inline_style_sheet, text);
+        MakeGarbageCollected<SetElementStyleAction>(inline_style_sheet, text);
     bool success = dom_agent_->History()->Perform(action, exception_state);
     if (success) {
       result = inline_style_sheet->InlineStyle();
       return Response::OK();
     }
   } else {
-    ModifyRuleAction* action = new ModifyRuleAction(
+    ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
         ModifyRuleAction::kSetStyleText,
         static_cast<InspectorStyleSheet*>(inspector_style_sheet), range, text);
     bool success = dom_agent_->History()->Perform(action, exception_state);
@@ -1528,9 +1529,9 @@ Response InspectorCSSAgent::setMediaText(
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  ModifyRuleAction* action =
-      new ModifyRuleAction(ModifyRuleAction::kSetMediaRuleText,
-                           inspector_style_sheet, text_range, text);
+  ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
+      ModifyRuleAction::kSetMediaRuleText, inspector_style_sheet, text_range,
+      text);
   bool success = dom_agent_->History()->Perform(action, exception_state);
   if (success) {
     CSSMediaRule* rule = InspectorCSSAgent::AsCSSMediaRule(action->TakeRule());
@@ -1584,8 +1585,8 @@ Response InspectorCSSAgent::addRule(
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  AddRuleAction* action =
-      new AddRuleAction(inspector_style_sheet, rule_text, rule_location);
+  AddRuleAction* action = MakeGarbageCollected<AddRuleAction>(
+      inspector_style_sheet, rule_text, rule_location);
   bool success = dom_agent_->History()->Perform(action, exception_state);
   if (!success)
     return InspectorDOMAgent::ToResponse(exception_state);

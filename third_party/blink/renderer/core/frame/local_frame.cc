@@ -968,7 +968,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
-    inspector_trace_events_ = new InspectorTraceEvents();
+    inspector_trace_events_ = MakeGarbageCollected<InspectorTraceEvents>();
     probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
       ad_tracker_ = new AdTracker(this);

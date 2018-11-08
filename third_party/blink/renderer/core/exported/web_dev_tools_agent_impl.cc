@@ -199,16 +199,17 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->ConnectToV8(main_thread_debugger->GetV8Inspector(),
                        context_group_id);
 
-  InspectorDOMAgent* dom_agent =
-      new InspectorDOMAgent(isolate, inspected_frames, session->V8Session());
+  InspectorDOMAgent* dom_agent = MakeGarbageCollected<InspectorDOMAgent>(
+      isolate, inspected_frames, session->V8Session());
   session->Append(dom_agent);
 
   InspectorLayerTreeAgent* layer_tree_agent =
       InspectorLayerTreeAgent::Create(inspected_frames, this);
   session->Append(layer_tree_agent);
 
-  InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
-      inspected_frames, nullptr, session->V8Session());
+  InspectorNetworkAgent* network_agent =
+      MakeGarbageCollected<InspectorNetworkAgent>(inspected_frames, nullptr,
+                                                  session->V8Session());
   session->Append(network_agent);
 
   InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
@@ -217,14 +218,15 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->Append(css_agent);
 
   InspectorDOMDebuggerAgent* dom_debugger_agent =
-      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session());
+      MakeGarbageCollected<InspectorDOMDebuggerAgent>(isolate, dom_agent,
+                                                      session->V8Session());
   session->Append(dom_debugger_agent);
 
   session->Append(
       InspectorDOMSnapshotAgent::Create(inspected_frames, dom_debugger_agent));
 
-  session->Append(new InspectorAnimationAgent(inspected_frames, css_agent,
-                                              session->V8Session()));
+  session->Append(MakeGarbageCollected<InspectorAnimationAgent>(
+      inspected_frames, css_agent, session->V8Session()));
 
   session->Append(InspectorMemoryAgent::Create(inspected_frames));
 
@@ -237,23 +239,26 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
       session->V8Session());
   session->Append(page_agent);
 
-  session->Append(new InspectorLogAgent(
+  session->Append(MakeGarbageCollected<InspectorLogAgent>(
       &inspected_frames->Root()->GetPage()->GetConsoleMessageStorage(),
       inspected_frames->Root()->GetPerformanceMonitor(), session->V8Session()));
 
   InspectorOverlayAgent* overlay_agent =
-      new InspectorOverlayAgent(web_local_frame_impl_.Get(), inspected_frames,
-                                session->V8Session(), dom_agent);
+      MakeGarbageCollected<InspectorOverlayAgent>(
+          web_local_frame_impl_.Get(), inspected_frames, session->V8Session(),
+          dom_agent);
   session->Append(overlay_agent);
 
-  session->Append(new InspectorIOAgent(isolate, session->V8Session()));
+  session->Append(
+      MakeGarbageCollected<InspectorIOAgent>(isolate, session->V8Session()));
 
-  session->Append(new InspectorAuditsAgent(network_agent));
+  session->Append(MakeGarbageCollected<InspectorAuditsAgent>(network_agent));
 
   // TODO(dgozman): we should actually pass the view instead of frame, but
   // during remote->local transition we cannot access mainFrameImpl() yet, so
   // we have to store the frame which will become the main frame later.
-  session->Append(new InspectorEmulationAgent(web_local_frame_impl_.Get()));
+  session->Append(MakeGarbageCollected<InspectorEmulationAgent>(
+      web_local_frame_impl_.Get()));
 
   session->Append(new InspectorTestingAgent(inspected_frames));
 
@@ -298,7 +303,8 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       resource_content_loader_(InspectorResourceContentLoader::Create(
           web_local_frame_impl_->GetFrame())),
       inspected_frames_(new InspectedFrames(web_local_frame_impl_->GetFrame())),
-      resource_container_(new InspectorResourceContainer(inspected_frames_)),
+      resource_container_(
+          MakeGarbageCollected<InspectorResourceContainer>(inspected_frames_)),
       include_view_agents_(include_view_agents) {
   DCHECK(IsMainThread());
   agent_ = new DevToolsAgent(

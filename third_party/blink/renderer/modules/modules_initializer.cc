@@ -216,13 +216,15 @@ void ModulesInitializer::InitInspectorAgentSession(
     InspectorDOMAgent* dom_agent,
     InspectedFrames* inspected_frames,
     Page* page) const {
-  session->Append(
-      new InspectorIndexedDBAgent(inspected_frames, session->V8Session()));
+  session->Append(MakeGarbageCollected<InspectorIndexedDBAgent>(
+      inspected_frames, session->V8Session()));
   session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
-  session->Append(new InspectorDOMStorageAgent(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorDOMStorageAgent>(inspected_frames));
   if (allow_view_agents) {
     session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(new InspectorAccessibilityAgent(inspected_frames, dom_agent));
+    session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
+        inspected_frames, dom_agent));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
 }

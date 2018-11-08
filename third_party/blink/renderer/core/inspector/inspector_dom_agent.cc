@@ -450,7 +450,7 @@ Response InspectorDOMAgent::AssertEditableElement(int node_id,
 
 void InspectorDOMAgent::EnableAndReset() {
   enabled_.Set(true);
-  history_ = new InspectorHistory();
+  history_ = MakeGarbageCollected<InspectorHistory>();
   dom_editor_ = new DOMEditor(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
   instrumenting_agents_->addInspectorDOMAgent(this);
@@ -1967,7 +1967,7 @@ void InspectorDOMAgent::CharacterDataModified(CharacterData* character_data) {
 
 InspectorRevalidateDOMTask* InspectorDOMAgent::RevalidateTask() {
   if (!revalidate_task_)
-    revalidate_task_ = new InspectorRevalidateDOMTask(this);
+    revalidate_task_ = MakeGarbageCollected<InspectorRevalidateDOMTask>(this);
   return revalidate_task_.Get();
 }
 
