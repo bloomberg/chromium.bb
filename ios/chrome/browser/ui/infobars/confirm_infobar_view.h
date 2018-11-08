@@ -8,10 +8,9 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 // An inforbar with an optional message, icon, two action buttons, and a switch.
-@interface ConfirmInfoBarView : BidiContainerView<InfoBarViewSizing>
+@interface ConfirmInfoBarView : BidiContainerView
 
 // Label text with links initialized with |stringAsLink:|.
 @property(nonatomic, strong, readonly) NSString* markedLabel;

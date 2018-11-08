@@ -11,7 +11,7 @@
 
 // Returns a view with all the infobar elements in it. Will not add it as a
 // subview yet. This method must be overriden in subclasses.
-- (UIView<InfoBarViewSizing>*)infobarView;
+- (UIView*)infobarView;
 
 // Returns whether user interaction with the infobar should be ignored.
 - (BOOL)shouldIgnoreUserInteraction;

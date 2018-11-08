@@ -15,7 +15,6 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -330,6 +329,10 @@ UIImage* InfoBarCloseImage() {
 // Returns the marker delimiting the end of a link.
 + (NSString*)closingMarkerForLink;
 
+// How much of the infobar (in points) is visible (e.g., during showing/hiding
+// animation).
+@property(nonatomic, assign) CGFloat visibleHeight;
+
 @end
 
 @implementation ConfirmInfoBarView {
@@ -363,7 +366,6 @@ UIImage* InfoBarCloseImage() {
 }
 
 @synthesize visibleHeight = visibleHeight_;
-@synthesize sizingDelegate = sizingDelegate_;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -760,10 +762,7 @@ UIImage* InfoBarCloseImage() {
 - (void)layoutSubviews {
   // Lays out the position of the icon.
   [imageView_ setFrame:[self frameOfIcon]];
-  targetHeight_ = [self computeRequiredHeightAndLayoutSubviews:YES];
-
-  if (sizingDelegate_)
-    [sizingDelegate_ didSetInfoBarTargetHeight:targetHeight_];
+  self.visibleHeight = [self computeRequiredHeightAndLayoutSubviews:YES];
   [self resetBackground];
 
   // Asks the BidiContainerView to reposition of all the subviews.

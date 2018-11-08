@@ -5,12 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
 
+#import <UIKit/UIKit.h>
 #include <memory>
 
 #include "base/macros.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/infobars/infobar_controller_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 @class InfoBarController;
 namespace infobars {
@@ -25,17 +25,13 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   ~InfoBarIOS() override;
 
   // Returns the infobar view holding contents of this infobar.
-  UIView<InfoBarViewSizing>* view();
+  UIView* view();
 
   // Remove the infobar view from infobar container view.
   void RemoveView();
 
  private:
-  // infobars::InfoBar overrides:
-  void PlatformSpecificOnHeightRecalculated() override;
-
   // InfoBarControllerDelegate overrides:
-  void SetInfoBarTargetHeight(int height) override;
   bool IsOwned() override;
   void RemoveInfoBar() override;
 

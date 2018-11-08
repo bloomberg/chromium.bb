@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -87,6 +86,10 @@ UIFont* InfoBarMessageFont() {
 // Constraint used to add bottom margin to the view.
 @property(nonatomic) NSLayoutConstraint* footerViewBottomAnchorConstraint;
 
+// How much of the infobar (in points) is visible (e.g., during showing/hiding
+// animation).
+@property(nonatomic, assign) CGFloat visibleHeight;
+
 // Creates and adds subviews.
 - (void)setupSubviews;
 
@@ -127,7 +130,6 @@ UIFont* InfoBarMessageFont() {
 @implementation SaveCardInfoBarView
 
 @synthesize visibleHeight = _visibleHeight;
-@synthesize sizingDelegate = _sizingDelegate;
 @synthesize delegate = _delegate;
 @synthesize icon = _icon;
 @synthesize googlePayIcon = _googlePayIcon;
@@ -167,8 +169,6 @@ UIFont* InfoBarMessageFont() {
       layoutGuide.layoutFrame.size.height;
 
   [super layoutSubviews];
-
-  [self.sizingDelegate didSetInfoBarTargetHeight:CGRectGetHeight(self.frame)];
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {

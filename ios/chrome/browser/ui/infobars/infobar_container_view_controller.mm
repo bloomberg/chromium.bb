@@ -19,6 +19,13 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 @implementation InfobarContainerViewController
 
+// Whenever the container or contained views are re-drawn update the layout to
+// match their new size or position.
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  [self updateLayoutAnimated:YES];
+}
+
 #pragma mark - InfobarConsumer
 
 - (void)addInfoBarView:(UIView*)infoBarView position:(NSInteger)position {

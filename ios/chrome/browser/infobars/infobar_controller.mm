@@ -8,14 +8,13 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface InfoBarController () {
-  UIView<InfoBarViewSizing>* _infoBarView;
+  UIView* _infoBarView;
 }
 @end
 
@@ -32,7 +31,6 @@
   if (self) {
     _infoBarDelegate = infoBarDelegate;
     _infoBarView = [self infobarView];
-    [_infoBarView setSizingDelegate:self];
   }
   return self;
 }
@@ -41,15 +39,7 @@
   [_infoBarView removeFromSuperview];
 }
 
-- (int)barHeight {
-  return CGRectGetHeight([_infoBarView frame]);
-}
-
-- (void)onHeightRecalculated:(int)newHeight {
-  [_infoBarView setVisibleHeight:newHeight];
-}
-
-- (UIView<InfoBarViewSizing>*)view {
+- (UIView*)view {
   return _infoBarView;
 }
 
@@ -58,14 +48,13 @@
 }
 
 - (void)detachView {
-  [_infoBarView setSizingDelegate:nil];
   _delegate = nullptr;
   _infoBarDelegate = nullptr;
 }
 
 #pragma mark - Protected
 
-- (UIView<InfoBarViewSizing>*)infobarView {
+- (UIView*)infobarView {
   NOTREACHED() << "Must be overriden in subclasses.";
   return _infoBarView;
 }
@@ -73,15 +62,6 @@
 - (BOOL)shouldIgnoreUserInteraction {
   // Ignore user interaction if view is already detached or is about to.
   return !_delegate || !_delegate->IsOwned() || !_infoBarDelegate;
-}
-
-#pragma mark - InfoBarViewDelegate
-
-- (void)didSetInfoBarTargetHeight:(CGFloat)height {
-  if (!_delegate)
-    return;
-
-  _delegate->SetInfoBarTargetHeight(height);
 }
 
 @end
