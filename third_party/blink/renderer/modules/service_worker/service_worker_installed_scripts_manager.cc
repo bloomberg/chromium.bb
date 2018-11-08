@@ -97,11 +97,11 @@ class Receiver {
     watcher_.ArmOrNotify();
   }
 
-  bool is_running() const { return handle_.is_valid(); }
-  bool has_received_all_data() const { return remaining_bytes_ == 0; }
+  bool IsRunning() const { return handle_.is_valid(); }
+  bool HasReceivedAllData() const { return remaining_bytes_ == 0; }
 
   Vector<BytesChunk> TakeChunks() {
-    DCHECK(!is_running());
+    DCHECK(!IsRunning());
     return std::move(chunks_);
   }
 
@@ -109,7 +109,7 @@ class Receiver {
   void OnCompleted() {
     handle_.reset();
     watcher_.Cancel();
-    if (!has_received_all_data())
+    if (!HasReceivedAllData())
       chunks_.clear();
     DCHECK(callback_);
     std::move(callback_).Run();
@@ -207,8 +207,8 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
     DCHECK(iter != running_receivers_.end());
     std::unique_ptr<BundledReceivers> receivers = std::move(iter->value);
     DCHECK(receivers);
-    if (!receivers->body()->has_received_all_data() ||
-        !receivers->meta_data()->has_received_all_data()) {
+    if (!receivers->body()->HasReceivedAllData() ||
+        !receivers->meta_data()->HasReceivedAllData()) {
       script_container_->AddOnIOThread(script_info->script_url,
                                        nullptr /* data */);
       running_receivers_.erase(iter);
