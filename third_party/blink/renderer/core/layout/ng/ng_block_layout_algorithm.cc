@@ -512,11 +512,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Try to reuse line box fragments from cached fragments if possible.
   // When possible, this adds fragments to |container_builder_| and update
   // |previous_inflow_position| and |BreakToken()|.
-  NGLayoutInputNode first_child = Node().FirstChild();
-  TryReuseFragmentsFromCache(first_child, &previous_inflow_position);
-
   scoped_refptr<const NGBreakToken> previous_inline_break_token;
-  NGBlockChildIterator child_iterator(first_child, BreakToken());
+  NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
   for (auto entry = child_iterator.NextChild();
        NGLayoutInputNode child = entry.node;
        entry = child_iterator.NextChild(previous_inline_break_token.get())) {
@@ -537,7 +534,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       // all the way to the root of the fragmentation context without finding
       // any such container, we have no valid class A break point, and if a
       // forced break was requested, none will be inserted.
-      container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
+      if (!child.IsInline())
+        container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
 
       bool success =
           child.CreatesNewFormattingContext()
@@ -716,64 +714,75 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
-    NGLayoutInputNode child,
-    NGPreviousInflowPosition* previous_inflow_position) {
-  // Block boxes are cached in LayoutBox and that partial reuse is not needed.
-  if (!child.IsInline())
-    return false;
-  NGInlineNode inline_node = ToNGInlineNode(child);
-
+const NGPaintFragment* NGBlockLayoutAlgorithm::ReusableLineBoxContainer(
+    NGInlineNode inline_node) const {
   // If floats are intruding into this node, re-layout may be needed.
   if (!exclusion_space_.IsEmpty() || !unpositioned_floats_.IsEmpty())
-    return false;
+    return nullptr;
 
   // Cached fragments are not for intermediate layout.
   if (constraint_space_.IsIntermediateLayout())
-    return false;
+    return nullptr;
 
   // Block fragmentation is not supported yet.
   if (constraint_space_.HasBlockFragmentation())
-    return false;
+    return nullptr;
 
   // Laying out from a break token is not supported yet, because this logic
   // synthesize a break token.
   if (BreakToken())
-    return false;
-
-  // Resolving BFC requires additional logic and is not supported yet.
-  if (!container_builder_.BfcBlockOffset())
-    return false;
+    return nullptr;
 
   // Re-use from a NGPaintFragment, because currently dirty flags are on
   // NGPaintFragment.
   const NGPaintFragment* paint_fragment = inline_node.PaintFragment();
   if (!paint_fragment)
-    return false;
+    return nullptr;
 
   if (!inline_node.PrepareReuseFragments(constraint_space_))
-    return false;
+    return nullptr;
+
+  return paint_fragment;
+}
+
+const NGBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
+    NGInlineNode inline_node,
+    NGPreviousInflowPosition* previous_inflow_position,
+    bool* aborted_out) {
+  const NGPaintFragment* lineboxes = ReusableLineBoxContainer(inline_node);
+  if (!lineboxes)
+    return nullptr;
+
+  // Following is a copy of logic from HandleInFlow(). They need to keep in
+  // sync.
+  if (inline_node.IsEmptyInline())
+    return nullptr;
+  if (!ResolveBfcBlockOffset(previous_inflow_position)) {
+    *aborted_out = true;
+    return nullptr;
+  }
+  DCHECK(container_builder_.BfcBlockOffset());
 
   WritingMode writing_mode = container_builder_.GetWritingMode();
   TextDirection direction = container_builder_.Direction();
-  DCHECK_EQ(writing_mode, paint_fragment->Style().GetWritingMode());
-  DCHECK_EQ(direction, paint_fragment->Style().Direction());
-  const NGPhysicalSize outer_size = paint_fragment->Size();
+  DCHECK_EQ(writing_mode, lineboxes->Style().GetWritingMode());
+  DCHECK_EQ(direction, lineboxes->Style().Direction());
+  const NGPhysicalSize outer_size = lineboxes->Size();
 
   struct FragmentWithLogicalOffset {
     const NGPhysicalFragment& fragment;
     NGLogicalOffset offset;
   };
   Vector<FragmentWithLogicalOffset, 64> fragments;
-  fragments.ReserveInitialCapacity(paint_fragment->Children().size());
-  for (const NGPaintFragment* child : paint_fragment->Children()) {
+  fragments.ReserveInitialCapacity(lineboxes->Children().size());
+  for (const NGPaintFragment* child : lineboxes->Children()) {
     if (child->IsDirty())
       break;
 
     // Abort if there are floats, oof, or list marker. They need re-layout.
     const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
     if (!child_fragment.IsLineBox())
-      return false;
+      return nullptr;
 
     NGLogicalOffset logical_offset = child->Offset().ConvertToLogical(
         writing_mode, direction, outer_size, child_fragment.Size());
@@ -781,7 +790,7 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
         FragmentWithLogicalOffset{child_fragment, logical_offset});
   }
   if (fragments.IsEmpty())
-    return false;
+    return nullptr;
 
   // TODO(kojii): Running the normal layout code at least once for this child
   // helps reducing the code to setup internal states after the reuse. Remove
@@ -791,7 +800,7 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   if (fragments.back().fragment.BreakToken()->IsFinished()) {
     fragments.Shrink(fragments.size() - 1);
     if (fragments.IsEmpty())
-      return false;
+      return nullptr;
   }
 
   for (const auto& fragment : fragments) {
@@ -805,17 +814,12 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
       last_fragment.fragment.Size().ConvertToLogical(writing_mode).block_size;
   previous_inflow_position->logical_block_offset = used_block_size;
 
-  // Setup a break token so that this algorithm can start laying out the rest.
-  // Only creating one new break token is supported for now.
-  DCHECK(!break_token_);
+  // In order to layout the rest of lines, return the break token from the last
+  // reused line box.
   NGBreakToken* last_break_token = last_fragment.fragment.BreakToken();
   DCHECK(last_break_token);
   DCHECK(!last_break_token->IsFinished());
-  NGBreakTokenVector child_break_tokens;
-  child_break_tokens.push_back(last_break_token);
-  break_token_ =
-      NGBlockBreakToken::Create(Node(), used_block_size, child_break_tokens);
-  return true;
+  return last_break_token;
 }
 
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
@@ -1201,6 +1205,17 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   DCHECK(!child.IsOutOfFlowPositioned());
   DCHECK(!child.CreatesNewFormattingContext());
 
+  if (child.IsInline() && !child_break_token) {
+    DCHECK(!*previous_inline_break_token);
+    bool aborted = false;
+    *previous_inline_break_token = TryReuseFragmentsFromCache(
+        ToNGInlineNode(child), previous_inflow_position, &aborted);
+    if (*previous_inline_break_token)
+      return true;
+    if (aborted)
+      return false;
+  }
+
   bool is_non_empty_inline =
       child.IsInline() && !ToNGInlineNode(child).IsEmptyInline();
   bool has_clearance_past_adjoining_floats =
@@ -1213,6 +1228,9 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // pending floats. There are two situations where this is necessary:
   //  1. If the child is to be cleared by adjoining floats.
   //  2. If the child is a non-empty inline.
+  //
+  // Note this logic is copied to TryReuseFragmentsFromCache(), they need to
+  // keep in sync.
   if (has_clearance_past_adjoining_floats || is_non_empty_inline) {
     if (!ResolveBfcBlockOffset(previous_inflow_position))
       return false;
