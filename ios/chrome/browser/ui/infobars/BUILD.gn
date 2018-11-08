@@ -5,11 +5,8 @@
 source_set("infobars") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    # TODO(crbug.com/892376): Move infobar_container_view_controller to infobars_ui.
     "infobar_container_mediator.h",
     "infobar_container_mediator.mm",
-    "infobar_container_view_controller.h",
-    "infobar_container_view_controller.mm",
     "infobar_coordinator.h",
     "infobar_coordinator.mm",
   ]
@@ -44,10 +41,13 @@ source_set("infobars_ui") {
     "infobar_constants.h",
     "infobar_constants.mm",
     "infobar_container_consumer.h",
+    "infobar_container_view_controller.h",
+    "infobar_container_view_controller.mm",
     "infobar_view_sizing.h",
     "infobar_view_sizing_delegate.h",
   ]
   deps = [
+    ":public",
     "resources:infobar_downloading",
     "resources:infobar_popup_blocker",
     "resources:infobar_warning",

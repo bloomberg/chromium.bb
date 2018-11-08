@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 
 #include "base/ios/block_types.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,18 +21,16 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBar:(InfoBarIOS*)infoBarIOS position:(NSInteger)position {
+- (void)addInfoBarView:(UIView*)infoBarView position:(NSInteger)position {
   DCHECK_LE(static_cast<NSUInteger>(position), [[self.view subviews] count]);
-  CGRect containerBounds = [self.view bounds];
-  infoBarIOS->Layout(containerBounds);
-  UIView<InfoBarViewSizing>* view = infoBarIOS->view();
-  [self.view insertSubview:view atIndex:position];
-  view.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view insertSubview:infoBarView atIndex:position];
+  infoBarView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
-    [view.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-    [view.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-    [view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [view.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    [infoBarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+    [infoBarView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [infoBarView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [infoBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
   ]];
 }
 

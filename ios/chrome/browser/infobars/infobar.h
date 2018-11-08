@@ -24,9 +24,6 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
              std::unique_ptr<infobars::InfoBarDelegate> delegate);
   ~InfoBarIOS() override;
 
-  // Lays out the infobar view using data from the delegate to add to superview.
-  void Layout(CGRect container_bounds);
-
   // Returns the infobar view holding contents of this infobar.
   UIView<InfoBarViewSizing>* view();
 

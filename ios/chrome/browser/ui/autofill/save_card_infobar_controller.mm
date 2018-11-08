@@ -69,9 +69,9 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
-- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
+- (UIView<InfoBarViewSizing>*)infobarView {
   SaveCardInfoBarView* infoBarView =
-      [[SaveCardInfoBarView alloc] initWithFrame:frame];
+      [[SaveCardInfoBarView alloc] initWithFrame:CGRectZero];
   self.infoBarView = infoBarView;
   self.infoBarView.accessibilityIdentifier =
       self.infoBarDelegate->upload() ? kSaveCardInfobarViewUploadAccessibilityID

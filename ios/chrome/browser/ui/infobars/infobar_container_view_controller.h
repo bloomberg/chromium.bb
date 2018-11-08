@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 
 @protocol InfobarPositioner;

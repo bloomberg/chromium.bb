@@ -34,12 +34,6 @@ InfoBarIOS::~InfoBarIOS() {
   controller_ = nil;
 }
 
-void InfoBarIOS::Layout(CGRect container_bounds) {
-  DCHECK(controller_);
-  [controller_ layoutForFrame:container_bounds];
-  SetTargetHeight([controller_ barHeight]);
-}
-
 UIView<InfoBarViewSizing>* InfoBarIOS::view() {
   DCHECK(controller_);
   return [controller_ view];
