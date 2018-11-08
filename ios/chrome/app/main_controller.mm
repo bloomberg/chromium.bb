@@ -950,6 +950,9 @@ enum class ShowTabSwitcherSnapshotResult {
   [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
+  [_historyCoordinator stop];
+  _historyCoordinator = nil;
+
   [_mainCoordinator stop];
   _httpProtocolHandlerDelegate.reset();
 
