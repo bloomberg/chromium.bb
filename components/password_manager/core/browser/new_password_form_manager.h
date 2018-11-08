@@ -92,6 +92,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Sends fill data to the renderer.
   void Fill();
 
+  // Sends fill data to the renderer to fill |observed_form|.
+  void FillForm(const autofill::FormData& observed_form);
+
   // PasswordFormManagerForUI:
   FormFetcher* GetFormFetcher() override;
   const GURL& GetOrigin() const override;
@@ -230,7 +233,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   base::WeakPtr<PasswordManagerDriver> driver_;
 
-  const autofill::FormData observed_form_;
+  autofill::FormData observed_form_;
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. The PasswordForms are owned
@@ -316,6 +319,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // of times that Chrome will autofill to avoid being stuck in an infinite
   // loop.
   int autofills_left_ = kMaxTimesAutofill;
+
+  // True until server predictions received or waiting for them timed out.
+  bool waiting_for_server_predictions_ = false;
 
   // Controls whether to wait or not server before filling. It is used in tests.
   static bool wait_for_server_predictions_for_filling_;
