@@ -40,6 +40,16 @@
   webState->ShowTransientContentView(contentView);
 }
 
+- (void)sadTabTabHelperDismissSadTab:(SadTabTabHelper*)tabHelper {
+}
+
+- (void)sadTabTabHelper:(SadTabTabHelper*)tabHelper
+    didShowForRepeatedFailure:(BOOL)repeatedFailure {
+}
+
+- (void)sadTabTabHelperDidHide:(SadTabTabHelper*)tabHelper {
+}
+
 @end
 
 class SadTabTabHelperTest : public PlatformTest {
