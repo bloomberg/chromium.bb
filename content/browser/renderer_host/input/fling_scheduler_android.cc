@@ -54,7 +54,6 @@ void FlingSchedulerAndroid::UnregisterFlingSchedulerObserver() {
 }
 
 void FlingSchedulerAndroid::DidStopFlingingOnBrowser() {
-  UnregisterFlingSchedulerObserver();
   host_->DidStopFlinging();
 }
 

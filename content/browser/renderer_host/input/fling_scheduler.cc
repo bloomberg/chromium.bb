@@ -59,7 +59,6 @@ void FlingScheduler::UnregisterFlingSchedulerObserver() {
 }
 
 void FlingScheduler::DidStopFlingingOnBrowser() {
-  UnregisterFlingSchedulerObserver();
   host_->DidStopFlinging();
 }
 
