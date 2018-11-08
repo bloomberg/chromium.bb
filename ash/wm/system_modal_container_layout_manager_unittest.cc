@@ -183,13 +183,8 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
       return;
 
     if (show) {
-      keyboard->ShowKeyboard(true);
-      if (keyboard->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->GetKeyboardWindow()->SetBounds(
-            keyboard::KeyboardBoundsFromRootBounds(
-                Shell::GetPrimaryRootWindow()->bounds(), 100));
-        ASSERT_TRUE(keyboard::WaitUntilShown());
-      }
+      keyboard->ShowKeyboard(true /* lock */);
+      ASSERT_TRUE(keyboard::WaitUntilShown());
     } else {
       keyboard->HideKeyboardByUser();
     }

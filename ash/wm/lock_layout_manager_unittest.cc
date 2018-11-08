@@ -27,8 +27,6 @@ namespace ash {
 
 namespace {
 
-const int kVirtualKeyboardHeight = 100;
-
 // A login implementation of WidgetDelegate.
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
  public:
@@ -88,13 +86,7 @@ class LockLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(false);
-      if (keyboard->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->GetKeyboardWindow()->SetBounds(
-            keyboard::KeyboardBoundsFromRootBounds(
-                Shell::GetPrimaryRootWindow()->bounds(),
-                kVirtualKeyboardHeight));
-        ASSERT_TRUE(keyboard::WaitUntilShown());
-      }
+      ASSERT_TRUE(keyboard::WaitUntilShown());
     } else {
       keyboard->HideKeyboardByUser();
     }

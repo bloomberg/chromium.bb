@@ -32,6 +32,10 @@ bool IsKeyboardShowing();
 // Returns true if the keyboard is about to hide or already hidden.
 bool IsKeyboardHiding();
 
+// Gets the calculated keyboard bounds from |root_bounds|. A default keyboard
+// height is used.
+gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds);
+
 // Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
 // is specified by |keyboard_height|.
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,

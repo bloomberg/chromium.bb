@@ -74,10 +74,6 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
   // Show the keyboard.
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false /* locked */);
-  const int kKeyboardHeight = 200;
-  keyboard_controller->GetKeyboardWindow()->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(),
-                                             kKeyboardHeight));
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Verify that test manager was notified of bounds change.

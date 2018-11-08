@@ -46,8 +46,6 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Add two hit test bounds (coordinates relative to keyboard window).
@@ -60,7 +58,8 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
   // Click at various places within the keyboard window and check whether the
   // event passes through the keyboard window to the background window.
   ui::test::EventGenerator generator(root_window);
-  const gfx::Point origin = keyboard_window->bounds().origin();
+  const gfx::Point origin =
+      keyboard_controller->visual_bounds_in_screen().origin();
 
   // (0, 0) is inside the first hit rect, so the event is handled by the window
   // and is not received by the background window.
@@ -97,14 +96,13 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Set empty hit test bounds, so all events pass through to the background.
   keyboard_controller->SetHitTestBounds(std::vector<gfx::Rect>());
 
   ui::test::EventGenerator generator(root_window);
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
 
   // (0, 0) passes through and is received by background window.
   generator.MoveMouseTo(keyboard_window->bounds().origin());

@@ -44,8 +44,6 @@
 namespace keyboard {
 namespace {
 
-const int kDefaultVirtualKeyboardHeight = 100;
-
 // Steps a layer animation until it is completed. Animations must be enabled.
 void RunAnimationForLayer(ui::Layer* layer) {
   // Animations must be enabled for stepping to work.
@@ -249,13 +247,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
         client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE) {
       input_method->ShowVirtualKeyboardIfEnabled();
-      if (controller().GetKeyboardWindow()->bounds().height() == 0) {
-        // Set initial bounds for test keyboard window.
-        controller().GetKeyboardWindow()->SetBounds(
-            KeyboardBoundsFromRootBounds(root_window()->bounds(),
-                                         kDefaultVirtualKeyboardHeight));
-        ASSERT_TRUE(keyboard::WaitUntilShown());
-      }
+      ASSERT_TRUE(keyboard::WaitUntilShown());
     }
   }
 
@@ -302,14 +294,11 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
 
   controller().LoadKeyboardWindowInBackground();
 
+  // The keyboard window should not be visible.
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
+  EXPECT_FALSE(keyboard_window->IsVisible());
 
-  // The container should be positioned at the bottom of screen and has 0
-  // height.
   const gfx::Rect screen_bounds = root_window()->bounds();
-  const gfx::Rect initial_keyboard_bounds = keyboard_window->bounds();
-  EXPECT_EQ(0, initial_keyboard_bounds.height());
-  EXPECT_EQ(screen_bounds.height(), initial_keyboard_bounds.y());
 
   // Attempt to change window width or move window up from the bottom are
   // ignored. Changing window height is supported.

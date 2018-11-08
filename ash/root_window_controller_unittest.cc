@@ -827,17 +827,14 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ASSERT_EQ(root_window, controller->GetRootWindow());
 
-  aura::Window* contents_window = controller->GetKeyboardWindow();
-  contents_window->SetName("KeyboardWindow");
-  contents_window->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
-  contents_window->Show();
+  controller->ShowKeyboard(false /* locked */);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
   ui::test::EventGenerator root_window_event_generator(root_window);
-  ui::test::EventGenerator keyboard_event_generator(root_window,
-                                                    contents_window);
+  ui::test::EventGenerator keyboard_event_generator(
+      root_window, controller->GetKeyboardWindow());
 
   views::Widget* modal_widget = CreateModalWidget(gfx::Rect(300, 10, 100, 100));
 
@@ -1064,9 +1061,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickDoesNotFocusKeyboard) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
   ASSERT_TRUE(keyboard::WaitUntilShown());
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   EXPECT_FALSE(keyboard_window->HasFocus());
 
   // Click on the keyboard. Make sure the keyboard receives the event, but does

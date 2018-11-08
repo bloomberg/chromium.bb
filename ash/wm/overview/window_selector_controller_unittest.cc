@@ -57,6 +57,7 @@ class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
     WindowSelectorControllerTest::SetUp();
 
     TabletModeControllerTestApi().EnterTabletMode();
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
     keyboard_controller()->LoadKeyboardWindowInBackground();
@@ -74,7 +75,7 @@ class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {
 
 TEST_F(OverviewVirtualKeyboardTest, ToggleOverviewModeHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
-  keyboard::WaitUntilShown();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   Shell::Get()->window_selector_controller()->ToggleOverview();
 
@@ -85,7 +86,7 @@ TEST_F(OverviewVirtualKeyboardTest, ToggleOverviewModeHidesVirtualKeyboard) {
 TEST_F(OverviewVirtualKeyboardTest,
        ToggleOverviewModeDoesNotHideLockedVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(true /* locked */);
-  keyboard::WaitUntilShown();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());

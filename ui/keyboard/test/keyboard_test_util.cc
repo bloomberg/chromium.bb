@@ -8,12 +8,15 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace keyboard {
 
 namespace {
+
+constexpr int kDefaultKeyboardHeight = 100;
 
 class KeyboardVisibilityChangeWaiter : public KeyboardControllerObserver {
  public:
@@ -111,6 +114,10 @@ bool IsKeyboardHiding() {
              KeyboardControllerState::HIDDEN;
 }
 
+gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds) {
+  return KeyboardBoundsFromRootBounds(root_bounds, kDefaultKeyboardHeight);
+}
+
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height) {
   return gfx::Rect(root_bounds.x(), root_bounds.bottom() - keyboard_height,
@@ -130,6 +137,11 @@ aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
   window_ = std::make_unique<aura::Window>(&delegate_);
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->set_owned_by_parent(false);
+
+  // Set a default size for the keyboard.
+  display::Screen* screen = display::Screen::GetScreen();
+  window_->SetBounds(
+      KeyboardBoundsFromRootBounds(screen->GetPrimaryDisplay().bounds()));
 
   // Simulate an asynchronous load.
   base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,

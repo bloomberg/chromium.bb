@@ -1664,9 +1664,6 @@ TEST_P(AppListPresenterDelegateVirtualKeyboardTest,
   // Manually show the virtual keyboard.
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->GetKeyboardWindow()->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(
-          Shell::GetPrimaryRootWindow()->bounds(), 100));
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Tap or click outside the searchbox, the virtual keyboard should hide.
