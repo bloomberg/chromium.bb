@@ -2549,6 +2549,19 @@
       'linux_flavor_specific_chromium_gtests',
     ],
 
+    'chromium_linux_coverage_gtests': [
+      'aura_gtests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
+      'linux_flavor_specific_chromium_gtests',
+      'network_service_gtests',
+      'non_android_chromium_gtests',
+      'non_android_and_cast_and_chromeos_chromium_gtests',
+      'vr_platform_specific_chromium_gtests',
+    ],
+
     'chromium_linux_dbg_isolated_scripts': [
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
