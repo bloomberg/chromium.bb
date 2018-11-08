@@ -315,8 +315,9 @@ void LaunchCrostiniApp(Profile* profile,
     DCHECK(files.empty());
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
+    // At this point, we know that Crostini UI is allowed.
     if (!crostini_manager->IsCrosTerminaInstalled() ||
-        !IsCrostiniEnabled(profile)) {
+        !profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
       ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
       return;
     }
