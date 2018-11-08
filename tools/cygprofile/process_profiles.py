@@ -15,6 +15,7 @@ _SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir))
 path = os.path.join(_SRC_PATH, 'tools', 'cygprofile')
 sys.path.append(path)
+import cygprofile_utils
 import symbol_extractor
 
 
@@ -49,7 +50,6 @@ class SymbolOffsetProcessor(object):
   higher-level operations can be done in different orders without the caller
   managing all the state.
   """
-  START_OF_TEXT_SYMBOL = 'linker_script_start_of_text'
 
   def __init__(self, binary_filename):
     self._binary_filename = binary_filename
@@ -257,7 +257,7 @@ class SymbolOffsetProcessor(object):
     """
     if self._offset_to_symbol_info is None:
       start_syms = [s for s in self.SymbolInfos()
-                    if s.name == self.START_OF_TEXT_SYMBOL]
+                    if s.name == cygprofile_utils.START_OF_TEXT_SYMBOL]
       assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
       start_of_text = start_syms[0].offset
       max_offset = max(s.offset + s.size for s in self.SymbolInfos())

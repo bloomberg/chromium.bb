@@ -16,7 +16,7 @@ from test_utils import (ProfileFile,
                         TestProfileManager)
 
 class ProcessProfilesTestCase(unittest.TestCase):
-  START_SYMBOL = process_profiles.SymbolOffsetProcessor.START_OF_TEXT_SYMBOL
+  START_SYMBOL = 'linker_script_start_of_text'
 
   def setUp(self):
     self.symbol_0 = SimpleTestSymbol(self.START_SYMBOL, 0, 0)
