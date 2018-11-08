@@ -990,7 +990,6 @@ void SelectionController::HandleMouseDraggedEvent(
   if (!Selection().IsAvailable())
     return;
   if (selection_state_ != SelectionState::kExtendedSelection) {
-    frame_->LocalFrameRoot().Client()->SetMouseCapture(true);
     HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
     HitTestLocation location(mouse_down_pos);
     HitTestResult result(request, location);
@@ -1063,9 +1062,6 @@ bool SelectionController::HandleMouseReleaseEvent(
 
     handled = true;
   }
-
-  if (frame_->LocalFrameRoot().Client())
-    frame_->LocalFrameRoot().Client()->SetMouseCapture(false);
 
   Selection().NotifyTextControlOfSelectionChange(SetSelectionBy::kUser);
 

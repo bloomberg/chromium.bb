@@ -2826,14 +2826,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // This test checks that a MouseDown triggers mouse capture when it hits
 // a scrollbar thumb or a subframe, and does not trigger mouse
 // capture if it hits an element in the main frame.
-#if defined(OS_CHROMEOS)
-// TODO: Flaky on Chrome OS. crbug.com/868409
-#define MAYBE_CrossProcessMouseCapture DISABLED_CrossProcessMouseCapture
-#else
-#define MAYBE_CrossProcessMouseCapture CrossProcessMouseCapture
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_CrossProcessMouseCapture) {
+                       CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_large_scrollable_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2968,8 +2962,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                                       &mouse_event);
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(child_interceptor->Capturing());
 
-  // A MouseUp sent anywhere should cancel the mouse capture.
+  // No release capture events since the capture statu doesn't change.
   mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   mouse_event.SetModifiers(blink::WebInputEvent::kNoModifiers);
   SetWebEventPositions(&mouse_event,
@@ -2978,7 +2973,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RouteMouseEventAndWaitUntilDispatch(router, root_view, rwhv_child,
                                       &mouse_event);
 
-  child_interceptor->Wait();
+  EXPECT_FALSE(child_interceptor->Capturing());
   base::RunLoop().RunUntilIdle();
 
 // Targeting a scrollbar with a click doesn't work on Mac or Android.
@@ -3065,6 +3060,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
 
+  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
+      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
+          child_node->current_frame_host()->GetRenderWidgetHost()));
+
   // Target MouseDown to child frame.
   blink::WebMouseEvent mouse_event(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
@@ -3079,12 +3078,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  // Wait for the mouse capture message.
+  interceptor->Wait();
+  EXPECT_TRUE(interceptor->Capturing());
+
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-
-  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
-      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
-          child_node->current_frame_host()->GetRenderWidgetHost()));
 
   // Target MouseMove to child frame to start drag. This should cause the
   // child to start capturing mouse input.
@@ -3107,9 +3106,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
 
-  // Wait for the mouse capture message.
-  interceptor->Wait();
   EXPECT_TRUE(interceptor->Capturing());
+
   // Yield the thread, in order to let the capture message be processed by its
   // actual handler.
   {
