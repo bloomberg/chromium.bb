@@ -980,6 +980,7 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
 }
 
 void PaymentRequest::OnUpdatePaymentDetails(
+    const AtomicString& event_type,
     const ScriptValue& details_script_value) {
   if (!GetPendingAcceptPromiseResolver() || !payment_provider_)
     return;
@@ -1014,6 +1015,20 @@ void PaymentRequest::OnUpdatePaymentDetails(
     resolver->Reject(exception_state.GetException());
     ClearResolversAndCloseMojoConnection();
     return;
+  }
+
+  // TODO(https://crbug.com/902291): We should make shippingOptions optional.
+  if (options_->requestShipping() && !details->hasShippingOptions()) {
+    if (event_type == event_type_names::kShippingaddresschange) {
+      UseCounter::Count(
+          GetExecutionContext(),
+          WebFeature::kUpdateWithoutShippingOptionOnShippingAddressChange);
+    }
+    if (event_type == event_type_names::kShippingoptionchange) {
+      UseCounter::Count(
+          GetExecutionContext(),
+          WebFeature::kUpdateWithoutShippingOptionOnShippingOptionChange);
+    }
   }
 
   if (!options_->requestShipping())
