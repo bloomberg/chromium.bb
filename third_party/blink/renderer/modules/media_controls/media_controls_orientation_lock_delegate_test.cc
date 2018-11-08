@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -1441,6 +1442,47 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   CheckStateMaybeLockedFullscreen();
   EXPECT_EQ(kWebScreenOrientationLockAny, DelegateOrientationLock());
   EXPECT_TRUE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       DetachBeforeChangeLockToAnyOrientation) {
+  // Naturally portrait device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls fullscreen button.
+  SimulateEnterFullscreen();
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should lock to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // This will trigger a screen orientation change to landscape.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // Rotate the device to match.
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // And immediately detach the document by synchronously navigating.
+  // One easy way to do this is to replace the document with a JavaScript URL.
+  GetFrame().GetSettings()->SetScriptEnabled(true);
+  GetFrame().Navigate(
+      FrameLoadRequest(&GetDocument(),
+                       ResourceRequest("javascript:'Hello, world!'")),
+      WebFrameLoadType::kStandard);
+
+  // We should not crash after the unlock delay.
+  test::RunDelayedTasks(GetUnlockDelay());
 }
 
 }  // namespace blink
