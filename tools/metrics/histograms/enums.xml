@@ -9273,6 +9273,10 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Click"/>
 </enum>
 
+<enum name="CrosSystemTrayManagedType">
+  <int value="0" label="Enterprise"/>
+</enum>
+
 <enum name="CrosSystemTrayToggleExpanded">
   <int value="0" label="Toggled by button"/>
   <int value="1" label="Toggled by gesture"/>
