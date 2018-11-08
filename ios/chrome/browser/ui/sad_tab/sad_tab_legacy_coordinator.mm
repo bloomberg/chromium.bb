@@ -53,4 +53,17 @@
   webState->ShowTransientContentView(contentView);
 }
 
+- (void)sadTabTabHelperDismissSadTab:(SadTabTabHelper*)tabHelper {
+  // Transient Content View is dismissed automatically.
+}
+
+- (void)sadTabTabHelper:(SadTabTabHelper*)tabHelper
+    didShowForRepeatedFailure:(BOOL)repeatedFailure {
+  // No-op. Transient content view was not removed when Tab was hidden.
+}
+
+- (void)sadTabTabHelperDidHide:(SadTabTabHelper*)tabHelper {
+  // No-op. Transient content view should not be removed when Tab is hidden.
+}
+
 @end
