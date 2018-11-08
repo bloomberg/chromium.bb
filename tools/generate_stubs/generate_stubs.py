@@ -17,16 +17,6 @@ or a header + implementation file of stubs suitable for use in a POSIX system.
 
 This script also handles variadic functions, e.g.
 void printf(const char* s, ...);
-
-TODO(hclam): Fix the situation for variadic functions.
-Stub for the above function will be generated and inside the stub function it
-is translated to:
-void printf(const char* s, ...) {
-  printf_ptr(s, (void*)arg1);
-}
-
-Only one argument from the variadic arguments is used and it will be used as
-type void*.
 """
 
 __author__ = 'ajwong@chromium.org (Albert J. Wong)'
@@ -111,11 +101,9 @@ STUB_FUNCTION_DEFINITION = (
 VARIADIC_STUB_FUNCTION_DEFINITION = (
     """extern %(return_type)s %(name)s(%(params)s) __attribute__((weak));
 %(return_type)s %(export)s %(name)s(%(params)s) {
-  va_list args___;
-  va_start(args___, %(last_named_arg)s);
-  %(return_type)s ret___ = %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
-  va_end(args___);
-  return ret___;
+#define %(name)s_ptr_variadic(%(arg_list)s, ...) \
+%(name)s_ptr(%(arg_list)s, ##__VA_ARGS__)
+  return %(name)s_ptr_variadic(%(arg_list)s);
 }""")
 
 # Template for generating a variadic stub function definition without
@@ -132,10 +120,9 @@ VARIADIC_STUB_FUNCTION_DEFINITION = (
 VOID_VARIADIC_STUB_FUNCTION_DEFINITION = (
     """extern void %(name)s(%(params)s) __attribute__((weak));
 void %(export)s %(name)s(%(params)s) {
-  va_list args___;
-  va_start(args___, %(last_named_arg)s);
-  %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
-  va_end(args___);
+#define %(name)s_ptr_variadic(%(arg_list)s, ...) \
+%(name)s_ptr(%(arg_list)s, ##__VA_ARGS__)
+  %(name)s_ptr_variadic(%(arg_list)s);
 }""")
 
 # Template for the preamble for the stub header file with the header guards,
