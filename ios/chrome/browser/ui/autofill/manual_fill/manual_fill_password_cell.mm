@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
@@ -274,11 +275,15 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 }
 
 - (void)userDidTapUsernameButton:(UIButton*)button {
+  base::RecordAction(
+      base::UserMetricsAction("ManualFallback_Password_SelectUsername"));
   [self.delegate userDidPickContent:self.manualFillCredential.username
                            isSecure:NO];
 }
 
 - (void)userDidTapPasswordButton:(UIButton*)button {
+  base::RecordAction(
+      base::UserMetricsAction("ManualFallback_Password_SelectPassword"));
   [self.delegate userDidPickContent:self.manualFillCredential.password
                            isSecure:YES];
 }

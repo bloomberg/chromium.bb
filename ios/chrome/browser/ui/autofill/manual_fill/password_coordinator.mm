@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 
+#include "base/metrics/user_metrics.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -241,6 +242,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (void)popoverPresentationControllerDidDismissPopover:
     (UIPopoverPresentationController*)popoverPresentationController {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePopover"));
   [self.delegate resetAccessoryView];
 }
 

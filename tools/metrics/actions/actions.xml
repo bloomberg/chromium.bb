@@ -10033,6 +10033,66 @@ should be able to be added at any place in this file.
   <description>The chrome://management page was viewed.</description>
 </action>
 
+<action name="ManualFallback_Close">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user closed the Manual Fallback view by tapping the keyboard icon.
+  </description>
+</action>
+
+<action name="ManualFallback_ClosePopover">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user closed the Manual Fallback Popover view. This happens when the user
+    taps outside the popover.
+  </description>
+</action>
+
+<action name="ManualFallback_OpenCreditCard">
+  <owner>javierrobles@chromium.org</owner>
+  <description>The user opened Credit Card Manual Fallback view.</description>
+</action>
+
+<action name="ManualFallback_OpenPassword">
+  <owner>javierrobles@chromium.org</owner>
+  <description>The user opened the Password Manual Fallback view.</description>
+</action>
+
+<action name="ManualFallback_OpenProfile">
+  <owner>javierrobles@chromium.org</owner>
+  <description>The user opened the Profile Manual Fallback view.</description>
+</action>
+
+<action name="ManualFallback_Password_OpenManagePassword">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Manage passwords&quot; on the Password Manual
+    Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Password_OpenOtherPassword">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Use other password&quot; on the Password Manual
+    Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Password_SelectPassword">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a password in the Password Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Password_SelectUsername">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on a username in the Password Manual Fallback view.
+  </description>
+</action>
+
 <action name="MaxButton_Clk_ExitFS">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
