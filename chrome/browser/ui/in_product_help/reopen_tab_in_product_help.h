@@ -37,12 +37,18 @@ class ReopenTabInProductHelp : public BrowserListObserver, public KeyedService {
 
   // Should be called when the user opens a blank new tab.
   void NewTabOpened();
+
   // Should be called when the user focuses on the omnibox. Possibly triggers
   // IPH.
   void OmniboxFocused();
+
   // Should be called when the user reopens a previously closed tab, either
   // through CTRL+SHIFT+T or through the recent tabs menu.
   void TabReopened();
+
+  // Must be called when IPH promo finishes showing, whether by use of the
+  // feature or by timing out.
+  void HelpDismissed();
 
  private:
   // BrowserListObserver:
