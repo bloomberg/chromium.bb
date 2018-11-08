@@ -657,13 +657,13 @@ void DataReductionProxyConfig::ContinueNetworkChanged(
 
 void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   DCHECK(configurator_);
+  // Under the hood we use an instance of ProxyBypassRules to evaluate these
+  // rules. ProxyBypassRules implicitly bypasses localhost, loopback, and
+  // link-local addresses, so it is not necessary to explicitly add them here.
+  // See ProxyBypassRules::MatchesImplicitRules() for details.
   configurator_->SetBypassRules(
       // localhost
       "<local>,"
-
-      // RFC6890 loopback addresses.
-      // TODO(tbansal): Remove this once crbug/446705 is fixed.
-      "127.0.0.0/8,"
 
       // RFC6890 current network (only valid as source address).
       "0.0.0.0/8,"
