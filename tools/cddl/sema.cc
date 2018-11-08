@@ -474,8 +474,8 @@ bool AddMembersToStruct(
             MakeCppType(table, cddl_table,
                         cpp_type->name + std::string("_") + x->type.opt_key,
                         *x->type.value);
-        if (!member_type)
-          return false;
+        if (!member_type) return false;
+        if (member_type->name.empty()) member_type->name = x->type.opt_key;
         if (x->opt_occurrence == "?") {
           table->cpp_types.emplace_back(new CppType);
           CppType* optional_type = table->cpp_types.back().get();

@@ -94,5 +94,53 @@ TEST(PresentationMessagesTest, DecodeInvalidUtf8) {
   ASSERT_GT(0, bytes_read);
 }
 
+TEST(PresentationMessagesTest, EncodeConnectionMessageString) {
+  uint8_t buffer[256];
+  PresentationConnectionMessage message;
+  message.connection_id = 1234;
+  message.presentation_id = "deadbeef__";
+  message.message.which =
+      PresentationConnectionMessage::Message::Which::kString;
+  new (&message.message.str) std::string("test message as a string");
+  ssize_t bytes_out =
+      EncodePresentationConnectionMessage(message, buffer, sizeof(buffer));
+  ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
+  ASSERT_GT(bytes_out, 0);
+
+  PresentationConnectionMessage decoded_message;
+  ssize_t bytes_read =
+      DecodePresentationConnectionMessage(buffer, bytes_out, &decoded_message);
+  ASSERT_GT(bytes_read, 0);
+  EXPECT_EQ(bytes_read, bytes_out);
+  EXPECT_EQ(message.presentation_id, decoded_message.presentation_id);
+  EXPECT_EQ(message.connection_id, decoded_message.connection_id);
+  ASSERT_EQ(message.message.which, decoded_message.message.which);
+  EXPECT_EQ(message.message.str, decoded_message.message.str);
+}
+
+TEST(PresentationMessagesTest, EncodeConnectionMessageBytes) {
+  uint8_t buffer[256];
+  PresentationConnectionMessage message;
+  message.connection_id = 1234;
+  message.presentation_id = "deadbeef__";
+  message.message.which = PresentationConnectionMessage::Message::Which::kBytes;
+  new (&message.message.bytes)
+      std::vector<uint8_t>{0, 1, 2, 3, 255, 254, 253, 86, 71, 0, 0, 1, 0, 2};
+  ssize_t bytes_out =
+      EncodePresentationConnectionMessage(message, buffer, sizeof(buffer));
+  ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
+  ASSERT_GT(bytes_out, 0);
+
+  PresentationConnectionMessage decoded_message;
+  ssize_t bytes_read =
+      DecodePresentationConnectionMessage(buffer, bytes_out, &decoded_message);
+  ASSERT_GT(bytes_read, 0);
+  EXPECT_EQ(bytes_read, bytes_out);
+  EXPECT_EQ(message.presentation_id, decoded_message.presentation_id);
+  EXPECT_EQ(message.connection_id, decoded_message.connection_id);
+  ASSERT_EQ(message.message.which, decoded_message.message.which);
+  EXPECT_EQ(message.message.bytes, decoded_message.message.bytes);
+}
+
 }  // namespace msgs
 }  // namespace openscreen

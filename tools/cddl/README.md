@@ -186,11 +186,9 @@ struct X {
 };
 ```
 Currently, only `uint`, `text`, and `bytes` are allowed here.  Additionally, as
-an implementation note, if `uint` isn't one of the choices, a bool and an
-"uninitialized" enum value will be added so that no destructor is necessary
-before the initial assignment.
-
-**TODO(btolsch): This isn't completely implemented.**
+an implementation note, a placeholder `bool` is also included in the union so it
+can always be created as "uninitialized".  This means that no destructor is
+necessary before the first proper member assignment.
 
 ### Tagged Types
 
