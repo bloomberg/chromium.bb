@@ -1226,7 +1226,6 @@ bool FocusController::SetFocusedElement(Element* element,
       new_document->FocusedElement() == element)
     return true;
 
-
   if (old_document && old_document != new_document)
     old_document->ClearFocusedElement();
 
@@ -1285,16 +1284,13 @@ static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
        candidate.rect_in_root_frame.IsEmpty()))
     return;
 
-  // Ignore off screen child nodes of containers that do not scroll
-  // (overflow:hidden)
-  if (candidate.is_offscreen && !CanBeScrolledIntoView(direction, candidate))
+  // Ignore off-screen focusables that are not exposed after one "scroll step"
+  // in the direction.
+  if (candidate.is_offscreen && candidate.is_offscreen_after_scrolling)
     return;
 
   DistanceDataForNode(direction, current, candidate);
   if (candidate.distance == MaxDistance())
-    return;
-
-  if (candidate.is_offscreen_after_scrolling)
     return;
 
   if (closest.IsNull()) {
