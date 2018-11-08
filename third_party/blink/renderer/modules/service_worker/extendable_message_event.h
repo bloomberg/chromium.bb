@@ -47,10 +47,11 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
   void SetSerializedData(scoped_refptr<SerializedScriptValue> serialized_data) {
     serialized_data_ = std::move(serialized_data);
   }
+
   const String& origin() const { return origin_; }
   const String& lastEventId() const { return last_event_id_; }
-  MessagePortArray ports() const;
   void source(ClientOrServiceWorkerOrMessagePort& result) const;
+  MessagePortArray ports() const;
 
   const AtomicString& InterfaceName() const override;
 

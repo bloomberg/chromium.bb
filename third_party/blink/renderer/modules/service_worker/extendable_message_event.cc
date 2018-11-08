@@ -51,17 +51,6 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
   return event;
 }
 
-MessagePortArray ExtendableMessageEvent::ports() const {
-  // TODO(bashi): Currently we return a copied array because the binding
-  // layer could modify the content of the array while executing JS callbacks.
-  // Avoid copying once we can make sure that the binding layer won't
-  // modify the content.
-  if (ports_) {
-    return *ports_;
-  }
-  return MessagePortArray();
-}
-
 void ExtendableMessageEvent::source(
     ClientOrServiceWorkerOrMessagePort& result) const {
   if (source_as_client_)
@@ -74,6 +63,17 @@ void ExtendableMessageEvent::source(
         source_as_message_port_);
   else
     result = ClientOrServiceWorkerOrMessagePort();
+}
+
+MessagePortArray ExtendableMessageEvent::ports() const {
+  // TODO(bashi): Currently we return a copied array because the binding
+  // layer could modify the content of the array while executing JS callbacks.
+  // Avoid copying once we can make sure that the binding layer won't
+  // modify the content.
+  if (ports_) {
+    return *ports_;
+  }
+  return MessagePortArray();
 }
 
 const AtomicString& ExtendableMessageEvent::InterfaceName() const {
