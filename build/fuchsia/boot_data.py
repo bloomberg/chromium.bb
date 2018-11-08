@@ -41,20 +41,15 @@ def _TargetCpuToSdkBinPath(target_arch):
 
 
 def _ProvisionSSH(output_dir):
-  """Provisions the key files used by the SSH daemon, and generates a
-  configuration file used by clients for connecting to SSH.
+  """Generates a keypair and configuration data for the SSH client.
+  Returns a path to the client public key."""
 
-  Returns a tuple with:
-  #0: the client configuration file
-  #1: a list of file path pairs: (<path in image>, <path on build filesystem>).
-  """
-
-  host_key_path = output_dir + '/ssh_key'
+  host_key_path = os.path.join(output_dir, 'ssh_key')
   host_pubkey_path = host_key_path + '.pub'
-  id_key_path = output_dir + '/id_ed25519'
+  id_key_path = os.path.join(output_dir, 'id_ed25519')
   id_pubkey_path = id_key_path + '.pub'
-  known_hosts_path = output_dir + '/known_hosts'
-  ssh_config_path = GetSSHConfigPath(output_dir)
+  known_hosts_path = os.path.join(output_dir, 'known_hosts')
+  ssh_config_path = os.path.join(output_dir, 'ssh_config')
 
   logging.debug('Generating SSH credentials.')
   if not os.path.isfile(host_key_path):
@@ -73,12 +68,7 @@ def _ProvisionSSH(output_dir):
   if os.path.exists(known_hosts_path):
     os.remove(known_hosts_path)
 
-  return (
-      ssh_config_path,
-      (('ssh/ssh_host_ed25519_key', host_key_path),
-       ('ssh/ssh_host_ed25519_key.pub', host_pubkey_path),
-       ('ssh/authorized_keys', id_pubkey_path))
-  )
+  return id_pubkey_path
 
 
 def _MakeQcowDisk(output_dir, disk_path):
@@ -104,54 +94,20 @@ def GetSSHConfigPath(output_dir):
   return output_dir + '/ssh_config'
 
 
-def ConfigureDataFVM(output_dir, output_type):
-  """Builds the FVM image for the /data volume and prepopulates it
-  with SSH keys.
+def GetBootImage(output_dir, target_arch):
+  """"Gets a path to the Zircon boot image, with the SSH client public key
+  added."""
 
-  output_dir: Path to the output directory which will contain the FVM file.
-  output_type: If FVM_TYPE_QCOW, then returns a path to the qcow2 FVM file,
-               used for QEMU.
+  pubkey_path = _ProvisionSSH(output_dir)
+  zbi_tool = os.path.join(common.SDK_ROOT, 'tools', 'zbi')
+  image_source_path = GetTargetFile(target_arch, 'fuchsia.zbi')
+  image_dest_path = os.path.join(output_dir, 'gen', 'fuchsia-with-keys.zbi')
 
-               If FVM_TYPE_SPARSE, then returns a path to the
-               sparse/compressed FVM file."""
+  cmd = [ zbi_tool, '-o', image_dest_path, image_source_path,
+          '-e', 'data/ssh/authorized_keys=' + pubkey_path ]
+  subprocess.check_call(cmd)
 
-  logging.debug('Building /data partition FVM file.')
-  # minfs expects absolute paths(bug:
-  #   https://fuchsia.atlassian.net/browse/ZX-2397)
-  output_dir = os.path.abspath(output_dir)
-  with tempfile.NamedTemporaryFile() as data_file:
-    # Build up the minfs partition data and install keys into it.
-    ssh_config, ssh_data = _ProvisionSSH(output_dir)
-    with tempfile.NamedTemporaryFile() as manifest:
-      for dest, src in ssh_data:
-        manifest.write('%s=%s\n' % (dest, src))
-      manifest.flush()
-      minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
-      subprocess.check_call([minfs_path, '%s@1G' % data_file.name, 'create'])
-      subprocess.check_call([minfs_path, data_file.name, 'manifest',
-                             manifest.name])
-
-      # Wrap the minfs partition in a FVM container.
-      fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
-      fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
-      if os.path.exists(fvm_output_path):
-        os.remove(fvm_output_path)
-
-      if output_type == FVM_TYPE_SPARSE:
-        cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
-               '--data', data_file.name]
-      else:
-        cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file.name]
-
-      logging.debug(' '.join(cmd))
-      subprocess.check_call(cmd)
-
-      if output_type == FVM_TYPE_SPARSE:
-        return fvm_output_path
-      elif output_type == FVM_TYPE_QCOW:
-        return _MakeQcowDisk(output_dir, fvm_output_path)
-      else:
-        raise Exception('Unknown output_type: %r' % output_type)
+  return image_dest_path
 
 
 def GetNodeName(output_dir):

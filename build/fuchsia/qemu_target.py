@@ -77,21 +77,15 @@ class QemuTarget(target.Target):
             boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                     'qemu-kernel.bin')),
         '-initrd', EnsurePathExists(
-            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                    'fuchsia.zbi')),
+            boot_data.GetBootImage(self._output_dir, self._GetTargetSdkArch())),
         '-smp', str(self._cpu_cores),
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard
         # any changes.
         '-snapshot',
-        '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
-                    EnsurePathExists(os.path.join(self._output_dir,
-                                                  'fvm.blk.qcow2')),
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
-            EnsurePathExists(
-                boot_data.ConfigureDataFVM(self._output_dir,
-                                           boot_data.FVM_TYPE_QCOW)),
-        '-device', 'virtio-blk-pci,drive=data',
+                    EnsurePathExists(
+                        os.path.join(self._output_dir, 'fvm.blk.qcow2')),
         '-device', 'virtio-blk-pci,drive=blobstore',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
@@ -166,6 +160,8 @@ class QemuTarget(target.Target):
     self._WaitUntilReady();
 
   def _IsQemuStillRunning(self):
+    if not self._qemu_process:
+      return False
     return os.waitpid(self._qemu_process.pid, os.WNOHANG)[0] == 0
 
   def _GetEndpoint(self):
