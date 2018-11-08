@@ -11,6 +11,8 @@ import android.media.ThumbnailUtils;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v4.text.TextUtilsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -28,6 +30,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,6 +40,7 @@ import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -70,6 +74,9 @@ class AutofillAssistantUiDelegate {
     private final TextView mDetailsText;
     private final int mDetailsImageWidth;
     private final int mDetailsImageHeight;
+
+    private final BottomBarAnimations mBottomBarAnimations;
+    private final boolean mIsRightToLeftLayout;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -244,7 +251,10 @@ class AutofillAssistantUiDelegate {
         mDetailsImageHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
 
-        setCarouselTopPadding();
+        mBottomBarAnimations = new BottomBarAnimations(mBottomBar, mDetails, mChipsViewContainer,
+                mActivity.getResources().getDisplayMetrics());
+        mIsRightToLeftLayout = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
+                == ViewCompat.LAYOUT_DIRECTION_RTL;
 
         // Finch experiment to adjust overlay color
         String overlayColor = VariationsAssociatedData.getVariationParamValue(
@@ -276,33 +286,27 @@ class AutofillAssistantUiDelegate {
      * @param scriptHandles List of scripts to show.
      */
     public void updateScripts(ArrayList<ScriptHandle> scriptHandles) {
-        clearChipsViewContainer();
-
         if (scriptHandles.isEmpty()) {
+            clearCarousel();
             return;
         }
 
-        boolean hasHighlightedScript = hasHighlightedScript(scriptHandles);
+        boolean alignRight = hasHighlightedScript(scriptHandles);
         ChipStyle nonHighlightStyle =
-                hasHighlightedScript ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
-
+                alignRight ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
+        ArrayList<View> childViews = new ArrayList<>();
         for (int i = 0; i < scriptHandles.size(); i++) {
-            // Add scripts in reverse order if the chips are right aligned.
-            int j = hasHighlightedScript ? scriptHandles.size() - i - 1 : i;
-            ScriptHandle scriptHandle = scriptHandles.get(j);
+            ScriptHandle scriptHandle = scriptHandles.get(i);
             ChipStyle chipStyle =
                     scriptHandle.isHighlight() ? ChipStyle.BUTTON_FILLED : nonHighlightStyle;
             TextView chipView = createChipView(scriptHandle.getName(), chipStyle);
             chipView.setOnClickListener((unusedView) -> {
-                clearChipsViewContainer();
+                clearCarousel();
                 mClient.onScriptSelected(scriptHandle.getPath());
             });
-
-            addChipViewToContainer(chipView);
+            childViews.add(chipView);
         }
-
-        setChipViewContainerGravity(hasHighlightedScript);
-        show();
+        setCarouselChildViews(childViews, alignRight);
     }
 
     private boolean hasHighlightedScript(ArrayList<ScriptHandle> scripts) {
@@ -314,7 +318,47 @@ class AutofillAssistantUiDelegate {
         return false;
     }
 
-    private void setChipViewContainerGravity(boolean alignRight) {
+    private void clearCarousel() {
+        setCarouselChildViews(Collections.emptyList(), /* alignRight= */ false);
+    }
+
+    private void setCarouselChildViews(List<View> children, boolean alignRight) {
+        // TODO(crbug.com/806868): Pull the carousel logic into its own MVC component.
+
+        // Reverse alignRight if we are in a RTL layout.
+        alignRight = mIsRightToLeftLayout ? !alignRight : alignRight;
+
+        // Replace children.
+        // TODO(crbug.com/806868): We might want to animate children change using fade in/out
+        // animations.
+        mChipsViewContainer.removeAllViews();
+        setCarouselAlignment(alignRight);
+        for (int i = 0; i < children.size(); i++) {
+            // Add children in reverse order if the chips are right aligned.
+            int j = alignRight ? children.size() - i - 1 : i;
+            View child = children.get(j);
+            if (i > 0) {
+                LinearLayout.LayoutParams layoutParams =
+                        (LinearLayout.LayoutParams) child.getLayoutParams();
+                int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16,
+                        child.getContext().getResources().getDisplayMetrics());
+                layoutParams.setMargins(leftMargin, 0, 0, 0);
+                child.setLayoutParams(layoutParams);
+            }
+            mChipsViewContainer.addView(child);
+        }
+
+        if (children.isEmpty()) {
+            mBottomBarAnimations.hideCarousel();
+        } else {
+            // Make sure the Autofill Assistant is visible.
+            show();
+            mBottomBarAnimations.showCarousel();
+        }
+    }
+
+    private void setCarouselAlignment(boolean alignRight) {
+        // Set carousel scroll gravity.
         ViewGroup.LayoutParams currentLayoutParams = mCarouselScroll.getLayoutParams();
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(currentLayoutParams);
         layoutParams.gravity = alignRight ? Gravity.END : Gravity.START;
@@ -323,21 +367,6 @@ class AutofillAssistantUiDelegate {
         // Reset the scroll position.
         mCarouselScroll.post(
                 () -> mCarouselScroll.fullScroll(alignRight ? View.FOCUS_RIGHT : View.FOCUS_LEFT));
-    }
-
-    private void addChipViewToContainer(TextView newChild) {
-        // Add a left margin if it's not the first child.
-        if (mChipsViewContainer.getChildCount() > 0) {
-            LinearLayout.LayoutParams layoutParams =
-                    new LinearLayout.LayoutParams(newChild.getLayoutParams());
-            int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16,
-                    newChild.getContext().getResources().getDisplayMetrics());
-            layoutParams.setMargins(leftMargin, 0, 0, 0);
-            newChild.setLayoutParams(layoutParams);
-        }
-
-        mChipsViewContainer.addView(newChild);
-        mChipsViewContainer.setVisibility(View.VISIBLE);
     }
 
     private TextView createChipView(String text, ChipStyle style) {
@@ -361,7 +390,7 @@ class AutofillAssistantUiDelegate {
     }
 
     public void show() {
-        if (!mFullContainer.isShown()) {
+        if (mFullContainer.getVisibility() != View.VISIBLE) {
             mFullContainer.setVisibility(View.VISIBLE);
 
             // Set the initial progress. It is OK to make multiple calls to this method as it will
@@ -403,7 +432,7 @@ class AutofillAssistantUiDelegate {
         mBottomBar.findViewById(R.id.feedback_button).setVisibility(View.GONE);
         hideProgressBar();
         hideDetails();
-        hideChipsViewContainer();
+        mBottomBarAnimations.hideCarousel();
     }
 
     /** Called to show overlay. */
@@ -421,8 +450,7 @@ class AutofillAssistantUiDelegate {
     }
 
     public void hideDetails() {
-        mDetails.setVisibility(View.GONE);
-        setCarouselTopPadding();
+        mBottomBarAnimations.hideDetails();
     }
 
     /** Called to show contextual information. */
@@ -440,10 +468,6 @@ class AutofillAssistantUiDelegate {
         }
 
         mDetailsImage.setVisibility(View.GONE);
-        mDetails.setVisibility(View.VISIBLE);
-        setCarouselTopPadding();
-        show();
-
         String url = details.getUrl();
         if (!url.isEmpty()) {
             // The URL is safe given because it comes from the knowledge graph and is hosted on
@@ -459,16 +483,10 @@ class AutofillAssistantUiDelegate {
                     mActivity, R.drawable.autofill_assistant_default_details));
             mDetailsImage.setVisibility(View.VISIBLE);
         }
-    }
 
-    private void setCarouselTopPadding() {
-        int topPadding = 0;
-        if (mDetails.getVisibility() != View.VISIBLE) {
-            topPadding = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 16, mActivity.getResources().getDisplayMetrics());
-        }
-        mChipsViewContainer.setPadding(mChipsViewContainer.getPaddingLeft(), topPadding,
-                mChipsViewContainer.getPaddingRight(), mChipsViewContainer.getPaddingBottom());
+        // Make sure the Autofill Assistant is visible.
+        show();
+        mBottomBarAnimations.showDetails();
     }
 
     private String getDetailsText(Details details) {
@@ -526,35 +544,24 @@ class AutofillAssistantUiDelegate {
      */
     public void showProfiles(ArrayList<AutofillProfile> profiles) {
         if (profiles.isEmpty()) {
+            clearCarousel();
             mClient.onAddressSelected("");
             return;
         }
 
-        clearChipsViewContainer();
-
+        ArrayList<View> childViews = new ArrayList<>();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             // TODO(crbug.com/806868): Show more information than the street.
             TextView chipView =
                     createChipView(profile.getStreetAddress(), ChipStyle.CHIP_ASSISTIVE);
             chipView.setOnClickListener((unusedView) -> {
-                clearChipsViewContainer();
+                clearCarousel();
                 mClient.onAddressSelected(profile.getGUID());
             });
-            addChipViewToContainer(chipView);
+            childViews.add(chipView);
         }
-
-        setChipViewContainerGravity(false);
-        show();
-    }
-
-    private void clearChipsViewContainer() {
-        mChipsViewContainer.removeAllViews();
-        hideChipsViewContainer();
-    }
-
-    private void hideChipsViewContainer() {
-        mChipsViewContainer.setVisibility(View.GONE);
+        setCarouselChildViews(childViews, /* alignRight= */ false);
     }
 
     /**
@@ -568,22 +575,19 @@ class AutofillAssistantUiDelegate {
             return;
         }
 
-        clearChipsViewContainer();
-
+        ArrayList<View> childViews = new ArrayList<>();
         for (int i = 0; i < cards.size(); i++) {
             CreditCard card = cards.get(i);
             // TODO(crbug.com/806868): Show more information than the card number.
             TextView chipView =
                     createChipView(card.getObfuscatedNumber(), ChipStyle.CHIP_ASSISTIVE);
             chipView.setOnClickListener((unusedView) -> {
-                clearChipsViewContainer();
+                clearCarousel();
                 mClient.onCardSelected(card.getGUID());
             });
-            addChipViewToContainer(chipView);
+            childViews.add(chipView);
         }
-
-        setChipViewContainerGravity(false);
-        show();
+        setCarouselChildViews(childViews, /* alignRight= */ false);
     }
 
     /**
