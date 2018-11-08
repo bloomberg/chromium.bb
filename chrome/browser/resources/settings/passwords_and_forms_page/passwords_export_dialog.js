@@ -43,6 +43,15 @@ Polymer({
   properties: {
     /** The error that occurred while exporting. */
     exportErrorMessage: String,
+
+    /** @private */
+    showStartDialog_: Boolean,
+
+    /** @private */
+    showProgressDialog_: Boolean,
+
+    /** @private */
+    showErrorDialog_: Boolean,
   },
 
   listeners: {'cancel': 'close'},
@@ -157,12 +166,9 @@ Polymer({
     this.delayedCompletionToken_ = null;
     this.passwordManager_.removePasswordsFileExportProgressListener(
         this.onPasswordsFileExportProgressListener_);
-    if (this.$.dialog_start.open)
-      this.$.dialog_start.close();
-    if (this.$.dialog_progress.open)
-      this.$.dialog_progress.close();
-    if (this.$.dialog_error.open)
-      this.$.dialog_error.close();
+    this.showStartDialog_ = false;
+    this.showProgressDialog_ = false;
+    this.showErrorDialog_ = false;
   },
 
   /**
@@ -210,16 +216,9 @@ Polymer({
    * @private
    */
   switchToDialog_(state) {
-    this.$.dialog_start.open = false;
-    this.$.dialog_error.open = false;
-    this.$.dialog_progress.open = false;
-
-    if (state == States.START)
-      this.$.dialog_start.showModal();
-    if (state == States.ERROR)
-      this.$.dialog_error.showModal();
-    if (state == States.IN_PROGRESS)
-      this.$.dialog_progress.showModal();
+    this.showStartDialog_ = state == States.START;
+    this.showProgressDialog_ = state == States.IN_PROGRESS;
+    this.showErrorDialog_ = state == States.ERROR;
   },
 
   /**

@@ -74,6 +74,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    showOnAttach: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
@@ -123,6 +128,8 @@ Polymer({
 
     // In some cases dialog already has the 'open' attribute by this point.
     mutationObserverCallback();
+    if (this.showOnAttach)
+      this.showModal();
   },
 
   /** @override */

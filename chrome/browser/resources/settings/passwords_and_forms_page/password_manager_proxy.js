@@ -114,6 +114,8 @@ class PasswordManagerProxy {
    *     listener
    */
   removePasswordsFileExportProgressListener(listener) {}
+
+  cancelExportPasswords() {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -230,6 +232,11 @@ class PasswordManagerImpl {
   removePasswordsFileExportProgressListener(listener) {
     chrome.passwordsPrivate.onPasswordsFileExportProgress.removeListener(
         listener);
+  }
+
+  /** @override */
+  cancelExportPasswords() {
+    chrome.passwordsPrivate.cancelExportPasswords();
   }
 }
 
