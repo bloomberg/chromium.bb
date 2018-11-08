@@ -16,9 +16,10 @@ from test_utils import (ProfileFile,
                         TestProfileManager)
 
 class ProcessProfilesTestCase(unittest.TestCase):
+  START_SYMBOL = process_profiles.SymbolOffsetProcessor.START_OF_TEXT_SYMBOL
 
   def setUp(self):
-    self.symbol_0 = SimpleTestSymbol('0', 0, 0)
+    self.symbol_0 = SimpleTestSymbol(self.START_SYMBOL, 0, 0)
     self.symbol_1 = SimpleTestSymbol('1', 8, 16)
     self.symbol_2 = SimpleTestSymbol('2', 32, 8)
     self.symbol_3 = SimpleTestSymbol('3', 40, 12)
@@ -38,6 +39,18 @@ class ProcessProfilesTestCase(unittest.TestCase):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
     offset_to_symbol_info = processor._GetDumpOffsetToSymbolInfo()
     self.assertListEqual(self.offset_to_symbol_info, offset_to_symbol_info)
+
+  def testSymbolsBeforeStart(self):
+    self.symbol_infos = [SimpleTestSymbol(s.name, s.offset + 8, s.size)
+                         for s in self.symbol_infos]
+    self.symbol_infos.append(SimpleTestSymbol('early', 0, 4))
+    processor = TestSymbolOffsetProcessor(self.symbol_infos)
+    offset_to_symbol_info = processor._GetDumpOffsetToSymbolInfo()
+    # The 'early' symbol should be omitted.
+    self.assertEqual(([None, None] + [self.symbol_infos[1]] * 4 +
+                      [None] * 2 + [self.symbol_infos[2]] * 2 +
+                      [self.symbol_infos[3]] * 3),
+                     offset_to_symbol_info)
 
   def testGetReachedOffsetsFromDump(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
@@ -60,7 +73,7 @@ class ProcessProfilesTestCase(unittest.TestCase):
 
   def testGetOrderedSymbols(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
-    self.assertListEqual(['1', '3', '0'],
+    self.assertListEqual(['1', '3', self.START_SYMBOL],
                          processor.GetOrderedSymbols([8, 41, 6, 0]))
 
   def testOffsetToSymbolsMap(self):

@@ -49,6 +49,7 @@ class SymbolOffsetProcessor(object):
   higher-level operations can be done in different orders without the caller
   managing all the state.
   """
+  START_OF_TEXT_SYMBOL = 'linker_script_start_of_text'
 
   def __init__(self, binary_filename):
     self._binary_filename = binary_filename
@@ -147,7 +148,8 @@ class SymbolOffsetProcessor(object):
         symbols.append(self.OffsetToPrimaryMap()[o - 1].name)
       else:
         not_found += 1
-    logging.warning('%d offsets do not have matching symbol', not_found)
+    if not_found:
+      logging.warning('%d offsets do not have matching symbol', not_found)
     return symbols
 
   def OffsetsPrimarySize(self, offsets):
@@ -234,7 +236,7 @@ class SymbolOffsetProcessor(object):
     for i in items:
       dump_offset = get(i)
       idx = dump_offset / 4
-      assert idx < len(dump_offset_to_symbol_info), (
+      assert dump_offset >= 0 and idx < len(dump_offset_to_symbol_info), (
           'Dump offset out of binary range')
       symbol_info = dump_offset_to_symbol_info[idx]
       if symbol_info is None:
@@ -254,12 +256,17 @@ class SymbolOffsetProcessor(object):
         section, maps it to a symbol, or None.
     """
     if self._offset_to_symbol_info is None:
-      min_offset = min(s.offset for s in self.SymbolInfos())
+      start_syms = [s for s in self.SymbolInfos()
+                    if s.name == self.START_OF_TEXT_SYMBOL]
+      assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
+      start_of_text = start_syms[0].offset
       max_offset = max(s.offset + s.size for s in self.SymbolInfos())
-      text_length_words = (max_offset - min_offset) / 4
+      text_length_words = (max_offset - start_of_text) / 4
       self._offset_to_symbol_info = [None for _ in xrange(text_length_words)]
       for s in self.SymbolInfos():
-        offset = s.offset - min_offset
+        offset = s.offset - start_of_text
+        if offset < 0:
+          continue
         for i in range(offset / 4, (offset + s.size) / 4):
           self._offset_to_symbol_info[i] = s
     return self._offset_to_symbol_info
