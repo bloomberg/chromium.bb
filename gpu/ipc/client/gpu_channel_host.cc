@@ -90,7 +90,7 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
                      std::move(message), &pending_sync));
 
   // http://crbug.com/125264
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   pending_sync.done_event->Wait();
 
   return pending_sync.send_result;
