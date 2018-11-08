@@ -2330,7 +2330,7 @@
               'msisov@igalia.com',
               'ozone-reviews@chromium.org'],
     'ozone_scenic': ['dworsham@google.com',
-                     'rjkroege@chromium.org'
+                     'rjkroege@chromium.org',
                      'sergeyu@chromium.org',
                      'spang+watch@chromium.org',
                      'wez@chromium.org'],
