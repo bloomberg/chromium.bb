@@ -288,6 +288,26 @@ void SecurityInfoForRequest(
       visible_security_state.insecure_input_events;
 }
 
+std::string GetHistogramSuffixForSecurityLevel(
+    security_state::SecurityLevel level) {
+  switch (level) {
+    case EV_SECURE:
+      return "EV_SECURE";
+    case SECURE:
+      return "SECURE";
+    case NONE:
+      return "NONE";
+    case HTTP_SHOW_WARNING:
+      return "HTTP_SHOW_WARNING";
+    case SECURE_WITH_POLICY_INSTALLED_CERT:
+      return "SECURE_WITH_POLICY_INSTALLED_CERT";
+    case DANGEROUS:
+      return "DANGEROUS";
+    default:
+      return "OTHER";
+  }
+}
+
 }  // namespace
 
 SecurityInfo::SecurityInfo()
@@ -352,6 +372,12 @@ bool IsOriginLocalhostOrFile(const GURL& url) {
 bool IsSslCertificateValid(SecurityLevel security_level) {
   return security_level == SECURE || security_level == EV_SECURE ||
          security_level == SECURE_WITH_POLICY_INSTALLED_CERT;
+}
+
+std::string GetSecurityLevelHistogramName(
+    const std::string& prefix,
+    security_state::SecurityLevel level) {
+  return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
 }
 
 }  // namespace security_state

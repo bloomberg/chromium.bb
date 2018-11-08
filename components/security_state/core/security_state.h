@@ -241,6 +241,10 @@ bool IsOriginLocalhostOrFile(const GURL& url);
 // SECURE, and SECURE_WITH_POLICY_INSTALLED_CERT are considered valid.
 bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 
+// Returns the given prefix suffixed with a dot and the current security level.
+std::string GetSecurityLevelHistogramName(
+    const std::string& prefix, security_state::SecurityLevel level);
+
 }  // namespace security_state
 
 #endif  // COMPONENTS_SECURITY_STATE_CORE_SECURITY_STATE_H_

@@ -32,30 +32,6 @@ const char kTimeOnPagePrefix[] = "Security.TimeOnPage";
 const char kSecurityLevelOnCommit[] = "Security.SecurityLevel.OnCommit";
 const char kSecurityLevelOnComplete[] = "Security.SecurityLevel.OnComplete";
 
-std::string GetHistogramSuffixForSecurityLevel(
-    security_state::SecurityLevel level) {
-  switch (level) {
-    case security_state::EV_SECURE:
-      return "EV_SECURE";
-    case security_state::SECURE:
-      return "SECURE";
-    case security_state::NONE:
-      return "NONE";
-    case security_state::HTTP_SHOW_WARNING:
-      return "HTTP_SHOW_WARNING";
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return "SECURE_WITH_POLICY_INSTALLED_CERT";
-    case security_state::DANGEROUS:
-      return "DANGEROUS";
-    default:
-      return "OTHER";
-  }
-}
-
-std::string GetHistogramName(const char* prefix,
-                             security_state::SecurityLevel level) {
-  return std::string(prefix) + "." + GetHistogramSuffixForSecurityLevel(level);
-}
 }  // namespace
 
 // static
@@ -77,21 +53,24 @@ SecurityStatePageLoadMetricsObserver::MaybeCreateForProfile(
 std::string
 SecurityStatePageLoadMetricsObserver::GetEngagementDeltaHistogramNameForTesting(
     security_state::SecurityLevel level) {
-  return GetHistogramName(kEngagementDeltaPrefix, level);
+  return security_state::GetSecurityLevelHistogramName(
+      kEngagementDeltaPrefix, level);
 }
 
 // static
 std::string
 SecurityStatePageLoadMetricsObserver::GetEngagementFinalHistogramNameForTesting(
     security_state::SecurityLevel level) {
-  return GetHistogramName(kEngagementFinalPrefix, level);
+  return security_state::GetSecurityLevelHistogramName(
+      kEngagementFinalPrefix, level);
 }
 
 // static
 std::string
 SecurityStatePageLoadMetricsObserver::GetPageEndReasonHistogramNameForTesting(
     security_state::SecurityLevel level) {
-  return GetHistogramName(kPageEndReasonPrefix, level);
+  return security_state::GetSecurityLevelHistogramName(
+      kPageEndReasonPrefix, level);
 }
 
 SecurityStatePageLoadMetricsObserver::SecurityStatePageLoadMetricsObserver(
@@ -189,18 +168,22 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     int delta = std::round(
         (final_engagement_score - initial_engagement_score_ + 100) / 2);
     base::UmaHistogramExactLinear(
-        GetHistogramName(kEngagementDeltaPrefix, current_security_level_),
+        security_state::GetSecurityLevelHistogramName(
+            kEngagementDeltaPrefix, current_security_level_),
         delta, 100);
     base::UmaHistogramExactLinear(
-        GetHistogramName(kEngagementFinalPrefix, current_security_level_),
+        security_state::GetSecurityLevelHistogramName(
+            kEngagementFinalPrefix, current_security_level_),
         final_engagement_score, 100);
   }
 
   base::UmaHistogramEnumeration(
-      GetHistogramName(kPageEndReasonPrefix, current_security_level_),
+      security_state::GetSecurityLevelHistogramName(
+          kPageEndReasonPrefix, current_security_level_),
       extra_info.page_end_reason, page_load_metrics::PAGE_END_REASON_COUNT);
   base::UmaHistogramCustomTimes(
-      GetHistogramName(kTimeOnPagePrefix, current_security_level_),
+      security_state::GetSecurityLevelHistogramName(
+          kTimeOnPagePrefix, current_security_level_),
       foreground_time_, base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromHours(1), 100);
   base::UmaHistogramEnumeration(kSecurityLevelOnComplete,
