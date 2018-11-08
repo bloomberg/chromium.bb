@@ -4,6 +4,7 @@
     <title>
       cycle-connection-gc.html
     </title>
+    <script src="../../resources/gc.js"></script>
     <script src="../../resources/js-test.js"></script>
   </head>
   <body>
@@ -11,21 +12,26 @@
       description('Cycles of AudioNode connections should be collected.');
       window.jsTestIsAsync = true;
 
-      gc();
-      let context = new OfflineAudioContext(2, 1024, 44100);
-      let initialCount = internals.audioHandlerCount();
-      createCycle();
-      debug('A cycle was created:');
-      shouldBeTrue('internals.audioHandlerCount() > initialCount');
+      let context;
+      let initialCount;
 
-      // Need to render to cleanup the cycle on an offline context
-      context.startRendering()
-        .then(() => {
-          gc();
-          debug('GC happened:');
-          shouldBe('internals.audioHandlerCount()', 'initialCount');
-          finishJSTest();
-      });
+      (async () => {
+        await asyncGC();
+
+        context = new OfflineAudioContext(2, 1024, 44100);
+        initialCount = internals.audioHandlerCount();
+        createCycle();
+        debug('A cycle was created:');
+        shouldBeTrue('internals.audioHandlerCount() > initialCount');
+
+        // Need to render to cleanup the cycle on an offline context
+        await context.startRendering();
+
+        await asyncGC();
+        debug('GC happened:');
+        shouldBe('internals.audioHandlerCount()', 'initialCount');
+        finishJSTest();
+      })();
 
       function createCycle() {
         let source = context.createBufferSource();
