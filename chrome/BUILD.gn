@@ -114,6 +114,7 @@ if (!is_android && !is_mac) {
     ]
     if (is_win) {
       public_deps += [ ":reorder_imports" ]
+      data_deps += [ ":reorder_imports" ]
     }
     if (use_aura && (is_win || is_linux)) {
       data_deps += [ "//chrome/app:service_manifests" ]
