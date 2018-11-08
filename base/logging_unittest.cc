@@ -540,7 +540,7 @@ void DcheckEmptyFunction1() {
 }
 void DcheckEmptyFunction2() {}
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
 class ScopedDcheckSeverity {
  public:
   ScopedDcheckSeverity(LogSeverity new_severity) : old_severity_(LOG_DCHECK) {
@@ -552,7 +552,7 @@ class ScopedDcheckSeverity {
  private:
   LogSeverity old_severity_;
 };
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 // https://crbug.com/709067 tracks test flakiness on iOS.
 #if defined(OS_IOS)
@@ -561,12 +561,12 @@ class ScopedDcheckSeverity {
 #define MAYBE_Dcheck Dcheck
 #endif
 TEST_F(LoggingTest, MAYBE_Dcheck) {
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
   // DCHECKs are enabled, and LOG_DCHECK is mutable, but defaults to non-fatal.
   // Set it to LOG_FATAL to get the expected behavior from the rest of this
   // test.
   ScopedDcheckSeverity dcheck_severity(LOG_FATAL);
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Release build.
@@ -727,7 +727,7 @@ namespace nested_test {
   }
 }  // namespace nested_test
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
 TEST_F(LoggingTest, ConfigurableDCheck) {
   // Verify that DCHECKs default to non-fatal in configurable-DCHECK builds.
   // Note that we require only that DCHECK is non-fatal by default, rather
@@ -777,7 +777,7 @@ TEST_F(LoggingTest, ConfigurableDCheckFeature) {
     EXPECT_LT(LOG_DCHECK, LOG_FATAL);
   }
 }
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 #if defined(OS_FUCHSIA)
 TEST_F(LoggingTest, FuchsiaLogging) {

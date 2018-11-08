@@ -85,13 +85,13 @@ GetDefaultTaskSchedulerInitParams() {
                                       kSuggestedReclaimTime));
 }
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
 void V8DcheckCallbackHandler(const char* file, int line, const char* message) {
   // TODO(siggi): Set a crash key or a breadcrumb so the fact that we hit a
   //     V8 DCHECK gets out in the crash report.
   ::logging::LogMessage(file, line, logging::LOG_DCHECK).stream() << message;
 }
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
 }  // namespace
 
@@ -101,7 +101,7 @@ RenderProcessImpl::RenderProcessImpl(
     std::unique_ptr<base::TaskScheduler::InitParams> task_scheduler_init_params)
     : RenderProcess("Renderer", std::move(task_scheduler_init_params)),
       enabled_bindings_(0) {
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DHECK_IS_CONFIGURABLE)
   // Some official builds ship with DCHECKs compiled in. Failing DCHECKs then
   // are either fatal or simply log the error, based on a feature flag.
   // Make sure V8 follows suit by setting a Dcheck handler that forwards to
@@ -120,7 +120,7 @@ RenderProcessImpl::RenderProcessImpl(
 
     v8::V8::SetFlagsFromString(kDisabledFlags, sizeof(kDisabledFlags));
   }
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DHECK_IS_CONFIGURABLE)
 
   if (base::SysInfo::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
