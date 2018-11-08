@@ -260,8 +260,16 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable MojoVideoDecoder, replacing GpuVideoDecoder.
-const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kMojoVideoDecoder {
+  "MojoVideoDecoder",
+#if defined(OS_CHROMEOS)
+      // TODO(posciak): Re-enable once the feature is verified on CrOS.
+      // https://crbug.com/902968.
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable The D3D11 Video decoder. Must also enable MojoVideoDecoder for
 // this to have any effect.
