@@ -30,7 +30,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,23 +96,9 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   GURL main_frame_url_;
 };
 
-class MockSyncService : public syncer::FakeSyncService {
- public:
-  MockSyncService() {}
-  ~MockSyncService() override {}
-  MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
-  MOCK_CONST_METHOD0(IsSyncActive, bool());
-  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
-  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
-};
-
 class MockAutofillClient : public autofill::TestAutofillClient {
  public:
-  MockAutofillClient() : sync_service_(nullptr) {}
-  MockAutofillClient(MockSyncService* sync_service)
-      : sync_service_(sync_service) {
-    LOG(ERROR) << "init mpck client";
-  }
+  MockAutofillClient() = default;
   MOCK_METHOD5(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
@@ -122,11 +107,6 @@ class MockAutofillClient : public autofill::TestAutofillClient {
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
   MOCK_METHOD0(HideAutofillPopup, void());
   MOCK_METHOD1(ExecuteCommand, void(int));
-
-  syncer::SyncService* GetSyncService() override { return sync_service_; }
-
- private:
-  MockSyncService* sync_service_;
 };
 
 bool IsPreLollipopAndroid() {
