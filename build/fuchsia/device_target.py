@@ -111,12 +111,8 @@ class DeviceTarget(target.Target):
           '--fvm',
           EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                                    'fvm.sparse.blk')),
-          '--fvm',
-          EnsurePathExists(
-              boot_data.ConfigureDataFVM(self._output_dir,
-                                         boot_data.FVM_TYPE_SPARSE)),
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'fuchsia.zbi'))]
+          EnsurePathExists(boot_data.GetBootImage(self._output_dir,
+                                                  self._GetTargetSdkArch()))]
 
       if self._GetTargetSdkArch() == 'x64':
         bootserver_command += [

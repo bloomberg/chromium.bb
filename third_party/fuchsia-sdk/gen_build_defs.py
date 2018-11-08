@@ -151,6 +151,7 @@ _CONVERSION_FUNCTION_MAP = {
   'image': ConvertNoOp,
   'loadable_module': ConvertNoOp,
   'sysroot': ConvertNoOp,
+  'documentation': ConvertNoOp,
 }
 
 
