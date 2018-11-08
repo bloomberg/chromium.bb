@@ -1,3 +1,2 @@
-CONSOLE MESSAGE: line 6: FAIL
-CONSOLE MESSAGE: line 7: compatible with old versions = true
+CONSOLE MESSAGE: line 9: SecurityError: Blocked a frame with origin "null" from accessing a cross-origin frame.
 

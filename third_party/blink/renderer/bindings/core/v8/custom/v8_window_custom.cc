@@ -235,13 +235,16 @@ void V8Window::namedPropertyGetterCustom(
         CurrentExecutionContext(info.GetIsolate()),
         WebFeature::
             kNamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch);
-    // In addition to the above spec'ed case, we return the child window
-    // regardless of step 3 due to crbug.com/701489 for the time being.
-    // TODO(yukishiino): Makes iframe.name update the browsing context name
-    // appropriately and makes the new name available in the named access on
-    // window.  Then, removes the following two lines.
-    V8SetReturnValueFast(info, child->DomWindow(), window);
-    return;
+    if (!RuntimeEnabledFeatures::
+            IgnoreCrossOriginWindowWhenNamedAccessOnWindowEnabled()) {
+      // In addition to the above spec'ed case, we return the child window
+      // regardless of step 3 due to crbug.com/701489 for the time being.
+      // TODO(yukishiino): Makes iframe.name update the browsing context name
+      // appropriately and makes the new name available in the named access on
+      // window.  Then, removes the following two lines.
+      V8SetReturnValueFast(info, child->DomWindow(), window);
+      return;
+    }
   }
 
   // This is a cross-origin interceptor. Check that the caller has access to the
