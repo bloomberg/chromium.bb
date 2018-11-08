@@ -121,11 +121,11 @@ class PageLoadMetricsUpdateDispatcher {
   ~PageLoadMetricsUpdateDispatcher();
 
   void UpdateMetrics(content::RenderFrameHost* render_frame_host,
-                     const mojom::PageLoadTiming& new_timing,
-                     const mojom::PageLoadMetadata& new_metadata,
-                     const mojom::PageLoadFeatures& new_features,
+                     mojom::PageLoadTimingPtr new_timing,
+                     mojom::PageLoadMetadataPtr new_metadata,
+                     mojom::PageLoadFeaturesPtr new_features,
                      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-                     const mojom::PageRenderData& render_data);
+                     mojom::PageRenderDataPtr render_data);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -155,14 +155,14 @@ class PageLoadMetricsUpdateDispatcher {
  private:
   using FrameTreeNodeId = int;
 
-  void UpdateMainFrameTiming(const mojom::PageLoadTiming& new_timing);
+  void UpdateMainFrameTiming(mojom::PageLoadTimingPtr new_timing);
   void UpdateSubFrameTiming(content::RenderFrameHost* render_frame_host,
-                            const mojom::PageLoadTiming& new_timing);
+                            mojom::PageLoadTimingPtr new_timing);
 
-  void UpdateMainFrameMetadata(const mojom::PageLoadMetadata& new_metadata);
-  void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
+  void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
+  void UpdateSubFrameMetadata(mojom::PageLoadMetadataPtr subframe_metadata);
 
-  void UpdateMainFrameRenderData(const mojom::PageRenderData& render_data);
+  void UpdateMainFrameRenderData(mojom::PageRenderDataPtr render_data);
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
