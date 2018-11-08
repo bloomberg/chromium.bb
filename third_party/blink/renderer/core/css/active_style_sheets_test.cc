@@ -419,7 +419,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddRemoveNonMatchingMQ) {
 }
 
 TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   CSSStyleSheet* sheet = CreateSheet("body * { color:red }");
 
@@ -440,7 +440,7 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   CSSStyleSheet* sheet = CreateSheet("body * { color:red }");
 
@@ -456,7 +456,7 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
 }
 
 TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   CSSStyleSheet* sheet =
       CreateSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
@@ -478,7 +478,7 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
 
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   CSSStyleSheet* sheet =
       CreateSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
@@ -505,7 +505,7 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
       "<style>::slotted(#dummy){color:pink}</style>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(GetStyleEngine().TreeBoundaryCrossingScopes().IsEmpty());
   ASSERT_EQ(1u, shadow_root.StyleSheets().length());

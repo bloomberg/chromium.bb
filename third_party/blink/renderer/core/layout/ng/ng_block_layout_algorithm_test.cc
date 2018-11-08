@@ -755,7 +755,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
     MutableStyleForElement(inflow_element)->SetMarginTop(inflow_margin_top);
     inflow_element->GetLayoutObject()->SetNeedsLayout("");
 
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
 
     LayoutNGBlockFlow* child;
     // #float
@@ -2304,7 +2304,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, RootFragmentOffsetInsideLegacy) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const LayoutObject* innerNGRoot = GetLayoutObjectByElementId("innerNGRoot");
 
   ASSERT_TRUE(innerNGRoot->IsLayoutNGMixin());
@@ -2324,7 +2324,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DetailsFlexDoesntCrash) {
   SetBodyInnerHTML(R"HTML(
     <details style="display:flex"></details>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   // No crash is good.
 }
 

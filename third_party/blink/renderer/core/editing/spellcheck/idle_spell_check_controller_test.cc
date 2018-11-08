@@ -198,7 +198,7 @@ TEST_F(IdleSpellCheckControllerTest, ColdModeRangeCrossesShadow) {
   html_object_element->RenderFallbackContent(
       html_object_element->ContentFrame());
   GetDocument().QuerySelector("div")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Advance to cold mode invocation
   IdleChecker().ForceInvocationForTesting();

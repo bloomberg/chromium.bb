@@ -58,7 +58,7 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
   }
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {
-    GetFrameView().UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     if (callback_queue_.size() > 0) {
       InvokeCallback();
     }
@@ -115,7 +115,7 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
     <div></div>
   )HTML");
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -219,14 +219,14 @@ TEST_F(ImagePaintTimingDetectorTest, DiscardAnalysisWhenLargestIsLoading) {
     </div>
   )HTML");
   SetImageAndPaint("1", 5, 5);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record;
   InvokeCallback();
   record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 
   SetImageAndPaint("2", 9, 9);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   InvokeCallback();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
@@ -250,16 +250,16 @@ TEST_F(ImagePaintTimingDetectorTest, MatchSwapTimeToNodesOfDifferentFrames) {
   )HTML");
 
   SetImageAndPaint("larger", 9, 9);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   SetImageAndPaint("smaller", 5, 5);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   InvokeCallback();
   // record1 is the larger.
   ImageRecord* record1 = FindLargestPaintCandidate();
   const base::TimeTicks record1Time = record1->first_paint_time_after_loaded;
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("larger"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   InvokeCallback();
   // record2 is the smaller.
   ImageRecord* record2 = FindLargestPaintCandidate();
@@ -294,7 +294,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
     <div></div>
   )HTML");
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ImageRecord* record = FindLastPaintCandidate();
   EXPECT_FALSE(record);
 }
@@ -322,9 +322,9 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
       <img height="7" width="7" id="3"></img>
     </div>
   )HTML");
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   SetImageAndPaint("1", 10, 10);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   clock.Advance(TimeDelta::FromSecondsD(1));
   InvokeCallback();
 
@@ -336,7 +336,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
             base::TimeTicks() + TimeDelta::FromSecondsD(1));
 
   SetImageAndPaint("2", 5, 5);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   clock.Advance(TimeDelta::FromSecondsD(1));
   InvokeCallback();
 
@@ -351,7 +351,7 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_Last) {
             base::TimeTicks() + TimeDelta::FromSecondsD(2));
 
   SetImageAndPaint("3", 7, 7);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   clock.Advance(TimeDelta::FromSecondsD(1));
   // 6th s
   InvokeCallback();
@@ -435,10 +435,10 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneSwapPromiseForOneFrame) {
     </div>
   )HTML");
   SetImageAndPaint("1", 5, 5);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   SetImageAndPaint("2", 9, 9);
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   InvokeCallback();
   ImageRecord* record;

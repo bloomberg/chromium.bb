@@ -159,28 +159,28 @@ TEST_F(TextAutosizerTest, ParagraphWithChangingTextSizeAdjustment) {
       40.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   autosized_div->setAttribute(html_names::kClassAttr, "none");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   autosized_div->setAttribute(html_names::kClassAttr, "small");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       8.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   autosized_div->setAttribute(html_names::kClassAttr, "large");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       24.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   autosized_div->removeAttribute(html_names::kClassAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
@@ -414,7 +414,7 @@ TEST_F(TextAutosizerTest, ChangingAccessibilityFontScaleFactor) {
                   autosized->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(2);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FLOAT_EQ(16.f,
                   autosized->GetLayoutObject()->StyleRef().SpecifiedFontSize());
@@ -473,7 +473,7 @@ TEST_F(TextAutosizerTest, TextSizeAdjustDoesNotDisableAccessibility) {
   // Changing the accessibility font scale factor should change the adjusted
   // size.
   GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(2);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FLOAT_EQ(
       16.f,
@@ -534,7 +534,7 @@ TEST_F(TextAutosizerTest, DeviceScaleAdjustmentWithViewport) {
 
   GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   GetDocument().GetSettings()->SetDeviceScaleAdjustment(1.5f);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* autosized = GetDocument().getElementById("autosized");
   EXPECT_FLOAT_EQ(16.f,
@@ -546,7 +546,7 @@ TEST_F(TextAutosizerTest, DeviceScaleAdjustmentWithViewport) {
                   autosized->GetLayoutObject()->StyleRef().ComputedFontSize());
 
   GetDocument().GetSettings()->SetViewportMetaEnabled(false);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   autosized = GetDocument().getElementById("autosized");
   EXPECT_FLOAT_EQ(16.f,
@@ -572,7 +572,7 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterFirstText) {
       <div id='shortText'>short blah blah</div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* long_text_element = GetDocument().getElementById("longText");
   long_text_element->SetInnerHTMLFromString(
@@ -588,7 +588,7 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterFirstText) {
       "qui officia deserunt"
       "    mollit anim id est laborum.",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject* long_text =
       GetDocument().getElementById("longText")->GetLayoutObject();
@@ -617,7 +617,7 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterSecondText) {
       <div id='longText'>short blah blah</div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* long_text_element = GetDocument().getElementById("longText");
   long_text_element->SetInnerHTMLFromString(
@@ -633,7 +633,7 @@ TEST_F(TextAutosizerTest, ChangingSuperClusterSecondText) {
       "qui officia deserunt"
       "    mollit anim id est laborum.",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject* long_text =
       GetDocument().getElementById("longText")->GetLayoutObject();
@@ -662,7 +662,7 @@ TEST_F(TextAutosizerTest, AddingSuperCluster) {
     </div>
     <div id='container'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* container = GetDocument().getElementById("container");
   container->SetInnerHTMLFromString(
@@ -680,7 +680,7 @@ TEST_F(TextAutosizerTest, AddingSuperCluster) {
       "    mollit anim id est laborum."
       "</div>",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject* long_text =
       GetDocument().getElementById("longText")->GetLayoutObject();
@@ -710,7 +710,7 @@ TEST_F(TextAutosizerTest, ChangingInheritedClusterTextInsideSuperCluster) {
       <div class='cluster' id='shortText'>short blah blah</div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* long_text_element = GetDocument().getElementById("longText");
   long_text_element->SetInnerHTMLFromString(
@@ -726,7 +726,7 @@ TEST_F(TextAutosizerTest, ChangingInheritedClusterTextInsideSuperCluster) {
       "qui officia deserunt"
       "    mollit anim id est laborum.",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject* long_text =
       GetDocument().getElementById("longText")->GetLayoutObject();
@@ -776,7 +776,7 @@ TEST_F(TextAutosizerTest, AutosizeInnerContentOfRuby) {
       </ruby>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* ruby_inline = GetDocument().getElementById("rubyInline");
   EXPECT_FLOAT_EQ(
@@ -826,15 +826,15 @@ TEST_F(TextAutosizerTest, ResizeAndGlyphOverflowChanged) {
       "  <span style='font-size:15px'>n</span>"
       "</body>",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
       IntSize(640, 360));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
       IntSize(360, 640));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_F(TextAutosizerTest, narrowContentInsideNestedWideBlock) {
@@ -864,7 +864,7 @@ TEST_F(TextAutosizerTest, narrowContentInsideNestedWideBlock) {
       "  </div>"
       "</body>",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* content = GetDocument().getElementById("content");
   //(content width = 200px) / (window width = 320px) < 1.0f, multiplier = 1.0,
@@ -896,7 +896,7 @@ TEST_F(TextAutosizerTest, LayoutViewWidthProvider) {
       "  <div id='panel'></div>"
       "</body>",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* content = GetDocument().getElementById("content");
   // (specified font-size = 16px) * (viewport width = 800px) /
@@ -906,7 +906,7 @@ TEST_F(TextAutosizerTest, LayoutViewWidthProvider) {
 
   GetDocument().getElementById("panel")->SetInnerHTMLFromString("insert text");
   content->SetInnerHTMLFromString(content->InnerHTMLAsString());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // (specified font-size = 16px) * (viewport width = 800px) /
   // (window width = 320px) = 40px.
@@ -939,7 +939,7 @@ TEST_F(TextAutosizerTest, MultiColumns) {
       "  <div> hello </div>"
       "</body>",
       ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* target = GetDocument().getElementById("target");
   // (specified font-size = 16px) * ( thread flow layout width = 800px / 3) /

@@ -161,7 +161,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
   void UpdateVisibilityObserver() {
     // Let IntersectionObserver update.
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     test::RunPendingTasks();
   }
 
@@ -315,7 +315,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should have observed visibility once compositor updates.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   test::RunPendingTasks();
   EXPECT_TRUE(ObservedVisibility());
 
@@ -336,7 +336,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should have observed visibility once compositor updates.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   test::RunPendingTasks();
   EXPECT_TRUE(ObservedVisibility());
 }

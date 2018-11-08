@@ -73,7 +73,7 @@ class DocumentTest : public PageTestBase {
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 namespace {
@@ -561,13 +561,13 @@ TEST_F(DocumentTest, StyleVersion) {
   element->setAttribute(blink::html_names::kClassAttr, "notfound");
   EXPECT_EQ(previous_style_version, GetDocument().StyleVersion());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::html_names::kClassAttr, "a");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   previous_style_version = GetDocument().StyleVersion();
   element->setAttribute(blink::html_names::kClassAttr, "a b");
@@ -1145,7 +1145,7 @@ class ParameterizedViewportFitDocumentTest
     }
 
     GetDocument().documentElement()->SetInnerHTMLFromString(html.ToString());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 };
 

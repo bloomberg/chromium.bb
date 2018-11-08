@@ -135,7 +135,7 @@ class AnimationAnimationTest : public RenderingTest {
 
     // After creating the animation we need to clean the lifecycle so that the
     // animation can be pushed to the compositor.
-    UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
 
     document->GetAnimationClock().UpdateTime(base::TimeTicks());
     document->GetPendingAnimations().Update(base::nullopt, true);

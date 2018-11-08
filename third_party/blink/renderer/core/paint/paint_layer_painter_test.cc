@@ -341,7 +341,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
       *GetDocument().getElementById("outline")->GetLayoutObject();
   ToHTMLElement(outline_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_outline);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
       GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
@@ -363,7 +363,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   ToHTMLElement(self_painting_layer_object.GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; outline: 1px solid green");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_TRUE(DisplayItemListContains(
@@ -386,7 +386,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   // actually painted.
   ToHTMLElement(outline_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_outline);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantOutlines());
 }
 
@@ -408,7 +408,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
       *GetDocument().getElementById("float")->GetLayoutObject();
   ToHTMLElement(float_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_float);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
       GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
@@ -441,7 +441,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
   // painted.
   ToHTMLElement(float_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_float);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseFloat());
 }
 
@@ -456,7 +456,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
       </div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutObject& float_div =
       *GetDocument().getElementById("float")->GetLayoutObject();
@@ -501,7 +501,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
       *GetDocument().getElementById("background")->GetLayoutObject();
   ToHTMLElement(background_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_background);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
       GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
@@ -524,7 +524,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   ToHTMLElement(self_painting_layer_object.GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; background: green");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
   EXPECT_FALSE(
       non_self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
@@ -549,7 +549,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   // is actually painted.
   ToHTMLElement(background_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, style_without_background);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 
@@ -581,7 +581,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {
   EXPECT_FALSE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 
   ToHTMLElement(layer_div.GetNode())->setAttribute(html_names::kStyleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(layer_div.HasLayer());
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
@@ -614,7 +614,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
 
   ToHTMLElement(layer_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(layer_div.HasLayer());
   PaintLayer& layer = *layer_div.Layer();
   ASSERT_TRUE(layer.IsSelfPaintingLayer());
@@ -651,7 +651,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
       ->setAttribute(
           html_names::kStyleAttr,
           "width: 100px; height: 100px; overflow: hidden; position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   PaintLayer& layer = *layer_div.Layer();
   ASSERT_TRUE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
@@ -690,7 +690,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
   ToHTMLElement(layer_div.GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "width: 100px; height: 100px; overflow: hidden");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
@@ -737,7 +737,7 @@ TEST_P(PaintLayerPainterTest,
   ToHTMLElement(table.GetNode())
       ->setAttribute(html_names::kStyleAttr,
                      "position: relative; border-collapse: collapse");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 

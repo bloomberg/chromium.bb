@@ -99,7 +99,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
                            SetSelectionOptions());
   sample->setAttribute(html_names::kStyleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const EphemeralRange& range =
       FirstEphemeralRangeOf(Selection().ComputeVisibleSelectionInDOMTree());
   EXPECT_EQ(Position(sample->nextSibling(), 0), range.StartPosition())
@@ -109,7 +109,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
 
 TEST_F(FrameSelectionTest, SetValidSelection) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
@@ -119,7 +119,7 @@ TEST_F(FrameSelectionTest, SetValidSelection) {
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
   GetDocument().body()->focus();
@@ -128,7 +128,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Selection().SetCaretVisible(true);
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
   EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
@@ -159,7 +159,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
 TEST_F(FrameSelectionTest, SelectWordAroundCaret) {
   // "Foo Bar  Baz,"
   Text* text = AppendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // "Fo|o Bar  Baz,"
   EXPECT_TRUE(SelectWordAroundPosition(Position(text, 2)));
@@ -234,7 +234,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   // "Foo Bar Baz,"
   Text* text = AppendTextNode("Foo Bar Baz,");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Itinitializes with "Foo B|a>r Baz," (| means start and > means end).
   Selection().SetSelectionAndEndTyping(
@@ -374,7 +374,7 @@ TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
 
 TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))

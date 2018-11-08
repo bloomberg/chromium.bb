@@ -132,7 +132,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
     GetDocument().firstChild()->remove();
   GetDocument().AppendChild(table);
   GetDocument().setDesignMode("on");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsEditablePosition(Position(table, 0)));
 }
@@ -271,7 +271,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_FirstLetter) {
   EXPECT_EQ(2, NextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, NextGraphemeBoundaryOf(node, 2));
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, node.GetLayoutObject());
   EXPECT_EQ(2, PreviousGraphemeBoundaryOf(node, 3));
   EXPECT_EQ(1, PreviousGraphemeBoundaryOf(node, 2));
@@ -292,7 +292,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_textTransform) {
   EXPECT_EQ(2, NextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, NextGraphemeBoundaryOf(node, 2));
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, node.GetLayoutObject());
   EXPECT_EQ(2, PreviousGraphemeBoundaryOf(node, 3));
   EXPECT_EQ(1, PreviousGraphemeBoundaryOf(node, 2));

@@ -44,7 +44,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
   void ExpectFullPaintInvalidationOnGeometryChange(const char* test_title) {
     SCOPED_TRACE(test_title);
 
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     auto& target = *GetDocument().getElementById("target");
     auto& box = *ToLayoutBox(target.GetLayoutObject());
     LayoutRect visual_rect = box.FirstFragment().VisualRect();
@@ -104,7 +104,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   auto& box = *ToLayoutBox(target.GetLayoutObject());
   // Remove border.
   target.setAttribute(html_names::kClassAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
   LayoutRect visual_rect = box.FirstFragment().VisualRect();
@@ -139,7 +139,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   // Remove border.
   target.setAttribute(html_names::kClassAttr, "");
   target.setAttribute(html_names::kStyleAttr, "background: blue");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   box.SetShouldCheckForPaintInvalidation();
   LayoutRect visual_rect = box.FirstFragment().VisualRect();

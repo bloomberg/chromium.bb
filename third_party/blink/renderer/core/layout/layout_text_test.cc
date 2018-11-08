@@ -40,7 +40,7 @@ class LayoutTextTest : public RenderingTest {
   void SetSelectionAndUpdateLayoutSelection(const std::string& selection_text) {
     const SelectionInDOMTree selection =
         SelectionSample::SetSelectionText(GetDocument().body(), selection_text);
-    UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     Selection().SetSelectionAndEndTyping(selection);
     Selection().CommitAppearanceIfNeeded();
   }

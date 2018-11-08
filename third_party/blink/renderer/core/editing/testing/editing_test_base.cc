@@ -64,7 +64,7 @@ SelectionInDOMTree EditingTestBase::SetSelectionText(
     const std::string& selection_text) {
   const SelectionInDOMTree selection =
       SelectionSample::SetSelectionText(element, selection_text);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   return selection;
 }
 

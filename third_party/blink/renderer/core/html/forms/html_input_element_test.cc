@@ -169,7 +169,7 @@ TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
   GetDocument().View()->GetFrame().GetPage()->GetVisualViewport().SetScale(2.f);
   GetDocument().body()->SetInnerHTMLFromString(
       "<input type='date' style='width:200px;height:50px' />");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   HTMLInputElement* input =
       ToHTMLInputElement(GetDocument().body()->firstChild());
 
@@ -219,7 +219,7 @@ TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
   EXPECT_EQ(1u, list->length());
 
   input->setFiles(list);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(input->GetLayoutObject());
   EXPECT_FALSE(input->GetLayoutObject()->ShouldCheckForPaintInvalidation());

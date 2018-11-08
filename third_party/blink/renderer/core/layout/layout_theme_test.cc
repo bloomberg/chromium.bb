@@ -26,7 +26,7 @@ class LayoutThemeTest : public PageTestBase {
 void LayoutThemeTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 inline Color OutlineColor(Element* element) {
@@ -55,7 +55,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   span->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Checking focused style.
   EXPECT_NE(EBorderStyle::kNone, OutlineStyle(span));
@@ -64,7 +64,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   // Change focus ring color.
   LayoutTheme::GetTheme().SetCustomFocusRingColor(custom_color);
   Page::PlatformColorsChanged();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the focus ring color is updated.
   EXPECT_NE(EBorderStyle::kNone, OutlineStyle(span));

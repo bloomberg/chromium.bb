@@ -103,7 +103,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_AfterLoad) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -120,7 +120,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Change) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -146,7 +146,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the document
   // variable.
@@ -158,7 +158,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the global
   // variable.
@@ -183,7 +183,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the document
   // variable.
@@ -221,7 +221,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element does not have the background color any more.
   EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
@@ -285,7 +285,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_AfterLoad) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -304,7 +304,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -353,7 +353,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element does not have the background color any more.
   EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(

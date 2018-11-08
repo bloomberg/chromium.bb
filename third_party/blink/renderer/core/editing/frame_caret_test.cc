@@ -50,7 +50,7 @@ TEST_F(FrameCaretTest, BlinkAfterTyping) {
   GetDocument().body()->SetInnerHTMLFromString("<textarea>");
   Element* editor = ToElement(GetDocument().body()->firstChild());
   editor->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(caret.IsActive());
   EXPECT_FALSE(caret.ShouldShowBlockCursor());
@@ -62,17 +62,17 @@ TEST_F(FrameCaretTest, BlinkAfterTyping) {
       << "The caret blinks normally.";
 
   TypingCommand::InsertLineBreak(GetDocument());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(caret.ShouldPaintCaretForTesting())
       << "The caret should be in visible cycle just after a typing command.";
 
   task_runner->AdvanceTimeAndRun(kInterval - 1);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(caret.ShouldPaintCaretForTesting())
       << "The typing command reset the timer. The caret is still visible.";
 
   task_runner->AdvanceTimeAndRun(1);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(caret.ShouldPaintCaretForTesting())
       << "The caret should blink after the typing command.";
 }
@@ -89,7 +89,7 @@ TEST_F(FrameCaretTest, ShouldNotBlinkWhenSelectionLooseFocus) {
   input->focus();
   Element* outer = GetDocument().QuerySelector("#outer");
   outer->focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const SelectionInDOMTree& selection = Selection().GetSelectionInDOMTree();
   EXPECT_EQ(selection.Base(),
             Position(input, PositionAnchorType::kBeforeChildren));

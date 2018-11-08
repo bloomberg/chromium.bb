@@ -255,7 +255,7 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   EXPECT_EQ(LayoutPoint(-1000, -1000), content_layer->Location());
   EXPECT_FALSE(content_layer->NeedsRepaint());
   EXPECT_FALSE(scroll_layer->NeedsRepaint());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
@@ -285,7 +285,7 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   EXPECT_EQ(LayoutPoint(-1000, -1000), content_layer->Location());
   EXPECT_TRUE(scroll_layer->NeedsRepaint());
   EXPECT_FALSE(content_layer->NeedsRepaint());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
@@ -326,7 +326,7 @@ TEST_P(PaintLayerTest, HasStickyPositionDescendant) {
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(parent->HasStickyPositionDescendant());
   EXPECT_FALSE(child->HasStickyPositionDescendant());
@@ -346,7 +346,7 @@ TEST_P(PaintLayerTest, HasFixedPositionDescendant) {
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(parent->HasFixedPositionDescendant());
   EXPECT_FALSE(child->HasFixedPositionDescendant());
@@ -373,7 +373,7 @@ TEST_P(PaintLayerTest, HasFixedAndStickyPositionDescendant) {
 
   GetDocument().getElementById("child1")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(parent->HasFixedPositionDescendant());
   EXPECT_FALSE(child1->HasFixedPositionDescendant());
@@ -384,7 +384,7 @@ TEST_P(PaintLayerTest, HasFixedAndStickyPositionDescendant) {
 
   GetDocument().getElementById("child2")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(parent->HasFixedPositionDescendant());
   EXPECT_FALSE(child1->HasFixedPositionDescendant());
@@ -408,14 +408,14 @@ TEST_P(PaintLayerTest, HasNonContainedAbsolutePositionDescendant) {
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "position: absolute");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(parent->HasNonContainedAbsolutePositionDescendant());
   EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
 
   GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(parent->HasNonContainedAbsolutePositionDescendant());
   EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
 }
@@ -566,7 +566,7 @@ TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
   GetDocument()
       .getElementById("grandchild1")
       ->setAttribute(html_names::kStyleAttr, "isolation: isolate");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(parent->SupportsSubsequenceCaching());
   EXPECT_FALSE(child1->SupportsSubsequenceCaching());
@@ -614,7 +614,7 @@ TEST_P(PaintLayerTest, NegativeZIndexChangeToPositive) {
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "z-index: 1");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(target->StackingNode()->HasNegativeZOrderList());
   EXPECT_TRUE(target->StackingNode()->HasPositiveZOrderList());
@@ -683,7 +683,7 @@ TEST_P(PaintLayerTest, Has3DTransformedDescendantChangeStyle) {
 
   GetDocument().getElementById("child")->setAttribute(
       html_names::kStyleAttr, "transform: translateZ(1px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(parent->Has3DTransformedDescendant());
   EXPECT_FALSE(child->Has3DTransformedDescendant());
@@ -739,7 +739,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
   // Move the child frame offscreen so it becomes available for throttling.
   auto* iframe = ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
   iframe->setAttribute(html_names::kStyleAttr, "transform: translateY(5555px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   // Ensure intersection observer notifications get delivered.
   test::RunPendingTasks();
   EXPECT_FALSE(GetDocument().View()->IsHiddenForThrottling());
@@ -765,7 +765,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
 
     // Also check that the rest of the lifecycle succeeds without crashing due
     // to a stale m_needsDescendantDependentFlagsUpdate.
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
 
     // Still dirty, because the frame was throttled.
     EXPECT_TRUE(ChildDocument()
@@ -775,7 +775,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
                     ->needs_descendant_dependent_flags_update_);
   }
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(ChildDocument()
                    .View()
                    ->GetLayoutView()
@@ -808,7 +808,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
@@ -837,7 +837,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
 
   scroller->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 20),
                                                  kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
@@ -1361,7 +1361,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   EXPECT_TRUE(target_layer->NeedsRepaint());
   EXPECT_TRUE(target_layer->CompositingContainer()->NeedsRepaint());
   EXPECT_TRUE(span_layer->NeedsRepaint());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
@@ -1389,7 +1389,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
   EXPECT_TRUE(body_layer->NeedsRepaint());
   EXPECT_TRUE(old_compositing_container->NeedsRepaint());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 TEST_P(PaintLayerTest, FrameViewContentSize) {
@@ -1488,7 +1488,7 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       squashed->GetLayoutObject(), point);

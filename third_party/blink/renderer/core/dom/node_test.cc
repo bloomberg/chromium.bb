@@ -267,7 +267,7 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_Slotted) {
           ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
       "<div id=root style='display:contents'><span></span><slot></slot></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* root = shadow_root.getElementById("root");
   Element* span = GetDocument().getElementById("inline");
@@ -309,7 +309,7 @@ TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
 }
 
 TEST_F(NodeTest, appendChildProcessingInstructionNoStyleRecalc) {
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   ProcessingInstruction* pi =
       ProcessingInstruction::Create(GetDocument(), "A", "B");
@@ -318,7 +318,7 @@ TEST_F(NodeTest, appendChildProcessingInstructionNoStyleRecalc) {
 }
 
 TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   Comment* comment = Comment::Create(GetDocument(), "comment");
   GetDocument().body()->appendChild(comment, ASSERT_NO_EXCEPTION);
@@ -331,7 +331,7 @@ TEST_F(NodeTest, LazyReattachCommentAndPI) {
   ProcessingInstruction* pi =
       ProcessingInstruction::Create(GetDocument(), "A", "B");
   body->appendChild(pi, ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* comment = body->firstChild();
   EXPECT_EQ(Node::kCommentNode, comment->getNodeType());

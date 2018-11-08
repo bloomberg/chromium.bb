@@ -73,7 +73,7 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
   )HTML");
   Element* element = GetDocument().getElementById("test");
   element->setAttribute(html_names::kClassAttr, "contrast1");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ElementAnimations* animations = element->GetElementAnimations();
   EXPECT_EQ(1u, animations->Animations().size());
   Animation* animation = (*animations->Animations().begin()).key;
@@ -85,13 +85,13 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
   // Starting the second transition should retarget the active transition.
   element->setAttribute(html_names::kClassAttr, "contrast2");
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_DOUBLE_EQ(0.6, GetContrastFilterAmount(element));
 
   // As it has been retargeted, advancing halfway should go to 0.3.
   AdvanceClockSeconds(0.5);
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_DOUBLE_EQ(0.3, GetContrastFilterAmount(element));
 }
 
@@ -109,7 +109,7 @@ TEST_F(CSSAnimationsTest, IncompatibleRetargetedTransition) {
   )HTML");
   Element* element = GetDocument().getElementById("test");
   element->setAttribute(html_names::kClassAttr, "saturate");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ElementAnimations* animations = element->GetElementAnimations();
   EXPECT_EQ(1u, animations->Animations().size());
   Animation* animation = (*animations->Animations().begin()).key;
@@ -127,7 +127,7 @@ TEST_F(CSSAnimationsTest, IncompatibleRetargetedTransition) {
   // be no transition and it should immediately apply on the next frame.
   element->setAttribute(html_names::kClassAttr, "contrast");
   EXPECT_TRUE(element->GetComputedStyle()->Filter().IsEmpty());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(0.2, GetContrastFilterAmount(element));
 }
 

@@ -20,7 +20,7 @@ TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
   SetBodyContent(
       "<span id=s1 style='--A:var(---B)'>1</span>"
       "<span id=s2 style='float:var(--C)'>2</span>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EditingStyle* editing_style =
       EditingStyle::Create(ToHTMLElement(GetDocument().getElementById("s2")));

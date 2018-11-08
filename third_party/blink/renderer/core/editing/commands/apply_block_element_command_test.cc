@@ -63,7 +63,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
   SetBodyContent("<ul style='visibility:hidden'><li>xyz</li></ul>");
   GetDocument().setDesignMode("on");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().QuerySelector("li"), 0))

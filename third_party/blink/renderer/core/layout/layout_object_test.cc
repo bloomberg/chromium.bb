@@ -465,7 +465,7 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
   ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const LayoutTextFragment* layout_object0 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 0));
@@ -565,7 +565,7 @@ TEST_F(LayoutObjectTest, DisplayContentsAddInlineWrapper) {
   ExpectAnonymousInlineWrapperFor<false>(text);
 
   div->SetInlineStyleProperty(CSSPropertyColor, "pink");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<true>(text);
 }
 
@@ -578,7 +578,7 @@ TEST_F(LayoutObjectTest, DisplayContentsRemoveInlineWrapper) {
   ExpectAnonymousInlineWrapperFor<true>(text);
 
   div->RemoveInlineStyleProperty(CSSPropertyColor);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<false>(text);
 }
 
@@ -618,7 +618,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTable) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -644,7 +644,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableSection) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -670,7 +670,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableRow) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -697,7 +697,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
 }
@@ -744,7 +744,7 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   svg_element->appendChild(text);
   span->appendChild(svg_element);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_FALSE(svg_element->GetLayoutObject());
   ASSERT_FALSE(text->GetLayoutObject());
@@ -763,7 +763,7 @@ TEST_F(LayoutObjectTest, HasDistortingVisualEffects) {
       <div class=inner></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* outer = GetDocument().getElementById("opaque");
   Element* inner = outer->QuerySelector(".inner");

@@ -39,7 +39,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
       {CSSPropertyColor, CSSPropertyAlignItems});
   Vector<AtomicString> empty_custom_properties;
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
   PrepopulatedComputedStylePropertyMap* map =
@@ -75,7 +75,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
   Vector<CSSPropertyID> empty_native_properties;
   Vector<AtomicString> custom_properties({"--foo", "--bar"});
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
   PrepopulatedComputedStylePropertyMap* map =

@@ -65,7 +65,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionInputEventListeners() {
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => document.title += `compositionend.data:${event.data};`);");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   editable->focus();
 }
 
@@ -110,7 +110,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionEndEventListener(
       NOTREACHED();
   }
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   editable->focus();
 }
 
@@ -1201,7 +1201,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
       "  event => document.title += "
       "  `input.isComposing:${event.isComposing};`);");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
@@ -2557,7 +2557,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 11);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "hello".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 5);
@@ -2591,7 +2591,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 0);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Select "hello".
   GetFrame().Selection().SetSelectionAndEndTyping(
@@ -2630,7 +2630,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2663,7 +2663,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2696,7 +2696,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2730,7 +2730,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2763,7 +2763,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Select "world".
   GetFrame().Selection().SetSelectionAndEndTyping(
@@ -2801,7 +2801,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 11);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "hello".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 5);
@@ -2837,7 +2837,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2870,7 +2870,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2903,7 +2903,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2935,7 +2935,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2965,7 +2965,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -2995,7 +2995,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -3025,7 +3025,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -3057,7 +3057,7 @@ TEST_F(
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 

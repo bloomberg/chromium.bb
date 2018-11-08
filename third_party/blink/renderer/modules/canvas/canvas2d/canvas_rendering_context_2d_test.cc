@@ -1193,7 +1193,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetVisibilityState(
@@ -1205,7 +1205,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             !CanvasElement().ResourceProvider());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.
@@ -1232,7 +1232,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetVisibilityState(

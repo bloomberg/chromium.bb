@@ -378,7 +378,7 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
       "      :first-letter, None(0,1), ShouldInvalidate \n"
       "  'baz', End(0,1), ShouldInvalidate ",
       DumpSelectionInfo());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  <style> \n"
@@ -388,7 +388,7 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
       "      :first-letter, None(0,1), NotInvalidate \n"
       "  'baz', End(0,1), NotInvalidate ",
       DumpSelectionInfo());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // <div>foo</div><div>bar</div>ba^z|
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree::Builder()
@@ -440,7 +440,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_Start) {
       DumpSelectionInfo());
 
   // Paint virtually and clear ShouldInvalidate flag.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(1,3), NotInvalidate \n"
@@ -477,7 +477,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_End) {
       DumpSelectionInfo());
 
   // Paint virtually and clear ShouldInvalidate flag.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(1,3), NotInvalidate \n"
@@ -511,7 +511,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd) {
       DumpSelectionInfo());
 
   // Paint virtually and clear ShouldInvalidate flag.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foobar', StartAndEnd(1,4), NotInvalidate ",
@@ -541,7 +541,7 @@ TEST_F(LayoutSelectionTest, MoveOnSameNode_StartAndEnd_Collapse) {
       DumpSelectionInfo());
 
   // Paint virtually and clear ShouldInvalidate flag.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foobar', StartAndEnd(1,4), NotInvalidate ",
@@ -585,7 +585,7 @@ TEST_F(LayoutSelectionTest, ClearSelection) {
       "    'foo', StartAndEnd(1,2), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
@@ -614,7 +614,7 @@ TEST_F(LayoutSelectionTest, SVG) {
       "      'foobar', StartAndEnd(2,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  svg, Contain, NotInvalidate \n"
@@ -651,7 +651,7 @@ TEST_F(LayoutSelectionTest, SVGAncestor) {
       "        'foobar', StartAndEnd(2,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  svg, Contain, NotInvalidate \n"
@@ -700,7 +700,7 @@ TEST_F(LayoutSelectionTest, Ruby) {
       "      'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  RUBY, Contain, NotInvalidate \n"
@@ -741,7 +741,7 @@ TEST_F(LayoutSelectionTest, ClearByRemoveNode) {
       "    'bar', Inside(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(0,3), NotInvalidate \n"
@@ -774,7 +774,7 @@ TEST_F(LayoutSelectionTest, ClearByRemoveLayoutObject) {
       "  SPAN, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> ",
       DumpSelectionInfo());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(0,3), NotInvalidate \n"
@@ -820,7 +820,7 @@ TEST_F(LayoutSelectionTest, ClearBySlotChange) {
       "      'bar', <null LayoutObject> ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
@@ -857,7 +857,7 @@ TEST_F(LayoutSelectionTest, MoveNode) {
       "        'bar', <null LayoutObject> ",
       DumpSelectionInfo());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, None, NotInvalidate \n"
       "  DIV, None, NotInvalidate \n"
@@ -877,7 +877,7 @@ TEST_F(LayoutSelectionTest, InvalidateSlot) {
                              "</template>"
                              "foo"
                              "</div>|"));
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"

@@ -75,7 +75,7 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
   EXPECT_TRUE(null_visible_position.IsValid());
   EXPECT_FALSE(non_null_visible_position.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Invalid VisiblePosition can never become valid again.
   EXPECT_FALSE(non_null_visible_position.IsValid());
@@ -93,14 +93,14 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
                             ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position1.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   VisiblePosition visible_position2 = CreateVisiblePosition(position);
   div->style()->setProperty(&GetDocument(), "display", "none", "important",
                             ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position2.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Invalid VisiblePosition can never become valid again.
   EXPECT_FALSE(visible_position1.IsValid());

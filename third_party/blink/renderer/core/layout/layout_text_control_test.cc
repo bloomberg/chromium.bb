@@ -38,7 +38,7 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
@@ -47,7 +47,7 @@ TEST_F(LayoutTextControlTest,
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 
@@ -63,7 +63,7 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
@@ -72,7 +72,7 @@ TEST_F(LayoutTextControlTest,
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 
@@ -88,7 +88,7 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
@@ -97,7 +97,7 @@ TEST_F(LayoutTextControlTest,
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 

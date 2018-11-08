@@ -63,7 +63,7 @@ void CanvasRenderingContext2DAPITest::SetUp() {
   PageTestBase::SetUp();
   GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   canvas_element_ = ToHTMLCanvasElement(GetDocument().getElementById("c"));
 }
 

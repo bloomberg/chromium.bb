@@ -56,7 +56,7 @@ class CSSVariableResolverTest : public PageTestBase {
         "<div>"
         "  <div id=target></div>"
         "</div>");
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 
   const CSSCustomPropertyDeclaration* CreateCustomProperty(

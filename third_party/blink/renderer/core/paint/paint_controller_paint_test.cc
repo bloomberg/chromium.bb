@@ -38,7 +38,7 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
                           IsSameId(&text_inline_box, kForegroundType)));
 
   div.focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -65,7 +65,7 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
                           IsSameId(&first_text_box, kForegroundType)));
 
   div.setAttribute(html_names::kStyleAttr, "width: 10px; height: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
@@ -148,7 +148,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(5000, 5000), kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
   // small?
@@ -191,7 +191,7 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
 
   container.GetScrollableArea()->SetScrollOffset(ScrollOffset(5000, 5000),
                                                  kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Cull rect after scroll: (1000,1000 8100x8100)
   EXPECT_THAT(

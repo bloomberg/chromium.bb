@@ -219,7 +219,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
   // created for both the parent and the visible child.
   auto* parent_element = GetElementById("parent");
   parent_element->setAttribute(html_names::kClassAttr, "touchActionNone");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* child_visible = GetLayoutObjectByElementId("childVisible");
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -230,7 +230,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
   // Remove the touch action from parent and ensure no hit test display items
   // are left.
   parent_element->removeAttribute(html_names::kClassAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
@@ -384,7 +384,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
 
   touchaction_element->setAttribute(html_names::kStyleAttr,
                                     "touch-action: none;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
                           IsSameId(touchaction, DisplayItem::kHitTest)));
@@ -405,7 +405,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
                                hit_test_chunk_properties, hit_test_data)));
 
   touchaction_element->removeAttribute(html_names::kStyleAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
@@ -452,7 +452,8 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
   BlockPainterMockEventListener* callback = new BlockPainterMockEventListener();
   auto* parent_element = GetElementById("parent");
   parent_element->addEventListener(event_type_names::kTouchstart, callback);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
+
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -463,7 +464,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
   // Remove the event handler from parent and ensure no hit test display items
   // are left.
   parent_element->RemoveAllEventListeners();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
@@ -493,7 +494,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
 
   auto* child_element = GetElementById("parent");
   child_element->setAttribute("style", "background: blue;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
                           IsSameId(parent, kBackgroundType),

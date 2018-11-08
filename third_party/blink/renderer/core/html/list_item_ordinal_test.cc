@@ -40,7 +40,7 @@ TEST_F(ListItemOrdinalTest, ItemInsertedOrRemoved_ListItemsInSlot) {
   ShadowRoot& shadow_root =
       host.AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString("<slot></slot>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_FALSE(shadow_root.NeedsSlotAssignmentRecalc());
   Element& list_item1 = *GetDocument().getElementById("item1");
   Element& list_item2 = *GetDocument().getElementById("item2");
@@ -57,7 +57,7 @@ TEST_F(ListItemOrdinalTest, ItemInsertedOrRemoved_ListItemsInSlot) {
   EXPECT_EQ(layout_object, list_item2.GetLayoutObject())
       << "remove() doesn't change layout object for list_item2.";
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(1, ListItemOrdinal::Get(list_item2)->Value(list_item2))
       << "Update layout should update list item ordinal too.";
 }

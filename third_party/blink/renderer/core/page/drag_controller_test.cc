@@ -52,10 +52,6 @@ class DragControllerTest : public RenderingTest {
     return *chrome_client_;
   }
 
-  void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases();
-  }
-
  private:
   Persistent<DragMockChromeClient> chrome_client_;
 };
@@ -66,12 +62,12 @@ TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
       "by page scale factor</div>");
   GetFrame().GetPage()->GetVisualViewport().SetScale(1);
   GetFrame().Selection().SelectAll();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const std::unique_ptr<DragImage> image1(
       DragController::DragImageForSelection(GetFrame(), 0.75f));
   GetFrame().GetPage()->GetVisualViewport().SetScale(2);
   GetFrame().Selection().SelectAll();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const std::unique_ptr<DragImage> image2(
       DragController::DragImageForSelection(GetFrame(), 0.75f));
 
@@ -259,7 +255,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
     </style>
     <div>abcdefg</div>
   )HTML");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
@@ -339,7 +335,7 @@ TEST_F(DragControllerTest,
   )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 

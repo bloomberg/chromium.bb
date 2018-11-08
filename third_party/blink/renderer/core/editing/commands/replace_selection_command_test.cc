@@ -86,7 +86,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 // This is a regression test for https://crbug.com/121163
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   GetDocument().setDesignMode("on");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   GetDummyPageHolder().GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))

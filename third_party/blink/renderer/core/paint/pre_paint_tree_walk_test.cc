@@ -78,7 +78,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
 
   // Cause a paint invalidation.
   transformed_element->setAttribute(html_names::kClassAttr, "border");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Should have changed back.
   EXPECT_EQ(TransformationMatrix().Translate(100, 100),
@@ -92,7 +92,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithFrameScroll) {
 
   // Cause a scroll invalidation and ensure the translation is updated.
   GetDocument().domWindow()->scrollTo(0, 100);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             FrameScrollTranslation()->Matrix());
@@ -116,7 +116,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
 
   // Invalidate the CSS transform property.
   transformed_element->setAttribute(html_names::kClassAttr, "transformB");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // The transform should have changed.
   EXPECT_EQ(TransformationMatrix().Translate(200, 200),
@@ -139,7 +139,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
 
   // Invalidate the opacity property.
   transparent_element->setAttribute(html_names::kClassAttr, "opacityB");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // The opacity should have changed.
   EXPECT_EQ(0.4f, transparent_properties->Effect()->Opacity());
@@ -274,7 +274,7 @@ TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
   auto* grandchild = GetLayoutObjectByElementId("grandchild");
 
   GetDocument().getElementById("parent")->removeAttribute("style");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(200, grandchild->FirstFragment().VisualRect().Height());
 }
@@ -299,7 +299,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_object->Layer()->NeedsRepaint());
   // And should not trigger any assert failure.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 namespace {
@@ -326,7 +326,7 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& ancestor = *GetLayoutObjectByElementId("ancestor");
   auto& handler = *GetLayoutObjectByElementId("handler");
   auto& descendant = *GetLayoutObjectByElementId("descendant");
@@ -356,7 +356,7 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
   EXPECT_FALSE(handler.DescendantEffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(descendant.DescendantEffectiveWhitelistedTouchActionChanged());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(ancestor.EffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(handler.EffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(descendant.EffectiveWhitelistedTouchActionChanged());
@@ -382,7 +382,7 @@ TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& ancestor = *GetLayoutObjectByElementId("ancestor");
   auto& touchaction = *GetLayoutObjectByElementId("touchaction");
   auto& descendant = *GetLayoutObjectByElementId("descendant");
@@ -405,7 +405,7 @@ TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
   EXPECT_FALSE(touchaction.DescendantEffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(descendant.DescendantEffectiveWhitelistedTouchActionChanged());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(ancestor.EffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(touchaction.EffectiveWhitelistedTouchActionChanged());
   EXPECT_FALSE(descendant.EffectiveWhitelistedTouchActionChanged());
@@ -427,7 +427,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
   GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
                                                        "border-radius: 5px");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& parent = *GetLayoutObjectByElementId("parent");
   auto& child = *GetLayoutObjectByElementId("child");
 
@@ -445,7 +445,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
   GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
                                                        "border-radius: 6px");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(100, parent.FirstFragment().VisualRect().Width());
   EXPECT_EQ(100, parent.FirstFragment().VisualRect().Height());
   EXPECT_EQ(100, child.FirstFragment().VisualRect().Width());

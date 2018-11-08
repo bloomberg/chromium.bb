@@ -116,7 +116,7 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
       "sample.addEventListener('onselectstart', "
       "  event => elem.parentNode.removeChild(elem));");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   HitTestLocation location((IntPoint(8, 8)));
   GetFrame().GetEventHandler().GetSelectionController().HandleGestureLongPress(
       GetFrame().GetEventHandler().HitTestResultAtLocation(location));
@@ -130,7 +130,7 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResultWithNullPosition) {
       "#sample { user-select: none; }"
       "</style>"
       "<div id=sample></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Hit "&nbsp;" in before pseudo element of "sample".
   HitTestLocation location((IntPoint(10, 10)));
@@ -159,7 +159,7 @@ TEST_F(SelectionControllerTest,
       "}"
       "document.addEventListener('selectstart', selectstart);");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Simulate a tap somewhere in the document
   blink::WebMouseEvent mouse_event(
