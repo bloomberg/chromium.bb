@@ -10,6 +10,7 @@
     <includes>
       <include name="IDR_WEBUI_TEST_I18N_PROCESS_CSS_TEST" file="webui/i18n_process_css_test.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_WEB_UI_TEST_MOJO_JS" file="${root_gen_dir}/chrome/test/data/webui/web_ui_test.mojom.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_WEB_UI_TEST_MOJO_LITE_JS" file="${root_gen_dir}/chrome/test/data/webui/web_ui_test.mojom-lite.js" use_base_dir="false" type="BINDATA"/>
     </includes>
   </release>
 </grit>

@@ -805,10 +805,20 @@ function testDone(result) {
       result = testResult();
 
     if (hasWindow && window.webUiTest) {
-      // For MojoWebUI tests.
-      var testRunner = new webUiTest.mojom.TestRunnerPtr();
-      Mojo.bindInterface(
-          webUiTest.mojom.TestRunner.name, mojo.makeRequest(testRunner).handle);
+      let testRunner;
+      if (webUiTest.mojom.TestRunnerPtr) {
+        // For mojo WebUI tests.
+        testRunner = new webUiTest.mojom.TestRunnerPtr();
+        Mojo.bindInterface(
+            webUiTest.mojom.TestRunner.name,
+            mojo.makeRequest(testRunner).handle);
+      } else if (webUiTest.mojom.TestRunnerProxy) {
+        // For mojo-lite WebUI tests.
+        testRunner = webUiTest.mojom.TestRunner.getProxy();
+      } else {
+        assertNotReached(
+            'Mojo bindings found, but no valid test interface loaded');
+      }
       if (result[0])
         testRunner.testComplete();
       else
@@ -820,6 +830,8 @@ function testDone(result) {
       // For extension tests.
       valueResult = {'result': result[0], message: result[1]};
       window.domAutomationController.send(JSON.stringify(valueResult));
+    } else {
+      assertNotReached('No test framework available');
     }
     errors.splice(0, errors.length);
   } else {
