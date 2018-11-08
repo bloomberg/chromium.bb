@@ -29,7 +29,7 @@ message AutofillQueryContents {
 // information.
 // Next available id: 10
 message AutofillQueryResponseContents {
-  optional bool upload_required = 1;
+  optional bool upload_required = 1 [deprecated = true];
   repeated group Field = 2 {
     required fixed32 overall_type_prediction = 3;
     // Detailed list of all possible predictions (including
