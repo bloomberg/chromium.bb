@@ -4,14 +4,8 @@
 
 (async function() {
   TestRunner.addResult(`Tests how execution context and target are selected.\n`);
+  await TestRunner.loadModule('sdk_test_runner');
   await TestRunner.showPanel('sources');
-
-  var mockTargetId = 1;
-  function createMockTarget(name, type, dontAttachToMain) {
-    return SDK.targetManager.createTarget(
-        'mock-target-' + mockTargetId++, name, type, params => new SDK.StubConnection(params),
-        dontAttachToMain ? null : TestRunner.mainTarget);
-  }
 
   var context = new UI.Context();
   context.addFlavorChangeListener(SDK.ExecutionContext, executionContextChanged, this);
@@ -22,7 +16,7 @@
     var executionContext = event.data;
     TestRunner.addResult(
         'Execution context selected: ' +
-        (executionContext.isDefault ? executionContext.target().name() + ':' + executionContext.frameId :
+        (executionContext.isDefault ? executionContext.target().name() :
                                       executionContext.name));
   }
 
@@ -30,49 +24,44 @@
     TestRunner.addResult('Target selected: ' + event.data.name());
   }
 
-  TestRunner.runtimeModel._executionContextsCleared();
-
-
   TestRunner.addResult('');
   TestRunner.addResult('Adding page target');
-  var pageTarget = createMockTarget('page-target', SDK.Target.Type.Frame, true /* dontAttachToMain */);
-  var pageRuntimeModel = pageTarget.model(SDK.RuntimeModel);
-  pageTarget.model(SDK.ResourceTreeModel)._frameAttached('42', '');
-  pageTarget.model(SDK.ResourceTreeModel)._frameNavigated({
-    id: '42',
-    parentId: '',
-    loaderId: '',
-    name: 'mock-frame',
-    url: 'mock-url.com/frame.html',
-    securityOrigin: 'mock-security-origin',
-    mineType: 'mimeType'
-  });
-  pageRuntimeModel._executionContextCreated(
-      {id: 'cs1', auxData: {isDefault: false, frameId: '42'}, origin: 'origin', name: 'contentScript1'});
-  pageRuntimeModel._executionContextCreated(
-      {id: 'if1', auxData: {isDefault: true, frameId: 'iframe1'}, origin: 'origin', name: 'iframeContext1'});
-  pageRuntimeModel._executionContextCreated(
-      {id: 'p1', auxData: {isDefault: true, frameId: '42'}, origin: 'origin', name: 'pageContext1Name'});
+  var pageMock = new SDKTestRunner.PageMock('mock-url.com/page.html');
+  var pageTarget = pageMock.connectAsMainTarget('page-target');
+  await pageTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextCreated);
+  pageMock.evalScript('contentScript1.js', 'var script', true /* isContentScript */);
+  await pageTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextCreated);
 
   TestRunner.addResult('');
-  TestRunner.addResult('Adding sw target');
-  var swTarget = createMockTarget('sw-target', SDK.Target.Type.Worker);
-  swTarget.model(SDK.RuntimeModel)
-      ._executionContextCreated(
-          {id: 'sw1', auxData: {isDefault: true, frameId: ''}, origin: 'origin', name: 'swContext1Name'});
+  TestRunner.addResult('Adding frame target');
+  var frameMock = new SDKTestRunner.PageMock('mock-url.com/iframe.html');
+  var frameTarget = frameMock.connectAsChildTarget('frame-target', pageMock);
+  await frameTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextCreated);
 
   TestRunner.addResult('');
-  TestRunner.addResult('Removing page main frame');
-  pageRuntimeModel._executionContextDestroyed('p1');
+  TestRunner.addResult('Adding worker target');
+  var workerMock = new SDKTestRunner.PageMock('mock-url.com/worker.js');
+  workerMock.turnIntoWorker();
+  var workerTarget = workerMock.connectAsChildTarget('worker-target', pageMock);
+  await workerTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextCreated);
 
   TestRunner.addResult('');
-  TestRunner.addResult('Readding page main frame');
-  pageRuntimeModel._executionContextCreated(
-      {id: 'p2', auxData: {isDefault: true, frameId: '42'}, origin: 'origin', name: 'pageContext1Name'});
+  TestRunner.addResult('User selected content script');
+  context.setFlavor(SDK.ExecutionContext, pageTarget.model(SDK.RuntimeModel).executionContexts().find(context => !context.isDefault));
 
   TestRunner.addResult('');
-  TestRunner.addResult('Switching to sw target');
-  context.setFlavor(SDK.Target, swTarget);
+  TestRunner.addResult('Removing content script');
+  pageMock.removeContentScripts();
+  await pageTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextDestroyed);
+
+  TestRunner.addResult('');
+  TestRunner.addResult('Readding content script');
+  pageMock.evalScript('contentScript2.js', 'var script', true /* isContentScript */);
+  await pageTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextCreated);
+
+  TestRunner.addResult('');
+  TestRunner.addResult('Switching to worker target');
+  context.setFlavor(SDK.Target, workerTarget);
 
   TestRunner.addResult('');
   TestRunner.addResult('Switching to page target');
@@ -80,11 +69,11 @@
 
   TestRunner.addResult('');
   TestRunner.addResult('User selected content script');
-  context.setFlavor(SDK.ExecutionContext, pageRuntimeModel.executionContexts().find(context => context.id === 'cs1'));
+  context.setFlavor(SDK.ExecutionContext, pageTarget.model(SDK.RuntimeModel).executionContexts().find(context => !context.isDefault));
 
   TestRunner.addResult('');
-  TestRunner.addResult('Switching to sw target');
-  context.setFlavor(SDK.Target, swTarget);
+  TestRunner.addResult('Switching to worker target');
+  context.setFlavor(SDK.Target, workerTarget);
 
   TestRunner.addResult('');
   TestRunner.addResult('Switching to page target');
@@ -92,28 +81,32 @@
 
   TestRunner.addResult('');
   TestRunner.addResult('User selected iframe1');
-  context.setFlavor(SDK.ExecutionContext, pageRuntimeModel.executionContexts().find(context => context.id === 'if1'));
+  context.setFlavor(SDK.ExecutionContext, frameTarget.model(SDK.RuntimeModel).executionContexts()[0]);
 
   TestRunner.addResult('');
-  TestRunner.addResult('Switching to sw target');
-  context.setFlavor(SDK.Target, swTarget);
+  TestRunner.addResult('Switching to worker target');
+  context.setFlavor(SDK.Target, workerTarget);
+
+  TestRunner.addResult('');
+  TestRunner.addResult('Removing worker');
+  workerMock.disconnect();
+
+  TestRunner.addResult('');
+  TestRunner.addResult('User selected content script');
+  context.setFlavor(SDK.ExecutionContext, pageTarget.model(SDK.RuntimeModel).executionContexts().find(context => !context.isDefault));
+
+  TestRunner.addResult('');
+  TestRunner.addResult('Switching to iframe target');
+  context.setFlavor(SDK.Target, frameTarget);
+
+  TestRunner.addResult('');
+  TestRunner.addResult('Removing content script');
+  pageMock.removeContentScripts();
+  await pageTarget.model(SDK.RuntimeModel).once(SDK.RuntimeModel.Events.ExecutionContextDestroyed);
 
   TestRunner.addResult('');
   TestRunner.addResult('Switching to page target');
   context.setFlavor(SDK.Target, pageTarget);
-
-  TestRunner.addResult('');
-  TestRunner.addResult('Switching to sw target');
-  context.setFlavor(SDK.Target, swTarget);
-
-  TestRunner.addResult('');
-  TestRunner.addResult('Removing page main frame');
-  pageRuntimeModel._executionContextDestroyed('p2');
-
-  TestRunner.addResult('');
-  TestRunner.addResult('Readding page main frame');
-  pageRuntimeModel._executionContextCreated(
-      {id: 'p3', auxData: {isDefault: true, frameId: '42'}, origin: 'origin', name: 'pageContext1Name'});
 
   TestRunner.completeTest();
 })();
