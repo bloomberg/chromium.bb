@@ -287,7 +287,6 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
 std::ostream& operator<<(
     std::ostream& out,
     const autofill::AutofillQueryResponseContents& response) {
-  out << "upload_required: " << response.upload_required();
   for (const auto& field : response.field()) {
     out << "\nautofill_type: " << field.overall_type_prediction();
   }
@@ -546,9 +545,6 @@ void FormStructure::ProcessQueryResponse(
   // Copy the field types into the actual form.
   auto current_field = response.field().begin();
   for (FormStructure* form : forms) {
-    form->upload_required_ =
-        response.upload_required() ? UPLOAD_REQUIRED : UPLOAD_NOT_REQUIRED;
-
     bool query_response_has_no_server_data = true;
     for (auto& field : form->fields_) {
       if (form->ShouldSkipField(*field))
