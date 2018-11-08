@@ -2958,7 +2958,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       before_push = time_time()
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
-          print_stdout=False,
+          print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
           # recipe.
           filter_fn=lambda _: sys.stdout.flush())
