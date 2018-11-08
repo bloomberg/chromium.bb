@@ -427,7 +427,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // SanityCheck() will always be true, except during the invokation of a
   // method.  So all public methods expect the Group to pass SanityCheck() when
   // invoked.
-  class Group {
+  class NET_EXPORT_PRIVATE Group {
    public:
     using JobList = std::list<std::unique_ptr<ConnectJob>>;
 
