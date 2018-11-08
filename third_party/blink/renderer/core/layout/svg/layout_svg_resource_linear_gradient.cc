@@ -57,7 +57,8 @@ scoped_refptr<Gradient> LayoutSVGResourceLinearGradient::BuildGradient() const {
   scoped_refptr<Gradient> gradient = Gradient::CreateLinear(
       StartPoint(attributes), EndPoint(attributes),
       PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),
-      Gradient::ColorInterpolation::kUnpremultiplied);
+      Gradient::ColorInterpolation::kUnpremultiplied,
+      Gradient::DegenerateHandling::kAllow);
   gradient->AddColorStops(attributes.Stops());
   return gradient;
 }

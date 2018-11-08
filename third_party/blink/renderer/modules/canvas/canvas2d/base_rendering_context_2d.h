@@ -323,7 +323,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                         SkIRect*);
 
   template <typename DrawFunc, typename ContainsFunc>
-  bool Draw(const DrawFunc&,
+  void Draw(const DrawFunc&,
             const ContainsFunc&,
             const SkRect& bounds,
             CanvasRenderingContext2DState::PaintType,
@@ -434,26 +434,18 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 };
 
 template <typename DrawFunc, typename ContainsFunc>
-bool BaseRenderingContext2D::Draw(
+void BaseRenderingContext2D::Draw(
     const DrawFunc& draw_func,
     const ContainsFunc& draw_covers_clip_bounds,
     const SkRect& bounds,
     CanvasRenderingContext2DState::PaintType paint_type,
     CanvasRenderingContext2DState::ImageType image_type) {
   if (!GetState().IsTransformInvertible())
-    return false;
+    return;
 
   SkIRect clip_bounds;
   if (!DrawingCanvas() || !DrawingCanvas()->getDeviceClipBounds(&clip_bounds))
-    return false;
-
-  // If gradient size is zero, then paint nothing.
-  CanvasStyle* style = GetState().Style(paint_type);
-  if (style) {
-    CanvasGradient* gradient = style->GetCanvasGradient();
-    if (gradient && gradient->IsZeroSize())
-      return false;
-  }
+    return;
 
   if (IsFullCanvasCompositeMode(GetState().GlobalComposite()) ||
       StateHasFilter()) {
@@ -477,7 +469,6 @@ bool BaseRenderingContext2D::Draw(
       DidDraw(dirty_rect);
     }
   }
-  return true;
 }
 
 template <typename DrawFunc>

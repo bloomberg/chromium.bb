@@ -61,11 +61,8 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
 
   void addColorStop(float value, const String& color, ExceptionState&);
 
-  bool IsZeroSize() const { return is_zero_size_; }
-
  private:
   scoped_refptr<Gradient> gradient_;
-  const bool is_zero_size_;
 };
 
 }  // namespace blink
