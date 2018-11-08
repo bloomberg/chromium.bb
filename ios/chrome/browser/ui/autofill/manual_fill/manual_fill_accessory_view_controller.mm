@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -183,12 +184,14 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 }
 
 - (void)keyboardButtonPressed {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_Close"));
   [self animateKeyboardButtonHidden:YES];
   [self resetTintColors];
   [self.delegate keyboardButtonPressed];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenPassword"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.passwordButton setTintColor:UIColor.cr_manualFillTintColor];
@@ -196,6 +199,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 }
 
 - (void)cardButtonPressed {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.cardsButton setTintColor:UIColor.cr_manualFillTintColor];
@@ -203,6 +207,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 }
 
 - (void)accountButtonPressed {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.accountButton setTintColor:UIColor.cr_manualFillTintColor];

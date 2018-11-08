@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
@@ -186,6 +187,8 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
     auto otherPasswordsItem = [[ManualFillActionItem alloc]
         initWithTitle:otherPasswordsTitleString
                action:^{
+                 base::RecordAction(base::UserMetricsAction(
+                     "ManualFallback_Password_OpenOtherPassword"));
                  [weakSelf.navigationDelegate openAllPasswordsList];
                }];
     otherPasswordsItem.accessibilityIdentifier =
@@ -196,6 +199,8 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
     auto managePasswordsItem = [[ManualFillActionItem alloc]
         initWithTitle:managePasswordsTitle
                action:^{
+                 base::RecordAction(base::UserMetricsAction(
+                     "ManualFallback_Password_OpenManagePassword"));
                  [weakSelf.navigationDelegate openPasswordSettings];
                }];
     managePasswordsItem.accessibilityIdentifier =
