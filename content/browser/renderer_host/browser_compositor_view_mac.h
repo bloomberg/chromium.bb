@@ -113,8 +113,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   void GetRendererScreenInfo(ScreenInfo* screen_info) const;
   viz::ScopedSurfaceIdAllocator GetScopedRendererSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task);
-  const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
-  base::TimeTicks GetRendererLocalSurfaceIdAllocationTime() const;
+  const viz::LocalSurfaceIdAllocation& GetRendererLocalSurfaceIdAllocation();
   void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future

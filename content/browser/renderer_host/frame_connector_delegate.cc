@@ -27,16 +27,16 @@ FrameConnectorDelegate::GetRootRenderWidgetHostView() {
 
 void FrameConnectorDelegate::SynchronizeVisualProperties(
     const viz::SurfaceId& surface_id,
-    const FrameVisualProperties& resize_params) {
-  screen_info_ = resize_params.screen_info;
-  local_surface_id_ = surface_id.local_surface_id();
-  local_surface_id_allocation_time_ =
-      resize_params.local_surface_id_allocation_time.value_or(
-          base::TimeTicks());
-  capture_sequence_number_ = resize_params.capture_sequence_number;
+    const FrameVisualProperties& visual_properties) {
+  screen_info_ = visual_properties.screen_info;
+  local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation(
+      surface_id.local_surface_id(),
+      visual_properties.local_surface_id_allocation_time.value_or(
+          base::TimeTicks()));
+  capture_sequence_number_ = visual_properties.capture_sequence_number;
 
-  SetScreenSpaceRect(resize_params.screen_space_rect);
-  SetLocalFrameSize(resize_params.local_frame_size);
+  SetScreenSpaceRect(visual_properties.screen_space_rect);
+  SetLocalFrameSize(visual_properties.local_frame_size);
 
   if (!view_)
     return;
@@ -47,10 +47,10 @@ void FrameConnectorDelegate::SynchronizeVisualProperties(
   RenderWidgetHostImpl* render_widget_host = view_->host();
   DCHECK(render_widget_host);
 
-  render_widget_host->SetAutoResize(resize_params.auto_resize_enabled,
-                                    resize_params.min_size_for_auto_resize,
-                                    resize_params.max_size_for_auto_resize);
-  render_widget_host->SetPageScaleFactor(resize_params.page_scale_factor);
+  render_widget_host->SetAutoResize(visual_properties.auto_resize_enabled,
+                                    visual_properties.min_size_for_auto_resize,
+                                    visual_properties.max_size_for_auto_resize);
+  render_widget_host->SetPageScaleFactor(visual_properties.page_scale_factor);
 
   render_widget_host->SynchronizeVisualProperties();
 }

@@ -678,9 +678,9 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
     // If the frame for the renderer is already available, then the
     // tab-switching time is the presentation time for the browser-compositor.
     const bool record_presentation_time = has_saved_frame;
-    delegated_frame_host_->WasShown(GetLocalSurfaceId(),
-                                    window_->bounds().size(),
-                                    record_presentation_time);
+    delegated_frame_host_->WasShown(
+        GetLocalSurfaceIdAllocation().local_surface_id(),
+        window_->bounds().size(), record_presentation_time);
   }
 
 #if defined(OS_WIN)
@@ -2094,7 +2094,8 @@ bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
 
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(
-        GetLocalSurfaceId(), window_->bounds().size(), deadline_policy);
+        GetLocalSurfaceIdAllocation().local_surface_id(),
+        window_->bounds().size(), deadline_policy);
   }
   return host()->SynchronizeVisualProperties();
 }
@@ -2396,13 +2397,9 @@ const viz::FrameSinkId& RenderWidgetHostViewAura::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
-const viz::LocalSurfaceId& RenderWidgetHostViewAura::GetLocalSurfaceId() const {
-  return window_->GetLocalSurfaceIdAllocation().local_surface_id();
-}
-
-base::TimeTicks RenderWidgetHostViewAura::GetLocalSurfaceIdAllocationTime()
-    const {
-  return window_->GetLocalSurfaceIdAllocation().allocation_time();
+const viz::LocalSurfaceIdAllocation&
+RenderWidgetHostViewAura::GetLocalSurfaceIdAllocation() const {
+  return window_->GetLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(

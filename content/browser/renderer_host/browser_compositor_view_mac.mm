@@ -286,8 +286,9 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   }
   DCHECK_EQ(state_, new_state);
   delegated_frame_host_->AttachToCompositor(GetCompositor());
-  delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
-                                  false /* record_presentation_time */);
+  delegated_frame_host_->WasShown(
+      GetRendererLocalSurfaceIdAllocation().local_surface_id(), dfh_size_dip_,
+      false /* record_presentation_time */);
 }
 
 // static
@@ -398,16 +399,13 @@ BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
                                        std::move(allocation_task));
 }
 
-const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
-  if (!dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid())
+const viz::LocalSurfaceIdAllocation&
+BrowserCompositorMac::GetRendererLocalSurfaceIdAllocation() {
+  if (!dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+           .IsValid())
     dfh_local_surface_id_allocator_.GenerateId();
 
-  return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-}
-
-base::TimeTicks BrowserCompositorMac::GetRendererLocalSurfaceIdAllocationTime()
-    const {
-  return dfh_local_surface_id_allocator_.allocation_time();
+  return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 
 void BrowserCompositorMac::TransformPointToRootSurface(gfx::PointF* point) {

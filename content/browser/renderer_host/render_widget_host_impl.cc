@@ -882,11 +882,11 @@ bool RenderWidgetHostImpl::GetVisualProperties(
     visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
-    viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
-    if (local_surface_id.is_valid()) {
-      visual_properties->local_surface_id = local_surface_id;
-      visual_properties->local_surface_id_allocation_time =
-          view_->GetLocalSurfaceIdAllocationTime();
+    viz::LocalSurfaceIdAllocation local_surface_id_allocation =
+        view_->GetLocalSurfaceIdAllocation();
+    if (local_surface_id_allocation.IsValid()) {
+      visual_properties->local_surface_id_allocation =
+          local_surface_id_allocation;
     }
   }
 
@@ -914,14 +914,19 @@ bool RenderWidgetHostImpl::GetVisualProperties(
         (old_visual_properties_->compositor_viewport_pixel_size.IsEmpty() &&
          !visual_properties->compositor_viewport_pixel_size.IsEmpty())));
 
-  viz::LocalSurfaceId old_parent_local_surface_id =
+  viz::LocalSurfaceIdAllocation old_parent_local_surface_id_allocation =
       old_visual_properties_
-          ? old_visual_properties_->local_surface_id.value_or(
-                viz::LocalSurfaceId())
-          : viz::LocalSurfaceId();
+          ? old_visual_properties_->local_surface_id_allocation.value_or(
+                viz::LocalSurfaceIdAllocation())
+          : viz::LocalSurfaceIdAllocation();
+  const viz::LocalSurfaceId& old_parent_local_surface_id =
+      old_parent_local_surface_id_allocation.local_surface_id();
 
-  viz::LocalSurfaceId new_parent_local_surface_id =
-      visual_properties->local_surface_id.value_or(viz::LocalSurfaceId());
+  viz::LocalSurfaceIdAllocation new_parent_local_surface_id_allocation =
+      visual_properties->local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation());
+  const viz::LocalSurfaceId& new_parent_local_surface_id =
+      new_parent_local_surface_id_allocation.local_surface_id();
 
   const bool parent_local_surface_id_changed =
       !old_visual_properties_ ||
@@ -963,7 +968,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
                !visual_properties->auto_resize_enabled &&
                !visual_properties->new_size.IsEmpty() &&
                !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
-               visual_properties->local_surface_id && size_changed;
+               visual_properties->local_surface_id_allocation && size_changed;
 
   return dirty;
 }

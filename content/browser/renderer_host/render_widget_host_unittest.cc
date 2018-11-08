@@ -406,8 +406,9 @@ class TestView : public TestRenderWidgetHostView {
   float GetBottomControlsHeight() const override {
     return bottom_controls_height_;
   }
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override {
-    return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override {
+    return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,

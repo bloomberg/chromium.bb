@@ -331,12 +331,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
 
   // Returns the LocalSurfaceId allocated by the parent client for this view.
-  // TODO(fsamuel): Return by const ref.
-  virtual const viz::LocalSurfaceId& GetLocalSurfaceId() const = 0;
-
-  // Returns the time at which the viz::LocalSurfaceId was allocated by the
-  // parent client for this view.
-  virtual base::TimeTicks GetLocalSurfaceIdAllocationTime() const;
+  virtual const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const = 0;
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following

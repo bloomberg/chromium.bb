@@ -130,4 +130,10 @@ const LocalSurfaceId& ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId() {
   return g_invalid_local_surface_id_allocation.local_surface_id();
 }
 
+// static
+const LocalSurfaceIdAllocation&
+ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation() {
+  return g_invalid_local_surface_id_allocation;
+}
+
 }  // namespace viz

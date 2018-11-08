@@ -2008,18 +2008,12 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
   return touch_selection_controller_client_manager_.get();
 }
 
-const viz::LocalSurfaceId& RenderWidgetHostViewAndroid::GetLocalSurfaceId()
-    const {
+const viz::LocalSurfaceIdAllocation&
+RenderWidgetHostViewAndroid::GetLocalSurfaceIdAllocation() const {
   if (!delegated_frame_host_)
-    return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
-  return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-}
-
-base::TimeTicks RenderWidgetHostViewAndroid::GetLocalSurfaceIdAllocationTime()
-    const {
-  if (!delegated_frame_host_)
-    return base::TimeTicks();
-  return local_surface_id_allocator_.allocation_time();
+    return viz::ParentLocalSurfaceIdAllocator::
+        InvalidLocalSurfaceIdAllocation();
+  return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewAndroid::OnRenderWidgetInit() {

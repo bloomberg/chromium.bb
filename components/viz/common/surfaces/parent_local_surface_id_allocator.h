@@ -56,6 +56,8 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   static const LocalSurfaceId& InvalidLocalSurfaceId();
 
+  static const LocalSurfaceIdAllocation& InvalidLocalSurfaceIdAllocation();
+
   base::TimeTicks allocation_time() const {
     return current_local_surface_id_allocation_.allocation_time();
   }

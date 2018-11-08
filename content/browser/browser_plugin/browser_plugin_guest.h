@@ -29,7 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/edit_command.h"
@@ -63,7 +63,7 @@ class RenderFrameMetadata;
 }  // namespace cc
 
 namespace viz {
-class LocalSurfaceId;
+class LocalSurfaceIdAllocation;
 }  // namespace viz
 
 namespace content {
@@ -179,14 +179,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
 
-  // Returns the viz::LocalSurfaceId propagated from the parent to be used by
-  // this guest.
-  const viz::LocalSurfaceId& local_surface_id() const {
-    return local_surface_id_;
-  }
-
-  base::TimeTicks local_surface_id_allocation_time() const {
-    return local_surface_id_allocation_time_;
+  // Returns the viz::LocalSurfaceIdAllocation propagated from the parent to be
+  // used by this guest.
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation() const {
+    return local_surface_id_allocation_;
   }
 
   bool is_in_destruction() { return is_in_destruction_; }
@@ -464,8 +460,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // WebContents associated with this BrowserPluginGuest has OOPIF structure.
   bool can_use_cross_process_frames_;
 
-  viz::LocalSurfaceId local_surface_id_;
-  base::TimeTicks local_surface_id_allocation_time_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
   ScreenInfo screen_info_;
   double zoom_level_ = 0.0;
   uint32_t capture_sequence_number_ = 0u;

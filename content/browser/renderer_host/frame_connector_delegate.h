@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -184,16 +184,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // CSS opacity or transform) in the parent view.
   bool occluded_or_obscured() const { return occluded_or_obscured_; }
 
-  // Returns the viz::LocalSurfaceId propagated from the parent to be used by
-  // this child frame.
-  const viz::LocalSurfaceId& local_surface_id() const {
-    return local_surface_id_;
-  }
-
-  // Returns the allocation time of the viz::LocalSurfaceId propagated from the
-  // parent. Or the null base::TimeTicks if no allocation time was provided.
-  base::TimeTicks local_surface_id_allocation_time() const {
-    return local_surface_id_allocation_time_;
+  // Returns the viz::LocalSurfaceIdAllocation propagated from the parent to be
+  // used by this child frame.
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation() const {
+    return local_surface_id_allocation_;
   }
 
   // Returns the ScreenInfo propagated from the parent to be used by this
@@ -281,8 +275,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   gfx::Rect screen_space_rect_in_dip_;
   gfx::Rect screen_space_rect_in_pixels_;
 
-  viz::LocalSurfaceId local_surface_id_;
-  base::TimeTicks local_surface_id_allocation_time_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
 
   bool has_size_ = false;
   const bool use_zoom_for_device_scale_factor_;
