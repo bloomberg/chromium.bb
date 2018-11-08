@@ -502,6 +502,16 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
   storage_key_to_tag_hash_.erase(iter);
 }
 
+bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
+    const std::string& storage_key) {
+  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  if (entity == nullptr) {
+    return false;
+  }
+
+  return entity->IsUnsynced();
+}
+
 void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())

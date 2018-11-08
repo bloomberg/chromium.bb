@@ -86,9 +86,9 @@ base::Optional<ModelError> ConvertToModelError(const SyncError& sync_error) {
 
 // Object to propagate local changes to the bridge, which will ultimately
 // propagate them to the server.
-class ChangeProcessorImpl : public SyncChangeProcessor {
+class LocalChangeProcessor : public SyncChangeProcessor {
  public:
-  ChangeProcessorImpl(
+  LocalChangeProcessor(
       ModelType type,
       const base::RepeatingCallback<void(const base::Optional<ModelError>&)>&
           error_callback,
@@ -107,7 +107,7 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
     DCHECK(other);
   }
 
-  ~ChangeProcessorImpl() override {}
+  ~LocalChangeProcessor() override {}
 
   SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override {
@@ -189,15 +189,20 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
           DCHECK(!storage_key.empty())
               << " from " << change.location().ToString();
 
-          in_memory_store_->erase(storage_key);
-          batch->DeleteData(storage_key);
-
           if (IsActOnceDataType(type_)) {
+            if (other_->IsEntityUnsynced(storage_key)) {
+              // Ignore the local deletion if the entity hasn't been committed
+              // yet, similarly to how WriteNode::Drop() does it.
+              continue;
+            }
             batch->GetMetadataChangeList()->ClearMetadata(storage_key);
             other_->UntrackEntityForStorageKey(storage_key);
           } else {
             other_->Delete(storage_key, batch->GetMetadataChangeList());
           }
+
+          in_memory_store_->erase(storage_key);
+          batch->DeleteData(storage_key);
 
           break;
         }
@@ -250,7 +255,7 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
   ModelTypeChangeProcessor* const other_;
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ChangeProcessorImpl);
+  DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessor);
 };
 
 class SyncErrorFactoryImpl : public SyncErrorFactory {
@@ -296,8 +301,8 @@ SyncableServiceBasedBridge::SyncableServiceBasedBridge(
 
 SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Stop the syncable service to make sure instances of ChangeProcessorImpl are
-  // not continued to be used.
+  // Stop the syncable service to make sure instances of LocalChangeProcessor
+  // are not continued to be used.
   if (syncable_service_started_) {
     syncable_service_->StopSyncing(type_);
   }
@@ -358,14 +363,14 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
   auto error_callback =
       base::BindRepeating(&SyncableServiceBasedBridge::ReportErrorIfSet,
                           weak_ptr_factory_.GetWeakPtr());
-  auto processor_impl = std::make_unique<ChangeProcessorImpl>(
+  auto local_change_processor = std::make_unique<LocalChangeProcessor>(
       type_, error_callback, store_.get(), &in_memory_store_, cryptographer_,
       change_processor());
 
   const base::Optional<ModelError> merge_error = ConvertToModelError(
       syncable_service_
           ->MergeDataAndStartSyncing(
-              type_, initial_sync_data, std::move(processor_impl),
+              type_, initial_sync_data, std::move(local_change_processor),
               std::make_unique<SyncErrorFactoryImpl>(type_))
           .error());
 
@@ -508,6 +513,18 @@ SyncableServiceBasedBridge::ApplySyncChangesWithNewEncryptionRequirements(
                                    std::move(entity_changes), std::move(batch));
 }
 
+// static
+std::unique_ptr<SyncChangeProcessor>
+SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
+    ModelType type,
+    ModelTypeStore* store,
+    std::map<std::string, sync_pb::PersistedEntityData>* in_memory_store,
+    ModelTypeChangeProcessor* other) {
+  return std::make_unique<LocalChangeProcessor>(
+      type, /*error_callback=*/base::DoNothing(), store, in_memory_store,
+      /*cryptographer=*/nullptr, other);
+}
+
 void SyncableServiceBasedBridge::OnStoreCreated(
     const base::Optional<ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
@@ -618,14 +635,14 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
   auto error_callback =
       base::BindRepeating(&SyncableServiceBasedBridge::ReportErrorIfSet,
                           weak_ptr_factory_.GetWeakPtr());
-  auto processor_impl = std::make_unique<ChangeProcessorImpl>(
+  auto local_change_processor = std::make_unique<LocalChangeProcessor>(
       type_, error_callback, store_.get(), &in_memory_store_, cryptographer_,
       change_processor());
 
   const base::Optional<ModelError> merge_error = ConvertToModelError(
       syncable_service_
           ->MergeDataAndStartSyncing(
-              type_, initial_sync_data, std::move(processor_impl),
+              type_, initial_sync_data, std::move(local_change_processor),
               std::make_unique<SyncErrorFactoryImpl>(type_))
           .error());
 

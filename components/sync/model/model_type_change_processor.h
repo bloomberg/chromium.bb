@@ -66,6 +66,14 @@ class ModelTypeChangeProcessor {
   // |storage_key| is unknown.
   virtual void UntrackEntityForStorageKey(const std::string& storage_key) = 0;
 
+  // Returns true if a tracked entity has local changes. A commit may or may not
+  // be in progress at this time.
+  // TODO(mastiz): The only user of this is HISTORY_DELETE_DIRECTIVES which
+  // needs it for a rather questionable reason. Revisit this, for example by
+  // moving the SyncableService to history's backend thread, and leveraging
+  // USS's ability to delete local data upcon commit completion.
+  virtual bool IsEntityUnsynced(const std::string& storage_key) = 0;
+
   // Pass the pointer to the processor so that the processor can notify the
   // bridge of various events; |bridge| must not be nullptr and must outlive
   // this object.

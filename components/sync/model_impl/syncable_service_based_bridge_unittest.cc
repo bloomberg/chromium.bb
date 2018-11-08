@@ -22,6 +22,7 @@
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/protocol/persisted_entity_data.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -688,6 +689,78 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldReencryptDataUponKeyChange) {
                   kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
                   NotNull(), NotNull()));
   StartSyncing();
+}
+
+TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
+     ShouldDropIfCommitted) {
+  const std::string kClientTagHash = "clienttaghash1";
+
+  base::MessageLoop message_loop;
+  std::unique_ptr<ModelTypeStore> store =
+      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
+  std::map<std::string, sync_pb::PersistedEntityData> in_memory_store;
+  testing::NiceMock<MockModelTypeChangeProcessor> mock_processor;
+
+  in_memory_store[kClientTagHash] = sync_pb::PersistedEntityData();
+
+  std::unique_ptr<SyncChangeProcessor> sync_change_processor =
+      SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
+          HISTORY_DELETE_DIRECTIVES, store.get(), &in_memory_store,
+          &mock_processor);
+
+  EXPECT_CALL(mock_processor, IsEntityUnsynced(kClientTagHash))
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_processor, UntrackEntityForStorageKey(kClientTagHash));
+
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_history_delete_directive();
+
+  SyncChangeList change_list;
+  change_list.push_back(SyncChange(
+      FROM_HERE, SyncChange::ACTION_DELETE,
+      SyncData::CreateRemoteData(/*id=*/1, specifics,
+                                 /*last_modified_time=*/base::Time::Now(),
+                                 /*client_tag_hash=*/kClientTagHash)));
+
+  sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
+
+  EXPECT_EQ(0U, in_memory_store.count(kClientTagHash));
+}
+
+TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
+     ShouldNotDropIfUnsynced) {
+  const std::string kClientTagHash = "clienttaghash1";
+
+  base::MessageLoop message_loop;
+  std::unique_ptr<ModelTypeStore> store =
+      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
+  std::map<std::string, sync_pb::PersistedEntityData> in_memory_store;
+  testing::NiceMock<MockModelTypeChangeProcessor> mock_processor;
+
+  in_memory_store[kClientTagHash] = sync_pb::PersistedEntityData();
+
+  std::unique_ptr<SyncChangeProcessor> sync_change_processor =
+      SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
+          HISTORY_DELETE_DIRECTIVES, store.get(), &in_memory_store,
+          &mock_processor);
+
+  EXPECT_CALL(mock_processor, IsEntityUnsynced(kClientTagHash))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_processor, UntrackEntityForStorageKey(_)).Times(0);
+
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_history_delete_directive();
+
+  SyncChangeList change_list;
+  change_list.push_back(SyncChange(
+      FROM_HERE, SyncChange::ACTION_DELETE,
+      SyncData::CreateRemoteData(/*id=*/1, specifics,
+                                 /*last_modified_time=*/base::Time::Now(),
+                                 /*client_tag_hash=*/kClientTagHash)));
+
+  sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
+
+  EXPECT_EQ(1U, in_memory_store.count(kClientTagHash));
 }
 
 }  // namespace

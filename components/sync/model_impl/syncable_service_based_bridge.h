@@ -93,6 +93,14 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
 
+  // For testing.
+  static std::unique_ptr<SyncChangeProcessor>
+  CreateLocalChangeProcessorForTesting(
+      ModelType type,
+      ModelTypeStore* store,
+      std::map<std::string, sync_pb::PersistedEntityData>* in_memory_store,
+      ModelTypeChangeProcessor* other);
+
  private:
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
