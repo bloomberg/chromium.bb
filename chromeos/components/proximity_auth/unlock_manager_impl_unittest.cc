@@ -126,8 +126,6 @@ class TestUnlockManager : public UnlockManagerImpl {
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
       RemoteDeviceLifeCycle* life_cycle,
       ProximityAuthPrefManager* pref_manager) override {
-    EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
-              life_cycle->GetConnection()->remote_device().public_key());
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>());
     proximity_monitor_ = proximity_monitor.get();
@@ -194,7 +192,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ON_CALL(messenger_, GetChannel())
         .WillByDefault(Return(fake_client_channel_.get()));
 
-    life_cycle_.set_connection(&connection_);
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
     ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
@@ -329,7 +326,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  life_cycle_.set_connection(nullptr);
   life_cycle_.set_messenger(nullptr);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
@@ -459,7 +455,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  life_cycle_.set_connection(nullptr);
   life_cycle_.set_messenger(nullptr);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
 
@@ -838,34 +833,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->OnUnlockEventSent(true);
 }
 
-TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnDecryptResponse(kSignInSecret);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
-  unlock_manager_->OnUnlockEventSent(true);
-}
-
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_SignIn_Success_MultiDeviceApiEnabled) {
   InitializeTest(true /* multidevice_flags_enabled */);
@@ -907,61 +874,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
   EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
   unlock_manager_->OnUnlockEventSent(true);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_SignIn_UnlockEventSendFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnDecryptResponse(kSignInSecret);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(std::string()));
-  unlock_manager_->OnUnlockEventSent(false);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_SignIn_DecryptRequestFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(std::string()));
-  unlock_manager_->OnDecryptResponse(std::string());
 }
 
 }  // namespace proximity_auth

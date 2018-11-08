@@ -24,10 +24,6 @@ cryptauth::RemoteDeviceRef FakeRemoteDeviceLifeCycle::GetRemoteDevice() const {
   return remote_device_;
 }
 
-cryptauth::Connection* FakeRemoteDeviceLifeCycle::GetConnection() const {
-  return connection_;
-}
-
 chromeos::secure_channel::ClientChannel* FakeRemoteDeviceLifeCycle::GetChannel()
     const {
   return channel_;
