@@ -92,7 +92,8 @@ NetworkChangeNotifierMac::NetworkChangeCalculatorParamsMac() {
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierMac::GetCurrentConnectionType() const {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  // https://crbug.com/125097
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::AutoLock lock(connection_type_lock_);
   // Make sure the initial connection type is set before returning.
   while (!connection_type_initialized_) {
