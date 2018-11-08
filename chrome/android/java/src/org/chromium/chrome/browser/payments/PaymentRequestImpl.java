@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
@@ -1434,9 +1433,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                context, MainPreferences.class.getName());
-        context.startActivity(intent);
+        PreferencesLauncher.launchSettingsPage(context, MainPreferences.class);
     }
 
     @Override

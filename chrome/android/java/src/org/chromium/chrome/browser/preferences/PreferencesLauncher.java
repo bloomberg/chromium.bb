@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfilesFragment;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
-import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.ref.WeakReference;
@@ -28,11 +31,25 @@ public class PreferencesLauncher {
      * Launches settings, either on the top-level page or on a subpage.
      *
      * @param context The current Activity, or an application context if no Activity is available.
-     * @param fragmentName The name of the fragment to show, or null to show the top-level page.
+     * @param fragment The fragment to show, or null to show the top-level page.
      */
-    public static void launchSettingsPage(Context context, String fragmentName) {
-        Intent intent = createIntentForSettingsPage(context, fragmentName);
-        context.startActivity(intent);
+    public static void launchSettingsPage(
+            Context context, @Nullable Class<? extends Fragment> fragment) {
+        launchSettingsPage(context, fragment, null);
+    }
+
+    /**
+     * Launches settings, either on the top-level page or on a subpage.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
+     * @param fragment The name of the fragment to show, or null to show the top-level page.
+     * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     */
+    public static void launchSettingsPage(Context context,
+            @Nullable Class<? extends Fragment> fragment, @Nullable Bundle fragmentArgs) {
+        String fragmentName = fragment != null ? fragment.getName() : null;
+        Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
+        IntentUtils.safeStartActivity(context, intent);
     }
 
     /**
@@ -42,7 +59,21 @@ public class PreferencesLauncher {
      * @param context The current Activity, or an application context if no Activity is available.
      * @param fragmentName The name of the fragment to show, or null to show the top-level page.
      */
-    public static Intent createIntentForSettingsPage(Context context, String fragmentName) {
+    public static Intent createIntentForSettingsPage(
+            Context context, @Nullable String fragmentName) {
+        return createIntentForSettingsPage(context, fragmentName, null);
+    }
+
+    /**
+     * Creates an intent for launching settings, either on the top-level settings page or a specific
+     * subpage.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
+     * @param fragmentName The name of the fragment to show, or null to show the top-level page.
+     * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     */
+    public static Intent createIntentForSettingsPage(
+            Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs) {
         Intent intent = new Intent();
         intent.setClass(context, Preferences.class);
         if (!(context instanceof Activity)) {
@@ -52,38 +83,31 @@ public class PreferencesLauncher {
         if (fragmentName != null) {
             intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT, fragmentName);
         }
+        if (fragmentArgs != null) {
+            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+        }
         return intent;
-    }
-
-    /**
-     * Creates an intent for launching clear browsing data, either on the top-level settings page or
-     * a specific subpage.
-     *
-     * @param context The current Activity, or an application context if no Activity is available.
-     */
-    public static Intent createIntentForClearBrowsingDataPage(Context context) {
-        return createIntentForSettingsPage(context, ClearBrowsingDataTabsFragment.class.getName());
     }
 
     @CalledByNative
     private static void showAutofillProfileSettings(WebContents webContents) {
-        showSettingSubpage(webContents, AutofillProfilesFragment.class.getName());
+        showSettingSubpage(webContents, AutofillProfilesFragment.class);
     }
 
     @CalledByNative
     private static void showAutofillCreditCardSettings(WebContents webContents) {
-        showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class.getName());
+        showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class);
     }
 
     @CalledByNative
     private static void showPasswordSettings() {
-        launchSettingsPage(
-                ContextUtils.getApplicationContext(), SavePasswordsPreferences.class.getName());
+        launchSettingsPage(ContextUtils.getApplicationContext(), SavePasswordsPreferences.class);
     }
 
-    private static void showSettingSubpage(WebContents webContents, String className) {
+    private static void showSettingSubpage(
+            WebContents webContents, Class<? extends Fragment> fragment) {
         WeakReference<Activity> currentActivity =
                 webContents.getTopLevelNativeWindow().getActivity();
-        launchSettingsPage(currentActivity.get(), className);
+        launchSettingsPage(currentActivity.get(), fragment);
     }
 }

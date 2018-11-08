@@ -397,8 +397,8 @@ public class ContextualSearchPromoControl extends OverlayPanelInflater {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                PreferencesLauncher.launchSettingsPage(getContext(),
-                        ContextualSearchPreferenceFragment.class.getName());
+                PreferencesLauncher.launchSettingsPage(
+                        getContext(), ContextualSearchPreferenceFragment.class);
             }
         });
     }

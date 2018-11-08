@@ -392,9 +392,7 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             ThreadUtils.runOnUiThreadBlocking(() -> {
-                Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                        context, SingleWebsitePreferences.class.getName());
-                context.startActivity(preferencesIntent);
+                PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
             });
         });
         ThreadUtils.runOnUiThreadBlocking(

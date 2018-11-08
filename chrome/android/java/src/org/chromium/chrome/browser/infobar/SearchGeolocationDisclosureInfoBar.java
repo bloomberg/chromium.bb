@@ -5,16 +5,12 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * An infobar to disclose to the user that the default search engine has geolocation access by
@@ -60,10 +56,7 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     @CalledByNative
     private static void showSettingsPage(String searchUrl) {
         Context context = ContextUtils.getApplicationContext();
-        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
-                context, SingleWebsitePreferences.class.getName());
-        Bundle fragmentArgs = SingleWebsitePreferences.createFragmentArgsForSite(searchUrl);
-        settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        IntentUtils.safeStartActivity(context, settingsIntent);
+        PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class,
+                SingleWebsitePreferences.createFragmentArgsForSite(searchUrl));
     }
 }

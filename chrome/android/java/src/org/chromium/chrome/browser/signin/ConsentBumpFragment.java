@@ -55,8 +55,7 @@ public class ConsentBumpFragment extends SigninFragmentBase {
             boolean settingsClicked, Runnable callback) {
         UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
         if (settingsClicked) {
-            PreferencesLauncher.launchSettingsPage(
-                    getActivity(), SyncAndServicesPreferences.class.getName());
+            PreferencesLauncher.launchSettingsPage(getActivity(), SyncAndServicesPreferences.class);
         }
         getActivity().finish();
         callback.run();

@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.text.Spannable;
@@ -40,7 +39,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -232,12 +230,9 @@ public class PageInfoController
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    Bundle fragmentArguments =
-                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
                     Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                            mContext, SingleWebsitePreferences.class.getName());
-                    preferencesIntent.putExtra(
-                            Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
+                            mContext, SingleWebsitePreferences.class.getName(),
+                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl));
                     // Disabling StrictMode to avoid violations (https://crbug.com/819410).
                     try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                         mContext.startActivity(preferencesIntent);
