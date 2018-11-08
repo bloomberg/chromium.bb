@@ -59,8 +59,6 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -707,57 +705,6 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   DISALLOW_COPY_AND_ASSIGN(DeleteSocketCallback);
 };
 
-// A ChannelIDStore that always returns an error when asked for a
-// channel id.
-class FailingChannelIDStore : public ChannelIDStore {
-  int GetChannelID(const std::string& server_identifier,
-                   std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   GetChannelIDCallback callback) override {
-    return ERR_UNEXPECTED;
-  }
-  void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
-  void DeleteChannelID(const std::string& server_identifier,
-                       base::OnceClosure completion_callback) override {}
-  void DeleteForDomainsCreatedBetween(
-      const base::Callback<bool(const std::string&)>& domain_predicate,
-      base::Time delete_begin,
-      base::Time delete_end,
-      base::OnceClosure completion_callback) override {}
-  void DeleteAll(base::OnceClosure completion_callback) override {}
-  void GetAllChannelIDs(GetChannelIDListCallback callback) override {}
-  int GetChannelIDCount() override { return 0; }
-  void SetForceKeepSessionState() override {}
-  void Flush() override {}
-  bool IsEphemeral() override { return true; }
-};
-
-// A ChannelIDStore that asynchronously returns an error when asked for a
-// channel id.
-class AsyncFailingChannelIDStore : public ChannelIDStore {
-  int GetChannelID(const std::string& server_identifier,
-                   std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   GetChannelIDCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), ERR_UNEXPECTED,
-                                  server_identifier, nullptr));
-    return ERR_IO_PENDING;
-  }
-  void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
-  void DeleteChannelID(const std::string& server_identifier,
-                       base::OnceClosure completion_callback) override {}
-  void DeleteForDomainsCreatedBetween(
-      const base::Callback<bool(const std::string&)>& domain_predicate,
-      base::Time delete_begin,
-      base::Time delete_end,
-      base::OnceClosure completion_callback) override {}
-  void DeleteAll(base::OnceClosure completion_callback) override {}
-  void GetAllChannelIDs(GetChannelIDListCallback callback) override {}
-  int GetChannelIDCount() override { return 0; }
-  void SetForceKeepSessionState() override {}
-  void Flush() override {}
-  bool IsEphemeral() override { return true; }
-};
-
 // A mock ExpectCTReporter that remembers the latest violation that was
 // reported and the number of violations reported.
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
@@ -1182,32 +1129,6 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       EXPECT_FALSE(callback.have_result());
     }
   }
-};
-
-class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
- protected:
-  SSLClientSocketChannelIDTest() = default;
-
-  void EnableChannelID() {
-    channel_id_service_.reset(
-        new ChannelIDService(new DefaultChannelIDStore(NULL)));
-    context_.channel_id_service = channel_id_service_.get();
-  }
-
-  void EnableFailingChannelID() {
-    channel_id_service_.reset(
-        new ChannelIDService(new FailingChannelIDStore()));
-    context_.channel_id_service = channel_id_service_.get();
-  }
-
-  void EnableAsyncFailingChannelID() {
-    channel_id_service_.reset(
-        new ChannelIDService(new AsyncFailingChannelIDStore()));
-    context_.channel_id_service = channel_id_service_.get();
-  }
-
- private:
-  std::unique_ptr<ChannelIDService> channel_id_service_;
 };
 
 // Provides a response to the 0RTT request indicating whether it was received
@@ -3285,95 +3206,6 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
   SSLInfo ssl_info;
   EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-}
-
-// Connect to a server using channel id. It should allow the connection.
-TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
-  SpawnedTestServer::SSLOptions ssl_options;
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  EnableChannelID();
-  SSLConfig ssl_config;
-  ssl_config.channel_id_enabled = true;
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(sock_->IsConnected());
-  SSLInfo ssl_info;
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_TRUE(ssl_info.channel_id_sent);
-
-  sock_->Disconnect();
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Connect to a server using Channel ID but failing to look up the Channel
-// ID. It should fail.
-TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
-  SpawnedTestServer::SSLOptions ssl_options;
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  EnableFailingChannelID();
-  SSLConfig ssl_config;
-  ssl_config.channel_id_enabled = true;
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-
-  // TODO(haavardm@opera.com): Due to differences in threading, Linux returns
-  // ERR_UNEXPECTED while Mac and Windows return ERR_PROTOCOL_ERROR. Accept all
-  // error codes for now.
-  // http://crbug.com/373670
-  EXPECT_NE(OK, rv);
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Connect to a server using Channel ID but asynchronously failing to look up
-// the Channel ID. It should fail.
-TEST_F(SSLClientSocketChannelIDTest, FailingChannelIDAsync) {
-  SpawnedTestServer::SSLOptions ssl_options;
-
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  EnableAsyncFailingChannelID();
-  SSLConfig ssl_config;
-  ssl_config.channel_id_enabled = true;
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-
-  EXPECT_THAT(rv, IsError(ERR_UNEXPECTED));
-  EXPECT_FALSE(sock_->IsConnected());
-}
-
-// Tests that session caches are sharded by whether Channel ID is enabled.
-TEST_F(SSLClientSocketChannelIDTest, ChannelIDShardSessionCache) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  EnableChannelID();
-
-  // Connect without Channel ID.
-  SSLConfig ssl_config;
-  ssl_config.channel_id_enabled = false;
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  SSLInfo ssl_info;
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-  EXPECT_FALSE(ssl_info.channel_id_sent);
-
-  // Enable Channel ID and connect again. This needs a full handshake to assert
-  // Channel ID.
-  ssl_config.channel_id_enabled = true;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-  EXPECT_TRUE(ssl_info.channel_id_sent);
 }
 
 // Server preference should win in ALPN.

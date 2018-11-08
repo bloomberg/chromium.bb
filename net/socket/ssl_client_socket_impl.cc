@@ -86,32 +86,6 @@ std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
   return std::move(value);
 }
 
-std::unique_ptr<base::Value> NetLogChannelIDLookupCallback(
-    ChannelIDService* channel_id_service,
-    NetLogCaptureMode capture_mode) {
-  ChannelIDStore* store = channel_id_service->GetChannelIDStore();
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("ephemeral", store->IsEphemeral());
-  dict->SetString("service", base::HexEncode(&channel_id_service,
-                                             sizeof(channel_id_service)));
-  dict->SetString("store", base::HexEncode(&store, sizeof(store)));
-  return std::move(dict);
-}
-
-std::unique_ptr<base::Value> NetLogChannelIDLookupCompleteCallback(
-    crypto::ECPrivateKey* key,
-    int result,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("net_error", result);
-  std::string raw_key;
-  if (result == OK && key && key->ExportRawPublicKey(&raw_key)) {
-    std::string key_to_log = base::HexEncode(raw_key.data(), raw_key.length());
-    dict->SetString("key", key_to_log);
-  }
-  return std::move(dict);
-}
-
 std::unique_ptr<base::Value> NetLogSSLInfoCallback(
     SSLClientSocketImpl* socket,
     NetLogCaptureMode capture_mode) {
@@ -450,7 +424,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       was_ever_used_(false),
       cert_verifier_(context.cert_verifier),
       cert_transparency_verifier_(context.cert_transparency_verifier),
-      channel_id_service_(context.channel_id_service),
       transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
@@ -459,7 +432,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       in_confirm_handshake_(false),
       disconnected_(false),
       negotiated_protocol_(kProtoUnknown),
-      channel_id_sent_(false),
       certificate_verified_(false),
       certificate_requested_(false),
       signature_result_(kSSLClientSocketNoPendingResult),
@@ -542,7 +514,6 @@ void SSLClientSocketImpl::Disconnect() {
 
   // Shut down anything that may call us back.
   cert_verifier_request_.reset();
-  channel_id_request_.Cancel();
   weak_factory_.InvalidateWeakPtrs();
   transport_adapter_.reset();
 
@@ -654,7 +625,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
-  ssl_info->channel_id_sent = channel_id_sent_;
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -729,14 +699,6 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
     cert_request_info->cert_key_types.push_back(
         static_cast<SSLClientCertType>(client_cert_types[i]));
   }
-}
-
-ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
-  return channel_id_service_;
-}
-
-crypto::ECPrivateKey* SSLClientSocketImpl::GetChannelIDKey() const {
-  return channel_id_key_.get();
 }
 
 void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {
@@ -929,11 +891,6 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
-  // TLS channel ids.
-  if (IsChannelIDEnabled()) {
-    SSL_enable_tls_channel_id(ssl_.get());
-  }
-
   if (!ssl_config_.alpn_protos.empty()) {
     std::vector<uint8_t> wire_protos =
         SerializeNextProtos(ssl_config_.alpn_protos);
@@ -982,12 +939,6 @@ int SSLClientSocketImpl::DoHandshake() {
   int net_error = OK;
   if (rv <= 0) {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
-    if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
-      // The server supports channel ID. Stop to look one up before returning to
-      // the handshake.
-      next_handshake_state_ = STATE_CHANNEL_ID_LOOKUP;
-      return OK;
-    }
     if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP &&
         !ssl_config_.send_client_cert) {
       return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
@@ -1069,40 +1020,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   // Verify the certificate.
   next_handshake_state_ = STATE_VERIFY_CERT;
-  return OK;
-}
-
-int SSLClientSocketImpl::DoChannelIDLookup() {
-  NetLogParametersCallback callback = base::Bind(
-      &NetLogChannelIDLookupCallback, base::Unretained(channel_id_service_));
-  net_log_.BeginEvent(NetLogEventType::SSL_GET_CHANNEL_ID, callback);
-  next_handshake_state_ = STATE_CHANNEL_ID_LOOKUP_COMPLETE;
-  return channel_id_service_->GetOrCreateChannelID(
-      host_and_port_.host(), &channel_id_key_,
-      base::Bind(&SSLClientSocketImpl::OnHandshakeIOComplete,
-                 base::Unretained(this)),
-      &channel_id_request_);
-}
-
-int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
-  net_log_.EndEvent(NetLogEventType::SSL_GET_CHANNEL_ID,
-                    base::Bind(&NetLogChannelIDLookupCompleteCallback,
-                               channel_id_key_.get(), result));
-  if (result < 0)
-    return result;
-
-  // Hand the key to OpenSSL. Check for error in case OpenSSL rejects the key
-  // type.
-  DCHECK(channel_id_key_);
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  if (!SSL_set1_tls_channel_id(ssl_.get(), channel_id_key_->key())) {
-    LOG(ERROR) << "Failed to set Channel ID.";
-    return ERR_FAILED;
-  }
-
-  // Return to the handshake.
-  channel_id_sent_ = true;
-  next_handshake_state_ = STATE_HANDSHAKE;
   return OK;
 }
 
@@ -1316,13 +1233,6 @@ int SSLClientSocketImpl::DoHandshakeLoop(int last_io_result) {
         break;
       case STATE_HANDSHAKE_COMPLETE:
         rv = DoHandshakeComplete(rv);
-        break;
-      case STATE_CHANNEL_ID_LOOKUP:
-        DCHECK_EQ(OK, rv);
-        rv = DoChannelIDLookup();
-        break;
-      case STATE_CHANNEL_ID_LOOKUP_COMPLETE:
-        rv = DoChannelIDLookupComplete(rv);
         break;
       case STATE_VERIFY_CERT:
         DCHECK_EQ(OK, rv);
@@ -1687,7 +1597,6 @@ std::string SSLClientSocketImpl::GetSessionCacheKey() const {
   result.append(ssl_session_cache_shard_);
 
   result.push_back('/');
-  result.push_back(ssl_config_.channel_id_enabled ? '1' : '0');
   result.push_back(ssl_config_.version_interference_probe ? '1' : '0');
   return result;
 }
@@ -1808,10 +1717,6 @@ void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
 void SSLClientSocketImpl::RecordNegotiatedProtocol() const {
   UMA_HISTOGRAM_ENUMERATION("Net.SSLNegotiatedAlpnProtocol",
                             negotiated_protocol_, kProtoLast + 1);
-}
-
-bool SSLClientSocketImpl::IsChannelIDEnabled() const {
-  return ssl_config_.channel_id_enabled && channel_id_service_;
 }
 
 int SSLClientSocketImpl::MapLastOpenSSLError(
