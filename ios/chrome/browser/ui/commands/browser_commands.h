@@ -61,9 +61,6 @@ class GURL;
 // Closes all tabs.
 - (void)closeAllTabs;
 
-// Closes all incognito tabs.
-- (void)closeAllIncognitoTabs;
-
 #if !defined(NDEBUG)
 // Shows the source of the current page.
 - (void)viewSource;
