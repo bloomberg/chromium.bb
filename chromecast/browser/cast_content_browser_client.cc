@@ -89,6 +89,7 @@
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "media/mojo/services/android_mojo_media_client.h"
@@ -255,6 +256,14 @@ CastContentBrowserClient::CreateAudioManager(
   bool use_mixer = true;
 #else
   bool use_mixer = false;
+#endif
+
+#if defined(OS_ANDROID)
+  // Disable CMA backend on builds older than N.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_NOUGAT) {
+    return nullptr;
+  }
 #endif
 
 #if defined(USE_ALSA)
