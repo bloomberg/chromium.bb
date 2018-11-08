@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
@@ -129,27 +130,34 @@ class TraceEventDataSource::ThreadLocalEventSink {
     trace_packet_handle_ = trace_writer_->NewTracePacket();
     event_bundle_ =
         ChromeEventBundleHandle(trace_packet_handle_->set_chrome_events());
-    string_table_.clear();
-    next_string_table_index_ = 0;
+    interned_strings_.clear();
+#if DCHECK_IS_ON()
+    hash_verifier_.clear();
+#endif
   }
 
-  int GetStringTableIndexForString(const char* str_value) {
+  uint32_t GetStringTableIndexForString(const char* str_value) {
     EnsureValidHandles();
 
-    auto it = string_table_.find(reinterpret_cast<intptr_t>(str_value));
-    if (it != string_table_.end()) {
-      CHECK_EQ(std::string(reinterpret_cast<const char*>(it->first)),
-               std::string(str_value));
+    uint32_t string_table_index = base::Hash(str_value, strlen(str_value));
 
-      return it->second;
+    if (interned_strings_.find(string_table_index) != interned_strings_.end()) {
+#if DCHECK_IS_ON()
+      DCHECK_EQ(hash_verifier_[string_table_index], str_value);
+#endif
+
+      return string_table_index;
     }
 
-    int string_table_index = ++next_string_table_index_;
-    string_table_[reinterpret_cast<intptr_t>(str_value)] = string_table_index;
+    interned_strings_.insert(string_table_index);
 
     auto* new_string_table_entry = event_bundle_->add_string_table();
     new_string_table_entry->set_value(str_value);
     new_string_table_entry->set_index(string_table_index);
+
+#if DCHECK_IS_ON()
+    hash_verifier_[string_table_index] = str_value;
+#endif
 
     return string_table_index;
   }
@@ -183,9 +191,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
 
     EnsureValidHandles();
 
-    int name_index = 0;
-    int category_name_index = 0;
-    int arg_name_indices[base::trace_event::kTraceMaxNumArgs] = {0};
+    uint32_t name_index = 0;
+    uint32_t category_name_index = 0;
+    uint32_t arg_name_indices[base::trace_event::kTraceMaxNumArgs] = {0};
+
+    char phase = trace_event->phase();
 
     // Populate any new string table parts first; has to be done before
     // the add_trace_events() call (as the string table is part of the outer
@@ -196,10 +206,18 @@ class TraceEventDataSource::ThreadLocalEventSink {
     bool string_table_enabled =
         !(trace_event->flags() & TRACE_EVENT_FLAG_COPY) && thread_will_flush_;
     if (string_table_enabled) {
-      name_index = GetStringTableIndexForString(trace_event->name());
-      category_name_index =
-          GetStringTableIndexForString(TraceLog::GetCategoryGroupName(
-              trace_event->category_group_enabled()));
+      // Optimization: If it's an _END event, we know that the string table
+      // entries for the name and the category have already been emitted.
+      if (phase == TRACE_EVENT_PHASE_END) {
+        name_index = base::Hash(trace_event->name());
+        category_name_index = base::Hash(TraceLog::GetCategoryGroupName(
+            trace_event->category_group_enabled()));
+      } else {
+        name_index = GetStringTableIndexForString(trace_event->name());
+        category_name_index =
+            GetStringTableIndexForString(TraceLog::GetCategoryGroupName(
+                trace_event->category_group_enabled()));
+      }
 
       for (int i = 0;
            i < base::trace_event::kTraceMaxNumArgs && trace_event->arg_name(i);
@@ -244,7 +262,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
     new_trace_event->set_process_id(process_id);
     new_trace_event->set_thread_id(thread_id);
 
-    char phase = trace_event->phase();
     new_trace_event->set_phase(phase);
 
     for (int i = 0;
@@ -297,11 +314,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
       int64_t duration = trace_event->duration().InMicroseconds();
       if (duration != -1) {
         new_trace_event->set_duration(duration);
-      } else {
-        // TODO(oysteine): Workaround until TRACE_EVENT_PHASE_COMPLETE can be
-        // split into begin/end pairs. If the duration is -1 and the
-        // trace-viewer will spend forever generating a warning for each event.
-        new_trace_event->set_duration(0);
       }
 
       if (!trace_event->thread_timestamp().is_null()) {
@@ -353,8 +365,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
   const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
-  std::map<intptr_t, int> string_table_;
-  int next_string_table_index_ = 0;
+  std::set<uint32_t> interned_strings_;
+#if DCHECK_IS_ON()
+  std::map<uint32_t, std::string> hash_verifier_;
+#endif
 };
 
 namespace {
