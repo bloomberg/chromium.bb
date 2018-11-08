@@ -109,14 +109,8 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
-  // Returns the location bar border thickness in DIPs.
-  static int GetBorderThicknessDip();
-
-  // Whether the location bar is a pill shape.
-  static bool IsRounded();
-
   // Returns the location bar border radius in DIPs.
-  float GetBorderRadius() const;
+  int GetBorderRadius() const;
 
   // Initializes the LocationBarView.
   void Init();
@@ -142,6 +136,14 @@ class LocationBarView : public LocationBar,
 
   // Returns the cached theme color tint for the location bar and results.
   OmniboxTint tint() const { return tint_; }
+
+  // Returns a background that paints an (optionally stroked) rounded rect with
+  // the given color.
+  std::unique_ptr<views::Background> CreateRoundRectBackground(
+      SkColor background_color,
+      SkColor stroke_color,
+      SkBlendMode blend_mode = SkBlendMode::kSrcOver,
+      bool antialias = true) const;
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -188,11 +190,6 @@ class LocationBarView : public LocationBar,
   // we can't show the autocompletion inside the actual OmniboxView.  See
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const base::string16& text);
-
-  // Paints a custom focus ring on platforms that normally do not show focus
-  // rings if |full_keyboard_accessibility_mode| is set to true.
-  // TODO(tommycli): Remove this after after Material Refresh is launched.
-  void SetFullKeyboardAcessibilityMode(bool full_keyboard_accessibility_mode);
 
   // Select all of the text. Needed when the user tabs through controls
   // in the toolbar in full keyboard accessibility mode.
@@ -285,9 +282,6 @@ class LocationBarView : public LocationBar,
   // this method would return a gfx::Rect with 46dip width.
   gfx::Rect GetLocalBoundsWithoutEndcaps() const;
 
-  // Returns the thickness of any visible edge, in pixels.
-  int GetHorizontalEdgeThickness() const;
-
   // Updates the background on a theme change, or dropdown state change.
   void RefreshBackground();
 
@@ -364,7 +358,6 @@ class LocationBarView : public LocationBar,
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // views::DragController:
@@ -395,10 +388,6 @@ class LocationBarView : public LocationBar,
 
   // ui::MaterialDesignControllerObserver:
   void OnMdModeChanged() override;
-
-  // Returns the total amount of space reserved above or below the content,
-  // which is the vertical edge thickness plus the padding next to it.
-  static int GetTotalVerticalPadding();
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
@@ -476,12 +465,6 @@ class LocationBarView : public LocationBar,
 
   // The theme tint. Updated based on the profile and theme settings.
   OmniboxTint tint_;
-
-  // True if we are in full keyboard accessibility mode. This causes us to show
-  // an internally drawn focus ring on platforms that normally don't display any
-  // focus rings. This custom ring is only drawn if |focus_ring_| is nullptr.
-  // TODO(tommycli): Remove this after after Material Refresh is launched.
-  bool full_keyboard_accessibility_mode_ = false;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;

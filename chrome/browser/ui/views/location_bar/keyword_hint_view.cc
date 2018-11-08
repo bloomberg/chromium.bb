@@ -15,14 +15,12 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -40,42 +38,22 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
       chip_label_(
           new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)),
       trailing_label_(nullptr) {
-  const bool experimental_keyword_mode =
-      OmniboxFieldTrial::IsExperimentalKeywordModeEnabled();
-  const bool is_newer_material =
-      ui::MaterialDesignController::IsNewerMaterialUi();
-  SkColor text_color =
-      is_newer_material
-          ? GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint)
-          : GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED, tint);
-  SkColor background_color =
+  const SkColor leading_label_text_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+  const SkColor background_color =
       GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
-  leading_label_ = CreateLabel(text_color, background_color);
+  leading_label_ = CreateLabel(leading_label_text_color, background_color);
 
-  constexpr int kPaddingInsideBorder = 5;
-  // Even though the border is 1 px thick visibly, it takes 1 DIP logically for
-  // the non-rounded style.
-  const int horizontal_padding = LocationBarView::IsRounded()
-                                     ? GetCornerRadius()
-                                     : kPaddingInsideBorder + 1;
   chip_label_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, horizontal_padding)));
+      views::CreateEmptyBorder(gfx::Insets(0, GetCornerRadius())));
 
-  SkColor tab_bg_color = SkColorSetA(text_color, 0x13);
-  SkColor tab_border_color = text_color;
-  if (color_utils::IsDark(background_color)) {
-    tab_bg_color = SK_ColorWHITE;
-    tab_border_color = SK_ColorWHITE;
-  }
-  if (is_newer_material) {
-    tab_border_color =
-        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
-    if (!experimental_keyword_mode) {
-      tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
-    } else {
-      tab_bg_color = tab_border_color;
-      text_color = SK_ColorWHITE;
-    }
+  const SkColor tab_border_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+  SkColor text_color = leading_label_text_color;
+  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
+    text_color = SK_ColorWHITE;
+    tab_bg_color = tab_border_color;
   }
   chip_label_->SetEnabledColor(text_color);
   chip_label_->SetBackgroundColor(tab_bg_color);
@@ -158,11 +136,6 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
 }
 
 gfx::Insets KeywordHintView::GetInsets() const {
-  if (!LocationBarView::IsRounded()) {
-    return gfx::Insets(
-        0, GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left());
-  }
-
   // The location bar and keyword hint view chip have rounded ends. Ensure the
   // chip label's corner with the furthest extent from its midpoint is still at
   // least kMinDistanceFromBorder DIPs away from the location bar rounded end.
@@ -224,21 +197,17 @@ gfx::Size KeywordHintView::CalculatePreferredSize() const {
 }
 
 void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (LocationBarView::IsRounded()) {
-    const int chip_corner_radius = GetCornerRadius();
-    chip_label_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
-                    chip_corner_radius)));
-  }
+  const int chip_corner_radius = GetCornerRadius();
+  chip_label_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
+                  chip_corner_radius)));
   views::Button::OnBoundsChanged(previous_bounds);
 }
 
 views::Label* KeywordHintView::CreateLabel(SkColor text_color,
                                            SkColor background_color) {
   views::Label* label =
-      new views::Label(base::string16(), LocationBarView::IsRounded()
-                                             ? CONTEXT_OMNIBOX_DECORATION
-                                             : CONTEXT_OMNIBOX_PRIMARY);
+      new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION);
   label->SetEnabledColor(text_color);
   label->SetBackgroundColor(background_color);
   AddChildView(label);
@@ -246,7 +215,5 @@ views::Label* KeywordHintView::CreateLabel(SkColor text_color,
 }
 
 int KeywordHintView::GetCornerRadius() const {
-  if (!LocationBarView::IsRounded())
-    return GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
   return chip_container_->height() / 2;
 }
