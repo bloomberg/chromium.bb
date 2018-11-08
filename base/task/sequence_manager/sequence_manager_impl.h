@@ -96,7 +96,8 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       MessageLoop* message_loop);
 
-  static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump();
+  static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
+      MessageLoop::Type type);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
@@ -104,8 +105,6 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToMessagePump(std::unique_ptr<MessagePump> message_loop) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RegisterTimeDomain(TimeDomain* time_domain) override;
@@ -123,17 +122,34 @@ class BASE_EXPORT SequenceManagerImpl
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
   void DeletePendingTasks() override;
-  void SetAddQueueTimeToTasks(bool enable) override;
   bool HasTasks() override;
-  void SetTaskExecutionAllowed(bool allowed) override;
-  bool IsTaskExecutionAllowed() const override;
   bool IsIdleForTesting() const override;
+  size_t GetPendingTaskCountForTesting() const override;
 
   // Implementation of SequencedTaskSource:
   Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
   bool HasPendingHighResolutionTasks() override;
+
+  // Methods needed for MessageLoopCurrent support.
+  // TOOD(alexclarke): Introduce MessageLoopBase and make SequenceManagerImpl
+  // inherit from it, and mark these as override.
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void AddDestructionObserver(
+      MessageLoopCurrent::DestructionObserver* destruction_observer);
+  void RemoveDestructionObserver(
+      MessageLoopCurrent::DestructionObserver* destruction_observer);
+  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
+  void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
+  std::string GetThreadName() const;
+  bool IsBoundToCurrentThread() const;
+  MessagePump* GetMessagePump() const;
+  bool IsType(MessageLoop::Type type) const;
+  void SetAddQueueTimeToTasks(bool enable);
+  void SetTaskExecutionAllowed(bool allowed);
+  bool IsTaskExecutionAllowed() const;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other
@@ -172,8 +188,8 @@ class BASE_EXPORT SequenceManagerImpl
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
-  explicit SequenceManagerImpl(
-      std::unique_ptr<internal::ThreadController> controller);
+  SequenceManagerImpl(std::unique_ptr<internal::ThreadController> controller,
+                      MessageLoop::Type type);
 
   friend class internal::TaskQueueImpl;
   friend class ::base::sequence_manager::SequenceManagerForTest;
@@ -264,12 +280,13 @@ class BASE_EXPORT SequenceManagerImpl
     bool task_was_run_on_quiescence_monitored_queue = false;
     bool nesting_observer_registered_ = false;
 
-    bool task_execution_allowed_ = true;
-
     // Due to nested runloops more than one task can be executing concurrently.
     std::list<ExecutingTask> task_execution_stack;
 
     Observer* observer = nullptr;  // NOT OWNED
+
+    ObserverList<MessageLoopCurrent::DestructionObserver>::Unchecked
+        destruction_observers;
   };
 
   // TaskQueueSelector::Observer:
@@ -339,7 +356,8 @@ class BASE_EXPORT SequenceManagerImpl
 
   internal::EnqueueOrder::Generator enqueue_order_generator_;
 
-  std::unique_ptr<internal::ThreadController> controller_;
+  const std::unique_ptr<internal::ThreadController> controller_;
+  const MessageLoop::Type type_;
 
   mutable Lock any_thread_lock_;
   AnyThread any_thread_;

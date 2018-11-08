@@ -344,6 +344,8 @@ void ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled() {
 
 void ThreadControllerWithMessagePumpImpl::SetTaskExecutionAllowed(
     bool allowed) {
+  if (allowed)
+    EnsureWorkScheduled();
   main_thread_only().task_execution_allowed = allowed;
 }
 
@@ -356,6 +358,10 @@ ThreadControllerWithMessagePumpImpl::AcquirePumpReadLockIfNeeded() {
   if (RunsTasksInCurrentSequence())
     return nullopt;
   return MoveableAutoLock(pump_lock_);
+}
+
+MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
+  return pump_.get();
 }
 
 }  // namespace internal
