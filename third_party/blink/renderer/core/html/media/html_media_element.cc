@@ -2375,9 +2375,7 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
   // The spec does not define an invalid value default:
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28950
   UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadDefault);
-  return RuntimeEnabledFeatures::PreloadDefaultIsMetadataEnabled()
-             ? WebMediaPlayer::kPreloadMetaData
-             : WebMediaPlayer::kPreloadAuto;
+  return WebMediaPlayer::kPreloadMetaData;
 }
 
 String HTMLMediaElement::EffectivePreload() const {
