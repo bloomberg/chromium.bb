@@ -282,67 +282,30 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
 
   NGInlineNodeData* data = MutableData();
   if (!data->offset_mapping) {
-    DCHECK(!data->text_content.IsNull());
-    ComputeOffsetMapping(GetLayoutBlockFlow(), data);
-    DCHECK(data->offset_mapping);
+    // TODO(xiaochengh): ComputeOffsetMappingIfNeeded() discards the
+    // NGInlineItems and text content built by |builder|, because they are
+    // already there in NGInlineNodeData. For efficiency, we should make
+    // |builder| not construct items and text content.
+    Vector<NGInlineItem> items;
+    items.ReserveCapacity(EstimateInlineItemsCount(*GetLayoutBlockFlow()));
+    NGInlineItemsBuilderForOffsetMapping builder(&items);
+    builder.GetOffsetMappingBuilder().ReserveCapacity(
+        EstimateOffsetMappingItemsCount(*GetLayoutBlockFlow()));
+    const bool update_layout = false;
+    CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr,
+                           update_layout);
+    String text = builder.ToString();
+    DCHECK_EQ(data->text_content, text);
+
+    // TODO(xiaochengh): This doesn't compute offset mapping correctly when
+    // text-transform CSS property changes text length.
+    NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
+    mapping_builder.SetDestinationString(data->text_content);
+    data->offset_mapping =
+        std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   }
 
   return data->offset_mapping.get();
-}
-
-void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
-                                        NGInlineNodeData* data) {
-  DCHECK(!data->offset_mapping);
-  DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate());
-
-  // TODO(xiaochengh): ComputeOffsetMappingIfNeeded() discards the
-  // NGInlineItems and text content built by |builder|, because they are
-  // already there in NGInlineNodeData. For efficiency, we should make
-  // |builder| not construct items and text content.
-  Vector<NGInlineItem> items;
-  items.ReserveCapacity(EstimateInlineItemsCount(*layout_block_flow));
-  NGInlineItemsBuilderForOffsetMapping builder(&items);
-  builder.GetOffsetMappingBuilder().ReserveCapacity(
-      EstimateOffsetMappingItemsCount(*layout_block_flow));
-  const bool update_layout = false;
-  CollectInlinesInternal(layout_block_flow, &builder, nullptr, update_layout);
-  if (data->text_content.IsNull())
-    data->text_content = builder.ToString();
-  else
-    DCHECK_EQ(data->text_content, builder.ToString());
-
-  // TODO(xiaochengh): This doesn't compute offset mapping correctly when
-  // text-transform CSS property changes text length.
-  NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
-  mapping_builder.SetDestinationString(data->text_content);
-  data->offset_mapping =
-      std::make_unique<NGOffsetMapping>(mapping_builder.Build());
-  DCHECK(data->offset_mapping);
-}
-
-const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
-    LayoutBlockFlow* layout_block_flow,
-    std::unique_ptr<NGOffsetMapping>* storage) {
-  DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate());
-
-  // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
-  if (layout_block_flow->IsLayoutNGMixin()) {
-    NGInlineNode node(layout_block_flow);
-    if (node.IsPrepareLayoutFinished())
-      return node.ComputeOffsetMappingIfNeeded();
-
-    // When this is not laid out yet, compute each time it is requested.
-    // TODO(kojii): We could still keep the result for later uses but it would
-    // add more states. Reconsider if this turned out to be needed.
-  }
-
-  // If this is not LayoutNG, compute the offset mapping and store in |storage|.
-  // The caller is responsible to keep |storage| for the life cycle.
-  NGInlineNodeData data;
-  ComputeOffsetMapping(layout_block_flow, &data);
-  *storage = std::move(data.offset_mapping);
-  DCHECK(*storage);
-  return storage->get();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
