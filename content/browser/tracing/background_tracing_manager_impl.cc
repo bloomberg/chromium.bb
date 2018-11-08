@@ -692,6 +692,12 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
           "disabled-by-default-renderer.scheduler,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_SERVICEWORKER:
+      return TraceConfig(
+          "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
+          "loader,loading,navigation,blink.user_timing,"
+          "disabled-by-default-network",
+          record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);
 
@@ -707,7 +713,6 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       config.ResetMemoryDumpConfig(memory_config);
       return config;
     }
-
     case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
       NOTREACHED();
   }
