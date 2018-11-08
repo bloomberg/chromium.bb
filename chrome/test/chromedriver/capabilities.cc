@@ -802,16 +802,5 @@ Status Capabilities::CheckSupport() const {
                                         "' not yet supported");
   }
 
-  // TODO(https://crbug.com/chromedriver/2597): Some unhandledPromptBehavior
-  // modes not yet supported.
-  if (unhandled_prompt_behavior.length() > 0 &&
-      unhandled_prompt_behavior != kAccept &&
-      unhandled_prompt_behavior != kDismiss &&
-      unhandled_prompt_behavior != kIgnore) {
-    return Status(kInvalidArgument,
-                  "'unhandledPromptBehavior=" + unhandled_prompt_behavior +
-                      "' not yet supported");
-  }
-
   return Status(kOk);
 }

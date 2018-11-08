@@ -238,7 +238,15 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
 
-  session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
+  if (capabilities.unhandled_prompt_behavior.length() > 0) {
+    session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
+  } else {
+    // W3C spec (https://www.w3.org/TR/webdriver/#dfn-handle-any-user-prompts)
+    // shows the default behavior to be dismiss and notify. For backward
+    // compatibility, in legacy mode default behavior is not handling prompt.
+    session->unhandled_prompt_behavior =
+        session->w3c_compliant ? kDismissAndNotify : kIgnore;
+  }
 
   session->implicit_wait = capabilities.implicit_wait_timeout;
   session->page_load_timeout = capabilities.page_load_timeout;
