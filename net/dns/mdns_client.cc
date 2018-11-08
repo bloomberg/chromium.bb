@@ -4,12 +4,11 @@
 
 #include "net/dns/mdns_client.h"
 
-#include "build/build_config.h"
-#include "net/base/ip_address.h"
+#include "net/base/address_family.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/mdns_client_impl.h"
-#include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_source.h"
 
@@ -17,28 +16,18 @@ namespace net {
 
 namespace {
 
-const char kMDnsMulticastGroupIPv4[] = "224.0.0.251";
-const char kMDnsMulticastGroupIPv6[] = "FF02::FB";
-
-IPEndPoint GetMDnsIPEndPoint(const char* address) {
-  IPAddress multicast_group_number;
-  bool success = multicast_group_number.AssignFromIPLiteral(address);
-  DCHECK(success);
-  return IPEndPoint(multicast_group_number,
-                    dns_protocol::kDefaultPortMulticast);
-}
-
 int Bind(AddressFamily address_family,
          uint32_t interface_index,
          DatagramServerSocket* socket) {
   socket->AllowAddressSharingForMulticast();
   socket->SetMulticastInterface(interface_index);
 
-  int rv = socket->Listen(GetMDnsReceiveEndPoint(address_family));
+  int rv = socket->Listen(dns_util::GetMdnsReceiveEndPoint(address_family));
   if (rv < OK)
     return rv;
 
-  return socket->JoinGroup(GetMDnsGroupEndPoint(address_family).address());
+  return socket->JoinGroup(
+      dns_util::GetMdnsGroupEndPoint(address_family).address());
 }
 
 }  // namespace
@@ -54,43 +43,6 @@ std::unique_ptr<MDnsSocketFactory> MDnsSocketFactory::CreateDefault() {
 // static
 std::unique_ptr<MDnsClient> MDnsClient::CreateDefault() {
   return std::unique_ptr<MDnsClient>(new MDnsClientImpl());
-}
-
-IPEndPoint GetMDnsGroupEndPoint(AddressFamily address_family) {
-  switch (address_family) {
-    case ADDRESS_FAMILY_IPV4:
-      return GetMDnsIPEndPoint(kMDnsMulticastGroupIPv4);
-    case ADDRESS_FAMILY_IPV6:
-      return GetMDnsIPEndPoint(kMDnsMulticastGroupIPv6);
-    default:
-      NOTREACHED();
-      return IPEndPoint();
-  }
-}
-
-IPEndPoint GetMDnsReceiveEndPoint(AddressFamily address_family) {
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
-  // With Windows, binding to a mulitcast group address is not allowed.
-  // Multicast messages will be received appropriate to the multicast groups the
-  // socket has joined. Sockets intending to receive multicast messages should
-  // bind to a wildcard address (e.g. 0.0.0.0).
-  switch (address_family) {
-    case ADDRESS_FAMILY_IPV4:
-      return IPEndPoint(IPAddress::IPv4AllZeros(),
-                        dns_protocol::kDefaultPortMulticast);
-    case ADDRESS_FAMILY_IPV6:
-      return IPEndPoint(IPAddress::IPv6AllZeros(),
-                        dns_protocol::kDefaultPortMulticast);
-    default:
-      NOTREACHED();
-      return IPEndPoint();
-  }
-#else   // !(defined(OS_WIN) || defined(OS_FUCHSIA))
-  // With POSIX, any socket can receive messages for multicast groups joined by
-  // any socket on the system. Sockets intending to receive messages for a
-  // specific multicast group should bind to that group address.
-  return GetMDnsGroupEndPoint(address_family);
-#endif  // !(defined(OS_WIN) || defined(OS_FUCHSIA))
 }
 
 InterfaceIndexFamilyList GetMDnsInterfacesToBind() {

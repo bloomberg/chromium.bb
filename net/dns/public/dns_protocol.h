@@ -21,7 +21,13 @@ namespace net {
 namespace dns_protocol {
 
 static const uint16_t kDefaultPort = 53;
+// RFC 5353.
 static const uint16_t kDefaultPortMulticast = 5353;
+
+// https://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml#multicast-addresses-1
+static const char kMdnsMulticastGroupIPv4[] = "224.0.0.251";
+// https://www.iana.org/assignments/ipv6-multicast-addresses/ipv6-multicast-addresses.xhtml#link-local
+static const char kMdnsMulticastGroupIPv6[] = "FF02::FB";
 
 // DNS packet consists of a header followed by questions and/or answers.
 // For the meaning of specific fields, please see RFC 1035 and 2535

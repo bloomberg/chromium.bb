@@ -19,6 +19,7 @@
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/util.h"
 #include "net/dns/record_rdata.h"
 #include "net/socket/datagram_socket.h"
 
@@ -70,7 +71,7 @@ int MDnsConnection::SocketHandler::Start() {
     return rv;
   DCHECK(end_point.GetFamily() == ADDRESS_FAMILY_IPV4 ||
          end_point.GetFamily() == ADDRESS_FAMILY_IPV6);
-  multicast_addr_ = GetMDnsGroupEndPoint(end_point.GetFamily());
+  multicast_addr_ = dns_util::GetMdnsGroupEndPoint(end_point.GetFamily());
   return DoLoop(0);
 }
 
