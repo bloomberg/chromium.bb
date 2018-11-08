@@ -9,7 +9,6 @@ import urlparse
 from common import chrome_proxy_measurements as measurements
 from common.chrome_proxy_measurements import ChromeProxyValidation
 from integration_tests import chrome_proxy_metrics as metrics
-from metrics import loading
 from telemetry.core import exceptions, util
 from telemetry.page import legacy_page_test
 
