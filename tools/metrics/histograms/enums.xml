@@ -33517,6 +33517,14 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="ResponseReceived"/>
 </enum>
 
+<enum name="MixedContentType">
+  <int value="0" label="Display Mixed Content"/>
+  <int value="1" label="Display Content with Certificate Errors"/>
+  <int value="2" label="Mixed Content Form"/>
+  <int value="3" label="Scripting Mixed Content"/>
+  <int value="4" label="Scripting Content with Certificate Errors"/>
+</enum>
+
 <enum name="MobileDefaultBrowserState">
   <int value="0" label="No default"/>
   <int value="1" label="Chrome: System default"/>
