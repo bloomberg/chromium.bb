@@ -150,21 +150,21 @@ class RunSysrootCommandMockTestCase(cros_test_lib.MockTestCase):
   def setUp(self):
     _SetPathToSysroot()
     self.expected_command = None
-    self.expected_env = None
+    self.expected_extra_env = None
     self.PatchObject(
         cros_fuzz,
         'RunSysrootCommand',
         side_effect=self.MockedRunSysrootCommand)
 
 
-  def MockedRunSysrootCommand(
-      self, command, env=None, **kwargs): # pylint: disable=unused-argument
+  def MockedRunSysrootCommand(self, command, extra_env=None,
+                              **kwargs):    # pylint: disable=unused-argument
     """The mocked version of RunSysrootCommand.
 
-    Asserts |command| and |env| are what is expected.
+    Asserts |command| and |extra_env| are what is expected.
     """
     self.assertEqual(self.expected_command, command)
-    self.assertEqual(self.expected_env, env)
+    self.assertEqual(self.expected_extra_env, extra_env)
 
 
 class RunFuzzerTest(RunSysrootCommandMockTestCase):
@@ -177,7 +177,11 @@ class RunFuzzerTest(RunSysrootCommandMockTestCase):
     self.expected_command = [
         cros_fuzz.GetFuzzerSysrootPath(FUZZ_TARGET).sysroot,
     ]
-    self.expected_env = {'ASAN_OPTIONS': 'log_path=stderr'}
+    self.expected_extra_env = {
+        'ASAN_OPTIONS': 'log_path=stderr',
+        'MSAN_OPTIONS': 'log_path=stderr',
+        'UBSAN_OPTIONS': 'log_path=stderr',
+    }
 
   def _Helper(self):
     """Calls RunFuzzer."""

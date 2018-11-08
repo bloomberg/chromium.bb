@@ -70,11 +70,6 @@ CORPUS_DIRECTORY_NAME = 'corpus'
 TESTCASE_DIRECTORY_NAME = 'testcase'
 COVERAGE_REPORT_DIRECTORY_NAME = 'coverage-report'
 
-# Constants needed for fuzzing.
-# The environment we need to use when fuzzing. ASAN_OPTIONS must contain
-# log_path=stderr otherwise ASAN errors will be hidden from users.
-FUZZ_ENV = {'ASAN_OPTIONS': 'log_path=stderr'}
-
 # Constants for names of libFuzzer command line options.
 RUNS_OPTION_NAME = 'runs'
 MAX_TOTAL_TIME_OPTION_NAME = 'max_total_time'
@@ -153,7 +148,7 @@ class SysrootPath(object):
     Returns:
       The path this object represents when chrooted into the sysroot.
     """
-    assert self.path_to_sysroot is not None, "set SysrootPath.path_to_sysroot"
+    assert self.path_to_sysroot is not None, 'set SysrootPath.path_to_sysroot'
     return os.path.join(self.path_to_sysroot, *self.path_list)
 
   @property
@@ -375,7 +370,7 @@ def LimitFuzzing(fuzz_command, corpus):
     corpus: The corpus that will be passed to the fuzzer. If not None then
       fuzzing is limited by running everything in the corpus once.
   """
-  if any(IsOptionLimit(option) for option in fuzz_command[1:]):
+  if any(IsOptionLimit(x) for x in fuzz_command[1:]):
     # Don't do anything if there is already a limit.
     return
 
@@ -392,16 +387,43 @@ def LimitFuzzing(fuzz_command, corpus):
   fuzz_command.append(max_total_time_option)
 
 
-def RunFuzzer(fuzzer, corpus_path=None, fuzz_args='', testcase_path=None):
+def GetFuzzExtraEnv(extra_options=None):
+  """Gets extra_env for fuzzing.
+
+  Gets environment varaibles and values for running libFuzzer. Sets defaults and
+  allows user to specify extra sanitizer options.
+
+  Args:
+    extra_options: A dict containing sanitizer options to set in addition to the
+      defaults.
+
+  Returns:
+    A dict containing environment variables and their values that can be used in
+    the environment libFuzzer runs in.
+  """
+  if extra_options is None:
+    extra_options = {}
+
+  # log_path must be set because Chrome OS's patched compiler changes it.
+  options_dict = {'log_path': 'stderr'}
+  options_dict.update(extra_options)
+  sanitizer_options = ':'.join('%s=%s' % x for x in options_dict.items())
+  sanitizers = ('ASAN', 'MSAN', 'UBSAN')
+  return {x + '_OPTIONS': sanitizer_options for x in sanitizers}
+
+
+def RunFuzzer(fuzzer, corpus_path=None, fuzz_args='', testcase_path=None,
+              crash_expected=False):
   """Runs the fuzzer while chrooted into the sysroot.
 
   Args:
     fuzzer: The fuzzer to run.
-    corpus_path: A path to a corpus (not necessarily in the sysroot) to
-      run the fuzzer on.
+    corpus_path: A path to a corpus (not necessarily in the sysroot) to run the
+      fuzzer on.
     fuzz_args: Additional arguments to pass to the fuzzer when running it.
     testcase_path: A path to a testcase (not necessarily in the sysroot) to run
       the fuzzer on.
+    crash_expected: Is it normal for the fuzzer to crash on this run?
   """
   logging.info('Running fuzzer: %s', fuzzer)
   fuzzer_sysroot_path = GetFuzzerSysrootPath(fuzzer)
@@ -416,7 +438,20 @@ def RunFuzzer(fuzzer, corpus_path=None, fuzz_args='', testcase_path=None):
   if corpus_path:
     fuzz_command.append(corpus_path)
 
-  RunSysrootCommand(fuzz_command, env=FUZZ_ENV, debug_level=logging.INFO)
+  if crash_expected:
+    # Don't return nonzero when fuzzer OOMs, leaks, or timesout, since we don't
+    # want an exception in those cases. The user may be trying to reproduce
+    # those issues.
+    fuzz_command += ['-error_exitcode=0', '-timeout_exitcode=0']
+
+    # We must set exitcode=0 or else the fuzzer will return nonzero on
+    # successful reproduction.
+    sanitizer_options = {'exitcode': '0'}
+  else:
+    sanitizer_options = {}
+
+  extra_env = GetFuzzExtraEnv(sanitizer_options)
+  RunSysrootCommand(fuzz_command, extra_env=extra_env, debug_level=logging.INFO)
 
 
 def MergeProfraw(fuzzer):
@@ -542,20 +577,18 @@ def RunFuzzerAndGenerateCoverageReport(fuzzer, corpus, fuzz_args):
   return GenerateCoverageReport(fuzzer, shared_libraries)
 
 
-def RunSysrootCommand(command, env=None, **kwargs):
+def RunSysrootCommand(command, **kwargs):
   """Runs command while chrooted into sysroot and returns the output.
 
   Args:
     command: A command to run in the sysroot.
-    env: Environment variables that can be used by |command| when executing in
-      the sysroot.
     kwargs: Extra arguments to pass to cros_build_lib.SudoRunCommand.
 
   Returns:
     The result of a call to cros_build_lib.SudoRunCommand.
   """
   command = ['chroot', SysrootPath.path_to_sysroot] + command
-  return SudoRunCommand(command, extra_env=env, **kwargs)
+  return SudoRunCommand(command, **kwargs)
 
 
 def GetBuildExtraEnv(build_type):
@@ -607,7 +640,7 @@ def BuildPackage(package, board, build_type):
     return
 
   logging.info('Building %s using %s.', package, build_type)
-  env = GetBuildExtraEnv(build_type)
+  extra_env = GetBuildExtraEnv(build_type)
   build_packages_path = os.path.join(constants.SOURCE_ROOT, 'src', 'scripts',
                                      'build_packages')
   command = [
@@ -620,19 +653,19 @@ def BuildPackage(package, board, build_type):
   # Print the output of the build command. Do this because it is familiar to
   # devs and we don't want to leave them not knowing about the build's progress
   # for a long time.
-  cros_build_lib.RunCommand(command, extra_env=env)
+  cros_build_lib.RunCommand(command, extra_env=extra_env)
 
 
 def DownloadFuzzerCorpus(fuzzer, dest_directory=None):
   """Downloads a corpus and returns its path.
 
+  Downloads a corpus to a subdirectory of dest_directory if specified and
+  returns path on the filesystem of the corpus. Asks users to authenticate
+  if permission to read from bucket is denied.
+
   Args:
     fuzzer: The name of the fuzzer who's corpus we want to download.
     dest_directory: The directory to download the corpus to.
-
-  Downloads the corpus of |fuzzer| to a subdirectory of |dest_directory|.
-  Returns the path of this subdirectory. If we are denied access to the file,
-  asks the user to authenticate to gsutil.
 
   Returns:
     The path to the downloaded corpus.
@@ -693,8 +726,8 @@ def Reproduce(fuzzer, testcase_path):
     testcase_path: The path (not necessarily in the sysroot) of the testcase to
       run the fuzzer on.
   """
-  testcase_sysroot_path = CopyTestcaseToSysroot(testcase_path)
-  RunFuzzer(fuzzer, testcase_path=testcase_sysroot_path.sysroot)
+  testcase_sysroot_path = CopyTestcaseToSysroot(testcase_path).sysroot
+  RunFuzzer(fuzzer, testcase_path=testcase_sysroot_path, crash_expected=True)
 
 
 def SetUpSysrootForFuzzing():
@@ -737,7 +770,7 @@ def CleanUpSysroot():
 
   tool_manager = ToolManager()
   tool_manager.Uninstall()
-  osutils.RmDir(GetSysrootPath(SCRIPT_STORAGE_PATH))
+  osutils.RmDir(GetSysrootPath(SCRIPT_STORAGE_PATH), ignore_missing=True)
 
 
 class ToolManager(object):
@@ -777,7 +810,7 @@ class ToolManager(object):
 
   def _GetLLVMBinaries(self):
     """Creates LllvmBinary objects for each binary name in LLVM_BINARY_NAMES."""
-    return [LlvmBinary(binary_name) for binary_name in self.LLVM_BINARY_NAMES]
+    return [LlvmBinary(x) for x in self.LLVM_BINARY_NAMES]
 
 
 class LlvmBinary(object):
@@ -918,7 +951,9 @@ def EnterSysrootShell():
   """Spawns and gives user access to a bash shell in the sysroot."""
   command = ['/bin/bash', '-i']
   return RunSysrootCommand(
-      command, env=FUZZ_ENV, debug_level=logging.INFO,
+      command,
+      extra_env=GetFuzzExtraEnv(),
+      debug_level=logging.INFO,
       error_code_ok=True).returncode
 
 
