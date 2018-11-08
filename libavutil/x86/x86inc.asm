@@ -744,11 +744,11 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
     %elifidn __OUTPUT_FORMAT__,elf64
         global %2:function %%VISIBILITY
     %elifidn __OUTPUT_FORMAT__,macho
-        global %2:function %%VISIBILITY
+        global %2:%%VISIBILITY
     %elifidn __OUTPUT_FORMAT__,macho32
-        global %2:function %%VISIBILITY
+        global %2:%%VISIBILITY
     %elifidn __OUTPUT_FORMAT__,macho64
-        global %2:function %%VISIBILITY
+        global %2:%%VISIBILITY
     %else
         global %2
     %endif

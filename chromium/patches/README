@@ -800,3 +800,19 @@ Date:   Fri Sep 28 10:56:34 2018 -0700
  Affects: 
 libavcodec/utvideodec.c
 
+------------------------------------------------------------------
+commit 763521999e130f4ede1a5c972b6d1394e3d4d9a7
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Thu Nov 8 10:47:03 2018 -0800
+
+    Drop function: prefix in x86util.asm for macOS ffmpeg builds.
+    
+    nasm doesn't want the function prefix before the visibliity
+    on macOS (which remains private_extern). I'm not sure why it's
+    fine with it on other platforms, but it is ¯\_(ツ)_/¯
+    
+    BUG=766721
+
+ Affects: 
+libavutil/x86/x86inc.asm
+
