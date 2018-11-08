@@ -1586,10 +1586,10 @@ TEST(FormParserTest, MultipleUsernames) {
               {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .prediction = {.type = autofill::USERNAME}},
-              {.form_control_type = "password",
-               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
               {.role = ElementRole::NEW_PASSWORD,
                .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
@@ -1611,6 +1611,29 @@ TEST(FormParserTest, MultipleUsernames) {
                .prediction = {.type = autofill::PASSWORD}},
               {.role = ElementRole::NEW_PASSWORD,
                .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+  });
+}
+
+// If multiple hints for new-password fields are given (e.g., because of more
+// fields having the same signature), the first one should be marked as
+// new-password. That way the generation can be offered before the user has
+// thought of and typed their new password elsewhere. See
+// https://crbug.com/902700 for more details.
+TEST(FormParserTest, NewPasswordFirst) {
+  CheckTestData({
+      {
+          "More than two usernames are ignored.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
           },
       },
