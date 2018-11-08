@@ -817,10 +817,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Tab creation and selection
 // --------------------------
-// Called when either a tab finishes loading or when a tab with finished content
-// is added directly to the model via pre-rendering. The tab must be non-nil and
-// must be a member of the tab model controlled by this BrowserViewController.
-- (void)tabLoadComplete:(Tab*)tab;
 // Adds a new tab with |url| and |postData| at the end of the model, and make it
 // the selected tab and return it.
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
@@ -2841,15 +2837,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - Private Methods: Tab creation and selection
 
-// Called when either a tab finishes loading or when a tab with finished content
-// is added directly to the model via pre-rendering.
-- (void)tabLoadComplete:(Tab*)tab {
-  DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
-
-  // Persist the session on a delay.
-  [_model saveSessionImmediately:NO];
-}
-
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                      postData:(TemplateURLRef::PostContent*)postData
                    transition:(ui::PageTransition)transition {
@@ -4292,7 +4279,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
             ->DidPromotePrerenderTab();
       }
 
-      [self tabLoadComplete:newTab];
+      [self.tabModel saveSessionImmediately:NO];
       return;
     }
   }
@@ -4866,7 +4853,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab {
   [_toolbarUIUpdater updateState];
-  [self tabLoadComplete:tab];
+  [model saveSessionImmediately:NO];
   if ([self canShowTabStrip]) {
     UIUserInterfaceSizeClass sizeClass =
         self.view.window.traitCollection.horizontalSizeClass;
