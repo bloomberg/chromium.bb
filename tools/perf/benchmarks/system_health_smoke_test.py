@@ -84,6 +84,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load:tools:stackoverflow',
   'system_health.memory_desktop/load:games:alphabetty',
   'system_health.memory_desktop/browse:search:google_india',
+  'system_health.memory_desktop/browse:media:pinterest',
 
   # crbug.com/698006
   'system_health.memory_desktop/load:tools:drive',

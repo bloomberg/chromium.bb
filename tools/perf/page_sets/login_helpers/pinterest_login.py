@@ -26,17 +26,14 @@ def LoginDesktopAccount(action_runner, credential,
 
   action_runner.Navigate('https://www.pinterest.com/login/')
   action_runner.Wait(1) # Error page happens if this wait is not here.
+  action_runner.WaitForElement(selector='button[type=submit]')
+
   login_utils.InputWithSelector(
       action_runner, '%s@gmail.com' % account_name, 'input[type=email]')
+
   login_utils.InputWithSelector(
       action_runner, password, 'input[type=password]')
 
-  login_button_function = (
-      'document.getElementsByClassName("Button Module btn hasText large '
-      'primary continueButton rounded")[0]')
-  action_runner.WaitForElement(element_function=login_button_function)
-  action_runner.ClickElement(element_function=login_button_function)
+  action_runner.ClickElement(selector='button[type=submit]')
 
-  search_bar_function = (
-      'document.getElementsByClassName("Input Module field")[0]')
-  action_runner.WaitForElement(element_function=search_bar_function)
+  action_runner.WaitForElement(selector='input[name=searchBoxInput]')
