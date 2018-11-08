@@ -11,11 +11,14 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.ParameterizedRobolectricTestRunner;
+import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
@@ -26,27 +29,67 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
 
-/** Tests for WebApkUtils. */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, packageName = WebApkUtilsTest.WEBAPK_PACKAGE_NAME)
-public class HostBrowserUtilsTest {
-    private static final String BROWSER_INSTALLED_SUPPORTING_WEBAPKS = "com.chrome.canary";
-    private static final String BROWSER_UNINSTALLED_SUPPORTING_WEBAPKS = "com.chrome.dev";
-    private static final String BROWSER_INSTALLED_NOT_SUPPORTING_WEBAPKS =
-            "browser.installed.not.supporting.webapks";
-    private static final String ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS = "com.chrome.beta";
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-    private static final String[] sInstalledBrowsers = {BROWSER_INSTALLED_NOT_SUPPORTING_WEBAPKS,
-            BROWSER_INSTALLED_SUPPORTING_WEBAPKS, ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS};
+/** Tests for HostBrowserUtils. */
+@RunWith(ParameterizedRobolectricTestRunner.class)
+@Config(sdk = LocalRobolectricTestRunner.DEFAULT_SDK, manifest = Config.NONE)
+public class HostBrowserUtilsTest {
+    @IntDef({DefaultBrowserWebApkSupport.YES, DefaultBrowserWebApkSupport.NO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DefaultBrowserWebApkSupport {
+        int YES = 0;
+        int NO = 1;
+    }
+
+    // Cannot specify a custom package name with {@link ParameterizedRobolectricTestRunner}.
+    private static final String WEBAPK_PACKAGE_NAME = "org.robolectric.default";
+
+    private static final String DEFAULT_BROWSER_SUPPORTING_WEBAPKS =
+            "com.google.android.apps.chrome";
+    private static final String DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS =
+            "com.browser.not.supporting.webapks";
+    private static final String[] BROWSERS_SUPPORTING_WEBAPKS =
+            new String[] {"com.chrome.canary", "com.chrome.dev", "com.chrome.beta"};
+    private static final String[] BROWSERS_NOT_SUPPORTING_WEBAPKS =
+            new String[] {"com.random.browser1", "com.random.browser2"};
+    private static final String[] ALL_BROWSERS =
+            mergeStringArrays(new String[] {DEFAULT_BROWSER_SUPPORTING_WEBAPKS,
+                                      DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS},
+                    BROWSERS_SUPPORTING_WEBAPKS, BROWSERS_NOT_SUPPORTING_WEBAPKS);
 
     private Context mContext;
     private ShadowPackageManager mPackageManager;
+    private SharedPreferences mSharedPrefs;
+
+    private Set<String> mInstalledBrowsers = new HashSet<String>();
+
+    // Whether we are testing with bound WebAPKs.
+    private boolean mIsBoundWebApk;
+
+    @Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {{true}, {false}});
+    }
+
+    public HostBrowserUtilsTest(boolean isBoundWebApk) {
+        mIsBoundWebApk = isBoundWebApk;
+    }
 
     @Before
     public void setUp() {
         mContext = RuntimeEnvironment.application;
 
         mPackageManager = Shadows.shadowOf(mContext.getPackageManager());
+        mSharedPrefs =
+                mContext.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
 
         HostBrowserUtils.resetCachedHostPackageForTesting();
     }
@@ -56,128 +99,108 @@ public class HostBrowserUtilsTest {
      */
     @Test
     public void testReturnsNullWhenNoBrowserInstalled() {
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertNull(hostBrowser);
+        if (mIsBoundWebApk) {
+            // Bound browser in AndroidManifest.xml is no longer installed.
+            setHostBrowserInMetadata(BROWSERS_SUPPORTING_WEBAPKS[0]);
+        }
+        Assert.assertNull(HostBrowserUtils.getHostBrowserPackageName(mContext));
     }
 
     /**
-     * Tests that the package name of the host browser in the SharedPreference will be returned if
-     * it is installed, even if a host browser is specified in the AndroidManifest.xml.
+     * Tests the order of precedence for bound WebAPKs. The expected order of precedence is:
+     * 1) Browser specified in shared preferences if it is still installed.
+     * 2) Bound browser specified in AndroidManifest.xml
+     * The default browser and the number of installed browsers which support WebAPKs should
+     * have no effect.
      */
     @Test
-    public void testReturnsHostBrowserInSharedPreferenceIfInstalled() {
-        String expectedHostBrowser = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
-        mockInstallBrowsers(sInstalledBrowsers, ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS);
-        setHostBrowserInMetadata(ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS);
-        setHostBrowserInSharedPreferences(expectedHostBrowser);
+    public void testBoundWebApkPrecedence() {
+        if (!mIsBoundWebApk) return;
 
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(expectedHostBrowser, hostBrowser);
-    }
+        final String boundBrowserSupportingWebApks = BROWSERS_SUPPORTING_WEBAPKS[0];
+        setHostBrowserInMetadata(boundBrowserSupportingWebApks);
 
-    /**
-     * This is a test for the WebAPK WITH a runtime host specified in its AndroidManifest.xml.
-     * Tests that the package name of the host browser specified in the AndroidManifest.xml will be
-     * returned if:
-     * 1. there isn't a host browser specified in the SharedPreference or the specified one is
-     *    uninstalled.
-     * And
-     * 2. the host browser stored in the AndroidManifest is still installed.
-     */
-    @Test
-    public void testReturnsHostBrowserInManifestIfInstalled() {
-        String expectedHostBrowser = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
-        mockInstallBrowsers(sInstalledBrowsers, ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS);
-        setHostBrowserInMetadata(expectedHostBrowser);
-        // Simulates there isn't any host browser stored in the SharedPreference.
-        setHostBrowserInSharedPreferences(null);
+        // Shared pref browser: Still installed
+        // Bound browser in AndroidManifest.xml: Still installed
+        {
+            final String sharedPrefBrowserSupportingWebApks = BROWSERS_SUPPORTING_WEBAPKS[1];
+            setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, ALL_BROWSERS);
+            setHostBrowserInSharedPreferences(sharedPrefBrowserSupportingWebApks);
+            Assert.assertEquals(sharedPrefBrowserSupportingWebApks,
+                    HostBrowserUtils.getHostBrowserPackageName(mContext));
+        }
 
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(hostBrowser, expectedHostBrowser);
-
+        // Shared pref browser: Null
+        // Bound browser in AndroidManifest.xml: Still installed
         HostBrowserUtils.resetCachedHostPackageForTesting();
-        // Simulates there is a host browser stored in the SharedPreference but uninstalled.
-        setHostBrowserInSharedPreferences(BROWSER_UNINSTALLED_SUPPORTING_WEBAPKS);
-        hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(expectedHostBrowser, hostBrowser);
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, ALL_BROWSERS);
+        setHostBrowserInSharedPreferences(null);
+        Assert.assertEquals(boundBrowserSupportingWebApks,
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
+
+        // Shared pref browser: No longer installed
+        // Bound browser in AndroidManifest.xml: Still installed
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, ALL_BROWSERS);
+        setHostBrowserInSharedPreferences(null);
+        Assert.assertEquals(boundBrowserSupportingWebApks,
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
+
+        // Shared pref browser: Null
+        // Bound browser in AndroidManifest.xml: No longer installed
+        // Should ignore default browser and number of browsers supporting WebAPKs.
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, null);
+        setHostBrowserInSharedPreferences(null);
+        Assert.assertNull(HostBrowserUtils.getHostBrowserPackageName(mContext));
     }
 
     /**
-     * This is a test for the WebAPK WITH a runtime host specified in its AndroidManifest.xml.
-     * Tests that we will return NULL if the runtime host is not installed, even if we have only one
-     * other browser that supports WebAPK. This test is to ensure we don't fall into auto-selecting
-     * browser for users, if browser is specified in WebAPK AndroidManifest.xml.
+     * Tests the order of precedence for unbound WebAPKs. The expected order of precedence is:
+     * 1) Browser specified in shared preferences if it is still installed.
+     * 2) Default browser if the default browser supports WebAPKs.
+     * 3) The browser which supports WebAPKs if there is just one.
      */
     @Test
-    public void testReturnsNullIfHostBrowserInManifestNotFoundAndAnotherBrowserSupportingWebApk() {
-        mockInstallBrowsers(new String[] {ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS}, null);
-        setHostBrowserInMetadata(BROWSER_UNINSTALLED_SUPPORTING_WEBAPKS);
+    public void testUnboundWebApkPrecedence() {
+        if (mIsBoundWebApk) return;
+
+        // Shared pref browser: Still installed
+        // Default browser: Supports WebAPKs
+        {
+            final String sharedPrefBrowserSupportingWebApks = BROWSERS_SUPPORTING_WEBAPKS[0];
+            setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, ALL_BROWSERS);
+            setHostBrowserInSharedPreferences(sharedPrefBrowserSupportingWebApks);
+            Assert.assertEquals(sharedPrefBrowserSupportingWebApks,
+                    HostBrowserUtils.getHostBrowserPackageName(mContext));
+        }
+
+        // Shared pref browser: Null
+        // Default browser: Supports WebAPKs
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.YES, ALL_BROWSERS);
         setHostBrowserInSharedPreferences(null);
+        Assert.assertEquals(DEFAULT_BROWSER_SUPPORTING_WEBAPKS,
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
 
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertNull(hostBrowser);
-    }
-
-    /**
-     * This is a test for the WebAPK WITHOUT any runtime host specified in its AndroidManifest.xml.
-     * Tests that it will return package name of browser which supports WebAPKs if:
-     * 1. there isn't any host browser stored in the SharedPreference, or the specified one has
-     *    been uninstalled.
-     * 2. the default browser does not support WebAPKs.
-     * 3. only one of the installed browsers supports WebAPKs.
-     * In this test, we only simulate the the first part of the condition 1.
-     */
-    @Test
-    public void testReturnsOtherBrowserIfDefaultBrowserNotSupportingWebApk() {
-        String defaultBrowser = BROWSER_INSTALLED_NOT_SUPPORTING_WEBAPKS;
-        mockInstallBrowsers(new String[] {ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS,
-                                    BROWSER_INSTALLED_NOT_SUPPORTING_WEBAPKS},
-                defaultBrowser);
-        setHostBrowserInMetadata(null);
+        // Shared pref browser: Null
+        // Default browser: Does not support WebAPKs
+        // > 1 installed browsers supporting WebAPKs
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.NO, ALL_BROWSERS);
         setHostBrowserInSharedPreferences(null);
+        Assert.assertNull(HostBrowserUtils.getHostBrowserPackageName(mContext));
 
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS, hostBrowser);
-    }
-
-    /**
-     * This is a test for the WebAPK WITHOUT any runtime host specified in its AndroidManifest.xml.
-     * Tests that the default browser package name will be returned if:
-     * 1. there isn't any host browser stored in the SharedPreference, or the specified one has
-     *    been uninstalled.
-     * And
-     * 2. the default browser supports WebAPKs.
-     * In this test, we only simulate the the first part of the condition 1.
-     */
-    @Test
-    public void testReturnsDefaultBrowser() {
-        String defaultBrowser = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
-        mockInstallBrowsers(sInstalledBrowsers, defaultBrowser);
-        setHostBrowserInMetadata(null);
-        // Simulates that there isn't any host browser stored in the SharedPreference.
+        // Shared pref browser: Null
+        // Default browser: Does not support WebAPKS
+        // 1 installed browser supporting WebAPKS
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.NO,
+                new String[] {BROWSERS_SUPPORTING_WEBAPKS[0], BROWSERS_NOT_SUPPORTING_WEBAPKS[0],
+                        BROWSERS_NOT_SUPPORTING_WEBAPKS[1]});
         setHostBrowserInSharedPreferences(null);
-
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(defaultBrowser, hostBrowser);
-    }
-
-    /**
-     * This is a test for the WebAPK WITHOUT any runtime host specified in its AndroidManifest.xml.
-     * Tests that null will be returned if:
-     * 1. there isn't any host browser stored in the SharedPreference, or the specified one has
-     *    been uninstalled.
-     * And
-     * 2. the default browser doesn't support WebAPKs.
-     * In this test, we only simulate the the first part of the condition 1.
-     */
-    @Test
-    public void testReturnsNullWhenDefaultBrowserDoesNotSupportWebApks() {
-        mockInstallBrowsers(sInstalledBrowsers, BROWSER_INSTALLED_NOT_SUPPORTING_WEBAPKS);
-        setHostBrowserInMetadata(null);
-        setHostBrowserInSharedPreferences(null);
-
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertNull(hostBrowser);
+        Assert.assertEquals(BROWSERS_SUPPORTING_WEBAPKS[0],
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
     }
 
     /**
@@ -187,17 +210,63 @@ public class HostBrowserUtilsTest {
      */
     @Test
     public void testDoesNotReturnTheCurrentHostBrowserAfterUninstall() {
-        String currentHostBrowser = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
-        mockInstallBrowsers(sInstalledBrowsers, ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS);
-        setHostBrowserInMetadata(null);
-        setHostBrowserInSharedPreferences(currentHostBrowser);
+        if (mIsBoundWebApk) {
+            setHostBrowserInMetadata(BROWSERS_SUPPORTING_WEBAPKS[0]);
+        }
 
-        String hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(currentHostBrowser, hostBrowser);
+        final String sharedPrefBrowserSupportingWebApks = BROWSERS_SUPPORTING_WEBAPKS[0];
+        setInstalledBrowsers(DefaultBrowserWebApkSupport.NO, ALL_BROWSERS);
+        setHostBrowserInSharedPreferences(sharedPrefBrowserSupportingWebApks);
+        Assert.assertEquals(sharedPrefBrowserSupportingWebApks,
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
 
-        uninstallBrowser(currentHostBrowser);
-        hostBrowser = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        Assert.assertNotEquals(currentHostBrowser, hostBrowser);
+        uninstallBrowser(sharedPrefBrowserSupportingWebApks);
+        Assert.assertNotEquals(sharedPrefBrowserSupportingWebApks,
+                HostBrowserUtils.getHostBrowserPackageName(mContext));
+    }
+
+    @SafeVarargs
+    private static String[] mergeStringArrays(String[]... toMerge) {
+        List<String> out = new ArrayList<String>();
+        for (String[] toMergeArray : toMerge) {
+            out.addAll(Arrays.asList(toMergeArray));
+        }
+        return out.toArray(new String[0]);
+    }
+
+    /** Sets the installed browsers to the passed-in list. */
+    private void setInstalledBrowsers(
+            @DefaultBrowserWebApkSupport int defaultBrowser, String[] packagesToInstall) {
+        HostBrowserUtils.resetCachedHostPackageForTesting();
+
+        while (!mInstalledBrowsers.isEmpty()) {
+            uninstallBrowser(mInstalledBrowsers.iterator().next());
+        }
+
+        String defaultPackage = (defaultBrowser == DefaultBrowserWebApkSupport.YES)
+                ? DEFAULT_BROWSER_SUPPORTING_WEBAPKS
+                : DEFAULT_BROWSER_NOT_SUPPORTING_WEBAPKS;
+        installBrowser(defaultPackage);
+        if (packagesToInstall != null) {
+            for (String packageToInstall : packagesToInstall) {
+                installBrowser(packageToInstall);
+            }
+        }
+    }
+
+    private void installBrowser(String packageName) {
+        if (mInstalledBrowsers.contains(packageName)) return;
+
+        Intent intent = null;
+        try {
+            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
+        } catch (Exception e) {
+            Assert.fail();
+            return;
+        }
+        mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(packageName));
+        mPackageManager.addPackage(packageName);
+        mInstalledBrowsers.add(packageName);
     }
 
     /**
@@ -213,6 +282,7 @@ public class HostBrowserUtilsTest {
         }
         mPackageManager.removeResolveInfosForIntent(intent, packageName);
         mPackageManager.removePackage(packageName);
+        mInstalledBrowsers.remove(packageName);
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {
@@ -223,27 +293,6 @@ public class HostBrowserUtilsTest {
         ResolveInfo resolveInfo = new ResolveInfo();
         resolveInfo.activityInfo = activityInfo;
         return resolveInfo;
-    }
-
-    private void mockInstallBrowsers(String[] browsersToInstall, String defaultBrowser) {
-        Intent intent = null;
-        try {
-            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
-        } catch (Exception e) {
-            Assert.fail();
-            return;
-        }
-
-        ResolveInfo defaultBrowserInfo = null;
-        if (defaultBrowser != null) {
-            defaultBrowserInfo = newResolveInfo(defaultBrowser);
-            mPackageManager.addResolveInfoForIntent(intent, defaultBrowserInfo);
-        }
-
-        for (String name : browsersToInstall) {
-            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(name));
-            mPackageManager.addPackage(name);
-        }
     }
 
     private void setHostBrowserInSharedPreferences(String hostBrowserPackage) {
@@ -257,6 +306,6 @@ public class HostBrowserUtilsTest {
     private void setHostBrowserInMetadata(String hostBrowserPackage) {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, hostBrowserPackage);
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
     }
 }
