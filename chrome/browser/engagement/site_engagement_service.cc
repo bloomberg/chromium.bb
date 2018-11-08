@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -107,6 +108,14 @@ std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
   }
 
   return details;
+}
+
+// Takes a scoped_refptr to keep HostContentSettingsMap alive. See
+// crbug.com/901287.
+std::vector<mojom::SiteEngagementDetails> GetAllDetailsImplInBackground(
+    base::Clock* clock,
+    scoped_refptr<HostContentSettingsMap> map) {
+  return GetAllDetailsImpl(clock, map.get());
 }
 
 // Only accept a navigation event for engagement if it is one of:
@@ -350,7 +359,6 @@ void SiteEngagementService::AfterStartupTask() {
   // in AddPoints for people who never restart Chrome, but leave it open and
   // their computer on standby.
   CleanupEngagementScores(IsLastEngagementStale());
-  MaybeRecordMetrics();
 }
 
 void SiteEngagementService::CleanupEngagementScores(
@@ -453,8 +461,8 @@ void SiteEngagementService::MaybeRecordMetrics() {
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &GetAllDetailsImpl, base::Unretained(clock_),
-          base::Unretained(
+          &GetAllDetailsImplInBackground, base::Unretained(clock_),
+          scoped_refptr<HostContentSettingsMap>(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&SiteEngagementService::RecordMetrics,
                      weak_factory_.GetWeakPtr()));
