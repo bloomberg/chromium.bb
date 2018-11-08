@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import java.net.URL;
+import android.support.annotation.Nullable;
 
-import javax.annotation.Nullable;
+import java.net.URL;
 
 /**
  * An interface for network communication between the Contextual Search client and server.
