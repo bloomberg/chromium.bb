@@ -61,5 +61,6 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
+    options.config.enable_platform_display_trace = True
     options.SetTimelineBasedMetrics(['renderingMetric'])
     return options
