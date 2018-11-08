@@ -336,7 +336,8 @@ void CategorizedWorkerPool::WaitForTasksToFinishRunning(
 
   {
     base::AutoLock lock(lock_);
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // http://crbug.com/902823
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
     auto* task_namespace = work_queue_.GetNamespaceForToken(token);
 
