@@ -11,7 +11,6 @@ group("mac") {
   public_deps = [
     ":copies",
     ":make_signers",
-    "app:mac_installer_app",
   ]
 }
 

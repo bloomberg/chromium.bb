@@ -590,18 +590,6 @@
             }
           ]
         },
-        "test": "mac_installer_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
         "test": "media_blink_unittests"
       },
       {
@@ -1716,18 +1704,6 @@
           ]
         },
         "test": "libjingle_xmpp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ]
-        },
-        "test": "mac_installer_unittests"
       },
       {
         "swarming": {
@@ -2949,18 +2925,6 @@
             }
           ]
         },
-        "test": "mac_installer_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ]
-        },
         "test": "media_blink_unittests"
       },
       {
@@ -4086,18 +4050,6 @@
             }
           ]
         },
-        "test": "mac_installer_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13"
-            }
-          ]
-        },
         "test": "media_blink_unittests"
       },
       {
@@ -5200,18 +5152,6 @@
           ]
         },
         "test": "libjingle_xmpp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13"
-            }
-          ]
-        },
-        "test": "mac_installer_unittests"
       },
       {
         "swarming": {

@@ -1828,7 +1828,6 @@
     },
 
     'mac_specific_chromium_gtests': {
-      'mac_installer_unittests': {},
       'sandbox_mac_unittests': {},
     },
 
