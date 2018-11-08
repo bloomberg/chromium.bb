@@ -113,12 +113,39 @@ void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
   UpdateEnableFlag(was_enabled);
 }
 
-void AshKeyboardController::ReloadKeyboard() {
+void AshKeyboardController::ReloadKeyboardIfNeeded() {
+  keyboard_controller_->Reload();
+}
+
+void AshKeyboardController::RebuildKeyboardIfEnabled() {
   // Test IsKeyboardEnableRequested in case of an unlikely edge case where this
   // is called while after the enable state changed to disabled (in which case
   // we do not want to override the requested state).
   if (keyboard_controller_->IsKeyboardEnableRequested())
     EnableKeyboard();
+}
+
+void AshKeyboardController::IsKeyboardVisible(
+    IsKeyboardVisibleCallback callback) {
+  std::move(callback).Run(keyboard_controller_->IsKeyboardVisible());
+}
+
+void AshKeyboardController::ShowKeyboard() {
+  if (keyboard_controller_->IsEnabled())
+    keyboard_controller_->ShowKeyboard(false /* lock */);
+}
+
+void AshKeyboardController::HideKeyboard(mojom::HideReason reason) {
+  if (!keyboard_controller_->IsEnabled())
+    return;
+  switch (reason) {
+    case mojom::HideReason::kUser:
+      keyboard_controller_->HideKeyboardByUser();
+      break;
+    case mojom::HideReason::kSystem:
+      keyboard_controller_->HideKeyboardExplicitlyBySystem();
+      break;
+  }
 }
 
 void AshKeyboardController::OnSessionStateChanged(

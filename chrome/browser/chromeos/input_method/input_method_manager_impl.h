@@ -273,6 +273,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // changed.
   void NotifyImeMenuListChanged();
 
+  // Request that the virtual keyboard be reloaded.
+  void ReloadKeyboard();
+
   std::unique_ptr<InputMethodDelegate> delegate_;
 
   // The current UI session status.

@@ -27,7 +27,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace input_method_private = extensions::api::input_method_private;
@@ -781,8 +780,8 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     // desktop shelf will disappear. see bugs: 775507,788247,786273,761714.
     // But still need to unload keyboard container document. Since ime extension
     // need to re-render the document when it's recovered.
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->IsEnabled()) {
+    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+    if (keyboard_client->is_keyboard_enabled()) {
       // Keyboard controller "Reload" method only reload current page when the
       // url is changed. So we need unload the current page first. Then next
       // engine->Enable() can refresh the inputview page correctly.
@@ -790,7 +789,7 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
       // current page.
       // TODO(wuyingbing): Should add a new method to unload the document.
       manager->GetActiveIMEState()->DisableInputView();
-      keyboard_controller->Reload();
+      keyboard_client->ReloadKeyboardIfNeeded();
     }
     event_router->SetUnloadedExtensionId(extension->id());
   } else {

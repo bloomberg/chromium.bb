@@ -43,8 +43,9 @@ void SendProcessKeyEvent(ui::EventType type, aura::WindowTreeHost* host) {
 // https://crbug.com/84332.
 
 bool GetFlag(mojom::KeyboardEnableFlag flag) {
-  auto* controller = KeyboardController::Get();
-  return controller ? controller->IsEnableFlagSet(flag) : false;
+  return KeyboardController::HasInstance()
+             ? KeyboardController::Get()->IsEnableFlagSet(flag)
+             : false;
 }
 
 void SetOrClearEnableFlag(mojom::KeyboardEnableFlag flag, bool enabled) {
