@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -109,11 +110,11 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       std::unique_ptr<ModelTypeStore::RecordList> record_list);
   void OnReadAllMetadataForInit(const base::Optional<ModelError>& error,
                                 std::unique_ptr<MetadataBatch> metadata_batch);
-  void MaybeStartSyncableService();
+  base::Optional<ModelError> MaybeStartSyncableService() WARN_UNUSED_RESULT;
   base::Optional<ModelError> StoreAndConvertRemoteChanges(
       std::unique_ptr<ModelTypeStore::WriteBatch> batch,
       EntityChangeList input_entity_change_list,
-      SyncChangeList* output_sync_change_list);
+      SyncChangeList* output_sync_change_list) WARN_UNUSED_RESULT;
   void ReportErrorIfSet(const base::Optional<ModelError>& error);
   base::Optional<ModelError> ReencryptEverything(
       ModelTypeStore::WriteBatch* batch);
@@ -121,6 +122,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_change_list,
       std::unique_ptr<ModelTypeStore::WriteBatch> batch);
+  void RecordAssociationTime(base::TimeDelta time) const;
 
   const ModelType type_;
   SyncableService* const syncable_service_;
