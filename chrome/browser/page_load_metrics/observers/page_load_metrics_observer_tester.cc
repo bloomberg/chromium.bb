@@ -68,29 +68,40 @@ PageLoadMetricsObserverTester::~PageLoadMetricsObserverTester() {}
 void PageLoadMetricsObserverTester::SimulateTimingUpdate(
     const mojom::PageLoadTiming& timing) {
   SimulatePageLoadTimingUpdate(timing, mojom::PageLoadMetadata(),
-                               mojom::PageLoadFeatures());
+                               mojom::PageLoadFeatures(),
+                               mojom::PageRenderData());
 }
 
 void PageLoadMetricsObserverTester::SimulateTimingAndMetadataUpdate(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata) {
-  SimulatePageLoadTimingUpdate(timing, metadata, mojom::PageLoadFeatures());
+  SimulatePageLoadTimingUpdate(timing, metadata, mojom::PageLoadFeatures(),
+                               mojom::PageRenderData());
 }
 
 void PageLoadMetricsObserverTester::SimulateFeaturesUpdate(
     const mojom::PageLoadFeatures& new_features) {
   SimulatePageLoadTimingUpdate(mojom::PageLoadTiming(),
-                               mojom::PageLoadMetadata(), new_features);
+                               mojom::PageLoadMetadata(), new_features,
+                               mojom::PageRenderData());
+}
+
+void PageLoadMetricsObserverTester::SimulateRenderDataUpdate(
+    const mojom::PageRenderData& render_data) {
+  SimulatePageLoadTimingUpdate(mojom::PageLoadTiming(),
+                               mojom::PageLoadMetadata(),
+                               mojom::PageLoadFeatures(), render_data);
 }
 
 void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata,
-    const mojom::PageLoadFeatures& new_features) {
+    const mojom::PageLoadFeatures& new_features,
+    const mojom::PageRenderData& render_data) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing.Clone(),
                              metadata.Clone(), new_features.Clone(),
                              std::vector<mojom::ResourceDataUpdatePtr>(),
-                             mojom::PageRenderDataPtr(base::in_place));
+                             render_data.Clone());
   // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
   // schedule a buffering timer, then fire it now so metrics are dispatched to
   // observers.
