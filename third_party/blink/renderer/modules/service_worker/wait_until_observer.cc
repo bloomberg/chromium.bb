@@ -144,6 +144,7 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
         DOMExceptionCode::kInvalidStateError,
         "The event handler is already finished and no extend lifetime "
         "promises are outstanding.");
+    return;
   }
 
   if (!execution_context_)
