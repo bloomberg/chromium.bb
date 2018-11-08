@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -110,13 +111,13 @@ public final class FirstRunSignInProcessor {
      * Opens sign in settings as requested in the FRE sign-in dialog.
      */
     private static void openSignInSettings(Activity activity) {
-        final String fragmentName;
+        final Class<? extends Fragment> fragment;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            fragmentName = SyncAndServicesPreferences.class.getName();
+            fragment = SyncAndServicesPreferences.class;
         } else {
-            fragmentName = AccountManagementFragment.class.getName();
+            fragment = AccountManagementFragment.class;
         }
-        PreferencesLauncher.launchSettingsPage(activity, fragmentName);
+        PreferencesLauncher.launchSettingsPage(activity, fragment);
     }
 
     /**

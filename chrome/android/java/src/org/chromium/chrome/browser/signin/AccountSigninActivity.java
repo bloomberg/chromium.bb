@@ -191,9 +191,8 @@ public class AccountSigninActivity extends SynchronousInitializationActivity
             @Override
             public void onSignInComplete() {
                 if (settingsClicked) {
-                    Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                            context, AccountManagementFragment.class.getName());
-                    startActivity(intent);
+                    PreferencesLauncher.launchSettingsPage(
+                            context, AccountManagementFragment.class);
                 }
 
                 recordSigninCompletedHistogramAccountInfo();

@@ -149,9 +149,8 @@ public class SiteSettingsPreferencesTest {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SiteSettingsPreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                InstrumentationRegistry.getTargetContext(), SiteSettingsPreferences.class.getName(),
+                fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
@@ -161,8 +160,7 @@ public class SiteSettingsPreferencesTest {
                 SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
-                SingleCategoryPreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                SingleCategoryPreferences.class.getName(), fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
@@ -171,8 +169,7 @@ public class SiteSettingsPreferencesTest {
         fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
-                SingleWebsitePreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                SingleWebsitePreferences.class.getName(), fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 

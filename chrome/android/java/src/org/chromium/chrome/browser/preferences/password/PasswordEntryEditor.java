@@ -102,8 +102,8 @@ public class PasswordEntryEditor extends Fragment {
         mExtras = getArguments();
         assert mExtras != null;
         mID = mExtras.getInt(SavePasswordsPreferences.PASSWORD_LIST_ID);
-        mFoundViaSearch = getActivity().getIntent().getBooleanExtra(
-                SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, false);
+        mFoundViaSearch =
+                mExtras.getBoolean(SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, false);
         final String name = mExtras.containsKey(SavePasswordsPreferences.PASSWORD_LIST_NAME)
                 ? mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_NAME)
                 : null;

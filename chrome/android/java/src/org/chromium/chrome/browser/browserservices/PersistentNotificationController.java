@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 
@@ -188,9 +187,8 @@ public class PersistentNotificationController implements StartStopWithNativeObse
         }
 
         private PendingIntent makeManageDataIntent() {
-            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
-                    mAppContext, SingleWebsitePreferences.class.getName());
-            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
+            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(mAppContext,
+                    SingleWebsitePreferences.class.getName(),
                     SingleWebsitePreferences.createFragmentArgsForSite(mOrigin.toString()));
             return PendingIntent.getActivity(mAppContext, 0, settingsIntent, FLAG_UPDATE_CURRENT);
         }

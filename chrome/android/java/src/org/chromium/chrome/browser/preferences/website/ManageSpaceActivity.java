@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
@@ -36,7 +35,6 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.AboutChromePreferences;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
@@ -236,17 +234,15 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             }
             mUnimportantDialog.show();
         } else if (view == mManageSiteDataButton) {
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    this, SingleCategoryPreferences.class.getName());
             Bundle initialArguments = new Bundle();
             initialArguments.putString(SingleCategoryPreferences.EXTRA_CATEGORY,
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.USE_STORAGE));
             initialArguments.putString(SingleCategoryPreferences.EXTRA_TITLE,
                     getString(R.string.website_settings_storage));
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, initialArguments);
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
-            startActivity(intent);
+            PreferencesLauncher.launchSettingsPage(
+                    this, SingleCategoryPreferences.class, initialArguments);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =
                     (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);

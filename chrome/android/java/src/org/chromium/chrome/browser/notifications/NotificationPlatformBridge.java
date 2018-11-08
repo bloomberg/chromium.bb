@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.app.Fragment;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
@@ -33,7 +34,6 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -264,11 +264,9 @@ public class NotificationPlatformBridge {
         String origin = getOriginFromIntent(incomingIntent);
         boolean launchSingleWebsitePreferences = origin != null;
 
-        String fragmentName = launchSingleWebsitePreferences
-                ? SingleWebsitePreferences.class.getName()
-                : SingleCategoryPreferences.class.getName();
-        Intent preferencesIntent =
-                PreferencesLauncher.createIntentForSettingsPage(applicationContext, fragmentName);
+        Class<? extends Fragment> fragment = launchSingleWebsitePreferences
+                ? SingleWebsitePreferences.class
+                : SingleCategoryPreferences.class;
 
         Bundle fragmentArguments;
         if (launchSingleWebsitePreferences) {
@@ -286,9 +284,8 @@ public class NotificationPlatformBridge {
                     applicationContext.getResources().getString(
                             R.string.push_notifications_permission_title));
         }
-        preferencesIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
 
-        applicationContext.startActivity(preferencesIntent);
+        PreferencesLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
     }
 
     /**
@@ -598,12 +595,10 @@ public class NotificationPlatformBridge {
                     notificationBuilder);
         } else {
             // Set up a pending intent for going to the settings screen for |origin|.
-            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
-                    context, SingleWebsitePreferences.class.getName());
-            settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
-            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
+            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(context,
+                    SingleWebsitePreferences.class.getName(),
                     SingleWebsitePreferences.createFragmentArgsForSite(origin));
-
+            settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
             PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,
                     PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

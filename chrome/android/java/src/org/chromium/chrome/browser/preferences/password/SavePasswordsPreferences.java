@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
@@ -385,11 +384,11 @@ public class SavePasswordsPreferences
         } else {
             // Launch preference activity with PasswordEntryEditor fragment with
             // intent extras specifying the object.
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    getActivity(), PasswordEntryEditor.class.getName());
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, preference.getExtras());
-            intent.putExtra(SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
-            startActivity(intent);
+            Bundle fragmentAgs = new Bundle(preference.getExtras());
+            fragmentAgs.putBoolean(
+                    SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
+            PreferencesLauncher.launchSettingsPage(
+                    getActivity(), PasswordEntryEditor.class, fragmentAgs);
         }
         return true;
     }

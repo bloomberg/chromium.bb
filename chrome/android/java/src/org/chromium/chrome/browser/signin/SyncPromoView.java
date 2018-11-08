@@ -174,7 +174,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
         ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button,
                 view -> PreferencesLauncher.launchSettingsPage(
-                        getContext(), SyncCustomizationFragment.class.getName()));
+                        getContext(), SyncCustomizationFragment.class));
 
         return new ViewState(descId, positiveButton);
     }

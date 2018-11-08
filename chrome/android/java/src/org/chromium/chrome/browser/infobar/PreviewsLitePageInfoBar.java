@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.Intent;
+import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
@@ -31,9 +31,9 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
     public void onLinkClicked() {
         super.onLinkClicked();
 
-        final Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getContext(), DataReductionPreferences.class.getName());
-        intent.putExtra(FROM_INFOBAR, true);
-        getContext().startActivity(intent);
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putBoolean(FROM_INFOBAR, true);
+        PreferencesLauncher.launchSettingsPage(
+                getContext(), DataReductionPreferences.class, fragmentArgs);
     }
 }

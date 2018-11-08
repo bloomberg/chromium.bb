@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.content.Intent;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
@@ -20,7 +19,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -170,9 +168,7 @@ public class ContextualSuggestionsCoordinator implements Destroyable {
 
     /** Show the settings page for contextual suggestions. */
     void showSettings() {
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                mActivity, ContextualSuggestionsPreference.class.getName());
-        IntentUtils.safeStartActivity(mActivity, intent);
+        PreferencesLauncher.launchSettingsPage(mActivity, ContextualSuggestionsPreference.class);
     }
 
     /** Show the feedback page. */
