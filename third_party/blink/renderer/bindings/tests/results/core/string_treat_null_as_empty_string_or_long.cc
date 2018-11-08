@@ -91,7 +91,7 @@ v8::Local<v8::Value> ToV8(const StringTreatNullAsEmptyStringOrLong& impl, v8::Lo
     case StringTreatNullAsEmptyStringOrLong::SpecificType::kLong:
       return v8::Integer::New(isolate, impl.GetAsLong());
     case StringTreatNullAsEmptyStringOrLong::SpecificType::kStringTreatNullAsEmptyString:
-      return V8String(isolate, impl.GetAsStringTreatNullAsEmptyString());
+      return V8String(isolate, impl.GetAsString());
     default:
       NOTREACHED();
   }
