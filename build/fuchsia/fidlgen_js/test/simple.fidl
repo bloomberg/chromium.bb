@@ -89,6 +89,17 @@ struct VectorOfHandleToVMO {
   vector<handle<vmo>> vmos;
 };
 
+// This is a compile-only test for gen.py to ensure that the size of
+// AfterPreviousReference is available before the vector<AfterPreviousReference>
+// is compiled in this struct.
+struct LaterReference {
+  vector<AfterPreviousReference>? later;
+};
+
+struct AfterPreviousReference {
+  int32 an_int;
+};
+
 interface Testola {
   1: DoSomething();
 
