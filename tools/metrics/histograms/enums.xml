@@ -29692,6 +29692,7 @@ from previous Chrome versions.
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-816984237" label="OfflinePagesAsyncDownload:enabled"/>
+  <int value="-816895294" label="DiscoverApp:disabled"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813753274" label="VrBrowsing:disabled"/>
   <int value="-813474479" label="site-per-process"/>
@@ -30408,6 +30409,7 @@ from previous Chrome versions.
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
   <int value="606834606" label="force-color-profile"/>
+  <int value="606969417" label="DiscoverApp:enabled"/>
   <int value="609112512" label="touch-selection-strategy"/>
   <int value="609580715" label="ArcCupsApi:disabled"/>
   <int value="610545308" label="enable-potentially-annoying-security-features"/>

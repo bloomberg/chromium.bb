@@ -1964,6 +1964,9 @@ extern const char kEnableChromeOsAccountManagerDescription[];
 extern const char kEnableContinueReadingName[];
 extern const char kEnableContinueReadingDescription[];
 
+extern const char kEnableDiscoverAppName[];
+extern const char kEnableDiscoverAppDescription[];
+
 extern const char kEnableDragAppsInTabletModeName[];
 extern const char kEnableDragAppsInTabletModeDescription[];
 
