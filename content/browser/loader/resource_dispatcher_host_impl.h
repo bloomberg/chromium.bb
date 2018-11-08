@@ -243,6 +243,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
+      net::RequestPriority net_priority,
       const GlobalRequestID& global_request_id);
 
   int num_in_flight_requests_for_testing() const {
