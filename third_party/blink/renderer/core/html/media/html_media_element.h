@@ -124,6 +124,8 @@ class CORE_EXPORT HTMLMediaElement
 
   bool SupportsSave() const;
 
+  bool SupportsLoop() const;
+
   cc::Layer* CcLayer() const;
 
   enum DelayedActionType {
@@ -359,6 +361,7 @@ class CORE_EXPORT HTMLMediaElement
 
  private:
   // Friend class for testing.
+  friend class ContextMenuControllerTest;
   friend class MediaElementFillingViewportTest;
 
   void ResetMediaPlayerAndMediaSource();

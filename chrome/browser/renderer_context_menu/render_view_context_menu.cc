@@ -1705,8 +1705,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     // Media control commands should all be disabled if the player is in an
     // error state.
     case IDC_CONTENT_CONTEXT_PLAYPAUSE:
-    case IDC_CONTENT_CONTEXT_LOOP:
       return (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
+
+    // Loop command should be disabled if the player is in an error state.
+    case IDC_CONTENT_CONTEXT_LOOP:
+      return (params_.media_flags & WebContextMenuData::kMediaCanLoop) != 0 &&
+             (params_.media_flags & WebContextMenuData::kMediaInError) == 0;
 
     // Mute and unmute should also be disabled if the player has no audio.
     case IDC_CONTENT_CONTEXT_MUTE:

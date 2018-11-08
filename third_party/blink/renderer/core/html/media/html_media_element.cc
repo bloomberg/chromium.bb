@@ -1995,6 +1995,18 @@ bool HTMLMediaElement::SupportsSave() const {
   return true;
 }
 
+bool HTMLMediaElement::SupportsLoop() const {
+  // MediaStream can't be looped.
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return false;
+
+  // Infinite streams don't have a clear end at which to loop.
+  if (duration() == std::numeric_limits<double>::infinity())
+    return false;
+
+  return true;
+}
+
 void HTMLMediaElement::SetIgnorePreloadNone() {
   BLINK_MEDIA_LOG << "setIgnorePreloadNone(" << (void*)this << ")";
   ignore_preload_none_ = true;
