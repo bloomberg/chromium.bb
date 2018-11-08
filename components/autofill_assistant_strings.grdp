@@ -2,7 +2,7 @@
 <grit-part>
   <if expr="is_android">
     <message name="IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR" desc="Text label that is shown when autofill assistant cannot help anymore, because something went wrong.">
-      Something happened! I cannot help anymore. You can continue directly on the website.
+      Something went wrong. You can finish your order on the website.
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP" desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action.">
       It looks like you want to do this by yourself. It's ok to continue on without my help.
