@@ -79,8 +79,7 @@ void WebGraphicsContext3DProviderImpl::OnContextLost() {
 cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
     blink::CanvasColorSpace color_space,
     blink::CanvasPixelFormat pixel_format) {
-  SkColorType color_type =
-      blink::CanvasColorParams::PixelFormatToSkColorType(pixel_format);
+  SkColorType color_type = blink::PixelFormatToSkColorType(pixel_format);
 
   DCHECK(GetGrContext()->colorTypeSupportedAsImage(color_type));
   auto key = std::make_pair(color_space, pixel_format);
@@ -102,8 +101,7 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
           provider_.get(), use_transfer_cache, color_type, kMaxWorkingSetBytes,
           provider_->ContextCapabilities().max_texture_size,
           cc::PaintImage::kDefaultGeneratorClientId,
-          blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(
-              color_space)));
+          blink::CanvasColorSpaceToSkColorSpace(color_space)));
   DCHECK(insertion_result.second);
   cache_iterator = insertion_result.first;
   return cache_iterator->second.get();

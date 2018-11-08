@@ -33,7 +33,7 @@
 
 #include <cstdint>
 #include "base/callback_forward.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class GrContext;
@@ -60,6 +60,53 @@ class GLHelper;
 }
 
 namespace blink {
+
+enum CanvasColorSpace {
+  kSRGBCanvasColorSpace,
+  kLinearRGBCanvasColorSpace,
+  kRec2020CanvasColorSpace,
+  kP3CanvasColorSpace,
+  kMaxCanvasColorSpace = kP3CanvasColorSpace
+};
+
+enum CanvasPixelFormat {
+  kRGBA8CanvasPixelFormat,
+  kF16CanvasPixelFormat,
+  kMaxCanvasPixelFormat = kF16CanvasPixelFormat
+};
+
+inline SkColorType PixelFormatToSkColorType(CanvasPixelFormat pixel_format) {
+  switch (pixel_format) {
+    case kF16CanvasPixelFormat:
+      return kRGBA_F16_SkColorType;
+    case kRGBA8CanvasPixelFormat:
+      return kN32_SkColorType;
+  }
+  NOTREACHED();
+  return kN32_SkColorType;
+}
+
+inline sk_sp<SkColorSpace> CanvasColorSpaceToSkColorSpace(
+    CanvasColorSpace color_space) {
+  SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
+  SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
+  switch (color_space) {
+    case kSRGBCanvasColorSpace:
+      break;
+    case kLinearRGBCanvasColorSpace:
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+    case kRec2020CanvasColorSpace:
+      gamut = SkColorSpace::kRec2020_Gamut;
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+    case kP3CanvasColorSpace:
+      gamut = SkColorSpace::kDCIP3_D65_Gamut;
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+  }
+  return SkColorSpace::MakeRGB(gamma, gamut);
+}
 
 class WebGraphicsContext3DProvider {
  public:
