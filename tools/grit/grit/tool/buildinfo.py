@@ -13,7 +13,13 @@ from grit.node import structure
 from grit.tool import interface
 
 class DetermineBuildInfo(interface.Tool):
-  """Determine what files will be read and output by GRIT."""
+  """Determine what files will be read and output by GRIT.
+Outputs the list of generated files and inputs used to stdout.
+
+Usage: grit buildinfo [-o DIR]
+
+The output directory is used for display only.
+"""
 
   def __init__(self):
     pass
@@ -24,8 +30,7 @@ class DetermineBuildInfo(interface.Tool):
             'output by GRIT with a given input.')
 
   def Run(self, opts, args):
-    """Main method for the buildinfo tool.  Outputs the list
-       of generated files and inputs used to stdout."""
+    """Main method for the buildinfo tool."""
     self.output_directory = '.'
     (own_opts, args) = getopt.getopt(args, 'o:')
     for (key, val) in own_opts:
