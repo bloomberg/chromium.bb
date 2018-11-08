@@ -36,12 +36,15 @@ std::string GetFrameNameFromOffsetAddr(uintptr_t offset_from_module_base) {
 class TracingProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
+  TracingProfileBuilder(base::PlatformThreadId sampled_thread_id)
+      : sampled_thread_id_(sampled_thread_id) {}
+
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override {
     if (frames.empty()) {
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                            "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD,
-                           "frames", "empty");
+                           "frames", "empty", "thread_id", sampled_thread_id_);
 
       return;
     }
@@ -101,13 +104,16 @@ class TracingProfileBuilder
                           module_name.c_str(), frame.module.id.c_str());
     }
 
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                          "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD, "frames",
-                         result);
+                         result, "thread_id", sampled_thread_id_);
   }
 
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override {}
+
+ private:
+  base::PlatformThreadId sampled_thread_id_;
 };
 
 }  // namespace
@@ -153,11 +159,13 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      sampled_thread_id_, params, std::make_unique<TracingProfileBuilder>(),
+      sampled_thread_id_, params,
+      std::make_unique<TracingProfileBuilder>(sampled_thread_id_),
       std::make_unique<NativeStackSamplerAndroid>(sampled_thread_id_));
 #else
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      sampled_thread_id_, params, std::make_unique<TracingProfileBuilder>());
+      sampled_thread_id_, params,
+      std::make_unique<TracingProfileBuilder>(sampled_thread_id_));
 #endif
   profiler_->Start();
 }
