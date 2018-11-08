@@ -756,8 +756,6 @@ EntryListItem.prototype.updateSubDirectories = function(
     if (this.entries_.length > 0)
       this.expanded = true;
     opt_successCallback && opt_successCallback();
-    // TODO(lucmult): Remove this log once flakiness is fixed.
-    console.log('EntryListItem children loaded.');
   };
   const reader = this.entry.createReader();
   const entries = [];
