@@ -97,17 +97,15 @@ bool CanvasResource::PrepareTransferableResource(
   DCHECK(IsValid());
 
   DCHECK(out_callback);
-  scoped_refptr<CanvasResource> this_ref(this);
   auto func = WTF::Bind(&ReleaseFrameResources, provider_,
-                        WTF::Passed(std::move(this_ref)));
+                        WTF::Passed(base::WrapRefCounted(this)));
   *out_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
-  if (out_resource) {
-    if (SupportsAcceleratedCompositing())
-      return PrepareAcceleratedTransferableResource(out_resource, sync_mode);
-    return PrepareUnacceleratedTransferableResource(out_resource);
-  }
-  return true;
+  if (!out_resource)
+    return true;
+  if (SupportsAcceleratedCompositing())
+    return PrepareAcceleratedTransferableResource(out_resource, sync_mode);
+  return PrepareUnacceleratedTransferableResource(out_resource);
 }
 
 bool CanvasResource::PrepareAcceleratedTransferableResource(

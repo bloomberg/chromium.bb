@@ -28,16 +28,13 @@
 
 namespace blink {
 
-// CanvasResourceProviderTexture
-//==============================================================================
-//
-// * Renders to a texture managed by skia. Mailboxes are straight GL textures.
-// * Layers are not overlay candidates
-
 void CanvasResourceProvider::RecordTypeToUMA(ResourceProviderType type) {
   UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ResourceProviderType", type);
 }
 
+// * Renders to a texture managed by Skia. Mailboxes are backed by vanilla GL
+//   textures.
+// * Layers are not overlay candidates.
 class CanvasResourceProviderTexture : public CanvasResourceProvider {
  public:
   CanvasResourceProviderTexture(
@@ -142,13 +139,9 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   const bool is_origin_top_left_;
 };
 
-// CanvasResourceProviderTextureGpuMemoryBuffer
-//==============================================================================
-//
-// * Renders to a texture managed by skia. Mailboxes are
-//     gpu-accelerated platform native surfaces.
-// * Layers are overlay candidates
-
+// * Renders to a texture managed by Skia. Mailboxes are GPU-accelerated
+//   platform native surfaces.
+// * Layers are overlay candidates.
 class CanvasResourceProviderTextureGpuMemoryBuffer final
     : public CanvasResourceProviderTexture {
  public:
@@ -217,12 +210,8 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
   }
 };
 
-// CanvasResourceProviderBitmap
-//==============================================================================
-//
-// * Renders to a skia RAM-backed bitmap
-// * Mailboxing is not supported : cannot be directly composited
-
+// * Renders to a Skia RAM-backed bitmap.
+// * Mailboxing is not supported : cannot be directly composited.
 class CanvasResourceProviderBitmap : public CanvasResourceProvider {
  public:
   CanvasResourceProviderBitmap(
@@ -259,17 +248,13 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
   }
 };
 
-// CanvasResourceProviderRamGpuMemoryBuffer
-//==============================================================================
-//
-// * Renders to a ram memory buffer managed by skia
+// * Renders to a ram memory buffer managed by Skia
 // * Uses GpuMemoryBuffer to pass frames to the compositor
 // * Layers are overlay candidates
-
-class CanvasResourceProviderRamGpuMemoryBuffer final
+class CanvasResourceProviderBitmapGpuMemoryBuffer final
     : public CanvasResourceProviderBitmap {
  public:
-  CanvasResourceProviderRamGpuMemoryBuffer(
+  CanvasResourceProviderBitmapGpuMemoryBuffer(
       const IntSize& size,
       const CanvasColorParams color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -280,14 +265,14 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
                                      std::move(context_provider_wrapper),
                                      std::move(resource_dispatcher)) {}
 
-  ~CanvasResourceProviderRamGpuMemoryBuffer() override = default;
+  ~CanvasResourceProviderBitmapGpuMemoryBuffer() override = default;
   bool SupportsDirectCompositing() const override { return true; }
   bool SupportsSingleBuffering() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
     TRACE_EVENT0("blink",
-                 "CanvasResourceProviderRamGpuMemoryBuffer::CreateResource");
+                 "CanvasResourceProviderBitmapGpuMemoryBuffer::CreateResource");
 
     constexpr bool is_accelerated = false;
     return CanvasResourceGpuMemoryBuffer::Create(
@@ -297,7 +282,7 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
 
   scoped_refptr<CanvasResource> ProduceFrame() final {
     TRACE_EVENT0("blink",
-                 "CanvasResourceProviderRamGpuMemoryBuffer::ProduceFrame");
+                 "CanvasResourceProviderBitmapGpuMemoryBuffer::ProduceFrame");
 
     DCHECK(GetSkSurface());
 
@@ -318,12 +303,8 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
   }
 };
 
-// CanvasResourceProviderSharedBitmap
-//==============================================================================
-//
-// * Renders to a shared memory bitmap
-// * Uses SharedBitmaps to pass frames directly to the compositor
-
+// * Renders to a shared memory bitmap.
+// * Uses SharedBitmaps to pass frames directly to the compositor.
 class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
  public:
   CanvasResourceProviderSharedBitmap(
@@ -370,9 +351,6 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
     return output_resource;
   }
 };
-
-// CanvasResourceProvider base class implementation
-//==============================================================================
 
 enum CanvasResourceType {
   kTextureGpuMemoryBufferResourceType,
@@ -481,8 +459,10 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 gfx::Size(size), color_params.GetBufferFormat())) {
           continue;
         }
-        provider = std::make_unique<CanvasResourceProviderRamGpuMemoryBuffer>(
-            size, color_params, context_provider_wrapper, resource_dispatcher);
+        provider =
+            std::make_unique<CanvasResourceProviderBitmapGpuMemoryBuffer>(
+                size, color_params, context_provider_wrapper,
+                resource_dispatcher);
         break;
       case kSharedBitmapResourceType:
         if (!resource_dispatcher)
