@@ -127,6 +127,50 @@ class BindingsSetupHelper {
     return t;
   }
 
+  template <class T>
+  T FromV8BigInt(v8::Local<v8::Value> val);
+
+  template <>
+  uint64_t FromV8BigInt(v8::Local<v8::Value> val) {
+    EXPECT_TRUE(val->IsBigInt());
+    return val.As<v8::BigInt>()->Uint64Value(nullptr);
+  }
+
+  template <>
+  int64_t FromV8BigInt(v8::Local<v8::Value> val) {
+    EXPECT_TRUE(val->IsBigInt());
+    return val.As<v8::BigInt>()->Int64Value(nullptr);
+  }
+
+  // Custom version of gin::Converter that handles int64/uint64 from BigInt as
+  // gin::Converter is quite tied to Number.
+  template <class T>
+  std::vector<T> GetBigIntVector(const std::string& name) {
+    v8::Local<v8::Value> val =
+        runner_.global()->Get(gin::StringToV8(isolate_, name));
+    EXPECT_TRUE(val->IsArray());
+
+    std::vector<T> result;
+    v8::Local<v8::Array> array(v8::Local<v8::Array>::Cast(val));
+    uint32_t length = array->Length();
+    for (uint32_t i = 0; i < length; ++i) {
+      v8::Local<v8::Value> v8_item;
+      EXPECT_TRUE(
+          array->Get(isolate_->GetCurrentContext(), i).ToLocal(&v8_item));
+      T item;
+      if (v8_item->IsNumber()) {
+        EXPECT_TRUE(gin::Converter<T>::FromV8(isolate_, v8_item, &item));
+      } else if (v8_item->IsBigInt()) {
+        item = FromV8BigInt<T>(v8_item);
+      } else {
+        ADD_FAILURE();
+      }
+      result.push_back(item);
+    }
+
+    return result;
+  }
+
   void DestroyBindingsForTesting() { zx_bindings_.reset(); }
 
   zx::channel& server() { return server_; }
@@ -289,6 +333,118 @@ class TestolaImpl : public fidljstest::Testola {
     b.num = 258;
     response.push_back(b);
     callback(std::move(response));
+  }
+
+  void PassVectorOfPrimitives(
+      fidljstest::VectorsOfPrimitives input,
+      PassVectorOfPrimitivesCallback callback) override {
+    ASSERT_EQ(input.v_bool->size(), 1u);
+    ASSERT_EQ(input.v_uint8->size(), 2u);
+    ASSERT_EQ(input.v_uint16->size(), 3u);
+    ASSERT_EQ(input.v_uint32->size(), 4u);
+    ASSERT_EQ(input.v_uint64->size(), 5u);
+    ASSERT_EQ(input.v_int8->size(), 6u);
+    ASSERT_EQ(input.v_int16->size(), 7u);
+    ASSERT_EQ(input.v_int32->size(), 8u);
+    ASSERT_EQ(input.v_int64->size(), 9u);
+    ASSERT_EQ(input.v_float32->size(), 10u);
+    ASSERT_EQ(input.v_float64->size(), 11u);
+
+    EXPECT_EQ((*input.v_bool)[0], true);
+
+    EXPECT_EQ((*input.v_uint8)[0], 2u);
+    EXPECT_EQ((*input.v_uint8)[1], 3u);
+
+    EXPECT_EQ((*input.v_uint16)[0], 4u);
+    EXPECT_EQ((*input.v_uint16)[1], 5u);
+    EXPECT_EQ((*input.v_uint16)[2], 6u);
+
+    EXPECT_EQ((*input.v_uint32)[0], 7u);
+    EXPECT_EQ((*input.v_uint32)[1], 8u);
+    EXPECT_EQ((*input.v_uint32)[2], 9u);
+    EXPECT_EQ((*input.v_uint32)[3], 10u);
+
+    EXPECT_EQ((*input.v_uint64)[0], 11u);
+    EXPECT_EQ((*input.v_uint64)[1], 12u);
+    EXPECT_EQ((*input.v_uint64)[2], 13u);
+    EXPECT_EQ((*input.v_uint64)[3], 14u);
+    EXPECT_EQ((*input.v_uint64)[4], 0xffffffffffffff00ULL);
+
+    EXPECT_EQ((*input.v_int8)[0], -16);
+    EXPECT_EQ((*input.v_int8)[1], -17);
+    EXPECT_EQ((*input.v_int8)[2], -18);
+    EXPECT_EQ((*input.v_int8)[3], -19);
+    EXPECT_EQ((*input.v_int8)[4], -20);
+    EXPECT_EQ((*input.v_int8)[5], -21);
+
+    EXPECT_EQ((*input.v_int16)[0], -22);
+    EXPECT_EQ((*input.v_int16)[1], -23);
+    EXPECT_EQ((*input.v_int16)[2], -24);
+    EXPECT_EQ((*input.v_int16)[3], -25);
+    EXPECT_EQ((*input.v_int16)[4], -26);
+    EXPECT_EQ((*input.v_int16)[5], -27);
+    EXPECT_EQ((*input.v_int16)[6], -28);
+
+    EXPECT_EQ((*input.v_int32)[0], -29);
+    EXPECT_EQ((*input.v_int32)[1], -30);
+    EXPECT_EQ((*input.v_int32)[2], -31);
+    EXPECT_EQ((*input.v_int32)[3], -32);
+    EXPECT_EQ((*input.v_int32)[4], -33);
+    EXPECT_EQ((*input.v_int32)[5], -34);
+    EXPECT_EQ((*input.v_int32)[6], -35);
+    EXPECT_EQ((*input.v_int32)[7], -36);
+
+    EXPECT_EQ((*input.v_int64)[0], -37);
+    EXPECT_EQ((*input.v_int64)[1], -38);
+    EXPECT_EQ((*input.v_int64)[2], -39);
+    EXPECT_EQ((*input.v_int64)[3], -40);
+    EXPECT_EQ((*input.v_int64)[4], -41);
+    EXPECT_EQ((*input.v_int64)[5], -42);
+    EXPECT_EQ((*input.v_int64)[6], -43);
+    EXPECT_EQ((*input.v_int64)[7], -44);
+    EXPECT_EQ((*input.v_int64)[8], -0x7fffffffffffffffLL);
+
+    EXPECT_EQ((*input.v_float32)[0], 46.f);
+    EXPECT_EQ((*input.v_float32)[1], 47.f);
+    EXPECT_EQ((*input.v_float32)[2], 48.f);
+    EXPECT_EQ((*input.v_float32)[3], 49.f);
+    EXPECT_EQ((*input.v_float32)[4], 50.f);
+    EXPECT_EQ((*input.v_float32)[5], 51.f);
+    EXPECT_EQ((*input.v_float32)[6], 52.f);
+    EXPECT_EQ((*input.v_float32)[7], 53.f);
+    EXPECT_EQ((*input.v_float32)[8], 54.f);
+    EXPECT_EQ((*input.v_float32)[9], 55.f);
+
+    EXPECT_EQ((*input.v_float64)[0], 56.0);
+    EXPECT_EQ((*input.v_float64)[1], 57.0);
+    EXPECT_EQ((*input.v_float64)[2], 58.0);
+    EXPECT_EQ((*input.v_float64)[3], 59.0);
+    EXPECT_EQ((*input.v_float64)[4], 60.0);
+    EXPECT_EQ((*input.v_float64)[5], 61.0);
+    EXPECT_EQ((*input.v_float64)[6], 62.0);
+    EXPECT_EQ((*input.v_float64)[7], 63.0);
+    EXPECT_EQ((*input.v_float64)[8], 64.0);
+    EXPECT_EQ((*input.v_float64)[9], 65.0);
+    EXPECT_EQ((*input.v_float64)[10], 66.0);
+
+    fidljstest::VectorsOfPrimitives output = std::move(input);
+#define INC_OUTPUT_ARRAY(v)                       \
+  for (size_t i = 0; i < output.v->size(); ++i) { \
+    (*output.v)[i] += 10;                         \
+  }
+    INC_OUTPUT_ARRAY(v_uint8);
+    INC_OUTPUT_ARRAY(v_uint16);
+    INC_OUTPUT_ARRAY(v_uint32);
+    INC_OUTPUT_ARRAY(v_uint64);
+    INC_OUTPUT_ARRAY(v_int8);
+    INC_OUTPUT_ARRAY(v_int16);
+    INC_OUTPUT_ARRAY(v_int32);
+    INC_OUTPUT_ARRAY(v_int64);
+    INC_OUTPUT_ARRAY(v_float32);
+    INC_OUTPUT_ARRAY(v_float64);
+#undef INC_OUTPUT_ARRAY
+
+    callback(std::move(output));
   }
 
   bool was_do_something_called() const { return was_do_something_called_; }
@@ -842,6 +998,167 @@ TEST_F(FidlGenJsTest, VectorOfStruct) {
   EXPECT_EQ(helper.Get<uint32_t>("result_length"), 2u);
   EXPECT_EQ(helper.Get<int>("result_0"), 369);
   EXPECT_EQ(helper.Get<int>("result_1"), 258);
+}
+
+TEST_F(FidlGenJsTest, VectorsOfPrimitives) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    var v_bool = [true];
+    var v_uint8 = [2, 3];
+    var v_uint16 = [4, 5, 6];
+    var v_uint32 = [7, 8, 9, 10];
+    var v_uint64 = [11, 12, 13, 14, 0xffffffffffffff00n];
+    var v_int8 = [-16, -17, -18, -19, -20, -21];
+    var v_int16 = [-22, -23, -24, -25, -26, -27, -28];
+    var v_int32 = [-29, -30, -31, -32, -33, -34, -35, -36];
+    var v_int64 = [-37, -38, -39, -40, -41, -42, -43, -44,
+                   -0x7fffffffffffffffn];
+    var v_float32 = [46, 47, 48, 49, 50, 51, 52, 53, 54, 55];
+    var v_float64 = [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66];
+
+    var data = new VectorsOfPrimitives(
+        v_bool,
+        v_uint8,
+        v_uint16,
+        v_uint32,
+        v_uint64,
+        v_int8,
+        v_int16,
+        v_int32,
+        v_int64,
+        v_float32,
+        v_float64);
+
+    proxy.PassVectorOfPrimitives(data).then(resp => {
+      this.result_v_bool = resp.v_bool;
+      this.result_v_uint8 = resp.v_uint8;
+      this.result_v_uint16 = resp.v_uint16;
+      this.result_v_uint32 = resp.v_uint32;
+      this.result_v_uint64 = resp.v_uint64;
+      this.result_v_int8 = resp.v_int8;
+      this.result_v_int16 = resp.v_int16;
+      this.result_v_int32 = resp.v_int32;
+      this.result_v_int64 = resp.v_int64;
+      this.result_v_float32 = resp.v_float32;
+      this.result_v_float64 = resp.v_float64;
+    }).catch((e) => log('FAILED: ' + e));
+  )";
+
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  auto result_v_bool = helper.Get<std::vector<bool>>("result_v_bool");
+  auto result_v_uint8 = helper.Get<std::vector<unsigned int>>("result_v_uint8");
+  auto result_v_uint16 =
+      helper.Get<std::vector<unsigned int>>("result_v_uint16");
+  auto result_v_uint32 = helper.Get<std::vector<uint32_t>>("result_v_uint32");
+  auto result_v_uint64 = helper.GetBigIntVector<uint64_t>("result_v_uint64");
+  auto result_v_int8 = helper.Get<std::vector<int>>("result_v_int8");
+  auto result_v_int16 = helper.Get<std::vector<int>>("result_v_int16");
+  auto result_v_int32 = helper.Get<std::vector<int32_t>>("result_v_int32");
+  auto result_v_int64 = helper.GetBigIntVector<int64_t>("result_v_int64");
+  auto result_v_float32 = helper.Get<std::vector<float>>("result_v_float32");
+  auto result_v_float64 = helper.Get<std::vector<double>>("result_v_float64");
+
+  ASSERT_EQ(result_v_bool.size(), 1u);
+  ASSERT_EQ(result_v_uint8.size(), 2u);
+  ASSERT_EQ(result_v_uint16.size(), 3u);
+  ASSERT_EQ(result_v_uint32.size(), 4u);
+  ASSERT_EQ(result_v_uint64.size(), 5u);
+  ASSERT_EQ(result_v_int8.size(), 6u);
+  ASSERT_EQ(result_v_int16.size(), 7u);
+  ASSERT_EQ(result_v_int32.size(), 8u);
+  ASSERT_EQ(result_v_int64.size(), 9u);
+  ASSERT_EQ(result_v_float32.size(), 10u);
+  ASSERT_EQ(result_v_float64.size(), 11u);
+
+  // Check that all the responses have had 10 added to them (except bool).
+
+  EXPECT_EQ(result_v_bool[0], true);
+
+  EXPECT_EQ(result_v_uint8[0], 12u);
+  EXPECT_EQ(result_v_uint8[1], 13u);
+
+  EXPECT_EQ(result_v_uint16[0], 14u);
+  EXPECT_EQ(result_v_uint16[1], 15u);
+  EXPECT_EQ(result_v_uint16[2], 16u);
+
+  EXPECT_EQ(result_v_uint32[0], 17u);
+  EXPECT_EQ(result_v_uint32[1], 18u);
+  EXPECT_EQ(result_v_uint32[2], 19u);
+  EXPECT_EQ(result_v_uint32[3], 20u);
+
+  EXPECT_EQ(result_v_uint64[0], 21u);
+  EXPECT_EQ(result_v_uint64[1], 22u);
+  EXPECT_EQ(result_v_uint64[2], 23u);
+  EXPECT_EQ(result_v_uint64[3], 24u);
+  EXPECT_EQ(result_v_uint64[4], 0xffffffffffffff0aULL);
+
+  EXPECT_EQ(result_v_int8[0], -6);
+  EXPECT_EQ(result_v_int8[1], -7);
+  EXPECT_EQ(result_v_int8[2], -8);
+  EXPECT_EQ(result_v_int8[3], -9);
+  EXPECT_EQ(result_v_int8[4], -10);
+  EXPECT_EQ(result_v_int8[5], -11);
+
+  EXPECT_EQ(result_v_int16[0], -12);
+  EXPECT_EQ(result_v_int16[1], -13);
+  EXPECT_EQ(result_v_int16[2], -14);
+  EXPECT_EQ(result_v_int16[3], -15);
+  EXPECT_EQ(result_v_int16[4], -16);
+  EXPECT_EQ(result_v_int16[5], -17);
+  EXPECT_EQ(result_v_int16[6], -18);
+
+  EXPECT_EQ(result_v_int32[0], -19);
+  EXPECT_EQ(result_v_int32[1], -20);
+  EXPECT_EQ(result_v_int32[2], -21);
+  EXPECT_EQ(result_v_int32[3], -22);
+  EXPECT_EQ(result_v_int32[4], -23);
+  EXPECT_EQ(result_v_int32[5], -24);
+  EXPECT_EQ(result_v_int32[6], -25);
+  EXPECT_EQ(result_v_int32[7], -26);
+
+  EXPECT_EQ(result_v_int64[0], -27);
+  EXPECT_EQ(result_v_int64[1], -28);
+  EXPECT_EQ(result_v_int64[2], -29);
+  EXPECT_EQ(result_v_int64[3], -30);
+  EXPECT_EQ(result_v_int64[4], -31);
+  EXPECT_EQ(result_v_int64[5], -32);
+  EXPECT_EQ(result_v_int64[6], -33);
+  EXPECT_EQ(result_v_int64[7], -34);
+  EXPECT_EQ(result_v_int64[8], -0x7ffffffffffffff5LL);
+
+  EXPECT_EQ(result_v_float32[0], 56.f);
+  EXPECT_EQ(result_v_float32[1], 57.f);
+  EXPECT_EQ(result_v_float32[2], 58.f);
+  EXPECT_EQ(result_v_float32[3], 59.f);
+  EXPECT_EQ(result_v_float32[4], 60.f);
+  EXPECT_EQ(result_v_float32[5], 61.f);
+  EXPECT_EQ(result_v_float32[6], 62.f);
+  EXPECT_EQ(result_v_float32[7], 63.f);
+  EXPECT_EQ(result_v_float32[8], 64.f);
+  EXPECT_EQ(result_v_float32[9], 65.f);
+
+  EXPECT_EQ(result_v_float64[0], 66.f);
+  EXPECT_EQ(result_v_float64[1], 67.f);
+  EXPECT_EQ(result_v_float64[2], 68.f);
+  EXPECT_EQ(result_v_float64[3], 69.f);
+  EXPECT_EQ(result_v_float64[4], 70.f);
+  EXPECT_EQ(result_v_float64[5], 71.f);
+  EXPECT_EQ(result_v_float64[6], 72.f);
+  EXPECT_EQ(result_v_float64[7], 73.f);
+  EXPECT_EQ(result_v_float64[8], 74.f);
+  EXPECT_EQ(result_v_float64[9], 75.f);
+  EXPECT_EQ(result_v_float64[10], 76.f);
 }
 
 int main(int argc, char** argv) {

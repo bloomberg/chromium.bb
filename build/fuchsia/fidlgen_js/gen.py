@@ -119,6 +119,9 @@ class Compiler(object):
   def _InlineSizeOfType(self, t):
     if t.kind == fidl.TypeKind.PRIMITIVE:
       return {
+          'bool': 1,
+          'float32': 4,
+          'float64': 8,
           'int16': 2,
           'int32': 4,
           'int64': 8,

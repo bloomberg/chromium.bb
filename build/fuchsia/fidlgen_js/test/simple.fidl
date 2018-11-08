@@ -61,6 +61,20 @@ struct DefaultUsingIdentifier {
   Blorp blorp_defaulting_to_beta = BETA;
 };
 
+struct VectorsOfPrimitives {
+  vector<bool> v_bool;
+  vector<uint8> v_uint8;
+  vector<uint16> v_uint16;
+  vector<uint32> v_uint32;
+  vector<uint64> v_uint64;
+  vector<int8> v_int8;
+  vector<int16> v_int16;
+  vector<int32> v_int32;
+  vector<int64> v_int64;
+  vector<float32> v_float32;
+  vector<float64> v_float64;
+};
+
 interface Testola {
   1: DoSomething();
 
@@ -88,4 +102,7 @@ interface Testola {
 
   12: VectorOfStruct(vector<StructWithUint> stuff)
         -> (vector<StructWithUint> result);
+
+  13: PassVectorOfPrimitives(VectorsOfPrimitives input)
+        -> (VectorsOfPrimitives output);
 };
