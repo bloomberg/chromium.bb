@@ -6,9 +6,31 @@
 
 import collections
 import logging
+import re
 import subprocess
 
 import path_util
+
+_PROMOTED_GLOBAL_NAME_DEMANGLED_PATTERN = re.compile(
+    r' \((\.\d+)?\.llvm\.\d+\)$')
+_PROMOTED_GLOBAL_NAME_RAW_PATTERN = re.compile(r'(\.\d+)?\.llvm\.\d+$')
+
+def StripLlvmPromotedGlobalNames(name):
+  """Strips LLVM promoted global names suffix, and returns the result.
+
+  LLVM can promote global names by adding the suffix '.llvm.1234', or
+  '.1.llvm.1234', where the last numeric suffix is a hash. If demangle is
+  sucessful, the suffix transforms into, e.g., ' (.llvm.1234)' or
+  ' (.1.llvm.1234)'. Otherwise the suffix is left as is. This function strips
+  the suffix to prevent it from intefering with name comparison.
+  """
+  llvm_pos = name.find('.llvm.')
+  if llvm_pos < 0:
+    return name  # Handles most cases.
+  if name.endswith(')'):
+    return _PROMOTED_GLOBAL_NAME_DEMANGLED_PATTERN.sub('', name)
+  return _PROMOTED_GLOBAL_NAME_RAW_PATTERN.sub('', name)
+
 
 def _DemangleNames(names, tool_prefix):
   """Uses c++filt to demangle a list of names."""
@@ -16,7 +38,7 @@ def _DemangleNames(names, tool_prefix):
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   stdout = proc.communicate('\n'.join(names))[0]
   assert proc.returncode == 0
-  ret = stdout.splitlines()
+  ret = [StripLlvmPromotedGlobalNames(line) for line in stdout.splitlines()]
   if logging.getLogger().isEnabledFor(logging.INFO):
     fail_count = sum(1 for s in ret if s.startswith('_Z'))
     if fail_count:
