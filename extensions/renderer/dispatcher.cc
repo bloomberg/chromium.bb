@@ -38,6 +38,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
@@ -1214,12 +1215,11 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   // Remove all old patterns associated with this extension.
   WebSecurityPolicy::ClearOriginAccessListForOrigin(extension.url());
 
-  // TODO(toyoshim): Change this delegate call to be available even from the
-  // browser process.
-  delegate_->AddOriginAccessPermissions(extension,
-                                        IsExtensionActive(extension.id()));
-
-  for (const auto& entry : CreateCorsOriginAccessAllowList(extension)) {
+  std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
+      CreateCorsOriginAccessAllowList(extension);
+  ExtensionsClient::Get()->AddOriginAccessPermissions(
+      extension, IsExtensionActive(extension.id()), &allow_list);
+  for (const auto& entry : allow_list) {
     WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), WebString::FromUTF8(entry->protocol),
         WebString::FromUTF8(entry->domain), entry->allow_subdomains,

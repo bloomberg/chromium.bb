@@ -10,7 +10,6 @@
 
 namespace extensions {
 class Dispatcher;
-class Extension;
 class ExtensionBindingsSystem;
 class ModuleSystem;
 class NativeExtensionBindingsSystem;
@@ -23,11 +22,6 @@ class ScriptContext;
 class DispatcherDelegate {
  public:
   virtual ~DispatcherDelegate() {}
-
-  // Adds any allowlisted entries for cross-origin communication for a newly
-  // created extension context.
-  virtual void AddOriginAccessPermissions(const Extension& extension,
-                                          bool is_extension_active) {}
 
   // Includes additional native handlers in a ScriptContext's ModuleSystem.
   virtual void RegisterNativeHandlers(Dispatcher* dispatcher,
