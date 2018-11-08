@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_names.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
