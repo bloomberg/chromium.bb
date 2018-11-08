@@ -249,15 +249,20 @@ Status ExecuteWindowCommand(const WindowCommand& command,
 
     // Close the dialog depending on the unexpectedalert behaviour set by user
     // before returning an error, so that subsequent commands do not fail.
-    std::string prompt_behavior = session->unhandled_prompt_behavior;
-    if (prompt_behavior == kAccept)
+    const std::string& prompt_behavior = session->unhandled_prompt_behavior;
+
+    if (prompt_behavior == kAccept || prompt_behavior == kAcceptAndNotify)
       status = dialog_manager->HandleDialog(true, session->prompt_text.get());
-    else if (prompt_behavior == kDismiss)
+    else if (prompt_behavior == kDismiss ||
+             prompt_behavior == kDismissAndNotify)
       status = dialog_manager->HandleDialog(false, session->prompt_text.get());
     if (status.IsError())
       return status;
 
-    return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
+    // For backward compatibility, in legacy mode we always notify.
+    if (!session->w3c_compliant || prompt_behavior == kAcceptAndNotify ||
+        prompt_behavior == kDismissAndNotify || prompt_behavior == kIgnore)
+      return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
   }
 
   Status nav_status(kOk);

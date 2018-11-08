@@ -1780,6 +1780,15 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
+  def testUnexpectedAlertOpenExceptionMessage(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('window.alert("Hi");')
+    self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
+                            '{Alert text : Hi}',
+                            self._driver.FindElement, 'tag name', 'divine')
+    # In W3C mode, the alert is dismissed by default.
+    self.assertFalse(self._driver.IsAlertOpen())
+
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
 
@@ -2216,6 +2225,19 @@ class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
     self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
                             'unexpected alert open: {Alert text : HI}',
                             driver.FindElement, 'tag name', 'div')
+    self.assertFalse(driver.IsAlertOpen())
+
+  def testUnexpectedAlertBehaviourW3c(self):
+    driver = self.CreateDriver(unexpected_alert_behaviour='accept',
+                               send_w3c_capability=True, send_w3c_request=True)
+    self.assertEquals('accept',
+                      driver.capabilities['unhandledPromptBehavior'])
+    driver.ExecuteScript('alert("HI");')
+    self.WaitForCondition(driver.IsAlertOpen)
+    # With unhandledPromptBehavior=accept, calling GetTitle (and most other
+    # endpoints) automatically dismisses the alert, so IsAlertOpen() becomes
+    # False afterwards.
+    self.assertEquals(driver.GetTitle(), '')
     self.assertFalse(driver.IsAlertOpen())
 
 

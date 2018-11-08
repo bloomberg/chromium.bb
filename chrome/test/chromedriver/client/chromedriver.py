@@ -312,7 +312,7 @@ class ChromeDriver(object):
     if (not self.w3c_compliant and 'status' in response
         and response['status'] != 0):
       raise _ExceptionForLegacyResponse(response)
-    elif (self.w3c_compliant and response['value'] is not None
+    elif (self.w3c_compliant and type(response['value']) is dict
           and 'error' in response['value']):
       raise _ExceptionForStandardResponse(response)
     return response
