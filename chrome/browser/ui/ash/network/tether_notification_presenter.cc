@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 
 #include "ash/public/cpp/network_icon_image_source.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -207,7 +208,7 @@ void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
   PA_LOG(VERBOSE) << "Displaying \"connection attempt failed\" notification. "
                   << "Notification ID = " << id;
 
-  ShowNotification(message_center::Notification::CreateSystemNotification(
+  ShowNotification(ash::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE),

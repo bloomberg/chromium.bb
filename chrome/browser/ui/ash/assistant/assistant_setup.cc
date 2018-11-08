@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -130,7 +131,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   const base::string16 display_source =
       base::UTF8ToUTF16(kAssistantDisplaySource);
 
-  auto notification = message_center::Notification::CreateSystemNotification(
+  auto notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kHotwordNotificationId, title,
       base::string16(), display_source, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,

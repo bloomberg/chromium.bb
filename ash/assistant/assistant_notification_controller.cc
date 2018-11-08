@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
@@ -157,7 +158,7 @@ void AssistantNotificationController::OnShowNotification(
   }
 
   std::unique_ptr<message_center::Notification> system_notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           GetNotificationId(notification->grouping_key), title, message,
           display_source, GURL(), notifier_id_, data,

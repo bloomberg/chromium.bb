@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -113,7 +114,7 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
 
   // Add a new notification.
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
           l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
           l10n_util::GetStringUTF16(

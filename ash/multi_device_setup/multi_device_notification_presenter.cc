@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_controller.h"
@@ -269,7 +270,7 @@ std::unique_ptr<message_center::Notification>
 MultiDeviceNotificationPresenter::CreateNotification(
     const base::string16& title,
     const base::string16& message) {
-  return message_center::Notification::CreateSystemNotification(
+  return ash::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId, title, message, base::string16() /* display_source */,
       GURL() /* origin_url */,

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
@@ -67,7 +68,7 @@ void OnAvailableUpdateModes(Profile* profile,
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kTPMFirmwareUpdateNotificationId,
           l10n_util::GetStringUTF16(IDS_TPM_FIRMWARE_UPDATE_NOTIFICATION_TITLE),

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -61,7 +62,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           base::BindRepeating(&chrome::AttemptUserExit));
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
           l10n_util::GetStringUTF16(
               IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),

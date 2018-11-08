@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -278,7 +279,7 @@ bool PeripheralBatteryNotifier::PostNotification(const std::string& path,
           : GetNonStylusNotificationParams(path, battery.name, battery.level,
                                            !battery.bluetooth_address.empty());
 
-  auto notification = message_center::Notification::CreateSystemNotification(
+  auto notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
       params.message, base::string16(), params.url,
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,

@@ -4,6 +4,7 @@
 
 #include "ash/system/tracing_notification_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -56,21 +57,19 @@ void TracingNotificationController::OnTracingModeChanged() {
 }
 
 void TracingNotificationController::CreateNotification() {
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          l10n_util::GetStringUTF16(
-              IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_TITLE),
-          l10n_util::GetStringUTF16(
-              IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_MESSAGE),
-          base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
-          message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::BindRepeating(&HandleNotificationClick)),
-          kSystemMenuTracingIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_MESSAGE),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierId),
+      message_center::RichNotificationData(),
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&HandleNotificationClick)),
+      kSystemMenuTracingIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_pinned(true);
   MessageCenter::Get()->AddNotification(std::move(notification));
 }

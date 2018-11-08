@@ -9,6 +9,7 @@
 
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -64,7 +65,7 @@ void DetachableBaseNotificationController::
       IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_MESSAGE);
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kBaseRequiresUpdateNotificationId, title, message, base::string16(),
           GURL(),
@@ -140,7 +141,7 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
       IDS_ASH_DETACHABLE_BASE_NOTIFICATION_DEVICE_CHANGED_MESSAGE);
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kBaseChangedNotificationId,
           title, message, base::string16(), GURL(),
           message_center::NotifierId(

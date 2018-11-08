@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -60,7 +61,7 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
 
   Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskSpaceId,
           l10n_util::GetStringUTF16(
               IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE),
