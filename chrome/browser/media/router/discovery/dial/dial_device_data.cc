@@ -44,6 +44,18 @@ bool DialDeviceData::IsDeviceDescriptionUrl(const GURL& url) {
   return !address.IsPubliclyRoutable();
 }
 
+// static
+bool DialDeviceData::IsValidDialAppUrl(
+    const GURL& url,
+    const net::IPAddress& expected_ip_address) {
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  net::IPAddress host_ip;
+  return host_ip.AssignFromIPLiteral(url.HostNoBracketsPiece()) &&
+         host_ip.IsValid() && host_ip == expected_ip_address;
+}
+
 bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {
   DCHECK(new_data.device_id() == device_id_);
   DCHECK(new_data.label().empty());
