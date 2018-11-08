@@ -157,6 +157,8 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    ariaLabel: String,
   },
 
   listeners: {

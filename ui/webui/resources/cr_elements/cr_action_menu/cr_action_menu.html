@@ -60,8 +60,9 @@
         outline: none;
       }
     </style>
-    <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_">
-      <div class="item-wrapper" tabindex="-1" role="menu">
+    <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_" role="menu"
+        aria-label$="[[ariaLabel]]">
+      <div class="item-wrapper" tabindex="-1">
         <slot name="item" id="contentNode"></slot>
       </div>
     </dialog>
