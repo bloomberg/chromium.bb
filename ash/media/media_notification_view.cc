@@ -6,12 +6,13 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "components/vector_icons/vector_icons.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 
 namespace ash {
 
@@ -19,10 +20,12 @@ namespace {
 
 // Dimensions.
 constexpr gfx::Insets kButtonRowPadding(0, 12, 16, 12);
-constexpr gfx::Size kMediaButtonSize(64, 64);
 constexpr int kMediaButtonIconSize = 32;
 
-constexpr SkColor kControlIconColor = SK_ColorBLACK;
+SkColor GetMediaNotificationColor(const views::View& view) {
+  return views::style::GetColor(view, views::style::CONTEXT_LABEL,
+                                views::style::STYLE_PRIMARY);
+}
 
 }  // namespace
 
@@ -49,27 +52,27 @@ MediaNotificationView::MediaNotificationView(
   button_row_ = new views::View();
   auto* button_row_layout =
       button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, kButtonRowPadding, 0));
+          views::BoxLayout::kHorizontal, kButtonRowPadding, 16));
   button_row_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   button_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   AddChildView(button_row_);
 
+  CreateMediaButton(vector_icons::kMediaPreviousTrackIcon);
+
   // |play_pause_button_| toggles playback.
-  play_pause_button_ = new views::ToggleImageButton(this);
-  play_pause_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                        views::ImageButton::ALIGN_MIDDLE);
-  play_pause_button_->SetSize(kMediaButtonSize);
-  play_pause_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon, kMediaButtonIconSize,
-                            kControlIconColor));
-  const gfx::ImageSkia pause_image = gfx::CreateVectorIcon(
-      vector_icons::kPauseIcon, kMediaButtonIconSize, kControlIconColor);
-  play_pause_button_->SetToggledImage(views::Button::STATE_NORMAL,
-                                      &pause_image);
+  play_pause_button_ = views::CreateVectorToggleImageButton(this);
+  SkColor play_button_color = GetMediaNotificationColor(*play_pause_button_);
+  views::SetImageFromVectorIcon(play_pause_button_,
+                                vector_icons::kPlayArrowIcon,
+                                kMediaButtonIconSize, play_button_color);
+  views::SetToggledImageFromVectorIcon(play_pause_button_,
+                                       vector_icons::kPauseIcon,
+                                       kMediaButtonIconSize, play_button_color);
   button_row_->AddChildView(play_pause_button_);
+
+  CreateMediaButton(vector_icons::kMediaNextTrackIcon);
 
   // TODO(beccahughes): Update |play_pause_button_| based on state.
 
@@ -120,9 +123,9 @@ void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
 
 void MediaNotificationView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (sender == play_pause_button_) {
+  if (sender->parent() == button_row_) {
     message_center::MessageCenter::Get()->ClickOnNotificationButton(
-        notification_id(), 0);
+        notification_id(), sender->parent()->GetIndexOf(sender));
   }
 }
 
@@ -134,6 +137,13 @@ void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
 
   control_buttons_view_->ShowCloseButton(!notification.pinned());
   UpdateControlButtonsVisibility();
+}
+
+void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon) {
+  views::ImageButton* button = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(button, icon, kMediaButtonIconSize,
+                                GetMediaNotificationColor(*button));
+  button_row_->AddChildView(button);
 }
 
 }  // namespace ash

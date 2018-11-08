@@ -108,8 +108,22 @@ void MediaNotificationController::FlushForTesting() {
 
 void MediaNotificationController::OnNotificationClicked(
     base::Optional<int> button_id) {
-  DCHECK_EQ(0, *button_id);
-  media_controller_ptr_->ToggleSuspendResume();
+  DCHECK(button_id.has_value());
+
+  // TODO(beccahughes): Replace with MediaSessionAction enum when moved.
+  switch (*button_id) {
+    case 0:
+      media_controller_ptr_->PreviousTrack();
+      break;
+    case 1:
+      media_controller_ptr_->ToggleSuspendResume();
+      break;
+    case 2:
+      media_controller_ptr_->NextTrack();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace ash
