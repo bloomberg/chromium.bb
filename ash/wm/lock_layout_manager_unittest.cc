@@ -93,7 +93,7 @@ class LockLayoutManagerTest : public AshTestBase {
             keyboard::KeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(),
                 kVirtualKeyboardHeight));
-        keyboard->NotifyKeyboardWindowLoaded();
+        ASSERT_TRUE(keyboard::WaitUntilShown());
       }
     } else {
       keyboard->HideKeyboardByUser();
