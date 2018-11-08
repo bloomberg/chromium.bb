@@ -34,6 +34,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,6 +133,10 @@ class DiceResponseHandlerTest : public testing::Test,
                         GaiaConstants::kChromeSource,
                         &signin_client_,
                         /*use_fake_url_fetcher=*/false),
+        identity_test_env_(&account_tracker_service_,
+                           &token_service_,
+                           &signin_manager_,
+                           &cookie_service_),
         about_signin_internals_(&token_service_,
                                 &account_tracker_service_,
                                 &signin_manager_,
@@ -175,7 +180,7 @@ class DiceResponseHandlerTest : public testing::Test,
       signin::AccountConsistencyMethod account_consistency) {
     DCHECK(!dice_response_handler_);
     dice_response_handler_ = std::make_unique<DiceResponseHandler>(
-        &signin_client_, &signin_manager_, &token_service_,
+        &signin_client_, &token_service_, identity_test_env_.identity_manager(),
         &account_tracker_service_, account_reconcilor_.get(),
         &about_signin_internals_, account_consistency, temp_dir_.GetPath());
   }
@@ -226,11 +231,12 @@ class DiceResponseHandlerTest : public testing::Test,
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;
-  ProfileOAuth2TokenService token_service_;
+  FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
   SigninErrorController signin_error_controller_;
   FakeSigninManager signin_manager_;
   FakeGaiaCookieManagerService cookie_service_;
+  identity::IdentityTestEnvironment identity_test_env_;
   AboutSigninInternals about_signin_internals_;
   std::unique_ptr<AccountReconcilor> account_reconcilor_;
   std::unique_ptr<DiceResponseHandler> dice_response_handler_;
@@ -493,15 +499,18 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
 TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   const char kSecondaryGaiaID[] = "secondary_account";
+  const char kSecondaryEmail[] = "other@gmail.com";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = account_tracker_service_.SeedAccountInfo(
       account_info.gaia_id, account_info.email);
+  std::string secondary_account_id = account_tracker_service_.SeedAccountInfo(
+      kSecondaryGaiaID, kSecondaryEmail);
   // User is signed in to Chrome, and has some refresh token for a secondary
   // account.
   signin_manager_.SignIn(account_info.gaia_id, account_info.email, "password");
   token_service_.UpdateCredentials(account_id, "token1");
-  token_service_.UpdateCredentials(kSecondaryGaiaID, "token2");
+  token_service_.UpdateCredentials(secondary_account_id, "token2");
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
   EXPECT_TRUE(signin_manager_.IsAuthenticated());
@@ -531,11 +540,10 @@ TEST_F(DiceResponseHandlerTest, MigrationSignout) {
   dice_params.signout_info->account_infos.emplace_back(kSecondaryGaiaID,
                                                        kSecondaryEmail, 1);
   const auto& main_account_info = dice_params.signout_info->account_infos[0];
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = account_tracker_service_.SeedAccountInfo(
       main_account_info.gaia_id, main_account_info.email);
-  std::string secondary_account_id =
-      account_tracker_service_.PickAccountIdForAccount(kSecondaryGaiaID,
-                                                       kSecondaryEmail);
+  std::string secondary_account_id = account_tracker_service_.SeedAccountInfo(
+      kSecondaryGaiaID, kSecondaryEmail);
 
   // User is signed in to Chrome, and has some refresh token for a secondary
   // account.
@@ -565,10 +573,10 @@ TEST_F(DiceResponseHandlerTest, SignoutSecondaryAccount) {
   const char kMainGaiaID[] = "main_account";
   const char kMainEmail[] = "main@gmail.com";
   std::string main_account_id =
-      account_tracker_service_.PickAccountIdForAccount(kMainGaiaID, kMainEmail);
+      account_tracker_service_.SeedAccountInfo(kMainGaiaID, kMainEmail);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = account_tracker_service_.SeedAccountInfo(
       account_info.gaia_id, account_info.email);
   // User is signed in to Chrome, and has some refresh token for a secondary
   // account.
@@ -592,14 +600,17 @@ TEST_F(DiceResponseHandlerTest, SignoutSecondaryAccount) {
 TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   const char kSecondaryAccountID[] = "secondary_account";
+  const char kSecondaryEmail[] = "other@gmail.com";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
+  std::string account_id = account_tracker_service_.SeedAccountInfo(
       account_info.gaia_id, account_info.email);
+  std::string secondary_account_id = account_tracker_service_.SeedAccountInfo(
+      kSecondaryAccountID, kSecondaryEmail);
   // User is NOT signed in to Chrome, and has some refresh tokens for two
   // accounts.
   token_service_.UpdateCredentials(account_id, "refresh_token");
-  token_service_.UpdateCredentials(kSecondaryAccountID, "refresh_token");
+  token_service_.UpdateCredentials(secondary_account_id, "refresh_token");
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryAccountID));
   EXPECT_FALSE(signin_manager_.IsAuthenticated());
