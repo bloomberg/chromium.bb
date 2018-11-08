@@ -6,11 +6,16 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
+
+#if defined(OS_POSIX)
+#include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
+#endif
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
@@ -19,41 +24,9 @@ namespace test {
 
 namespace {
 
-constexpr uint32_t kDummyPictureBufferId = 0;
-// This is equal to GBM_FORMAT_MOD_NONE.
-constexpr uint64_t kDummyGbmModifier = 0;
-
 constexpr VAImageFormat kImageFormatNV12{.fourcc = VA_FOURCC_NV12,
                                          .byte_order = VA_LSB_FIRST,
                                          .bits_per_pixel = 12};
-
-gfx::GpuMemoryBufferHandle CreateGMBHandleFromVideoFrame(
-    const VideoFrame* const video_frame) {
-  DCHECK(video_frame->HasDmaBufs());
-
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::NATIVE_PIXMAP;
-
-  const VideoFrameLayout& layout = video_frame->layout();
-  size_t num_planes = layout.num_planes();
-  const std::vector<VideoFrameLayout::Plane>& planes = layout.planes();
-  for (size_t i = 0; i < num_planes; i++) {
-    handle.native_pixmap_handle.planes.emplace_back(
-        planes[i].stride, planes[i].offset, i, kDummyGbmModifier);
-  }
-
-  const auto& fds = video_frame->DmabufFds();
-  for (const auto& fd : fds) {
-    int dup_fd = HANDLE_EINTR(dup(fd.get()));
-    if (dup_fd == -1) {
-      VLOGF(1) << "Failed duplicating dmabuf fd";
-      return gfx::GpuMemoryBufferHandle();
-    }
-    handle.native_pixmap_handle.fds.emplace_back(
-        base::FileDescriptor(dup_fd, true));
-  }
-  return handle;
-}
 
 void DeallocateBuffers(std::unique_ptr<ScopedVAImage> va_image) {
   // Destructing ScopedVAImage releases its owned memory.
@@ -130,6 +103,7 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   }
 
   const gfx::Size& coded_size = video_frame->coded_size();
+  constexpr int32_t kDummyPictureBufferId = 0;
 
   // Passing empty callbacks is ok, because given PictureBuffer doesn't have
   // texture id and thus these callbacks will never called.
@@ -141,7 +115,12 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  auto gmb_handle = CreateGMBHandleFromVideoFrame(video_frame.get());
+  gfx::GpuMemoryBufferHandle gmb_handle;
+#if defined(OS_POSIX)
+  gmb_handle =
+      VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
+          video_frame.get());
+#endif
   if (gmb_handle.is_null()) {
     VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
     return nullptr;
