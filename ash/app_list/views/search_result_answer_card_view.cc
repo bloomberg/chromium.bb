@@ -341,14 +341,17 @@ int SearchResultAnswerCardView::DoUpdate() {
   SearchResult* top_result =
       display_results.empty() ? nullptr : display_results.front();
 
-  const bool have_result =
+  const bool has_valid_answer_card =
       search_answer_container_view_->has_valid_answer_card();
   search_answer_container_view_->SetSearchResult(top_result);
-  parent()->SetVisible(have_result);
+  parent()->SetVisible(has_valid_answer_card);
 
-  set_container_score(top_result ? top_result->display_score() : 0);
+  set_container_score(
+      has_valid_answer_card && top_result ? top_result->display_score() : 0);
+  if (top_result)
+    top_result->set_is_visible(has_valid_answer_card);
 
-  return have_result ? 1 : 0;
+  return has_valid_answer_card ? 1 : 0;
 }
 
 bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {

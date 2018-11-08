@@ -119,6 +119,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->is_omnibox_search = is_omnibox_search;
   }
 
+  bool is_visible() const { return is_visible_; }
+  void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
+
   void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
@@ -147,6 +150,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
+  bool is_visible_ = true;
 
   ash::mojom::SearchResultMetadataPtr metadata_;
 
