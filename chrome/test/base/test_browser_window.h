@@ -169,6 +169,10 @@ class TestBrowserWindow : public BrowserWindow {
   std::string GetWorkspace() const override;
   bool IsVisibleOnAllWorkspaces() const override;
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override {}
+#endif
+
  protected:
   void DestroyBrowser() override {}
 

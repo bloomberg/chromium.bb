@@ -61,7 +61,6 @@ TEST_F(ReopenTabInProductHelpTest, TriggersIPH) {
   EXPECT_CALL(*mock_tracker, ShouldTriggerHelpUI(_))
       .Times(1)
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_tracker, Dismissed(_)).Times(1);
 
   AddTab(browser(), GURL("chrome://blank"));
   AddTab(browser(), GURL("chrome://blank"));

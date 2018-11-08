@@ -191,6 +191,11 @@
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
@@ -2943,6 +2948,18 @@ std::string BrowserView::GetWorkspace() const {
 bool BrowserView::IsVisibleOnAllWorkspaces() const {
   return frame_->IsVisibleOnAllWorkspaces();
 }
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
+  switch (iph_feature) {
+    case InProductHelpFeature::kReopenTab:
+      // TODO(collinbaker): start in-product help flow here.
+      ReopenTabInProductHelpFactory::GetForProfile(browser()->profile())
+          ->HelpDismissed();
+      break;
+  }
+}
+#endif
 
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
