@@ -793,10 +793,6 @@
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
     "type": "console_test_launcher",
   },
-  "mac_installer_unittests": {
-    "label": "//chrome/installer/mac/app:mac_installer_unittests",
-    "type": "console_test_launcher",
-  },
   "mash:all" : {
     "label": "//mash:all",
     "type": "additional_compile_target",
