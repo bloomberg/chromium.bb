@@ -453,7 +453,13 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   EXPECT_EQ(20, boring_view->width());
 }
 
-TEST_F(DialogClientViewTest, ButtonPosition) {
+// TODO(crbug.com/903000): We should not mark GetIndexOf flaky.
+#if defined(OS_MACOSX)
+#define MAYBE_ButtonPosition DISABLED_ButtonPosition
+#else
+#define MAYBE_ButtonPosition ButtonPosition
+#endif
+TEST_F(DialogClientViewTest, MAYBE_ButtonPosition) {
   constexpr int button_row_inset = 13;
   client_view()->SetButtonRowInsets(gfx::Insets(button_row_inset));
   constexpr int contents_height = 37;
