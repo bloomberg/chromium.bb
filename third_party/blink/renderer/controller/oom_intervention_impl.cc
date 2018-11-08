@@ -53,7 +53,6 @@ OomInterventionMetrics OomInterventionImpl::GetCurrentMemoryMetrics() {
 
 void OomInterventionImpl::Check(TimerBase*) {
   DCHECK(host_);
-  DCHECK(renderer_pause_enabled_ || navigate_ads_enabled_);
 
   OomInterventionMetrics current_memory = GetCurrentMemoryMetrics();
   bool oom_detected = false;
