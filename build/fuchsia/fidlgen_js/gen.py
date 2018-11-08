@@ -90,6 +90,20 @@ def _JsTypeForPrimitiveType(t):
   return mapping[t]
 
 
+def _BuildInlineSizeTable(fidl):
+  """Builds a mapping from type name to inline type size. These need to be
+  extracted beforehand because a vector<X> can be required during compilation
+  before seeing the compilation of X."""
+  result = {}
+  for enum in fidl.enum_declarations:
+    result[enum.name] = _InlineSizeOfPrimitiveType(enum.type.value)
+  for union in fidl.union_declarations:
+    result[union.name] = union.size
+  for struct in fidl.struct_declarations:
+    result[struct.name] = struct.size
+  return result
+
+
 class Compiler(object):
 
   def __init__(self, fidl, output_file):
@@ -97,7 +111,7 @@ class Compiler(object):
     self.f = output_file
     self.output_deferred_to_eof = ''
     self.type_table_defined = set()
-    self.type_inline_size_by_name = {}
+    self.type_inline_size_by_name = _BuildInlineSizeTable(self.fidl)
     # Used to hold the JS name for constants and enumerants. In particular,
     # enums aren't scoped by name to their enum in the fidl json, but the JS
     # bindings emit them as Enum.Something. So this maps from Something ->
@@ -187,8 +201,6 @@ const %(name)s = %(value)s;
     self.resolved_constant_name[const.name] = name
 
   def _CompileEnum(self, enum):
-    self.type_inline_size_by_name[enum.name] = _InlineSizeOfPrimitiveType(
-        enum.type.value)
     compound = _ParseCompoundIdentifier(enum.name)
     name = _CompileCompoundIdentifier(compound)
     js_type = _JsTypeForPrimitiveType(enum.type)
@@ -212,7 +224,6 @@ const %(name)s = {
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
   def _CompileUnion(self, union):
-    self.type_inline_size_by_name[union.name] = union.size
     compound = _ParseCompoundIdentifier(union.name)
     name = _CompileCompoundIdentifier(compound)
     member_names = []
@@ -313,7 +324,6 @@ function %(name)s() { this.reset(); }
       })
 
   def _CompileStruct(self, struct):
-    self.type_inline_size_by_name[struct.name] = struct.size
     compound = _ParseCompoundIdentifier(struct.name)
     name = _CompileCompoundIdentifier(compound)
     param_names = [_ChangeIfReserved(x.name) for x in struct.members]
