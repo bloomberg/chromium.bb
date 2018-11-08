@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/files/file_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/macros.h"
@@ -442,9 +443,8 @@ TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
 
 // Verify that the default_path argument is respected.
 TEST_F(SelectFileDialogMacTest, DefaultPath) {
-  const std::string fake_path = "/fake_directory/filename.txt";
   FileDialogArguments args(GetDefaultArguments());
-  args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path));
+  args.default_path = base::GetHomeDir().AppendASCII("test.txt");
 
   SelectFileWithParams(args);
   NSSavePanel* panel = GetPanel();
