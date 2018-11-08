@@ -326,6 +326,32 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
   EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
+// Tests a scenario where the authenticator responds with an empty credential.
+// When GetAssertion request only has a single credential in the allow list,
+// this is a valid response. Check that credential is set by the client before
+// the response is returned to the relying party.
+TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  // Resident Keys must be disabled, otherwise allow list check is skipped.
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponseWithoutResidentKeySupport);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      test_data::kTestGetAssertionResponseWithEmptyCredential);
+  discovery()->AddDevice(std::move(device));
+
+  get_assertion_callback().WaitForCallback();
+  const auto& response = get_assertion_callback().value<0>();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(response->credential());
+  EXPECT_THAT(
+      response->raw_credential_id(),
+      ::testing::ElementsAreArray(test_data::kTestGetAssertionCredentialId));
+}
+
 // Tests a scenario where authenticator responds without user entity in its
 // response but client is expecting a resident key credential.
 TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
