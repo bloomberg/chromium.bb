@@ -13,37 +13,23 @@
 #include "base/observer_list.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
-#include "components/cryptauth/connection.h"
-#include "components/cryptauth/connection_observer.h"
 
 namespace base {
 class DictionaryValue;
-}
-
-namespace cryptauth {
-class SecureContext;
 }
 
 namespace proximity_auth {
 
 // Concrete implementation of the Messenger interface.
 class MessengerImpl : public Messenger,
-                      public cryptauth::ConnectionObserver,
                       public chromeos::secure_channel::ClientChannel::Observer {
  public:
   // Constructs a messenger that sends and receives messages.
   //
-  // If the |chromeos::features::kMultiDeviceApi| flag is enabled, messages are
-  // relayed over the provided |channel|, and |connection| and |secure_context|
-  // are ignored.
-  //
-  // If not, messages are relayed over |connection|, using the |secure_context|
-  // to encrypt and decrypt the messages. |channel| is ignored.
+  // Messages are relayed over the provided |channel|.
   //
   // The messenger begins observing messages as soon as it is constructed.
   MessengerImpl(
-      std::unique_ptr<cryptauth::Connection> connection,
-      std::unique_ptr<cryptauth::SecureContext> secure_context,
       std::unique_ptr<chromeos::secure_channel::ClientChannel> channel);
   ~MessengerImpl() override;
 
@@ -54,12 +40,7 @@ class MessengerImpl : public Messenger,
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
-  cryptauth::SecureContext* GetSecureContext() const override;
-  cryptauth::Connection* GetConnection() const override;
   chromeos::secure_channel::ClientChannel* GetChannel() const override;
-
-  // Exposed for testing.
-  cryptauth::Connection* connection() { return connection_.get(); }
 
  private:
   // Internal data structure to represent a pending message that either hasn't
@@ -96,17 +77,6 @@ class MessengerImpl : public Messenger,
   // response.
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
-  // cryptauth::ConnectionObserver:
-  void OnConnectionStatusChanged(
-      cryptauth::Connection* connection,
-      cryptauth::Connection::Status old_status,
-      cryptauth::Connection::Status new_status) override;
-  void OnMessageReceived(const cryptauth::Connection& connection,
-                         const cryptauth::WireMessage& wire_message) override;
-  void OnSendCompleted(const cryptauth::Connection& connection,
-                       const cryptauth::WireMessage& wire_message,
-                       bool success) override;
-
   // chromeos::secure_channel::ClientChannel::Observer:
   void OnDisconnected() override;
   void OnMessageReceived(const std::string& payload) override;
@@ -117,13 +87,6 @@ class MessengerImpl : public Messenger,
 
   // Called when a message has been sent to the remote device.
   void OnSendMessageResult(bool success);
-
-  // The connection used to send and receive events and status updates.
-  std::unique_ptr<cryptauth::Connection> connection_;
-
-  // Used to encrypt and decrypt payloads sent and received over the
-  // |connection_|.
-  std::unique_ptr<cryptauth::SecureContext> secure_context_;
 
   // Authenticated end-to-end channel used to communicate with the remote
   // device.

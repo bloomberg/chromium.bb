@@ -59,16 +59,6 @@ cryptauth::RemoteDeviceRef RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
   return remote_device_;
 }
 
-cryptauth::Connection* RemoteDeviceLifeCycleImpl::GetConnection() const {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  if (connection_)
-    return connection_.get();
-  if (messenger_)
-    return messenger_->GetConnection();
-  return nullptr;
-}
-
 chromeos::secure_channel::ClientChannel* RemoteDeviceLifeCycleImpl::GetChannel()
     const {
   DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
@@ -184,16 +174,7 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
 void RemoteDeviceLifeCycleImpl::CreateMessenger() {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    messenger_.reset(new MessengerImpl(nullptr /* connection */,
-                                       nullptr /* secure_context */,
-                                       std::move(channel_)));
-  } else {
-    messenger_.reset(new MessengerImpl(std::move(connection_),
-                                       std::move(secure_context_),
-                                       nullptr /* channel */));
-  }
-
+  messenger_.reset(new MessengerImpl(std::move(channel_)));
   messenger_->AddObserver(this);
 
   TransitionToState(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);

@@ -53,7 +53,6 @@ class RemoteDeviceLifeCycleImpl
   // RemoteDeviceLifeCycle:
   void Start() override;
   cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
-  cryptauth::Connection* GetConnection() const override;
   chromeos::secure_channel::ClientChannel* GetChannel() const override;
 
   RemoteDeviceLifeCycle::State GetState() const override;

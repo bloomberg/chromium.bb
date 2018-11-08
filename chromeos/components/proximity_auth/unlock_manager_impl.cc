@@ -156,7 +156,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
 
   remote_screenlock_state_.reset();
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    DCHECK(life_cycle_->GetConnection() || life_cycle_->GetChannel());
+    DCHECK(life_cycle_->GetChannel());
     DCHECK(GetMessenger());
     proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
     GetMessenger()->AddObserver(this);
@@ -335,15 +335,9 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
     RemoteDeviceLifeCycle* life_cycle,
     ProximityAuthPrefManager* pref_manager) {
-  return std::make_unique<ProximityMonitorImpl>(
-      life_cycle->GetRemoteDevice(),
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? life_cycle->GetChannel()
-          : nullptr,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? nullptr
-          : life_cycle->GetConnection(),
-      pref_manager);
+  return std::make_unique<ProximityMonitorImpl>(life_cycle->GetRemoteDevice(),
+                                                life_cycle->GetChannel(),
+                                                nullptr, pref_manager);
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {
@@ -352,28 +346,14 @@ void UnlockManagerImpl::SendSignInChallenge() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    if (!GetMessenger()->GetChannel()) {
-      PA_LOG(ERROR) << "Channel is not ready to send sign-in challenge.";
-      return;
-    }
-
-    GetMessenger()->GetChannel()->GetConnectionMetadata(
-        base::BindOnce(&UnlockManagerImpl::OnGetConnectionMetadata,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    if (!GetMessenger()->GetSecureContext()) {
-      PA_LOG(ERROR) << "SecureContext is not ready to send sign-in challenge.";
-      return;
-    }
-
-    cryptauth::RemoteDeviceRef remote_device = life_cycle_->GetRemoteDevice();
-    proximity_auth_client_->GetChallengeForUserAndDevice(
-        remote_device.user_id(), remote_device.public_key(),
-        GetMessenger()->GetSecureContext()->GetChannelBindingData(),
-        base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
-                   weak_ptr_factory_.GetWeakPtr()));
+  if (!GetMessenger()->GetChannel()) {
+    PA_LOG(ERROR) << "Channel is not ready to send sign-in challenge.";
+    return;
   }
+
+  GetMessenger()->GetChannel()->GetConnectionMetadata(
+      base::BindOnce(&UnlockManagerImpl::OnGetConnectionMetadata,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UnlockManagerImpl::OnGetConnectionMetadata(
