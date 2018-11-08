@@ -5063,15 +5063,12 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     previews_state |= (previews_data->allowed_previews_state() &
                        server_previews_enabled_state);
   } else {
-    if (previews_decider_impl->ShouldAllowPreviewAtECT(
+    if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
             previews_data, current_navigation_url, is_reload,
-            previews::PreviewsType::LITE_PAGE,
-            net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(),
-            true) &&
-        previews_decider_impl->ShouldAllowPreviewAtECT(
+            previews::PreviewsType::LITE_PAGE, true /* is_server_preview */) &&
+        previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
             previews_data, current_navigation_url, is_reload,
-            previews::PreviewsType::LOFI, net::EFFECTIVE_CONNECTION_TYPE_4G,
-            std::vector<std::string>(), true)) {
+            previews::PreviewsType::LOFI, true /* is_server_preview */)) {
       previews_state |= server_previews_enabled_state;
     }
   }

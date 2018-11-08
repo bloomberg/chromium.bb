@@ -46,12 +46,15 @@ class PreviewsOptimizationGuide
 
   ~PreviewsOptimizationGuide() override;
 
-  // Returns whether |type| is whitelisted for |url|.|previews_data| can be
-  // modified.
+  // Returns whether |type| is whitelisted for |url|. If so |out_ect_threshold|
+  // provides the maximum effective connection type to trigger the preview for.
+  // |previews_data| can be modified (for further details provided by hints).
   // Virtual so it can be mocked in tests.
-  virtual bool IsWhitelisted(PreviewsUserData* previews_data,
-                             const GURL& url,
-                             PreviewsType type) const;
+  virtual bool IsWhitelisted(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      PreviewsType type,
+      net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Returns whether |type| is blacklisted for |url|.
   // Virtual so it can be mocked in tests.
