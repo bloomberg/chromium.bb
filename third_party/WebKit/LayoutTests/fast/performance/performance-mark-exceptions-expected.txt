@@ -2,7 +2,6 @@ This tests that 'performance.mark' throws exceptions with reasonable messages.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS window.performance.mark('navigationStart') threw exception SyntaxError: Failed to execute 'mark' on 'Performance': 'navigationStart' is part of the PerformanceTiming interface, and cannot be used as a mark name..
 PASS window.performance.mark('unloadEventStart') threw exception SyntaxError: Failed to execute 'mark' on 'Performance': 'unloadEventStart' is part of the PerformanceTiming interface, and cannot be used as a mark name..
 PASS window.performance.mark('unloadEventEnd') threw exception SyntaxError: Failed to execute 'mark' on 'Performance': 'unloadEventEnd' is part of the PerformanceTiming interface, and cannot be used as a mark name..

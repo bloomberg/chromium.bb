@@ -2,7 +2,6 @@ String.replace(…) test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS testString is "It's the end of the world as we know it, and I feel fine."
 PASS testString.replace('end','BEGINNING') is "It's the BEGINNING of the world as we know it, and I feel fine."
 PASS testString.replace(/[aeiou]/gi,'-') is "-t's th- -nd -f th- w-rld -s w- kn-w -t, -nd - f--l f-n-."

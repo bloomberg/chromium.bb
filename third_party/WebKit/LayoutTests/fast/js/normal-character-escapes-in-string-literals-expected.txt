@@ -2,7 +2,6 @@ Test non-escaping characters in string literals - added with https://bugs.webkit
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS eval('"\ "') is " "
 PASS eval('"\!"') is "!"
 PASS eval('"\#"') is "#"

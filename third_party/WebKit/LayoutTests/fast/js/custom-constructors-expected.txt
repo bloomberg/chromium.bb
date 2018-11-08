@@ -2,7 +2,6 @@ This test checks construction of objects with custom constructors.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new Image() is non-null.
 PASS new Image().tagName is "IMG"
 PASS new Image().height is 0

@@ -2,7 +2,6 @@ Test that accessing innerHTML and outerHTML properties works on SVG elements
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS innerHTML("emptysvg") is ""
 PASS innerHTML("rectsvg") is "<rect></rect>"
 PASS innerHTML("foreign") is "<foreignObject width=\"100\" height=\"30\"><p>html</p></foreignObject>"
@@ -11,5 +10,4 @@ PASS outerHTML("rectsvg") is "<svg id=\"rectsvg\"><rect></rect></svg>"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
 

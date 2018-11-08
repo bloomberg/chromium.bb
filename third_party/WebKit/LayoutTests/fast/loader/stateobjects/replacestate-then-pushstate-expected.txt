@@ -6,6 +6,8 @@ This test does the following:
 -Goes back, and makes sure the popstate event is correct
 -Goes forward, and makes sure the popstate event is correct
 
+
+
 History length is 1
 History length is 2
 State popped - OriginalHistoryItem (type string)

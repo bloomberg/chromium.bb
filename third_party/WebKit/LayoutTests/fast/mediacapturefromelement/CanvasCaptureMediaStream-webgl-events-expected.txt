@@ -2,7 +2,6 @@ Exercises the potential events on CanvasCaptureMediaStream.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Got a stream from canvas.
 PASS stream.getVideoTracks().length is 1
 PASS track.readyState is "live"
@@ -13,4 +12,5 @@ PASS Video canplaythrough callback succeeded.
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

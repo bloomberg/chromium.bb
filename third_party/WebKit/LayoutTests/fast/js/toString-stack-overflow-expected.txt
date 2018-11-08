@@ -6,7 +6,6 @@ It is possible that this may need to be updated if WebKit gets an improvement to
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS ary.toString() threw exception RangeError: Maximum call stack size exceeded.
 PASS successfullyParsed is true
 

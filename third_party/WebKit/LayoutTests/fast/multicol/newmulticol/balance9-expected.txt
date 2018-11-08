@@ -2,6 +2,8 @@ PASS mc.offsetHeight is ref.offsetHeight
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be two identical boxes below.
 
 line

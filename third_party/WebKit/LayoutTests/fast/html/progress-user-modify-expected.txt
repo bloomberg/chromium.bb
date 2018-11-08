@@ -2,6 +2,8 @@ PASS layoutTreeAfterType is layoutTreeBeforeType
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 The inner element of progress should not be deleteable.
 
 (before)(after)

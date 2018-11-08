@@ -2,7 +2,6 @@ Tests the acceptable types for arguments to navigator.getUserMedia methods.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS navigator.webkitGetUserMedia() threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 0 present..
 PASS navigator.webkitGetUserMedia({video: true}) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 1 present..
 PASS navigator.webkitGetUserMedia({video: true}, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 2 present..

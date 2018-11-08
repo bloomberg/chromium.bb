@@ -2,7 +2,6 @@ Test shouldBeNow() in js-test.js
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Date.now() is equivalent to Date.now().
 PASS new Date() is equivalent to Date.now().
 Testing type checking with a string. This should fail.

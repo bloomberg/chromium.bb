@@ -4,7 +4,10 @@ PASS document.documentElement.scrollWidth is >= document.documentElement.clientW
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be two identical boxes below.
+
 
 
 

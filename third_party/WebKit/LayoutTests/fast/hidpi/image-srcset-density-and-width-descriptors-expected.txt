@@ -9,6 +9,7 @@ CONSOLE ERROR: Dropped srcset candidate "resources/green-400-px-square.png"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS document.getElementById("foo").clientWidth==100 is true
 This test passes if the image below is a blue square, since the srcset resource doesn't load, as it has both 'w' and 'x' descriptors.
 

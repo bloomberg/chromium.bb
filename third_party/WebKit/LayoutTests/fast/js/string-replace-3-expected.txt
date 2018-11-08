@@ -2,7 +2,6 @@ String.replace(…) test — $&, $`, $' and $nn
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS testString is "It's the end of the world as we know it, and I feel fine."
 PASS testString.replace(/I feel/, 'yet $& just') is "It's the end of the world as we know it, and yet I feel just fine."
 PASS testString.replace(/the end/, 'nice. $`a picture') is "It's nice. It's a picture of the world as we know it, and I feel fine."

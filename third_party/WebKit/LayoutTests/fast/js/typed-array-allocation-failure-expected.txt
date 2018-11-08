@@ -2,7 +2,6 @@ This test checks that TypedArray allocation failures should throw
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new ArrayBuffer(7 * 1125899906842624) threw exception RangeError.
 PASS new Uint8Array(7 * 1125899906842624) threw exception RangeError.
 PASS new Uint8ClampedArray(7 * 1125899906842624) threw exception RangeError.

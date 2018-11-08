@@ -3,7 +3,6 @@ This page tests handling of characters which, according to ECMA 262, are not reg
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Testing regexp: /^/g
 PASS regexp.test('') is true
 PASS regexp.lastIndex is 0

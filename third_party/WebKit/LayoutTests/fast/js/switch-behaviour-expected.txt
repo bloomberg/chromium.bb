@@ -2,7 +2,6 @@ This test covers the correctness and behaviour of switch statements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS characterSwitch('A' + emptyString1) is "A"
 PASS characterSwitch('A' + emptyString1 + emptyString2) is "A"
 PASS characterSwitch(emptyString1 + emptyString2) is "default"

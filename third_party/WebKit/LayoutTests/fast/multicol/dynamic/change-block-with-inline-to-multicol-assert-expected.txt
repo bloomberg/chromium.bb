@@ -3,4 +3,3 @@ Test changing a regular block with inline children into a multicol container, an
 PASS if no crash.
 
  
-

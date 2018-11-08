@@ -6,6 +6,8 @@ This test does the following:
 -Goes back, and makes sure the popstate event is correct
 -Goes forward, and makes sure the popstate event represents the replaced state object
 
+
+
 History length is 2
 History length is 2
 State popped - null (type object)

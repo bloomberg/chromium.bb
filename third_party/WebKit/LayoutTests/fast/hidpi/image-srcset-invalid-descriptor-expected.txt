@@ -81,6 +81,7 @@ CONSOLE ERROR: Dropped srcset candidate "resources/blue-100-px-square.png"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS document.getElementById("foo").clientWidth==200 is true
 PASS document.getElementById("foo2").clientWidth==200 is true
 PASS document.getElementById("foo3").clientWidth==200 is true

@@ -3,6 +3,6 @@ PASS document.documentElement.scrollWidth is document.documentElement.clientWidt
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be a 2 by 2 image grid below.
-
-

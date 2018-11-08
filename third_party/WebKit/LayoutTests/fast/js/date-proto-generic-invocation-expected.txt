@@ -2,7 +2,6 @@ This test verifies that the functions of the Date prototype object are not gener
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS o.__proto__.toString() threw exception TypeError: Method Date.prototype.toString called on incompatible receiver [object Object].
 PASS o.__proto__.toDateString() threw exception TypeError: Method Date.prototype.toDateString called on incompatible receiver [object Object].
 PASS o.__proto__.toTimeString() threw exception TypeError: Method Date.prototype.toTimeString called on incompatible receiver [object Object].

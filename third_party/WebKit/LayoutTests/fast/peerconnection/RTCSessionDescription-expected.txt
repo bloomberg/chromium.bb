@@ -2,7 +2,6 @@ Tests RTCSessionDescription.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS sessionDescription = new RTCSessionDescription(initializer); did not throw exception.
 PASS sessionDescription.type is "offer"
 PASS sessionDescription.sdp is "foobar"

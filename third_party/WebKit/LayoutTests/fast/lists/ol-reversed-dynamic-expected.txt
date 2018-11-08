@@ -6,6 +6,7 @@ This tests that changing the value of an item updates markers accordingly.
 7 Seven
 6 Six
 
+
 This tests that resetting the value of an item updates markers accordingly.
 
 5 Five
@@ -13,6 +14,7 @@ This tests that resetting the value of an item updates markers accordingly.
 3 Three
 2 Two
 1 One
+
 
 This tests that changing the start value of the list updates markers accordingly.
 
@@ -22,6 +24,7 @@ This tests that changing the start value of the list updates markers accordingly
 17 Seventeen
 16 Sixteen
 
+
 This tests that removing the custom start value of the list updates markers accordingly.
 
 5 Five
@@ -29,6 +32,7 @@ This tests that removing the custom start value of the list updates markers acco
 3 Three
 2 Two
 1 One
+
 
 This tests that changing the custom start value from 1 to "" works.
 

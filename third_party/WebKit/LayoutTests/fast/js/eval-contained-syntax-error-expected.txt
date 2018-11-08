@@ -2,7 +2,6 @@ This file tests whether a syntax error inside an eval() has the correct line num
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 FAIL: e.line should be 6 but instead is undefined.
 PASS successfullyParsed is true
 

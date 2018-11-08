@@ -2,7 +2,6 @@ Test column balancer behavior when widows requirements are high, and there's nee
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS mc.offsetHeight is 250
 PASS first.offsetTop is inFirstColumn.offsetTop
 PASS first.offsetLeft is > inFirstColumn.offsetLeft
@@ -10,6 +9,8 @@ PASS last.offsetLeft is first.offsetLeft
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 The 5 lines should all be in the second column.
 
 

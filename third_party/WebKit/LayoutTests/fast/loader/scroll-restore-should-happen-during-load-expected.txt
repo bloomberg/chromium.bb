@@ -2,7 +2,6 @@ Test ensures that frame scroll position is only restored during the navigation p
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.scrollingElement.scrollLeft is 0
 PASS document.scrollingElement.scrollTop is 0
 Verify that scroll position restored correctly during navigation.

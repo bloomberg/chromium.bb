@@ -2,11 +2,12 @@ Test column balancer behavior when widows requirements are high, and there are s
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS mc.offsetHeight is 300
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be 6 lines in the first column, 5 in the second and 5 in the last one.
 
 line

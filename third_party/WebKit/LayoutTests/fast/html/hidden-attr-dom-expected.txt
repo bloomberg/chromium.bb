@@ -2,7 +2,6 @@ Various tests for the the hidden IDL attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 The IDL attribute reflects what is present in markup:
 PASS h1.hidden is true
 PASS h2.hidden is true

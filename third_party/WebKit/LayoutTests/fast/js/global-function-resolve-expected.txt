@@ -2,7 +2,6 @@ Test to make sure cached lookups on the global object are performed correctly.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS cachedFunctions[0]() is addEventListener
 PASS cachedFunctions[0]() is addEventListener
 PASS cachedFunctions[1]() is alert

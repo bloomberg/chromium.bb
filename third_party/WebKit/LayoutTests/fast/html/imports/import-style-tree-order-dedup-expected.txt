@@ -11,4 +11,5 @@ PASS colorOf(target3) is 'rgb(255, 0, 0)'
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Hello! Hello! Hello!

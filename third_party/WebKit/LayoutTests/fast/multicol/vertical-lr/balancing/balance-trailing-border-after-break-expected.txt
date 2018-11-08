@@ -2,11 +2,12 @@ Tests that the bottom border at a column boundary in a block that lives in multi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS mc.offsetWidth is 69
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 There should be no space between the short black line and the long gray one.
 
 

@@ -2,7 +2,6 @@ Tests that the internals.observeGC hook works.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS observationA.wasCollected is false
 PASS observationB.wasCollected is true
 PASS observationC.wasCollected is true

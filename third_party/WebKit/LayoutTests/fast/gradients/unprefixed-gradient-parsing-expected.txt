@@ -38,10 +38,12 @@ PASS testGradient("background-image: linear-gradient(black 10% 20%, white)") is 
 PASS testGradient("background-image: linear-gradient(black, white 100px 200px)") is "linear-gradient(black, white 100px, white 200px)"
 PASS testGradient("background-image: linear-gradient(black 10% 20%, white 100px 200px)") is "linear-gradient(black 10%, black 20%, white 100px, white 200px)"
 PASS testGradient("background-image: linear-gradient(black 10% 20%, 50%, white 100px 200px)") is "linear-gradient(black 10%, black 20%, 50%, white 100px, white 200px)"
+
 repeating-linear-gradient
 
 PASS testGradient("background-image: repeating-linear-gradient(black, white)") is "repeating-linear-gradient(black, white)"
 PASS testGradient("background-image: repeating-linear-gradient(black, 35%, white)") is "repeating-linear-gradient(black, 35%, white)"
+
 radial-gradient
 
 PASS testGradient("background-image: radial-gradient(white, black)") is "radial-gradient(white, black)"
@@ -84,6 +86,7 @@ PASS testGradient("background-image: radial-gradient(black 10% 20%, white)") is 
 PASS testGradient("background-image: radial-gradient(black, white 100px 200px)") is "radial-gradient(black, white 100px, white 200px)"
 PASS testGradient("background-image: radial-gradient(black 10% 20%, white 100px 200px)") is "radial-gradient(black 10%, black 20%, white 100px, white 200px)"
 PASS testGradient("background-image: radial-gradient(black 10% 20%, 50%, white 100px 200px)") is "radial-gradient(black 10%, black 20%, 50%, white 100px, white 200px)"
+
 repeating-radial-gradient
 
 PASS testGradient("background-image: repeating-radial-gradient(white, black)") is "repeating-radial-gradient(white, black)"

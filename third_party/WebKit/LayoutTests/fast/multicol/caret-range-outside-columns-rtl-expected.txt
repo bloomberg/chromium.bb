@@ -2,7 +2,6 @@ Test that hitting areas outside columns takes us to the right text content insid
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Above first column:
 PASS document.caretRangeFromPoint(450,0).startOffset is 0
 PASS document.caretRangeFromPoint(350,0).startOffset is 0
@@ -55,4 +54,5 @@ PASS document.caretRangeFromPoint(190,69).startOffset is 32
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 xxx xxx xxx xxx xxx xxx xxx xxx xxx

@@ -1,5 +1,7 @@
 This test pushes a series of state objects with different URLs and fragment identifiers meant to test the hashChange event as states are popped.
 
+
+
 State popped with event null (type object) and last path component some-other.html?withsomeotherquery
 State popped with event null (type object) and last path component some-other.html?withsomeotherquery#
 Hash change fired and last path component is some-other.html?withsomeotherquery#

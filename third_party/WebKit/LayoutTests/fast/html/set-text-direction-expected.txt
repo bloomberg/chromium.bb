@@ -2,7 +2,6 @@ Test that WebKit changes the dir attribute and sends an input event when we chan
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS expected is textarea.dir
 PASS sentInputEvent is true
 PASS expected is textarea.dir

@@ -2,7 +2,6 @@ Test for regression against
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS postIncDotAssignToBase() is true
 PASS postIncBracketAssignToBase() is true
 PASS postIncBracketAssignToSubscript() is true

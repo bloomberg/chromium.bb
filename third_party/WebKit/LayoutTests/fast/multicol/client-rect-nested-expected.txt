@@ -2,7 +2,6 @@ Tests getBoundingClientRect() in nested multicol.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS elements[0].getBoundingClientRect().left is 8
 PASS elements[0].getBoundingClientRect().top is 8
 PASS elements[0].getBoundingClientRect().right is 318
@@ -54,6 +53,18 @@ PASS elements[11].getBoundingClientRect().bottom is 48
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
