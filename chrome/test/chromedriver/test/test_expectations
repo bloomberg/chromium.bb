@@ -12,14 +12,6 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
-    # marked as not yet implemented with chrome but already works
-    'ChildrenFindingTest.testShouldNotReturnRootElementWhenFindingChildrenById',
-    'ClearTest.shouldBeAbleToClearDateInput',
-    'ClearTest.shouldBeAbleToClearDatetimeLocalInput',
-    'ClearTest.shouldBeAbleToClearMonthInput',
-    'ClearTest.shouldBeAbleToClearTimeInput',
-    'ClearTest.shouldBeAbleToClearWeekInput',
-
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
@@ -29,6 +21,17 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
     'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
+]
+
+_REVISION_READY_TO_RUN_FILTER = {}
+_REVISION_READY_TO_RUN_FILTER['HEAD'] = [
+    # marked as not yet implemented with chrome but already works
+    'ChildrenFindingTest.testShouldNotReturnRootElementWhenFindingChildrenById',
+    'ClearTest.shouldBeAbleToClearDateInput',
+    'ClearTest.shouldBeAbleToClearDatetimeLocalInput',
+    'ClearTest.shouldBeAbleToClearMonthInput',
+    'ClearTest.shouldBeAbleToClearTimeInput',
+    'ClearTest.shouldBeAbleToClearWeekInput',
 ]
 
 _OS_NEGATIVE_FILTER = {}
@@ -221,6 +224,11 @@ def _GetRevisionNegativeFilter(chrome_version):
     return _REVISION_NEGATIVE_FILTER[chrome_version]
   return _REVISION_NEGATIVE_FILTER['HEAD']
 
+def _GetRevisionReadyToRunFilter(chrome_version):
+  if chrome_version in _REVISION_READY_TO_RUN_FILTER:
+    return _REVISION_READY_TO_RUN_FILTER[chrome_version]
+  return _REVISION_READY_TO_RUN_FILTER['HEAD']
+
 def _GetSpecificOsRevisionNegativeFilter(operating_system, chrome_version):
   os_version = operating_system + "_" + chrome_version
   if os_version in _SPECIFIC_OS_REVISION_NEGATIVE_FILTER:
@@ -244,6 +252,8 @@ def GetDisabledTestMatchers(operating_system, chrome_version):
           _GetSpecificOsRevisionNegativeFilter(operating_system,
                                                chrome_version))[:]
 
+def GetReadyToRunTestMatchers(chrome_version):
+  return (_GetRevisionReadyToRunFilter(chrome_version))[:]
 
 def ApplyJavaTestFilter(operating_system, chrome_version, tests):
   """Applies the test filter to the given list of tests.
