@@ -518,7 +518,7 @@ TEST(VideoCaptureDeviceDescriptor, RemoveTrailingWhitespaceFromDisplayName) {
 }
 
 // Allocates the first enumerated device, and expects a frame.
-WRAPPED_TEST_P(VideoCaptureDeviceTest, UsingRealWebcam_CaptureWithSize) {
+WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_UsingRealWebcam_CaptureWithSize) {
   RunTestCase(
       base::BindOnce(&VideoCaptureDeviceTest::RunCaptureWithSizeTestCase,
                      base::Unretained(this)));
