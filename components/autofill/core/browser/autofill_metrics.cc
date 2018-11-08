@@ -90,31 +90,6 @@ int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
   return static_cast<uint64_t>(field_signature) % 1021;
 }
 
-std::string GetHistogramSuffixForSecurityLevel(
-    security_state::SecurityLevel level) {
-  switch (level) {
-    case security_state::EV_SECURE:
-      return "EV_SECURE";
-    case security_state::SECURE:
-      return "SECURE";
-    case security_state::NONE:
-      return "NONE";
-    case security_state::HTTP_SHOW_WARNING:
-      return "HTTP_SHOW_WARNING";
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return "SECURE_WITH_POLICY_INSTALLED_CERT";
-    case security_state::DANGEROUS:
-      return "DANGEROUS";
-    default:
-      return "OTHER";
-  }
-}
-
-std::string GetSecurityLevelHistogramName(const std::string prefix,
-                                          security_state::SecurityLevel level) {
-  return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
-}
-
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -808,8 +783,9 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
   }
 
   base::UmaHistogramEnumeration(
-      GetSecurityLevelHistogramName(histogram_name, security_level), metric,
-      NUM_SAVE_CARD_PROMPT_METRICS);
+      security_state::GetSecurityLevelHistogramName(
+          histogram_name, security_level),
+      metric, NUM_SAVE_CARD_PROMPT_METRICS);
 }
 
 // static
@@ -1192,8 +1168,9 @@ void AutofillMetrics::LogUserHappinessBySecurityLevel(
   }
 
   base::UmaHistogramEnumeration(
-      GetSecurityLevelHistogramName(histogram_name, security_level), metric,
-      NUM_USER_HAPPINESS_METRICS);
+      security_state::GetSecurityLevelHistogramName(
+          histogram_name, security_level),
+      metric, NUM_USER_HAPPINESS_METRICS);
 }
 
 // static
