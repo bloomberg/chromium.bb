@@ -1338,7 +1338,9 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
     uint32_t usage,
     const SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (!MakeCurrent())
+  // |shared_image_factory_| never writes to the surface, so skip unnecessary
+  // MakeCurrent to mitigate driver bugs. https://crbug.com/457431
+  if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   if (!shared_image_factory_) {
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
@@ -1359,7 +1361,9 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
 void InProcessCommandBuffer::DestroySharedImageOnGpuThread(
     const Mailbox& mailbox) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (!MakeCurrent())
+  // |shared_image_factory_| never writes to the surface, so skip unnecessary
+  // MakeCurrent to mitigate driver bugs. https://crbug.com/457431
+  if (!context_->IsCurrent(nullptr) && !MakeCurrent())
     return;
   if (!shared_image_factory_ ||
       !shared_image_factory_->DestroySharedImage(mailbox)) {
