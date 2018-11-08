@@ -5096,7 +5096,6 @@ crbug.com/824539 [ Android ] fast/selectors/018.html [ Failure ]
 crbug.com/824539 [ Android ] fast/selectors/061.html [ Failure ]
 crbug.com/824539 [ Android ] fast/shapes/crash-caused-by-dirtying-a-shape-while-computing-it-requires-a-long-filename-to-crash.html [ Crash Failure ]
 crbug.com/824539 [ Android ] fast/speech/scripted/speechrecognition-re-restart.html [ Failure ]
-crbug.com/824539 [ Android ] fast/table/border-collapsing/004-vertical.html [ Failure ]
 crbug.com/824539 [ Android ] fast/table/border-collapsing/004.html [ Failure ]
 crbug.com/824539 [ Android ] fast/text/stroking-decorations.html [ Failure ]
 crbug.com/824539 [ Android ] fast/text/international/001.html [ Failure ]
@@ -5282,6 +5281,10 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 # The below is only supported with network service.
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Skip ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
+
+# New rebaselines because LayoutNG is more correct
+crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]
+crbug.com/902591 [ Linux ] tables/mozilla/bugs/bug2973.html [ Failure ]
 
 # Sheriff 2018-09-13
 crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
