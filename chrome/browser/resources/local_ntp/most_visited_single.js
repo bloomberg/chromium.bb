@@ -643,7 +643,9 @@ function setupReorder(tile) {
   // Starts the reorder flow after the user has held the mouse button down for
   // |REORDER_TIMEOUT_DELAY|.
   tile.addEventListener('mousedown', (event) => {
-    if (event.button == 0 /* LEFT CLICK */) {
+    // Do not reorder if the edit menu was clicked.
+    if (event.button == 0 /* LEFT CLICK */ &&
+        !event.target.classList.contains(CLASSES.MD_MENU)) {
       let timeout = -1;
 
       // Cancel the timeout if the user drags the mouse off the tile and
