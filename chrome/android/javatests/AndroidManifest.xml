@@ -12,8 +12,6 @@
 {% endblock %}
 
 {% block extra_application_definitions_for_test %}
-        <uses-library android:name="android.test.runner" />
-
         <provider android:name="org.chromium.chrome.test.TestContentProvider"
             android:authorities="org.chromium.chrome.test.TestContentProvider"
             android:exported="true" />
