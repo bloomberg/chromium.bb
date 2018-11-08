@@ -1382,7 +1382,7 @@
             'code-coverage',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
+          'gtest_tests': 'chromium_linux_coverage_gtests',
         }
       },
       'linux-tcmalloc-rel': {
@@ -3484,6 +3484,19 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+        },
+      },
+    },
+  },
+  {
+    'name': 'tryserver.chromium.linux',
+    'machines': {
+      'linux-coverage-rel': {
+        'mixins': [
+	  'code-coverage',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_coverage_gtests',
         },
       },
     },
