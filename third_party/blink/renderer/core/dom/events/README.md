@@ -2,8 +2,6 @@
 
 [Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/dom/events/README.md)
 
-Author: hayato@chromium.org
-
 The `renderer/core/dom/events` directory contains the implementation of [DOM Events].
 
 [DOM Events]: https://dom.spec.whatwg.org/#events
