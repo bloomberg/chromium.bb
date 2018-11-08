@@ -63,7 +63,7 @@ class TestClient {
 
   ~TestClient() = default;
 
-  bool IsKeyboardEnabled() {
+  bool GetIsEnabled() {
     keyboard_controller_->IsKeyboardEnabled(base::BindOnce(
         &TestClient::OnIsKeyboardEnabled, base::Unretained(this)));
     keyboard_controller_.FlushForTesting();
@@ -91,38 +91,19 @@ class TestClient {
     keyboard_controller_.FlushForTesting();
   }
 
-  void RebuildKeyboardIfEnabled() {
-    keyboard_controller_->RebuildKeyboardIfEnabled();
-    keyboard_controller_.FlushForTesting();
-  }
-
-  bool IsKeyboardVisible() {
-    keyboard_controller_->IsKeyboardVisible(base::BindOnce(
-        &TestClient::OnIsKeyboardVisible, base::Unretained(this)));
-    keyboard_controller_.FlushForTesting();
-    return is_visible_;
-  }
-
-  void ShowKeyboard() {
-    keyboard_controller_->ShowKeyboard();
-    keyboard_controller_.FlushForTesting();
-  }
-
-  void HideKeyboard() {
-    keyboard_controller_->HideKeyboard(ash::mojom::HideReason::kUser);
+  void ReloadKeyboard() {
+    keyboard_controller_->ReloadKeyboard();
     keyboard_controller_.FlushForTesting();
   }
 
   TestObserver* test_observer() const { return test_observer_.get(); }
 
   bool is_enabled_ = false;
-  bool is_visible_ = false;
   int got_keyboard_config_count_ = 0;
   KeyboardConfig keyboard_config_;
 
  private:
   void OnIsKeyboardEnabled(bool enabled) { is_enabled_ = enabled; }
-  void OnIsKeyboardVisible(bool visible) { is_visible_ = visible; }
 
   void OnGetKeyboardConfig(KeyboardConfigPtr config) {
     ++got_keyboard_config_count_;
@@ -215,21 +196,21 @@ TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
 }
 
 TEST_F(AshKeyboardControllerTest, Enabled) {
-  EXPECT_FALSE(test_client()->IsKeyboardEnabled());
+  EXPECT_FALSE(test_client()->GetIsEnabled());
   // Enable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_TRUE(test_client()->IsKeyboardEnabled());
+  EXPECT_TRUE(test_client()->GetIsEnabled());
 
   // Set the enable override to disable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-  EXPECT_FALSE(test_client()->IsKeyboardEnabled());
+  EXPECT_FALSE(test_client()->GetIsEnabled());
 
   // Clear the enable override; should enable the keyboard.
   test_client()->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-  EXPECT_TRUE(test_client()->IsKeyboardEnabled());
+  EXPECT_TRUE(test_client()->GetIsEnabled());
 }
 
-TEST_F(AshKeyboardControllerTest, RebuildKeyboardIfEnabled) {
+TEST_F(AshKeyboardControllerTest, ReloadKeyboard) {
   EXPECT_EQ(0, test_client()->test_observer()->destroyed_count_);
 
   // Enable the keyboard.
@@ -240,30 +221,13 @@ TEST_F(AshKeyboardControllerTest, RebuildKeyboardIfEnabled) {
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   EXPECT_EQ(0, test_client()->test_observer()->destroyed_count_);
 
-  // Rebuild the keyboard. This should destroy the previous keyboard window.
-  test_client()->RebuildKeyboardIfEnabled();
+  // Reload the keyboard. This should destroy the previous keyboard window.
+  test_client()->ReloadKeyboard();
   EXPECT_EQ(1, test_client()->test_observer()->destroyed_count_);
 
   // Disable the keyboard. The keyboard window should be destroyed.
   test_client()->ClearEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   EXPECT_EQ(2, test_client()->test_observer()->destroyed_count_);
-}
-
-TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
-  // Enable the keyboard. This will not trigger showing the keyboard.
-  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_FALSE(keyboard_controller()->show_on_keyboard_window_load_for_test());
-
-  // Show the keyboard. TODO(stevenjb): Use TestObserver and IsKeyboardVisible
-  // to test visibility changes once ash::TestKeyboardUI properly fakes showing
-  // the keyboard. https://crbug.com/849995.
-  test_client()->ShowKeyboard();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(keyboard_controller()->show_on_keyboard_window_load_for_test());
-
-  // Hide the keyboard. See comment above.
-  test_client()->HideKeyboard();
-  EXPECT_FALSE(keyboard_controller()->show_on_keyboard_window_load_for_test());
 }
 
 }  // namespace ash

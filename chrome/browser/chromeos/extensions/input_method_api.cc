@@ -10,8 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
@@ -24,7 +22,6 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_features.h"
@@ -41,6 +38,8 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace AddWordToDictionary =
     extensions::api::input_method_private::AddWordToDictionary;
@@ -246,28 +245,26 @@ InputMethodPrivateShowInputViewFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-  if (!keyboard_client->is_keyboard_enabled()) {
-    keyboard_client->ShowKeyboard();
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->IsEnabled()) {
+    keyboard_controller->ShowKeyboard(false);
     return RespondNow(NoArguments());
   }
 
-  // Temporarily enable the onscreen keyboard if there is no keyboard enabled.
-  // This will be cleared when the keybaord is hidden.
-  keyboard_client->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kTemporarilyEnabled);
-  keyboard_client->GetKeyboardEnabled(base::BindOnce(
-      &InputMethodPrivateShowInputViewFunction::OnGetIsEnabled, this));
-  return RespondLater();
-}
+  if (keyboard::IsKeyboardEnabled())
+    return RespondNow(Error(kErrorFailToShowInputView));
 
-void InputMethodPrivateShowInputViewFunction::OnGetIsEnabled(bool enabled) {
-  if (!enabled) {
-    Respond(Error(kErrorFailToShowInputView));
-    return;
+  // Forcibly enables the a11y onscreen keyboard if there is on keyboard enabled
+  // for now. And re-disables it after showing once.
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->IsEnabled()) {
+    keyboard::SetAccessibilityKeyboardEnabled(false);
+    return RespondNow(Error(kErrorFailToShowInputView));
   }
-  ChromeKeyboardControllerClient::Get()->ShowKeyboard();
-  Respond(NoArguments());
+  keyboard_controller->ShowKeyboard(false);
+  keyboard::SetAccessibilityKeyboardEnabled(false);
+  return RespondNow(NoArguments());
 #endif
 }
 

@@ -32,7 +32,4 @@ enum KeyboardEnableFlag {
 
   // Enabled by the touch controller.
   kTouchEnabled,
-
-  // Temporarily enable the keyboard; cleared once the keyboard is shown.
-  kTemporarilyEnabled,
 };

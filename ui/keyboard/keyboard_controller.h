@@ -253,9 +253,6 @@ class KEYBOARD_EXPORT KeyboardController
   KeyboardControllerState GetStateForTest() const { return state_; }
   ui::InputMethod* GetInputMethodForTest();
   void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds);
-  bool show_on_keyboard_window_load_for_test() {
-    return show_on_keyboard_window_load_;
-  }
 
  private:
   // For access to Observer methods for simulation.

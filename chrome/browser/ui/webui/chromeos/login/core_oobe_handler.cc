@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -57,6 +56,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace chromeos {
 
@@ -585,8 +585,8 @@ void CoreOobeHandler::UpdateKeyboardState() {
   // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
   if (!features::IsUsingWindowService()) {
-    const bool is_keyboard_shown =
-        ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    const bool is_keyboard_shown = keyboard_controller->IsKeyboardVisible();
     ShowControlBar(!is_keyboard_shown);
     SetVirtualKeyboardShown(is_keyboard_shown);
   }

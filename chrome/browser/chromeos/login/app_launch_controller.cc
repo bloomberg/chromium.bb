@@ -320,7 +320,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   profile_->InitChromeOSPreferences();
 
   // Reset virtual keyboard to use IME engines in app profile early.
-  ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
+  ChromeKeyboardControllerClient::Get()->ReloadKeyboard();
 
   kiosk_profile_loader_.reset();
   startup_app_launcher_.reset(
