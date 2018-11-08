@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/message_center/message_center_observer.h"
 
 namespace message_center {
 class MessageCenter;
@@ -43,7 +44,8 @@ namespace ash {
 // old text is replaced (if it's different) and the notification pops up again.
 class ASH_EXPORT MultiDeviceNotificationPresenter
     : public chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate,
-      public SessionObserver {
+      public SessionObserver,
+      public message_center::MessageCenterObserver {
  public:
   MultiDeviceNotificationPresenter(
       message_center::MessageCenter* message_center,
@@ -66,6 +68,15 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   // SessionObserver:
   void OnUserSessionAdded(const AccountId& account_id) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;
+
+  // message_center::MessageCenterObserver
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
+
+  void OnNotificationClicked(
+      const std::string& notification_id,
+      const base::Optional<int>& button_index,
+      const base::Optional<base::string16>& reply) override;
 
  private:
   friend class MultiDeviceNotificationPresenterTest;
@@ -109,7 +120,6 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
       Status notification_status);
 
   void ObserveMultiDeviceSetupIfPossible();
-  void OnNotificationClicked();
   void ShowNotification(const Status notification_status,
                         const base::string16& title,
                         const base::string16& message);
