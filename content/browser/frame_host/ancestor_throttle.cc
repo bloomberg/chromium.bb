@@ -68,8 +68,9 @@ enum XFrameOptionsHistogram {
 };
 
 void RecordXFrameOptionsUsage(XFrameOptionsHistogram usage) {
-  UMA_HISTOGRAM_ENUMERATION(kXFrameOptionsSameOriginHistogram, usage,
-                            XFRAMEOPTIONS_HISTOGRAM_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      kXFrameOptionsSameOriginHistogram, usage,
+      XFrameOptionsHistogram::XFRAMEOPTIONS_HISTOGRAM_MAX);
 }
 
 bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers) {
@@ -114,7 +115,7 @@ AncestorThrottle::WillRedirectRequest() {
       ProcessResponseImpl(LoggingDisposition::DO_NOT_LOG_TO_CONSOLE);
 
   if (result.action() == NavigationThrottle::BLOCK_RESPONSE)
-    RecordXFrameOptionsUsage(REDIRECT_WOULD_BE_BLOCKED);
+    RecordXFrameOptionsUsage(XFrameOptionsHistogram::REDIRECT_WOULD_BE_BLOCKED);
 
   // TODO(mkwst): We need to decide whether we'll be able to get away with
   // tightening the XFO check to include redirect responses once we have a
@@ -148,20 +149,20 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     case HeaderDisposition::CONFLICT:
       if (logging == LoggingDisposition::LOG_TO_CONSOLE)
         ParseError(header_value, disposition);
-      RecordXFrameOptionsUsage(CONFLICT);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::CONFLICT);
       return NavigationThrottle::BLOCK_RESPONSE;
 
     case HeaderDisposition::INVALID:
       if (logging == LoggingDisposition::LOG_TO_CONSOLE)
         ParseError(header_value, disposition);
-      RecordXFrameOptionsUsage(INVALID);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::INVALID);
       // TODO(mkwst): Consider failing here.
       return NavigationThrottle::PROCEED;
 
     case HeaderDisposition::DENY:
       if (logging == LoggingDisposition::LOG_TO_CONSOLE)
         ConsoleError(disposition);
-      RecordXFrameOptionsUsage(DENY);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::DENY);
       return NavigationThrottle::BLOCK_RESPONSE;
 
     case HeaderDisposition::SAMEORIGIN: {
@@ -171,7 +172,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
           url::Origin::Create(navigation_handle()->GetURL());
       while (parent) {
         if (!parent->current_origin().IsSameOriginWith(current_origin)) {
-          RecordXFrameOptionsUsage(SAMEORIGIN_BLOCKED);
+          RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN_BLOCKED);
           if (logging == LoggingDisposition::LOG_TO_CONSOLE)
             ConsoleError(disposition);
 
@@ -181,25 +182,26 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
           // https://crbug.com/250309
           if (parent->frame_tree()->root()->current_origin().IsSameOriginWith(
                   current_origin)) {
-            RecordXFrameOptionsUsage(SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
+            RecordXFrameOptionsUsage(
+                XFrameOptionsHistogram::SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
           }
 
           return NavigationThrottle::BLOCK_RESPONSE;
         }
         parent = parent->parent();
       }
-      RecordXFrameOptionsUsage(SAMEORIGIN);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
       return NavigationThrottle::PROCEED;
     }
 
     case HeaderDisposition::NONE:
-      RecordXFrameOptionsUsage(NONE);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::NONE);
       return NavigationThrottle::PROCEED;
     case HeaderDisposition::BYPASS:
-      RecordXFrameOptionsUsage(BYPASS);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
       return NavigationThrottle::PROCEED;
     case HeaderDisposition::ALLOWALL:
-      RecordXFrameOptionsUsage(ALLOWALL);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::ALLOWALL);
       return NavigationThrottle::PROCEED;
   }
   NOTREACHED();
