@@ -148,6 +148,8 @@ void WebAppInstallManager::OnDidPerformInstallableCheck(
   web_app->SetName(base::UTF16ToUTF8(web_app_info_->title));
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info_->description));
   web_app->SetLaunchUrl(web_app_info_->app_url);
+  web_app->SetScope(web_app_info_->scope);
+  web_app->SetThemeColor(web_app_info_->theme_color);
 
   registrar_->RegisterApp(std::move(web_app));
 

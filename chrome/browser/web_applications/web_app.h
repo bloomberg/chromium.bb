@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -24,10 +26,14 @@ class WebApp {
   const std::string& name() const { return name_; }
   const std::string& description() const { return description_; }
   const GURL& launch_url() const { return launch_url_; }
+  const GURL& scope() const { return scope_; }
+  const base::Optional<SkColor>& theme_color() const { return theme_color_; }
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
   void SetLaunchUrl(const GURL& launch_url);
+  void SetScope(const GURL& scope);
+  void SetThemeColor(base::Optional<SkColor> theme_color);
 
  private:
   const AppId app_id_;
@@ -35,6 +41,10 @@ class WebApp {
   std::string name_;
   std::string description_;
   GURL launch_url_;
+  // TODO(loyso): Implement IsValid() function that verifies that the launch_url
+  // is within the scope.
+  GURL scope_;
+  base::Optional<SkColor> theme_color_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);
 };

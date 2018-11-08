@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ios>
 #include <ostream>
 
 #include "base/logging.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "ui/gfx/color_utils.h"
 
 namespace web_app {
 
@@ -26,10 +28,26 @@ void WebApp::SetLaunchUrl(const GURL& launch_url) {
   launch_url_ = launch_url;
 }
 
+void WebApp::SetScope(const GURL& scope) {
+  DCHECK(scope.is_empty() || scope.is_valid());
+  scope_ = scope;
+}
+
+void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
+  theme_color_ = theme_color;
+}
+
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
+  const std::string theme_color =
+      app.theme_color()
+          ? color_utils::SkColorToRgbaString(app.theme_color().value())
+          : "none";
+
   return out << "app_id: " << app.app_id() << std::endl
              << "  name: " << app.name() << std::endl
              << "  launch_url: " << app.launch_url() << std::endl
+             << "  scope: " << app.scope() << std::endl
+             << "  theme_color: " << theme_color << std::endl
              << "  description: " << app.description();
 }
 
