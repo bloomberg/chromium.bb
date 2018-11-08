@@ -5,15 +5,22 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.download.R;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
@@ -24,7 +31,8 @@ import java.util.ArrayList;
  */
 public class DownloadLocationDialogBridge implements ModalDialogView.Controller {
     private long mNativeDownloadLocationDialogBridge;
-    private DownloadLocationDialog mLocationDialog;
+    private ModalDialogView mLocationDialog;
+    private DownloadLocationCustomView mCustomView;
     private ModalDialogManager mModalDialogManager;
     private long mTotalBytes;
     private @DownloadLocationDialogType int mDialogType;
@@ -82,22 +90,21 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
                 break;
             default:
         }
-
-        mLocationDialog = null;
     }
 
     @Override
     public void onDismiss(@DialogDismissalCause int dismissalCause) {
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                handleResponses(mLocationDialog.getFileName(), mLocationDialog.getDirectoryOption(),
-                        mLocationDialog.getDontShowAgain());
+                handleResponses(mCustomView.getFileName(), mCustomView.getDirectoryOption(),
+                        mCustomView.getDontShowAgain());
                 break;
             default:
                 cancel();
                 break;
         }
         mLocationDialog = null;
+        mCustomView = null;
     }
 
     /**
@@ -123,9 +130,54 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         if (mLocationDialog != null) return;
 
         // Actually show the dialog.
-        mLocationDialog = DownloadLocationDialog.create(
-                this, mContext, mTotalBytes, mDialogType, new File(mSuggestedPath));
+        mCustomView = (DownloadLocationCustomView) LayoutInflater.from(mContext).inflate(
+                R.layout.download_location_dialog, null);
+        mCustomView.initialize(mDialogType, new File(mSuggestedPath));
+
+        Resources resources = mContext.getResources();
+        PropertyModel model =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, this)
+                        .with(ModalDialogProperties.TITLE, getTitle(mTotalBytes, mDialogType))
+                        .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                R.string.duplicate_download_infobar_download_button)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.cancel)
+                        .build();
+
+        mLocationDialog = new ModalDialogView(mContext);
+        PropertyModelChangeProcessor.create(model, mLocationDialog, new ModalDialogViewBinder());
+
         mModalDialogManager.showDialog(mLocationDialog, ModalDialogManager.ModalDialogType.APP);
+    }
+
+    private String getTitle(long totalBytes, @DownloadLocationDialogType int dialogType) {
+        switch (dialogType) {
+            case DownloadLocationDialogType.LOCATION_FULL:
+                return mContext.getString(R.string.download_location_not_enough_space);
+
+            case DownloadLocationDialogType.LOCATION_NOT_FOUND:
+                return mContext.getString(R.string.download_location_no_sd_card);
+
+            case DownloadLocationDialogType.NAME_CONFLICT:
+                return mContext.getString(R.string.download_location_download_again);
+
+            case DownloadLocationDialogType.NAME_TOO_LONG:
+                return mContext.getString(R.string.download_location_rename_file);
+
+            case DownloadLocationDialogType.DEFAULT:
+                String title = mContext.getString(R.string.download_location_dialog_title);
+                if (totalBytes > 0) {
+                    StringBuilder stringBuilder = new StringBuilder(title);
+                    stringBuilder.append(" ");
+                    stringBuilder.append(DownloadUtils.getStringForBytes(mContext, totalBytes));
+                    title = stringBuilder.toString();
+                }
+                return title;
+        }
+        assert false;
+        return null;
     }
 
     /**
