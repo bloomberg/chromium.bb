@@ -734,12 +734,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void OnStopConcierge(ConciergeCallback callback, dbus::Response* response) {
-    bool result = false;
-    dbus::MessageReader reader(response);
-    if (response) {
-      reader.PopBool(&result);
-    }
-    std::move(callback).Run(result);
+    // Debugd just sends back an empty response, so we just check if
+    // the response exists
+    std::move(callback).Run(response != nullptr);
   }
 
   void OnSetRlzPingSent(SetRlzPingSentCallback callback,
