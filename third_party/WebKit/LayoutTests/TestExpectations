@@ -2266,9 +2266,6 @@ crbug.com/555703 [ Linux Mac Win Fuchsia ] virtual/media-gpu-accelerated [ Skip 
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 
-crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Failure Pass ]
-crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Failure Pass ]
-
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
