@@ -46,12 +46,11 @@ config("no_asm_config") {
 all_sources = crypto_sources + ssl_sources
 all_headers = crypto_headers + ssl_headers
 
-# Windows' assembly is built with Yasm. The other platforms use the platform
-# assembler.
-# Exclude Yasm for Windows ARM64 because Yasm targets to x86 and x64 only.
+# Windows' assembly is built with NASM. The other platforms use the platform
+# assembler. Exclude Windows ARM64 because NASM targets x86 and x64 only.
 if (is_win && !is_msan && current_cpu != "arm64") {
-  import("//third_party/yasm/yasm_assemble.gni")
-  yasm_assemble("boringssl_asm") {
+  import("//third_party/nasm/nasm_assemble.gni")
+  nasm_assemble("boringssl_asm") {
     if (current_cpu == "x64") {
       sources = crypto_sources_win_x86_64
     } else if (current_cpu == "x86") {

@@ -961,6 +961,11 @@ deps = {
       'condition': 'checkout_nacl and checkout_win',
   },
 
+  'src/third_party/nasm': {
+      'url': Var('chromium_git') + '/chromium/deps/nasm.git' + '@' +
+      '20920a85609b0608d4c9c80b525196d07183b289'
+  },
+
   'src/third_party/netty-tcnative/src': {
       'url': Var('chromium_git') + '/external/netty-tcnative.git' + '@' + '5b46a8ef4a39c39c576fcdaaf718b585d75df463',
       'condition': 'checkout_android',

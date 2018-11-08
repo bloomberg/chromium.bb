@@ -152,6 +152,7 @@
 /mocha
 /mockito/src
 /nacl_sdk_binaries/
+/nasm
 /netty-tcnative/src
 /netty4/src
 /node/linux
