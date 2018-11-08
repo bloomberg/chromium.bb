@@ -172,9 +172,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
   std::string issue_title = GetIssueTitle();
   // TODO(imcheng): Fix host name for file schemes (crbug.com/560576).
-  ASSERT_EQ(l10n_util::GetStringFUTF8(
-                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT, base::string16()),
-            issue_title);
+  ASSERT_EQ(
+      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
+                                base::UTF8ToUTF16("file:///")),
+      issue_title);
 
   // Route will still get created, it just takes longer than usual.
   WaitUntilRouteCreated();
