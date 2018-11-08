@@ -746,7 +746,6 @@ fast/sub-pixel/client-and-offset-width.html
 fast/sub-pixel/vertical-align-middle-overflow.html
 fast/table/assert-autotablelayout-maxlogicalwidth.html
 fast/table/border-collapsing/004.html
-fast/table/border-collapsing/004-vertical.html
 fast/table/border-collapsing/dynamic-border-width-change.html
 fast/table/columngroup-inside-columngroup.html
 fast/table/crash-anonymous-table-computeLogicalWidth.html
