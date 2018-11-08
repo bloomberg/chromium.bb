@@ -18,13 +18,6 @@
 
 namespace resource_coordinator {
 
-// static
-TabMemoryMetricsReporter* TabMemoryMetricsReporter::Get() {
-  static base::NoDestructor<TabMemoryMetricsReporter>
-      tab_memory_metrics_reporter;
-  return tab_memory_metrics_reporter.get();
-}
-
 TabMemoryMetricsReporter::TabMemoryMetricsReporter() = default;
 
 TabMemoryMetricsReporter::~TabMemoryMetricsReporter() = default;

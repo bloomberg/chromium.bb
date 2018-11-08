@@ -13,6 +13,9 @@
 
 namespace resource_coordinator {
 
+class PageSignalReceiver;
+class TabLifecycleUnitSource;
+
 // Serialize an Origin into the representation used by the different databases
 // that need it.
 std::string SerializeOriginIntoDatabaseKey(const url::Origin& origin);
@@ -23,6 +26,13 @@ bool URLShouldBeStoredInLocalDatabase(const GURL& url);
 
 // Get the private memory footprint (in KB) for the process.
 int GetPrivateMemoryKB(base::ProcessHandle handle);
+
+// Returns the TabLifecycleUnitSource indirectly owned by g_browser_process.
+TabLifecycleUnitSource* GetTabLifecycleUnitSource();
+
+// Returns the PageSignalReceiver indirectly owned by g_browser_process. This
+// can be null if the service isn't enabled.
+PageSignalReceiver* GetPageSignalReceiver();
 
 }  // namespace resource_coordinator
 

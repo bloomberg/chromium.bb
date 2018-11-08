@@ -53,7 +53,7 @@ class PolicyService;
 }
 
 namespace resource_coordinator {
-class TabLifecycleUnitSource;
+class ResourceCoordinatorParts;
 }
 
 class TestingBrowserProcess : public BrowserProcess {
@@ -134,6 +134,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   gcm::GCMDriver* gcm_driver() override;
   resource_coordinator::TabManager* GetTabManager() override;
+  resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
+      override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
@@ -197,14 +199,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
-  // |tab_manager_| is null by default and will be created when
-  // GetTabManager() is invoked on supported platforms.
-#if !defined(OS_ANDROID)
-  std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
-  std::unique_ptr<resource_coordinator::TabLifecycleUnitSource>
-      tab_lifecycle_unit_source_;
-#endif
-
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;
   IOThread* io_thread_;
@@ -222,6 +216,9 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<extensions::ExtensionsBrowserClient>
       extensions_browser_client_;
 #endif
+
+  std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
+      resource_coordinator_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

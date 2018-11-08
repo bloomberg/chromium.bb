@@ -6,6 +6,8 @@
 
 #include "base/md5.h"
 #include "base/numerics/safe_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 
 namespace resource_coordinator {
@@ -39,6 +41,24 @@ int GetPrivateMemoryKB(base::ProcessHandle handle) {
       dump->platform_private_footprint->rss_anon_bytes +
       dump->platform_private_footprint->vm_swap_bytes;
   return base::saturated_cast<int>(total_freed_bytes / 1024);
+}
+
+TabLifecycleUnitSource* GetTabLifecycleUnitSource() {
+  DCHECK(g_browser_process);
+  auto* source = g_browser_process->resource_coordinator_parts()
+                     ->tab_lifecycle_unit_source();
+  DCHECK(source);
+  return source;
+}
+
+PageSignalReceiver* GetPageSignalReceiver() {
+  // This might get called during the destruction of the browser process, at
+  // which point there's no PageSignalReceiver anymore.
+  if (!g_browser_process)
+    return nullptr;
+  auto* page_signal_receiver =
+      g_browser_process->resource_coordinator_parts()->page_signal_receiver();
+  return page_signal_receiver;
 }
 
 }  // namespace resource_coordinator

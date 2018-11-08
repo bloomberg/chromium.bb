@@ -24,9 +24,6 @@ class TabMemoryMetricsReporter : public TabLoadTracker::Observer {
   TabMemoryMetricsReporter();
   ~TabMemoryMetricsReporter() override;
 
-  // Returns the singleton TabMemoryMetricsReporter instance.
-  static TabMemoryMetricsReporter* Get();
-
   void StartReporting(TabLoadTracker* tracker);
 
   void OnStartTracking(content::WebContents* web_contents,
