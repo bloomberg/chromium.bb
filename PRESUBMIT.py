@@ -2843,19 +2843,29 @@ def _CheckWatchlistDefinitionsEntrySyntax(key, value, ast):
   return None
 
 
-def _CheckWatchlistsEntrySyntax(key, value, ast):
+def _CheckWatchlistsEntrySyntax(key, value, ast, email_regex):
   if not isinstance(key, ast.Str):
     return 'Key at line %d must be a string literal' % key.lineno
   if not isinstance(value, ast.List):
     return 'Value at line %d must be a list' % value.lineno
+  for element in value.elts:
+    if not isinstance(element, ast.Str):
+      return 'Watchlist elements on line %d is not a string' % key.lineno
+    if not email_regex.match(element.s):
+      return ('Watchlist element on line %d doesn\'t look like a valid ' +
+              'email: %s') % (key.lineno, element.s)
   return None
 
 
-def _CheckWATCHLISTSEntries(wd_dict, w_dict, ast):
+def _CheckWATCHLISTSEntries(wd_dict, w_dict, input_api):
   mismatch_template = (
       'Mismatch between WATCHLIST_DEFINITIONS entry (%s) and WATCHLISTS '
       'entry (%s)')
 
+  email_regex = input_api.re.compile(
+      r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+$")
+
+  ast = input_api.ast
   i = 0
   last_key = ''
   while True:
@@ -2875,7 +2885,8 @@ def _CheckWATCHLISTSEntries(wd_dict, w_dict, ast):
     if result is not None:
       return 'Bad entry in WATCHLIST_DEFINITIONS dict: %s' % result
 
-    result = _CheckWatchlistsEntrySyntax(w_key, w_dict.values[i], ast)
+    result = _CheckWatchlistsEntrySyntax(
+        w_key, w_dict.values[i], ast, email_regex)
     if result is not None:
       return 'Bad entry in WATCHLISTS dict: %s' % result
 
@@ -2893,7 +2904,8 @@ def _CheckWATCHLISTSEntries(wd_dict, w_dict, ast):
     i = i + 1
 
 
-def _CheckWATCHLISTSSyntax(expression, ast):
+def _CheckWATCHLISTSSyntax(expression, input_api):
+  ast = input_api.ast
   if not isinstance(expression, ast.Expression):
     return 'WATCHLISTS file must contain a valid expression'
   dictionary = expression.body
@@ -2919,7 +2931,7 @@ def _CheckWATCHLISTSSyntax(expression, ast):
         'The second entry of the dict in WATCHLISTS file must be '
         'WATCHLISTS dict')
 
-  return _CheckWATCHLISTSEntries(first_value, second_value, ast)
+  return _CheckWATCHLISTSEntries(first_value, second_value, input_api)
 
 
 def _CheckWATCHLISTS(input_api, output_api):
@@ -2943,7 +2955,7 @@ def _CheckWATCHLISTS(input_api, output_api):
         return [output_api.PresubmitError(
             'Cannot parse WATCHLISTS file', long_text=repr(e))]
 
-      result = _CheckWATCHLISTSSyntax(expression, input_api.ast)
+      result = _CheckWATCHLISTSSyntax(expression, input_api)
       if result is not None:
         return [output_api.PresubmitError(result)]
       break
