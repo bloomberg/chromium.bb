@@ -938,13 +938,6 @@ int32_t RTCVideoEncoder::Release() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss,
-                                              int64_t rtt) {
-  DVLOG(3) << __func__ << " packet_loss=" << packet_loss << ", rtt=" << rtt;
-  // Ignored.
-  return WEBRTC_VIDEO_CODEC_OK;
-}
-
 int32_t RTCVideoEncoder::SetRateAllocation(
     const webrtc::VideoBitrateAllocation& allocation,
     uint32_t frame_rate) {
