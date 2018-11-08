@@ -161,6 +161,11 @@ void TabIcon::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
     SchedulePaint();
 }
 
+void TabIcon::SetBackgroundColor(SkColor bg_color) {
+  bg_color_ = bg_color;
+  SchedulePaint();
+}
+
 void TabIcon::OnPaint(gfx::Canvas* canvas) {
   // Compute the bounds adjusted for the hiding fraction.
   gfx::Rect contents_bounds = GetContentsBounds();
@@ -253,12 +258,15 @@ void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (UseNewLoadingAnimation()) {
     const gfx::RectF throbber_bounds = GetThrobberBounds(bounds);
-    constexpr SkColor kLoadingColor = gfx::kGoogleBlue500;
     if (network_state_ == TabNetworkState::kWaiting) {
-      gfx::PaintNewThrobberWaiting(canvas, throbber_bounds, kLoadingColor,
-                                   waiting_state_.elapsed_time);
+      gfx::PaintNewThrobberWaiting(
+          canvas, throbber_bounds,
+          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
+          waiting_state_.elapsed_time);
     } else {
-      PaintLoadingProgressIndicator(canvas, throbber_bounds, kLoadingColor);
+      PaintLoadingProgressIndicator(
+          canvas, throbber_bounds,
+          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING));
     }
   } else {
     if (network_state_ == TabNetworkState::kWaiting) {
@@ -296,7 +304,8 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
 void TabIcon::PaintFaviconPlaceholder(gfx::Canvas* canvas,
                                       const gfx::Rect& bounds) {
   cc::PaintFlags flags;
-  flags.setColor(gfx::kGoogleBlue100);
+  flags.setColor(SkColorSetA(
+      color_utils::IsDark(bg_color_) ? SK_ColorWHITE : SK_ColorBLACK, 32));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
