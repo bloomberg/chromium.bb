@@ -21,8 +21,8 @@
 
 NSErrorDomain const CWVCreditCardVerifierErrorDomain =
     @"org.chromium.chromewebview.CreditCardVerifierErrorDomain";
-NSString* const CWVCreditCardVerifierErrorMessageKey = @"error_message";
-NSString* const CWVCreditCardVerifierRetryAllowedKey = @"retry_allowed";
+NSErrorUserInfoKey const CWVCreditCardVerifierRetryAllowedKey =
+    @"retry_allowed";
 
 namespace {
 // Converts an autofill::AutofillClient::PaymentsRpcResult to a
@@ -155,7 +155,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
   return _unmaskingController->GetExpectedCvcLength();
 }
 
-- (BOOL)needsUpdateForExpirationDate {
+- (BOOL)shouldRequestUpdateForExpirationDate {
   return _unmaskingController->ShouldRequestExpirationDate();
 }
 
@@ -192,6 +192,10 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
       base::SysNSStringToUTF16(month), base::SysNSStringToUTF16(year));
 }
 
+- (void)requestUpdateForExpirationDate {
+  _unmaskingController->NewCardLinkClicked();
+}
+
 #pragma mark - Private Methods
 
 - (void)didReceiveVerificationResultWithErrorMessage:(NSString*)errorMessage
@@ -204,7 +208,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
     if (errorMessage.length > 0 && result != autofill::AutofillClient::NONE &&
         result != autofill::AutofillClient::SUCCESS) {
       NSDictionary* userInfo = @{
-        CWVCreditCardVerifierErrorMessageKey : errorMessage,
+        NSLocalizedDescriptionKey : errorMessage,
         CWVCreditCardVerifierRetryAllowedKey : @(retryAllowed),
       };
       error = [NSError errorWithDomain:CWVCreditCardVerifierErrorDomain

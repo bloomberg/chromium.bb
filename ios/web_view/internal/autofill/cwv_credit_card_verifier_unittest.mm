@@ -151,7 +151,9 @@ TEST_F(CWVCreditCardVerifierTest, Properties) {
   EXPECT_EQ(UIScreen.mainScreen.scale,
             credit_card_verifier_.CVCHintImage.scale);
   EXPECT_GT(credit_card_verifier_.expectedCVCLength, 0);
-  EXPECT_FALSE(credit_card_verifier_.needsUpdateForExpirationDate);
+  EXPECT_FALSE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
+  [credit_card_verifier_ requestUpdateForExpirationDate];
+  EXPECT_TRUE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
 }
 
 // Tests CWVCreditCardVerifier's |isCVCValid| method.
@@ -216,7 +218,7 @@ TEST_F(CWVCreditCardVerifierTest, DelegateCallbacks) {
         return
             [error.domain isEqualToString:CWVCreditCardVerifierErrorDomain] &&
             error.code == CWVCreditCardVerificationErrorTryAgainFailure &&
-            error.userInfo[CWVCreditCardVerifierErrorMessageKey] != nil &&
+            error.localizedDescription != nil &&
             error.userInfo[CWVCreditCardVerifierRetryAllowedKey] &&
             [error.userInfo[CWVCreditCardVerifierRetryAllowedKey] boolValue];
       }]];
