@@ -589,7 +589,7 @@
 <translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
 <translation id="2536525645274582300">Ang user ang magpapasya kung ie-enable ang mga serbisyo ng lokasyon ng Google</translation>
-<translation id="254653220329944566">Ine-enable ang pag-uulat sa cloud ng <ph name="PRODUCT_NAME" /></translation>
+<translation id="254653220329944566">Ine-enable ang pag-uulat ng <ph name="PRODUCT_NAME" /> sa cloud</translation>
 <translation id="2550593661567988768">Simplex na pag-print lang</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Ang URL ay dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" />, na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
@@ -1935,11 +1935,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="614662973812186053">Kinokontrol din ng patakarang ito ang pagkolekta ng data ng paggamit at diagnostic sa Android.</translation>
-<translation id="6153048425064249648">Kinokontrol ng patakarang ito ang pag-uulat sa cloud ng <ph name="PRODUCT_NAME" />, na nag-a-upload ng impormasyon tungkol sa pagpapatakbo ng browser sa Google Admin console.
+<translation id="6153048425064249648">Kinokontrol ng patakarang ito ang pag-uulat ng <ph name="PRODUCT_NAME" /> sa cloud, na nag-a-upload ng impormasyon tungkol sa pagpapatakbo ng browser sa Google Admin console.
 
       Kapag ang patakarang ito ay hinayaang hindi nakatakda o nakatakda sa False, walang kokolektahin o ia-upload na data.
       Kapag ang patakarang ito ay nakatakda sa True, kokolektahin at ia-upload ang data sa Google Admin console.
-      Para makontrol kung anong data ang ina-upload, pakigamit ang mga patakaran sa panggrupong Chrome Reporting Extension.
+      Para makontrol kung anong data ang ina-upload, pakigamit ang mga patakaran sa grupong Chrome Reporting Extension.
 
       May bisa lang ang patakarang ito kapag naka-enroll ang machine sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 

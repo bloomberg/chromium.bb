@@ -1860,7 +1860,7 @@
       אם המדיניות הזו מקבלת את הערך True, הנתונים נאספים ועוברים העלאה למסוף הממשק של Google למנהלי מערכות.
       כדי לקבוע אילו נתונים עוברים העלאה, אפשר להשתמש בכללי המדיניות שנמצאים בקבוצה Chrome Reporting Extension.
 
-      המדיניות הזו יעילה רק כשהמחשב רשום במדיניות <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
+      המדיניות הזו בתוקף רק כשהמחשב רשום במדיניות <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       המדיניות הזו גורמת להתקנה כפויה של <ph name="CHROME_REPORTING_EXTENSION_NAME" /> לצורך דיווח, ועוקפת את כל כללי המדיניות בנושא תוספים שקשורים לתוסף הזה.</translation>
 <translation id="6155936611791017817">הגדר מצב ברירת מחדל של הסמן הגדול במסך ההתחברות</translation>

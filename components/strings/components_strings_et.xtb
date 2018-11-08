@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Vaadake makse üle</translation>
 <translation id="4116663294526079822">Luba sellel saidil alati</translation>
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
-<translation id="4119109454650683048">Vaadake allolevat teavet ja vajaduse korral parandage vead</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{veel 1}other{veel #}}</translation>
 <translation id="4130226655945681476">Kontrollige võrgukaableid, modemit ja ruuterit</translation>
 <translation id="413544239732274901">Lisateave</translation>
@@ -967,7 +966,6 @@ Lisateave:
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7662298039739062396">Seadet juhib laiendus</translation>
 <translation id="7663736086183791259">Sertifikaat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Kas soovite salvestada kaardid Google'isse?</translation>
 <translation id="7667346355482952095">Tagastatud reegli luba on tühi või ei kattu praeguse loaga</translation>
 <translation id="7668654391829183341">Tundmatu seade</translation>
 <translation id="7669271284792375604">Sellel saidil asuvad ründajad võivad proovida meelitada teid installima programme, mis kahjustavad sirvimiskogemust (nt muudavad avalehte või kuvavad külastatavatel saitidel lisareklaame).</translation>
@@ -1179,7 +1177,6 @@ Lisateave:
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>
 <translation id="9114524666733003316">Kaardi kinnitamine …</translation>
-<translation id="9117895703580314323">Teenus pole saadaval. Proovige hiljem uuesti.</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9137248913990643158">Enne selle rakenduse kasutamist alustage ja logige Chrome'i sisse.</translation>

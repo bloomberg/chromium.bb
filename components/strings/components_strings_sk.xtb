@@ -469,7 +469,6 @@
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
-<translation id="4119109454650683048">Skontrolujte informácie nižšie a podľa potreby opravte chyby</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 ďalšia}few{# ďalšie}many{# ďalšej}other{# ďalších}}</translation>
 <translation id="4130226655945681476">Skontrolovať sieťové káble, modem a smerovač</translation>
 <translation id="413544239732274901">Ďalšie informácie</translation>
@@ -962,7 +961,6 @@
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7662298039739062396">Nastavenie ovládané rozšírením</translation>
 <translation id="7663736086183791259">Certifikát <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Chcete ukladať karty do Googlu?</translation>
 <translation id="7667346355482952095">Vrátený token pravidla je prázdny alebo sa nezhoduje s aktuálnym tokenom</translation>
 <translation id="7668654391829183341">Neznáme zariadenie</translation>
 <translation id="7669271284792375604">Útočníci na tomto webe sa vás môžu pokúsiť podvodom presvedčiť, aby ste si nainštalovali programy poškodzujúce vaše prostredie prehliadania (napríklad zmenou domovskej stránky alebo zobrazovaním ďalších reklám na weboch, ktoré navštevujete).</translation>
@@ -1175,7 +1173,6 @@
 <translation id="9103872766612412690">Web <ph name="SITE" /> zvyčajne chráni vaše informácie pomocou šifrovania. Keď sa prehliadač Chromium tentokrát pokúsil pripojiť k webu <ph name="SITE" />, odoslal späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za web <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi‑Fi. Vaše informácie sú stále zabezpečené, pretože prehliadač Chromium zastavil pripojenie ešte pred výmenou dát.</translation>
 <translation id="9106062320799175032">Pridanie fakturačnej adresy</translation>
 <translation id="9114524666733003316">Overuje sa karta…</translation>
-<translation id="9117895703580314323">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="9128870381267983090">Pripojiť k sieti</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9137248913990643158">Začnite a prihláste sa do Chromu ešte predtým, ako použijete túto aplikáciu.</translation>

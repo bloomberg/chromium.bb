@@ -441,7 +441,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken SystemTimezone indstilles, tilsidesættes denne politik. I dette tilfælde deaktiveres registrering af tidszoner helt.</translation>
 <translation id="2178899310296064282">Gennemtving som minimum Moderat begrænset tilstand på YouTube</translation>
 <translation id="2182291258410176649">Brugeren beslutter, om sikkerhedskopiering og gendannelse skal aktiveres</translation>
-<translation id="2183294522275408937">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden indtastes for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
+<translation id="2183294522275408937">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden angives for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
 
       Hvis denne indstilling er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen afhængigt af denne indstilling.
 

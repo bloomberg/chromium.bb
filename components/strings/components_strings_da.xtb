@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Gennemgå din betaling</translation>
 <translation id="4116663294526079822">Tillad altid på dette website</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
-<translation id="4119109454650683048">Tjek nedenstående oplysninger, og ret om nødvendigt eventuelle fejl</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 anden/andet}one{# anden/andet}other{# andre}}</translation>
 <translation id="4130226655945681476">Kontrollere netværkskabler, modem og router</translation>
 <translation id="413544239732274901">Få flere oplysninger</translation>
@@ -967,7 +966,6 @@ Yderligere oplysninger:
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7662298039739062396">Indstillingen styres af en udvidelse</translation>
 <translation id="7663736086183791259">Certifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vil du gemme dine kort på Google?</translation>
 <translation id="7667346355482952095">Det returnerede token for politikken er tomt eller stemmer ikke overens med det nuværende token</translation>
 <translation id="7668654391829183341">Ukendt enhed</translation>
 <translation id="7669271284792375604">Hackere på dette website kan forsøge at narre dig til at installere programmer, der skader din browseroplevelse (f.eks. ved at ændre din startside eller vise flere annoncer på de websites, du besøger).</translation>
@@ -1180,7 +1178,6 @@ Yderligere oplysninger:
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9106062320799175032">Tilføj faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekræfter kort...</translation>
-<translation id="9117895703580314323">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="9128870381267983090">Opret forbindelse til netværk</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9137248913990643158">Start og log ind på Chrome, inden du bruger denne app.</translation>

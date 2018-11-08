@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">בדיקת התשלום</translation>
 <translation id="4116663294526079822">אפשר תמיד באתר זה</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
-<translation id="4119109454650683048">עליך לעיין במידע שבהמשך ולתקן שגיאות, אם יש צורך</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{אחד נוסף}two{שניים נוספים}many{# נוספים}other{# נוספים}}</translation>
 <translation id="4130226655945681476">בדוק את כבלי הרשת, את המודם ואת הנתב</translation>
 <translation id="413544239732274901">מידע נוסף</translation>
@@ -972,7 +971,6 @@ Del</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7662298039739062396">ההגדרה נשלטת על-ידי תוסף</translation>
 <translation id="7663736086183791259">אישור <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">‏לשמור את הכרטיסים שלך ב-Google?</translation>
 <translation id="7667346355482952095">אסימון המדיניות שהוחזר הוא ריק או שאינו תואם לאסימון הנוכחי</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7669271284792375604">תוקפים באתר הזה עשויים לגרום לך, בדרכי מרמה, להתקין תוכניות שיפגעו בחוויית הגלישה שלך (לדוגמה, על ידי שינוי דף הבית או הצגת מודעות נוספות באתרים שבהם אתה מבקר).</translation>
@@ -1185,7 +1183,6 @@ Del</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
 <translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>
-<translation id="9117895703580314323">השירות לא זמין. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9137248913990643158">‏היכנס לחשבונך ב-Chrome לפני שתשתמש באפליקציה הזו.</translation>

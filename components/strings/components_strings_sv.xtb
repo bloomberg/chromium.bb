@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Granska betalningen</translation>
 <translation id="4116663294526079822">Tillåt alltid på den här webbplatsen</translation>
 <translation id="4117700440116928470">Principens omfattning stöds inte.</translation>
-<translation id="4119109454650683048">Läs informationen nedan och åtgärda eventuella fel</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 till}other{# till}}</translation>
 <translation id="4130226655945681476">Kontrollera nätverkskablar, modem och router</translation>
 <translation id="413544239732274901">Läs mer</translation>
@@ -967,7 +966,6 @@ Mer information.
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7662298039739062396">Inställningen styrs av ett tillägg</translation>
 <translation id="7663736086183791259">Certifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Vill du spara korten på Google?</translation>
 <translation id="7667346355482952095">Policytoken som returnerades är tom eller matchade inte den aktuella token</translation>
 <translation id="7668654391829183341">Okänd enhet</translation>
 <translation id="7669271284792375604">Angripare på den här webbplatsen kan försöka lura dig att installera program som skadar din webbupplevelse (till exempel genom att byta ut din startsida eller visa extra annonser på webbplatser som du besöker).</translation>
@@ -1180,7 +1178,6 @@ Mer information:
 <translation id="9103872766612412690">På <ph name="SITE" /> används normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="9106062320799175032">Lägg till faktureringsadress</translation>
 <translation id="9114524666733003316">Kortet kontrolleras …</translation>
-<translation id="9117895703580314323">Tjänsten är inte tillgänglig. Försök igen senare.</translation>
 <translation id="9128870381267983090">Anslut till ett nätverk</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9137248913990643158">Logga in på Chrome innan du använder den här appen.</translation>

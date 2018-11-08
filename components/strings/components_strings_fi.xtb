@@ -474,7 +474,6 @@
 <translation id="4110652170750985508">Tarkasta maksu</translation>
 <translation id="4116663294526079822">Salli aina tässä sivustossa</translation>
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
-<translation id="4119109454650683048">Tarkista tiedot alta ja korjaa mahdolliset virheet</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 muu}other{# muuta}}</translation>
 <translation id="4130226655945681476">Tarkista verkkojohdot, modeemi ja reititin.</translation>
 <translation id="413544239732274901">Lisätietoja</translation>
@@ -968,7 +967,6 @@ Lisätietoja:
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7662298039739062396">Laajennuksen hallinnoima asetus</translation>
 <translation id="7663736086183791259">Varmenne <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Tallennetaanko kortit Googleen?</translation>
 <translation id="7667346355482952095">Palautettu käytäntötunnus on tyhjä tai ei vastaa nykyistä tunnusta.</translation>
 <translation id="7668654391829183341">Tuntematon laite</translation>
 <translation id="7669271284792375604">Tämän sivuston hyökkääjät saattavat yrittää huijata sinua asentamaan ohjelmia, jotka ovat haitallisia selauskokemuksellesi (esimerkiksi vaihtamalla aloitussivusi tai näyttämällä ylimääräisiä mainoksia käymilläsi sivustoilla).</translation>
@@ -1181,7 +1179,6 @@ Lisätietoja:
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>
 <translation id="9114524666733003316">Vahvistetaan korttia…</translation>
-<translation id="9117895703580314323">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9137248913990643158">Aloita ja kirjaudu sisään Chromeen ennen tämän sovelluksen käyttämistä.</translation>

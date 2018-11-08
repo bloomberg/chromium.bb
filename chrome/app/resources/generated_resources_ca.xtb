@@ -164,7 +164,7 @@
     Heu de tornar a configurar el perfil.<ph name="BR" />
     <ph name="BR" />
     A la pantalla següent, envieu suggeriments per ajudar-nos a resoldre el problema.</translation>
-<translation id="1217668622537098248">Torna al clic amb el botó esquerre després de l'acció</translation>
+<translation id="1217668622537098248">Torna al clic amb el botó esquerre després d'una acció</translation>
 <translation id="121783623783282548">Les contrasenyes no coincideixen.</translation>
 <translation id="1218860753635451122">En fer clic al botó Accepto, acceptes el processament descrit anteriorment per a aquests serveis de Google.</translation>
 <translation id="122082903575839559">Algoritme de signatura del certificat</translation>
@@ -3074,7 +3074,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5669267381087807207">S'està activant</translation>
 <translation id="5669691691057771421">Introdueix el PIN nou</translation>
 <translation id="5671641761787789573">S'han bloquejat les imatges</translation>
-<translation id="567643736130151854">Inicia la sessió i activa la sincronització per accedir a les teves adreces d'interès, les contrasenyes i altres continguts des de tots els teus dispositius</translation>
+<translation id="567643736130151854">Inicia la sessió i activa la sincronització per accedir a les teves adreces d'interès, les contrasenyes i altres opcions des de tots els teus dispositius</translation>
 <translation id="5677503058916217575">Idioma de la pàgina:</translation>
 <translation id="5677928146339483299">Bloquejades</translation>
 <translation id="5678550637669481956">S'ha concedit accés de lectura i d'escriptura a <ph name="VOLUME_NAME" />.</translation>

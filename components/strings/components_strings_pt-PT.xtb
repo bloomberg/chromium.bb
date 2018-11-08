@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">Rever o seu pagamento</translation>
 <translation id="4116663294526079822">Permitir sempre neste Website</translation>
 <translation id="4117700440116928470">O âmbito da política não é suportado.</translation>
-<translation id="4119109454650683048">Verifique as informações abaixo e corrija quaisquer erros, se necessário.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 outro}other{# outros}}</translation>
 <translation id="4130226655945681476">Verificar os cabos de rede, o modem e o router</translation>
 <translation id="413544239732274901">Saiba mais</translation>
@@ -966,7 +965,6 @@ Detalhes adicionais:
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Definição controlada por uma extensão</translation>
 <translation id="7663736086183791259">Certificado <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Pretende guardar os seus cartões com a Google?</translation>
 <translation id="7667346355482952095">O símbolo da política devolvido está vazio ou não corresponde ao símbolo atual</translation>
 <translation id="7668654391829183341">Dispositivo desconhecido</translation>
 <translation id="7669271284792375604">Os utilizadores mal intencionados neste site podem tentar enganá-lo para instalar programas que são prejudiciais para a sua experiência de navegação (por exemplo, ao alterar a sua página inicial ou ao mostrar anúncios adicionais em sites que visita).</translation>
@@ -1179,7 +1177,6 @@ Detalhes adicionais:
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9106062320799175032">Adicionar endereço de faturação</translation>
 <translation id="9114524666733003316">A confirmar o cartão…</translation>
-<translation id="9117895703580314323">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137248913990643158">Comece e inicie sessão no Chrome antes de utilizar esta aplicação.</translation>

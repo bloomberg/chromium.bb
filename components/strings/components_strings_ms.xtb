@@ -474,7 +474,6 @@
 <translation id="4110652170750985508">Semak pembayaran anda</translation>
 <translation id="4116663294526079822">Sentiasa benarkan di tapak ini</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
-<translation id="4119109454650683048">Sila semak maklumat di bawah dan betulkan sebarang ralat, jika perlu</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 yang lain}other{# yang lain}}</translation>
 <translation id="4130226655945681476">Memeriksa kabel rangkaian, modem dan penghala</translation>
 <translation id="413544239732274901">Ketahui lebih lanjut</translation>
@@ -968,7 +967,6 @@ Butiran tambahan:
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7662298039739062396">Tetapan dikawal oleh sambungan</translation>
 <translation id="7663736086183791259">Sijil <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Simpan kad anda ke Google?</translation>
 <translation id="7667346355482952095">Token dasar yang dikembalikan kosong atau tidak sepadan dengan token semasa</translation>
 <translation id="7668654391829183341">Peranti tidak diketahui</translation>
 <translation id="7669271284792375604">Penyerang pada tapak ini mungkin cuba menipu dengan meminta anda memasang atur cara yang membahayakan pengalaman penyemakan imbas anda (contohnya, dengan menukar halaman utama anda atau menunjukkan iklan tambahan pada laman yang anda lawati).</translation>
@@ -1181,7 +1179,6 @@ Butiran tambahan:
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Pengebilan</translation>
 <translation id="9114524666733003316">Mengesahkan kad...</translation>
-<translation id="9117895703580314323">Perkhidmatan tidak tersedia. Cuba lagi nanti.</translation>
 <translation id="9128870381267983090">Sambung ke rangkaian</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9137248913990643158">Sila mulakan dan log masuk ke Chrome sebelum menggunakan apl ini.</translation>

@@ -473,7 +473,6 @@
 <translation id="4110652170750985508">查看您的付款</translation>
 <translation id="4116663294526079822">永遠允許在這個網站執行</translation>
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
-<translation id="4119109454650683048">請確認下方資訊，並視需要修改錯誤內容</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{以及另外 1 項表單資料}other{以及另外 # 項表單資料}}</translation>
 <translation id="4130226655945681476">檢查網路線、數據機和路由器</translation>
 <translation id="413544239732274901">瞭解詳情</translation>
@@ -967,7 +966,6 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7662298039739062396">由擴充功能控制的設定</translation>
 <translation id="7663736086183791259">憑證 <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">要將卡片儲存至 Google 嗎？</translation>
 <translation id="7667346355482952095">傳回的政策憑證沒有任何內容，或是與目前的憑證不符</translation>
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>
@@ -1179,7 +1177,6 @@
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9106062320799175032">新增帳單地址</translation>
 <translation id="9114524666733003316">正在驗證信用卡...</translation>
-<translation id="9117895703580314323">服務無法使用，請稍後再試。</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9137248913990643158">使用這個應用程式前，請先啟動 Chrome 並登入帳戶。</translation>

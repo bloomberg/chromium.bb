@@ -472,7 +472,6 @@
 <translation id="4110652170750985508">Pregledajte uplatu</translation>
 <translation id="4116663294526079822">Uvijek dopusti na ovoj web-lokaciji</translation>
 <translation id="4117700440116928470">Opseg pravila nije podržan.</translation>
-<translation id="4119109454650683048">Provjerite informacije u nastavku i ispravite pogreške ako je to potrebno</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 druga stavka}one{# druga stavka}few{# druge stavke}other{# drugih stavki}}</translation>
 <translation id="4130226655945681476">provjerite mrežne kabele, modem i usmjerivač</translation>
 <translation id="413544239732274901">Saznajte više</translation>
@@ -966,7 +965,6 @@ Dodatne pojedinosti:
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7662298039739062396">Postavkom upravlja proširenje</translation>
 <translation id="7663736086183791259">Certifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
-<translation id="7665886282480776333">Želite li spremiti svoje kartice na Google?</translation>
 <translation id="7667346355482952095">Vraćeni token pravila prazan je ili ne odgovara trenutačnom tokenu</translation>
 <translation id="7668654391829183341">Nepoznati uređaj</translation>
 <translation id="7669271284792375604">Napadači na ovoj web-lokaciji mogu vas pokušati navesti na instaliranje programa koji smanjuju kvalitetu pregledavanja interneta (npr. promjenom početne stranice ili prikazivanjem dodatnih oglasa na web-lokacijama koje posjetite).</translation>
@@ -1180,7 +1178,6 @@ Dodatne pojedinosti:
 i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chromium zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="9106062320799175032">Dodajte adresu za naplatu</translation>
 <translation id="9114524666733003316">Potvrđivanje kartice...</translation>
-<translation id="9117895703580314323">Usluga nije dostupna. Pokušajte ponovo kasnije.</translation>
 <translation id="9128870381267983090">Povezivanje s mrežom</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9137248913990643158">Pokrenite Chrome i prijavite se na njega da biste mogli upotrebljavati tu aplikaciju.</translation>

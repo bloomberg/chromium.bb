@@ -31,7 +31,7 @@
 <translation id="4555020257205549924">启用此功能后，Chromium 将使用 Google 翻译对其他语言的网页进行翻译。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">您在其他设备上的 Chromium 中打开的标签页将列在此处。</translation>
 <translation id="495292094137889840">开始使用 Chromium QR 码扫描器</translation>
-<translation id="4999538639245140991">由于您正要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
+<translation id="4999538639245140991">由于您要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="5231355151045086930">退出 Chromium</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5945387852661427312">您正要登录由 <ph name="DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chromium 数据。您的数据将与此帐号永久关联。退出 Chromium 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
