@@ -10,8 +10,6 @@ static_library("proximity_auth") {
   sources = [
     "bluetooth_low_energy_connection_finder.cc",
     "bluetooth_low_energy_connection_finder.h",
-    "bluetooth_low_energy_setup_connection_finder.cc",
-    "bluetooth_low_energy_setup_connection_finder.h",
     "messenger.h",
     "messenger_impl.cc",
     "messenger_impl.h",
