@@ -982,9 +982,6 @@ TEST_F(MagnificationControllerTest, TextfieldFocusedWithKeyboard) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
 
-  gfx::Rect keyboard_bounds = gfx::Rect(0, 300, 800, 300);
-  keyboard_controller->GetKeyboardWindow()->SetBounds(keyboard_bounds);
-
   // Focus on the text input field.
   text_input_helper_.FocusOnTextInputView();
   base::RunLoop().RunUntilIdle();
@@ -993,7 +990,8 @@ TEST_F(MagnificationControllerTest, TextfieldFocusedWithKeyboard) {
   gfx::Rect viewport_outside_keyboard_bounds = GetViewport();
   viewport_outside_keyboard_bounds.set_height(
       viewport_outside_keyboard_bounds.height() -
-      keyboard_bounds.height() / GetMagnificationController()->GetScale());
+      keyboard_controller->visual_bounds_in_screen().height() /
+          GetMagnificationController()->GetScale());
 
   gfx::Rect caret_bounds = text_input_helper_.GetCaretBounds();
 

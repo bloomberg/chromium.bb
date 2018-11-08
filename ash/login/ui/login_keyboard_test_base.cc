@@ -49,12 +49,10 @@ void LoginKeyboardTestBase::ShowKeyboard() {
   keyboard_controller->ShowKeyboard(false);
   // Set keyboard height to half of the root window - this should overlap with
   // lock/login layout.
-  if (keyboard_controller->GetKeyboardWindow()->bounds().height() == 0) {
-    int height = Shell::GetPrimaryRootWindow()->bounds().height() / 2;
-    keyboard_controller->GetKeyboardWindow()->SetBounds(
-        keyboard::KeyboardBoundsFromRootBounds(
-            Shell::GetPrimaryRootWindow()->bounds(), height));
-  }
+  int height = Shell::GetPrimaryRootWindow()->bounds().height() / 2;
+  keyboard_controller->GetKeyboardWindow()->SetBounds(
+      keyboard::KeyboardBoundsFromRootBounds(
+          Shell::GetPrimaryRootWindow()->bounds(), height));
   ASSERT_TRUE(keyboard::WaitUntilShown());
 }
 

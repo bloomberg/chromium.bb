@@ -2237,6 +2237,7 @@ static_library("test_support_common") {
     "//ui/gl",
     "//ui/gl:test_support",
     "//ui/keyboard",
+    "//ui/keyboard:test_support",
     "//ui/message_center",
     "//ui/message_center/public/cpp",
     "//ui/views",

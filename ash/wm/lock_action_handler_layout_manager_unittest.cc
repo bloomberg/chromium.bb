@@ -43,8 +43,6 @@ namespace ash {
 
 namespace {
 
-constexpr int kVirtualKeyboardHeight = 100;
-
 aura::Window* GetContainer(ShellWindowId container_id) {
   return Shell::GetPrimaryRootWindowController()->GetContainer(container_id);
 }
@@ -130,9 +128,6 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(true);
-      keyboard->GetKeyboardWindow()->SetBounds(
-          keyboard::KeyboardBoundsFromRootBounds(
-              Shell::GetPrimaryRootWindow()->bounds(), kVirtualKeyboardHeight));
       ASSERT_TRUE(keyboard::WaitUntilShown());
     } else {
       keyboard->HideKeyboardByUser();

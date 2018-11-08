@@ -591,7 +591,6 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
   keyboard_controller_->LoadKeyboardWindowInBackground();
   // Wait for the keyboard window to load.
   base::RunLoop().RunUntilIdle();
-  keyboard_controller_->GetKeyboardWindow()->SetBounds(gfx::Rect(0, 0, 10, 10));
 
   // Show in secondary display.
   keyboard_controller_->ShowKeyboardInDisplay(GetSecondaryDisplay());
