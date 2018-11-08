@@ -489,6 +489,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     default_loader_used_ = true;
     uint32_t options = GetURLLoaderOptions(request_info_->is_main_frame);
 
+    // A URLLoaderThrottle may have changed the headers.
+    request_info_->begin_params->headers =
+        resource_request_->headers.ToString();
+    request_info_->begin_params->load_flags = resource_request_->load_flags;
+
     bool intercepted = false;
     if (g_interceptor.Get()) {
       // Recreate the ResourceRequest for the interceptor, in case a
@@ -496,17 +501,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       auto latest_resource_request =
           CreateResourceRequest(request_info_.get(), frame_tree_node_id_,
                                 resource_request_->allow_download);
-      latest_resource_request->headers = resource_request_->headers;
+      latest_resource_request->headers.AddHeadersFromString(
+          request_info_->begin_params->headers);
       intercepted = g_interceptor.Get().Run(
           &url_loader, frame_tree_node_id_, 0 /* request_id */, options,
           *latest_resource_request, &url_loader_client,
           net::MutableNetworkTrafficAnnotationTag(
               kNavigationUrlLoaderTrafficAnnotation));
     }
-
-    // A URLLoaderThrottle may have changed the headers.
-    request_info_->begin_params->headers =
-        resource_request_->headers.ToString();
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
     if (!intercepted && ResourceDispatcherHostImpl::Get()) {
@@ -515,7 +517,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           upload_file_system_context, *request_info_,
           std::move(navigation_ui_data_), std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
-          appcache_handle_core, options, global_request_id_);
+          appcache_handle_core, options, resource_request_->priority,
+          global_request_id_);
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
