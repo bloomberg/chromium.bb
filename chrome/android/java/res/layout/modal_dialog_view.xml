@@ -3,7 +3,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- TODO(huayinz): rename menu_bg or change the dialog background to the desired one. -->
 <org.chromium.chrome.browser.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -24,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:visibility="gone"
         android:fadeScrollbars="false">
 
         <LinearLayout
@@ -40,6 +40,7 @@
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/message"
                 android:textAppearance="@style/BlackBody"
+                android:visibility="gone"
                 app:leading="20sp"
                 style="@style/AlertDialogContent" />
 
@@ -51,23 +52,28 @@
         android:id="@+id/custom"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:visibility="gone" />
 
     <android.support.v7.widget.ButtonBarLayout
+        android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         style="?attr/buttonBarStyle">
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/negative_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             style="?attr/buttonBarNegativeButtonStyle" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/positive_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             style="?attr/buttonBarPositiveButtonStyle" />
 
     </android.support.v7.widget.ButtonBarLayout>

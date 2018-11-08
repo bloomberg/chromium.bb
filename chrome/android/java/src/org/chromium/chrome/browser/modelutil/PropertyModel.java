@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.modelutil;
 
+import android.content.res.Resources;
+import android.support.annotation.StringRes;
 import android.support.v4.util.ObjectsCompat;
 
 import org.chromium.base.annotations.RemovableInRelease;
@@ -238,6 +240,18 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
             ObjectContainer<T> container = new ObjectContainer<>();
             container.value = value;
             mData.put(key, container);
+            return this;
+        }
+
+        /**
+         * @param key The key of the specified {@link ReadableObjectPropertyKey<String>}.
+         * @param resources The {@link Resources} for obtaining the specified string resource.
+         * @param resId The specified string resource id.
+         * @return The {@link Builder} with the specified key and string resource set.
+         */
+        public Builder with(
+                ReadableObjectPropertyKey<String> key, Resources resources, @StringRes int resId) {
+            if (resId != 0) with(key, resources.getString(resId));
             return this;
         }
 
