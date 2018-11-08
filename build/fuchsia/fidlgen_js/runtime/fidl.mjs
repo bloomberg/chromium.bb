@@ -130,6 +130,16 @@ const _kTT_bool = {
   dec: function(d, o) { return d.data.getInt8(o) != 0; },
 };
 
+const _kTT_float32 = {
+  enc: function(e, o, v) { e.data.setFloat32(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getFloat32(o, $fidl__kLE); },
+};
+
+const _kTT_float64 = {
+  enc: function(e, o, v) { e.data.setFloat64(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getFloat64(o, $fidl__kLE); },
+};
+
 const _kTT_int8 = {
   enc: function(e, o, v) { e.data.setInt8(o, v); },
   dec: function(d, o) { return d.data.getInt8(o); },
@@ -145,6 +155,21 @@ const _kTT_int32 = {
   dec: function(d, o) { return d.data.getInt32(o, $fidl__kLE); },
 };
 
+const _kTT_int64 = {
+  enc: function(e, o, v) {
+    var bi = BigInt.asIntN(64, BigInt(v));
+    var x = Number(bi & 0xffffffffn);
+    var y = Number((bi >> 32n) & 0xffffffffn);
+    e.data.setInt32(o, x, $fidl__kLE);
+    e.data.setInt32(o + 4, y, $fidl__kLE);
+  },
+  dec: function(d, o) {
+    var x = BigInt.asIntN(64, BigInt(d.data.getInt32(o, $fidl__kLE)));
+    var y = BigInt.asIntN(64, BigInt(d.data.getInt32(o + 4, $fidl__kLE)));
+    return x | (y << 32n);
+  },
+};
+
 const _kTT_uint8 = {
   enc: function(e, o, v) { e.data.setUint8(o, v); },
   dec: function(d, o) { return d.data.getUint8(o); },
@@ -158,6 +183,21 @@ const _kTT_uint16 = {
 const _kTT_uint32 = {
   enc: function(e, o, v) { e.data.setUint32(o, v, $fidl__kLE); },
   dec: function(d, o) { return d.data.getUint32(o, $fidl__kLE); },
+};
+
+const _kTT_uint64 = {
+  enc: function(e, o, v) {
+    var bi = BigInt.asUintN(64, BigInt(v));
+    var x = Number(bi & 0xffffffffn);
+    var y = Number((bi >> 32n) & 0xffffffffn);
+    e.data.setUint32(o, x, $fidl__kLE);
+    e.data.setUint32(o + 4, y, $fidl__kLE);
+  },
+  dec: function(d, o) {
+    var x = BigInt.asUintN(64, BigInt(d.data.getUint32(o, $fidl__kLE)));
+    var y = BigInt.asUintN(64, BigInt(d.data.getUint32(o + 4, $fidl__kLE)));
+    return x | (y << 32n);
+  },
 };
 
 const _kTT_Handle = {
