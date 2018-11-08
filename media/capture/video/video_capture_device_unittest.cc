@@ -64,6 +64,7 @@
 #define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
 #define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_WIN)
@@ -74,6 +75,8 @@
 #define MAYBE_UsingRealWebcam_TakePhoto DISABLED_UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState \
   DISABLED_UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize \
+  DISABLED_UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   DISABLED_UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_ANDROID)
@@ -103,6 +106,7 @@
 #define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
 #define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #else
@@ -111,6 +115,7 @@
 #define MAYBE_UsingRealWebcam_TakePhoto DISABLED_UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState \
   DISABLED_UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #endif
