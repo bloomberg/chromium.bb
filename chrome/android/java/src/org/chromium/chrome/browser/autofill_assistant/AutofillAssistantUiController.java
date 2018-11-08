@@ -15,7 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.payments.AutofillAssistantPaymentRequest;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;

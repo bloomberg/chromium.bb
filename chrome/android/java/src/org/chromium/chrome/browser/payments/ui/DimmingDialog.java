@@ -36,8 +36,12 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
  * A fullscreen semitransparent dialog used for dimming Chrome when overlaying a bottom sheet
  * dialog/CCT or an alert dialog on top of it. FLAG_DIM_BEHIND is not being used because it causes
  * the web contents of a payment handler CCT to also dim on some versions of Android (e.g., Nougat).
+ *
+ * Note: Do not use this class outside of the payments.ui package!
+ * TODO(crbug.com/806868): Revert the visibility to package default again when it is no longer used
+ * by Autofill Assistant.
  */
-/* package */ class DimmingDialog {
+public class DimmingDialog {
     /**
      * Length of the animation to either show the UI or expand it to full height. Note that click of
      * 'Pay' button in PaymentRequestUI is not accepted until the animation is done, so this
@@ -60,8 +64,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
      * @param activity        The activity on top of which the dialog should be displayed.
      * @param dismissListener The listener for the dismissal of this dialog.
      */
-    /* package */ DimmingDialog(
-            Activity activity, DialogInterface.OnDismissListener dismissListener) {
+    public DimmingDialog(Activity activity, DialogInterface.OnDismissListener dismissListener) {
         // To handle the specced animations, the dialog is entirely contained within a translucent
         // FrameLayout. This could eventually be converted to a real BottomSheetDialog, but that
         // requires exploration of how interactions would work when the dialog can be sent back and
@@ -87,14 +90,14 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
      * Makes sure that the color of the icons in the status bar makes the icons visible.
      * @param window The window whose status bar icon color is being set.
      */
-    /* package */ static void setVisibleStatusBarIconColor(Window window) {
+    public static void setVisibleStatusBarIconColor(Window window) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         ApiCompatibilityUtils.setStatusBarIconColor(window.getDecorView().getRootView(),
                 !ColorUtils.shouldUseLightForegroundOnBackground(window.getStatusBarColor()));
     }
 
     /** @param bottomSheetView The view to show in the bottom sheet. */
-    /* package */ void addBottomSheetView(View bottomSheetView) {
+    public void addBottomSheetView(View bottomSheetView) {
         FrameLayout.LayoutParams bottomSheetParams =
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         bottomSheetParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
@@ -103,12 +106,12 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
     }
 
     /** Show the dialog. */
-    /* package */ void show() {
+    public void show() {
         mDialog.show();
     }
 
     /** Hide the dialog without dismissing it. */
-    /* package */ void hide() {
+    public void hide() {
         mDialog.hide();
     }
 
@@ -117,7 +120,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
      *
      * @param isAnimated If true, the dialog dismissal is animated.
      */
-    /* package */ void dismiss(boolean isAnimated) {
+    public void dismiss(boolean isAnimated) {
         if (!mDialog.isShowing()) return;
         if (isAnimated) {
             new DisappearingAnimator(true);
@@ -127,7 +130,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
     }
 
     /** @param overlay The overlay to show. This can be an error dialog, for example. */
-    /* package */ void showOverlay(View overlay) {
+    public void showOverlay(View overlay) {
         // Animate the bottom sheet going away.
         new DisappearingAnimator(false);
 
@@ -140,7 +143,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
     }
 
     /** @return Whether the dialog is currently animating disappearance. */
-    /* package */ boolean isAnimatingDisappearance() {
+    public boolean isAnimatingDisappearance() {
         return mIsAnimatingDisappearance;
     }
 
@@ -190,7 +193,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
     private class DisappearingAnimator extends AnimatorListenerAdapter {
         private final boolean mIsDialogClosing;
 
-        /* package */ DisappearingAnimator(boolean removeDialog) {
+        public DisappearingAnimator(boolean removeDialog) {
             mIsDialogClosing = removeDialog;
 
             View child = mFullContainer.getChildAt(0);
