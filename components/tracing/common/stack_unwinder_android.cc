@@ -159,13 +159,14 @@ size_t TraceStackWithContext(
   }
 
   // We tried all possible ways to unwind and failed. So, scan the stack to find
-  // all chrome address and add them to stack trace. This would give us a lot of
-  // false frames on the trace. The idea is to try to sanitize the trace on
+  // all chrome addresses and add them to stack trace. This would give us a lot
+  // of false frames on the trace. The idea is to try to sanitize the trace on
   // server side or try unwinding after each search. The current version just
-  // sends back all PCs untill we figure out what is the best way to sanitize
+  // sends back all PCs until we figure out what is the best way to sanitize
   // the stack trace.
   if (try_stack_search) {
-    uintptr_t* stack = reinterpret_cast<uintptr_t*>(sp);
+    // Search from beginning of stack, in case unwinding obtained bad offsets.
+    uintptr_t* stack = reinterpret_cast<uintptr_t*>(initial_sp);
     // Add a nullptr to differentiate addresses found by unwinding and scanning.
     out_trace[depth++] = nullptr;
     while (depth < max_depth &&
@@ -446,14 +447,14 @@ size_t StackUnwinderAndroid::TraceStack(
 
 uintptr_t StackUnwinderAndroid::GetEndAddressOfRegion(uintptr_t addr) const {
   auto it =
-      std::lower_bound(regions_.begin(), regions_.end(), addr,
-                       [](const MappedMemoryRegion& region, uintptr_t addr) {
-                         return region.start < addr;
+      std::upper_bound(regions_.begin(), regions_.end(), addr,
+                       [](uintptr_t addr, const MappedMemoryRegion& region) {
+                         return addr < region.start;
                        });
   if (it == regions_.begin())
     return 0;
   --it;
-  if (it->start <= addr && it->end > addr)
+  if (it->end > addr)
     return it->end;
   return 0;
 }
@@ -496,7 +497,7 @@ bool StackUnwinderAndroid::SuspendThreadAndRecordStack(
     if (!finished_waiting) {
       RecordUnwindResult(SamplingProfilerUnwindResult::kFutexSignalFailed);
       NOTREACHED();
-      return 0;
+      return false;
     }
   }
   base::subtle::Release_Store(&g_handler_params, 0);
@@ -510,16 +511,20 @@ StackUnwinderAndroid::RewritePointersAndGetMarkers(
     size_t stack_size) const {
   std::vector<const JniMarker*> jni_markers;
   uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_buffer->buffer());
-  constexpr uintptr_t marker_l =
-                          jni_generator::kJniStackMarkerValue & 0xFFFFFFFF,
-                      marker_r = jni_generator::kJniStackMarkerValue >> 32;
+  constexpr uint32_t marker_l =
+                         jni_generator::kJniStackMarkerValue & 0xFFFFFFFF;
+  constexpr uint32_t marker_r = jni_generator::kJniStackMarkerValue >> 32;
   const uintptr_t new_stack_top =
       reinterpret_cast<uintptr_t>(stack_buffer->buffer());
-  for (size_t i = 0; i < stack_size / sizeof(uintptr_t); ++i) {
-    if (new_stack[i] == marker_r && i > 0 && new_stack[i - 1] == marker_l) {
+  const size_t ptrs_to_rewrite = stack_size / sizeof(uintptr_t);
+  for (size_t i = 0; i < ptrs_to_rewrite; ++i) {
+    // Scanning needs to be fixed for 64 bit version.
+    DCHECK_EQ(4u, sizeof(uintptr_t));
+    if (i < ptrs_to_rewrite - 1 && new_stack[i] == marker_l &&
+        new_stack[i + 1] == marker_r) {
       // Note: JniJavaCallContext::sp will be replaced with offset below.
       const JniMarker* marker =
-          reinterpret_cast<const JniMarker*>(new_stack + i - 1);
+          reinterpret_cast<const JniMarker*>(new_stack + i);
       DCHECK_EQ(jni_generator::kJniStackMarkerValue, marker->marker);
       if (marker->sp >= sp && marker->sp < sp + stack_size &&
           CFIBacktraceAndroid::is_chrome_address(marker->pc)) {
