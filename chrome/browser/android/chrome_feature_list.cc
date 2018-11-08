@@ -171,6 +171,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kQueryInOmnibox,
     &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
+    &password_manager::features::kManagePasswordsAlternativeUIAndroid,
     &translate::kTranslateAndroidManualTrigger,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
