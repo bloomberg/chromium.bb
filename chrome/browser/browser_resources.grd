@@ -71,20 +71,21 @@
     </structures>
     <includes>
       <if expr="is_win or is_macosx or desktop_linux or chromeos">
-        <include name="IDR_DISCARDS_DATABASE_TAB_HTML" file="resources\discards\database_tab.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_MOJO_API_HTML" file="resources\discards\mojo_api.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DATABASE_TAB_HTML" file="resources\discards\database_tab.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_DATABASE_TAB_JS" file="resources\discards\database_tab.js" type="BINDATA" />
-        <include name="IDR_DISCARDS_DISCARDS_MAIN_HTML" file="resources\discards\discards_main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_MAIN_HTML" file="resources\discards\discards_main.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_DISCARDS_MAIN_JS" file="resources\discards\discards_main.js" type="BINDATA" />
-        <include name="IDR_DISCARDS_DISCARDS_TAB_HTML" file="resources\discards\discards_tab.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_DISCARDS_TAB_HTML" file="resources\discards\discards_tab.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_DISCARDS_TAB_JS" file="resources\discards\discards_tab.js" type="BINDATA" />
-        <include name="IDR_DISCARDS_GRAPH_TAB_HTML" file="${root_gen_dir}\chrome\browser\resources\discards\graph_tab.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_GRAPH_TAB_HTML" file="${root_gen_dir}\chrome\browser\resources\discards\graph_tab.html" use_base_dir="false" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_GRAPH_TAB_JS" file="resources\discards\graph_tab.js" type="BINDATA" />
-        <include name="IDR_DISCARDS_HTML" file="resources\discards\discards.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_HTML" file="resources\discards\discards.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
         <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML" file="resources\discards\sorted_table_behavior.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML" file="resources\discards\sorted_table_behavior.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" type="BINDATA" />
         <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJO_JS" file="${root_gen_dir}\services\resource_coordinator\public\mojom\webui_graph_dump.mojom.js" use_base_dir="false" type="BINDATA" />
       </if>
