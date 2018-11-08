@@ -763,14 +763,7 @@ TEST_F(ScrollViewTest, ClipHeightToNormalContentHeight) {
 
 // Verifies ClipHeightTo() uses the minimum height when the content is shorter
 // than the minimum height value.
-// TODO(crbug.com/903001): We should not mark GetIndexOf flaky.
-#if defined(OS_MACOSX)
-#define MAYBE_ClipHeightToShortContentHeight \
-  DISABLED_ClipHeightToShortContentHeight
-#else
-#define MAYBE_ClipHeightToShortContentHeight ClipHeightToShortContentHeight
-#endif
-TEST_F(ScrollViewTest, MAYBE_ClipHeightToShortContentHeight) {
+TEST_F(ScrollViewTest, ClipHeightToShortContentHeight) {
   scroll_view_->ClipHeightTo(kMinHeight, kMaxHeight);
 
   const int kShortContentHeight = 10;
