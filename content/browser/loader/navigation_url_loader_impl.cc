@@ -533,6 +533,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               kNavigationUrlLoaderTrafficAnnotation));
     }
 
+    // A URLLoaderThrottle may have changed the headers.
+    request_info_->begin_params->headers =
+        resource_request_->headers.ToString();
+
     // The ResourceDispatcherHostImpl can be null in unit tests.
     if (!intercepted && ResourceDispatcherHostImpl::Get()) {
       ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
