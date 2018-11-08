@@ -6,41 +6,25 @@
 
 #include "base/values.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_token_status.h"
-#include "components/sync/syncable/base_transaction.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/syncable/user_share.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
 
 // Dummy methods
 
 FakeSyncService::FakeSyncService()
-    : error_(GoogleServiceAuthError::NONE),
-      user_share_(std::make_unique<UserShare>()) {}
+    : user_share_(std::make_unique<UserShare>()) {}
 
-FakeSyncService::~FakeSyncService() {}
+FakeSyncService::~FakeSyncService() = default;
 
 int FakeSyncService::GetDisableReasons() const {
-  // Note: Most subclasses will want to override this.
-  return DISABLE_REASON_PLATFORM_OVERRIDE;
+  return DISABLE_REASON_NOT_SIGNED_IN;
 }
 
 syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
-  // This is a temporary partial copy of the real implementation in
-  // ProfileSyncService, containing only the things that exist in the
-  // FakeSyncService. If subclasses override some of the individual getters,
-  // this should still return a reasonable result.
-  if (GetDisableReasons() != DISABLE_REASON_NONE) {
-    return TransportState::DISABLED;
-  }
-  // From this point on, Sync can start in principle.
-  DCHECK(CanSyncFeatureStart());
-  if (!IsFirstSetupComplete()) {
-    return TransportState::PENDING_DESIRED_CONFIGURATION;
-  }
-  return TransportState::ACTIVE;
+  return TransportState::DISABLED;
 }
 
 AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
@@ -158,7 +142,7 @@ SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
 }
 
 std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMap() {
-  return std::make_unique<base::ListValue>();
+  return nullptr;
 }
 
 const GURL& FakeSyncService::sync_service_url() const {
@@ -166,7 +150,7 @@ const GURL& FakeSyncService::sync_service_url() const {
 }
 
 std::string FakeSyncService::unrecoverable_error_message() const {
-  return unrecoverable_error_message_;
+  return std::string();
 }
 
 base::Location FakeSyncService::unrecoverable_error_location() const {
