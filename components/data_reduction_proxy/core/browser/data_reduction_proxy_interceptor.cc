@@ -7,7 +7,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -166,14 +165,6 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
 
     if (bypass_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
       bypass_stats_->SetBypassType(bypass_type);
-  }
-
-  DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-  std::unique_ptr<DataReductionProxyData::RequestInfo> request_info =
-      DataReductionProxyData::CreateRequestInfoFromRequest(request,
-                                                           should_retry);
-  if (data && request_info) {
-    data->add_request_info(*request_info.get());
   }
 
   if (!should_retry)
