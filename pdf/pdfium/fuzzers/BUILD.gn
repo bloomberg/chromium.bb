@@ -16,6 +16,7 @@ group("fuzzers") {
 group("pdf_fuzzers") {
   testonly = true
   deps = [
+    ":pdf_cjs_util_fuzzer",
     ":pdf_cmap_fuzzer",
     ":pdf_codec_a85_fuzzer",
     ":pdf_codec_fax_fuzzer",
@@ -23,6 +24,7 @@ group("pdf_fuzzers") {
     ":pdf_codec_jbig2_fuzzer",
     ":pdf_codec_rle_fuzzer",
     ":pdf_font_fuzzer",
+    ":pdf_fx_date_helpers_fuzzer",
     ":pdf_hint_table_fuzzer",
     ":pdf_jpx_fuzzer",
     ":pdf_psengine_fuzzer",
@@ -65,6 +67,13 @@ fuzzer_test("pdfium_fuzzer") {
   ]
   dict = "dicts/pdf.dict"
   seed_corpus = "//third_party/pdfium/testing/resources"
+}
+
+fuzzer_test("pdf_cjs_util_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/fuzzers:pdf_cjs_util_fuzzer_src",
+  ]
 }
 
 fuzzer_test("pdf_cmap_fuzzer") {
@@ -110,6 +119,20 @@ fuzzer_test("pdf_codec_jbig2_fuzzer") {
   ]
 }
 
+fuzzer_test("pdf_fx_date_helpers_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/fuzzers:pdf_fx_date_helpers_fuzzer_src",
+  ]
+}
+
+fuzzer_test("pdf_font_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/fuzzers:pdf_font_fuzzer_src",
+  ]
+}
+
 fuzzer_test("pdf_hint_table_fuzzer") {
   sources = []
   deps = [
@@ -123,13 +146,6 @@ fuzzer_test("pdf_jpx_fuzzer") {
     "//third_party/pdfium/testing/fuzzers:pdf_jpx_fuzzer_src",
   ]
   seed_corpus = "corpora/pdf_jpx"
-}
-
-fuzzer_test("pdf_font_fuzzer") {
-  sources = []
-  deps = [
-    "//third_party/pdfium/testing/fuzzers:pdf_font_fuzzer_src",
-  ]
 }
 
 fuzzer_test("pdf_psengine_fuzzer") {
