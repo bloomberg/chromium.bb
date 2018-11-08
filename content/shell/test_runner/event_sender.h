@@ -208,13 +208,14 @@ class EventSender {
   std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
       const blink::WebInputEvent& event);
 
+  void UpdateLifecycleToPrePaint();
+
   base::TimeTicks last_event_timestamp() const { return last_event_timestamp_; }
 
   bool force_layout_on_events() const { return force_layout_on_events_; }
   void set_force_layout_on_events(bool force) {
     force_layout_on_events_ = force;
   }
-  void DoLayoutIfForceLayoutOnEventsRequested();
 
   bool is_drag_mode() const { return is_drag_mode_; }
   void set_is_drag_mode(bool drag_mode) { is_drag_mode_ = drag_mode; }

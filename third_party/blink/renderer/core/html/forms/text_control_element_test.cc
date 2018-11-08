@@ -29,6 +29,10 @@ class TextControlElementTest : public testing::Test {
   TextControlElement& TextControl() const { return *text_control_; }
   HTMLInputElement& Input() const { return *input_; }
 
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 
@@ -46,7 +50,7 @@ void TextControlElementTest::SetUp() {
   document_ = &dummy_page_holder_->GetDocument();
   document_->documentElement()->SetInnerHTMLFromString(
       "<body><textarea id=textarea></textarea><input id=input /></body>");
-  document_->View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   text_control_ = ToTextControl(document_->getElementById("textarea"));
   text_control_->focus();
   input_ = ToHTMLInputElement(document_->getElementById("input"));
@@ -90,12 +94,12 @@ TEST_F(TextControlElementTest, IndexForPosition) {
 TEST_F(TextControlElementTest, ReadOnlyAttributeChangeEditability) {
   Input().setAttribute(html_names::kStyleAttr, "all:initial");
   Input().setAttribute(html_names::kReadonlyAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 
   Input().removeAttribute(html_names::kReadonlyAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 }
@@ -103,12 +107,12 @@ TEST_F(TextControlElementTest, ReadOnlyAttributeChangeEditability) {
 TEST_F(TextControlElementTest, DisabledAttributeChangeEditability) {
   Input().setAttribute(html_names::kStyleAttr, "all:initial");
   Input().setAttribute(html_names::kDisabledAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 
   Input().removeAttribute(html_names::kDisabledAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 }

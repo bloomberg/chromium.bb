@@ -74,7 +74,7 @@ class RootScrollerTest : public testing::Test,
     if (document.GetFrame()) {
       LocalFrameView* root_view = document.GetFrame()->LocalFrameRoot().View();
       if (root_view)
-        root_view->UpdateAllLifecyclePhases();
+        UpdateAllLifecyclePhases(root_view);
     }
   }
 
@@ -185,9 +185,13 @@ class RootScrollerTest : public testing::Test,
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
     GetWebView()->GetBrowserControls().SetShownRatio(1);
 
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
 
     return GetWebView();
+  }
+
+  void UpdateAllLifecyclePhases(LocalFrameView* view) {
+    view->UpdateAllLifecyclePhases();
   }
 
   std::string base_url_;
@@ -223,7 +227,7 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
   nodes.push_back(NodeOrString::FromNode(iframe));
   document->documentElement()->ReplaceWith(nodes, ASSERT_NO_EXCEPTION);
 
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   EXPECT_EQ(MainFrame()->GetDocument(),
             EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -354,13 +358,13 @@ TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom) {
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
   EXPECT_EQ(container, EffectiveRootScroller(MainFrame()->GetDocument()));
 
   MainFrame()->GetDocument()->body()->RemoveChild(container);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
   EXPECT_NE(container, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -408,7 +412,7 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
 
     ExecuteScript(
         "document.querySelector('#container').style.display = 'inline'");
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
 
     EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(MainFrame()->GetDocument(),
@@ -428,7 +432,7 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
     EXPECT_EQ(container, EffectiveRootScroller(MainFrame()->GetDocument()));
 
     ExecuteScript("document.querySelector('#container').style.width = '98%'");
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
 
     EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(MainFrame()->GetDocument(),
@@ -634,7 +638,7 @@ TEST_F(RootScrollerTest, RemoveCurrentRootScroller) {
   {
     MainFrame()->GetDocument()->setRootScroller(container, ASSERT_NO_EXCEPTION);
     ASSERT_EQ(container, controller.Get());
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     ASSERT_EQ(container, controller.EffectiveRootScroller());
   }
 
@@ -672,7 +676,7 @@ TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
                                      base_url);
 
   GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
 
@@ -745,7 +749,7 @@ TEST_F(RootScrollerTest, RemoteIFrame) {
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
   }
 }
 
@@ -763,11 +767,11 @@ TEST_F(RootScrollerTest, IFrameSwapToRemote) {
   // Swap in a remote frame. Make sure we revert back to the document.
   {
     MainWebFrame()->FirstChild()->Swap(frame_test_helpers::CreateRemote());
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
   }
@@ -859,7 +863,7 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
                                               <iframe></iframe>
                                           )HTML",
                                        base_url);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
 
     WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
     WebLocalFrameImpl* child =
@@ -878,7 +882,7 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
 
   ASSERT_EQ(MainFrame()->GetDocument(), global_controller.GlobalRootScroller());
 
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
   GraphicsLayer* scroll_layer = global_controller.RootScrollerLayer();
   GraphicsLayer* container_layer = global_controller.RootContainerLayer();
 
@@ -889,8 +893,8 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   // root do a complete lifecycle update.
   helper_.LocalMainFrame()->GetFrameView()->SetNeedsLayout();
   helper_.LocalMainFrame()->GetFrameView()->UpdateLifecycleToLayoutClean();
-  non_main_local_root->GetFrameView()->UpdateAllLifecyclePhases();
-  helper_.LocalMainFrame()->GetFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(non_main_local_root->GetFrameView());
+  UpdateAllLifecyclePhases(helper_.LocalMainFrame()->GetFrameView());
 
   EXPECT_EQ(MainFrame()->GetDocument(), global_controller.GlobalRootScroller());
   EXPECT_EQ(global_controller.RootScrollerLayer(), scroll_layer);
@@ -979,7 +983,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
       "document.getElementById('container').style.height = '200%';",
       *child_web_frame);
 
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   ScrollableArea* container_scroller = child_frame->View()->LayoutViewport();
 
@@ -1013,7 +1017,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
                                      base_url);
 
   GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
@@ -1053,7 +1057,7 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
 
   {
     GetWebView()->ResizeWithBrowserControls(IntSize(250, 1000), 0, 0, true);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
 
     Element* container =
         MainFrame()->GetDocument()->getElementById("container");
@@ -1092,7 +1096,7 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
 
   // Now do a rotation resize.
   GetWebView()->ResizeWithBrowserControls(IntSize(1000, 250), 50, 0, false);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   // The visual viewport should remain fully filled by the target.
   DOMRect* rect = target->getBoundingClientRect();
@@ -1110,13 +1114,13 @@ TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
 
   Element* br = document->CreateRawElement(html_names::kBrTag);
   document->ReplaceChild(br, document->documentElement());
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
   Element* html = document->CreateRawElement(html_names::kHTMLTag);
   Element* body = document->CreateRawElement(html_names::kBodyTag);
   html->AppendChild(body);
   body->AppendChild(br);
   document->AppendChild(html);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 }
 
 // Makes sure that when an iframe becomes the effective root scroller, its
@@ -1126,7 +1130,7 @@ TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
 // resizes by the URL bar.
 TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   Initialize("root-scroller-iframe.html");
-  MainFrameView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(MainFrameView());
 
   Document* document = MainFrame()->GetDocument();
   HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
@@ -1150,7 +1154,7 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   // size should remain the same.
   {
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 450), iframe_view->Size());
   }
@@ -1158,19 +1162,19 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   // Simulate a rotation. This time the layout size should reflect the resize.
   {
     GetWebView()->ResizeWithBrowserControls(IntSize(450, 400), 50, 0, false);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(IntSize(450, 350), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(450, 400), iframe_view->Size());
 
     // "Un-rotate" for following tests.
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
   }
 
   // Show the URL bar again. The frame rect should match the viewport.
   {
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
   }
@@ -1179,7 +1183,7 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   // tracking layout size by frame rect.
   {
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(MainFrameView());
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 450), iframe_view->Size());
     SetAndSelectRootScroller(*document, nullptr);

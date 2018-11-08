@@ -141,6 +141,8 @@ class BrowserControlsTest : public testing::Test {
     return helper_.GetWebView()->GetPage()->GetVisualViewport();
   }
 
+  void UpdateAllLifecyclePhases() { GetWebView()->UpdateAllLifecyclePhases(); }
+
  private:
   std::string base_url_;
   frame_test_helpers::WebViewHelper helper_;
@@ -777,7 +779,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
   web_view->GetBrowserControls().UpdateConstraintsAndState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -797,7 +799,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
   // Hide the browser controls.
   VerticalScroll(-100.f);
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -936,7 +938,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnits)) {
   web_view->GetBrowserControls().UpdateConstraintsAndState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -954,7 +956,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnits)) {
   // Hide the browser controls.
   VerticalScroll(-100.f);
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -978,7 +980,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsWithScale)) {
   web_view->GetBrowserControls().UpdateConstraintsAndState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -1003,7 +1005,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsWithScale)) {
   // Hide the browser controls.
   VerticalScroll(-100.f);
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -1028,7 +1030,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectVHUnitsUseLayoutSize)) {
   web_view->GetBrowserControls().UpdateConstraintsAndState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_EQ(100.f, web_view->GetBrowserControls().ContentOffset());
 
@@ -1064,7 +1066,7 @@ TEST_F(BrowserControlsTest,
   web_view->GetBrowserControls().UpdateConstraintsAndState(
       cc::BrowserControlsState::kBoth, cc::BrowserControlsState::kShown, false);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   LocalFrameView* view = GetFrame()->View();
   ScrollableArea* root_viewport = GetFrame()->View()->GetScrollableArea();
@@ -1103,7 +1105,7 @@ TEST_F(BrowserControlsTest,
   web_view->ResizeWithBrowserControls(
       WebSize(800, layout_viewport_height + browser_controls_height),
       browser_controls_height, 0, false);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_EQ(expected_visual_offset,
             GetVisualViewport().GetScrollOffset().Height());
   ASSERT_EQ(expected_layout_offset,
@@ -1288,14 +1290,14 @@ TEST_F(BrowserControlsTest,
   WebViewImpl* web_view = Initialize("95-vh.html");
   web_view->ResizeWithBrowserControls(WebSize(412, 604), 56.f, 0, true);
   web_view->GetBrowserControls().SetShownRatio(1);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   GetFrame()->GetDocument()->View()->SetTracksPaintInvalidations(true);
 
   // Hide the browser controls.
   VerticalScroll(-100.f);
   web_view->ResizeWithBrowserControls(WebSize(412, 660), 56.f, 0, false);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Ensure there is a raster invalidation of the bottom of the layer.
   const auto& raster_invalidations = GetFrame()

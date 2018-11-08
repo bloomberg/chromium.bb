@@ -112,7 +112,9 @@ class VisualViewportTest : public testing::Test,
     frame_test_helpers::LoadFrame(WebView()->MainFrameImpl(), url);
   }
 
-  void ForceFullCompositingUpdate() { WebView()->UpdateAllLifecyclePhases(); }
+  void UpdateAllLifecyclePhases() { WebView()->UpdateAllLifecyclePhases(); }
+
+  void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
 
   void RegisterMockedHttpURLLoad(const std::string& fileName) {
     url_test_helpers::RegisterMockedURLLoadFromBase(
@@ -373,7 +375,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    WebView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Translate(0, -300),
@@ -397,7 +399,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    WebView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Translate(0, -75),
@@ -461,7 +463,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    WebView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
@@ -484,7 +486,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   // Verify the paint property nodes and GeometryMapper cache.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    WebView()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
     EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
@@ -513,7 +515,7 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   WebView()->Resize(IntSize(320, 240));
 
   NavigateTo("about:blank");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   main_frame_widget->SetRootGraphicsLayer(
       frame_view.GetLayoutView()->Compositor()->RootGraphicsLayer());
 
@@ -544,7 +546,7 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   // Viewport is whole frame.
   IntSize size = IntSize(400, 200);
   WebView()->Resize(size);
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   visual_viewport.SetSize(size);
 
   // Scale the viewport to 2X; size should not change.
@@ -785,7 +787,7 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResizeAndScale) {
 
   // Resize both the viewport and the frame to be larger.
   WebView()->Resize(IntSize(640, 480));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(IntSize(WebView()->Size()), visual_viewport.Size());
   EXPECT_EQ(IntSize(WebView()->Size()), GetFrame()->View()->FrameRect().Size());
   visual_viewport.SetLocation(FloatPoint(1000, 1000));
@@ -812,7 +814,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToContent) {
   NavigateTo(base_url_ + "200-by-300-viewport.html");
 
   WebView()->Resize(IntSize(600, 800));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Note: the size is ceiled and should match the behavior in CC's
   // LayerImpl::bounds().
@@ -831,7 +833,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToMinimumScale) {
   NavigateTo(base_url_ + "200-by-300.html");
 
   WebView()->Resize(IntSize(100, 160));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(IntSize(100, 160),
             WebView()->MainFrameImpl()->GetFrameView()->FrameRect().Size());
@@ -847,7 +849,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   // the smaller size on the second navigation.
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
@@ -860,7 +862,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   // Navigate again, this time the LocalFrameView should be smaller.
   RegisterMockedHttpURLLoad("viewport-device-width.html");
   NavigateTo(base_url_ + "viewport-device-width.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Ensure the scroll contents size matches the frame view's size.
   EXPECT_EQ(IntSize(320, 240), IntSize(visual_viewport.ScrollLayer()->Size()));
@@ -885,7 +887,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
   NavigateTo(base_url_ + "200-by-300-min-scale-2.html");
 
   WebView()->Resize(IntSize(100, 160));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(IntSize(50, 80),
             WebView()->MainFrameImpl()->GetFrameView()->FrameRect().Size());
@@ -946,7 +948,7 @@ TEST_P(VisualViewportTest, TestTextSelectionHandles) {
 TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   InitializeWithDesktopSettings();
   WebView()->Resize(IntSize(200, 300));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
@@ -1040,7 +1042,7 @@ TEST_P(VisualViewportTest,
        TestNavigateToSmallerFrameViewHistoryItemClobberBug) {
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(400, 400));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
@@ -1320,7 +1322,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1372,7 +1374,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1454,7 +1456,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1525,7 +1527,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1592,7 +1594,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Scroll the LocalFrameView to the bottom of the page but "hide" the browser
   // controls on the compositor side so the max scroll position should account
@@ -1682,7 +1684,7 @@ TEST_P(VisualViewportTest, ResizeVisualViewportStaysWithinOuterViewport) {
   WebView()->Resize(IntSize(100, 200));
 
   NavigateTo("about:blank");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebView()->ResizeVisualViewport(IntSize(100, 100));
 
@@ -1911,7 +1913,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   NavigateTo(base_url_ + "hit-test.html");
 
   WebView()->Resize(IntSize(500, 500));
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebDocument web_doc = WebView()->MainFrameImpl()->GetDocument();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -2031,7 +2033,7 @@ TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(700, 500),
                                                kProgrammaticScroll);
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebView()->Resize(IntSize(800, 300));
   EXPECT_EQ(ScrollOffset(700, 200),
@@ -2083,7 +2085,7 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
   Element* scroller = GetFrame()->GetDocument()->getElementById("rootScroller");
   NonThrowableExceptionState non_throw;
   GetFrame()->GetDocument()->setRootScroller(scroller, non_throw);
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   scroller->setScrollTop(800);
 
@@ -2377,7 +2379,7 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   auto* node = visual_viewport.GetOverscrollElasticityTransformNode();
@@ -2395,7 +2397,7 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
-  WebView()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   auto* vertical_scrollbar = visual_viewport.LayerForVerticalScrollbar();

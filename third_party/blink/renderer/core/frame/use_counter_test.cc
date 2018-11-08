@@ -63,6 +63,10 @@ class UseCounterTest : public testing::Test {
       UseCounter::Context context = UseCounter::kDefaultContext);
   std::unique_ptr<DummyPageHolder> dummy_;
   HistogramTester histogram_tester_;
+
+  void UpdateAllLifecyclePhases(Document& document) {
+    document.View()->UpdateAllLifecyclePhases();
+  }
 };
 
 template <typename T>
@@ -227,7 +231,7 @@ TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='contain: layout;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -242,7 +246,7 @@ TEST_F(UseCounterTest, CSSContainLayoutAbsolutelyPositionedDescendants) {
       "<div style='contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -258,7 +262,7 @@ TEST_F(UseCounterTest,
       "<div style='position: relative; contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -273,7 +277,7 @@ TEST_F(UseCounterTest, CSSContainLayoutFixedPositionedDescendants) {
       "<div style='contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -289,7 +293,7 @@ TEST_F(UseCounterTest,
       "<div style='transform: translateX(100px); contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -303,7 +307,7 @@ TEST_F(UseCounterTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-grid; grid-template-columns: 50%;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -317,7 +321,7 @@ TEST_F(UseCounterTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-grid; grid-template-rows: 50%;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -330,7 +334,7 @@ TEST_F(UseCounterTest, CSSFlexibleBox) {
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: flex;'>flexbox</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -343,7 +347,7 @@ TEST_F(UseCounterTest, CSSFlexibleBoxInline) {
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-flex;'>flexbox</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -357,7 +361,7 @@ TEST_F(UseCounterTest, CSSFlexibleBoxButton) {
   WebFeature feature = WebFeature::kCSSFlexibleBox;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString("<button>button</button>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
