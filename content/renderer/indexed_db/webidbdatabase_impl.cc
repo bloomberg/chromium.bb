@@ -171,18 +171,8 @@ void WebIDBDatabaseImpl::Put(
     WebIDBKeyView web_primary_key,
     blink::WebIDBPutMode put_mode,
     WebIDBCallbacks* callbacks,
-    const WebVector<blink::WebIDBIndexKeys>& index_keys) {
-  IndexedDBKey key = IndexedDBKeyBuilder::Build(web_primary_key);
-
-  if (value.size() + key.size_estimate() > max_put_value_size_) {
-    callbacks->OnError(blink::WebIDBDatabaseError(
-        blink::kWebIDBDatabaseExceptionUnknownError,
-        WebString::FromUTF8(base::StringPrintf(
-            "The serialized value is too large"
-            " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
-            value.size(), max_put_value_size_))));
-    return;
-  }
+    const WebVector<blink::WebIDBIndexKeys>& web_index_keys) {
+  IndexedDBKey primary_key = IndexedDBKeyBuilder::Build(web_primary_key);
 
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
@@ -218,10 +208,32 @@ void WebIDBDatabaseImpl::Put(
     mojo_value->blob_or_file_info.push_back(std::move(blob_info));
   }
 
+  std::vector<blink::IndexedDBIndexKeys> index_keys =
+      ConvertWebIndexKeys(web_index_keys);
+  size_t index_keys_size = 0;
+  for (const auto& index_key : index_keys) {
+    index_keys_size++;  // Account for index_key.first (int64_t).
+    for (const auto& key : index_key.second) {
+      index_keys_size += key.size_estimate();
+    }
+  }
+
+  size_t arg_size =
+      mojo_value->bits.size() + primary_key.size_estimate() + index_keys_size;
+  if (arg_size >= max_put_value_size_) {
+    callbacks->OnError(blink::WebIDBDatabaseError(
+        blink::kWebIDBDatabaseExceptionUnknownError,
+        WebString::FromUTF8(base::StringPrintf(
+            "The serialized keys and/or value are too large"
+            " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
+            arg_size, max_put_value_size_))));
+    return;
+  }
+
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->Put(transaction_id, object_store_id, std::move(mojo_value), key,
-                 put_mode, ConvertWebIndexKeys(index_keys),
+  database_->Put(transaction_id, object_store_id, std::move(mojo_value),
+                 primary_key, put_mode, std::move(index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
