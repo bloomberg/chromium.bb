@@ -29,7 +29,6 @@ class TetherHostFetcherImplTest;
 }  // namespace chromeos
 
 namespace proximity_auth {
-class BluetoothLowEnergySetupConnectionFinder;
 class ProximityAuthWebUIHandler;
 }  // namespace proximity_auth
 
@@ -102,7 +101,6 @@ class RemoteDeviceRef {
   friend class chromeos::tether::TetherHostFetcherImpl;
   friend class chromeos::tether::TetherHostFetcherImplTest;
   friend class proximity_auth::ProximityAuthWebUIHandler;
-  friend class proximity_auth::BluetoothLowEnergySetupConnectionFinder;
 
   explicit RemoteDeviceRef(std::shared_ptr<RemoteDevice> remote_device);
 
