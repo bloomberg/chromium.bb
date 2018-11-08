@@ -64,7 +64,7 @@ class TestResult(object):
     return self._failure
 
 
-def _Run(java_tests_src_dir, test_filter,
+def _Run(java_tests_src_dir, test_filter, ready_to_run_tests,
          chromedriver_path, chrome_path, log_path, android_package_key,
          verbose, debug):
   """Run the WebDriver Java tests and return the test results.
@@ -73,6 +73,8 @@ def _Run(java_tests_src_dir, test_filter,
     java_tests_src_dir: the java test source code directory.
     test_filter: the filter to use when choosing tests to run. Format is same
         as Google C++ Test format.
+    readyToRunTests: tests that need to run regardless of
+        @NotYetImplemented annotation
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
     log_path: path to server log.
@@ -124,6 +126,8 @@ def _Run(java_tests_src_dir, test_filter,
     # Test jar actually takes a regex. Convert from glob.
     test_filter = test_filter.replace('*', '.*')
     sys_props += ['filter=' + test_filter]
+  if ready_to_run_tests:
+    sys_props += ['readyToRun=' + ready_to_run_tests]
 
   jvm_args = []
   if debug:
@@ -313,6 +317,7 @@ def main():
           test_filter += '-'
         test_filter += ':'.join(environment.GetDisabledJavaTestMatchers())
       test_filters = [test_filter]
+    ready_to_run_tests = ':'.join(environment.GetReadyToRunJavaTestMatchers())
 
     java_tests_src_dir = os.path.join(chrome_paths.GetSrc(), 'chrome', 'test',
                                       'chromedriver', 'third_party',
@@ -334,6 +339,7 @@ def main():
       results += _Run(
           java_tests_src_dir=java_tests_src_dir,
           test_filter=filter,
+          ready_to_run_tests=ready_to_run_tests,
           chromedriver_path=options.chromedriver,
           chrome_path=util.GetAbsolutePathOfUserPath(options.chrome),
           log_path=options.log_path,
