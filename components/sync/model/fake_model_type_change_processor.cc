@@ -43,6 +43,11 @@ void FakeModelTypeChangeProcessor::UntrackEntity(
 void FakeModelTypeChangeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {}
 
+bool FakeModelTypeChangeProcessor::IsEntityUnsynced(
+    const std::string& storage_key) {
+  return false;
+}
+
 void FakeModelTypeChangeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {}
 

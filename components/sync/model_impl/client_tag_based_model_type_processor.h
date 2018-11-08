@@ -68,6 +68,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntity(const EntityData& entity_data) override;
   void UntrackEntityForStorageKey(const std::string& storage_key) override;
+  bool IsEntityUnsynced(const std::string& storage_key) override;
   void OnModelStarting(ModelTypeSyncBridge* bridge) override;
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
