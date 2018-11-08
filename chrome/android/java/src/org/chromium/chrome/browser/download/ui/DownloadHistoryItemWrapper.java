@@ -13,7 +13,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadMetrics;
-import org.chromium.chrome.browser.download.DownloadNotificationService2;
+import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.metrics.FileExtensions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -321,19 +321,19 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public void cancel() {
             mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
-                    mItem, DownloadNotificationService2.ACTION_DOWNLOAD_CANCEL);
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_CANCEL);
         }
 
         @Override
         public void pause() {
             mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
-                    mItem, DownloadNotificationService2.ACTION_DOWNLOAD_PAUSE);
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_PAUSE);
         }
 
         @Override
         public void resume() {
             mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
-                    mItem, DownloadNotificationService2.ACTION_DOWNLOAD_RESUME);
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_RESUME);
         }
 
         @Override

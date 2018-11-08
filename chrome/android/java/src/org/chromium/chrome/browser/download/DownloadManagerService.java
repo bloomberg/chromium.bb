@@ -233,7 +233,7 @@ public class DownloadManagerService
     public static DownloadManagerService getDownloadManagerService() {
         ThreadUtils.assertOnUiThread();
         if (sDownloadManagerService == null) {
-            DownloadNotifier downloadNotifier = new SystemDownloadNotifier2();
+            DownloadNotifier downloadNotifier = new SystemDownloadNotifier();
             sDownloadManagerService = new DownloadManagerService(
                     downloadNotifier, new Handler(), UPDATE_DELAY_MILLIS);
         }
@@ -410,7 +410,7 @@ public class DownloadManagerService
             mInfoBarController = new DownloadInfoBarController(false);
             mIncognitoInfoBarController = new DownloadInfoBarController(true);
 
-            DownloadNotificationService2.clearResumptionAttemptLeft();
+            DownloadNotificationService.clearResumptionAttemptLeft();
 
             DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                     /*isOffTheRecord=*/false);
@@ -1518,7 +1518,7 @@ public class DownloadManagerService
      * @param downloadItem The download associated with download action.
      */
     private void addCancelExtra(Intent intent, DownloadItem downloadItem) {
-        if (intent.getAction().equals(DownloadNotificationService2.ACTION_DOWNLOAD_CANCEL)) {
+        if (intent.getAction().equals(DownloadNotificationService.ACTION_DOWNLOAD_CANCEL)) {
             int state;
             if (DownloadUtils.isDownloadPaused(downloadItem)) {
                 state = DownloadNotificationUmaHelper.StateAtCancel.PAUSED;
@@ -1532,7 +1532,7 @@ public class DownloadManagerService
             } else {
                 state = DownloadNotificationUmaHelper.StateAtCancel.DOWNLOADING;
             }
-            intent.putExtra(DownloadNotificationService2.EXTRA_DOWNLOAD_STATE_AT_CANCEL, state);
+            intent.putExtra(DownloadNotificationService.EXTRA_DOWNLOAD_STATE_AT_CANCEL, state);
         }
     }
 

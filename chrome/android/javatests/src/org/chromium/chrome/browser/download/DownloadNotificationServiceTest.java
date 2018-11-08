@@ -41,11 +41,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Tests of {@link DownloadNotificationService2}.
+ * Tests of {@link DownloadNotificationService}.
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-public class DownloadNotificationService2Test {
+public class DownloadNotificationServiceTest {
     private static final ContentId ID1 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
     private static final ContentId ID2 =
@@ -66,7 +66,7 @@ public class DownloadNotificationService2Test {
     @Rule
     public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
-    private MockDownloadNotificationService2 mDownloadNotificationService;
+    private MockDownloadNotificationService mDownloadNotificationService;
     private DownloadForegroundServiceManagerTest
             .MockDownloadForegroundServiceManager mDownloadForegroundServiceManager;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
@@ -74,7 +74,7 @@ public class DownloadNotificationService2Test {
     private final boolean mEnableOfflinePagesDescriptivePendingStatus;
     private final boolean mEnableOfflinePagesDescriptiveFailStatus;
 
-    public DownloadNotificationService2Test(boolean enableOfflinePagesDescriptivePendingStatus,
+    public DownloadNotificationServiceTest(boolean enableOfflinePagesDescriptivePendingStatus,
             boolean enableOfflinePagesDescriptiveFailStatus) {
         mEnableOfflinePagesDescriptivePendingStatus = enableOfflinePagesDescriptivePendingStatus;
         mEnableOfflinePagesDescriptiveFailStatus = enableOfflinePagesDescriptiveFailStatus;
@@ -100,8 +100,8 @@ public class DownloadNotificationService2Test {
         } else {
             Features.getInstance().disable(ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS);
         }
-        DownloadNotificationService2.clearResumptionAttemptLeft();
-        mDownloadNotificationService = new MockDownloadNotificationService2();
+        DownloadNotificationService.clearResumptionAttemptLeft();
+        mDownloadNotificationService = new MockDownloadNotificationService();
         mDownloadForegroundServiceManager =
                 new DownloadForegroundServiceManagerTest.MockDownloadForegroundServiceManager();
         mDownloadNotificationService.setDownloadForegroundServiceManager(
@@ -111,7 +111,7 @@ public class DownloadNotificationService2Test {
 
     @After
     public void tearDown() {
-        DownloadNotificationService2.clearResumptionAttemptLeft();
+        DownloadNotificationService.clearResumptionAttemptLeft();
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);

@@ -20,10 +20,10 @@ import java.util.PriorityQueue;
 
 /**
  * DownloadNotifier implementation that creates and updates download notifications.
- * This class creates the {@link DownloadNotificationService2} when needed, and binds
+ * This class creates the {@link DownloadNotificationService} when needed, and binds
  * to the latter to issue calls to show and update notifications.
  */
-public class SystemDownloadNotifier2 implements DownloadNotifier {
+public class SystemDownloadNotifier implements DownloadNotifier {
     // To avoid notification updates being throttled by Android, using 220 ms as the interavl
     // so that no more than 5 updates are posted per second.
     private static final long UPDATE_DELAY_MILLIS = 220;
@@ -33,7 +33,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                             -> n1.mPriority == n2.mPriority ? (int) (n1.mTimestamp - n2.mTimestamp)
                                                             : n1.mPriority - n2.mPriority);
     private Handler mHandler;
-    private DownloadNotificationService2 mDownloadNotificationService;
+    private DownloadNotificationService mDownloadNotificationService;
     private boolean mIsNotificationUpdateScheduled;
 
     @IntDef({NotificationPriority.HIGH, NotificationPriority.LOW})
@@ -89,17 +89,17 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
     /**
      * Constructor.
      */
-    public SystemDownloadNotifier2() {}
+    public SystemDownloadNotifier() {}
 
-    DownloadNotificationService2 getDownloadNotificationService() {
+    DownloadNotificationService getDownloadNotificationService() {
         if (mDownloadNotificationService == null) {
-            mDownloadNotificationService = DownloadNotificationService2.getInstance();
+            mDownloadNotificationService = DownloadNotificationService.getInstance();
         }
         return mDownloadNotificationService;
     }
 
     @VisibleForTesting
-    void setDownloadNotificationService(DownloadNotificationService2 downloadNotificationService) {
+    void setDownloadNotificationService(DownloadNotificationService downloadNotificationService) {
         mDownloadNotificationService = downloadNotificationService;
     }
 
@@ -174,7 +174,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
 
     @Override
     public void resumePendingDownloads() {
-        if (DownloadNotificationService2.isTrackingResumableDownloads(
+        if (DownloadNotificationService.isTrackingResumableDownloads(
                     ContextUtils.getApplicationContext())) {
             getDownloadNotificationService().resumeAllPendingDownloads();
         }

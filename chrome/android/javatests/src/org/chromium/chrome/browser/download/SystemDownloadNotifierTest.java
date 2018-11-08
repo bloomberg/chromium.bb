@@ -25,20 +25,20 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import java.util.UUID;
 
 /**
- * Tests of {@link SystemDownloadNotifier2}.
+ * Tests of {@link SystemDownloadNotifier}.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class SystemDownloadNotifier2Test {
+public class SystemDownloadNotifierTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
-    private final SystemDownloadNotifier2 mSystemDownloadNotifier = new SystemDownloadNotifier2();
-    private MockDownloadNotificationService2 mMockDownloadNotificationService;
+    private final SystemDownloadNotifier mSystemDownloadNotifier = new SystemDownloadNotifier();
+    private MockDownloadNotificationService mMockDownloadNotificationService;
 
     @Before
     public void setUp() throws Exception {
         Looper.prepare();
-        mMockDownloadNotificationService = new MockDownloadNotificationService2();
+        mMockDownloadNotificationService = new MockDownloadNotificationService();
         mSystemDownloadNotifier.setDownloadNotificationService(mMockDownloadNotificationService);
         mSystemDownloadNotifier.setHandler(new Handler(Looper.getMainLooper()));
     }
