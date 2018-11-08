@@ -14,8 +14,9 @@
 
 namespace media_router {
 
+// TODO(crbug.com/903016) Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
-                       MANUAL_OpenLocalMediaFileFullscreen) {
+                       DISABLED_OpenLocalMediaFileFullscreen) {
   GURL file_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("media/bigbuck.webm")));
