@@ -34,16 +34,19 @@ static const char kTestBindingFile[] =
 
 namespace {
 
-zx_koid_t GetKoidForHandle(const zx::object_base& object) {
+zx_koid_t GetKoidForHandle(zx_handle_t handle) {
   zx_info_handle_basic_t info;
-  zx_status_t status =
-      zx_object_get_info(object.get(), ZX_INFO_HANDLE_BASIC, &info,
-                         sizeof(info), nullptr, nullptr);
+  zx_status_t status = zx_object_get_info(handle, ZX_INFO_HANDLE_BASIC, &info,
+                                          sizeof(info), nullptr, nullptr);
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "zx_object_get_info";
     return ZX_KOID_INVALID;
   }
   return info.koid;
+}
+
+zx_koid_t GetKoidForHandle(const zx::object_base& object) {
+  return GetKoidForHandle(object.get());
 }
 
 }  // namespace
@@ -445,6 +448,11 @@ class TestolaImpl : public fidljstest::Testola {
 #undef INC_OUTPUT_ARRAY
 
     callback(std::move(output));
+  }
+
+  void PassVectorOfVMO(fidljstest::VectorOfHandleToVMO input,
+                       PassVectorOfVMOCallback callback) override {
+    callback(std::move(input));
   }
 
   bool was_do_something_called() const { return was_do_something_called_; }
@@ -1159,6 +1167,56 @@ TEST_F(FidlGenJsTest, VectorsOfPrimitives) {
   EXPECT_EQ(result_v_float64[8], 74.f);
   EXPECT_EQ(result_v_float64[9], 75.f);
   EXPECT_EQ(result_v_float64[10], 76.f);
+}
+
+TEST_F(FidlGenJsTest, VectorOfHandle) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  zx::vmo test_vmo0, test_vmo1;
+  ASSERT_EQ(zx::vmo::create(4096, 0, &test_vmo0), ZX_OK);
+  ASSERT_EQ(zx::vmo::create(16384, 0, &test_vmo1), ZX_OK);
+
+  // Save to compare on return.
+  zx_koid_t koid_of_vmo0 = GetKoidForHandle(test_vmo0);
+  zx_koid_t koid_of_vmo1 = GetKoidForHandle(test_vmo1);
+
+  helper.runner().global()->Set(gin::StringToSymbol(isolate, "vmo0"),
+                                gin::ConvertToV8(isolate, test_vmo0.release()));
+  helper.runner().global()->Set(gin::StringToSymbol(isolate, "vmo1"),
+                                gin::ConvertToV8(isolate, test_vmo1.release()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    proxy.PassVectorOfVMO(new VectorOfHandleToVMO([vmo0, vmo1])).then(
+    resp => {
+      this.result_vmo0 = resp.vmos[0];
+      this.result_vmo1 = resp.vmos[1];
+    }).catch((e) => log('FAILED: ' + e));
+  )";
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  zx_handle_t result_vmo0 = helper.Get<zx_handle_t>("result_vmo0");
+  zx_handle_t result_vmo1 = helper.Get<zx_handle_t>("result_vmo1");
+
+  EXPECT_EQ(GetKoidForHandle(result_vmo0), koid_of_vmo0);
+  EXPECT_EQ(GetKoidForHandle(result_vmo1), koid_of_vmo1);
+
+  uint64_t size;
+  ASSERT_EQ(zx_vmo_get_size(result_vmo0, &size), ZX_OK);
+  EXPECT_EQ(size, 4096u);
+  ASSERT_EQ(zx_vmo_get_size(result_vmo1, &size), ZX_OK);
+  EXPECT_EQ(size, 16384u);
+
+  EXPECT_EQ(zx_handle_close(result_vmo0), ZX_OK);
+  EXPECT_EQ(zx_handle_close(result_vmo1), ZX_OK);
 }
 
 int main(int argc, char** argv) {

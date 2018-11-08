@@ -139,6 +139,8 @@ class Compiler(object):
         raise Exception('expected ' + t.identifier +
                         ' to be in self.type_inline_size_by_name')
       return size
+    elif t.kind == fidl.TypeKind.HANDLE:
+      return 4
     else:
       raise NotImplementedError(t.kind)
 

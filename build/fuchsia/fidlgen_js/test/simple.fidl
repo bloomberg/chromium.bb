@@ -75,6 +75,10 @@ struct VectorsOfPrimitives {
   vector<float64> v_float64;
 };
 
+struct VectorOfHandleToVMO {
+  vector<handle<vmo>> vmos;
+};
+
 interface Testola {
   1: DoSomething();
 
@@ -105,4 +109,7 @@ interface Testola {
 
   13: PassVectorOfPrimitives(VectorsOfPrimitives input)
         -> (VectorsOfPrimitives output);
+
+  14: PassVectorOfVMO(VectorOfHandleToVMO input)
+        -> (VectorOfHandleToVMO output);
 };
