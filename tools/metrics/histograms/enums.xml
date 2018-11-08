@@ -7911,6 +7911,13 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="Client hints setting"/>
   <int value="38" label="Sensors setting"/>
   <int value="39" label="Accessibility events setting"/>
+  <int value="40" label="Clipboard read"/>
+  <int value="41" label="Clipboard write"/>
+  <int value="42" label="Plugins data"/>
+  <int value="43" label="Payment handler"/>
+  <int value="44" label="USB guard"/>
+  <int value="45" label="Background fetch"/>
+  <int value="46" label="Intent picker display"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">

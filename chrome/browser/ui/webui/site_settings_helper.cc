@@ -99,6 +99,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE, nullptr},
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
+    {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
 };
 static_assert(arraysize(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
