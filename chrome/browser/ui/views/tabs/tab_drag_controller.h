@@ -470,6 +470,10 @@ class TabDragController : public views::WidgetObserver,
   // property.
   void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
 
+  // Whether a drag to |window| should be blocked (for example, if the window
+  // is showing a modal).
+  bool ShouldDisallowDrag(gfx::NativeWindow window);
+
   EventSource event_source_;
 
   // The TabStrip the drag originated from. This is set to null if destroyed
