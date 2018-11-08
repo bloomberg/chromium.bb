@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -332,7 +333,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // origin will be created via
   // ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests method.
   virtual void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-      std::vector<url::Origin> request_initiators,
+      base::flat_set<url::Origin> request_initiators,
       bool push_to_renderer_now) = 0;
 
   // Returns true if the given sandbox flag |flags| is in effect on this frame.
@@ -340,6 +341,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Content-Security-Policy header, in addition to those which are set by the
   // embedding frame.
   virtual bool IsSandboxed(blink::WebSandboxFlags flags) const = 0;
+
+  // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
+  // related interfaces to make sure all in-flight mojo messages have been
+  // received by the other end. For test use only.
+  virtual void FlushNetworkAndNavigationInterfacesForTesting() = 0;
 
  private:
   // This interface should only be implemented inside content.

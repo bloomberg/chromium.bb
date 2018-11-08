@@ -1075,15 +1075,32 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
 }
 
 void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-    std::vector<url::Origin> request_initiators,
+    base::flat_set<url::Origin> request_initiators,
     bool push_to_renderer_now) {
   size_t old_size = initiators_requiring_separate_url_loader_factory_.size();
   initiators_requiring_separate_url_loader_factory_.insert(
       request_initiators.begin(), request_initiators.end());
   size_t new_size = initiators_requiring_separate_url_loader_factory_.size();
   bool insertion_took_place = (old_size != new_size);
-  if (push_to_renderer_now && insertion_took_place)
-    UpdateSubresourceLoaderFactories();
+
+  // Push the updated set of factories to the renderer, but only if
+  // 1) the caller requested an immediate push (e.g. for content scripts
+  //    injected programmatically chrome.tabs.executeCode, but not for content
+  //    scripts declared in the manifest - the difference is that the latter
+  //    happen at a commit and the factories can just be send in the commit
+  //    IPC).
+  // 2) an insertion actually took place / the factories have been modified
+  // 3) a commit has taken place before (i.e. the frame has received a factory
+  //    bundle before).
+  if (push_to_renderer_now && insertion_took_place &&
+      has_committed_any_navigation_) {
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
+        std::make_unique<URLLoaderFactoryBundleInfo>();
+    subresource_loader_factories->initiator_specific_factory_infos() =
+        CreateInitiatorSpecificURLLoaderFactories(request_initiators);
+    GetNavigationControl()->UpdateSubresourceLoaderFactories(
+        std::move(subresource_loader_factories));
+  }
 }
 
 bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) const {
@@ -1091,12 +1108,12 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) const {
 }
 
 URLLoaderFactoryBundleInfo::OriginMap
-RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories() {
+RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories(
+    const base::flat_set<url::Origin>& initiator_origins) {
   URLLoaderFactoryBundleInfo::OriginMap result;
-  for (const url::Origin& initiator :
-       initiators_requiring_separate_url_loader_factory_) {
+  for (const url::Origin& initiator : initiator_origins) {
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
-    CreateNetworkServiceDefaultFactoryInternal(
+    CreateNetworkServiceDefaultFactoryAndObserve(
         initiator, mojo::MakeRequest(&factory_info));
     result[initiator] = std::move(factory_info);
   }
@@ -4385,6 +4402,7 @@ void RenderFrameHostImpl::CommitNavigation(
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       (!is_same_document || is_first_navigation)) {
+    recreate_default_url_loader_factory_after_network_service_crash_ = false;
     subresource_loader_factories =
         std::make_unique<URLLoaderFactoryBundleInfo>();
     BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
@@ -4425,6 +4443,7 @@ void RenderFrameHostImpl::CommitNavigation(
     if (!default_factory_info) {
       // Otherwise default to a Network Service-backed loader from the
       // appropriate NetworkContext.
+      recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               GetOriginForURLLoaderFactory(common_params.url,
@@ -4501,7 +4520,8 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     subresource_loader_factories->initiator_specific_factory_infos() =
-        CreateInitiatorSpecificURLLoaderFactories();
+        CreateInitiatorSpecificURLLoaderFactories(
+            initiators_requiring_separate_url_loader_factory_);
   }
 
   // It is imperative that cross-document navigations always provide a set of
@@ -5163,14 +5183,19 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(network_service_connection_error_handler_holder_.is_bound());
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      last_committed_origin_, mojo::MakeRequest(&default_factory_info));
+  bool bypass_redirect_checks = false;
+  if (recreate_default_url_loader_factory_after_network_service_crash_) {
+    bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
+        last_committed_origin_, mojo::MakeRequest(&default_factory_info));
+  }
 
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
           URLLoaderFactoryBundleInfo::SchemeMap(),
-          CreateInitiatorSpecificURLLoaderFactories(), bypass_redirect_checks);
+          CreateInitiatorSpecificURLLoaderFactories(
+              initiators_requiring_separate_url_loader_factory_),
+          bypass_redirect_checks);
   SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       CloneSubresourceFactories());

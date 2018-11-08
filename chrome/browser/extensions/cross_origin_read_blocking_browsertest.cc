@@ -4,21 +4,28 @@
 
 #include "chrome/browser/extensions/extension_action_runner.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -44,6 +51,10 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
   }
 
  protected:
+  content::WebContents* active_web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
   const Extension* InstallExtension(
       GURL resource_to_fetch_from_declarative_content_script = GURL()) {
     bool use_declarative_content_script =
@@ -183,6 +194,8 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
     return url::Origin::Create(extension_->url());
   }
 
+  const Extension* extension() { return extension_; }
+
  private:
   // Asks the test |extension_| to inject |content_script| into |web_contents|.
   //
@@ -307,9 +320,6 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
                        FromDeclarativeContentScript_NoSniffXml) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
   // Load the test extension.
   GURL cross_site_resource(
       embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
@@ -326,9 +336,10 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // |content_script| declared in the extension manifest.
     GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
     ui_test_utils::NavigateToURL(browser(), page_url);
-    EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+    EXPECT_EQ(page_url,
+              active_web_contents()->GetMainFrame()->GetLastCommittedURL());
     EXPECT_EQ(url::Origin::Create(page_url),
-              web_contents->GetMainFrame()->GetLastCommittedOrigin());
+              active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
     // Extract results of the fetch done in the declarative content script.
     std::string fetch_result = PopString(&message_queue);
@@ -355,7 +366,8 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     const char kBlankSubframeInjectionScript[] = R"(
         var subframe = document.createElement('iframe');
         document.body.appendChild(subframe); )";
-    content::ExecuteScriptAsync(web_contents, kBlankSubframeInjectionScript);
+    content::ExecuteScriptAsync(active_web_contents(),
+                                kBlankSubframeInjectionScript);
 
     // Extract results of the fetch done in the declarative content script.
     std::string fetch_result = PopString(&message_queue);
@@ -381,20 +393,19 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   ASSERT_TRUE(InstallExtension());
 
   // Navigate to a foo.com page.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   ui_test_utils::NavigateToURL(browser(), page_url);
-  EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(url::Origin::Create(page_url),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Inject a content script that performs a cross-origin XHR to bar.com.
   base::HistogramTester histograms;
   GURL cross_site_resource(
       embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
   std::string fetch_result =
-      FetchViaContentScript(cross_site_resource, web_contents);
+      FetchViaContentScript(cross_site_resource, active_web_contents());
 
   // Verify that no blocking occurred.
   EXPECT_EQ("nosniff.xml - body\n", fetch_result);
@@ -413,13 +424,12 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   ASSERT_TRUE(InstallExtension());
 
   // Navigate to a foo.com page.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   ui_test_utils::NavigateToURL(browser(), page_url);
-  EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(url::Origin::Create(page_url),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Inject a content script that performs a cross-origin XHR to bar.com.
   //
@@ -429,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   GURL cross_site_resource(
       embedded_test_server()->GetURL("bar.com", "/save_page/text.txt"));
   std::string fetch_result =
-      FetchViaContentScript(cross_site_resource, web_contents);
+      FetchViaContentScript(cross_site_resource, active_web_contents());
 
   // Verify that no blocking occurred.
   EXPECT_THAT(fetch_result,
@@ -451,19 +461,19 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   ASSERT_TRUE(InstallExtension());
 
   // Navigate to a foo.com page.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   ui_test_utils::NavigateToURL(browser(), page_url);
-  EXPECT_EQ(page_url, web_contents->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(url::Origin::Create(page_url),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Inject a content script that performs a cross-origin XHR to bar.com.
   base::HistogramTester histograms;
   GURL cross_site_resource(
       embedded_test_server()->GetURL("bar.com", "/nosniff.empty"));
-  EXPECT_EQ("", FetchViaContentScript(cross_site_resource, web_contents));
+  EXPECT_EQ("",
+            FetchViaContentScript(cross_site_resource, active_web_contents()));
 
   // Verify that no blocking occurred.
   EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
@@ -506,10 +516,8 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
   // Navigate a tab to an extension page.
   ui_test_utils::NavigateToURL(browser(), GetExtensionResource("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(GetExtensionOrigin(),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_EQ(GetExtensionOrigin(),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Test case #1: Fetch from a chrome-extension://... main frame.
   {
@@ -518,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     GURL cross_site_resource(
         embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
     std::string fetch_result =
-        FetchViaWebContents(cross_site_resource, web_contents);
+        FetchViaWebContents(cross_site_resource, active_web_contents());
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
@@ -537,8 +545,8 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     base::HistogramTester histograms;
     GURL cross_site_resource(
         embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
-    std::string fetch_result =
-        FetchViaSrcDocFrame(cross_site_resource, web_contents->GetMainFrame());
+    std::string fetch_result = FetchViaSrcDocFrame(
+        cross_site_resource, active_web_contents()->GetMainFrame());
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
@@ -593,15 +601,13 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
   // Navigate a tab to an extension page.
   ui_test_utils::NavigateToURL(browser(), GetExtensionResource("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(GetExtensionOrigin(),
-            web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  ASSERT_EQ(GetExtensionOrigin(),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Verify that the service worker controls the fetches.
   bool is_controlled_by_service_worker = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      web_contents,
+      active_web_contents(),
       "domAutomationController.send(!!navigator.serviceWorker.controller)",
       &is_controlled_by_service_worker));
   ASSERT_TRUE(is_controlled_by_service_worker);
@@ -617,8 +623,9 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     base::HistogramTester histograms;
     GURL cross_site_resource_intercepted_by_service_worker(
         embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
-    std::string fetch_result = FetchViaWebContents(
-        cross_site_resource_intercepted_by_service_worker, web_contents);
+    std::string fetch_result =
+        FetchViaWebContents(cross_site_resource_intercepted_by_service_worker,
+                            active_web_contents());
 
     // Verify that no blocking occurred (and that the response really did go
     // through the service worker).
@@ -645,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     GURL cross_site_resource_ignored_by_service_worker(
         embedded_test_server()->GetURL("other.com", "/nosniff.xml"));
     std::string fetch_result = FetchViaWebContents(
-        cross_site_resource_ignored_by_service_worker, web_contents);
+        cross_site_resource_ignored_by_service_worker, active_web_contents());
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
@@ -656,6 +663,94 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // for a request that wasn't from a content script.
     VerifyContentScriptHistogramIsMissing(histograms);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
+                       ProgrammaticContentScriptVsAppCache) {
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Set up http server serving files from content/test/data (which conveniently
+  // already contains appcache-related test files, unlike chrome/test/data).
+  net::EmbeddedTestServer content_test_data_server;
+  content_test_data_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(content_test_data_server.Start());
+
+  // Load the main page twice. The second navigation should have AppCache
+  // initialized for the page.
+  GURL main_url = content_test_data_server.GetURL(
+      "/appcache/simple_page_with_manifest.html");
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  content::TitleWatcher title_watcher(active_web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Turn off the server and sanity check that the resource is still available.
+  const char kScriptTemplate[] = R"(
+      new Promise(function (resolve, reject) {
+          var img = document.createElement('img');
+          img.src = '/appcache/' + $1;
+          img.onload = _ => resolve('IMG LOADED');
+          img.onerror = reject;
+      })
+  )";
+  ASSERT_TRUE(content_test_data_server.ShutdownAndWaitUntilComplete());
+  EXPECT_EQ("IMG LOADED",
+            content::EvalJs(active_web_contents(),
+                            content::JsReplace(kScriptTemplate, "logo.png")));
+
+  // Inject a content script and verify that this doesn't negatively impact
+  // AppCache (i.e. verify that
+  // RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory
+  // does not clobber the default URLLoaderFactory).
+  {
+    base::HistogramTester histograms;
+    GURL cross_site_resource(
+        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+    std::string fetch_result =
+        FetchViaContentScript(cross_site_resource, active_web_contents());
+
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+  }
+  // Using a different image, to bypass renderer-side caching.
+  EXPECT_EQ("IMG LOADED",
+            content::EvalJs(active_web_contents(),
+                            content::JsReplace(kScriptTemplate, "logo2.png")));
+
+  // Crash the network service and wait for things to come back up.  This (and
+  // the remaining part of the test) only makes sense if the network service is
+  // enabled.
+  if (!content::IsOutOfProcessNetworkService())
+    return;
+  SimulateNetworkServiceCrash();
+  active_web_contents()
+      ->GetMainFrame()
+      ->FlushNetworkAndNavigationInterfacesForTesting();
+
+  // Make sure that both requests still work - the code should have recovered
+  // from the crash by 1) refreshing the URLLoaderFactory for the content script
+  // and 2) without cloberring the default factory for the AppCache.
+  {
+    base::HistogramTester histograms;
+    GURL cross_site_resource(
+        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+    std::string fetch_result =
+        FetchViaContentScript(cross_site_resource, active_web_contents());
+
+    // Verify that no blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+  }
+  // Using a different image, to bypass renderer-side caching.
+  EXPECT_EQ("IMG LOADED",
+            content::EvalJs(active_web_contents(),
+                            content::JsReplace(kScriptTemplate, "logo3.png")));
 }
 
 }  // namespace extensions
