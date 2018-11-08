@@ -223,6 +223,10 @@ class APP_LIST_EXPORT AppListItemView
   const bool is_folder_;
   const bool is_in_folder_;
 
+  // Whether context menu options have been requested. Prevents multiple
+  // requests.
+  bool waiting_for_context_menu_options_ = false;
+
   AppListItem* item_weak_;  // Owned by AppListModel. Can be NULL.
 
   AppListViewDelegate* delegate_;            // Unowned.

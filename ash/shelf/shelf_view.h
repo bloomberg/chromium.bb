@@ -538,6 +538,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_ = false;
 
+  // Whether context menu options have been requested. Prevents multiple
+  // requests.
+  bool waiting_for_context_menu_options_ = false;
+
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
 
