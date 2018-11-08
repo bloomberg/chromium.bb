@@ -484,8 +484,7 @@ service_manifest("chrome_content_browser_manifest_overlay") {
     ]
   }
   if (!is_android) {
-    packaged_services +=
-        [ "//chrome/browser/apps/foundation/app_service:manifest" ]
+    packaged_services += [ "//chrome/services/app_service:manifest" ]
   }
 }
 

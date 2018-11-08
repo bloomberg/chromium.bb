@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image.h"
 
 namespace chromeos {

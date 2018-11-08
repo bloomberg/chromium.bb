@@ -4,6 +4,7 @@ include_rules = [
   # crbug.com/728877
   "+chrome/browser/ui/views/chrome_layout_provider.h",
 
+  "+chrome/services/app_service/public",
   "+cros",
   "+dbus",
   "+device/bluetooth",
