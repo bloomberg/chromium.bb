@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 701 tests; 643 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 701 tests; 642 PASS, 59 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -673,7 +673,7 @@ PASS translate with all three values specified
 FAIL translate with combination of percentages and lengths assert_equals: The value should be 200px -25.5px 200px at 500ms expected "200px -25.5px 200px" but got "200px calc(-50.5px + 25%) 200px"
 PASS scale (type: scaleList) has testInterpolation function
 FAIL scale with two unspecified values assert_equals: The value should be 4 at 500ms expected "4" but got "4 1"
-PASS scale with one unspecified value
+FAIL scale with one unspecified value assert_equals: The value should be 4 at 500ms expected "4" but got "4 4"
 PASS scale
 PASS vector-effect (type: discrete) has testInterpolation function
 PASS vector-effect uses discrete animation when animating between "none" and "non-scaling-stroke" with linear easing

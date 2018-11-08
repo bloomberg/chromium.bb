@@ -3,7 +3,7 @@ PASS replaceTrack() sets the track attribute to a new track.
 PASS replaceTrack() sets the track attribute to null.
 PASS replaceTrack() does not set the track synchronously.
 PASS replaceTrack() rejects when the peer connection is closed.
-FAIL replaceTrack() rejects when invoked after removeTrack(). assert_unreached: Expected replaceTrack() to be rejected with InvalidModificationError but the promise was resolved. Reached unreachable code
-FAIL replaceTrack() rejects after a subsequent removeTrack(). assert_unreached: Expected replaceTrack() to be rejected with InvalidModificationError but the promise was resolved. Reached unreachable code
+PASS replaceTrack() does not reject when invoked after removeTrack().
+PASS replaceTrack() does not reject after a subsequent removeTrack().
 Harness: the test ran to completion.
 
