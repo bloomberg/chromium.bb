@@ -24,7 +24,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/browser/apps/foundation/app_service/public/mojom",
+    "//chrome/services/app_service/public/mojom",
   ]
 }
 

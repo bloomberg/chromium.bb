@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/apps/foundation/app_service/app_registry/app_registry.h"
-#include "chrome/browser/apps/foundation/app_service/app_service.h"
+#include "chrome/services/app_service/app_registry/app_registry.h"
+#include "chrome/services/app_service/app_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
