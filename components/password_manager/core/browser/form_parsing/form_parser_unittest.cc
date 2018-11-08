@@ -124,20 +124,25 @@ struct ParseResultIds {
 void UpdateResultWithIdByRole(ParseResultIds* result,
                               uint32_t id,
                               ElementRole role) {
+  constexpr uint32_t kUnassigned = FormFieldData::kNotSetFormControlRendererId;
   switch (role) {
     case ElementRole::NONE:
       // Nothing to update.
       break;
     case ElementRole::USERNAME:
+      DCHECK_EQ(kUnassigned, result->username_id);
       result->username_id = id;
       break;
     case ElementRole::CURRENT_PASSWORD:
+      DCHECK_EQ(kUnassigned, result->password_id);
       result->password_id = id;
       break;
     case ElementRole::NEW_PASSWORD:
+      DCHECK_EQ(kUnassigned, result->new_password_id);
       result->new_password_id = id;
       break;
     case ElementRole::CONFIRMATION_PASSWORD:
+      DCHECK_EQ(kUnassigned, result->confirmation_password_id);
       result->confirmation_password_id = id;
       break;
   }
@@ -1581,8 +1586,7 @@ TEST(FormParserTest, MultipleUsernames) {
               {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .prediction = {.type = autofill::USERNAME}},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
+              {.form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
               {.role = ElementRole::NEW_PASSWORD,
                .form_control_type = "password",
