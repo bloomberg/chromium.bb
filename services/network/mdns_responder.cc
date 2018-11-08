@@ -26,6 +26,7 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/util.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"
 #include "net/socket/datagram_server_socket.h"
@@ -267,7 +268,8 @@ class MdnsResponderManager::SocketHandler {
     }
     DCHECK(end_point.GetFamily() == net::ADDRESS_FAMILY_IPV4 ||
            end_point.GetFamily() == net::ADDRESS_FAMILY_IPV6);
-    multicast_addr_ = GetMDnsGroupEndPoint(end_point.GetFamily());
+    multicast_addr_ =
+        net::dns_util::GetMdnsGroupEndPoint(end_point.GetFamily());
     int result = DoReadLoop();
     if (result == net::ERR_IO_PENDING) {
       // An in-progress read loop is considered a completed start.

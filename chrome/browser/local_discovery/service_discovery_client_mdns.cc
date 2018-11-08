@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "net/dns/mdns_client.h"
 #include "net/socket/datagram_server_socket.h"
 
 namespace net {

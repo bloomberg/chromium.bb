@@ -19,8 +19,8 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
-#include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/util.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
@@ -169,10 +169,11 @@ void PrivetTrafficDetector::Helper::Bind() {
   socket_options->multicast_loopback_mode = false;
 
   socket_->Bind(
-      net::GetMDnsReceiveEndPoint(net::ADDRESS_FAMILY_IPV4),
+      net::dns_util::GetMdnsReceiveEndPoint(net::ADDRESS_FAMILY_IPV4),
       std::move(socket_options),
-      base::BindOnce(&Helper::OnBindComplete, weak_ptr_factory_.GetWeakPtr(),
-                     net::GetMDnsGroupEndPoint(net::ADDRESS_FAMILY_IPV4)));
+      base::BindOnce(
+          &Helper::OnBindComplete, weak_ptr_factory_.GetWeakPtr(),
+          net::dns_util::GetMdnsGroupEndPoint(net::ADDRESS_FAMILY_IPV4)));
 }
 
 void PrivetTrafficDetector::Helper::OnBindComplete(

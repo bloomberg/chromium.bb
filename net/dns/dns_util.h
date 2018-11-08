@@ -50,13 +50,6 @@ NET_EXPORT std::string DNSDomainToString(const base::StringPiece& domain);
 NET_EXPORT_PRIVATE std::string GetURLFromTemplateWithoutParameters(
     const std::string& server_template);
 
-// Returns true if the URI template is acceptable for sending requests via the
-// given method. The template must be properly formatted, GET requests require
-// the template to contain a "dns" variable, an expanded template must parse
-// to a valid HTTPS URL, and the "dns" variable may not be part of the hostname.
-NET_EXPORT_PRIVATE bool IsValidDoHTemplate(const std::string& server_template,
-                                           const std::string& server_method);
-
 #if !defined(OS_NACL)
 NET_EXPORT_PRIVATE
 base::TimeDelta GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
