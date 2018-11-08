@@ -23,7 +23,7 @@ class HatsServiceFactory : public BrowserContextKeyedServiceFactory {
   HatsServiceFactory();
   ~HatsServiceFactory() override;
 
-  // Overrides from BrowserContextKeyedServiceFactory:
+  // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
