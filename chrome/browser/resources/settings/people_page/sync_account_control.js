@@ -260,7 +260,7 @@ Polymer({
    */
   shouldShowSigninAgainButton_: function() {
     return !this.hideButtons && !!this.syncStatus.signedIn &&
-        this.embeddedInSubpage && !!this.syncStatus.hasError &&
+        !!this.syncStatus.hasError &&
         this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE;
   },
 
