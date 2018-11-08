@@ -80,7 +80,7 @@ enum class ConnectionMigrationMode {
 
 // Cause of connection migration.
 enum ConnectionMigrationCause {
-  UNKNOWN,
+  UNKNOWN_CAUSE,
   ON_NETWORK_CONNECTED,                // No probing.
   ON_NETWORK_DISCONNECTED,             // No probing.
   ON_WRITE_ERROR,                      // No probing.
