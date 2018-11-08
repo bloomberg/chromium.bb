@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/hats/hats_service.h"
 
-#include <stddef.h>
-
-#include <iostream>
+#include <utility>
 
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
@@ -14,23 +12,22 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
-// which survey we're triggering
-const char kHatsSurveyTrigger[] = "survey";
+// Which survey we're triggering
+constexpr char kHatsSurveyTrigger[] = "survey";
 
-const char kHatsSurveyProbability[] = "probability";
+constexpr char kHatsSurveyProbability[] = "probability";
 
-const char kHatsSurveyEnSiteID[] = "en_site_id";
+constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 
-const char kHatsSurveyTriggerDefault[] = "test";
+constexpr char kHatsSurveyTriggerDefault[] = "test";
 
-const double kHatsSurveyProbabilityDefault = 1;
+constexpr double kHatsSurveyProbabilityDefault = 1;
 
-const char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
+constexpr char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
 
-const char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
+constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
 HatsFinchConfig CreateHatsFinchConfig() {
   HatsFinchConfig config;

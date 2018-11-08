@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_HATS_HATS_SERVICE_H_
 #define CHROME_BROWSER_UI_HATS_HATS_SERVICE_H_
 
-#include <stddef.h>
-
 #include <map>
 #include <string>
 

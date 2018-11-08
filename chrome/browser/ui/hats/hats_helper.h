@@ -27,13 +27,11 @@ class HatsHelper : public content::WebContentsObserver,
 
   explicit HatsHelper(content::WebContents* web_contents);
 
-  // Overridden from contents::WebContentsObserver:
+  // contents::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
   Profile* profile() const;
-
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsHelper);
 };
