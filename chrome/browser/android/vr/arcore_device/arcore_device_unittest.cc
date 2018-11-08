@@ -157,7 +157,8 @@ class ArCoreDeviceTest : public testing::Test {
     controller_->SetFrameDataRestricted(false);
 
     frame_provider.Bind(std::move(session_->data_provider));
-    environment_provider.Bind(std::move(session_->environment_provider));
+    frame_provider->GetEnvironmentIntegrationProvider(
+        mojo::MakeRequest(&environment_provider));
     std::move(quit_closure).Run();
   }
 
@@ -165,7 +166,7 @@ class ArCoreDeviceTest : public testing::Test {
   StubArCoreInstallUtils* install_utils;
   StubArCorePermissionHelper* permission_helper;
   mojom::XRFrameDataProviderPtr frame_provider;
-  mojom::XREnvironmentIntegrationProviderPtr environment_provider;
+  mojom::XREnvironmentIntegrationProviderAssociatedPtr environment_provider;
   std::unique_ptr<base::RunLoop> run_loop;
   base::OnceClosure quit_closure;
 

@@ -297,8 +297,17 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   // TODO(https://crbug.com/846411): use coordinate_system.
 
-  // TODO(https://crbug.com/843376): Reject the promise if device doesn't
-  // support the hit-test API.
+  // Reject the promise if device doesn't support the hit-test API.
+  // TODO(https://crbug.com/878936): Get the environment provider without going
+  // up to device_, since it doesn't know which runtime's environment provider
+  // we want.
+  if (!device_->xrEnvironmentProviderPtr()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                             "Device does not support hit-test!"));
+  }
+
   device::mojom::blink::XRRayPtr ray = device::mojom::blink::XRRay::New();
 
   ray->origin = gfx::mojom::blink::Point3F::New();

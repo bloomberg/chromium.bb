@@ -44,8 +44,7 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
       device::mojom::XRRuntimeSessionOptions::New();
   runtime_options->immersive = options->immersive;
   runtime_options->has_user_activation = options->has_user_activation;
-  runtime_options->provide_passthrough_camera =
-      options->provide_passthrough_camera;
+  runtime_options->environment_integration = options->environment_integration;
   runtime_options->use_legacy_webvr_render_path =
       options->use_legacy_webvr_render_path;
   return runtime_options;
