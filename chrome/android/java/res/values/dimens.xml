@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Connection info popup dimensions -->
     <dimen name="connection_info_padding_wide">24dp</dimen>
     <dimen name="connection_info_padding_thin">16dp</dimen>
@@ -231,12 +231,11 @@
     <!-- Find in Page dimensions -->
     <dimen name="find_result_bar_touch_width">68dp</dimen>
     <dimen name="find_result_bar_draw_width">46dp</dimen>
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <dimen tools:ignore="PxUsage" name="find_result_bar_result_min_height">8px</dimen>
-    <dimen tools:ignore="PxUsage" name="find_result_bar_active_min_height">16px</dimen>
-    <dimen tools:ignore="PxUsage" name="find_result_bar_vertical_padding">8px</dimen>
-    <dimen tools:ignore="PxUsage" name="find_result_bar_min_gap_between_stacks">3px</dimen>
-    <dimen tools:ignore="PxUsage" name="find_result_bar_stacked_result_height">3px</dimen>
+    <dimen name="find_result_bar_result_min_height">8px</dimen>
+    <dimen name="find_result_bar_active_min_height">16px</dimen>
+    <dimen name="find_result_bar_vertical_padding">8px</dimen>
+    <dimen name="find_result_bar_min_gap_between_stacks">3px</dimen>
+    <dimen name="find_result_bar_stacked_result_height">3px</dimen>
     <dimen name="find_in_page_separator_width">1dp</dimen>
     <dimen name="find_in_page_popup_width">375dp</dimen>
     <dimen name="find_in_page_popup_height">60dp</dimen>
@@ -316,8 +315,7 @@
     <dimen name="tile_view_width_condensed">64dp</dimen>
     <dimen name="tile_view_icon_size">48dp</dimen>
     <dimen name="tile_view_icon_size_modern">24dp</dimen>
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <dimen tools:ignore="PxUsage" name="tile_view_icon_min_size">24px</dimen>
+    <dimen name="tile_view_icon_min_size">24px</dimen>
     <dimen name="tile_view_icon_corner_radius">4dp</dimen>
     <dimen name="tile_view_icon_text_size">20dp</dimen>
     <dimen name="tile_view_monogram_size_modern">26dp</dimen>
@@ -411,8 +409,7 @@
     <dimen name="default_favicon_size">16dp</dimen>
     <dimen name="default_favicon_corner_radius">3dp</dimen>
     <dimen name="default_favicon_icon_text_size">10dp</dimen>
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <dimen tools:ignore="PxUsage" name="default_favicon_min_size">16px</dimen>
+    <dimen name="default_favicon_min_size">16px</dimen>
     <dimen name="circular_monogram_size">20dp</dimen>
     <dimen name="circular_monogram_text_size">14dp</dimen>
 

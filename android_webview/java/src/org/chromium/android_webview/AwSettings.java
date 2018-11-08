@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -167,7 +166,6 @@ public class AwSettings {
         EventHandler() {
         }
 
-        @SuppressLint("HandlerLeak")
         void bindUiThread() {
             if (mHandler != null) return;
             mHandler = new Handler(ThreadUtils.getUiThreadLooper()) {
