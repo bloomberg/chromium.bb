@@ -129,12 +129,17 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGInflowChildData& child_data,
       const NGLayoutResult&) const;
 
+  // Find the container of reusable line boxes. Returns nullptr if there are no
+  // reusable line boxes.
+  const NGPaintFragment* ReusableLineBoxContainer(NGInlineNode child) const;
+
   // Try to reuse part of cached fragments. When reusing is possible, this
   // function adds part of cached fragments to |container_builder_|, update
   // |break_token_| to continue layout from the last reused fragment, and
   // returns |true|. Otherwise returns |false|.
-  bool TryReuseFragmentsFromCache(NGLayoutInputNode child,
-                                  NGPreviousInflowPosition*);
+  const NGBreakToken* TryReuseFragmentsFromCache(NGInlineNode child,
+                                                 NGPreviousInflowPosition*,
+                                                 bool* abort_out);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
