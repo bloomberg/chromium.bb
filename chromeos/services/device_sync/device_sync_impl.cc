@@ -71,6 +71,20 @@ enum class ForceCryptAuthOperationResult {
   kMaxValue = kServiceNotReady
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
+enum class DeviceSyncSetSoftwareFeature {
+  kUnknown = 0,
+  kBetterTogetherSuite = 1,
+  kSmartLock = 2,
+  kInstantTethering = 3,
+  kMessages = 4,
+  kUnexpectedClientFeature = 5,
+  kMaxValue = kUnexpectedClientFeature
+};
+
 DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
     mojom::NetworkRequestResult failure_reason) {
   switch (failure_reason) {
@@ -110,6 +124,40 @@ void RecordSetSoftwareFeatureStateResultFailureReason(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
       "FailureReason",
       failure_reason);
+}
+
+DeviceSyncSetSoftwareFeature GetDeviceSyncSoftwareFeature(
+    cryptauth::SoftwareFeature software_feature) {
+  switch (software_feature) {
+    case cryptauth::SoftwareFeature::UNKNOWN_FEATURE:
+      return DeviceSyncSetSoftwareFeature::kUnknown;
+    case cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST:
+      return DeviceSyncSetSoftwareFeature::kBetterTogetherSuite;
+    case cryptauth::SoftwareFeature::EASY_UNLOCK_HOST:
+      return DeviceSyncSetSoftwareFeature::kSmartLock;
+    case cryptauth::SoftwareFeature::MAGIC_TETHER_HOST:
+      return DeviceSyncSetSoftwareFeature::kInstantTethering;
+    case cryptauth::SoftwareFeature::SMS_CONNECT_HOST:
+      return DeviceSyncSetSoftwareFeature::kMessages;
+    default:
+      NOTREACHED();
+      return DeviceSyncSetSoftwareFeature::kUnexpectedClientFeature;
+  }
+}
+
+void RecordSetSoftwareFailedFeature(bool enabled,
+                                    cryptauth::SoftwareFeature feature) {
+  if (enabled) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Enable."
+        "FailedFeature",
+        GetDeviceSyncSoftwareFeature(feature));
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Disable."
+        "FailedFeature",
+        GetDeviceSyncSoftwareFeature(feature));
+  }
 }
 
 void RecordFindEligibleDevicesResult(bool success) {
@@ -342,6 +390,7 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
     RecordSetSoftwareFeatureStateResult(false /* success */);
     RecordSetSoftwareFeatureStateResultFailureReason(
         DeviceSyncRequestFailureReason::kServiceNotYetInitialized);
+    RecordSetSoftwareFailedFeature(enabled, software_feature);
     return;
   }
 
@@ -605,14 +654,16 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
     return;
   }
 
-  it->second->InvokeCallback(
-      mojo::ConvertTo<mojom::NetworkRequestResult>(error));
-  id_to_pending_set_software_feature_request_map_.erase(it);
-
   RecordSetSoftwareFeatureStateResult(false /* success */);
   RecordSetSoftwareFeatureStateResultFailureReason(
       GetDeviceSyncRequestFailureReason(
           mojo::ConvertTo<mojom::NetworkRequestResult>(error)));
+  RecordSetSoftwareFailedFeature(it->second->enabled(),
+                                 it->second->software_feature());
+
+  it->second->InvokeCallback(
+      mojo::ConvertTo<mojom::NetworkRequestResult>(error));
+  id_to_pending_set_software_feature_request_map_.erase(it);
 }
 
 void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
@@ -686,13 +737,15 @@ void DeviceSyncImpl::OnSetSoftwareFeatureTimerFired() {
   // callbacks and remove them from the map.
   auto it = id_to_pending_set_software_feature_request_map_.begin();
   while (it != id_to_pending_set_software_feature_request_map_.end()) {
-    it->second->InvokeCallback(
-        mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult);
-    it = id_to_pending_set_software_feature_request_map_.erase(it);
-
     RecordSetSoftwareFeatureStateResult(false /* success */);
     RecordSetSoftwareFeatureStateResultFailureReason(
         DeviceSyncRequestFailureReason::kRequestSucceededButUnexpectedResult);
+    RecordSetSoftwareFailedFeature(it->second->enabled(),
+                                   it->second->software_feature());
+
+    it->second->InvokeCallback(
+        mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult);
+    it = id_to_pending_set_software_feature_request_map_.erase(it);
   }
 }
 
