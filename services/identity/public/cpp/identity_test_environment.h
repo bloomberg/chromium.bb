@@ -26,6 +26,10 @@ class IdentityManagerDependenciesOwner;
 // provides facilities for driving that IdentityManager. The IdentityManager
 // instance is brought up in an environment where the primary account is
 // not available; call MakePrimaryAccountAvailable() as needed.
+// NOTE: IdentityTestEnvironment requires that tests have a properly set up
+// task environment. If your test doesn't already have one, use a
+// base::test::ScopedTaskEnvironment instance variable to fulfill this
+// requirement.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 #if defined(OS_CHROMEOS)
   using SigninManagerForTest = FakeSigninManagerBase;

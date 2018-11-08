@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -145,6 +146,12 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
     IdentityManager* identity_manager)
     : weak_ptr_factory_(this) {
+  DCHECK(base::ThreadTaskRunnerHandle::Get())
+      << "IdentityTestEnvironment requires a properly set up task environment. "
+         "If your test has an existing one, move it to be initialized before "
+         "IdentityTestEnvironment. Otherwise, use "
+         "base::test::ScopedTaskEnvironment.";
+
   if (dependencies_owner) {
     DCHECK(!(account_tracker_service || token_service || signin_manager ||
              gaia_cookie_manager_service || identity_manager));
