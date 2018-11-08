@@ -66,8 +66,7 @@ public class ChannelsInitializerTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         mContext = InstrumentationRegistry.getTargetContext();
-        mNotificationManagerProxy = new NotificationManagerProxyImpl(
-                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
+        mNotificationManagerProxy = new NotificationManagerProxyImpl(mContext);
         mChannelsInitializer =
                 new ChannelsInitializer(mNotificationManagerProxy, mContext.getResources());
 

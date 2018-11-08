@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
 import android.content.Context;
@@ -130,8 +129,7 @@ public class NotificationPlatformBridge {
         if (sNotificationManagerOverride != null) {
             mNotificationManager = sNotificationManagerOverride;
         } else {
-            mNotificationManager = new NotificationManagerProxyImpl(
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+            mNotificationManager = new NotificationManagerProxyImpl(context);
         }
         mTwaClient = new TrustedWebActivityClient(
                 new TrustedWebActivityServiceConnectionManager(context));

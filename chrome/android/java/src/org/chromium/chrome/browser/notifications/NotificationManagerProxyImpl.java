@@ -9,7 +9,9 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.os.Build;
+import android.support.v4.app.NotificationManagerCompat;
 
 import java.util.List;
 
@@ -18,10 +20,18 @@ import java.util.List;
  * normal Android Notification Manager.
  */
 public class NotificationManagerProxyImpl implements NotificationManagerProxy {
+    private final Context mContext;
     private final NotificationManager mNotificationManager;
 
-    public NotificationManagerProxyImpl(NotificationManager notificationManager) {
-        mNotificationManager = notificationManager;
+    public NotificationManagerProxyImpl(Context context) {
+        mContext = context;
+        mNotificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    }
+
+    @Override
+    public boolean areNotificationsEnabled() {
+        return NotificationManagerCompat.from(mContext).areNotificationsEnabled();
     }
 
     @Override
