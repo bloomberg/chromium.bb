@@ -106,6 +106,7 @@ MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
 }
 
 MultiDeviceNotificationPresenter::~MultiDeviceNotificationPresenter() {
+  message_center_->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -161,6 +162,48 @@ void MultiDeviceNotificationPresenter::OnSessionStateChanged(
   ObserveMultiDeviceSetupIfPossible();
 }
 
+void MultiDeviceNotificationPresenter::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
+  if (by_user && notification_id == kNotificationId) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "MultiDeviceSetup_NotificationDismissed",
+        GetMetricValueForNotification(notification_status_),
+        kNotificationTypeMax);
+  }
+}
+
+void MultiDeviceNotificationPresenter::OnNotificationClicked(
+    const std::string& notification_id,
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  if (notification_id != kNotificationId)
+    return;
+
+  DCHECK(notification_status_ != Status::kNoNotificationVisible);
+  PA_LOG(VERBOSE) << "User clicked "
+                  << GetNotificationDescriptionForLogging(notification_status_)
+                  << ".";
+  UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup_NotificationClicked",
+                            GetMetricValueForNotification(notification_status_),
+                            kNotificationTypeMax);
+  switch (notification_status_) {
+    case Status::kNewUserNotificationVisible:
+      open_ui_delegate_->OpenMultiDeviceSetupUi();
+      break;
+    case Status::kExistingUserHostSwitchedNotificationVisible:
+      // Clicks on the 'host switched' and 'Chromebook added' notifications have
+      // the same effect, i.e. opening the Settings subpage.
+      FALLTHROUGH;
+    case Status::kExistingUserNewChromebookNotificationVisible:
+      open_ui_delegate_->OpenConnectedDevicesSettings();
+      break;
+    case Status::kNoNotificationVisible:
+      NOTREACHED();
+  }
+  RemoveMultiDeviceSetupNotification();
+}
+
 void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   // If already the delegate, there is nothing else to do.
   if (multidevice_setup_ptr_)
@@ -199,31 +242,8 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   binding_.Bind(mojo::MakeRequest(&delegate_ptr));
   multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
       std::move(delegate_ptr));
-}
 
-void MultiDeviceNotificationPresenter::OnNotificationClicked() {
-  DCHECK(notification_status_ != Status::kNoNotificationVisible);
-  PA_LOG(VERBOSE) << "User clicked "
-                  << GetNotificationDescriptionForLogging(notification_status_)
-                  << ".";
-  UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup_NotificationClicked",
-                            GetMetricValueForNotification(notification_status_),
-                            kNotificationTypeMax);
-  switch (notification_status_) {
-    case Status::kNewUserNotificationVisible:
-      open_ui_delegate_->OpenMultiDeviceSetupUi();
-      break;
-    case Status::kExistingUserHostSwitchedNotificationVisible:
-      // Clicks on the 'host switched' and 'Chromebook added' notifications have
-      // the same effect, i.e. opening the Settings subpage.
-      FALLTHROUGH;
-    case Status::kExistingUserNewChromebookNotificationVisible:
-      open_ui_delegate_->OpenConnectedDevicesSettings();
-      break;
-    case Status::kNoNotificationVisible:
-      NOTREACHED();
-  }
-  RemoveMultiDeviceSetupNotification();
+  message_center_->AddObserver(this);
 }
 
 void MultiDeviceNotificationPresenter::ShowNotification(
@@ -255,10 +275,7 @@ MultiDeviceNotificationPresenter::CreateNotification(
       GURL() /* origin_url */,
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierMultiDevice),
-      message_center::RichNotificationData(),
-      new message_center::HandleNotificationClickDelegate(base::BindRepeating(
-          &MultiDeviceNotificationPresenter::OnNotificationClicked,
-          weak_ptr_factory_.GetWeakPtr())),
+      message_center::RichNotificationData(), nullptr /* delegate */,
       ash::kNotificationMultiDeviceSetupIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 }

@@ -60,6 +60,8 @@ class TestMessageCenter : public message_center::FakeMessageCenter {
     EXPECT_TRUE(notification_);
     EXPECT_EQ(notification_->id(), id);
     notification_.reset();
+    for (auto& observer : observer_list())
+      observer.OnNotificationRemoved(id, by_user);
   }
 
   message_center::Notification* FindVisibleNotificationById(
@@ -74,7 +76,8 @@ class TestMessageCenter : public message_center::FakeMessageCenter {
   void ClickOnNotification(const std::string& id) override {
     EXPECT_TRUE(notification_);
     EXPECT_EQ(id, notification_->id());
-    notification_->delegate()->Click(base::nullopt, base::nullopt);
+    for (auto& observer : observer_list())
+      observer.OnNotificationClicked(id, base::nullopt, base::nullopt);
   }
 
  private:
@@ -198,6 +201,11 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
   void ClickNotification() {
     test_message_center_.ClickOnNotification(
         MultiDeviceNotificationPresenter::kNotificationId);
+  }
+
+  void DismissNotification(bool by_user) {
+    test_message_center_.RemoveNotification(
+        MultiDeviceNotificationPresenter::kNotificationId, by_user);
   }
 
   void VerifyNewUserPotentialHostExistsNotificationIsVisible() {
@@ -359,6 +367,29 @@ TEST_F(MultiDeviceNotificationPresenterTest,
   AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationShown", 1);
 }
 
+TEST_F(MultiDeviceNotificationPresenterTest,
+       TestHostNewUserPotentialHostExistsNotification_DismissedNotification) {
+  SignIntoAccount();
+
+  ShowNewUserNotification();
+  VerifyNewUserPotentialHostExistsNotificationIsVisible();
+
+  DismissNotification(true /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
+
+  ShowNewUserNotification();
+  VerifyNewUserPotentialHostExistsNotificationIsVisible();
+
+  DismissNotification(false /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
+}
+
 TEST_F(MultiDeviceNotificationPresenterTest, TestNoLongerNewUserEvent) {
   SignIntoAccount();
 
@@ -403,6 +434,29 @@ TEST_F(MultiDeviceNotificationPresenterTest,
   AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationShown", 1);
 }
 
+TEST_F(MultiDeviceNotificationPresenterTest,
+       TestHostExistingUserHostSwitchedNotification_DismissedNotification) {
+  SignIntoAccount();
+
+  ShowExistingUserHostSwitchedNotification();
+  VerifyExistingUserHostSwitchedNotificationIsVisible();
+
+  DismissNotification(true /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
+
+  ShowExistingUserHostSwitchedNotification();
+  VerifyExistingUserHostSwitchedNotificationIsVisible();
+
+  DismissNotification(false /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertHostSwitchedBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
+}
+
 TEST_F(
     MultiDeviceNotificationPresenterTest,
     TestHostExistingUserNewChromebookAddedNotification_RemoveProgrammatically) {
@@ -432,6 +486,30 @@ TEST_F(MultiDeviceNotificationPresenterTest,
   EXPECT_EQ(test_open_ui_delegate_->open_connected_devices_settings_count(), 1);
   AssertNewChromebookBucketCount("MultiDeviceSetup_NotificationClicked", 1);
   AssertNewChromebookBucketCount("MultiDeviceSetup_NotificationShown", 1);
+}
+
+TEST_F(
+    MultiDeviceNotificationPresenterTest,
+    TestHostExistingUserNewChromebookAddedNotification_DismissedNotification) {
+  SignIntoAccount();
+
+  ShowExistingUserNewChromebookNotification();
+  VerifyExistingUserNewChromebookAddedNotificationIsVisible();
+
+  DismissNotification(true /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertNewChromebookBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
+
+  ShowExistingUserNewChromebookNotification();
+  VerifyExistingUserNewChromebookAddedNotificationIsVisible();
+
+  DismissNotification(false /* by_user */);
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertNewChromebookBucketCount("MultiDeviceSetup_NotificationDismissed", 1);
 }
 
 TEST_F(MultiDeviceNotificationPresenterTest, NotificationsReplaceOneAnother) {
