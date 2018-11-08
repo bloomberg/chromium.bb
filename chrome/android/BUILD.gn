@@ -31,6 +31,7 @@ if (modularize_vr) {
 }
 
 manifest_package = "org.chromium.chrome"
+test_manifest_package = "org.chromium.chrome.tests"
 
 chrome_public_jinja_variables = default_chrome_public_jinja_variables +
                                 [ "manifest_package=$manifest_package" ]
@@ -38,18 +39,12 @@ chrome_public_android_manifest =
     "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
 chrome_modern_public_android_manifest =
     "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
-chrome_sync_shell_android_manifest =
-    "$target_gen_dir/chrome_sync_shell_apk/AndroidManifest.xml"
 monochrome_public_android_manifest =
     "$target_gen_dir/monochrome_public_apk/AndroidManifest.xml"
 trichrome_library_android_manifest =
     "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
 trichrome_chrome_android_manifest =
     "$target_gen_dir/trichrome_chrome_apk/AndroidManifest.xml"
-
-chrome_sync_shell_jinja_variables =
-    default_chrome_public_jinja_variables +
-    [ "manifest_package=org.chromium.chrome.sync_shell" ]
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 
@@ -116,16 +111,6 @@ jinja_template("trichrome_chrome_android_manifest") {
   includes = [ "java/AndroidManifest.xml" ]
   output = trichrome_chrome_android_manifest
   variables = chrome_public_jinja_variables + trichrome_jinja_variables
-}
-
-jinja_template("chrome_sync_shell_android_manifest") {
-  input = "java/AndroidManifest.xml"
-  output = chrome_sync_shell_android_manifest
-  variables = chrome_sync_shell_jinja_variables
-  variables += [
-    "min_sdk_version=16",
-    "target_sdk_version=$android_sdk_version",
-  ]
 }
 
 android_resources("chrome_app_java_resources") {
@@ -697,6 +682,7 @@ android_library("chrome_test_java") {
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/signin/core/browser/android:signin_javatests",
     "//components/sync:sync_java_test_support",
+    "//components/sync:test_support_proto_java",
     "//components/sync/android:sync_java",
     "//components/sync/android:sync_javatests",
     "//components/url_formatter/android:url_formatter_java",
@@ -1001,10 +987,10 @@ jinja_template_resources("chrome_public_apk_template_resources") {
     "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
-  variables = chrome_public_jinja_variables
+  variables = [ "manifest_package=$manifest_package" ]
 }
 
-jinja_template_resources("chrome_sync_shell_apk_template_resources") {
+jinja_template_resources("chrome_test_apk_template_resources") {
   resources = [
     "java/res_template/xml/file_paths.xml",
     "java/res_template/xml/launchershortcuts.xml",
@@ -1012,7 +998,13 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
     "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
-  variables = chrome_sync_shell_jinja_variables
+
+  # Add dep to ensure these override the ones in
+  # chrome_public_apk_template_resources.
+  deps = [
+    ":chrome_public_apk_template_resources",
+  ]
+  variables = [ "manifest_package=$test_manifest_package" ]
 }
 
 # This template contains common code for libchrome, libchromefortest and
@@ -1116,9 +1108,12 @@ chrome_shared_library("libchromefortest") {
     ":browser_test_support",
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
+    "//chrome:chrome_android_core",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",
+    "//components/sync",
+    "//components/sync:test_support_fake_server_android",
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
   ]
@@ -1134,17 +1129,12 @@ if (current_toolchain == default_toolchain) {
     exception_files = jni_exception_files
   }
 
+  # The test apks do not use chromium linker, but using manual JNI registration
+  # helps ensure that the correct classes are marked with @MainDex.
   generate_jni_registration("chrome_jni_for_test_registration") {
     testonly = true
     target = ":chrome_public_base_module_java_for_test"
     output = chrome_jni_for_test_registration_header
-    exception_files = jni_exception_files
-  }
-
-  generate_jni_registration("chrome_sync_shell_jni_registration") {
-    testonly = true
-    target = ":chrome_sync_shell_java"
-    output = chrome_sync_shell_jni_registration_header
     exception_files = jni_exception_files
   }
 
@@ -1309,29 +1299,6 @@ if (!android_64bit_target_cpu ||
   }
 }
 
-shared_library("chrome_sync_shell") {
-  testonly = true
-  sources = [
-    "../browser/android/chrome_sync_shell_entry_point.cc",
-    chrome_sync_shell_jni_registration_header,
-  ]
-  deps = [
-    ":chrome_sync_shell_jni_registration($default_toolchain)",
-    "//chrome:chrome_android_core",
-    "//chrome/browser/android/metrics:ukm_utils_for_test",
-    "//components/sync",
-    "//components/sync:test_support_fake_server_android",
-  ]
-  if (chromium_linker_supported && use_lld) {
-    configs += [ "//build/config/android:lld_pack_relocations" ]
-  }
-  if (enable_vr) {
-    sources += [ "../browser/android/vr/register_jni.cc" ]
-    deps +=
-        [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
-  }
-}
-
 # Java libraries that go into each public chrome APK and base module. The chrome
 # JNI registration is generated based on this target.
 # TODO(tiborg): Remove the following three groups once we have a APK / module
@@ -1354,31 +1321,11 @@ java_group("chrome_public_base_module_java_for_test") {
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_tools:android_test_mock_java",
   ]
 }
 
-# Similar to chrome_public_base_module_java but for Java libraries that go into
-# the chrome sync shell APK.
-android_library("chrome_sync_shell_java") {
-  # This exists here rather than in chrome_sync_shell_test_apk for JNI
-  # registration to be able to find the native side functions.
-  java_files = [ "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java" ]
-  deps = [
-    ":chrome_public_base_module_java",
-    "//base:base_java",
-    "//third_party/protobuf:protobuf_lite_javalib",
-
-    # This exists here because com.google.protobuf.nano is needed in tests,
-    # but that code is stripped out via proguard. Adding this deps adds
-    # usages and prevents removal of the proto code.
-    "//components/sync:test_support_proto_java",
-  ]
-}
-
-# Dependencies that are common to any chrome_public derivative targets, as well
-# as to chrome_sync_shell_apk.
-_chrome_public_and_sync_shell_shared_deps = [
+# Dependencies that are common to any chrome_public derivative targets.
+_chrome_public_shared_deps = [
   ":chrome_public_apk_resources",
   ":chrome_public_base_module_java",
   ":chrome_public_non_pak_assets",
@@ -1395,10 +1342,15 @@ generate_jni("test_support_jni_headers") {
 # Test support code that needs access to the browser.
 android_library("browser_java_test_support") {
   testonly = true
-  java_files = [ "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java" ]
+  java_files = [
+    "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
+    "javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+  ]
   deps = [
     ":chrome_java",
     "//base:base_java",
+    "//components/sync:test_support_proto_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
   ]
 }
 
@@ -1448,7 +1400,7 @@ template("chrome_public_apk_or_module_tmpl") {
                              "target_type",
                            ])
 
-    deps = _chrome_public_and_sync_shell_shared_deps
+    deps = _chrome_public_shared_deps
 
     if (_is_modern) {
       min_sdk_version = 21
@@ -1507,27 +1459,6 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_module") {
   module_name = "ChromeModernPublicBase"
   is_base_module = true
   is_modern = true
-}
-
-# Defines the 'chrome_public_apk_for_test' target, which corresponds to APK
-# built to run instrumentation tests. This includes additional code that is
-# not part of the regular 'chrome_public_apk' target.
-chrome_public_common_apk_or_module_tmpl("chrome_public_apk_for_test") {
-  testonly = true
-  target_type = "android_apk"
-  android_manifest = chrome_public_android_manifest
-  android_manifest_dep = ":chrome_public_android_manifest"
-  apk_name = "ChromePublicForTest"
-  shared_libraries = [ ":libchromefortest" ]
-  add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
-  if (_add_unwind_tables_in_chrome_public_apk) {
-    shared_library_for_unwind_asset = "chromefortest"
-  }
-  deps = _chrome_public_and_sync_shell_shared_deps +
-         [ ":chrome_public_base_module_java_for_test" ]
-  if (!is_java_debug) {
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
-  }
 }
 
 android_library("monochrome_java") {
@@ -1664,26 +1595,10 @@ monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
   use_trichrome_library = true
 }
 
-chrome_public_common_apk_or_module_tmpl("chrome_sync_shell_apk") {
-  testonly = true
-  target_type = "android_apk"
-  android_manifest = chrome_sync_shell_android_manifest
-  android_manifest_dep = ":chrome_sync_shell_android_manifest"
-  apk_name = "ChromeSyncShell"
-  shared_libraries = [ ":chrome_sync_shell" ]
-
-  deps = _chrome_public_and_sync_shell_shared_deps + [
-           ":chrome_sync_shell_apk_template_resources",
-           ":chrome_sync_shell_java",
-         ]
-}
-
 chrome_public_test_apk_manifest =
     "$root_gen_dir/chrome_public_test_apk_manifest/AndroidManifest.xml"
 chrome_public_test_vr_apk_manifest =
     "$root_gen_dir/chrome_public_test_vr_apk_manifest/AndroidManifest.xml"
-chrome_sync_shell_test_apk_manifest =
-    "$root_gen_dir/chrome_sync_shell_test_apk_manifest/AndroidManifest.xml"
 monochrome_public_test_ar_apk_manifest =
     "$root_gen_dir/monochrome_public_test_ar_apk_manifest/AndroidManifest.xml"
 vr_nfc_simulator_apk_manifest =
@@ -1691,9 +1606,11 @@ vr_nfc_simulator_apk_manifest =
 
 jinja_template("chrome_public_test_apk_manifest") {
   input = "javatests/AndroidManifest.xml"
+  includes = [ "java/AndroidManifest.xml" ]
   output = chrome_public_test_apk_manifest
-  variables = chrome_public_jinja_variables
+  variables = default_chrome_public_jinja_variables
   variables += [
+    "manifest_package=$test_manifest_package",
     "min_sdk_version=16",
     "target_sdk_version=$android_sdk_version",
   ]
@@ -1701,6 +1618,7 @@ jinja_template("chrome_public_test_apk_manifest") {
 
 jinja_template("chrome_public_test_vr_apk_manifest") {
   input = "javatests/AndroidManifest.xml"
+  includes = [ "java/AndroidManifest.xml" ]
   output = chrome_public_test_vr_apk_manifest
   variables = chrome_public_jinja_variables
   variables += [
@@ -1711,11 +1629,17 @@ jinja_template("chrome_public_test_vr_apk_manifest") {
 
 jinja_template("monochrome_public_test_ar_apk_manifest") {
   input = "javatests/AndroidManifest_monochrome.xml"
-  includes = [ "javatests/AndroidManifest.xml" ]
+  includes = [
+    "java/AndroidManifest.xml",
+    "javatests/AndroidManifest.xml",
+  ]
   output = monochrome_public_test_ar_apk_manifest
   variables = chrome_public_jinja_variables +
               monochrome_android_manifest_jinja_variables +
-              [ "target_sdk_version=$android_sdk_version" ]
+              [
+                "target_sdk_version=$android_sdk_version",
+                "test_manifest_package=$test_manifest_package",
+              ]
 }
 
 jinja_template("vr_nfc_simulator_apk_manifest") {
@@ -1725,29 +1649,64 @@ jinja_template("vr_nfc_simulator_apk_manifest") {
   variables = chrome_public_jinja_variables
 }
 
-jinja_template("chrome_sync_shell_test_apk_manifest") {
-  input = "sync_shell/javatests/AndroidManifest.xml"
-  output = chrome_sync_shell_test_apk_manifest
-  variables = chrome_sync_shell_jinja_variables
+template("chrome_test_apk_tmpl") {
+  chrome_public_common_apk_or_module_tmpl(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "apk_name",
+                             "android_manifest",
+                             "android_manifest_dep",
+                             "data_deps",
+                             "shared_libraries",
+                           ])
+
+    testonly = true
+    target_type = "instrumentation_test_apk"
+    add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
+    if (_add_unwind_tables_in_chrome_public_apk) {
+      shared_library_for_unwind_asset = "chromefortest"
+    }
+
+    deps = _chrome_public_shared_deps + invoker.deps + [
+             ":chrome_public_base_module_java_for_test",
+             "//third_party/android_support_test_runner:runner_java",
+             "//third_party/android_tools:android_test_base_java",
+             "//third_party/android_tools:android_test_mock_java",
+             "//third_party/android_tools:android_test_runner_java",
+           ]
+    if (enable_vr) {
+      # Contains VrFirstRunActivity, which is referenced by AndroidManifest.xml.
+      deps += [ "//chrome/browser/android/vr:java" ]
+    }
+
+    additional_apks = [ "//net/android:net_test_support_apk" ]
+    if (defined(invoker.additional_apks)) {
+      additional_apks += invoker.additional_apks
+    }
+    if (!is_java_debug) {
+      proguard_enabled = true
+      proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+    }
+
+    # The test APK contains code from both the APK under test and the
+    # test APK when proguard is enabled. That causes this APK to exceed
+    # the dex limit.
+    enable_multidex = true
+  }
 }
 
-instrumentation_test_apk("chrome_public_test_apk") {
+chrome_test_apk_tmpl("chrome_public_test_apk") {
   apk_name = "ChromePublicTest"
-  apk_under_test = ":chrome_public_apk_for_test"
   android_manifest = chrome_public_test_apk_manifest
   android_manifest_dep = ":chrome_public_test_apk_manifest"
-
+  shared_libraries = [ ":libchromefortest" ]
   deps = [
+    ":chrome_test_apk_template_resources",
     ":chrome_test_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
-    "//third_party/android_support_test_runner:runner_java",
-    "//third_party/android_tools:android_test_base_java",
-    "//third_party/android_tools:android_test_mock_java",
-    "//third_party/android_tools:android_test_runner_java",
   ]
-
   data_deps = [
     "//testing/buildbot/filters:chrome_public_test_apk_filters",
   ]
@@ -1757,34 +1716,20 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//chrome/android/webapk/shell_apk:http_webapk",
     "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
-    "//net/android:net_test_support_apk",
   ]
-  proguard_enabled = !is_java_debug
-
-  # The test APK contains code from both the APK under test and the
-  # test APK when proguard is enabled. That causes this APK to exceed
-  # the dex limit.
-  enable_multidex = proguard_enabled
 }
 
 if (enable_vr) {
-  instrumentation_test_apk("chrome_public_test_vr_apk") {
+  chrome_test_apk_tmpl("chrome_public_test_vr_apk") {
     apk_name = "ChromePublicTestVr"
-    apk_under_test = ":chrome_public_apk_for_test"
     android_manifest = chrome_public_test_vr_apk_manifest
     android_manifest_dep = ":chrome_public_test_vr_apk_manifest"
+    shared_libraries = [ ":libchromefortest" ]
 
     deps = [
       ":chrome_test_vr_java",
       "//third_party/android_tools:android_test_mock_java",
     ]
-    additional_apks = [ "//net/android:net_test_support_apk" ]
-    proguard_enabled = !is_java_debug
-
-    # The test APK contains code from both the APK under test and the
-    # test APK when proguard is enabled. That causes this APK to exceed
-    # the dex limit.
-    enable_multidex = proguard_enabled
   }
 
   android_apk("vr_nfc_simulator_apk") {
@@ -1828,56 +1773,6 @@ if (enable_arcore && package_arcore) {
 
     never_incremental = true
   }
-}
-
-instrumentation_test_apk("chrome_sync_shell_test_apk") {
-  apk_name = "ChromeSyncShellTest"
-  apk_under_test = ":chrome_sync_shell_apk"
-  android_manifest = chrome_sync_shell_test_apk_manifest
-  android_manifest_dep = ":chrome_sync_shell_test_apk_manifest"
-  java_files = [
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/AutofillTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/BookmarksTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FirstRunTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/GmsCoreSyncListenerTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/OpenTabsTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncCustomizationFragmentTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTestRule.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/TypedUrlsTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/UkmTest.java",
-    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragmentTest.java",
-  ]
-
-  deps = [
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//chrome/android:app_hooks_java",
-    "//chrome/android:chrome_java",
-    "//chrome/test/android:chrome_java_test_support",
-    "//components/bookmarks/common/android:bookmarks_java",
-    "//components/policy/android:policy_java",
-    "//components/signin/core/browser/android:java",
-    "//components/signin/core/browser/android:signin_java_test_support",
-    "//components/sync:sync_java_test_support",
-    "//components/sync:test_support_proto_java",
-    "//components/sync/android:sync_java",
-    "//content/public/android:content_java",
-    "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:android_arch_lifecycle_common_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_support_test_runner:rules_java",
-    "//third_party/android_support_test_runner:runner_java",
-    "//third_party/android_tools:android_test_mock_java",
-    "//third_party/junit",
-    "//ui/android:ui_java",
-  ]
-  proguard_enabled = !is_java_debug
-
-  # The test APK contains code from both the APK under test and the
-  # test APK when proguard is enabled. That causes this APK to exceed
-  # the dex limit.
-  enable_multidex = proguard_enabled
 }
 
 if (defined(expected_static_initializer_count)) {

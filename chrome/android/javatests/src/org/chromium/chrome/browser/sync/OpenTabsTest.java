@@ -197,8 +197,7 @@ public class OpenTabsTest {
         return SESSION_TAG_PREFIX + (mSessionTagCounter++);
     }
 
-    private void addFakeServerTabs(String clientName, String... urls)
-            throws InterruptedException {
+    private void addFakeServerTabs(String clientName, String... urls) throws InterruptedException {
         String tag = makeSessionTag();
         EntitySpecifics header = makeSessionEntity(tag, clientName, urls.length);
         mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(tag, header);
@@ -269,8 +268,7 @@ public class OpenTabsTest {
                 }));
     }
 
-    private void waitForServerTabs(final String... urls)
-            throws InterruptedException {
+    private void waitForServerTabs(final String... urls) throws InterruptedException {
         mSyncTestRule.pollInstrumentationThread(
                 new Criteria("Expected server open tabs: " + Arrays.toString(urls)) {
                     @Override
@@ -393,8 +391,8 @@ public class OpenTabsTest {
                 JSONObject tab = json.getJSONObject("tab");
                 int i = tab.getInt("current_navigation_index");
                 String tabId = tab.getString("tab_id");
-                String url = tab.getJSONArray("navigation")
-                        .getJSONObject(i).getString("virtual_url");
+                String url =
+                        tab.getJSONArray("navigation").getJSONObject(i).getString("virtual_url");
                 tabIdsToUrls.put(tabId, url);
                 tabIdsToServerIds.put(tabId, tabEntity.first);
                 tabIdsToClientTagHashes.put(tabId, clientTagHash);

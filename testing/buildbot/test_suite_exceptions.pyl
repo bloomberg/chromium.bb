@@ -271,16 +271,6 @@
       'ToTAndroidCFI',
     ],
   },
-  'chrome_sync_shell_test_apk': {
-    'modifications': {
-      # chromium.android
-      'KitKat Phone Tester (dbg)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
-  },
   'components_unittests': {
     'modifications': {
       # chromium.memory

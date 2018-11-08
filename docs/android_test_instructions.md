@@ -82,7 +82,6 @@ Java test files vary a bit more widely than their C++ counterparts:
     -   `webview_instrumentation_test_apk` for anything in `//android_webview`
     -   `content_shell_test_apk` for anything in `//content` or below
     -   `chrome_public_test_apk` for most things in `//chrome`
-    -   `chrome_sync_shell_test_apk` in a few exceptional cases
 -   JUnit or Robolectric test files -- i.e., tests that will run on the host --
     typically belong in `<top-level directory>_junit_tests` (e.g.
     `base_junit_tests` for `//base`), though here again there are cases

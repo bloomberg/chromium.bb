@@ -474,7 +474,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
 
 // Make sure that UKM is disabled when metrics consent is revoked.
 // Keep in sync with UkmTest.testMetricConsent in
-// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 
 IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
 
 // Make sure that providing consent doesn't enable UKM when sync is disabled.
 // Keep in sync with UkmTest.consentAddedButNoSyncCheck in
-// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   MetricsConsentOverride metrics_consent(false);
@@ -611,7 +611,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
 
 // Make sure that UKM is disabled when an open sync window disables history.
 // Keep in sync with UkmTest.singleDisableHistorySyncCheck in
-// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogsOpenerSource) {
 
 // Make sure that UKM is disabled when an secondary passphrase is set.
 // Keep in sync with UkmTest.secondaryPassphraseCheck in
-// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTestUnifiedConsentDisabled,
                        SecondaryPassphraseCheck) {
@@ -899,7 +899,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestUnifiedConsentDisabled,
 #if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when the profile signs out of Sync.
 // Keep in sync with UkmTest.singleSyncSignoutCheck in
-// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
 IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);

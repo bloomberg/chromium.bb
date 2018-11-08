@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -47,7 +48,8 @@ public class TrustedWebActivityTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
-    private static final String PACKAGE_NAME = "org.chromium.chrome"; // Package name of test apk.
+    private static final String PACKAGE_NAME =
+            ContextUtils.getApplicationContext().getPackageName();
 
     private EmbeddedTestServer mTestServer;
     private String mTestPage;

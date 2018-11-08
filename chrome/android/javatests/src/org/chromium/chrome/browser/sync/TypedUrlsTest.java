@@ -146,7 +146,7 @@ public class TypedUrlsTest {
                 SyncTestUtil.getLocalData(mSyncTestRule.getTargetContext(), TYPED_URLS_TYPE);
         List<TypedUrl> typedUrls = new ArrayList<TypedUrl>(rawTypedUrls.size());
         for (Pair<String, JSONObject> rawTypedUrl : rawTypedUrls) {
-            String id =  rawTypedUrl.first;
+            String id = rawTypedUrl.first;
             String client_tag_hash = "";
             if (rawTypedUrl.second.has("metadata")) {
                 JSONObject metadata = rawTypedUrl.second.getJSONObject("metadata");
@@ -182,18 +182,20 @@ public class TypedUrlsTest {
     }
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                "Expected " + count + " server typed URLs with name " + name + ".") {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return mSyncTestRule.getFakeServerHelper().verifyEntityCountByTypeAndName(
-                            count, ModelType.TYPED_URLS, name);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Expected " + count + " server typed URLs with name " + name + ".") {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            return mSyncTestRule.getFakeServerHelper()
+                                    .verifyEntityCountByTypeAndName(
+                                            count, ModelType.TYPED_URLS, name);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                },
+                SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     private long getCurrentTimeInMicroseconds() {

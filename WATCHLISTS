@@ -1515,8 +1515,7 @@
                   '|chrome/browser/.*supervised_user',
     },
     'sync': {
-      'filepath': '^chrome/android/sync_shell/'\
-                  '|^chrome/browser/ui/sync/'\
+      'filepath': '^chrome/browser/ui/sync/'\
                   '|^chrome/browser/ui/views/sync/'\
                   '|^chrome/test/android/javatests/src/org/chromium/chrome/test/util/browser/sync/'\
                   '|^ios/chrome/browser/sync/'\

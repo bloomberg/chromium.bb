@@ -246,6 +246,9 @@ jumbo_static_library("content_shell_lib") {
   public_deps = [
     ":android_shell_descriptors",
 
+    # #include'ed by renderer/layout_test/blink_test_runner.h
+    ":mojo_bindings",
+
     # This exposes all public content APIs.
     "//content/public/app:both",
     "//content/public/browser",
@@ -261,7 +264,6 @@ jumbo_static_library("content_shell_lib") {
     ":content_shell_packaged_services_manifest_overlay",
     ":layout_test_switches",
     ":layout_test_utils",
-    ":mojo_bindings",
     ":resources",
     "//base",
     "//base:base_static",
