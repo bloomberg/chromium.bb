@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /** Reports events related to contextual suggestions. */
@@ -47,6 +50,8 @@ class ContextualSuggestionsEventReporter implements SuggestionsEventReporter {
                 : ContextualSuggestionsEvent.SUGGESTION_CLICKED;
         mSuggestionSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), eventId);
 
+        TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
+                .notifyEvent(EventConstants.CONTEXTUAL_SUGGESTION_TAKEN);
         RecordHistogram.recordSparseSlowlyHistogram(
                 "ContextualSuggestions.SuggestionClickPosition.Global", suggestion.getGlobalRank());
         RecordHistogram.recordSparseSlowlyHistogram(
