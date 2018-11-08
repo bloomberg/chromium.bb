@@ -810,6 +810,27 @@ void Layer::SetOldestAcceptableFallback(const viz::SurfaceId& surface_id) {
     mirror->dest()->SetOldestAcceptableFallback(surface_id);
 }
 
+void Layer::SetShowReflectedSurface(const viz::SurfaceId& surface_id,
+                                    const gfx::Size& frame_size_in_pixels) {
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
+
+  if (!surface_layer_) {
+    scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
+    SwitchToLayer(new_layer);
+    surface_layer_ = new_layer;
+  }
+
+  surface_layer_->SetSurfaceId(surface_id,
+                               cc::DeadlinePolicy::UseInfiniteDeadline());
+  surface_layer_->SetBackgroundColor(SK_ColorBLACK);
+  // TODO(kylechar): Include UV transform and don't stretch to fill bounds.
+  surface_layer_->SetStretchContentToFillBounds(true);
+
+  // The reflecting surface uses the native size of the display.
+  frame_size_in_dip_ = frame_size_in_pixels;
+  RecomputeDrawsContentAndUVRect();
+}
+
 const viz::SurfaceId* Layer::GetSurfaceId() const {
   if (surface_layer_)
     return &surface_layer_->surface_id();
