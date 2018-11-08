@@ -769,10 +769,6 @@
       status: "experimental",
     },
     {
-      name: "ModulePreload",
-      status: "stable",
-    },
-    {
       name: "ModuleServiceWorker",
       status: "test",
     },
