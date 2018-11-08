@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.MailTo;
 import android.net.Uri;
 import android.provider.Browser;
@@ -226,11 +227,15 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         chromeIntent.setPackage(applicationContext.getPackageName());
         chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (applicationContext.getPackageManager()
-                        .queryIntentActivities(chromeIntent, 0)
-                        .isEmpty()) {
+        PackageManager packageManager = applicationContext.getPackageManager();
+
+        if (packageManager.queryIntentActivities(chromeIntent, 0).isEmpty()) {
             // If Chrome can't handle intent fallback to using any other VIEW handlers.
             chromeIntent.setPackage(null);
+
+            // Query again without the package name set and if there are still no handlers for the
+            // URI fail gracefully, and do nothing, since this will still cause a crash if launched.
+            if (packageManager.queryIntentActivities(chromeIntent, 0).isEmpty()) return;
         }
 
         // For "Open in Chrome" from the context menu in FullscreenActivity we want to bypass
