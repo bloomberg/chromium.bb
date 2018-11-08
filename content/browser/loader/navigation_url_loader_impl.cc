@@ -352,9 +352,12 @@ class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
-    network::ResourceResponseHead response;
-    response.mime_type = "text/html";
-    client->OnReceiveResponse(response);
+    network::ResourceResponseHead response_head;
+    response_head.mime_type = "text/html";
+    client->OnReceiveResponse(response_head);
+    // The response's body is empty, so this data pipe will not be filled.
+    mojo::DataPipe pipe;
+    client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   }
 
