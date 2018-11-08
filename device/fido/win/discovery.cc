@@ -18,6 +18,7 @@ WinNativeCrossPlatformAuthenticatorDiscovery::
     ~WinNativeCrossPlatformAuthenticatorDiscovery() = default;
 
 void WinNativeCrossPlatformAuthenticatorDiscovery::Start() {
+  DCHECK(!authenticator_);
   if (!observer()) {
     return;
   }

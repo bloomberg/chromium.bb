@@ -12,6 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/fido/buildflags.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
@@ -174,14 +175,18 @@ class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
 
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
-  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
+  FakeFidoRequestHandler(service_manager::Connector* connector,
+                         const base::flat_set<FidoTransportProtocol>& protocols,
                          FakeHandlerCallback callback)
-      : FidoRequestHandler(nullptr /* connector */,
-                           protocols,
-                           std::move(callback)),
+      : FidoRequestHandler(connector, protocols, std::move(callback)),
         weak_factory_(this) {
     Start();
   }
+  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
+                         FakeHandlerCallback callback)
+      : FakeFidoRequestHandler(nullptr /* connector */,
+                               protocols,
+                               std::move(callback)) {}
   ~FakeFidoRequestHandler() override = default;
 
   void DispatchRequest(FidoAuthenticator* authenticator) override {

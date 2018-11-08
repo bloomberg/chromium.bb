@@ -143,7 +143,6 @@ component("fido") {
   defines = [ "IS_DEVICE_FIDO_IMPL" ]
 
   deps = [
-    ":buildflags",
     "//components/apdu",
     "//components/cbor",
     "//crypto",
@@ -156,6 +155,7 @@ component("fido") {
   ]
 
   public_deps = [
+    ":buildflags",
     "//base",
     "//device/bluetooth",
     "//services/device/public/mojom",
@@ -307,6 +307,8 @@ source_set("test_support") {
     "//device/fido",
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -327,6 +329,13 @@ source_set("test_support") {
       "mac/fake_touch_id_context.mm",
       "mac/scoped_touch_id_test_environment.h",
       "mac/scoped_touch_id_test_environment.mm",
+    ]
+  }
+
+  if (is_win && use_win_webauthn_api) {
+    sources += [
+      "win/fake_webauthn_api.cc",
+      "win/fake_webauthn_api.h",
     ]
   }
 }

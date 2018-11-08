@@ -116,10 +116,28 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
   bool is_bound_ = false;
 };
 
+static WinWebAuthnApi* kDefaultForTesting = nullptr;
+
 // static
 WinWebAuthnApi* WinWebAuthnApi::GetDefault() {
+  if (kDefaultForTesting) {
+    return kDefaultForTesting;
+  }
+
   static base::NoDestructor<WinWebAuthnApiImpl> api;
   return api.get();
+}
+
+// static
+void WinWebAuthnApi::SetDefaultForTesting(WinWebAuthnApi* api) {
+  DCHECK(!kDefaultForTesting);
+  kDefaultForTesting = api;
+}
+
+// static
+void WinWebAuthnApi::ClearDefaultForTesting() {
+  DCHECK(kDefaultForTesting);
+  kDefaultForTesting = nullptr;
 }
 
 WinWebAuthnApi::~WinWebAuthnApi() = default;
