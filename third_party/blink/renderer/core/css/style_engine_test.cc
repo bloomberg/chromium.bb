@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -1656,6 +1657,39 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   // such that the new initial data is different.
   RegisterProperty("--y", "<color>", "black", false);
   EXPECT_NE(data1, GetStyleEngine().MaybeCreateAndGetInitialData());
+}
+
+TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>.match:empty { background-color: red }</style>
+    <div></div>
+    <div> <span></span></div>
+    <div> <!-- -->X</div>
+    <div></div>
+    <div> <!-- --></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail));
+
+  auto* div_elements = GetDocument().getElementsByTagName("div");
+  ASSERT_TRUE(div_elements);
+  ASSERT_EQ(5u, div_elements->length());
+
+  auto is_counted = [](Element* element) {
+    element->setAttribute(blink::html_names::kClassAttr, "match");
+    element->GetDocument().View()->UpdateAllLifecyclePhases();
+    return UseCounter::IsCounted(
+        element->GetDocument(),
+        WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
+  };
+
+  EXPECT_FALSE(is_counted(div_elements->item(0)));
+  EXPECT_FALSE(is_counted(div_elements->item(1)));
+  EXPECT_FALSE(is_counted(div_elements->item(2)));
+  EXPECT_FALSE(is_counted(div_elements->item(3)));
+  EXPECT_TRUE(is_counted(div_elements->item(4)));
 }
 
 }  // namespace blink

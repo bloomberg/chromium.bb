@@ -761,6 +761,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return CheckPseudoNot(context, result);
     case CSSSelector::kPseudoEmpty: {
       bool result = true;
+      bool has_whitespace = false;
       for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
         if (n->IsElementNode()) {
           result = false;
@@ -769,10 +770,19 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (n->IsTextNode()) {
           Text* text_node = ToText(n);
           if (!text_node->data().IsEmpty()) {
-            result = false;
-            break;
+            if (text_node->ContainsOnlyWhitespaceOrEmpty()) {
+              has_whitespace = true;
+            } else {
+              result = false;
+              break;
+            }
           }
         }
+      }
+      if (result && has_whitespace) {
+        UseCounter::Count(context.element->GetDocument(),
+                          WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
+        result = false;
       }
       if (mode_ == kResolvingStyle)
         element.SetStyleAffectedByEmpty();
