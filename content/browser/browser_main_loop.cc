@@ -1088,7 +1088,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     save_file_manager_->Shutdown();
 
   {
-    base::ThreadRestrictions::ScopedAllowWait allow_wait_for_join;
+    base::ScopedAllowBaseSyncPrimitives allow_wait_for_join;
     {
       TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
       ResetThread_IO(std::move(io_thread_));
