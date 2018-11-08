@@ -218,6 +218,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--shard-timeout=300'
           ],
+        },
+        {
+          'isolate': 'base_perftests',
+          'num_shards': 1,
+          'telemetry': False,
         }
       ],
       'platform': 'android',
@@ -336,6 +341,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -500,6 +510,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'media_perftests',
           'num_shards': 1,
           'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
+          'num_shards': 1,
+          'telemetry': False,
         }
       ],
       'platform': 'linux',
@@ -532,6 +547,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -616,6 +636,11 @@ NON_TELEMETRY_BENCHMARKS = {
     'angle_perftests': BenchmarkMetadata(
         'jmadill@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU>ANGLE'),
+    'base_perftests': BenchmarkMetadata(
+        'skyostil@chromium.org, gab@chromium.org',
+        'Internals>SequenceManager',
+        ('https://chromium.googlesource.com/chromium/src/+/HEAD/base/' +
+         'README.md#performance-testing')),
     'validating_command_buffer_perftests': BenchmarkMetadata(
         'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
