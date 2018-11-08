@@ -24,11 +24,15 @@
 @synthesize delegate = _delegate;
 @synthesize infoBarDelegate = _infoBarDelegate;
 
+#pragma mark - Public
+
 - (instancetype)initWithInfoBarDelegate:
     (infobars::InfoBarDelegate*)infoBarDelegate {
   self = [super init];
   if (self) {
     _infoBarDelegate = infoBarDelegate;
+    _infoBarView = [self infobarView];
+    [_infoBarView setSizingDelegate:self];
   }
   return self;
 }
@@ -39,20 +43,6 @@
 
 - (int)barHeight {
   return CGRectGetHeight([_infoBarView frame]);
-}
-
-- (void)layoutForFrame:(CGRect)bounds {
-  if (!_infoBarView) {
-    _infoBarView = [self viewForFrame:bounds];
-    [_infoBarView setSizingDelegate:self];
-  } else {
-    [_infoBarView setFrame:bounds];
-  }
-}
-
-- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)bounds {
-  NOTREACHED() << "Must be overriden in subclasses.";
-  return _infoBarView;
 }
 
 - (void)onHeightRecalculated:(int)newHeight {
@@ -71,6 +61,13 @@
   [_infoBarView setSizingDelegate:nil];
   _delegate = nullptr;
   _infoBarDelegate = nullptr;
+}
+
+#pragma mark - Protected
+
+- (UIView<InfoBarViewSizing>*)infobarView {
+  NOTREACHED() << "Must be overriden in subclasses.";
+  return _infoBarView;
 }
 
 - (BOOL)shouldIgnoreUserInteraction {

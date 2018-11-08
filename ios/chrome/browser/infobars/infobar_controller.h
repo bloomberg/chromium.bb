@@ -19,10 +19,6 @@ class InfoBarControllerDelegate;
 // InfoBar for iOS acts as a UIViewController for InfoBarView.
 @interface InfoBarController : NSObject<InfoBarViewSizingDelegate>
 
-// Creates a view and lays out all the infobar elements in it. Will not add
-// it as a subview yet.
-- (void)layoutForFrame:(CGRect)bounds;
-
 // Detaches view from its delegate.
 // After this function is called, no user interaction can be handled.
 - (void)detachView;

@@ -54,9 +54,9 @@
   return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
-- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
+- (UIView<InfoBarViewSizing>*)infobarView {
   ConfirmInfoBarView* infoBarView =
-      [[ConfirmInfoBarView alloc] initWithFrame:frame];
+      [[ConfirmInfoBarView alloc] initWithFrame:CGRectZero];
   _infoBarView = infoBarView;
   // Icon
   gfx::Image icon = self.infoBarDelegate->GetIcon();

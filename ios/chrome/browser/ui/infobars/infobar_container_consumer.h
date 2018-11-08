@@ -7,13 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
-class InfoBarIOS;
-
 // Protocol to communicate with the Infobar container.
 @protocol InfobarContainerConsumer
 
 // Add a new infobar to the Infobar container view at position |position|.
-- (void)addInfoBar:(InfoBarIOS*)infoBarIOS position:(NSInteger)position;
+- (void)addInfoBarView:(UIView*)infoBarView position:(NSInteger)position;
 
 // Sets the Infobar container user interaction to |enabled|.
 - (void)setUserInteractionEnabled:(BOOL)enabled;
