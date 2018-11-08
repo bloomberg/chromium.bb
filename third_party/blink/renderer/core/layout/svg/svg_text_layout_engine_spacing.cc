@@ -39,8 +39,7 @@ float SVGTextLayoutEngineSpacing::CalculateCSSSpacing(UChar current_character) {
     return 0;
 
   float spacing = font_.GetFontDescription().LetterSpacing();
-  if (current_character && last_character &&
-      font_.GetFontDescription().WordSpacing()) {
+  if (font_.GetFontDescription().WordSpacing()) {
     if (Character::TreatAsSpace(current_character) &&
         !Character::TreatAsSpace(last_character))
       spacing += font_.GetFontDescription().WordSpacing();
