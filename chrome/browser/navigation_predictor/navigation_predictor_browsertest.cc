@@ -4,14 +4,18 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -307,5 +311,87 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
           blink::features::kRecordAnchorMetricsVisible)) {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       AnchorElementClickedOnSearchEnginePage) {
+  static const char kShortName[] = "test";
+  static const char kSearchURL[] = "/anchors_same_href.html?q={searchTerms}";
+
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(model);
+  search_test_utils::WaitForTemplateURLServiceToLoad(model);
+  ASSERT_TRUE(model->loaded());
+
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetKeyword(data.short_name());
+  data.SetURL(GetTestURL(kSearchURL).spec());
+
+  TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
+  ASSERT_TRUE(template_url);
+  model->SetUserSelectedDefaultSearchProvider(template_url);
+
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/anchors_same_href.html?q=cats");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('google').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Anchor element with id 'google' points to an href that's on a different
+  // host.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Clicked.OnDSE.SameHost", 0, 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       AnchorElementClickedOnNonSearchEnginePage) {
+  static const char kShortName[] = "test";
+  static const char kSearchURL[] = "/somne_other_url.html?q={searchTerms}";
+
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(model);
+  search_test_utils::WaitForTemplateURLServiceToLoad(model);
+  ASSERT_TRUE(model->loaded());
+
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetKeyword(data.short_name());
+  data.SetURL(GetTestURL(kSearchURL).spec());
+
+  TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
+  ASSERT_TRUE(template_url);
+  model->SetUserSelectedDefaultSearchProvider(template_url);
+
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/anchors_same_href.html?q=cats");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('google').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Anchor element with id 'google' points to an href that's on a different
+  // host.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Clicked.OnNonDSE.SameHost", 0, 1);
   }
 }
