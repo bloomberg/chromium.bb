@@ -382,12 +382,7 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
 }
 
-ProfileChooserView::~ProfileChooserView() {
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-  if (oauth2_token_service)
-    oauth2_token_service->RemoveObserver(this);
-}
+ProfileChooserView::~ProfileChooserView() = default;
 
 void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
@@ -577,6 +572,16 @@ void ProfileChooserView::WindowClosing() {
   if (anchor_button_)
     anchor_button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   profile_bubble_ = NULL;
+}
+
+void ProfileChooserView::OnWidgetClosing(views::Widget* widget) {
+  // Unsubscribe from everything early so that the updates do not reach the
+  // bubble and change its state.
+  avatar_menu_.reset();
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->RemoveObserver(this);
 }
 
 bool ProfileChooserView::AcceleratorPressed(
