@@ -33,7 +33,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -126,15 +126,11 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
 class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
  public:
-  TouchLocationBarViewBrowserTest() = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
-    LocationBarViewBrowserTest::SetUpCommandLine(command_line);
-  }
+  TouchLocationBarViewBrowserTest()
+      : md_mode_(ui::MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH) {}
 
  private:
+  ui::test::MaterialDesignControllerTestAPI md_mode_;
   DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
 };
 
