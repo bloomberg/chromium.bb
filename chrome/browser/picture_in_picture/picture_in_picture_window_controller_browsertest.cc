@@ -1137,16 +1137,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(second_controller->GetWindowForTesting()->IsVisible());
 }
 
-// Flaky, crbug.com/901235.
-#if defined(OS_CHROMEOS)
-#define MAYBE_EnterPictureInPictureThenFullscreen \
-  DISABLED_EnterPictureInPictureThenFullscreen
-#else
-#define MAYBE_EnterPictureInPictureThenFullscreen \
-  EnterPictureInPictureThenFullscreen
-#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MAYBE_EnterPictureInPictureThenFullscreen) {
+                       EnterPictureInPictureThenFullscreen) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::WebContents* active_web_contents =
