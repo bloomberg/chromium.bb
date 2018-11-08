@@ -53,8 +53,8 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   // Set up the substrings to create the UMA names
   const String uma_preamble = "Blink.";
   const String uma_postscript = ".UpdateTime";
-  const String uma_ratio_preamble = "Blink.MainFrame.";
-  const String uma_ratio_postscript = "Ratio";
+  const String uma_percentage_preamble = "Blink.MainFrame.";
+  const String uma_percentage_postscript = "Ratio";
 
   // Set up sub-strings for the bucketed UMA metrics
   Vector<String> threshold_substrings;
@@ -78,7 +78,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
 
   // Populate all the sub-metrics.
   absolute_metric_records_.ReserveInitialCapacity(kCount);
-  ratio_metric_records_.ReserveInitialCapacity(kCount);
+  main_frame_percentage_records_.ReserveInitialCapacity(kCount);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
     const auto& metric_name = metric_strings()[i];
 
@@ -100,18 +100,18 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     // Ratio records report the ratio of each metric to the primary metric,
     // average and worst case. UMA counters are also associated with the
     // ratios and we allocate and own them here.
-    auto& ratio_record = ratio_metric_records_.emplace_back();
-    ratio_record.worst_case_metric_name = metric_name;
-    ratio_record.worst_case_metric_name.append(".WorstCaseRatio");
-    ratio_record.average_metric_name = metric_name;
-    ratio_record.average_metric_name.append(".AverageRatio");
-    ratio_record.reset();
+    auto& percentage_record = main_frame_percentage_records_.emplace_back();
+    percentage_record.worst_case_metric_name = metric_name;
+    percentage_record.worst_case_metric_name.append(".WorstCaseRatio");
+    percentage_record.average_metric_name = metric_name;
+    percentage_record.average_metric_name.append(".AverageRatio");
+    percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
-      String uma_name = uma_ratio_preamble;
+      String uma_name = uma_percentage_preamble;
       uma_name.append(metric_name);
-      uma_name.append(uma_ratio_postscript);
+      uma_name.append(uma_percentage_postscript);
       uma_name.append(bucket_substring);
-      ratio_record.uma_counters_per_bucket.push_back(
+      percentage_record.uma_counters_per_bucket.push_back(
           std::make_unique<CustomCountHistogram>(uma_name.Utf8().data(), 0,
                                                  10000000, 50));
     }
@@ -145,13 +145,11 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
 
   // Just record the duration for ratios. We compute the ratio later
   // when we know the frame time.
-  ratio_metric_records_[metric_index].interval_duration += duration;
+  main_frame_percentage_records_[metric_index].interval_duration += duration;
 }
 
 void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
                                                   TimeTicks end) {
-  FlushIfNeeded(end);
-
   TimeDelta duration = end - start;
 
   // Record UMA
@@ -175,18 +173,23 @@ void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
     }
   }
 
-  for (auto& record : ratio_metric_records_) {
-    double ratio =
-        record.interval_duration.InMicrosecondsF() / duration.InMicrosecondsF();
-    if (ratio > record.worst_case_ratio)
-      record.worst_case_ratio = ratio;
-    record.total_ratio += ratio;
+  for (auto& record : main_frame_percentage_records_) {
+    unsigned percentage =
+        (unsigned)floor(record.interval_duration.InMicrosecondsF() * 100.0 /
+                        duration.InMicrosecondsF());
+    if (percentage > record.worst_case_percentage)
+      record.worst_case_percentage = percentage;
+    record.total_percentage += percentage;
     ++record.sample_count;
-    record.uma_counters_per_bucket[bucket_index]->Count(floor(ratio * 100.0));
+    record.uma_counters_per_bucket[bucket_index]->Count(percentage);
     record.interval_duration = TimeDelta();
   }
 
   has_data_ = true;
+
+  // Flush here to avoid resetting the ratios before this data point is
+  // recorded.
+  FlushIfNeeded(end);
 }
 
 void LocalFrameUkmAggregator::FlushIfNeeded(TimeTicks current_time) {
@@ -215,14 +218,13 @@ void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
                       record.total_duration.InMicroseconds() /
                           static_cast<int64_t>(record.sample_count));
   }
-  for (auto& record : ratio_metric_records_) {
+  for (auto& record : main_frame_percentage_records_) {
     if (record.sample_count == 0)
       continue;
     builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
-                      record.worst_case_ratio);
-    builder.SetMetric(
-        record.average_metric_name.Utf8().data(),
-        record.total_ratio / static_cast<float>(record.sample_count));
+                      record.worst_case_percentage);
+    builder.SetMetric(record.average_metric_name.Utf8().data(),
+                      record.total_percentage / record.sample_count);
     record.reset();
   }
   builder.Record(recorder_);
