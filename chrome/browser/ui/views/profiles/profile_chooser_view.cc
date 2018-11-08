@@ -74,7 +74,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_recorder.h"
@@ -119,8 +118,8 @@ constexpr int kFixedMenuWidthPreDice = 240;
 constexpr int kFixedMenuWidthDice = 288;
 constexpr int kIconSize = 16;
 
-// Spacing between the edge of the material design user menu and the
-// top/bottom or left/right of the menu items.
+// Spacing between the edge of the user menu and the top/bottom or left/right of
+// the menu items.
 constexpr int kMenuEdgeMargin = 16;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
@@ -334,14 +333,13 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_ =
       new ProfileChooserView(anchor_button, browser, view_mode,
                              manage_accounts_params.service_type, access_point);
-  if (!anchor_button) {
+  if (anchor_button) {
+    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  } else {
     DCHECK(parent_window);
     profile_bubble_->SetAnchorRect(anchor_rect);
     profile_bubble_->set_parent_window(parent_window);
   }
-
-  if (anchor_button && ui::MaterialDesignController::IsNewerMaterialUi())
-    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
@@ -577,7 +575,7 @@ void ProfileChooserView::FocusFirstProfileButton() {
 
 void ProfileChooserView::WindowClosing() {
   DCHECK_EQ(profile_bubble_, this);
-  if (anchor_button_ && ui::MaterialDesignController::IsNewerMaterialUi())
+  if (anchor_button_)
     anchor_button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   profile_bubble_ = NULL;
 }

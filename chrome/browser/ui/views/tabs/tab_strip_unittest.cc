@@ -178,7 +178,6 @@ class TabStripTest : public ChromeViewsTestBase,
   }
 
   void TearDown() override {
-    TabStrip::ResetTabSizeInfoForTesting();
     widget_.reset();
     ChromeViewsTestBase::TearDown();
   }

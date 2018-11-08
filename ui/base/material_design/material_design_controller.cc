@@ -149,8 +149,7 @@ void MaterialDesignController::Initialize() {
   // Ideally, there would be a more general, "initialize random stuff here"
   // function into which these things and a call to this function can be placed.
   // TODO(crbug.com/864544)
-  if (IsRefreshUi())
-    color_utils::SetDarkestColor(gfx::kGoogleGrey900);
+  color_utils::SetDarkestColor(gfx::kGoogleGrey900);
 
   double animation_duration_scale;
   if (base::StringToDouble(
@@ -173,16 +172,6 @@ bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
 }
 
 // static
-bool MaterialDesignController::IsNewerMaterialUi() {
-  return IsTouchOptimizedUiEnabled() || IsRefreshUi();
-}
-
-// static
-bool MaterialDesignController::IsRefreshUi() {
-  return GetMode() == MATERIAL_REFRESH || GetMode() == MATERIAL_TOUCH_REFRESH;
-}
-
-// static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
   // This is called (once) early in device startup to initialize core UI, so
@@ -190,15 +179,9 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   base::ScopedAllowBlocking allow_io;
   if (HasTouchscreen())
     return GetDefaultTouchDeviceMode();
-
-  return MATERIAL_REFRESH;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   return MATERIAL_REFRESH;
-#else
-  return MATERIAL_NORMAL;
-#endif
 }
 
 // static

@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -51,11 +50,8 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Ink drop ripple opacity.
-    set_ink_drop_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
-  }
+  set_ink_drop_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -196,10 +192,8 @@ PageActionIconView::CreateInkDropHighlight() const {
       CreateDefaultInkDropHighlight(
           gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
           size());
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    highlight->set_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
-  }
+  highlight->set_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
   return highlight;
 }
 

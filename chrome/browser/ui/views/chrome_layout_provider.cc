@@ -45,9 +45,7 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 // static
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
-  if (ui::MaterialDesignController::IsRefreshUi())
-    return std::make_unique<MaterialRefreshLayoutProvider>();
-  return std::make_unique<ChromeLayoutProvider>();
+  return std::make_unique<MaterialRefreshLayoutProvider>();
 }
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {

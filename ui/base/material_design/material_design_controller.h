@@ -49,12 +49,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
 
-  // Returns true if the Material Refresh or touch-optimized UI is enabled.
-  static bool IsNewerMaterialUi();
-
-  // Returns true if any Material Refresh mode is enabled.
-  static bool IsRefreshUi();
-
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();
 

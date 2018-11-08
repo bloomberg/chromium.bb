@@ -10,7 +10,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
@@ -48,17 +47,11 @@ std::unique_ptr<gfx::Path> CreateToolbarHighlightPath(
     const views::View* host_view,
     const gfx::Insets& margin_insets);
 
-// Creates the appropriate ink drop for the calling button. When the newer
-// material UI is not enabled, it uses the default implementation of the
-// calling button's base class (the template argument BaseInkDropHostView).
-// Otherwise, it uses an ink drop that shows a highlight on hover that is kept
-// and combined with the ripple when the ripple is shown.
+// Creates an ink drop that shows a highlight on hover that is kept and combined
+// with the ripple when the ripple is shown.
 template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
     BaseInkDropHostView* host_view) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
-    return host_view->BaseInkDropHostView::CreateInkDrop();
-
   auto ink_drop =
       std::make_unique<views::InkDropImpl>(host_view, host_view->size());
   ink_drop->SetAutoHighlightMode(

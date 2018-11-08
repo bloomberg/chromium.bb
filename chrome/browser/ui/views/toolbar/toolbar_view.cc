@@ -207,21 +207,19 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    if (media_router::MediaRouterEnabled(browser_->profile()) &&
-        media_router::ShouldUseViewsDialog()) {
-      cast_ = media_router::CastToolbarButton::Create(browser_).release();
-    }
-
-    bool show_avatar_toolbar_button = true;
-#if defined(OS_CHROMEOS)
-    // ChromeOS only badges Incognito and Guest icons in the browser window.
-    show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
-                                 browser_->profile()->IsGuestSession();
-#endif  // !defined(OS_CHROMEOS)
-    if (show_avatar_toolbar_button)
-      avatar_ = new AvatarToolbarButton(browser_);
+  if (media_router::MediaRouterEnabled(browser_->profile()) &&
+      media_router::ShouldUseViewsDialog()) {
+    cast_ = media_router::CastToolbarButton::Create(browser_).release();
   }
+
+  bool show_avatar_toolbar_button = true;
+#if defined(OS_CHROMEOS)
+  // ChromeOS only badges Incognito and Guest icons in the browser window.
+  show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+                               browser_->profile()->IsGuestSession();
+#endif  // !defined(OS_CHROMEOS)
+  if (show_avatar_toolbar_button)
+    avatar_ = new AvatarToolbarButton(browser_);
 
   app_menu_button_ = new BrowserAppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);

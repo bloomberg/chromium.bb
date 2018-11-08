@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -61,8 +60,6 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/metrics/metrics_service.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "extensions/browser/extension_registry.h"
@@ -120,6 +117,7 @@ using views::Button;
 using views::LabelButtonBorder;
 using views::MenuButton;
 using views::View;
+using MD = ui::MaterialDesignController;
 
 // Maximum size of buttons on the bookmark bar.
 static const int kBookmarkBarMaxButtonWidth = 150;
@@ -854,25 +852,6 @@ gfx::Size BookmarkBarView::CalculatePreferredSize() const {
         static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
   }
   return prefsize;
-}
-
-bool BookmarkBarView::CanProcessEventsWithinSubtree() const {
-  // Before Material Refresh, the omnibox popup was a full-width dropdown that
-  // laid on top of the bookmark bar if it was attached. For that old UI,
-  // if the bookmark bar is attached and the omnibox popup is open (on top of
-  // the bar), prevent events from targeting the bookmark bar or any of its
-  // descendants. This will prevent hovers/clicks just above the omnibox popup
-  // from activating the top few pixels of items on the bookmark bar.
-  if (!ui::MaterialDesignController::IsRefreshUi() && !IsDetached() &&
-      browser_view_ &&
-      browser_view_->GetLocationBar()
-          ->GetOmniboxView()
-          ->model()
-          ->popup_model()
-          ->IsOpen()) {
-    return false;
-  }
-  return true;
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() const {
@@ -1761,8 +1740,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() &&
-          GetThemeProvider()) {
+      if (MD::IsTouchOptimizedUiEnabled() && GetThemeProvider()) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -2092,11 +2070,10 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(
-          ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-              ? kBookmarkbarTouchOverflowIcon
-              : kOverflowChevronIcon,
-          overflow_color));
+      gfx::CreateVectorIcon(MD::IsTouchOptimizedUiEnabled()
+                                ? kBookmarkbarTouchOverflowIcon
+                                : kOverflowChevronIcon,
+                            overflow_color));
 
   // Redraw the background.
   SchedulePaint();

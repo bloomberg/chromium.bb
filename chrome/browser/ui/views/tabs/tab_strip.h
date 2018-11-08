@@ -523,10 +523,6 @@ class TabStrip : public views::View,
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
-  // Reset cached tab size info. Because Tab size info can be different
-  // depending on touch ui optimization, we should be able to reset this.
-  static void ResetTabSizeInfoForTesting();
-
   // -- Touch Layout ----------------------------------------------------------
 
   // Returns the tab to use for event handling. This uses FindTabForEventFrom()

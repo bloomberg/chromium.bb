@@ -33,7 +33,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -778,11 +777,9 @@ int BrowserActionsContainer::GetResizeAreaWidth() const {
 }
 
 int BrowserActionsContainer::GetSeparatorAreaWidth() const {
-  // The separator is not applicable to the app menu, and is only available in
-  // Material refresh.
-  if (ShownInsideMenu() || !ui::MaterialDesignController::IsRefreshUi()) {
+  // The separator is not applicable to the app menu.
+  if (ShownInsideMenu())
     return 0;
-  }
   return 2 * GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
          views::Separator::kThickness;
 }

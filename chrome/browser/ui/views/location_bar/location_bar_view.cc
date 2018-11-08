@@ -209,9 +209,8 @@ void LocationBarView::Init() {
                               PageActionIconType::kZoom};
   }
   page_action_icon_container_view_ = new PageActionIconContainerView(
-      page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING), browser_, this,
-      delegate_);
+      page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), 0,
+      browser_, this, delegate_);
   AddChildView(page_action_icon_container_view_);
   page_action_icon_container_view_->SetIconColor(icon_color);
 
@@ -470,9 +469,6 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int edge_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
-  const int internal_padding =
-      GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING);
-
   int leading_edit_item_padding = edge_padding;
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()) {
     // With jog enabled, the text should be indented only if these are all true:
@@ -527,9 +523,9 @@ void LocationBarView::Layout() {
   location_icon_view_->SetLabel(base::string16());
   if (ShouldShowKeywordBubble()) {
     location_icon_view_->SetVisible(false);
-    leading_decorations.AddDecoration(
-        vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
-        edge_padding, internal_padding, selected_keyword_view_);
+    leading_decorations.AddDecoration(vertical_padding, location_height, false,
+                                      kLeadingDecorationMaxFraction,
+                                      edge_padding, selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
@@ -546,22 +542,19 @@ void LocationBarView::Layout() {
     }
   } else if (ShouldShowLocationIconText()) {
     location_icon_view_->SetLabel(GetLocationIconText());
-    leading_decorations.AddDecoration(
-        vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
-        edge_padding, internal_padding, location_icon_view_);
+    leading_decorations.AddDecoration(vertical_padding, location_height, false,
+                                      kLeadingDecorationMaxFraction,
+                                      edge_padding, location_icon_view_);
   } else {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
-                                      0, edge_padding, internal_padding,
-                                      location_icon_view_);
+                                      0, edge_padding, location_icon_view_);
   }
 
   auto add_trailing_decoration = [&trailing_decorations, vertical_padding,
-                                  location_height, edge_padding,
-                                  internal_padding](View* view) {
+                                  location_height, edge_padding](View* view) {
     if (view->visible()) {
       trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                         false, 0, edge_padding,
-                                         internal_padding, view);
+                                         false, 0, edge_padding, view);
     }
   };
 
@@ -589,8 +582,7 @@ void LocationBarView::Layout() {
       omnibox_view_->model()->is_keyword_hint() &&
       !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
-                                       0, edge_padding, internal_padding,
-                                       keyword_hint_view_);
+                                       0, edge_padding, keyword_hint_view_);
     keyword_hint_view_->SetKeyword(keyword);
   }
 
@@ -782,10 +774,7 @@ int LocationBarView::GetAvailableDecorationTextHeight() {
 // LocationBarView, private:
 
 int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
-  return view->visible()
-             ? (GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING) +
-                view->GetMinimumSize().width())
-             : 0;
+  return view->visible() ? view->GetMinimumSize().width() : 0;
 }
 
 SkColor LocationBarView::GetBorderColor() const {
