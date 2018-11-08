@@ -77,7 +77,7 @@
 
     <cr-lazy-render id="sharedMenu">
       <template>
-        <cr-action-menu>
+        <cr-action-menu aria-label="$i18n{actionMenuDescription}">
           <button id="menuMoreButton" slot="item" class="dropdown-item"
               hidden="[[!canSearchMoreFromSite_(
                   searchedTerm, actionMenuModel_.item.domain)]]"
