@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/uuid.h"
@@ -55,8 +55,6 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   const KURL kPageUrl("http://dom_storage/page");
   Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
 
-  blink::scheduler::FakeRendererScheduler renderer_scheduler;
-
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
       *base::CreateSequencedTaskRunnerWithTraits({}), FROM_HERE,
@@ -68,7 +66,7 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
           },
           WTF::Passed(MakeRequest(&storage_partition_service_ptr))));
 
-  StorageController controller(renderer_scheduler.IPCTaskRunner(),
+  StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
                                std::move(storage_partition_service_ptr),
                                kTestCacheLimit);
   StorageNamespace* localStorage = new StorageNamespace(&controller);
