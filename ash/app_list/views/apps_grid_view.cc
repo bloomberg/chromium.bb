@@ -973,9 +973,11 @@ void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
     } else {
       // TODO(newcomer): Improve implementation of the mask layer so we can
       // enable it on all devices https://crbug.com/765292.
-      if (!fadeout_layer_delegate_)
-        fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
       if (!layer()->layer_mask_layer()) {
+        // Always create a new layer. The layer may be recreated by animation,
+        // and using the mask layer used by the detached layer can lead to
+        // crash. b/118822974.
+        fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
         layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
         fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
       }
