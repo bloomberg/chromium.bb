@@ -206,7 +206,7 @@ bool ParkableStringImpl::Park() {
     // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
     auto params = std::make_unique<CompressionTaskParams>(
         this, string_.Bytes(), string_.CharactersSizeInBytes(),
-        Platform::Current()->CurrentThread()->GetTaskRunner());
+        Thread::Current()->GetTaskRunner());
     background_scheduler::PostOnBackgroundThread(
         FROM_HERE, CrossThreadBind(&ParkableStringImpl::CompressInBackground,
                                    WTF::Passed(std::move(params))));

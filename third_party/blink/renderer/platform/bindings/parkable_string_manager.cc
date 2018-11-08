@@ -32,7 +32,7 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
 
   if (backgrounded_) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        Platform::Current()->CurrentThread()->GetTaskRunner();
+        Thread::Current()->GetTaskRunner();
     DCHECK(task_runner);
     task_runner->PostDelayedTask(
         FROM_HERE,

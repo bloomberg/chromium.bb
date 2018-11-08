@@ -570,7 +570,7 @@ void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
     ScopedDecodedDrawImage image) {
   if (!cleanup_task_pending_) {
     cleanup_task_pending_ = true;
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&CanvasImageProvider::CleanupLockedImages,
                                   weak_factory_.GetWeakPtr()));
   }

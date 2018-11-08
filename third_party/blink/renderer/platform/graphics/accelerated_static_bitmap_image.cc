@@ -125,8 +125,7 @@ void AcceleratedStaticBitmapImage::RetainOriginalSkImage() {
   original_skia_image_context_provider_wrapper_ = ContextProviderWrapper();
   DCHECK(original_skia_image_);
 
-  Thread* thread = Platform::Current()->CurrentThread();
-  original_skia_image_task_runner_ = thread->GetTaskRunner();
+  original_skia_image_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 IntSize AcceleratedStaticBitmapImage::Size() const {

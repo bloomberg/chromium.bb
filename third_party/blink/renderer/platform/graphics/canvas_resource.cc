@@ -39,7 +39,7 @@ CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
     : provider_(std::move(provider)),
       filter_quality_(filter_quality),
       color_params_(color_params) {
-  thread_of_origin_ = Platform::Current()->CurrentThread()->ThreadId();
+  thread_of_origin_ = Thread::Current()->ThreadId();
 }
 
 CanvasResource::~CanvasResource() {
@@ -49,7 +49,7 @@ CanvasResource::~CanvasResource() {
 }
 
 void CanvasResource::OnDestroy() {
-  if (thread_of_origin_ != Platform::Current()->CurrentThread()->ThreadId()) {
+  if (thread_of_origin_ != Thread::Current()->ThreadId()) {
     // Destroyed on wrong thread. This can happen when the thread of origin was
     // torn down, in which case the GPU context owning any underlying resources
     // no longer exists.

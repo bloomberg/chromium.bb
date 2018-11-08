@@ -124,7 +124,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
     // this once per thread.
     WaitableEvent waitable_event;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        Platform::Current()->MainThread()->GetTaskRunner();
+        Thread::MainThread()->GetTaskRunner();
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
         CrossThreadBind(&CreateContextProviderOnMainThread,

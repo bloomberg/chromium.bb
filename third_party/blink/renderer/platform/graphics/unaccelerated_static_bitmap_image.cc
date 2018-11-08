@@ -112,8 +112,7 @@ void UnacceleratedStaticBitmapImage::Transfer() {
   DETACH_FROM_THREAD(thread_checker_);
 
   original_skia_image_ = paint_image_.GetSkImage();
-  Thread* thread = Platform::Current()->CurrentThread();
-  original_skia_image_task_runner_ = thread->GetTaskRunner();
+  original_skia_image_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 }  // namespace blink

@@ -108,7 +108,7 @@ static void MaxObservedSizeFunction(size_t size_in_mb) {
 static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(function, CrossThreadUnretained(context)));
 }
 
