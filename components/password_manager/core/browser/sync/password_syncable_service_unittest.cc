@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_syncable_service.h"
+#include "components/password_manager/core/browser/sync/password_syncable_service.h"
 
 #include <algorithm>
 #include <memory>
@@ -236,8 +236,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
-  EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
-      SyncChangeIs(SyncChange::ACTION_ADD, form))));
+  EXPECT_CALL(*processor_,
+              ProcessSyncChanges(
+                  _, ElementsAre(SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, list, std::move(processor_),
@@ -277,8 +278,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
 
-  EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
-      SyncChangeIs(SyncChange::ACTION_ADD, form))));
+  EXPECT_CALL(*processor_,
+              ProcessSyncChanges(
+                  _, ElementsAre(SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, SyncDataList(), std::move(processor_),
@@ -336,8 +338,7 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
   EXPECT_CALL(weak_processor, ProcessSyncChanges(_, IsEmpty()));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, SyncDataList(), std::move(processor_),
       std::unique_ptr<syncer::SyncErrorFactory>());
@@ -358,10 +359,12 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form1));
   list.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form2));
   list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form3));
-  EXPECT_CALL(weak_processor, ProcessSyncChanges(_, ElementsAre(
-      SyncChangeIs(SyncChange::ACTION_ADD, form1),
-      SyncChangeIs(SyncChange::ACTION_UPDATE, form2),
-      SyncChangeIs(SyncChange::ACTION_DELETE, form3))));
+  EXPECT_CALL(
+      weak_processor,
+      ProcessSyncChanges(
+          _, ElementsAre(SyncChangeIs(SyncChange::ACTION_ADD, form1),
+                         SyncChangeIs(SyncChange::ACTION_UPDATE, form2),
+                         SyncChangeIs(SyncChange::ACTION_DELETE, form3))));
   service()->ActOnPasswordStoreChanges(list);
 }
 
@@ -445,7 +448,8 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
       .WillOnce(AppendForm(form1));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*other_service_wrapper.password_store(),
-              FillAutofillableLogins(_)).WillOnce(AppendForm(form2));
+              FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form2));
   EXPECT_CALL(*other_service_wrapper.password_store(), FillBlacklistLogins(_))
       .WillOnce(Return(true));
   // This method reads all passwords from the database. Make sure that the
@@ -556,8 +560,7 @@ TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersEnabled) {
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
       .WillOnce(Return(DatabaseCleanupResult::kSuccess));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
 
   syncer::SyncMergeResult result = service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS, SyncDataList(), std::move(processor_), nullptr);
