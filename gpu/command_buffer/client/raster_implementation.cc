@@ -20,6 +20,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -30,6 +31,7 @@
 #include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
@@ -385,6 +387,9 @@ void RasterImplementation::SetAggressivelyFreeResources(
   TRACE_EVENT1("gpu", "RasterImplementation::SetAggressivelyFreeResources",
                "aggressively_free_resources", aggressively_free_resources);
   aggressively_free_resources_ = aggressively_free_resources;
+
+  if (aggressively_free_resources_)
+    ClearPaintCache();
 
   if (aggressively_free_resources_ && helper_->HaveRingBuffer()) {
     // Flush will delete transfer buffer resources if
@@ -1291,7 +1296,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
 
   cc::PaintOpBufferSerializer serializer(
       serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
-      font_manager_.strike_server(), raster_properties_->color_space.get(),
+      GetOrCreatePaintCache(), font_manager_.strike_server(),
+      raster_properties_->color_space.get(),
       raster_properties_->can_use_lcd_text,
       capabilities().context_supports_distance_field_text,
       capabilities().max_texture_size,
@@ -1307,6 +1313,11 @@ void RasterImplementation::EndRasterCHROMIUM() {
 
   raster_properties_.reset();
   helper_->EndRasterCHROMIUM();
+
+  if (aggressively_free_resources_)
+    ClearPaintCache();
+  else
+    FlushPaintCachePurgedEntries();
 }
 
 void RasterImplementation::BeginGpuRaster() {
@@ -1362,6 +1373,45 @@ void RasterImplementation::SetActiveURLCHROMIUM(const char* url) {
   SetBucketContents(kResultBucketId, url, std::min(len, kMaxStrLen));
   helper_->SetActiveURLCHROMIUM(kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
+}
+
+cc::ClientPaintCache* RasterImplementation::GetOrCreatePaintCache() {
+  if (!paint_cache_) {
+    constexpr size_t kPaintCacheBudget = 4 * 1024 * 1024;
+    paint_cache_ = std::make_unique<cc::ClientPaintCache>(kPaintCacheBudget);
+  }
+  return paint_cache_.get();
+}
+
+void RasterImplementation::FlushPaintCachePurgedEntries() {
+  if (!paint_cache_)
+    return;
+
+  paint_cache_->Purge(&temp_paint_cache_purged_data_);
+  for (uint32_t i = static_cast<uint32_t>(cc::PaintDataType::kTextBlob);
+       i < cc::PaintDataTypeCount; ++i) {
+    auto& ids = temp_paint_cache_purged_data_[i];
+    if (ids.empty())
+      continue;
+
+    switch (static_cast<cc::PaintDataType>(i)) {
+      case cc::PaintDataType::kTextBlob:
+        helper_->DeletePaintCacheTextBlobsINTERNALImmediate(ids.size(),
+                                                            ids.data());
+        break;
+      case cc::PaintDataType::kPath:
+        helper_->DeletePaintCachePathsINTERNALImmediate(ids.size(), ids.data());
+        break;
+    }
+    ids.clear();
+  }
+}
+
+void RasterImplementation::ClearPaintCache() {
+  if (!paint_cache_ || !paint_cache_->PurgeAll())
+    return;
+
+  helper_->ClearPaintCacheINTERNAL();
 }
 
 std::unique_ptr<cc::TransferCacheSerializeHelper>

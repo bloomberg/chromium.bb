@@ -428,6 +428,21 @@ _FUNCTION_INFO = {
     'client_test': False,
     'unit_test': False,
   },
+  'DeletePaintCacheTextBlobsINTERNAL': {
+    'type': 'DELn',
+    'internal': True,
+    'unit_test': False,
+  },
+  'DeletePaintCachePathsINTERNAL': {
+    'type': 'DELn',
+    'internal': True,
+    'unit_test': False,
+  },
+  'ClearPaintCacheINTERNAL': {
+    'decoder_func': 'DoClearPaintCacheINTERNAL',
+    'internal': True,
+    'unit_test': False,
+  },
   'UnlockTransferCacheEntryINTERNAL': {
     'decoder_func': 'DoUnlockTransferCacheEntryINTERNAL',
     'cmd_args': 'GLuint entry_type, GLuint entry_id',

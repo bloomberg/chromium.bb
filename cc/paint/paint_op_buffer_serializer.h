@@ -11,8 +11,9 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
-
+class ClientPaintCache;
 class TransferCacheSerializeHelper;
+
 class CC_PAINT_EXPORT PaintOpBufferSerializer {
  public:
   using SerializeCallback =
@@ -21,6 +22,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   PaintOpBufferSerializer(SerializeCallback serialize_cb,
                           ImageProvider* image_provider,
                           TransferCacheSerializeHelper* transfer_cache,
+                          ClientPaintCache* paint_cache,
                           SkStrikeServer* strike_server,
                           SkColorSpace* color_space,
                           bool can_use_lcd_text,
@@ -102,6 +104,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   SerializeCallback serialize_cb_;
   ImageProvider* image_provider_;
   TransferCacheSerializeHelper* transfer_cache_;
+  ClientPaintCache* paint_cache_;
   SkStrikeServer* strike_server_;
   SkColorSpace* color_space_;
   bool can_use_lcd_text_;
@@ -122,6 +125,7 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
                          size_t size,
                          ImageProvider* image_provider,
                          TransferCacheSerializeHelper* transfer_cache,
+                         ClientPaintCache* paint_cache,
                          SkStrikeServer* strike_server,
                          SkColorSpace* color_space,
                          bool can_use_lcd_text,

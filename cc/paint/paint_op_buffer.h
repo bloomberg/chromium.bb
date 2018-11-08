@@ -39,6 +39,8 @@ class SkStrikeServer;
 // PaintOpBuffer is a reimplementation of SkLiteDL.
 // See: third_party/skia/src/core/SkLiteDL.h.
 namespace cc {
+class ClientPaintCache;
+class ServicePaintCache;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
  public:
@@ -145,6 +147,7 @@ class CC_PAINT_EXPORT PaintOp {
   struct CC_PAINT_EXPORT SerializeOptions {
     SerializeOptions(ImageProvider* image_provider,
                      TransferCacheSerializeHelper* transfer_cache,
+                     ClientPaintCache* paint_cache,
                      SkCanvas* canvas,
                      SkStrikeServer* strike_server,
                      SkColorSpace* color_space,
@@ -159,6 +162,7 @@ class CC_PAINT_EXPORT PaintOp {
     // Required.
     ImageProvider* image_provider = nullptr;
     TransferCacheSerializeHelper* transfer_cache = nullptr;
+    ClientPaintCache* paint_cache = nullptr;
     SkCanvas* canvas = nullptr;
     SkStrikeServer* strike_server = nullptr;
     SkColorSpace* color_space = nullptr;
@@ -179,8 +183,10 @@ class CC_PAINT_EXPORT PaintOp {
 
   struct CC_PAINT_EXPORT DeserializeOptions {
     DeserializeOptions(TransferCacheDeserializeHelper* transfer_cache,
+                       ServicePaintCache* paint_cache,
                        SkStrikeClient* strike_client);
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
+    ServicePaintCache* paint_cache = nullptr;
     uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
     SkStrikeClient* strike_client = nullptr;
   };

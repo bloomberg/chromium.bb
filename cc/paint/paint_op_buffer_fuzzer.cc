@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/test/transfer_cache_test_helper.h"
 #include "components/viz/test/test_context_provider.h"
@@ -52,6 +53,7 @@ class FontSupport : public gpu::ServiceFontManager::Client {
 
 void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
             SkStrikeClient* strike_client,
+            cc::ServicePaintCache* paint_cache,
             const uint8_t* data,
             size_t size) {
   const size_t kRasterDimension = 32;
@@ -66,8 +68,8 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
 
   cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
   cc::TransferCacheTestHelper transfer_cache_helper;
-  cc::PaintOp::DeserializeOptions deserialize_options(&transfer_cache_helper,
-                                                      strike_client);
+  cc::PaintOp::DeserializeOptions deserialize_options(
+      &transfer_cache_helper, paint_cache, strike_client);
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
@@ -116,6 +118,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FontSupport font_support;
   scoped_refptr<gpu::ServiceFontManager> font_manager(
       new gpu::ServiceFontManager(&font_support));
+  cc::ServicePaintCache paint_cache;
   std::vector<SkDiscardableHandleId> locked_handles;
   if (bytes_for_fonts > 0u) {
     font_manager->Deserialize(reinterpret_cast<const char*>(data),
@@ -127,16 +130,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto context_provider_no_support = viz::TestContextProvider::Create();
   context_provider_no_support->BindToCurrentThread();
   CHECK(!context_provider_no_support->GrContext()->supportsDistanceFieldText());
-  Raster(context_provider_no_support, font_manager->strike_client(), data,
-         size);
+  Raster(context_provider_no_support, font_manager->strike_client(),
+         &paint_cache, data, size);
 
   auto context_provider_with_support = viz::TestContextProvider::Create(
       std::string("GL_OES_standard_derivatives"));
   context_provider_with_support->BindToCurrentThread();
   CHECK(
       context_provider_with_support->GrContext()->supportsDistanceFieldText());
-  Raster(context_provider_with_support, font_manager->strike_client(), data,
-         size);
+  Raster(context_provider_with_support, font_manager->strike_client(),
+         &paint_cache, data, size);
 
   font_manager->Unlock(locked_handles);
   font_manager->Destroy();

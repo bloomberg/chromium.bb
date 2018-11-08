@@ -195,6 +195,36 @@ void UnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id) {
   }
 }
 
+void DeletePaintCacheTextBlobsINTERNALImmediate(GLsizei n, const GLuint* ids) {
+  const uint32_t size =
+      raster::cmds::DeletePaintCacheTextBlobsINTERNALImmediate::ComputeSize(n);
+  raster::cmds::DeletePaintCacheTextBlobsINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::DeletePaintCacheTextBlobsINTERNALImmediate>(size);
+  if (c) {
+    c->Init(n, ids);
+  }
+}
+
+void DeletePaintCachePathsINTERNALImmediate(GLsizei n, const GLuint* ids) {
+  const uint32_t size =
+      raster::cmds::DeletePaintCachePathsINTERNALImmediate::ComputeSize(n);
+  raster::cmds::DeletePaintCachePathsINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::DeletePaintCachePathsINTERNALImmediate>(size);
+  if (c) {
+    c->Init(n, ids);
+  }
+}
+
+void ClearPaintCacheINTERNAL() {
+  raster::cmds::ClearPaintCacheINTERNAL* c =
+      GetCmdSpace<raster::cmds::ClearPaintCacheINTERNAL>();
+  if (c) {
+    c->Init();
+  }
+}
+
 void CreateTexture(bool use_buffer,
                    gfx::BufferUsage buffer_usage,
                    viz::ResourceFormat format,

@@ -309,6 +309,54 @@ TEST_F(RasterFormatTest, UnlockTransferCacheEntryINTERNAL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(RasterFormatTest, DeletePaintCacheTextBlobsINTERNALImmediate) {
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
+  cmds::DeletePaintCacheTextBlobsINTERNALImmediate& cmd =
+      *GetBufferAs<cmds::DeletePaintCacheTextBlobsINTERNALImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::DeletePaintCacheTextBlobsINTERNALImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd,
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
+}
+
+TEST_F(RasterFormatTest, DeletePaintCachePathsINTERNALImmediate) {
+  static GLuint ids[] = {
+      12, 23, 34,
+  };
+  cmds::DeletePaintCachePathsINTERNALImmediate& cmd =
+      *GetBufferAs<cmds::DeletePaintCachePathsINTERNALImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::DeletePaintCachePathsINTERNALImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd,
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
+}
+
+TEST_F(RasterFormatTest, ClearPaintCacheINTERNAL) {
+  cmds::ClearPaintCacheINTERNAL& cmd =
+      *GetBufferAs<cmds::ClearPaintCacheINTERNAL>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClearPaintCacheINTERNAL::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(RasterFormatTest, CreateTexture) {
   cmds::CreateTexture& cmd = *GetBufferAs<cmds::CreateTexture>();
   void* next_cmd =

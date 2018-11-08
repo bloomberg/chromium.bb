@@ -51,6 +51,7 @@ class PaintOpPerfTest : public testing::Test {
           serialized_data_.get(), kMaxSerializedBufferBytes,
           test_options_provider.image_provider(),
           test_options_provider.transfer_cache_helper(),
+          test_options_provider.client_paint_cache(),
           test_options_provider.strike_server(),
           test_options_provider.color_space(),
           test_options_provider.can_use_lcd_text(),

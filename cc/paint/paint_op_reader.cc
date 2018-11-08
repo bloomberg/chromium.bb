@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -195,30 +196,38 @@ void PaintOpReader::Read(SkRRect* rect) {
 }
 
 void PaintOpReader::Read(SkPath* path) {
-  uint32_t transfer_cache_entry_id;
-  ReadSimple(&transfer_cache_entry_id);
-  if (!valid_)
-    return;
-  auto* entry =
-      options_.transfer_cache->GetEntryAs<ServicePathTransferCacheEntry>(
-          transfer_cache_entry_id);
-  if (entry) {
-    *path = entry->path();
-  } else {
-    valid_ = false;
-  }
-
-  size_t bytes_to_skip = 0u;
-  ReadSize(&bytes_to_skip);
+  uint32_t path_id;
+  ReadSimple(&path_id);
   if (!valid_)
     return;
 
-  if (bytes_to_skip > remaining_bytes_) {
-    valid_ = false;
+  size_t path_bytes = 0u;
+  ReadSize(&path_bytes);
+  if (path_bytes > remaining_bytes_)
+    SetInvalid();
+  if (!valid_)
+    return;
+
+  if (path_bytes != 0u) {
+    size_t bytes_read =
+        path->readFromMemory(const_cast<const char*>(memory_), path_bytes);
+    if (bytes_read == 0u) {
+      SetInvalid();
+      return;
+    }
+
+    options_.paint_cache->PutPath(path_id, *path);
+    memory_ += path_bytes;
+    remaining_bytes_ -= path_bytes;
     return;
   }
-  memory_ += bytes_to_skip;
-  remaining_bytes_ -= bytes_to_skip;
+
+  auto* cached_path = options_.paint_cache->GetPath(path_id);
+  if (!cached_path) {
+    SetInvalid();
+    return;
+  }
+  *path = *cached_path;
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
@@ -396,18 +405,19 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
 
   size_t data_bytes = 0u;
   ReadSize(&data_bytes);
-  if (remaining_bytes_ < data_bytes || data_bytes == 0u)
+  if (remaining_bytes_ < data_bytes)
     SetInvalid();
   if (!valid_)
     return;
 
-  auto* entry =
-      options_.transfer_cache->GetEntryAs<ServiceTextBlobTransferCacheEntry>(
-          blob_id);
-  if (entry) {
-    *blob = entry->blob();
-    memory_ += data_bytes;
-    remaining_bytes_ -= data_bytes;
+  if (data_bytes == 0u) {
+    auto cached_blob = options_.paint_cache->GetTextBlob(blob_id);
+    if (!cached_blob) {
+      SetInvalid();
+      return;
+    }
+
+    *blob = std::move(cached_blob);
     return;
   }
 
@@ -422,9 +432,7 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
     SetInvalid();
     return;
   }
-  options_.transfer_cache->CreateLocalEntry(
-      blob_id, std::make_unique<ServiceTextBlobTransferCacheEntry>(
-                   deserialized_blob, data_bytes));
+  options_.paint_cache->PutTextBlob(blob_id, deserialized_blob);
 
   *blob = std::move(deserialized_blob);
   memory_ += data_bytes;

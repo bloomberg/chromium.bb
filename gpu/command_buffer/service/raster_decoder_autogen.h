@@ -301,6 +301,57 @@ error::Error RasterDecoderImpl::HandleUnlockTransferCacheEntryINTERNAL(
   return error::kNoError;
 }
 
+error::Error
+RasterDecoderImpl::HandleDeletePaintCacheTextBlobsINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile raster::cmds::DeletePaintCacheTextBlobsINTERNALImmediate& c =
+      *static_cast<const volatile raster::cmds::
+                       DeletePaintCacheTextBlobsINTERNALImmediate*>(cmd_data);
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLuint* ids =
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+                                                        immediate_data_size);
+  if (ids == nullptr) {
+    return error::kOutOfBounds;
+  }
+  DeletePaintCacheTextBlobsINTERNALHelper(n, ids);
+  return error::kNoError;
+}
+
+error::Error RasterDecoderImpl::HandleDeletePaintCachePathsINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile raster::cmds::DeletePaintCachePathsINTERNALImmediate& c =
+      *static_cast<
+          const volatile raster::cmds::DeletePaintCachePathsINTERNALImmediate*>(
+          cmd_data);
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32_t data_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLuint* ids =
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+                                                        immediate_data_size);
+  if (ids == nullptr) {
+    return error::kOutOfBounds;
+  }
+  DeletePaintCachePathsINTERNALHelper(n, ids);
+  return error::kNoError;
+}
+
+error::Error RasterDecoderImpl::HandleClearPaintCacheINTERNAL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  DoClearPaintCacheINTERNAL();
+  return error::kNoError;
+}
+
 error::Error RasterDecoderImpl::HandleCreateTexture(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
