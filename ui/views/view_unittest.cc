@@ -3537,13 +3537,7 @@ TEST_F(ViewTest, Contains) {
 // +-- child1
 //     +-- foo1
 // +-- child2
-// TODO(crbug.com/903002): We should not mark GetIndexOf flaky.
-#if defined(OS_MACOSX)
-#define MAYBE_GetIndexOf DISABLED_GetIndexOf
-#else
-#define MAYBE_GetIndexOf GetIndexOf
-#endif
-TEST_F(ViewTest, MAYBE_GetIndexOf) {
+TEST_F(ViewTest, GetIndexOf) {
   View root;
 
   View* child1 = new View;
