@@ -65,7 +65,9 @@ class Adapter : public AlsReader::Observer,
 
   // Size of |ambient_light_values_|.
   static constexpr int kNumberAmbientValuesToTrack =
-      kAmbientLightShortHorizon.InSeconds() * AlsReader::kAlsPollFrequency;
+      (kAmbientLightShortHorizon.InMicroseconds() /
+       base::Time::kMicrosecondsPerSecond) *
+      AlsReader::kAlsPollFrequency;
 
   // The values in Params can be overridden by experiment flags.
   struct Params {

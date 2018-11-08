@@ -32,8 +32,8 @@ namespace offline_pages {
 namespace {
 const bool kUserRequest = true;
 const bool kStartOfProcessing = true;
-constexpr int kMinDurationSeconds = 1;
-constexpr int kMaxDurationSeconds = base::TimeDelta::FromDays(7).InSeconds();
+constexpr base::TimeDelta kMinDuration = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kMaxDuration = base::TimeDelta::FromDays(7);
 const int kDurationBuckets = 50;
 const int kDisabledTaskRecheckSeconds = 5;
 
@@ -66,8 +66,8 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
     base::TimeDelta duration = base::Time::Now() - request_creation_time;
     base::UmaHistogramCustomCounts(
         AddHistogramSuffix(client_id, "OfflinePages.Background.TimeToSaved"),
-        duration.InSeconds(), kMinDurationSeconds, kMaxDurationSeconds,
-        kDurationBuckets);
+        duration.InSeconds(), kMinDuration.InSeconds(),
+        kMaxDuration.InSeconds(), kDurationBuckets);
   }
 }
 
@@ -112,7 +112,7 @@ void RecordCancelTimeUMA(const SavePageRequest& canceled_request) {
   base::UmaHistogramCustomCounts(
       AddHistogramSuffix(canceled_request.client_id(),
                          "OfflinePages.Background.TimeToCanceled"),
-      duration.InSeconds(), kMinDurationSeconds, kMaxDurationSeconds,
+      duration.InSeconds(), kMinDuration.InSeconds(), kMaxDuration.InSeconds(),
       kDurationBuckets);
 }
 
