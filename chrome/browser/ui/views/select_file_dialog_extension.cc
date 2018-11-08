@@ -437,13 +437,9 @@ void SelectFileDialogExtension::SelectFileImpl(
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,
-      base_window ? base_window->GetNativeWindow() : owner_window,
-      profile_,
-      web_contents,
-      kFileManagerWidth,
-      kFileManagerHeight,
-      kFileManagerMinimumWidth,
-      kFileManagerMinimumHeight,
+      base_window ? base_window->GetNativeWindow() : owner_window, profile_,
+      web_contents, (owner_window != nullptr) /* is_modal */, kFileManagerWidth,
+      kFileManagerHeight, kFileManagerMinimumWidth, kFileManagerMinimumHeight,
       file_manager::util::GetSelectFileDialogTitle(type),
       this /* ExtensionDialog::Observer */);
   if (!dialog) {
