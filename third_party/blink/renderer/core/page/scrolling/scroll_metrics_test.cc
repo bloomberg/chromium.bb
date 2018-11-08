@@ -41,6 +41,9 @@ class ScrollMetricsTest : public SimTest {
  public:
   void SetUpHtml(const char*);
   void Scroll(Element*, const WebGestureDevice);
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
 };
 
 class NonCompositedMainThreadScrollingReasonRecordTest
@@ -134,7 +137,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* box = GetDocument().getElementById("box");
   HistogramTester histogram_tester;
@@ -172,7 +175,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
   GetDocument().View()->SetParentVisible(true);
   GetDocument().View()->SetSelfVisible(true);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* box = GetDocument().getElementById("box");
   HistogramTester histogram_tester;
@@ -183,7 +186,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   EXPECT_WHEEL_TOTAL(2);
 
   box->setAttribute("class", "composited translucent box");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   Scroll(box, kWebGestureDeviceTouchpad);
   EXPECT_FALSE(ToLayoutBox(box->GetLayoutObject())
                    ->GetScrollableArea()
@@ -206,7 +209,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
     </div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* box = GetDocument().getElementById("box");
   HistogramTester histogram_tester;
@@ -217,7 +220,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   EXPECT_WHEEL_TOTAL(2);
 
   box->setAttribute("class", "hidden translucent box");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   Scroll(box, kWebGestureDeviceTouchpad);
   EXPECT_WHEEL_BUCKET(kHasOpacityAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
@@ -247,7 +250,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
 
   GetDocument().View()->SetParentVisible(true);
   GetDocument().View()->SetSelfVisible(true);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* box = GetDocument().getElementById("inner");
   HistogramTester histogram_tester;

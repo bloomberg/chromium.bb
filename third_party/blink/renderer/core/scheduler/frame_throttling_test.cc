@@ -75,6 +75,10 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
     }
     return result;
   }
+
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
 };
 
 INSTANTIATE_PAINT_TEST_CASE_P(FrameThrottlingTest);
@@ -596,7 +600,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   // This will call ScrollingCoordinator::UpdateAfterPaint() and should not
   // cause assert failure about isAllowedToQueryCompositingState() in the
   // throttled frame.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   test::RunPendingTasks();
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
@@ -660,7 +664,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
   // This will call ScrollingCoordinator::UpdateAfterPaint() and should not
   // cause an assert failure about isAllowedToQueryCompositingState() in the
   // throttled frame.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   test::RunPendingTasks();
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
@@ -988,7 +992,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
     // And a throttled full lifecycle update.
     DocumentLifecycle::AllowThrottlingScope throttling_scope(
         GetDocument().Lifecycle());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
   }
   // The inner div should still be composited because compositing update is
   // throttled, though the inner_div's self-painting status has been updated.
@@ -1231,7 +1235,7 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
   {
     DocumentLifecycle::AllowThrottlingScope throttling_scope(
         GetDocument().Lifecycle());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
   }
   EXPECT_FALSE(inner_div_object->FirstFragment().PaintProperties());
 
@@ -1412,7 +1416,7 @@ TEST_P(FrameThrottlingTest, LifecycleUpdateAfterUnthrottledCompositingUpdate) {
     DocumentLifecycle::AllowThrottlingScope throttling_scope(
         GetDocument().Lifecycle());
     EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
   }
 }
 

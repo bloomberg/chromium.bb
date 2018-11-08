@@ -294,6 +294,10 @@ class WebViewTest : public testing::Test {
   bool TapElementById(WebInputEvent::Type, const WebString& id);
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
 
+  void UpdateAllLifecyclePhases() {
+    web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
+  }
+
   std::string base_url_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
@@ -505,7 +509,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   web_view->SetBaseBackgroundColor(kAlphaGreen);
   web_view->GetSettings()->SetShouldClearDocumentBackground(false);
   web_view->Resize(WebSize(kWidth, kHeight));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Set canvas background to red with alpha.
   SkBitmap bitmap;
@@ -1036,7 +1040,7 @@ TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
       web_view_helper_.InitializeAndLoad(base_url_ + "input_placeholder.html");
   web_view->SetInitialFocus(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString input_id = WebString::FromUTF8("input");
@@ -2564,7 +2568,7 @@ TEST_F(WebViewTest, LongPressEmptyDiv) {
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2584,7 +2588,7 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2604,7 +2608,7 @@ TEST_F(WebViewTest, LongPressObject) {
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_object.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2628,7 +2632,7 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
       base_url_ + "long_press_object_fallback.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2652,7 +2656,7 @@ TEST_F(WebViewTest, LongPressImage) {
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2672,7 +2676,7 @@ TEST_F(WebViewTest, LongPressVideo) {
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_video.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2692,7 +2696,7 @@ TEST_F(WebViewTest, LongPressLink) {
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_link.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2717,7 +2721,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
 
   web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebPointerEvent pointer_down(
@@ -2757,7 +2761,7 @@ TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
 
   web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString anchor_tag_id = WebString::FromUTF8("anchorTag");
@@ -2779,7 +2783,7 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
       base_url_ + "long_press_empty_editable_selection.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2798,7 +2802,7 @@ TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
   web_view->Resize(WebSize(500, 500));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
@@ -2819,7 +2823,7 @@ TEST_F(WebViewTest, LongPressSelection) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString target = WebString::FromUTF8("target");
@@ -2839,7 +2843,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString target = WebString::FromUTF8("target");
@@ -2875,7 +2879,7 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "longpress_textarea.html");
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString blanklinestextbox = WebString::FromUTF8("blanklinestextbox");
@@ -2918,7 +2922,7 @@ TEST_F(WebViewTest, LongPressImageTextarea) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_image_contenteditable.html");
   web_view->Resize(WebSize(500, 300));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString image = WebString::FromUTF8("purpleimage");
@@ -2938,7 +2942,7 @@ TEST_F(WebViewTest, BlinkCaretAfterLongPress) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "blink_caret_on_typing_after_long_press.html");
   web_view->Resize(WebSize(640, 480));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebString target = WebString::FromUTF8("target");
@@ -2987,7 +2991,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "selection_readonly.html");
   web_view->Resize(WebSize(640, 480));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   std::string test_word = "This text should be selected.";
@@ -3009,7 +3013,7 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "content-width-1000.html");
   web_view->Resize(WebSize(100, 100));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
@@ -3119,7 +3123,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
   web_view->Resize(WebSize(100, 100));
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   RunPendingTasks();
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
@@ -4885,7 +4889,7 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
                                      "  body {margin: 0px; height:3000px;}"
                                      "</style>",
                                      base_url);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   auto* frame_view = frame->GetFrameView();
@@ -5001,7 +5005,7 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
   plugin_element->style()->setCSSText(main_frame->GetDocument(),
                                       "display: none", ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(plugin_element->OwnedPlugin());
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FALSE(plugin_element->OwnedPlugin());
   EXPECT_EQ("done", frame_client.Message());
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.

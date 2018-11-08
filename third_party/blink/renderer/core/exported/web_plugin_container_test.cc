@@ -103,6 +103,10 @@ class WebPluginContainerTest : public testing::Test {
         WebString::FromUTF8(file_name), WebString::FromUTF8(mime_type));
   }
 
+  void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
+    web_view->UpdateAllLifecyclePhases();
+  }
+
  protected:
   ScopedFakePluginRegistry fake_plugins_;
   std::string base_url_;
@@ -330,7 +334,7 @@ TEST_F(WebPluginContainerTest, PluginDocumentPluginIsFocused) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
   EXPECT_TRUE(document.IsPluginDocument());
@@ -349,7 +353,7 @@ TEST_F(WebPluginContainerTest, IFramePluginDocumentNotFocused) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "iframe_pdf.html", &plugin_web_frame_client);
   DCHECK(web_view);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
   WebLocalFrame* iframe =
@@ -371,7 +375,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
   WebLocalFrame* frame = web_view->MainFrameImpl();
 
@@ -395,7 +399,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
   WebLocalFrame* frame = web_view->MainFrameImpl();
 
@@ -880,7 +884,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -921,7 +925,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1015,7 +1019,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1052,7 +1056,7 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1091,7 +1095,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
   web_view->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1132,7 +1136,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
   web_view->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1174,7 +1178,7 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
   web_view->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
   WebElement plugin_container_one_element =
@@ -1459,7 +1463,7 @@ TEST_F(WebPluginContainerTest, IFramePluginDocumentDisplayNone) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "iframe_pdf_display_none.html", &plugin_web_frame_client);
-  web_view->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   WebFrame* web_iframe = web_view->MainFrame()->FirstChild();
   LocalFrame* iframe = ToLocalFrame(WebFrame::ToCoreFrame(*web_iframe));

@@ -24,6 +24,8 @@ class JankTrackerTest : public RenderingTest {
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks()));
   }
+
+  void UpdateAllLifecyclePhases() { GetFrameView().UpdateAllLifecyclePhases(); }
 };
 
 TEST_F(JankTrackerTest, SimpleBlockMovement) {
@@ -39,7 +41,7 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
   EXPECT_FLOAT_EQ(60.0, GetJankTracker().MaxDistance());
@@ -54,7 +56,7 @@ TEST_F(JankTrackerTest, GranularitySnapping) {
   )HTML");
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 58px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   // Rect locations and sizes should snap to multiples of 600 / 60 = 10.
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
 }
@@ -73,7 +75,7 @@ TEST_F(JankTrackerTest, Transform) {
 
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   // (600 - 300) * (140 - 40 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
 }
@@ -87,7 +89,7 @@ TEST_F(JankTrackerTest, RtlDistance) {
   )HTML");
   GetDocument().getElementById("j")->setAttribute(
       html_names::kStyleAttr, AtomicString("width: 70px; left: 10px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(20.0, GetJankTracker().MaxDistance());
 }
 
@@ -100,7 +102,7 @@ TEST_F(JankTrackerTest, SmallMovementIgnored) {
   )HTML");
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 2px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
 }
 
@@ -114,7 +116,7 @@ TEST_F(JankTrackerTest, SmallMovementIgnoredWithZoom) {
   )HTML");
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 2px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
 }
 
@@ -128,7 +130,7 @@ TEST_F(JankTrackerTest, IgnoreAfterInput) {
   GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("top: 60px"));
   SimulateInput();
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
 }
 
@@ -159,7 +161,7 @@ TEST_F(JankTrackerTest, CompositedElementMovement) {
 
   GetDocument().getElementById("space")->setAttribute(
       html_names::kStyleAttr, AtomicString("height: 100px"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // #jank is 400x200 after viewport intersection with correct application of
   // composited #container offset, and 100px lower after janking, so jank score
@@ -191,7 +193,7 @@ TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
   GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling();
   GetDocument().getElementById("A")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("hide"));
-  GetFrameView().UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 }
 
 }  // namespace blink
