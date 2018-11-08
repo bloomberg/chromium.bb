@@ -75,4 +75,29 @@ TEST_F(CSSPropertyRefTest, FromStaticVariableInstance) {
   EXPECT_FALSE(ref.IsValid());
 }
 
+TEST_F(CSSPropertyRefTest, GetUnresolvedPropertyStandard) {
+  CSSPropertyRef ref("font-size", GetDocument());
+  EXPECT_TRUE(ref.GetUnresolvedProperty().IsResolvedProperty());
+}
+
+TEST_F(CSSPropertyRefTest, GetUnresolvedPropertyCustom) {
+  CSSPropertyRef ref("--x", GetDocument());
+  EXPECT_TRUE(ref.GetUnresolvedProperty().IsResolvedProperty());
+}
+
+TEST_F(CSSPropertyRefTest, GetUnresolvedPropertyAlias) {
+  // -webkit-transform is an arbitrarily chosen alias.
+  CSSPropertyRef ref("-webkit-transform", GetDocument());
+  const auto& unresolved = ref.GetUnresolvedProperty();
+  EXPECT_FALSE(unresolved.IsResolvedProperty());
+  EXPECT_EQ("-webkit-transform", unresolved.GetPropertyNameString());
+}
+
+TEST_F(CSSPropertyRefTest, GetResolvedPropertyAlias) {
+  // -webkit-transform is an arbitrarily chosen alias.
+  CSSPropertyRef ref("-webkit-transform", GetDocument());
+  EXPECT_TRUE(ref.GetProperty().IsResolvedProperty());
+  EXPECT_EQ("transform", ref.GetProperty().GetPropertyNameString());
+}
+
 }  // namespace blink
