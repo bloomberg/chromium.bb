@@ -4999,6 +4999,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Registration is a duplicate"/>
 </enum>
 
+<enum name="BooleanRemoved">
+  <int value="0" label="Not removed"/>
+  <int value="1" label="Removed"/>
+</enum>
+
 <enum name="BooleanRenamed">
   <int value="0" label="Not Renamed"/>
   <int value="1" label="Renamed"/>
@@ -52641,6 +52646,16 @@ Full version information for the fingerprint enum values:
   <int value="1" label="AcceptLanguage"/>
   <int value="2" label="UserAgent"/>
   <int value="3" label="Both"/>
+</enum>
+
+<enum name="WebRequestSpecialRequestHeaderModification">
+  <int value="0" label="None"/>
+  <int value="1" label="AcceptLanguage"/>
+  <int value="2" label="AcceptEncoding"/>
+  <int value="3" label="UserAgent"/>
+  <int value="4" label="Cookie"/>
+  <int value="5" label="Referer"/>
+  <int value="6" label="Multiple"/>
 </enum>
 
 <enum name="WebRequestWSRequestHeadersModification">

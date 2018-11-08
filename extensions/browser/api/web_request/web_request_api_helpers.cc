@@ -56,24 +56,6 @@ using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
 
 // Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
 // CHANGE THEIR MEANING.
-enum class WebRequestSpecialHeaderRemoval {
-  kNeither,
-  kAcceptLanguage,
-  kUserAgent,
-  kBoth,
-  kMaxValue = kBoth,
-};
-
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
-enum class WebRequestResponseHeaderType {
-  kNone,
-  kSetCookie,
-  kMaxValue = kSetCookie,
-};
-
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
 enum class WebRequestWSRequestHeadersModification {
   kNone,
   kSetUserAgentOnly,
@@ -125,6 +107,18 @@ bool NullableEquals(const std::string* a, const std::string* b) {
   if ((a && !b) || (!a && b))
     return false;
   return (!a) || (*a == *b);
+}
+
+void RecordSpecialRequestHeadersRemoved(
+    WebRequestSpecialRequestHeaderModification type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.SpecialRequestHeadersRemoved", type);
+}
+
+void RecordSpecialRequestHeadersChanged(
+    WebRequestSpecialRequestHeaderModification type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.WebRequest.SpecialRequestHeadersChanged", type);
 }
 
 }  // namespace
@@ -870,18 +864,49 @@ void MergeOnBeforeSendHeadersResponses(
     }
   }
 
-  // See https://crbug.com/827582
-  auto removal = WebRequestSpecialHeaderRemoval::kNeither;
-  bool removed_accept_language = removed_headers.count("Accept-Language");
-  bool removed_user_agent = removed_headers.count("User-Agent");
-  if (removed_accept_language && removed_user_agent)
-    removal = WebRequestSpecialHeaderRemoval::kBoth;
-  else if (removed_accept_language)
-    removal = WebRequestSpecialHeaderRemoval::kAcceptLanguage;
-  else if (removed_user_agent)
-    removal = WebRequestSpecialHeaderRemoval::kUserAgent;
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.SpecialHeadersRemoved",
-                            removal);
+  // TODO(https://crbug.com/827582): Remove once data is gathered.
+  static const std::map<std::string, WebRequestSpecialRequestHeaderModification>
+      kHeaderMap{
+          {"accept-language",
+           WebRequestSpecialRequestHeaderModification::kAcceptLanguage},
+          {"accept-encoding",
+           WebRequestSpecialRequestHeaderModification::kAcceptEncoding},
+          {"user-agent",
+           WebRequestSpecialRequestHeaderModification::kUserAgent},
+          {"cookie", WebRequestSpecialRequestHeaderModification::kCookie},
+          {"referer", WebRequestSpecialRequestHeaderModification::kReferer},
+      };
+  int special_headers_removed = 0;
+  for (const auto& header : removed_headers) {
+    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    if (it != kHeaderMap.end()) {
+      special_headers_removed++;
+      RecordSpecialRequestHeadersRemoved(it->second);
+    }
+  }
+  if (special_headers_removed == 0) {
+    RecordSpecialRequestHeadersRemoved(
+        WebRequestSpecialRequestHeaderModification::kNone);
+  } else if (special_headers_removed > 1) {
+    RecordSpecialRequestHeadersRemoved(
+        WebRequestSpecialRequestHeaderModification::kMultiple);
+  }
+
+  int special_headers_changed = 0;
+  for (const auto& header : set_headers) {
+    auto it = kHeaderMap.find(base::ToLowerASCII(header));
+    if (it != kHeaderMap.end()) {
+      special_headers_changed++;
+      RecordSpecialRequestHeadersChanged(it->second);
+    }
+  }
+  if (special_headers_changed == 0) {
+    RecordSpecialRequestHeadersChanged(
+        WebRequestSpecialRequestHeaderModification::kNone);
+  } else if (special_headers_changed > 1) {
+    RecordSpecialRequestHeadersChanged(
+        WebRequestSpecialRequestHeaderModification::kMultiple);
+  }
 
   if (url.SchemeIsWSOrWSS()) {
     WebSocketRequestHeaderModificationStatusReporter().Report(removed_headers,
@@ -1092,11 +1117,6 @@ void MergeCookiesInOnHeadersReceivedResponses(
     cookie_modifications_exist |=
         !(*delta)->response_cookie_modifications.empty();
   }
-  // See https://crbug.com/827582
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ModifiedResponseHeaders",
-                            cookie_modifications_exist
-                                ? WebRequestResponseHeaderType::kSetCookie
-                                : WebRequestResponseHeaderType::kNone);
 
   if (!cookie_modifications_exist)
     return;
@@ -1118,12 +1138,6 @@ void MergeCookiesInOnHeadersReceivedResponses(
   // Store new value.
   if (modified)
     StoreResponseCookies(cookies, *override_response_headers);
-
-  if (url.SchemeIsWSOrWSS()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Extensions.WebRequest.WS_CookiesAreModifiedOnHeadersReceived",
-        modified);
-  }
 }
 
 // Converts the key of the (key, value) pair to lower case.
@@ -1236,7 +1250,31 @@ void MergeOnHeadersReceivedResponses(
     *allowed_unsafe_redirect_url = new_url;
   }
 
+  // TODO(https://crbug.com/827582): Remove once data is gathered.
+  bool set_cookie_modified = false;
+  for (const auto& header : added_headers) {
+    if (header.first == "set-cookie") {
+      set_cookie_modified = true;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderChanged",
+                        set_cookie_modified);
+
+  bool set_cookie_removed = false;
+  for (const auto& header : removed_headers) {
+    if (header.first == "set-cookie") {
+      set_cookie_removed = true;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.SetCookieResponseHeaderRemoved",
+                        set_cookie_removed && !set_cookie_modified);
+
   if (url.SchemeIsWSOrWSS()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.WebRequest.WS_CookiesAreModifiedOnHeadersReceived",
+        set_cookie_removed || set_cookie_modified);
     UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_ResponseHeadersAreModified",
                           !added_headers.empty() || !removed_headers.empty());
   }
