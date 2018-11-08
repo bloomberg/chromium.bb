@@ -29,6 +29,7 @@ namespace autofill {
 
 AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
+    bool should_request_name_from_user,
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     StrikeDatabase* strike_database,
@@ -37,6 +38,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
+      should_request_name_from_user_(should_request_name_from_user),
       upload_save_card_callback_(std::move(upload_save_card_callback)),
       local_save_card_callback_(std::move(local_save_card_callback)),
       pref_service_(pref_service),
@@ -54,7 +56,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     DCHECK(upload_save_card_callback_.is_null());
     DCHECK(!local_save_card_callback_.is_null());
   }
-  if (legal_message) {
+  if (legal_message && !should_request_name_from_user) {
     if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
                                  /*escape_apostrophes=*/true)) {
       AutofillMetrics::LogCreditCardInfoBarMetric(
@@ -94,8 +96,8 @@ void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
 
 bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
   // If we are uploading to the server, verify that legal lines have been parsed
-  // into |legal_messages_|.
-  return !upload_ || !legal_messages_.empty();
+  // into |legal_messages_| unless |should_request_name_from_user_| is enabled.
+  return !upload_ || !legal_messages_.empty() || should_request_name_from_user_;
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
@@ -169,7 +171,9 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
     return base::string16();
   }
 
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+  return should_request_name_from_user_
+             ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_NEXT)
+             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
@@ -177,6 +181,7 @@ bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
     std::move(upload_save_card_callback_).Run({});
   else
     std::move(local_save_card_callback_).Run();
+
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
   return true;
 }

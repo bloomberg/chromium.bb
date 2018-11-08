@@ -281,6 +281,12 @@ void AwAutofillClient::ShowLocalCardMigrationDialog(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ConfirmAccountNameFixFlow(
+    std::unique_ptr<base::DictionaryValue> legal_message,
+    base::OnceCallback<void(const base::string16&)> callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
     const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,

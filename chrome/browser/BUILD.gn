@@ -4613,6 +4613,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",

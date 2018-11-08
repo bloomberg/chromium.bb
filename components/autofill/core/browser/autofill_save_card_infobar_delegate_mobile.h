@@ -32,6 +32,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
  public:
   AutofillSaveCardInfoBarDelegateMobile(
       bool upload,
+      bool should_request_name_from_user,
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       StrikeDatabase* strike_database,
@@ -76,6 +77,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // Whether the action is an upload or a local save.
   bool upload_;
+
+  // Whether the user should enter/confirm cardholder name.
+  bool should_request_name_from_user_;
 
   // The callback to save the credit card to Google Payments if |upload_| is
   // true and the user accepts the infobar.

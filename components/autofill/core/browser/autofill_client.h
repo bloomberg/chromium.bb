@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/risk_data_loader.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -196,6 +197,14 @@ class AutofillClient : public RiskDataLoader {
   virtual void ConfirmSaveCreditCardLocally(const CreditCard& card,
                                             bool show_prompt,
                                             base::OnceClosure callback) = 0;
+
+#if defined(OS_ANDROID)
+  // Run |callback| if the card should be uploaded to payments with updated
+  // name from the user. Displays the contents of |legal_message| to the user.
+  virtual void ConfirmAccountNameFixFlow(
+      std::unique_ptr<base::DictionaryValue> legal_message,
+      base::OnceCallback<void(const base::string16&)> callback) = 0;
+#endif  // defined(OS_ANDROID)
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
   // contents of |legal_message| to the user. Displays a cardholder name

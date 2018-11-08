@@ -181,6 +181,22 @@ class CreditCardSaveManager {
   // |user_provided_card_details.expiration_date_year| are both set.
   void OnUserDidAcceptUpload(const AutofillClient::UserProvidedCardDetails&
                                  user_provided_card_details);
+
+#if defined(OS_ANDROID)
+  // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
+  // the risk data is available. Sets the cardholder name on the upload request
+  // if |cardholder_name| is set.
+  // Only relevant for mobile as fix flow is two steps on mobile compared to
+  // one step on desktop.
+  void OnUserDidAcceptAccountNameFixFlow(const base::string16& cardholder_name);
+#endif  // defined(OS_ANDROID)
+
+  // Helper function that calls SendUploadCardRequest by setting
+  // UserProvidedCardDetails.
+  void OnUserDidAcceptUploadHelper(
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details);
+
   // Saves risk data in |uploading_risk_data_| and calls SendUploadCardRequest
   // if the user has accepted the prompt.
   void OnDidGetUploadRiskData(const std::string& risk_data);
