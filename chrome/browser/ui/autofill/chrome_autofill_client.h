@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -34,6 +35,7 @@ class WebContents;
 namespace autofill {
 
 class AutofillPopupControllerImpl;
+class CardNameFixFlowViewAndroid;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient
@@ -87,6 +89,12 @@ class ChromeAutofillClient
       bool should_request_expiration_date_from_user,
       bool show_prompt,
       UserAcceptedUploadCallback callback) override;
+#if defined(OS_ANDROID)
+  void ConfirmAccountNameFixFlow(
+      std::unique_ptr<base::DictionaryValue> legal_message,
+      base::OnceCallback<void(const base::string16&)> callback) override;
+#endif  // defined(OS_ANDROID)
+
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    const base::Closure& callback) override;
   void LoadRiskData(
@@ -138,10 +146,17 @@ class ChromeAutofillClient
 
   void ShowHttpNotSecureExplanation();
 
+  Profile* GetProfile() const;
+  base::string16 GetAccountHolderName();
+
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<CardNameFixFlowViewAndroid> card_name_fix_flow_view_android_;
+#endif  // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

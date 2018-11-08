@@ -231,6 +231,8 @@ jumbo_static_library("browser") {
       "autofill_save_card_infobar_delegate_mobile.cc",
       "autofill_save_card_infobar_delegate_mobile.h",
       "autofill_save_card_infobar_mobile.h",
+      "ui/card_name_fix_flow_view_delegate_mobile.cc",
+      "ui/card_name_fix_flow_view_delegate_mobile.h",
     ]
   }
 

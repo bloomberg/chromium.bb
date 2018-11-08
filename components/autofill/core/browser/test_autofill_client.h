@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -62,6 +63,12 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
                                     bool show_prompt,
                                     base::OnceClosure callback) override;
+#if defined(OS_ANDROID)
+  void ConfirmAccountNameFixFlow(
+      std::unique_ptr<base::DictionaryValue> legal_message,
+      base::OnceCallback<void(const base::string16&)> callback) override;
+#endif  // defined(OS_ANDROID)
+
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
@@ -172,6 +179,10 @@ class TestAutofillClient : public AutofillClient {
 
   // Populated if save was offered. True if bubble was shown, false otherwise.
   base::Optional<bool> offer_to_save_credit_card_bubble_was_shown_;
+
+  // Populated if name fix flow was offered. True if bubble was shown, false
+  // otherwise.
+  base::Optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
 
   std::vector<std::string> migration_card_selection_;
 

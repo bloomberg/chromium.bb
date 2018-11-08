@@ -432,8 +432,21 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   // should not display the offer-to-save infobar at all.
   if (!is_mobile_build || show_save_prompt_.value()) {
     user_did_accept_upload_prompt_ = false;
+
+    // legal_message_ ownership is always handled out to chrome autofill client
+    // and eventually to UI classes. In Android, cards name fix flows take two
+    // steps and legal messsage is shown only in second step, hence nullptr is
+    // sent now.
+    std::unique_ptr<base::DictionaryValue> legal_message_tmp;
+#if defined(OS_ANDROID)
+    legal_message_tmp =
+        should_request_name_from_user_ ? nullptr : std::move(legal_message_);
+#else
+    legal_message_tmp = std::move(legal_message_);
+#endif  // #if defined(OS_ANDROID)
+
     client_->ConfirmSaveCreditCardToCloud(
-        upload_request_.card, std::move(legal_message_),
+        upload_request_.card, std::move(legal_message_tmp),
         should_request_name_from_user_,
         should_request_expiration_date_from_user_, show_save_prompt_.value(),
         base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
@@ -719,6 +732,35 @@ int CreditCardSaveManager::GetDetectedValues() const {
 
 void CreditCardSaveManager::OnUserDidAcceptUpload(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
+// On Android, requesting cardholder name is a two step flow.
+#if defined(OS_ANDROID)
+  if (should_request_name_from_user_) {
+    client_->ConfirmAccountNameFixFlow(
+        std::move(legal_message_),
+        base::BindOnce(
+            &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
+            weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    OnUserDidAcceptUploadHelper(user_provided_card_details);
+  }
+#else
+  OnUserDidAcceptUploadHelper(user_provided_card_details);
+#endif
+}
+
+#if defined(OS_ANDROID)
+void CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow(
+    const base::string16& cardholder_name) {
+  DCHECK(should_request_name_from_user_);
+
+  OnUserDidAcceptUploadHelper({cardholder_name,
+                               /*expiration_date_month=*/base::string16(),
+                               /*expiration_date_year=*/base::string16()});
+}
+#endif
+
+void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
+    const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   // If cardholder name was explicitly requested for the user to enter/confirm,
   // replace the name on |upload_request_.card| with the entered name.  (Note
   // that it is possible a name already existed on the card if conflicting names
@@ -729,6 +771,7 @@ void CreditCardSaveManager::OnUserDidAcceptUpload(
                                  user_provided_card_details.cardholder_name,
                                  app_locale_);
   }
+
   user_did_accept_upload_prompt_ = true;
   // If expiration date was explicitly requested for the user to select, replace
   // the expiration date on |upload_request_.card| with the selected date.

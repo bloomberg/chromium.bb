@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -18,7 +19,9 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -49,7 +52,12 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/user_prefs/user_prefs.h"
@@ -64,10 +72,12 @@
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
+#include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
+#include "components/autofill/core/browser/ui/card_name_fix_flow_view_delegate_mobile.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
@@ -301,8 +311,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
-              GetStrikeDatabase(),
+              /*upload=*/false, /*should_request_name_from_user=*/false, card,
+              std::make_unique<base::DictionaryValue>(), GetStrikeDatabase(),
               /*upload_save_card_callback=*/
               UserAcceptedUploadCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs())));
@@ -316,6 +326,23 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 #endif
 }
 
+#if defined(OS_ANDROID)
+void ChromeAutofillClient::ConfirmAccountNameFixFlow(
+    std::unique_ptr<base::DictionaryValue> legal_message,
+    base::OnceCallback<void(const base::string16&)> callback) {
+  std::unique_ptr<CardNameFixFlowViewDelegateMobile>
+      card_name_fix_flow_view_delegate_mobile =
+          std::make_unique<CardNameFixFlowViewDelegateMobile>(
+              GetAccountHolderName(), std::move(legal_message),
+              /*upload_save_card_callback=*/std::move(callback));
+
+  card_name_fix_flow_view_android_ =
+      std::make_unique<CardNameFixFlowViewAndroid>(
+          std::move(card_name_fix_flow_view_delegate_mobile), web_contents());
+  card_name_fix_flow_view_android_->Show();
+}
+#endif
+
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
@@ -328,7 +355,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              true, card, std::move(legal_message), GetStrikeDatabase(),
+              /*upload=*/true, should_request_name_from_user, card,
+              std::move(legal_message), GetStrikeDatabase(),
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/base::Closure(), GetPrefs());
   if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
@@ -531,6 +559,27 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
     }
 #endif
   }
+}
+
+Profile* ChromeAutofillClient::GetProfile() const {
+  if (!web_contents())
+    return nullptr;
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
+base::string16 ChromeAutofillClient::GetAccountHolderName() {
+  Profile* profile = GetProfile();
+  if (!profile)
+    return base::string16();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  if (!signin_manager || !account_tracker)
+    return base::string16();
+  AccountInfo account_info = account_tracker->GetAccountInfo(
+      signin_manager->GetAuthenticatedAccountId());
+  return base::UTF8ToUTF16(account_info.full_name);
 }
 
 }  // namespace autofill

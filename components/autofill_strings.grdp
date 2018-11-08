@@ -198,6 +198,9 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
     Save card?
   </message>
+  <message name="IDS_AUTOFILL_NAME_FIX_FLOW_PROMPT_SAVE_CARD" desc="Text to show for the Autofill save credit card prompt card holder name fix flow button.">
+    Save card
+  </message>
   <if expr="is_linux and not chromeos">
     <then>
       <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
@@ -242,6 +245,9 @@
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip text for the cardholder name textfield.">
     This name is from your Google Account.
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_CARDHOLDER_NAME_FIX_FLOW_HEADER" desc="Header for the cardholder name fix flow.">
+    Confirm name
   </message>
 
   <!-- Autofill Local card migration bubble or dialog -->

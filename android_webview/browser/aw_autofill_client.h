@@ -79,6 +79,9 @@ class AwAutofillClient : public autofill::AutofillClient,
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
+  void ConfirmAccountNameFixFlow(
+      std::unique_ptr<base::DictionaryValue> legal_message,
+      base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmMigrateLocalCardToCloud(
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<autofill::MigratableCreditCard>&
