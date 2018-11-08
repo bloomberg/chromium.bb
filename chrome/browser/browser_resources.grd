@@ -618,8 +618,6 @@
         <include name="IDR_DEVICE_EMULATOR_PAGES_JS" file="resources\chromeos\emulator\device_emulator_pages.js" type="BINDATA" />
         <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
       </if>
-      <include name="IDR_EASY_UNLOCK_MANIFEST" file="resources\easy_unlock\manifest.json" type="BINDATA" />
-      <include name="IDR_EASY_UNLOCK_MANIFEST_SIGNIN" file="resources\easy_unlock\manifest_signin.json" type="BINDATA" />
       <if expr="chromeos">
         <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time.html" type="BINDATA" />
         <include name="IDR_SET_TIME_CSS" file="resources\chromeos\set_time.css" type="BINDATA" />
