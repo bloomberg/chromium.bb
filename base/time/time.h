@@ -639,6 +639,12 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // in the input string, FromString assumes local time and FromUTCString
   // assumes UTC. A timezone that cannot be parsed (e.g. "UTC" which is not
   // specified in RFC822) is treated as if the timezone is not specified.
+  //
+  // WARNING: the underlying converter is very permissive. For example: it is
+  // not checked whether a given day of the week matches the date; Feb 29
+  // silently becomes Mar 1 in non-leap years; under certain conditions, whole
+  // English sentences may be parsed successfully and yield unexpected results.
+  //
   // TODO(iyengar) Move the FromString/FromTimeT/ToTimeT/FromFileTime to
   // a new time converter class.
   static bool FromString(const char* time_string,
