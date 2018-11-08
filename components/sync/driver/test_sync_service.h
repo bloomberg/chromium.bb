@@ -30,6 +30,7 @@ class TestSyncService : public SyncService {
   void SetAuthenticatedAccountInfo(const AccountInfo& account_info);
   void SetIsAuthenticatedAccountPrimary(bool is_primary);
   void SetAuthError(const GoogleServiceAuthError& auth_error);
+  void SetFirstSetupComplete(bool first_setup_complete);
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
   void SetIsUsingSecondaryPassphrase(bool enabled);
@@ -112,6 +113,7 @@ class TestSyncService : public SyncService {
   AccountInfo account_info_;
   bool account_is_primary_ = true;
   GoogleServiceAuthError auth_error_;
+  bool first_setup_complete_ = true;
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;

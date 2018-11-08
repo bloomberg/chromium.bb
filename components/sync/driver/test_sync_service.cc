@@ -66,6 +66,10 @@ void TestSyncService::SetAuthError(const GoogleServiceAuthError& auth_error) {
   auth_error_ = auth_error;
 }
 
+void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
+  first_setup_complete_ = first_setup_complete;
+}
+
 void TestSyncService::SetPreferredDataTypes(const ModelTypeSet& types) {
   preferred_data_types_ = types;
 }
@@ -115,10 +119,12 @@ const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
 }
 
 bool TestSyncService::IsFirstSetupComplete() const {
-  return true;
+  return first_setup_complete_;
 }
 
-void TestSyncService::SetFirstSetupComplete() {}
+void TestSyncService::SetFirstSetupComplete() {
+  first_setup_complete_ = true;
+}
 
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
