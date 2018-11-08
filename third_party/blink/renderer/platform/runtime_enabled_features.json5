@@ -588,6 +588,10 @@
       status: "stable",
     },
     {
+      name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
+      status: "experimental",
+    },
+    {
       name: "ImageOrientation",
       status: "test",
     },
