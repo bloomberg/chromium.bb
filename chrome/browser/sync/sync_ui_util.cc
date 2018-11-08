@@ -19,6 +19,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
@@ -335,7 +336,7 @@ MessageType GetStatusLabels(Profile* profile,
 #if !defined(OS_CHROMEOS)
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    const SigninManagerBase& signin,
+    const identity::IdentityManager& identity_manager,
     int* content_string_id,
     int* button_string_id) {
   const ProfileSyncService* service =
@@ -403,7 +404,8 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     }
 
     // Check for a sync confirmation error.
-    if (signin.IsAuthenticated() && service->IsSyncConfirmationNeeded()) {
+    if (identity_manager.HasPrimaryAccount() &&
+        service->IsSyncConfirmationNeeded()) {
       *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
       return SETTINGS_UNCONFIRMED_ERROR;

@@ -29,7 +29,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -69,6 +68,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -198,7 +198,7 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   // policy.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) &&
       profile->IsSyncAllowed() &&
-      SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+      IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount()) {
     return BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE;
   }
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
@@ -673,9 +673,11 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           browser_sync::ProfileSyncService::SyncEvent(
               browser_sync::ProfileSyncService::STOP_FROM_OPTIONS);
         }
-        SigninManagerFactory::GetForProfile(browser_->profile())
-            ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                      signin_metrics::SignoutDelete::IGNORE_METRIC);
+        IdentityManagerFactory::GetForProfile(browser_->profile())
+            ->ClearPrimaryAccount(
+                identity::IdentityManager::ClearAccountTokensAction::kDefault,
+                signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
         ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
         break;
       case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
@@ -707,15 +709,15 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // The account management view is only available with the
     // --account-consistency=mirror flag.
     bool account_management_available =
-        SigninManagerFactory::GetForProfile(profile)->IsAuthenticated() &&
+        IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount() &&
         AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile);
     ShowViewFromMode(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   } else if (sender == current_profile_card_) {
     if (dice_enabled_ &&
-        SigninManagerFactory::GetForProfile(browser_->profile())
-            ->IsAuthenticated()) {
+        IdentityManagerFactory::GetForProfile(browser_->profile())
+            ->HasPrimaryAccount()) {
       chrome::ShowSettingsSubPage(browser_, chrome::kPeopleSubPage);
     } else {
       // Open settings to edit profile name and image. The profile doesn't need
@@ -911,11 +913,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
 views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(browser_->profile());
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser_->profile());
   sync_ui_util::AvatarSyncErrorType error =
       sync_ui_util::GetMessagesForAvatarSyncError(
-          browser_->profile(), *signin_manager, &content_string_id,
+          browser_->profile(), *identity_manager, &content_string_id,
           &button_string_id);
   if (error == sync_ui_util::NO_SYNC_ERROR)
     return nullptr;
@@ -1122,8 +1124,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
   }
 
-  if (!dice_enabled_ &&
-      SigninManagerFactory::GetForProfile(profile)->IsSigninAllowed()) {
+  bool is_signin_allowed =
+      profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+  if (!dice_enabled_ && is_signin_allowed) {
     views::View* extra_links_view = new views::View();
     extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
@@ -1541,8 +1544,9 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
       views::CreateEmptyBorder(0, dialog_insets.left(),
                                dialog_insets.bottom(), dialog_insets.right()));
 
-  const std::string& primary_account = SigninManagerFactory::GetForProfile(
-      browser_->profile())->GetAuthenticatedAccountId();
+  const std::string& primary_account =
+      IdentityManagerFactory::GetForProfile(browser_->profile())
+          ->GetPrimaryAccountId();
   bool is_primary_account = primary_account == account_id_to_remove_;
 
   const int unrelated_vertical_spacing =
