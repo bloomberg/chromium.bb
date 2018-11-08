@@ -65,7 +65,7 @@ bool IsHomeLauncherShown() {
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
                              Shelf* shelf)
-    : views::ImageButton(nullptr),
+    : ShelfControlButton(),
       listener_(listener),
       shelf_view_(shelf_view),
       shelf_(shelf),
@@ -79,14 +79,10 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-  set_ink_drop_base_color(kShelfInkDropBaseColor);
-  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(Button::NOTIFY_ON_PRESS);
+  set_has_ink_drop_action_on_click(false);
 
   // Initialize voice interaction overlay and sync the flags if active user
   // session has already started. This could happen when an external monitor
@@ -213,7 +209,7 @@ void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
     const {
-  const int app_list_button_radius = ShelfConstants::app_list_button_radius();
+  const int app_list_button_radius = ShelfConstants::control_border_radius();
   gfx::Point center = GetCenterPoint();
   gfx::Rect bounds(center.x() - app_list_button_radius,
                    center.y() - app_list_button_radius,
@@ -247,7 +243,7 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
   return std::make_unique<views::CircleInkDropMask>(
-      size(), GetCenterPoint(), ShelfConstants::app_list_button_radius());
+      size(), GetCenterPoint(), ShelfConstants::control_border_radius());
 }
 
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -296,27 +292,6 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
       canvas->DrawCircle(circle_center, std::ceil(kCircleRadiusDp * dsf),
                          fg_flags);
     }
-  }
-}
-
-gfx::Point AppListButton::GetCenterPoint() const {
-  // For a bottom-aligned shelf, the button bounds could have a larger height
-  // than width (in the case of touch-dragging the shelf upwards) or a larger
-  // width than height (in the case of a shelf hide/show animation), so adjust
-  // the y-position of the circle's center to ensure correct layout. Similarly
-  // adjust the x-position for a left- or right-aligned shelf.
-  const int x_mid = width() / 2.f;
-  const int y_mid = height() / 2.f;
-
-  const ShelfAlignment alignment = shelf_->alignment();
-  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    return gfx::Point(x_mid, x_mid);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    return gfx::Point(y_mid, y_mid);
-  } else {
-    DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    return gfx::Point(width() - y_mid, y_mid);
   }
 }
 
