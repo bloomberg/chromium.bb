@@ -54,6 +54,7 @@ template("webapk_java") {
       "src/org/chromium/webapk/shell_apk/TransparentLauncherActivity.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
+      "src/org/chromium/webapk/shell_apk/WebApkSharedPreferences.java",
       "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
     ]
     deps += [

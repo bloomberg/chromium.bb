@@ -14,7 +14,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
-import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
@@ -25,8 +24,6 @@ import java.util.List;
  * Contains methods for getting information about host browser.
  */
 public class HostBrowserUtils {
-    public static final String SHARED_PREF_RUNTIME_HOST = "runtime_host";
-
     private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
 
     private static final int MINIMUM_REQUIRED_INTENT_HELPER_VERSION = 2;
@@ -119,10 +116,8 @@ public class HostBrowserUtils {
     public static void writeHostBrowserToSharedPref(Context context, String hostPackage) {
         if (TextUtils.isEmpty(hostPackage)) return;
 
-        SharedPreferences sharedPref =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(SHARED_PREF_RUNTIME_HOST, hostPackage);
+        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
+        editor.putString(WebApkSharedPreferences.PREF_RUNTIME_HOST, hostPackage);
         editor.apply();
     }
 
@@ -212,9 +207,8 @@ public class HostBrowserUtils {
 
     /** Returns the package name of the host browser cached in the SharedPreferences. */
     public static String getHostBrowserFromSharedPreference(Context context) {
-        SharedPreferences sharedPref =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        return sharedPref.getString(SHARED_PREF_RUNTIME_HOST, null);
+        SharedPreferences sharedPref = WebApkSharedPreferences.getPrefs(context);
+        return sharedPref.getString(WebApkSharedPreferences.PREF_RUNTIME_HOST, null);
     }
 
     /** Returns the package name of the default browser on the Android device. */

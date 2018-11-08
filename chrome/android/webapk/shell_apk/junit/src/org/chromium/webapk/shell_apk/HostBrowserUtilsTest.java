@@ -25,7 +25,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
 
@@ -88,8 +87,7 @@ public class HostBrowserUtilsTest {
         mContext = RuntimeEnvironment.application;
 
         mPackageManager = Shadows.shadowOf(mContext.getPackageManager());
-        mSharedPrefs =
-                mContext.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
+        mSharedPrefs = WebApkSharedPreferences.getPrefs(mContext);
 
         HostBrowserUtils.resetCachedHostPackageForTesting();
     }
@@ -296,10 +294,8 @@ public class HostBrowserUtilsTest {
     }
 
     private void setHostBrowserInSharedPreferences(String hostBrowserPackage) {
-        SharedPreferences sharedPref =
-                mContext.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(HostBrowserUtils.SHARED_PREF_RUNTIME_HOST, hostBrowserPackage);
+        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(mContext).edit();
+        editor.putString(WebApkSharedPreferences.PREF_RUNTIME_HOST, hostBrowserPackage);
         editor.apply();
     }
 
