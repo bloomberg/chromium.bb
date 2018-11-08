@@ -43,8 +43,6 @@ source_set("infobars_ui") {
     "infobar_container_consumer.h",
     "infobar_container_view_controller.h",
     "infobar_container_view_controller.mm",
-    "infobar_view_sizing.h",
-    "infobar_view_sizing_delegate.h",
   ]
   deps = [
     ":public",

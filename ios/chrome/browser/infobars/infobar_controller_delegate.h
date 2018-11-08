@@ -10,9 +10,6 @@
 // Interface for delegating events from infobar.
 class InfoBarControllerDelegate {
  public:
-  // Notifies that the target size has been changed (e.g. after rotation).
-  virtual void SetInfoBarTargetHeight(int height) = 0;
-
   // Returns whether the infobar is owned.
   virtual bool IsOwned() = 0;
 

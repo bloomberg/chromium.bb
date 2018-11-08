@@ -50,7 +50,7 @@ enum AlwaysTranslateSwitchState {
   return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
-- (UIView<InfoBarViewSizing>*)infobarView {
+- (UIView*)infobarView {
   ConfirmInfoBarView* infoBarView =
       [[ConfirmInfoBarView alloc] initWithFrame:CGRectZero];
   // Icon

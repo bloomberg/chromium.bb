@@ -7,33 +7,24 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
-
 namespace infobars {
 class InfoBarDelegate;
 }  // namespace infobars
 
 class InfoBarControllerDelegate;
-@protocol InfoBarViewSizing;
 
 // InfoBar for iOS acts as a UIViewController for InfoBarView.
-@interface InfoBarController : NSObject<InfoBarViewSizingDelegate>
+@interface InfoBarController : NSObject
 
 // Detaches view from its delegate.
 // After this function is called, no user interaction can be handled.
 - (void)detachView;
 
-// Returns the actual height in pixels of this infobar instance.
-- (int)barHeight;
-
-// Adjusts visible portion of this infobar.
-- (void)onHeightRecalculated:(int)newHeight;
-
 // Removes the view.
 - (void)removeView;
 
 // Accesses the view.
-- (UIView<InfoBarViewSizing>*)view;
+- (UIView*)view;
 
 @property(nonatomic, assign) InfoBarControllerDelegate* delegate;  // weak
 

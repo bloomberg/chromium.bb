@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,7 +33,7 @@ InfoBarIOS::~InfoBarIOS() {
   controller_ = nil;
 }
 
-UIView<InfoBarViewSizing>* InfoBarIOS::view() {
+UIView* InfoBarIOS::view() {
   DCHECK(controller_);
   return [controller_ view];
 }
@@ -44,16 +43,7 @@ void InfoBarIOS::RemoveView() {
   [controller_ removeView];
 }
 
-void InfoBarIOS::PlatformSpecificOnHeightRecalculated() {
-  DCHECK(controller_);
-  [controller_ onHeightRecalculated:computed_height()];
-}
-
 #pragma mark - InfoBarControllerDelegate
-
-void InfoBarIOS::SetInfoBarTargetHeight(int height) {
-  SetTargetHeight(height);
-}
 
 bool InfoBarIOS::IsOwned() {
   return owner() != nullptr;
