@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_IDENTITY_TEST_ENVIRONMENT_PROFILE_ADAPTOR_H_
 
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 
 // Adaptor that supports identity::IdentityTestEnvironment's usage in testing
@@ -24,10 +25,11 @@ class IdentityTestEnvironmentProfileAdaptor {
   CreateProfileForIdentityTestEnvironment();
 
   // Like the above, but additionally configures the returned Profile with
-  // |input_factories|.
+  // |input_factories| and |prefs|.
   static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment(
-      const TestingProfile::TestingFactories& input_factories);
+      const TestingProfile::TestingFactories& input_factories,
+      std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs = nullptr);
 
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
