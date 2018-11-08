@@ -25,11 +25,20 @@ class PreviewsUserData {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
+  // The effective connection type value for the navigation.
+  net::EffectiveConnectionType navigation_ect() const {
+    return navigation_ect_;
+  }
+  void set_navigation_ect(net::EffectiveConnectionType navigation_ect) {
+    navigation_ect_ = navigation_ect;
+  }
+
   // Returns the data savings inflation percent to use for this navigation
   // instead of the default if it is not 0.
   int data_savings_inflation_percent() const {
     return data_savings_inflation_percent_;
   }
+
   // Sets a data savings inflation percent value to use instead of the default
   // if there is a committed preview. Note that this is expected to be used for
   // specific preview types (such as NoScript) that don't have better data use
@@ -99,6 +108,11 @@ class PreviewsUserData {
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
+
+  // The effective connection type at the time of navigation. This is the value
+  // to compare to the preview's triggering ect threshold.
+  net::EffectiveConnectionType navigation_ect_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // A previews data savings inflation percent for the navigation if not 0.
   int data_savings_inflation_percent_ = 0;

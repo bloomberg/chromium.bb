@@ -25,29 +25,28 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
   PreviewEnabledPreviewsDecider() {}
   ~PreviewEnabledPreviewsDecider() override {}
 
-  bool ShouldAllowPreviewAtECT(
+  bool ShouldAllowPreviewAtNavigationStart(
       PreviewsUserData* previews_data,
       const GURL& url,
       bool is_reload,
       PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_finch,
       bool is_server_preview) const override {
     return IsEnabled(type);
   }
 
-  bool ShouldAllowPreview(PreviewsUserData* previews_data,
-                          const GURL& url,
-                          bool is_reload,
-                          PreviewsType type) const override {
-    return ShouldAllowPreviewAtECT(previews_data, url, is_reload, type,
-                                   params::GetECTThresholdForPreview(type),
-                                   std::vector<std::string>(), false);
+  bool ShouldAllowClientPreviewWithFinchBlacklist(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
+      PreviewsType type,
+      const std::vector<std::string>& host_blacklist_from_finch)
+      const override {
+    return IsEnabled(type);
   }
 
-  bool IsURLAllowedForPreview(PreviewsUserData* previews_data,
-                              const GURL& url,
-                              PreviewsType type) const override {
+  bool ShouldCommitPreview(PreviewsUserData* previews_data,
+                           const GURL& url,
+                           PreviewsType type) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS);
     return IsEnabled(type);

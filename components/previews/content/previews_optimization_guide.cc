@@ -31,17 +31,18 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
   optimization_guide_service_->RemoveObserver(this);
 }
 
-bool PreviewsOptimizationGuide::IsWhitelisted(PreviewsUserData* previews_data,
-                                              const GURL& url,
-                                              PreviewsType type) const {
+bool PreviewsOptimizationGuide::IsWhitelisted(
+    PreviewsUserData* previews_data,
+    const GURL& url,
+    PreviewsType type,
+    net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
+  *out_ect_threshold = params::GetECTThresholdForPreview(type);
   int inflation_percent = 0;
-  net::EffectiveConnectionType ect_threshold =
-      params::GetECTThresholdForPreview(type);
-  if (!hints_->IsWhitelisted(url, type, &inflation_percent, &ect_threshold))
+  if (!hints_->IsWhitelisted(url, type, &inflation_percent, out_ect_threshold))
     return false;
 
   if (inflation_percent != 0 && previews_data)

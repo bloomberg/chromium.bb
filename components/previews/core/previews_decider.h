@@ -18,37 +18,39 @@ class PreviewsUserData;
 
 class PreviewsDecider {
  public:
-  // Whether |url| is allowed to show a preview of |type|. If the current
-  // ECT is strictly faster than |effective_connection_type_threshold|, the
-  // preview will be disallowed; preview types that check network quality before
-  // calling ShouldAllowPreviewAtECT should pass in
-  // EFFECTIVE_CONNECTION_TYPE_4G.
-  // |is_server_preview| means that the blacklist does
+  // Whether |url| is allowed to show a preview of |type| as can be determined
+  // at the start of a navigation (or start of a redirection). This can be
+  // further checked at navigation commit time via |ShouldCommitPreview|.
+  // Some types of previews will be checked for an applicable network quality
+  // threshold - these are client previews that do not have optimization hint
+  // support. Previews with optimization hint support can have variable
+  // network quality thresholds based on the committed URL. Server previews
+  // perform a network quality check on the server. |is_server_preview| is used
+  // to identify such server previews and also means that the blacklist does
   // not need to be checked for long term rules when Previews has been
   // configured to allow skipping the blacklist.
-  virtual bool ShouldAllowPreviewAtECT(
+  virtual bool ShouldAllowPreviewAtNavigationStart(
       PreviewsUserData* previews_data,
       const GURL& url,
       bool is_reload,
       PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_finch,
       bool is_server_preview) const = 0;
 
-  // Same as ShouldAllowPreviewAtECT, but uses the previews default
-  // EffectiveConnectionType and no blacklisted hosts from the server.
-  virtual bool ShouldAllowPreview(PreviewsUserData* previews_data,
-                                  const GURL& url,
-                                  bool is_reload,
-                                  PreviewsType type) const = 0;
+  // Whether |url| is allowed to show a preview of |type| as can be determined
+  // at the start of a navigation (or start of a redirection). The checks a
+  // provided server blacklist |host_blacklist_from_finch| that is used by
+  // ClientLoFi which pre-dated the optimization hints mechanism.
+  virtual bool ShouldAllowClientPreviewWithFinchBlacklist(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
+      PreviewsType type,
+      const std::vector<std::string>& host_blacklist_from_finch) const = 0;
 
-  // Whether the |url| is allowed to show a preview of |type|.
-  // This only considers whether the URL is constrained/allowed in
-  // blacklists/whitelists. It does not include other constraints such
-  // as the effective connection type.
-  virtual bool IsURLAllowedForPreview(PreviewsUserData* previews_data,
-                                      const GURL& url,
-                                      PreviewsType type) const = 0;
+  // Whether the |committed_url| is allowed to show a preview of |type|.
+  virtual bool ShouldCommitPreview(PreviewsUserData* previews_data,
+                                   const GURL& committed_url,
+                                   PreviewsType type) const = 0;
 
   // Requests that any applicable detailed resource hints be loaded.
   virtual void LoadResourceHints(const GURL& url) = 0;

@@ -104,25 +104,23 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
   // PreviewsDecider implementation:
-  bool ShouldAllowPreview(PreviewsUserData* previews_data,
-                          const GURL& url,
-                          bool is_reload,
-                          PreviewsType type) const override;
-  bool ShouldAllowPreviewAtECT(
+  bool ShouldAllowPreviewAtNavigationStart(
       PreviewsUserData* previews_data,
       const GURL& url,
       bool is_reload,
       PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_finch,
       bool is_server_preview) const override;
-  bool IsURLAllowedForPreview(PreviewsUserData* previews_data,
-                              const GURL& url,
-                              PreviewsType type) const override;
+  bool ShouldAllowClientPreviewWithFinchBlacklist(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
+      PreviewsType type,
+      const std::vector<std::string>& host_blacklist_from_finch) const override;
+  bool ShouldCommitPreview(PreviewsUserData* previews_data,
+                           const GURL& committed_url,
+                           PreviewsType type) const override;
 
-  // Set whether ignoring the long term blacklist rules is allowed for calls to
-  // ShouldAllowPreviewAtECT that have |can_ignore_long_term_black_list_rules|
-  // set to true.
+  // Set whether to ignore the long term blacklist rules for server previews.
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
@@ -148,6 +146,22 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:
+  // Returns whether the preview |type| should be considered for |url|.
+  // This is an initial check on the preview |type| being enabled and the
+  // |url| not being a local URL.
+  bool ShouldConsiderPreview(PreviewsType type,
+                             const GURL& url,
+                             PreviewsUserData* previews_data) const;
+
+  // Determines the eligibility of the preview |type| for |url|.
+  PreviewsEligibilityReason DeterminePreviewEligibility(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
+      PreviewsType type,
+      bool is_server_preview,
+      std::vector<PreviewsEligibilityReason>* passed_reasons) const;
+
   // Whether the preview |type| should be allowed to be considered for |url|
   // subject to any server provided optimization hints. This is meant for
   // checking the initial navigation URL. Returns ALLOWED if no reason found
@@ -161,7 +175,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // Whether |url| is allowed for |type| according to server provided
   // optimization hints, if available. This is meant for checking the committed
   // navigation URL against any specific hint details.
-  PreviewsEligibilityReason IsURLAllowedForPreviewByOptimizationHints(
+  PreviewsEligibilityReason ShouldCommitPreviewPerOptimizationHints(
       PreviewsUserData* previews_data,
       const GURL& url,
       PreviewsType type,
@@ -186,9 +200,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // set it in flags. See previews::IsPreviewsBlacklistIgnoredViaFlag.
   bool blacklist_ignored_;
 
-  // Whether ignoring the blacklist is allowed for calls to
-  // ShouldAllowPreviewAtECT that have
-  // |is_server_preview| true.
+  // Whether to ignore the blacklist for server previews.
   bool ignore_long_term_blacklist_for_server_previews_ = false;
 
   // The estimate of how slow a user's connection is. Used for triggering

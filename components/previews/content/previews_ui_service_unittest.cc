@@ -23,6 +23,11 @@ namespace previews {
 
 namespace {
 
+// Dummy method for creating TestPreviewsUIService.
+bool MockedPreviewsIsEnabled(previews::PreviewsType type) {
+  return true;
+}
+
 class TestPreviewsUIService : public PreviewsUIService {
  public:
   TestPreviewsUIService(
@@ -34,7 +39,7 @@ class TestPreviewsUIService : public PreviewsUIService {
       : PreviewsUIService(std::move(previews_decider_impl),
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
-                          PreviewsIsEnabledCallback(),
+                          base::BindRepeating(&MockedPreviewsIsEnabled),
                           std::move(logger),
                           blacklist::BlacklistData::AllowedTypesAndVersions(),
                           test_network_quality_tracker) {}
