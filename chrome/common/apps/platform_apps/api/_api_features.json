@@ -11,10 +11,6 @@
     "dependencies": ["permission:browser"],
     "contexts": ["blessed_extension"]
   },
-  "easyUnlockPrivate": {
-    "dependencies": ["permission:easyUnlockPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "mediaGalleries": {
     "dependencies": ["permission:mediaGalleries"],
     "contexts": ["blessed_extension"]

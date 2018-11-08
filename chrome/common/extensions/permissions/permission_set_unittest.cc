@@ -832,7 +832,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kCommandLinePrivate);
   skip.insert(APIPermission::kDeveloperPrivate);
   skip.insert(APIPermission::kDownloadsInternal);
-  skip.insert(APIPermission::kEasyUnlockPrivate);
   skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kEnterprisePlatformKeysPrivate);
   skip.insert(APIPermission::kEnterpriseReportingPrivate);
