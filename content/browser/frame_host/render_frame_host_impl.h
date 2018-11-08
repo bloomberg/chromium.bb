@@ -254,9 +254,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool CreateNetworkServiceDefaultFactory(
       network::mojom::URLLoaderFactoryRequest default_factory_request) override;
   void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-      std::vector<url::Origin> request_initiators,
+      base::flat_set<url::Origin> request_initiators,
       bool push_to_renderer_now) override;
   bool IsSandboxed(blink::WebSandboxFlags flags) const override;
+  void FlushNetworkAndNavigationInterfacesForTesting() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -767,11 +768,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::WebSandboxFlags active_sandbox_flags() {
     return active_sandbox_flags_;
   }
-
-  // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
-  // related interfaces to make sure all in-flight mojo messages have been
-  // received by the other end. For test use only.
-  void FlushNetworkAndNavigationInterfacesForTesting();
 
   // Notifies the render frame about a user activation from the browser side.
   void NotifyUserActivation();
@@ -1322,10 +1318,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
 
-  // Creates initiator-specific URLLoaderFactory objects for intiator origins
-  // registered via MarkInitiatorAsRequiringSeparateURLLoaderFactory method.
+  // Creates initiator-specific URLLoaderFactory objects for
+  // |initiator_origins|.
   URLLoaderFactoryBundleInfo::OriginMap
-  CreateInitiatorSpecificURLLoaderFactories();
+  CreateInitiatorSpecificURLLoaderFactories(
+      const base::flat_set<url::Origin>& initiator_origins);
 
   // Based on the termination |status|, may generate a crash report to be routed
   // to the Reporting API.
@@ -1765,6 +1762,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |RenderFrame|.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
+
+  // Whether UpdateSubresourceLoaderFactories should recreate the default
+  // URLLoaderFactory when handling a NetworkService crash.  In case the frame
+  // is covered by AppCache, only initiator-specific factories need to be
+  // refreshed, but the main, AppCache-specific factory shouldn't be refreshed.
+  bool recreate_default_url_loader_factory_after_network_service_crash_ = false;
 
   // Set of request-initiator-origins that require a separate URLLoaderFactory
   // (e.g. for handling requests initiated by extension content scripts that
