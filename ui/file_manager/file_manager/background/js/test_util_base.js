@@ -48,13 +48,17 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
   }
 
   result.styles = styles;
-  // These attributes are set when element is img or canvas.
+
+  // These attributes are set when element is <img> or <canvas>.
   result.imageWidth = Number(element.width);
   result.imageHeight = Number(element.height);
 
   // These attributes are set in any element.
   result.renderedWidth = size.width;
   result.renderedHeight = size.height;
+  result.renderedTop = size.top;
+  result.renderedLeft = size.left;
+
   return result;
 }
 
