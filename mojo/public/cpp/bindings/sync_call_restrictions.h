@@ -113,7 +113,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
 
    private:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
-    base::ThreadRestrictions::ScopedAllowWait allow_wait_;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait_;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(ScopedAllowSyncCall);
