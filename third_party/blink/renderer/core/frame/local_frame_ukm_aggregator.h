@@ -82,9 +82,9 @@ class CustomCountHistogram;
 //   "sub_metric1.Average", "sub_metric1.WorstCase",
 //   "sub_metric2.Average", "sub_metric2.WorstCase",
 //   "sub_metric3.Average", "sub_metric3.WorstCase"
-//   "sub_metric1.AverageRatio", "sub_metric1.WorstCaseRatio",
-//   "sub_metric2.AverageRatio", "sub_metric2.WorstCaseRatio",
-//   "sub_metric3.AverageRatio", "sub_metric3.WorstCaseRation"
+//   "sub_metric1.AveragePercentage", "sub_metric1.WorstCasePercentage",
+//   "sub_metric2.AveragePercentage", "sub_metric2.WorstCasePercentage",
+//   "sub_metric3.AveragePercentage", "sub_metric3.WorstCasePercentage"
 //
 // It will report 13 UMA values:
 //   "primary_uma_counter",
@@ -192,19 +192,19 @@ class CORE_EXPORT LocalFrameUkmAggregator {
     }
   };
 
-  struct RatioMetricRecord {
+  struct MainFramePercentageRecord {
     String worst_case_metric_name;
     String average_metric_name;
     Vector<std::unique_ptr<CustomCountHistogram>> uma_counters_per_bucket;
     TimeDelta interval_duration;
-    double total_ratio;
-    double worst_case_ratio;
+    unsigned total_percentage;
+    unsigned worst_case_percentage;
     size_t sample_count;
 
     void reset() {
       interval_duration = TimeDelta();
-      total_ratio = 0;
-      worst_case_ratio = 0;
+      total_percentage = 0;
+      worst_case_percentage = 0;
       sample_count = 0u;
     }
   };
@@ -218,7 +218,7 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   const TimeDelta event_frequency_;
   AbsoluteMetricRecord primary_metric_;
   Vector<AbsoluteMetricRecord> absolute_metric_records_;
-  Vector<RatioMetricRecord> ratio_metric_records_;
+  Vector<MainFramePercentageRecord> main_frame_percentage_records_;
   TimeTicks last_flushed_time_;
 
   bool has_data_ = false;
