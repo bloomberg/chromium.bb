@@ -223,7 +223,7 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
 Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
+  // TODO(hayato): Use {node -> index} map to avoid O(N) linear search
   wtf_size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
   if (index + 1 == assigned_nodes_.size())
@@ -234,7 +234,7 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
 Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
+  // TODO(hayato): Use {node -> index} map to avoid O(N) linear search
   wtf_size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
   if (index == 0)
