@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
@@ -539,7 +540,15 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleWidgetShowsInkDropOnAttaching) {
   EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop->GetTargetInkDropState());
 }
 
-TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {
+// TODO(crbug.com/903004): We should make VisibleAnchorChanges test not flaky
+// on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_VisibleAnchorChanges DISABLED_VisibleAnchorChanges
+#else
+#define MAYBE_VisibleAnchorChanges VisibleAnchorChanges
+#endif
+
+TEST_F(BubbleDialogDelegateViewTest, MAYBE_VisibleAnchorChanges) {
   std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   TestBubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(nullptr);
