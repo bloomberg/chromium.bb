@@ -9,5 +9,5 @@ description: Archive of WebView CTS tests
 data:
   - file: arm64/L/android-cts-arm_64-4607260.zip
   - file: arm64/M/android-cts-arm_64-4607285.zip
-  - file: arm64/N/android-cts-arm_64-4606956.zip
-  - file: arm64/O/android-cts-arm_64-4666824.zip
+  - file: arm64/N/android-cts-arm_64-5075646.zip
+  - file: arm64/O/android-cts-arm_64-5075719.zip
