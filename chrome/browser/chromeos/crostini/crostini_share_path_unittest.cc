@@ -110,7 +110,6 @@ class CrostiniSharePathTest : public testing::Test {
         chromeos::switches::kCrostiniFiles);
 
     // Setup for DriveFS.
-    features_.InitAndEnableFeature(chromeos::features::kDriveFs);
     user_manager.AddUser(AccountId::FromUserEmailGaiaId(
         profile()->GetProfileUserName(), "12345"));
     profile()->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
@@ -167,6 +166,19 @@ TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, SuccessMyFilesRoot) {
+  features_.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+  base::FilePath my_files =
+      file_manager::util::GetMyFilesFolderForProfile(profile());
+  SharePath(profile(), "vm-running", my_files, PERSIST_NO,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), Persist::NO,
+                           SeneschalClientCalled::YES,
+                           &vm_tools::seneschal::SharePathRequest::MY_FILES, "",
+                           Success::YES, "", run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
   SharePath(profile(), "vm-running", share_path_, PERSIST_NO,
             base::BindOnce(
@@ -189,6 +201,7 @@ TEST_F(CrostiniSharePathTest, SuccessPersist) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running", drivefs_.Append("root").Append("my"),
             PERSIST_NO,
             base::BindOnce(
@@ -199,7 +212,19 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, FailureDriveFsDisabled) {
+  features_.InitAndDisableFeature(chromeos::features::kDriveFs);
+  SharePath(
+      profile(), "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), Persist::NO,
+                     SeneschalClientCalled::NO, nullptr, "my", Success::NO,
+                     "Path is not allowed", run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running", drivefs_.Append("root"), PERSIST_NO,
             base::BindOnce(
                 &CrostiniSharePathTest::SharePathCallback,
@@ -210,6 +235,7 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running", drivefs_, PERSIST_NO,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                            base::Unretained(this), Persist::NO,
@@ -219,6 +245,7 @@ TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running",
             drivefs_.Append("team_drives").Append("team"), PERSIST_NO,
             base::BindOnce(
@@ -230,6 +257,7 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running", drivefs_.Append("Computers").Append("pc"),
             PERSIST_NO,
             base::BindOnce(
@@ -241,6 +269,7 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
+  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
   SharePath(profile(), "vm-running",
             drivefs_.Append(".Trash").Append("in-the-trash"), PERSIST_NO,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
