@@ -42,6 +42,8 @@ SIMPLE_SIGNATURES = [
     ('int corge(void);', _MakeSignature('int', 'corge', ['void'])),
     ('int ferda(char **argv[]);',
      _MakeSignature('int', 'ferda', ['char **argv[]'])),
+    ('void brouk(char *pytlik, ...);',
+     _MakeSignature('void', 'brouk', ['char *pytlik', '...'])),
     ]
 
 TRICKY_SIGNATURES = [
@@ -220,6 +222,14 @@ int* TEST_EXPORT foo(bool b) {
 int  ferda(char **argv[]) {
   return ferda_ptr(argv);
 }""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[6][1]))
+
+    # Test variadic argument
+    self.assertEqual("""extern void brouk(char *pytlik, ...) \
+__attribute__((weak));
+void  brouk(char *pytlik, ...) {
+#define brouk_ptr_variadic(pytlik, ...) brouk_ptr(pytlik, ##__VA_ARGS__)
+  brouk_ptr_variadic(pytlik);
+}""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[7][1]))
 
   def testWriteImplemenationContents(self):
     outfile = StringIO.StringIO()
