@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/document_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -181,10 +182,13 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
   if (!DocumentFullscreen::fullscreenElement(*document_)) {
     bool root_scroller_valid =
         root_scroller_ && IsValidRootScroller(*root_scroller_);
-    if (root_scroller_valid)
+    if (root_scroller_valid) {
       new_effective_root_scroller = root_scroller_;
-    else if (implicit_root_scroller_)
+    } else if (implicit_root_scroller_) {
       new_effective_root_scroller = implicit_root_scroller_;
+      UseCounter::Count(document_->GetFrame(),
+                        WebFeature::kActivatedImplicitRootScroller);
+    }
   }
 
   if (effective_root_scroller_ == new_effective_root_scroller)
