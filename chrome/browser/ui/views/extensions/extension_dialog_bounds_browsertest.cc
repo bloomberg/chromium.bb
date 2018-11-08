@@ -61,9 +61,9 @@ class ExtensionDialogBoundsTest
     auto* dialog = ExtensionDialog::Show(
         extension->url().Resolve("main.html"),
         browser()->window()->GetNativeWindow(), browser()->profile(),
-        nullptr /* web_contents */, kDialogWidth, kDialogHeight,
-        kDialogMinimumWidth, kDialogMinimumHeight, base::string16() /* title */,
-        nullptr /* observer */);
+        nullptr /* web_contents */, true /* is_modal */, kDialogWidth,
+        kDialogHeight, kDialogMinimumWidth, kDialogMinimumHeight,
+        base::string16() /* title */, nullptr /* observer */);
     ASSERT_TRUE(dialog);
     ASSERT_TRUE(init_listener.WaitUntilSatisfied());
   }

@@ -37,11 +37,13 @@ class ExtensionDialog : public views::DialogDelegate,
   // |parent_window| is the parent window to which the pop-up will be attached.
   // |profile| is the profile that the extension is registered with.
   // |web_contents| is the tab that spawned the dialog.
+  // |is_modal| determines whether the dialog is modal to |parent_window|.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
                                gfx::NativeWindow parent_window,
                                Profile* profile,
                                content::WebContents* web_contents,
+                               bool is_modal,
                                int width,
                                int height,
                                int min_width,
@@ -92,7 +94,10 @@ class ExtensionDialog : public views::DialogDelegate,
   ExtensionDialog(extensions::ExtensionViewHost* host,
                   ExtensionDialogObserver* observer);
 
-  void InitWindow(gfx::NativeWindow parent_window, int width, int height);
+  void InitWindow(gfx::NativeWindow parent_window,
+                  bool is_modal,
+                  int width,
+                  int height);
 
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(
