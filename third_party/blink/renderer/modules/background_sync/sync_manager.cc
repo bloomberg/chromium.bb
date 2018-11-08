@@ -25,8 +25,6 @@ SyncManager::SyncManager(ServiceWorkerRegistration* registration)
 
 ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
                                             const String& tag) {
-  // TODO(jkarlin): Wait for the registration to become active instead of
-  // rejecting. See crbug.com/542437.
   if (!registration_->active()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
