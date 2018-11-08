@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,25 +56,10 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
 
   connector->BindInterface(ash::mojom::kServiceName, &keyboard_controller_ptr_);
 
-  // Add this as a KeyboardController observer.
-  ash::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
-  keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-  keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
-
-  // Request the initial enabled state.
-  keyboard_controller_ptr_->IsKeyboardEnabled(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardEnabledChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
-
-  // Request the initial visible state.
-  keyboard_controller_ptr_->IsKeyboardVisible(base::BindOnce(
-      &ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged,
+  // Request the configuration. This will be queued until the service is ready.
+  keyboard_controller_ptr_->GetKeyboardConfig(base::BindOnce(
+      &ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig,
       weak_ptr_factory_.GetWeakPtr()));
-
-  // Request the configuration.
-  keyboard_controller_ptr_->GetKeyboardConfig(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardConfigChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 ChromeKeyboardControllerClient::~ChromeKeyboardControllerClient() {
@@ -106,12 +89,7 @@ void ChromeKeyboardControllerClient::SetKeyboardConfig(
     const keyboard::mojom::KeyboardConfig& config) {
   // Update the cache immediately.
   cached_keyboard_config_ = keyboard::mojom::KeyboardConfig::New(config);
-  keyboard_controller_ptr_->SetKeyboardConfig(config.Clone());
-}
-
-void ChromeKeyboardControllerClient::GetKeyboardEnabled(
-    base::OnceCallback<void(bool)> callback) {
-  keyboard_controller_ptr_->IsKeyboardEnabled(std::move(callback));
+  keyboard_controller_ptr_->SetKeyboardConfig(cached_keyboard_config_.Clone());
 }
 
 void ChromeKeyboardControllerClient::SetEnableFlag(
@@ -124,21 +102,8 @@ void ChromeKeyboardControllerClient::ClearEnableFlag(
   keyboard_controller_ptr_->ClearEnableFlag(flag);
 }
 
-void ChromeKeyboardControllerClient::ReloadKeyboardIfNeeded() {
-  keyboard_controller_ptr_->ReloadKeyboardIfNeeded();
-}
-
-void ChromeKeyboardControllerClient::RebuildKeyboardIfEnabled() {
-  keyboard_controller_ptr_->RebuildKeyboardIfEnabled();
-}
-
-void ChromeKeyboardControllerClient::ShowKeyboard() {
-  keyboard_controller_ptr_->ShowKeyboard();
-}
-
-void ChromeKeyboardControllerClient::HideKeyboard(
-    ash::mojom::HideReason reason) {
-  keyboard_controller_ptr_->HideKeyboard(reason);
+void ChromeKeyboardControllerClient::ReloadKeyboard() {
+  keyboard_controller_ptr_->ReloadKeyboard();
 }
 
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
@@ -178,6 +143,24 @@ void ChromeKeyboardControllerClient::FlushForTesting() {
   keyboard_controller_ptr_.FlushForTesting();
 }
 
+void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
+    keyboard::mojom::KeyboardConfigPtr config) {
+  // Only set the cached value if not already set by SetKeyboardConfig (the
+  // set value will override the initial value once processed).
+  if (!cached_keyboard_config_)
+    cached_keyboard_config_ = std::move(config);
+
+  // Add this as a KeyboardController observer now that the service is ready.
+  ash::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
+  keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+  keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
+
+  // Request the initial enabled state.
+  keyboard_controller_ptr_->IsKeyboardEnabled(
+      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardEnabledChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
   bool was_enabled = is_keyboard_enabled_;
   is_keyboard_enabled_ = enabled;
@@ -203,11 +186,7 @@ void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
 
 void ChromeKeyboardControllerClient::OnKeyboardConfigChanged(
     keyboard::mojom::KeyboardConfigPtr config) {
-  // Only notify extensions after the initial config is received.
-  bool notify = !!cached_keyboard_config_;
   cached_keyboard_config_ = std::move(config);
-  if (!notify)
-    return;
   extensions::VirtualKeyboardAPI* api =
       extensions::BrowserContextKeyedAPIFactory<
           extensions::VirtualKeyboardAPI>::Get(GetProfile());
@@ -215,7 +194,6 @@ void ChromeKeyboardControllerClient::OnKeyboardConfigChanged(
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged(bool visible) {
-  is_keyboard_visible_ = visible;
   for (auto& observer : observers_)
     observer.OnKeyboardVisibilityChanged(visible);
 }

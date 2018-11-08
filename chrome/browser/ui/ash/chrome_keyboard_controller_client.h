@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_H_
 
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -56,25 +55,12 @@ class ChromeKeyboardControllerClient
   // Sets the new keyboard configuration and updates the cached config.
   void SetKeyboardConfig(const keyboard::mojom::KeyboardConfig& config);
 
-  // Invokes |callback| with the current enabled state. Call this after
-  // Set/ClearEnableFlag to get the updated enabled state.
-  void GetKeyboardEnabled(base::OnceCallback<void(bool)> callback);
-
   // Sets/clears the privided keyboard enable state.
   void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
   void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
 
-  // Calls ash.mojom.ReloadKeyboardIfNeeded.
-  void ReloadKeyboardIfNeeded();
-
-  // Calls ash.mojom.RebuildKeyboard.
-  void RebuildKeyboardIfEnabled();
-
-  // Shows the virtual keyboard if enabled.
-  void ShowKeyboard();
-
-  // Hides the virtual keyboard if enabled.
-  void HideKeyboard(ash::mojom::HideReason reason);
+  // Reloads the virtual keyboard if enabled.
+  void ReloadKeyboard();
 
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();
@@ -83,7 +69,6 @@ class ChromeKeyboardControllerClient
   GURL GetVirtualKeyboardUrl();
 
   bool is_keyboard_enabled() { return is_keyboard_enabled_; }
-  bool is_keyboard_visible() { return is_keyboard_visible_; }
 
   void FlushForTesting();
 
@@ -93,6 +78,8 @@ class ChromeKeyboardControllerClient
   }
 
  private:
+  void OnGetInitialKeyboardConfig(keyboard::mojom::KeyboardConfigPtr config);
+
   // keyboard::mojom::KeyboardControllerObserver:
   void OnKeyboardEnabledChanged(bool enabled) override;
   void OnKeyboardConfigChanged(
@@ -112,9 +99,6 @@ class ChromeKeyboardControllerClient
 
   // Tracks the enabled state of the keyboard.
   bool is_keyboard_enabled_ = false;
-
-  // Tracks the visible state of the keyboard.
-  bool is_keyboard_visible_ = false;
 
   base::ObserverList<Observer> observers_;
 

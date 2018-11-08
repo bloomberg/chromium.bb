@@ -9,7 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -18,7 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client_test_helper.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,6 +30,8 @@
 #include "components/arc/test/test_browser_context.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
@@ -253,9 +258,21 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
     profile_ = std::make_unique<TestingProfile>();
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
 
-    chrome_keyboard_controller_client_test_helper_ =
-        ChromeKeyboardControllerClientTestHelper::InitializeForAsh();
-    chrome_keyboard_controller_client_test_helper_->SetProfile(profile_.get());
+    // Create a local service manager connector to handle requests to
+    // ash::mojom::CrosDisplayConfigController.
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        service_manager::Identity(ash::mojom::kServiceName),
+        ash::mojom::KeyboardController::Name_,
+        base::BindRepeating(
+            &ArcInputMethodManagerServiceTest::AddKeyboardControllerBinding,
+            base::Unretained(this)));
+    // Provide the local connector to ChromeKeyboardControllerClient.
+    chrome_keyboard_controller_client_ =
+        std::make_unique<ChromeKeyboardControllerClient>(connector_.get());
+    chrome_keyboard_controller_client_->set_profile_for_test(profile_.get());
 
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
         profile_.get());
@@ -264,11 +281,17 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
         base::WrapUnique(test_bridge_));
   }
 
+  void AddKeyboardControllerBinding(mojo::ScopedMessagePipeHandle handle) {
+    ash::Shell::Get()->ash_keyboard_controller()->BindRequest(
+        ash::mojom::KeyboardControllerRequest(std::move(handle)));
+  }
+
   void TearDown() override {
     test_bridge_ = nullptr;
     service_->Shutdown();
-    chrome_keyboard_controller_client_test_helper_.reset();
-    profile_.reset();
+    profile_.reset(nullptr);
+    chrome_keyboard_controller_client_.reset();
+    connector_.reset();
     tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
@@ -276,11 +299,13 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
   }
 
  private:
+  content::TestServiceManagerContext service_manager_context_;
+  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
-  std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
-      chrome_keyboard_controller_client_test_helper_;
+  std::unique_ptr<ChromeKeyboardControllerClient>
+      chrome_keyboard_controller_client_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
   ArcInputMethodManagerService* service_ = nullptr;

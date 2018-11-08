@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/devicemode.h"
@@ -1124,7 +1123,14 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     // If no engine to enable, cancel the virtual keyboard url override so that
     // it can use the fallback system virtual keyboard UI.
     state_->DisableInputView();
-    ReloadKeyboard();
+
+    // TODO(crbug.com/756059): Support virtual keyboard under MASH. There is no
+    // KeyboardController in the browser process under MASH.
+    if (!features::IsUsingWindowService()) {
+      auto* keyboard_controller = keyboard::KeyboardController::Get();
+      if (keyboard_controller->IsEnabled())
+        keyboard_controller->Reload();
+    }
   }
 
   // Change the keyboard layout to a preferred layout for the input method.
@@ -1336,7 +1342,9 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
     state_->input_view_url = state_->current_input_method.input_view_url();
-    ReloadKeyboard();
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->IsEnabled())
+      keyboard_controller->Reload();
     return;
   }
 
@@ -1356,7 +1364,9 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
   replacements.SetRefStr(overridden_ref);
   state_->input_view_url = url.ReplaceComponents(replacements);
 
-  ReloadKeyboard();
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->IsEnabled())
+    keyboard_controller->Reload();
 }
 
 void InputMethodManagerImpl::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
@@ -1394,18 +1404,11 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
 ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
   // Callers expect a nullptr when the keyboard is disabled. See
-  // https://crbug.com/850020. TODO(stevenjb/shuchen): Fix this for Mash.
-  // https://crbug.com/756059
+  // https://crbug.com/850020.
   return keyboard::KeyboardController::HasInstance() &&
                  keyboard::KeyboardController::Get()->IsEnabled()
              ? keyboard::KeyboardController::Get()
              : nullptr;
-}
-
-void InputMethodManagerImpl::ReloadKeyboard() {
-  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-  if (keyboard_client->is_keyboard_enabled())
-    keyboard_client->ReloadKeyboardIfNeeded();
 }
 
 }  // namespace input_method

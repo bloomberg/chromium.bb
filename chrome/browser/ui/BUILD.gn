@@ -3624,16 +3624,3 @@ static_library("test_support") {
     deps += [ "//extensions/browser" ]
   }
 }
-
-if (is_chromeos) {
-  source_set("ash_test_support") {
-    check_includes = false
-    sources = [
-      "ash/chrome_keyboard_controller_client_test_helper.cc",
-      "ash/chrome_keyboard_controller_client_test_helper.h",
-    ]
-    deps = [
-      "//ash",
-    ]
-  }
-}
