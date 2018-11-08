@@ -8,6 +8,8 @@ source_set("manual_fill") {
   sources = [
     "address_mediator.h",
     "address_mediator.mm",
+    "card_mediator.h",
+    "card_mediator.mm",
     "credential_password_form.h",
     "credential_password_form.mm",
     "form_observer_helper.h",
@@ -20,6 +22,7 @@ source_set("manual_fill") {
     "password_mediator.mm",
   ]
   deps = [
+    ":requesters",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -51,6 +54,7 @@ source_set("manual_fill_ui") {
     "action_cell.mm",
     "address_consumer.h",
     "address_list_delegate.h",
+    "card_consumer.h",
     "card_list_delegate.h",
     "credential.h",
     "credential.mm",
