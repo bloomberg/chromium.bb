@@ -295,7 +295,8 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->oop_rasterization_supported = data.oop_rasterization_supported();
 
 #if defined(OS_WIN)
-  out->direct_composition_overlays = data.direct_composition_overlays();
+  out->direct_composition = data.direct_composition();
+  out->supports_overlays = data.supports_overlays();
 #endif
 
   return data.ReadInitializationTime(&out->initialization_time) &&
