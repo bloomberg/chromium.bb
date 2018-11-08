@@ -10,6 +10,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace ash {
 
@@ -45,10 +46,9 @@ TEST_F(VirtualKeyboardTest, EventsAreHandledBasedOnHitTestBounds) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Add two hit test bounds (coordinates relative to keyboard window).
   // Both are 10x10 squares, but placed in different locations.
@@ -97,10 +97,9 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Set empty hit test bounds, so all events pass through to the background.
   keyboard_controller->SetHitTestBounds(std::vector<gfx::Rect>());

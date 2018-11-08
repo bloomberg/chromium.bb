@@ -21,6 +21,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -436,9 +437,10 @@ TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
 TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(0, 0, 1, 1),
+                                        base::DoNothing());
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(8, 150, 100, 100));
