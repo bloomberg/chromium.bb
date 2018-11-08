@@ -514,8 +514,9 @@ public class OmniboxTest {
             public void onSuggestionsReceived(
                     List<OmniboxSuggestion> suggestions,
                     String inlineAutocompleteText) {
-                locationBar.getAutocompleteCoordinator().onSuggestionsReceived(
-                        suggestions, inlineAutocompleteText);
+                locationBar.getAutocompleteCoordinator()
+                        .getSuggestionsReceivedListenerForTest()
+                        .onSuggestionsReceived(suggestions, inlineAutocompleteText);
                 synchronized (suggestionsProcessedSignal) {
                     int remaining = suggestionsLeft.decrementAndGet();
                     if (remaining == 0) {
@@ -839,8 +840,9 @@ public class OmniboxTest {
                                         "fa", null)
                                 .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
                                         "fac", null)));
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, locationBar.getAutocompleteCoordinator(), suggestionsMap);
+        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
+                locationBar.getAutocompleteCoordinator().getSuggestionsReceivedListenerForTest(),
+                suggestionsMap);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

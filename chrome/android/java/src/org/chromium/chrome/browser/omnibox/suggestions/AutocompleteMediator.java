@@ -5,7 +5,12 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -13,22 +18,31 @@ import android.text.style.StyleSpan;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionTextContainer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,46 +53,66 @@ import java.util.Map;
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
 class AutocompleteMediator implements OnSuggestionsReceivedListener {
+    private static final String TAG = "cr_Autocomplete";
+
+    // Delay triggering the omnibox results upon key press to allow the location bar to repaint
+    // with the new characters.
+    private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
+
     private final Context mContext;
+    private final AutocompleteDelegate mDelegate;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final PropertyModel mListPropertyModel;
     private final List<Pair<OmniboxSuggestion, PropertyModel>> mCurrentModels;
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final AnswersImageFetcher mImageFetcher;
+    private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
+    private final Handler mHandler;
 
     private ToolbarDataProvider mDataProvider;
-    private OmniboxSuggestionDelegate mSuggestionDelegate;
+    private boolean mNativeInitialized;
+    private AutocompleteController mAutocomplete;
+    private boolean mCanShowSuggestions;
+
+    // The timestamp (using SystemClock.elapsedRealtime()) at the point when the user started
+    // modifying the omnibox with new input.
+    private long mNewOmniboxEditSessionTimestamp = -1;
+    // Set to true when the user has started typing new input in the omnibox, set to false
+    // when the omnibox loses focus or becomes empty.
+    private boolean mHasStartedNewOmniboxEditSession;
+
+    /**
+     * The text shown in the URL bar (user text + inline autocomplete) after the most recent set of
+     * omnibox suggestions was received. When the user presses enter in the omnibox, this value is
+     * compared to the URL bar text to determine whether the first suggestion is still valid.
+     */
+    private String mUrlTextAfterSuggestionsReceived;
+
+    private Runnable mRequestSuggestions;
+    private DeferredOnSelectionRunnable mDeferredOnSelection;
+
+    private boolean mShowCachedZeroSuggestResults;
+    private boolean mShouldPreventOmniboxAutocomplete;
+
     private boolean mUseDarkColors = true;
     private int mLayoutDirection;
     private boolean mPreventSuggestionListPropertyChanges;
+    private long mLastActionUpTimestamp;
+    private boolean mIgnoreOmniboxItemSelection = true;
+    private float mMaxRequiredWidth;
+    private float mMaxMatchContentsWidth;
 
-    public AutocompleteMediator(Context context, UrlBarEditingTextStateProvider textProvider,
-            PropertyModel listPropertyModel) {
+    public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
+            UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
         mContext = context;
+        mDelegate = delegate;
         mUrlBarEditingTextProvider = textProvider;
         mListPropertyModel = listPropertyModel;
         mCurrentModels = new ArrayList<>();
         mPendingAnswerRequestUrls = new HashMap<>();
         mImageFetcher = new AnswersImageFetcher();
-    }
-
-    @Override
-    public void onSuggestionsReceived(
-            List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
-        // Ensure the list is fully replaced before broadcasting any change notifications.
-        mPreventSuggestionListPropertyChanges = true;
-        mCurrentModels.clear();
-        for (int i = 0; i < newSuggestions.size(); i++) {
-            PropertyModel model = new PropertyModel(SuggestionViewProperties.ALL_KEYS);
-            OmniboxSuggestion suggestion = newSuggestions.get(i);
-            mCurrentModels.add(Pair.create(suggestion, model));
-            // Before populating the model, add it to the list of current models.  If the suggestion
-            // has an image and the image was already cached, it will be updated synchronously and
-            // the model will only have the image populated if it is tracked as a current model.
-            populateModelForSuggestion(model, suggestion, i);
-        }
-        mPreventSuggestionListPropertyChanges = false;
-        notifyPropertyModelsChanged();
+        mAutocomplete = new AutocompleteController(this);
+        mHandler = new Handler();
     }
 
     /**
@@ -384,24 +418,15 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     /**
      * Sets the data provider for the toolbar.
      */
-    public void setToolbarDataProvider(ToolbarDataProvider provider) {
+    void setToolbarDataProvider(ToolbarDataProvider provider) {
         mDataProvider = provider;
-    }
-
-    /**
-     * Set the selection delegate for suggestion entries in the adapter.
-     *
-     * @param delegate The delegate for suggestion selections.
-     */
-    public void setSuggestionDelegate(OmniboxSuggestionDelegate delegate) {
-        mSuggestionDelegate = delegate;
     }
 
     /**
      * Sets the layout direction to be used for any new suggestion views.
      * @see View#setLayoutDirection(int)
      */
-    public void setLayoutDirection(int layoutDirection) {
+    void setLayoutDirection(int layoutDirection) {
         mLayoutDirection = layoutDirection;
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).second;
@@ -411,18 +436,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     }
 
     /**
-     * @return The selection delegate for suggestion entries in the adapter.
-     */
-    @VisibleForTesting
-    public OmniboxSuggestionDelegate getSuggestionDelegate() {
-        return mSuggestionDelegate;
-    }
-
-    /**
      * Specifies the visual state to be used by the suggestions.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
      */
-    public void setUseDarkColors(boolean useDarkColors) {
+    void setUseDarkColors(boolean useDarkColors) {
         mUseDarkColors = useDarkColors;
         mListPropertyModel.set(SuggestionListProperties.USE_DARK_BACKGROUND, !useDarkColors);
         for (int i = 0; i < mCurrentModels.size(); i++) {
@@ -432,37 +449,131 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         if (!mCurrentModels.isEmpty()) notifyPropertyModelsChanged();
     }
 
+    /**
+     * Sets to show cached zero suggest results. This will start both caching zero suggest results
+     * in shared preferences and also attempt to show them when appropriate without needing native
+     * initialization.
+     * @param showCachedZeroSuggestResults Whether cached zero suggest should be shown.
+     */
+    void setShowCachedZeroSuggestResults(boolean showCachedZeroSuggestResults) {
+        mShowCachedZeroSuggestResults = showCachedZeroSuggestResults;
+        if (mShowCachedZeroSuggestResults) mAutocomplete.startCachedZeroSuggest();
+    }
+
+    /** Notify the mediator that a item selection is pending and should be accepted. */
+    void allowPendingItemSelection() {
+        mIgnoreOmniboxItemSelection = false;
+    }
+
+    /**
+     * Signals that native initialization has completed.
+     */
+    void onNativeInitialized() {
+        mNativeInitialized = true;
+
+        for (Runnable deferredRunnable : mDeferredNativeRunnables) {
+            mHandler.post(deferredRunnable);
+        }
+        mDeferredNativeRunnables.clear();
+    }
+
+    /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
+    void onUrlFocusChange(boolean hasFocus) {
+        if (hasFocus) {
+            if (mNativeInitialized) {
+                startZeroSuggest();
+            } else {
+                mDeferredNativeRunnables.add(() -> {
+                    if (TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithAutocomplete())) {
+                        startZeroSuggest();
+                    }
+                });
+            }
+        } else {
+            // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
+            // a consequence the omnibox is unfocused).
+            stopAutocomplete(true);
+
+            mCanShowSuggestions = false;
+            mHasStartedNewOmniboxEditSession = false;
+            mNewOmniboxEditSessionTimestamp = -1;
+            hideSuggestions();
+            mImageFetcher.clearCache();
+        }
+    }
+
+    /**
+     * @see
+     * org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlAnimationFinished(boolean)
+     */
+    void onUrlAnimationFinished(boolean hasFocus) {
+        mCanShowSuggestions = hasFocus;
+        updateOmniboxSuggestionsVisibility();
+    }
+
+    /**
+     * Updates the profile used for generating autocomplete suggestions.
+     * @param profile The profile to be used.
+     */
+    void setAutocompleteProfile(Profile profile) {
+        mAutocomplete.setProfile(profile);
+    }
+
+    /**
+     * Whether omnibox autocomplete should currently be prevented from generating suggestions.
+     */
+    void setShouldPreventOmniboxAutocomplete(boolean prevent) {
+        mShouldPreventOmniboxAutocomplete = prevent;
+    }
+
+    /**
+     * @see AutocompleteController#onVoiceResults(List)
+     */
+    void onVoiceResults(@Nullable List<LocationBarVoiceRecognitionHandler.VoiceResult> results) {
+        mAutocomplete.onVoiceResults(results);
+    }
+
+    /**
+     * @return The current native pointer to the autocomplete results.
+     */
+    // TODO(tedchoc): Figure out how to remove this.
+    long getCurrentNativeAutocompleteResult() {
+        return mAutocomplete.getCurrentNativeAutocompleteResult();
+    }
+
     private SuggestionViewDelegate createSuggestionViewDelegate(
             OmniboxSuggestion suggestion, int position) {
         return new SuggestionViewDelegate() {
             @Override
             public void onSetUrlToSuggestion() {
-                mSuggestionDelegate.onSetUrlToSuggestion(suggestion);
+                if (mIgnoreOmniboxItemSelection) return;
+                mIgnoreOmniboxItemSelection = true;
+                AutocompleteMediator.this.onSetUrlToSuggestion(suggestion);
             }
 
             @Override
             public void onSelection() {
-                mSuggestionDelegate.onSelection(suggestion, position);
+                AutocompleteMediator.this.onSelection(suggestion, position);
             }
 
             @Override
             public void onRefineSuggestion() {
-                mSuggestionDelegate.onRefineSuggestion(suggestion);
+                AutocompleteMediator.this.onRefineSuggestion(suggestion);
             }
 
             @Override
             public void onLongPress() {
-                mSuggestionDelegate.onLongPress(suggestion, position);
+                AutocompleteMediator.this.onLongPress(suggestion, position);
             }
 
             @Override
-            public void onGestureUp(long timetamp) {
-                mSuggestionDelegate.onGestureUp(timetamp);
+            public void onGestureUp(long timestamp) {
+                mLastActionUpTimestamp = timestamp;
             }
 
             @Override
             public void onGestureDown() {
-                mSuggestionDelegate.onGestureDown();
+                stopAutocomplete(false);
             }
 
             @Override
@@ -475,10 +586,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                         line1.getPaint().measureText(fillIntoEdit, 0, fillIntoEdit.length());
                 String query = line1.getText().toString();
                 float abbreviatedTextWidth = line1.getPaint().measureText(query, 0, query.length());
-                mSuggestionDelegate.onTextWidthsUpdated(fullTextWidth, abbreviatedTextWidth);
 
-                final float maxRequiredWidth = mSuggestionDelegate.getMaxRequiredWidth();
-                final float maxMatchContentsWidth = mSuggestionDelegate.getMaxMatchContentsWidth();
+                AutocompleteMediator.this.onTextWidthsUpdated(fullTextWidth, abbreviatedTextWidth);
+
+                final float maxRequiredWidth = AutocompleteMediator.this.mMaxRequiredWidth;
+                final float maxMatchContentsWidth =
+                        AutocompleteMediator.this.mMaxMatchContentsWidth;
                 return (int) ((maxTextWidth > maxRequiredWidth)
                                 ? (fullTextWidth - abbreviatedTextWidth)
                                 : Math.max(maxTextWidth - maxMatchContentsWidth, 0));
@@ -487,63 +600,492 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     }
 
     /**
-     * Handler for actions that happen on suggestion view.
+     * Triggered when the user selects one of the omnibox suggestions to navigate to.
+     * @param suggestion The OmniboxSuggestion which was selected.
+     * @param position Position of the suggestion in the drop down view.
+     */
+    private void onSelection(OmniboxSuggestion suggestion, int position) {
+        if (mShowCachedZeroSuggestResults && !mNativeInitialized) {
+            mDeferredOnSelection = new DeferredOnSelectionRunnable(suggestion, position) {
+                @Override
+                public void run() {
+                    onSelection(this.mSuggestion, this.mPosition);
+                }
+            };
+            return;
+        }
+        loadUrlFromOmniboxMatch(position, suggestion, mLastActionUpTimestamp, true);
+        mDelegate.hideKeyboard();
+    }
+
+    /**
+     * Triggered when the user selects to refine one of the omnibox suggestions.
+     * @param suggestion The suggestion selected.
+     */
+    private void onRefineSuggestion(OmniboxSuggestion suggestion) {
+        stopAutocomplete(false);
+        boolean isUrlSuggestion = suggestion.isUrlSuggestion();
+        String refineText = suggestion.getFillIntoEdit();
+        if (!isUrlSuggestion) refineText = TextUtils.concat(refineText, " ").toString();
+
+        mDelegate.setOmniboxEditingText(refineText);
+        onTextChangedForAutocomplete();
+        if (isUrlSuggestion) {
+            RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
+        } else {
+            RecordUserAction.record("MobileOmniboxRefineSuggestion.Search");
+        }
+    }
+
+    /**
+     * Triggered when the user long presses the omnibox suggestion.
+     * @param suggestion The suggestion selected.
+     * @param position The position of the suggestion.
+     */
+    private void onLongPress(OmniboxSuggestion suggestion, int position) {
+        RecordUserAction.record("MobileOmniboxDeleteGesture");
+        if (!suggestion.isDeletable()) return;
+
+        // TODO(tedchoc): Migrate to modal dialog manager.
+        AlertDialog.Builder b = new AlertDialog.Builder(mContext, R.style.AlertDialogTheme);
+        b.setTitle(suggestion.getDisplayText());
+        b.setMessage(R.string.omnibox_confirm_delete);
+
+        DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == DialogInterface.BUTTON_POSITIVE) {
+                    RecordUserAction.record("MobileOmniboxDeleteRequested");
+                    mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
+                } else if (which == DialogInterface.BUTTON_NEGATIVE) {
+                    dialog.cancel();
+                }
+            }
+        };
+        b.setPositiveButton(android.R.string.ok, clickListener);
+        b.setNegativeButton(android.R.string.cancel, clickListener);
+
+        AlertDialog dialog = b.create();
+        try {
+            dialog.show();
+        } catch (WindowManager.BadTokenException ex) {
+        }
+    }
+
+    /**
+     * Triggered when the user navigates to one of the suggestions without clicking on it.
+     * @param suggestion The suggestion that was selected.
+     */
+    void onSetUrlToSuggestion(OmniboxSuggestion suggestion) {
+        mDelegate.setOmniboxEditingText(suggestion.getFillIntoEdit());
+    }
+
+    /**
+     * Triggered when text width information is updated.
+     * These values should be used to calculate max text widths.
+     * @param requiredWidth a new required width.
+     * @param matchContentsWidth a new match contents width.
+     */
+    private void onTextWidthsUpdated(float requiredWidth, float matchContentsWidth) {
+        mMaxRequiredWidth = Math.max(mMaxRequiredWidth, requiredWidth);
+        mMaxMatchContentsWidth = Math.max(mMaxMatchContentsWidth, matchContentsWidth);
+    }
+
+    /**
+     * Updates the maximum widths required to render the suggestions.
+     * This is needed for infinite suggestions where we try to vertically align the leading
+     * ellipsis.
+     */
+    private void resetMaxTextWidths() {
+        mMaxRequiredWidth = 0;
+        mMaxMatchContentsWidth = 0;
+    }
+
+    /**
+     * Updates the URL we will navigate to from suggestion, if needed. This will update the search
+     * URL to be of the corpus type if query in the omnibox is displayed and update aqs= parameter
+     * on regular web search URLs.
+     *
+     * @param suggestion The chosen omnibox suggestion.
+     * @param selectedIndex The index of the chosen omnibox suggestion.
+     * @param skipCheck Whether to skip an out of bounds check.
+     * @return The url to navigate to.
+     */
+    @SuppressWarnings("ReferenceEquality")
+    private String updateSuggestionUrlIfNeeded(
+            OmniboxSuggestion suggestion, int selectedIndex, boolean skipCheck) {
+        // Only called once we have suggestions, and don't have a listener though which we can
+        // receive suggestions until the native side is ready, so this is safe
+        assert mNativeInitialized
+            : "updateSuggestionUrlIfNeeded called before native initialization";
+
+        if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST) return suggestion.getUrl();
+
+        int verifiedIndex = -1;
+        if (!skipCheck) {
+            if (getSuggestionCount() > selectedIndex
+                    && getSuggestionAt(selectedIndex) == suggestion) {
+                verifiedIndex = selectedIndex;
+            } else {
+                // Underlying omnibox results may have changed since the selection was made,
+                // find the suggestion item, if possible.
+                for (int i = 0; i < getSuggestionCount(); i++) {
+                    if (suggestion.equals(getSuggestionAt(i))) {
+                        verifiedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If we do not have the suggestion as part of our results, skip the URL update.
+        if (verifiedIndex == -1) return suggestion.getUrl();
+
+        // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
+        // for query in the omnibox and voice suggestions, but it's currently difficult to do.
+        long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
+                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
+                : -1;
+        String updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(
+                verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);
+
+        return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
+    }
+
+    /**
+     * Notifies the autocomplete system that the text has changed that drives autocomplete and the
+     * autocomplete suggestions should be updated.
+     */
+    public void onTextChangedForAutocomplete() {
+        // crbug.com/764749
+        Log.w(TAG, "onTextChangedForAutocomplete");
+
+        if (mShouldPreventOmniboxAutocomplete) return;
+
+        cancelPendingAutocompleteStart();
+
+        if (!mHasStartedNewOmniboxEditSession && mNativeInitialized) {
+            mAutocomplete.resetSession();
+            mNewOmniboxEditSessionTimestamp = SystemClock.elapsedRealtime();
+            mHasStartedNewOmniboxEditSession = true;
+        }
+
+        stopAutocomplete(false);
+        if (TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithoutAutocomplete())) {
+            // crbug.com/764749
+            Log.w(TAG, "onTextChangedForAutocomplete: url is empty");
+            hideSuggestions();
+            startZeroSuggest();
+        } else {
+            assert mRequestSuggestions == null : "Multiple omnibox requests in flight.";
+            mRequestSuggestions = () -> {
+                String textWithoutAutocomplete =
+                        mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
+                boolean preventAutocomplete = !mUrlBarEditingTextProvider.shouldAutocomplete();
+                mRequestSuggestions = null;
+
+                if (!mDataProvider.hasTab()) {
+                    // crbug.com/764749
+                    Log.w(TAG, "onTextChangedForAutocomplete: no tab");
+                    return;
+                }
+
+                Profile profile = mDataProvider.getProfile();
+                int cursorPosition = -1;
+                if (mUrlBarEditingTextProvider.getSelectionStart()
+                        == mUrlBarEditingTextProvider.getSelectionEnd()) {
+                    // Conveniently, if there is no selection, those two functions return -1,
+                    // exactly the same value needed to pass to start() to indicate no cursor
+                    // position.  Hence, there's no need to check for -1 here explicitly.
+                    cursorPosition = mUrlBarEditingTextProvider.getSelectionStart();
+                }
+                mAutocomplete.start(profile, mDataProvider.getCurrentUrl(), textWithoutAutocomplete,
+                        cursorPosition, preventAutocomplete, mDelegate.didFocusUrlFromFakebox());
+            };
+            if (mNativeInitialized) {
+                mHandler.postDelayed(mRequestSuggestions, OMNIBOX_SUGGESTION_START_DELAY_MS);
+            } else {
+                mDeferredNativeRunnables.add(mRequestSuggestions);
+            }
+        }
+
+        mDelegate.onUrlTextChanged();
+    }
+
+    @Override
+    public void onSuggestionsReceived(
+            List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
+        if (mShouldPreventOmniboxAutocomplete) return;
+
+        // This is a callback from a listener that is set up by onNativeLibraryReady,
+        // so can only be called once the native side is set up unless we are showing
+        // cached java-only suggestions.
+        assert mNativeInitialized
+                || mShowCachedZeroSuggestResults
+            : "Native suggestions received before native side intialialized";
+
+        if (mDeferredOnSelection != null) {
+            mDeferredOnSelection.setShouldLog(newSuggestions.size() > mDeferredOnSelection.mPosition
+                    && mDeferredOnSelection.mSuggestion.equals(
+                               newSuggestions.get(mDeferredOnSelection.mPosition)));
+            mDeferredOnSelection.run();
+            mDeferredOnSelection = null;
+        }
+        String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
+        mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
+
+        // Show the suggestion list.
+        resetMaxTextWidths();
+        // Ensure the list is fully replaced before broadcasting any change notifications.
+        mPreventSuggestionListPropertyChanges = true;
+        mCurrentModels.clear();
+        for (int i = 0; i < newSuggestions.size(); i++) {
+            PropertyModel model = new PropertyModel(SuggestionViewProperties.ALL_KEYS);
+            OmniboxSuggestion suggestion = newSuggestions.get(i);
+            mCurrentModels.add(Pair.create(suggestion, model));
+            // Before populating the model, add it to the list of current models.  If the suggestion
+            // has an image and the image was already cached, it will be updated synchronously and
+            // the model will only have the image populated if it is tracked as a current model.
+            populateModelForSuggestion(model, suggestion, i);
+        }
+        mPreventSuggestionListPropertyChanges = false;
+        notifyPropertyModelsChanged();
+
+        if (mListPropertyModel.get(SuggestionListProperties.VISIBLE) && getSuggestionCount() == 0) {
+            hideSuggestions();
+        }
+        mDelegate.onSuggestionsChanged(inlineAutocompleteText);
+
+        updateOmniboxSuggestionsVisibility();
+    }
+
+    /**
+     * Load the suggestion at the given index.
+     * @param index The index that was selected.
+     * @param eventTime The timestamp the load was triggered by the user.
+     */
+    void loadSuggestionAtIndex(int index, long eventTime) {
+        mDelegate.hideKeyboard();
+
+        final String urlText = mUrlBarEditingTextProvider.getTextWithAutocomplete();
+        if (mNativeInitialized) {
+            findMatchAndLoadUrl(index, urlText, eventTime);
+        } else {
+            mDeferredNativeRunnables.add(() -> findMatchAndLoadUrl(index, urlText, eventTime));
+        }
+    }
+
+    private void findMatchAndLoadUrl(int suggestionIndex, String urlText, long inputStart) {
+        int suggestionMatchPosition;
+        OmniboxSuggestion suggestionMatch;
+        boolean inSuggestionList = true;
+
+        if (suggestionIndex != ListView.INVALID_POSITION
+                && suggestionIndex < getSuggestionCount()) {
+            // Bluetooth keyboard case: the user highlighted a suggestion with the arrow
+            // keys, then pressed enter.
+            suggestionMatchPosition = suggestionIndex;
+            suggestionMatch = getSuggestionAt(suggestionMatchPosition);
+        } else if (getSuggestionCount() > 0
+                && urlText.trim().equals(mUrlTextAfterSuggestionsReceived.trim())) {
+            // Common case: the user typed something, received suggestions, then pressed enter.
+            suggestionMatch = getSuggestionAt(0);
+            suggestionMatchPosition = 0;
+        } else {
+            // Less common case: there are no valid omnibox suggestions. This can happen if the
+            // user tapped the URL bar to dismiss the suggestions, then pressed enter. This can
+            // also happen if the user presses enter before any suggestions have been received
+            // from the autocomplete controller.
+            suggestionMatch = mAutocomplete.classify(urlText, mDelegate.didFocusUrlFromFakebox());
+            suggestionMatchPosition = 0;
+            // Classify matches don't propagate to java, so skip the OOB check.
+            inSuggestionList = false;
+
+            // If urlText couldn't be classified, bail.
+            if (suggestionMatch == null) return;
+        }
+
+        loadUrlFromOmniboxMatch(
+                suggestionMatchPosition, suggestionMatch, inputStart, inSuggestionList);
+    }
+
+    /**
+     * Loads the specified omnibox suggestion.
+     *
+     * @param matchPosition The position of the selected omnibox suggestion.
+     * @param suggestion The suggestion selected.
+     * @param inputStart The timestamp the input was started.
+     * @param inVisibleSuggestionList Whether the suggestion is in the visible suggestion list.
+     */
+    private void loadUrlFromOmniboxMatch(int matchPosition, OmniboxSuggestion suggestion,
+            long inputStart, boolean inVisibleSuggestionList) {
+        String url =
+                updateSuggestionUrlIfNeeded(suggestion, matchPosition, !inVisibleSuggestionList);
+
+        // loadUrl modifies AutocompleteController's state clearing the native
+        // AutocompleteResults needed by onSuggestionsSelected. Therefore,
+        // loadUrl should should be invoked last.
+        int transition = suggestion.getTransition();
+        int type = suggestion.getType();
+        String currentPageUrl = mDataProvider.getCurrentUrl();
+        WebContents webContents =
+                mDataProvider.hasTab() ? mDataProvider.getTab().getWebContents() : null;
+        long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
+                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
+                : -1;
+        boolean shouldSkipNativeLog = mShowCachedZeroSuggestResults
+                && (mDeferredOnSelection != null) && !mDeferredOnSelection.shouldLog();
+        if (!shouldSkipNativeLog) {
+            int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
+                    - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();
+            mAutocomplete.onSuggestionSelected(matchPosition, suggestion.hashCode(), type,
+                    currentPageUrl, mDelegate.didFocusUrlFromFakebox(), elapsedTimeSinceModified,
+                    autocompleteLength, webContents);
+        }
+        if (((transition & PageTransition.CORE_MASK) == PageTransition.TYPED)
+                && TextUtils.equals(url, mDataProvider.getCurrentUrl())) {
+            // When the user hit enter on the existing permanent URL, treat it like a
+            // reload for scoring purposes.  We could detect this by just checking
+            // user_input_in_progress_, but it seems better to treat "edits" that end
+            // up leaving the URL unchanged (e.g. deleting the last character and then
+            // retyping it) as reloads too.  We exclude non-TYPED transitions because if
+            // the transition is GENERATED, the user input something that looked
+            // different from the current URL, even if it wound up at the same place
+            // (e.g. manually retyping the same search query), and it seems wrong to
+            // treat this as a reload.
+            transition = PageTransition.RELOAD;
+        } else if (type == OmniboxSuggestionType.URL_WHAT_YOU_TYPED
+                && mUrlBarEditingTextProvider.wasLastEditPaste()) {
+            // It's important to use the page transition from the suggestion or we might end
+            // up saving generated URLs as typed URLs, which would then pollute the subsequent
+            // omnibox results. There is one special case where the suggestion text was pasted,
+            // where we want the transition type to be LINK.
+
+            transition = PageTransition.LINK;
+        }
+        mDelegate.loadUrl(url, transition, inputStart);
+    }
+
+    /**
+     * Make a zero suggest request if:
+     * - Native is loaded.
+     * - The URL bar has focus.
+     * - The current tab is not incognito.
+     */
+    private void startZeroSuggest() {
+        // Reset "edited" state in the omnibox if zero suggest is triggered -- new edits
+        // now count as a new session.
+        mHasStartedNewOmniboxEditSession = false;
+        mNewOmniboxEditSessionTimestamp = -1;
+        if (mNativeInitialized && mDelegate.isUrlBarFocused() && mDataProvider.hasTab()) {
+            mAutocomplete.startZeroSuggest(mDataProvider.getProfile(),
+                    mUrlBarEditingTextProvider.getTextWithAutocomplete(),
+                    mDataProvider.getCurrentUrl(), mDataProvider.getTitle(),
+                    mDelegate.didFocusUrlFromFakebox());
+        }
+    }
+
+    /**
+     * Update whether the omnibox suggestions are visible.
+     */
+    private void updateOmniboxSuggestionsVisibility() {
+        boolean shouldBeVisible = mCanShowSuggestions && getSuggestionCount() > 0;
+        boolean wasVisible = mListPropertyModel.get(SuggestionListProperties.VISIBLE);
+        mListPropertyModel.set(SuggestionListProperties.VISIBLE, shouldBeVisible);
+        if (shouldBeVisible && !wasVisible) {
+            mIgnoreOmniboxItemSelection = true; // Reset to default value.
+        }
+    }
+
+    /**
+     * Hides the omnibox suggestion popup.
+     *
+     * <p>
+     * Signals the autocomplete controller to stop generating omnibox suggestions.
+     *
+     * @see AutocompleteController#stop(boolean)
+     */
+    private void hideSuggestions() {
+        if (mAutocomplete == null || !mNativeInitialized) return;
+
+        stopAutocomplete(true);
+
+        clearSuggestions();
+        updateOmniboxSuggestionsVisibility();
+    }
+
+    /**
+     * Signals the autocomplete controller to stop generating omnibox suggestions and cancels the
+     * queued task to start the autocomplete controller, if any.
+     *
+     * @param clear Whether to clear the most recent autocomplete results.
+     */
+    private void stopAutocomplete(boolean clear) {
+        if (mAutocomplete != null) mAutocomplete.stop(clear);
+        cancelPendingAutocompleteStart();
+    }
+
+    /**
+     * Cancels the queued task to start the autocomplete controller, if any.
      */
     @VisibleForTesting
-    public static interface OmniboxSuggestionDelegate {
-        /**
-         * Triggered when the user selects one of the omnibox suggestions to navigate to.
-         * @param suggestion The OmniboxSuggestion which was selected.
-         * @param position Position of the suggestion in the drop down view.
-         */
-        public void onSelection(OmniboxSuggestion suggestion, int position);
+    void cancelPendingAutocompleteStart() {
+        if (mRequestSuggestions != null) {
+            // There is a request for suggestions either waiting for the native side
+            // to start, or on the message queue. Remove it from wherever it is.
+            if (!mDeferredNativeRunnables.remove(mRequestSuggestions)) {
+                mHandler.removeCallbacks(mRequestSuggestions);
+            }
+            mRequestSuggestions = null;
+        }
+    }
+
+    /**
+     * Trigger autocomplete for the given query.
+     */
+    void startAutocompleteForQuery(String query) {
+        stopAutocomplete(false);
+        if (mDataProvider.hasTab()) {
+            mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(), query,
+                    -1, false, false);
+        }
+    }
+
+    /**
+     * Sets the autocomplete controller for the location bar.
+     *
+     * @param controller The controller that will handle autocomplete/omnibox suggestions.
+     * @note Only used for testing.
+     */
+    @VisibleForTesting
+    public void setAutocompleteController(AutocompleteController controller) {
+        if (mAutocomplete != null) stopAutocomplete(true);
+        mAutocomplete = controller;
+    }
+
+    private static abstract class DeferredOnSelectionRunnable implements Runnable {
+        protected final OmniboxSuggestion mSuggestion;
+        protected final int mPosition;
+        protected boolean mShouldLog;
+
+        public DeferredOnSelectionRunnable(OmniboxSuggestion suggestion, int position) {
+            this.mSuggestion = suggestion;
+            this.mPosition = position;
+        }
 
         /**
-         * Triggered when the user selects to refine one of the omnibox suggestions.
-         * @param suggestion The suggestion selected.
+         * Set whether the selection matches with native results for logging to make sense.
+         * @param log Whether the selection should be logged in native code.
          */
-        public void onRefineSuggestion(OmniboxSuggestion suggestion);
+        public void setShouldLog(boolean log) {
+            mShouldLog = log;
+        }
 
         /**
-         * Triggered when the user long presses the omnibox suggestion.
-         * @param suggestion The suggestion selected.
-         * @param position The position of the suggestion.
+         * @return Whether the selection should be logged in native code.
          */
-        public void onLongPress(OmniboxSuggestion suggestion, int position);
-
-        /**
-         * Triggered when the user navigates to one of the suggestions without clicking on it.
-         * @param suggestion The suggestion that was selected.
-         */
-        public void onSetUrlToSuggestion(OmniboxSuggestion suggestion);
-
-        /**
-         * Triggered when the user touches the suggestion view.
-         */
-        public void onGestureDown();
-
-        /**
-         * Triggered when the user touch on the suggestion view finishes.
-         * @param ev the event for the ACTION_UP.
-         */
-        public void onGestureUp(long timetamp);
-
-        /**
-         * Triggered when text width information is updated.
-         * These values should be used to calculate max text widths.
-         * @param requiredWidth a new required width.
-         * @param matchContentsWidth a new match contents width.
-         */
-        public void onTextWidthsUpdated(float requiredWidth, float matchContentsWidth);
-
-        /**
-         * @return max required width for the suggestion.
-         */
-        public float getMaxRequiredWidth();
-
-        /**
-         * @return max match contents width for the suggestion.
-         */
-        public float getMaxMatchContentsWidth();
+        public boolean shouldLog() {
+            return mShouldLog;
+        }
     }
 }
