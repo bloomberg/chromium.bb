@@ -90,6 +90,10 @@ crbug.com/450493 http/tests/devtools/csp/ [ Slow ]
 crbug.com/450493 http/tests/devtools/profiler/ [ Slow ]
 crbug.com/420008 http/tests/devtools/tracing/ [ Slow ]
 crbug.com/420008 virtual/threaded/http/tests/devtools/tracing/ [ Slow ]
+crbug.com/902685 http/tests/devtools/isolated-code-cache/same-origin-test.js [ Slow ]
+crbug.com/902685 http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Slow ]
+crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Slow ]
+crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Slow ]
 
 # Misc DevTools tests that are slow
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]
