@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
-import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -26,19 +24,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.Promise;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.components.variations.VariationsAssociatedData;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -452,10 +448,12 @@ class AutofillAssistantUiDelegate {
         if (!url.isEmpty()) {
             // The URL is safe given because it comes from the knowledge graph and is hosted on
             // Google servers.
-            downloadImage(url).then(image -> {
-                mDetailsImage.setImageDrawable(getRoundedImage(image));
-                mDetailsImage.setVisibility(View.VISIBLE);
-            }, ignoredError -> {});
+            CachedImageFetcher.getInstance().fetchImage(url, image -> {
+                if (image != null) {
+                    mDetailsImage.setImageDrawable(getRoundedImage(image));
+                    mDetailsImage.setVisibility(View.VISIBLE);
+                }
+            });
         } else if (!details.isFinal()) {
             mDetailsImage.setImageDrawable(AppCompatResources.getDrawable(
                     mActivity, R.drawable.autofill_assistant_default_details));
@@ -619,40 +617,5 @@ class AutofillAssistantUiDelegate {
         CheckBox checkBox = initView.findViewById(R.id.checkbox_dont_show_init_again);
         controller.onInitFinished(initOk, checkBox.isChecked());
         mCoordinatorView.removeView(initView);
-    }
-
-    private Promise<Bitmap> downloadImage(String url) {
-        Promise<Bitmap> promise = new Promise<>();
-        new DownloadImageTask(promise).execute(url);
-        return promise;
-    }
-
-    private static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        private final Promise<Bitmap> mPromise;
-        private Exception mError = null;
-
-        private DownloadImageTask(Promise<Bitmap> promise) {
-            this.mPromise = promise;
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-            try (InputStream in = new URL(urls[0]).openStream()) {
-                return BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                mError = e;
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (mError != null) {
-                mPromise.reject(mError);
-                return;
-            }
-
-            mPromise.fulfill(bitmap);
-        }
     }
 }
