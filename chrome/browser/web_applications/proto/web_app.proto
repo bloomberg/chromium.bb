@@ -13,8 +13,10 @@ package web_app;
 // crbug.com/902214.
 message WebAppProto {
   // app_id is the client tag for sync system.
-  optional string app_id = 1;
+  required string app_id = 1;
   optional string name = 2;
   optional string description = 3;
-  optional string launch_url = 4;
+  required string launch_url = 4;
+  optional string scope = 5;
+  optional uint32 theme_color = 6;
 }

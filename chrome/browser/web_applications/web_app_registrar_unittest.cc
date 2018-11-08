@@ -55,6 +55,8 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
   const AppId app_id = GenerateAppIdFromURL(launch_url);
   const std::string name = "Name";
   const std::string description = "Description";
+  const GURL scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
 
   const GURL launch_url2 = GURL("https://example.com/path2");
   const AppId app_id2 = GenerateAppIdFromURL(launch_url2);
@@ -65,6 +67,8 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetLaunchUrl(launch_url);
+  web_app->SetScope(scope);
+  web_app->SetThemeColor(theme_color);
 
   EXPECT_EQ(nullptr, registrar->GetAppById(app_id));
   EXPECT_EQ(nullptr, registrar->GetAppById(app_id2));
@@ -76,7 +80,9 @@ TEST(WebAppRegistrar, CreateRegisterUnregister) {
   EXPECT_EQ(app_id, app->app_id());
   EXPECT_EQ(name, app->name());
   EXPECT_EQ(description, app->description());
-  EXPECT_EQ(launch_url.spec(), app->launch_url());
+  EXPECT_EQ(launch_url, app->launch_url());
+  EXPECT_EQ(scope, app->scope());
+  EXPECT_EQ(theme_color, app->theme_color());
 
   EXPECT_EQ(nullptr, registrar->GetAppById(app_id2));
   EXPECT_FALSE(registrar->is_empty());

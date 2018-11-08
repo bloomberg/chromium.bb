@@ -27,9 +27,11 @@ namespace {
 
 bool operator==(const WebApp& web_app, const WebApp& web_app2) {
   return std::tie(web_app.app_id(), web_app.name(), web_app.launch_url(),
-                  web_app.description()) ==
+                  web_app.description(), web_app.scope(),
+                  web_app.theme_color()) ==
          std::tie(web_app2.app_id(), web_app2.name(), web_app2.launch_url(),
-                  web_app2.description());
+                  web_app2.description(), web_app2.scope(),
+                  web_app2.theme_color());
 }
 
 bool operator!=(const WebApp& web_app, const WebApp& web_app2) {
@@ -74,12 +76,16 @@ class WebAppDatabaseTest : public testing::Test {
     const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
     const std::string name = "Name" + base::IntToString(suffix);
     const std::string description = "Description" + base::IntToString(suffix);
+    const std::string scope = base_url + "/scope" + base::IntToString(suffix);
+    const base::Optional<SkColor> theme_color = suffix;
 
     auto app = std::make_unique<WebApp>(app_id);
 
     app->SetName(name);
     app->SetDescription(description);
     app->SetLaunchUrl(GURL(launch_url));
+    app->SetScope(GURL(scope));
+    app->SetThemeColor(theme_color);
 
     return app;
   }
@@ -176,6 +182,38 @@ TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
 
   InitRegistrar();
   EXPECT_TRUE(IsRegistryEqual(registrar_->registry(), registry));
+}
+
+TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
+  InitRegistrar();
+
+  const auto launch_url = GURL("https://example.com/");
+  const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
+
+  auto app = std::make_unique<WebApp>(app_id);
+
+  app->SetLaunchUrl(launch_url);
+  EXPECT_TRUE(app->name().empty());
+  EXPECT_TRUE(app->description().empty());
+  EXPECT_TRUE(app->scope().is_empty());
+  EXPECT_FALSE(app->theme_color().has_value());
+
+  registrar_->RegisterApp(std::move(app));
+
+  Registry registry = ReadRegistry();
+  EXPECT_EQ(1UL, registry.size());
+
+  std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
+
+  // Mandatory members.
+  EXPECT_EQ(app_id, app_copy->app_id());
+  EXPECT_EQ(launch_url, app_copy->launch_url());
+
+  // No optional members.
+  EXPECT_TRUE(app_copy->name().empty());
+  EXPECT_TRUE(app_copy->description().empty());
+  EXPECT_TRUE(app_copy->scope().is_empty());
+  EXPECT_FALSE(app_copy->theme_color().has_value());
 }
 
 }  // namespace web_app

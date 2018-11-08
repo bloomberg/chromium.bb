@@ -65,15 +65,25 @@ class WebAppInstallManagerTest : public WebAppTest {
 
   void CreateRendererAppInfo(const GURL& url,
                              const std::string name,
-                             const std::string description) {
+                             const std::string description,
+                             const GURL& scope,
+                             base::Optional<SkColor> theme_color) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
 
     web_app_info->app_url = url;
     web_app_info->title = base::UTF8ToUTF16(name);
     web_app_info->description = base::UTF8ToUTF16(description);
+    web_app_info->scope = scope;
+    web_app_info->theme_color = theme_color;
 
     install_manager_->SetDataRetrieverForTesting(
         std::make_unique<TestDataRetriever>(std::move(web_app_info)));
+  }
+
+  void CreateRendererAppInfo(const GURL& url,
+                             const std::string name,
+                             const std::string description) {
+    CreateRendererAppInfo(url, name, description, GURL(), base::nullopt);
   }
 
   void CreateDefaultInstallableManager() {
@@ -118,9 +128,12 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
   const GURL url = GURL("https://example.com/path");
   const std::string name = "Name";
   const std::string description = "Description";
+  const GURL scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+
   const AppId app_id = GenerateAppIdFromURL(url);
 
-  CreateRendererAppInfo(url, name, description);
+  CreateRendererAppInfo(url, name, description, scope, theme_color);
   CreateDefaultInstallableManager();
 
   base::RunLoop run_loop;
@@ -146,7 +159,9 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
   EXPECT_EQ(app_id, web_app->app_id());
   EXPECT_EQ(name, web_app->name());
   EXPECT_EQ(description, web_app->description());
-  EXPECT_EQ(url.spec(), web_app->launch_url());
+  EXPECT_EQ(url, web_app->launch_url());
+  EXPECT_EQ(scope, web_app->scope());
+  EXPECT_EQ(theme_color, web_app->theme_color());
 }
 
 TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
@@ -205,17 +220,22 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
 TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
-  CreateRendererAppInfo(GURL("https://example.com/path"), "RendererName",
-                        renderer_description);
+  CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
+                        renderer_description,
+                        GURL("https://renderer.com/scope"), 0x00);
 
   const GURL manifest_start_url = GURL("https://example.com/start");
   const AppId app_id = GenerateAppIdFromURL(manifest_start_url);
   const std::string manifest_name = "Name from Manifest";
+  const GURL manifest_scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
 
   blink::Manifest manifest;
   manifest.short_name = ToNullableUTF16("Short Name from Manifest");
   manifest.name = ToNullableUTF16(manifest_name);
-  manifest.start_url = GURL(manifest_start_url);
+  manifest.start_url = manifest_start_url;
+  manifest.scope = manifest_scope;
+  manifest.theme_color = manifest_theme_color;
 
   CreateTestInstallableManager(GURL("https://example.com/manifest"), &manifest);
 
@@ -239,10 +259,13 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   WebApp* web_app = registrar_->GetAppById(app_id);
   EXPECT_NE(nullptr, web_app);
 
+  // Manifest data overrides Renderer data, except |description|.
   EXPECT_EQ(app_id, web_app->app_id());
   EXPECT_EQ(manifest_name, web_app->name());
-  EXPECT_EQ(manifest_start_url.spec(), web_app->launch_url());
+  EXPECT_EQ(manifest_start_url, web_app->launch_url());
   EXPECT_EQ(renderer_description, web_app->description());
+  EXPECT_EQ(manifest_scope, web_app->scope());
+  EXPECT_EQ(manifest_theme_color, web_app->theme_color());
 }
 
 }  // namespace web_app

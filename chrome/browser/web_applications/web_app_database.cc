@@ -67,6 +67,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   proto->set_name(web_app.name());
   proto->set_description(web_app.description());
   proto->set_launch_url(web_app.launch_url().spec());
+  if (!web_app.scope().is_empty())
+    proto->set_scope(web_app.scope().spec());
+  if (web_app.theme_color())
+    proto->set_theme_color(web_app.theme_color().value());
 
   return proto;
 }
@@ -85,6 +89,19 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   web_app->SetLaunchUrl(launch_url);
   web_app->SetName(proto.name());
   web_app->SetDescription(proto.description());
+
+  if (proto.has_scope()) {
+    GURL scope(proto.scope());
+    if (scope.is_empty() || !scope.is_valid()) {
+      LOG(ERROR) << "WebApp proto scope parse error: "
+                 << scope.possibly_invalid_spec();
+      return nullptr;
+    }
+    web_app->SetScope(scope);
+  }
+
+  if (proto.has_theme_color())
+    web_app->SetThemeColor(proto.theme_color());
 
   return web_app;
 }
