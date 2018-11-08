@@ -68,6 +68,11 @@ void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   WebUIBrowserTest::BrowsePreload(browse_to);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS));
+  if (use_mojo_lite_bindings_) {
+    web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS));
+  } else {
+    web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS));
+  }
 }
