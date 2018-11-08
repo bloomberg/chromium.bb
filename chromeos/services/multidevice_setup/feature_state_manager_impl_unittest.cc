@@ -327,22 +327,27 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
   VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kEnabledByUser);
 
+  SetAndroidSmsPairingState(false /* is_paired */);
   MakeBetterTogetherSuiteDisabledByUser();
   EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(6u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(7u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kUnavailableSuiteDisabled);
+
+  SetAndroidSmsPairingState(true /* is_paired */);
+  EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
+            manager()->GetFeatureStates()[mojom::Feature::kMessages]);
 
   test_pref_service()->SetBoolean(kMessagesEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(7u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(8u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kDisabledByUser);
 
   test_pref_service()->SetBoolean(kMessagesAllowedPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kProhibitedByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(8u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(9u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kProhibitedByPolicy);
 }
 

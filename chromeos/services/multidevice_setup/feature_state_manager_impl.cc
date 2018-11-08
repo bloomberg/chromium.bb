@@ -85,8 +85,10 @@ void ProcessSuiteEdgeCases(
     return;
 
   for (auto& map_entry : *feature_states_map) {
-    if (map_entry.second == mojom::FeatureState::kEnabledByUser)
+    if (map_entry.second == mojom::FeatureState::kEnabledByUser ||
+        map_entry.second == mojom::FeatureState::kFurtherSetupRequired) {
       map_entry.second = mojom::FeatureState::kUnavailableSuiteDisabled;
+    }
   }
 }
 
