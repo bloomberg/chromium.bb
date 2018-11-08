@@ -1101,10 +1101,8 @@ base::Value ConvertOncProxySettingsToProxyConfig(
     net::ProxyBypassRules bypass_rules;
     const base::Value* exclude_domains = onc_proxy_settings.FindKeyOfType(
         ::onc::proxy::kExcludeDomains, base::Value::Type::LIST);
-    if (exclude_domains) {
-      bypass_rules.AssignFrom(
-          ConvertOncExcludeDomainsToBypassRules(*exclude_domains));
-    }
+    if (exclude_domains)
+      bypass_rules = ConvertOncExcludeDomainsToBypassRules(*exclude_domains);
     return ProxyConfigDictionary::CreateFixedServers(manual_spec,
                                                      bypass_rules.ToString());
   }

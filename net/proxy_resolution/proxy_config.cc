@@ -154,13 +154,12 @@ const ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyList(
 }
 
 bool ProxyConfig::ProxyRules::Equals(const ProxyRules& other) const {
-  return type == other.type &&
-         single_proxies.Equals(other.single_proxies) &&
+  return type == other.type && single_proxies.Equals(other.single_proxies) &&
          proxies_for_http.Equals(other.proxies_for_http) &&
          proxies_for_https.Equals(other.proxies_for_https) &&
          proxies_for_ftp.Equals(other.proxies_for_ftp) &&
          fallback_proxies.Equals(other.fallback_proxies) &&
-         bypass_rules.Equals(other.bypass_rules) &&
+         bypass_rules == other.bypass_rules &&
          reverse_bypass == other.reverse_bypass;
 }
 

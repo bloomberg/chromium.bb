@@ -310,14 +310,14 @@ TEST(ProxyBypassRulesTest, Equals) {
   rules1.ParseFromString("foo1.com, .foo2.com");
   rules2.ParseFromString("foo1.com,.FOo2.com");
 
-  EXPECT_TRUE(rules1.Equals(rules2));
-  EXPECT_TRUE(rules2.Equals(rules1));
+  EXPECT_EQ(rules1, rules2);
+  EXPECT_EQ(rules2, rules1);
 
   rules1.ParseFromString(".foo2.com");
   rules2.ParseFromString("foo1.com,.FOo2.com");
 
-  EXPECT_FALSE(rules1.Equals(rules2));
-  EXPECT_FALSE(rules2.Equals(rules1));
+  EXPECT_FALSE(rules1 == rules2);
+  EXPECT_FALSE(rules2 == rules1);
 }
 
 TEST(ProxyBypassRulesTest, BypassLocalNames) {

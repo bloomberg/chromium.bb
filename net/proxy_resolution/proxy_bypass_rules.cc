@@ -208,13 +208,22 @@ bool ProxyBypassRules::Rule::Equals(const Rule& rule) const {
 ProxyBypassRules::ProxyBypassRules() = default;
 
 ProxyBypassRules::ProxyBypassRules(const ProxyBypassRules& rhs) {
-  AssignFrom(rhs);
+  *this = rhs;
+}
+
+ProxyBypassRules::ProxyBypassRules(ProxyBypassRules&& rhs) {
+  *this = std::move(rhs);
 }
 
 ProxyBypassRules::~ProxyBypassRules() = default;
 
 ProxyBypassRules& ProxyBypassRules::operator=(const ProxyBypassRules& rhs) {
-  AssignFrom(rhs);
+  ParseFromString(rhs.ToString());
+  return *this;
+}
+
+ProxyBypassRules& ProxyBypassRules::operator=(ProxyBypassRules&& rhs) {
+  rules_ = std::move(rhs.rules_);
   return *this;
 }
 
@@ -259,7 +268,7 @@ bool ProxyBypassRules::Matches(const GURL& url, bool reverse) const {
   return reverse;
 }
 
-bool ProxyBypassRules::Equals(const ProxyBypassRules& other) const {
+bool ProxyBypassRules::operator==(const ProxyBypassRules& other) const {
   if (rules_.size() != other.rules_.size())
     return false;
 
@@ -318,10 +327,6 @@ std::string ProxyBypassRules::ToString() const {
 
 void ProxyBypassRules::Clear() {
   rules_.clear();
-}
-
-void ProxyBypassRules::AssignFrom(const ProxyBypassRules& other) {
-  ParseFromString(other.ToString());
 }
 
 void ProxyBypassRules::ParseFromString(const std::string& raw,
