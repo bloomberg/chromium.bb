@@ -12,7 +12,8 @@ class GSUtilApi(recipe_api.RecipeApi):
     return self.package_repo_resource('gsutil.py')
 
   def __call__(self, cmd, name=None, use_retry_wrapper=True, version=None,
-               parallel_upload=False, multithreaded=False, **kwargs):
+               parallel_upload=False, multithreaded=False, infra_step=True,
+               **kwargs):
     """A step to run arbitrary gsutil commands.
 
     Note that this assumes that gsutil authentication environment variables
@@ -63,7 +64,7 @@ class GSUtilApi(recipe_api.RecipeApi):
       cmd_prefix.append('--')
 
     return self.m.python(full_name, gsutil_path, cmd_prefix + cmd,
-                         infra_step=True, **kwargs)
+                         infra_step=infra_step, **kwargs)
 
   def upload(self, source, bucket, dest, args=None, link_name='gsutil.upload',
              metadata=None, unauthenticated_url=False, **kwargs):
