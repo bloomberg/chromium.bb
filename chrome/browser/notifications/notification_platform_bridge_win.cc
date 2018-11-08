@@ -535,8 +535,6 @@ class NotificationPlatformBridgeWinImpl
   void GetDisplayed(const std::string& profile_id,
                     bool incognito,
                     GetDisplayedNotificationsCallback callback) const {
-    // TODO(finnur): Once this function is properly implemented, add DCHECK(UI)
-    // to NotificationPlatformBridgeWin::GetDisplayed.
     DCHECK(notification_task_runner_->RunsTasksInCurrentSequence());
 
     std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
@@ -810,6 +808,8 @@ void NotificationPlatformBridgeWin::Close(Profile* profile,
 void NotificationPlatformBridgeWin::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   notification_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::GetDisplayed, impl_,
