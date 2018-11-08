@@ -188,7 +188,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
-    bool direct_composition_overlays;
+    bool direct_composition;
+    bool supports_overlays;
     OverlayCapabilities overlay_capabilities;
     DxDiagNode dx_diagnostics;
     Dx12VulkanVersionInfo dx12_vulkan_version_info;
@@ -247,7 +248,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
                       can_support_threaded_texture_mailbox);
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
-  enumerator->AddBool("directCompositionOverlays", direct_composition_overlays);
+  enumerator->AddBool("directComposition", direct_composition);
+  enumerator->AddBool("supportsOverlays", supports_overlays);
   for (const auto& cap : overlay_capabilities)
     EnumerateOverlayCapability(cap, enumerator);
   EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);

@@ -34,7 +34,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     auto vsync_provider =
         std::make_unique<gl::VSyncProviderWin>(surface_handle);
 
-    if (DirectCompositionSurfaceWin::AreOverlaysSupported()) {
+    if (DirectCompositionSurfaceWin::IsDirectCompositionSupported()) {
       surface = base::MakeRefCounted<DirectCompositionSurfaceWin>(
           std::move(vsync_provider), delegate, surface_handle);
       if (!surface->Initialize())
