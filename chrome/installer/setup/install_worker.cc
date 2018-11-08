@@ -577,12 +577,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          true);
     // TODO(wfh): Ensure that this value is preserved in the 64-bit hive when
     // 64-bit installs place the uninstall information into the 64-bit registry.
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"InstallDate",
-                                         InstallUtil::GetCurrentDate(),
-                                         false);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"InstallDate",
+                                         InstallUtil::GetCurrentDate(), true);
 
     const std::vector<uint32_t>& version_components = new_version.components();
     if (version_components.size() == 4) {
