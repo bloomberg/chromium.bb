@@ -153,7 +153,15 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
     delegate_ = delegate;
   }
 
-  void PauseOnNextUpdate() { pause_ = true; }
+  void PauseOnNextUpdate() {
+    DCHECK(!resume_);
+    pause_ = true;
+  }
+
+  void ResumeOnNextUpdate() {
+    DCHECK(!pause_);
+    resume_ = true;
+  }
 
   // OfflineContentProvider::Observer implementation:
   void OnItemsAdded(
@@ -184,6 +192,12 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
       }
     }
 
+    if (resume_ &&
+        item.state == offline_items_collection::OfflineItemState::PAUSED) {
+      Resume(item.id);
+      resume_ = false;
+    }
+
     latest_item_ = item;
   }
 
@@ -199,6 +213,7 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   FinishedProcessingItemCallback finished_processing_item_callback_;
   BackgroundFetchDelegateImpl* delegate_ = nullptr;
   bool pause_ = false;
+  bool resume_ = false;
 
   OfflineItem latest_item_;
 
@@ -706,6 +721,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
                 CONTENT_SETTING_ALLOW);
 
   // The fetch should succeed.
+  offline_content_provider_observer_->ResumeOnNextUpdate();
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "StartFetchFromServiceWorker()", "backgroundfetchsuccess"));
 
@@ -748,11 +764,28 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchFromChildFrameWithPermissions) {
-  // Give the needed permissions.
+  // Give the needed permissions. The fetch should still start in a paused
+  // state.
   SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_ALLOW);
-  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
-      "StartFetchFromIframe()", "backgroundfetchsuccess"));
+
+  // The fetch doesn't start in a paused state, but is paused after the first
+  // update.
+  std::vector<OfflineItem> items;
+  OfflineItem updated_item;
+  base::RunLoop run_loop;
+  offline_content_provider_observer_->set_item_updated_callback(base::BindOnce(
+      &BackgroundFetchBrowserTest::DidUpdateItem, base::Unretained(this),
+      run_loop.QuitClosure(), &updated_item));
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartFetchFromIframeNoWait()", &items));
+  ASSERT_EQ(items.size(), 1u);
+  EXPECT_EQ(items[0].state,
+            offline_items_collection::OfflineItemState::IN_PROGRESS);
+
+  run_loop.Run();
+  EXPECT_EQ(updated_item.state,
+            offline_items_collection::OfflineItemState::PAUSED);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromChildFrameWithAsk) {
