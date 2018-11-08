@@ -5550,4 +5550,17 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="SSL.MixedContentShown">
+  <owner>carlosil@chromium.org</owner>
+  <summary>
+    Logged when mixed content is displayed on a site.
+  </summary>
+  <metric name="Type">
+    <summary>
+      A value of the MixedContentType enum, detailing the type of mixed content
+      included on the site.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>
