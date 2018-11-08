@@ -88,6 +88,15 @@ SearchResult* SearchModel::FindSearchResult(const std::string& id) {
   return nullptr;
 }
 
+SearchResult* SearchModel::GetFirstVisibleResult() {
+  for (const auto& result : *results_) {
+    if (result->is_visible())
+      return result.get();
+  }
+
+  return nullptr;
+}
+
 void SearchModel::DeleteAllResults() {
   PublishResults(std::vector<std::unique_ptr<SearchResult>>());
 }

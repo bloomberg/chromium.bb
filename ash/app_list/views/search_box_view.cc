@@ -365,24 +365,24 @@ void SearchBoxView::ProcessAutocomplete() {
   if (!is_app_list_search_autocomplete_enabled_)
     return;
 
+  SearchResult* const first_visible_result =
+      search_model_->GetFirstVisibleResult();
+
   // Current non-autocompleted text.
   const base::string16& user_typed_text =
       search_box()->text().substr(0, highlight_range_.start());
   if (last_key_pressed_ == ui::VKEY_BACK || last_key_pressed_ == ui::VKEY_UP ||
       last_key_pressed_ == ui::VKEY_DOWN ||
       last_key_pressed_ == ui::VKEY_LEFT ||
-      last_key_pressed_ == ui::VKEY_RIGHT ||
-      search_model_->results()->item_count() == 0 ||
+      last_key_pressed_ == ui::VKEY_RIGHT || !first_visible_result ||
       user_typed_text.length() < kMinimumLengthToAutocomplete) {
     // Backspace or arrow keys were pressed, no results exist, or current text
     // is too short for a confident autocomplete suggestion.
     return;
   }
 
-  const base::string16& details =
-      search_model_->results()->GetItemAt(0)->details();
-  const base::string16& search_text =
-      search_model_->results()->GetItemAt(0)->title();
+  const base::string16& details = first_visible_result->details();
+  const base::string16& search_text = first_visible_result->title();
   if (base::StartsWith(details, user_typed_text,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     // Current text in the search_box matches the first result's url.
