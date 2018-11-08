@@ -5,55 +5,14 @@
 #include "components/password_manager/core/browser/sync_username_test_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 
 using autofill::PasswordForm;
 
 namespace password_manager {
 
-SyncUsernameTestBase::LocalFakeSyncService::LocalFakeSyncService()
-    : syncing_passwords_(true) {}
+SyncUsernameTestBase::SyncUsernameTestBase() = default;
 
-SyncUsernameTestBase::LocalFakeSyncService::~LocalFakeSyncService() {}
-
-syncer::ModelTypeSet
-SyncUsernameTestBase::LocalFakeSyncService::GetPreferredDataTypes() const {
-  if (syncing_passwords_)
-    return syncer::ModelTypeSet(syncer::PASSWORDS);
-  return syncer::ModelTypeSet();
-}
-
-SyncUsernameTestBase::SyncUsernameTestBase()
-    : signin_client_(&prefs_),
-      token_service_(&prefs_),
-#if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_,
-                      &account_tracker_,
-                      nullptr /* signin_error_controller */),
-#else
-      signin_manager_(&signin_client_,
-                      &token_service_,
-                      &account_tracker_,
-                      nullptr, /* cookie_manager_service */
-                      nullptr, /* signin_error_controller */
-                      signin::AccountConsistencyMethod::kDisabled),
-#endif
-      gaia_cookie_manager_service_(&token_service_,
-                                   "sync_username_test_base",
-                                   &signin_client_),
-      identity_test_env_(&account_tracker_,
-                         &token_service_,
-                         &signin_manager_,
-                         &gaia_cookie_manager_service_) {
-  SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
-  AccountTrackerService::RegisterPrefs(prefs_.registry());
-#if !defined(OS_CHROMEOS)
-  ProfileOAuth2TokenService::RegisterProfilePrefs(prefs_.registry());
-#endif
-  account_tracker_.Initialize(&prefs_, base::FilePath());
-}
-
-SyncUsernameTestBase::~SyncUsernameTestBase() {}
+SyncUsernameTestBase::~SyncUsernameTestBase() = default;
 
 void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
   // This method is called in a roll by some tests. Differently than
@@ -97,7 +56,9 @@ PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username,
 }
 
 void SyncUsernameTestBase::SetSyncingPasswords(bool syncing_passwords) {
-  sync_service_.set_syncing_passwords(syncing_passwords);
+  sync_service_.SetPreferredDataTypes(
+      syncing_passwords ? syncer::ModelTypeSet(syncer::PASSWORDS)
+                        : syncer::ModelTypeSet());
 }
 
 }  // namespace password_manager
