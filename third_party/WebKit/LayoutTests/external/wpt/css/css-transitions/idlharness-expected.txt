@@ -31,7 +31,6 @@ FAIL Window interface: window must inherit property "ontransitionrun" with the p
 FAIL Window interface: window must inherit property "ontransitionstart" with the proper type assert_own_property: expected property "ontransitionstart" missing
 PASS Window interface: window must inherit property "ontransitionend" with the proper type
 FAIL Window interface: window must inherit property "ontransitioncancel" with the proper type assert_own_property: expected property "ontransitioncancel" missing
-PASS WorkerGlobalScope interface: existence and properties of interface object
 FAIL Document interface: attribute ontransitionrun assert_true: The prototype object must have a property "ontransitionrun" expected true got false
 FAIL Document interface: attribute ontransitionstart assert_true: The prototype object must have a property "ontransitionstart" expected true got false
 FAIL Document interface: attribute ontransitionend assert_true: The prototype object must have a property "ontransitionend" expected true got false

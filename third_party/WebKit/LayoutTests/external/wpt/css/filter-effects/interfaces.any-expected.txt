@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 459 tests; 427 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 458 tests; 426 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS SVGFilterElement interface: existence and properties of interface object
 PASS SVGFilterElement interface object length
@@ -458,6 +458,5 @@ PASS SVGFETurbulenceElement interface: attribute y
 PASS SVGFETurbulenceElement interface: attribute width
 PASS SVGFETurbulenceElement interface: attribute height
 PASS SVGFETurbulenceElement interface: attribute result
-PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 
