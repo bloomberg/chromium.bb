@@ -15,7 +15,7 @@
 
 namespace gpu {
 
-class DecoderContext;
+class GLContextVirtualDelegate;
 
 namespace gles2 {
 struct ContextState;
@@ -24,7 +24,8 @@ struct ContextState;
 // This class implements a GLStateRestorer that forwards to a DecoderContext.
 class GPU_GLES2_EXPORT GLStateRestorerImpl : public gl::GLStateRestorer {
  public:
-  explicit GLStateRestorerImpl(base::WeakPtr<DecoderContext> decoder);
+  explicit GLStateRestorerImpl(
+      base::WeakPtr<GLContextVirtualDelegate> delegate);
   ~GLStateRestorerImpl() override;
 
   bool IsInitialized() override;
@@ -42,7 +43,7 @@ class GPU_GLES2_EXPORT GLStateRestorerImpl : public gl::GLStateRestorer {
 
  private:
   const gles2::ContextState* GetContextState() const;
-  base::WeakPtr<DecoderContext> decoder_;
+  base::WeakPtr<GLContextVirtualDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GLStateRestorerImpl);
 };

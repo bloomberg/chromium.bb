@@ -127,6 +127,7 @@ target(link_target_type, "gles2_sources") {
     "framebuffer_manager.h",
     "gl_context_virtual.cc",
     "gl_context_virtual.h",
+    "gl_context_virtual_delegate.h",
     "gl_state_restorer_impl.cc",
     "gl_state_restorer_impl.h",
     "gl_utils.cc",

@@ -144,5 +144,13 @@ void RasterDecoderContextState::PurgeMemory(
   transfer_cache->PurgeMemory(memory_pressure_level);
 }
 
+void RasterDecoderContextState::PessimisticallyResetGrContext() const {
+  // Calling GrContext::resetContext() is very cheap, so we do it
+  // pessimistically. We could dirty less state if skia state setting
+  // performance becomes an issue.
+  if (gr_context && !use_vulkan_gr_context)
+    gr_context->resetContext();
+}
+
 }  // namespace raster
 }  // namespace gpu
