@@ -25,6 +25,7 @@ struct PaymentInformation {
   std::string payer_name;
   std::string payer_phone;
   std::string payer_email;
+  bool is_terms_and_conditions_accepted;
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PAYMENT_INFORMATION_H_

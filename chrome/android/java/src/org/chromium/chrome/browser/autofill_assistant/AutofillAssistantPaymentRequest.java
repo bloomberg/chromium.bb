@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.Client;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -51,7 +50,7 @@ import java.util.Map;
  * TODO(crbug.com/806868): Refactor shared codes with PaymentRequestImpl to a common place when the
  * UX is fixed.
  */
-public class AutofillAssistantPaymentRequest implements Client {
+public class AutofillAssistantPaymentRequest {
     private static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
@@ -90,6 +89,9 @@ public class AutofillAssistantPaymentRequest implements Client {
 
         /** Payer's contact phone. */
         public String payerPhone;
+
+        /** The terms and conditions accepted checkbox state. */
+        public boolean isTermsAndConditionsAccepted;
     }
 
     /**
@@ -141,7 +143,7 @@ public class AutofillAssistantPaymentRequest implements Client {
      *
      * @param callback The callback to return payment information.
      */
-    public void show(Callback<SelectedPaymentInformation> callback) {
+    /* package */ void show(Callback<SelectedPaymentInformation> callback) {
         // Do not expect calling show multiple times.
         assert mCallback == null;
         assert mUI == null;
@@ -234,7 +236,7 @@ public class AutofillAssistantPaymentRequest implements Client {
     }
 
     /** Close payment request. */
-    public void close() {
+    /* package */ void close() {
         if (mUI != null) {
             // Close the UI immediately and do not wait for finishing animations.
             mUI.close(/* shouldCloseImmediately = */ true, () -> {});
@@ -245,7 +247,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         mCallback = null;
     }
 
-    @Override
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
         mHandler.post(() -> {
             if (mUI != null) {
@@ -256,13 +257,11 @@ public class AutofillAssistantPaymentRequest implements Client {
         });
     }
 
-    @Override
     public void getShoppingCart(Callback<ShoppingCart> callback) {
         // Do not display anything for shopping cart.
         mHandler.post(() -> callback.onResult(null));
     }
 
-    @Override
     public void getSectionInformation(
             @PaymentRequestUI.DataType int optionType, Callback<SectionInformation> callback) {
         mHandler.post(() -> {
@@ -280,7 +279,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         });
     }
 
-    @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
             EditableOption option, Callback<PaymentInformation> checkedCallback) {
@@ -316,7 +314,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         return PaymentRequestUI.SelectionResult.NONE;
     }
 
-    @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, EditableOption option,
             Callback<PaymentInformation> checkedCallback) {
@@ -340,7 +337,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         return PaymentRequestUI.SelectionResult.NONE;
     }
 
-    @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionAddOption(@PaymentRequestUI.DataType int optionType,
             Callback<PaymentInformation> checkedCallback) {
@@ -474,13 +470,14 @@ public class AutofillAssistantPaymentRequest implements Client {
         return networksByString;
     }
 
-    @Override
     public boolean onPayClicked(EditableOption selectedShippingAddress,
-            EditableOption selectedShippingOption, EditableOption selectedPaymentMethod) {
+            EditableOption selectedShippingOption, EditableOption selectedPaymentMethod,
+            boolean isTermsAndConditionsAccepted) {
         if (mCallback != null) {
             SelectedPaymentInformation selectedPaymentInformation =
                     new SelectedPaymentInformation();
 
+            selectedPaymentInformation.isTermsAndConditionsAccepted = isTermsAndConditionsAccepted;
             selectedPaymentInformation.card =
                     ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
             if (mPaymentOptions.requestShipping && selectedShippingAddress != null) {
@@ -508,7 +505,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         return false;
     }
 
-    @Override
     public void onDismiss() {
         if (mCallback != null) {
             SelectedPaymentInformation selectedPaymentInformation =
@@ -521,7 +517,6 @@ public class AutofillAssistantPaymentRequest implements Client {
         close();
     }
 
-    @Override
     public void onCardAndAddressSettingsClicked() {
         // TODO(crbug.com/806868): Allow user to control cards and addresses.
     }

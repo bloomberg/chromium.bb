@@ -13,5 +13,8 @@
     <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]" formatter_data="android_java">
       Confirm
     </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_TERMS" desc="The text for the terms and service acceptance checkbox. Sentence-cased." formatter_data="android_java">
+      I know the terms and conditions and accept them (leave unclicked to read the terms and conditions from the website).
+    </message>
   </if>
 </grit-part>

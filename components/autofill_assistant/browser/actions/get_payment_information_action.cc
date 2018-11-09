@@ -71,10 +71,12 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
   if (succeed) {
     if (get_payment_information.ask_for_payment()) {
       DCHECK(payment_information->card);
-      processed_action_proto_->set_card_issuer_network(
+      std::string card_issuer_network =
           autofill::data_util::GetPaymentRequestData(
               payment_information->card->network())
-              .basic_card_issuer_network);
+              .basic_card_issuer_network;
+      processed_action_proto_->mutable_payment_details()
+          ->set_card_issuer_network(card_issuer_network);
       delegate->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
     }
@@ -110,6 +112,9 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
           contact_details_proto.contact_details_name(),
           std::make_unique<autofill::AutofillProfile>(contact_profile));
     }
+    processed_action_proto_->mutable_payment_details()
+        ->set_is_terms_and_conditions_accepted(
+            payment_information->is_terms_and_conditions_accepted);
   }
 
   UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);

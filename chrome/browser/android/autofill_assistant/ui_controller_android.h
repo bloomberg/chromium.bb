@@ -92,7 +92,8 @@ class UiControllerAndroid : public UiController,
       const base::android::JavaParamRef<jobject>& jaddress,
       const base::android::JavaParamRef<jstring>& jpayer_name,
       const base::android::JavaParamRef<jstring>& jpayer_phone,
-      const base::android::JavaParamRef<jstring>& jpayer_email);
+      const base::android::JavaParamRef<jstring>& jpayer_email,
+      jboolean jis_terms_and_services_accepted);
   void OnAccessToken(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jcaller,
                      jboolean success,
