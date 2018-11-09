@@ -167,8 +167,6 @@ testcase.shareDirectoryDrive = function() {
   shareWithOthersExpectBrowserURL('photos', URL);
 };
 
-// TODO(sashab): Add tests for sharing a file on Team Drives.
-
 /**
  * Tests managing a file on Drive.
  */
@@ -192,3 +190,5 @@ testcase.manageHostedFileDrive = function() {
   const URL = 'https://document_alternate_link/Test%20Document';
   manageWithDriveExpectBrowserURL('Test Document.gdoc', URL);
 };
+
+// TODO(903637): Add tests for sharing a file on Team Drives.
