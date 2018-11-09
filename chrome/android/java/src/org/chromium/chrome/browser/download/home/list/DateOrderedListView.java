@@ -41,7 +41,6 @@ class DateOrderedListView {
     private final int mPrefetchVerticalPaddingPx;
     private final int mPrefetchHorizontalPaddingPx;
     private final int mMaxWidthImageItemPx;
-    private final int mWideScreenThreshold;
 
     private final RecyclerView mView;
     private final UiConfig mUiConfig;
@@ -62,8 +61,6 @@ class DateOrderedListView {
                 R.dimen.download_manager_prefetch_vertical_margin);
         mMaxWidthImageItemPx = context.getResources().getDimensionPixelSize(
                 R.dimen.download_manager_max_image_item_width_wide_screen);
-        mWideScreenThreshold = context.getResources().getDimensionPixelSize(
-                R.dimen.download_manager_wide_screen_threshold);
 
         mView = new RecyclerView(context) {
             private int mScreenOrientation = Configuration.ORIENTATION_UNDEFINED;
@@ -130,6 +127,12 @@ class DateOrderedListView {
         return padding;
     }
 
+    /** @return The view width available after start and end padding. */
+    private int getAvailableViewWidth() {
+        return mView.getWidth() - ViewCompat.getPaddingStart(mView)
+                - ViewCompat.getPaddingEnd(mView);
+    }
+
     private class GridLayoutManagerImpl extends GridLayoutManager {
         /** Creates an instance of a {@link GridLayoutManagerImpl}. */
         public GridLayoutManagerImpl(Context context) {
@@ -142,7 +145,7 @@ class DateOrderedListView {
         public void onLayoutChildren(Recycler recycler, State state) {
             assert getOrientation() == VERTICAL;
 
-            int availableWidth = getWidth() - mImagePaddingPx;
+            int availableWidth = getAvailableViewWidth() - mImagePaddingPx;
             int columnWidth = mIdealImageWidthPx - mImagePaddingPx;
 
             int easyFitSpan = availableWidth / columnWidth;
@@ -202,8 +205,10 @@ class DateOrderedListView {
                     break;
             }
 
-            if (isFullWidthMedia && mView.getWidth() > mWideScreenThreshold) {
-                outRect.right += Math.max(mView.getWidth() - mMaxWidthImageItemPx, 0);
+            if (isFullWidthMedia
+                    && mUiConfig.getCurrentDisplayStyle().horizontal
+                            == HorizontalDisplayStyle.WIDE) {
+                outRect.right += Math.max(getAvailableViewWidth() - mMaxWidthImageItemPx, 0);
             }
         }
     }
