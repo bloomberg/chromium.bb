@@ -13,6 +13,8 @@
 
 namespace {
 const char kTestPassword[] = "test123";
+const char kTestFileName[] = "foo";
+const char kTestFileNameUppercase[] = "FOO";
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -26,6 +28,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   void* zip_file = mz_zip_create(nullptr);
   int result = mz_zip_open(zip_file, stream, MZ_OPEN_MODE_READ);
   if (result == MZ_OK) {
+    // Some archive properties that are non-fatal for reading the archive.
+    const char* archive_comment = nullptr;
+    mz_zip_get_comment(zip_file, &archive_comment);
+    uint16_t version_madeby = 0;
+    mz_zip_get_version_madeby(zip_file, &version_madeby);
+    uint64_t num_entries = 0;
+    mz_zip_get_number_entry(zip_file, &num_entries);
+
     result = mz_zip_goto_first_entry(zip_file);
     while (result == MZ_OK) {
       mz_zip_file* file_info = nullptr;
@@ -67,6 +77,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
       result = mz_zip_goto_next_entry(zip_file);
     }
+
+    mz_zip_entry_close(zip_file);
+
+    // Return value isn't checked here because we can't predict what the value
+    // will be.
+    mz_zip_locate_entry(zip_file, kTestFileName, 0);
+    mz_zip_locate_entry(zip_file, kTestFileNameUppercase, 0);
+    mz_zip_locate_entry(zip_file, kTestFileName, 1);
+    mz_zip_locate_entry(zip_file, kTestFileNameUppercase, 1);
+
     mz_zip_close(zip_file);
   }
 
