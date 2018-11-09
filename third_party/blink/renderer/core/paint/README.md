@@ -630,19 +630,6 @@ the paint phase.
 During painting, we check the flag before painting a paint phase and skip the
 tree walk if the flag is not set.
 
-It's hard to clear a `NeedsPaintPhaseXXX` flag when a layer no longer needs the
-paint phase, so we never clear the flags. Instead, we use another set of flags
-(`PreviousPaintPhaseXXXWasEmpty`) to record if a painting of a phase actually
-produced nothing. We'll skip the next painting of the phase if the flag is set,
-regardless of the corresponding `NeedsPaintPhaseXXX` flag. We will clear the
-`PreviousPaintPhaseXXXWasEmpty` flags when we paint with different clipping,
-scroll offset or interest rect from the previous paint.
-
-We don't clear the `PreviousPaintPhaseXXXWasEmpty` flags when the layer is
-marked `NeedsRepaint`. Instead we clear the flag when the corresponding
-`NeedsPaintPhaseXXX` is set. This ensures that we won't clear
-`PreviousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
-
 When layer structure changes, and we are not invalidate paint of the changed
 subtree, we need to manually update the `NeedsPaintPhaseXXX` flags. For example,
 if an object changes style and creates a self-painting-layer, we copy the flags

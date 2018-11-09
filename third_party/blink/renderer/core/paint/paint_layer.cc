@@ -104,6 +104,7 @@ namespace {
 static CompositingQueryMode g_compositing_query_mode =
     kCompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
+#ifdef OS_LINUX
 struct SameSizeAsPaintLayer : DisplayItemClient {
   // The bit fields may fit into the machine word of DisplayItemClient which
   // has only 8-bit data.
@@ -121,6 +122,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
               "PaintLayer should stay small");
+#endif
 
 }  // namespace
 
@@ -154,11 +156,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_repaint_(false),
       previous_paint_result_(kFullyPainted),
       needs_paint_phase_descendant_outlines_(false),
-      previous_paint_phase_descendant_outlines_was_empty_(false),
       needs_paint_phase_float_(false),
-      previous_paint_phase_float_was_empty_(false),
       needs_paint_phase_descendant_block_backgrounds_(false),
-      previous_paint_phase_descendant_block_backgrounds_was_empty_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
       has_fixed_position_descendant_(false),

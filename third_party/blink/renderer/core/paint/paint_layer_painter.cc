@@ -196,8 +196,7 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
 static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
     const PaintLayerPaintingInfo& painting_info,
-    ShouldRespectOverflowClipType respect_overflow_clip,
-    bool& should_clear_empty_paint_phase_flags) {
+    ShouldRespectOverflowClipType respect_overflow_clip) {
   bool needs_repaint = false;
 
   // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted
@@ -222,7 +221,6 @@ static bool ShouldRepaintSubsequence(
        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) &&
       paint_layer.PreviousPaintDirtyRect() != painting_info.paint_dirty_rect) {
     needs_repaint = true;
-    should_clear_empty_paint_phase_flags = true;
   }
   paint_layer.SetPreviousPaintDirtyRect(painting_info.paint_dirty_rect);
 
@@ -379,24 +377,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_, context, painting_info_arg, paint_flags);
 
   base::Optional<SubsequenceRecorder> subsequence_recorder;
-  bool should_clear_empty_paint_phase_flags = false;
   if (should_create_subsequence) {
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
-                                  respect_overflow_clip,
-                                  should_clear_empty_paint_phase_flags) &&
+                                  respect_overflow_clip) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
                                                             paint_layer_))
       return result;
     DCHECK(paint_layer_.SupportsSubsequenceCaching());
     subsequence_recorder.emplace(context, paint_layer_);
-  } else {
-    should_clear_empty_paint_phase_flags = true;
-  }
-
-  if (should_clear_empty_paint_phase_flags) {
-    paint_layer_.SetPreviousPaintPhaseDescendantOutlinesEmpty(false);
-    paint_layer_.SetPreviousPaintPhaseFloatEmpty(false);
-    paint_layer_.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
   }
 
   LayoutPoint offset_from_root;
@@ -832,21 +820,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
       }
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
           PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
           local_painting_info, paint_flags);
-      // Don't set the empty flag if we are not painting the whole background.
-      if (!(paint_flags & kPaintLayerPaintingSkipRootBackground)) {
-        bool phase_is_empty =
-            context.GetPaintController().NewDisplayItemList().size() ==
-            size_before;
-        DCHECK(phase_is_empty ||
-               paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds());
-        paint_layer_.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(
-            phase_is_empty);
-      }
     }
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
@@ -855,16 +831,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkFloat);
       }
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
                                            context, local_painting_info,
                                            paint_flags);
-      bool phase_is_empty =
-          context.GetPaintController().NewDisplayItemList().size() ==
-          size_before;
-      DCHECK(phase_is_empty || paint_layer_.NeedsPaintPhaseFloat());
-      paint_layer_.SetPreviousPaintPhaseFloatEmpty(phase_is_empty);
     }
 
     if (force_paint_chunks) {
@@ -878,17 +847,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kDescendantOutlinesOnly,
                                            layer_fragments, context,
                                            local_painting_info, paint_flags);
-      bool phase_is_empty =
-          context.GetPaintController().NewDisplayItemList().size() ==
-          size_before;
-      DCHECK(phase_is_empty ||
-             paint_layer_.NeedsPaintPhaseDescendantOutlines());
-      paint_layer_.SetPreviousPaintPhaseDescendantOutlinesEmpty(phase_is_empty);
     }
   }
 }
