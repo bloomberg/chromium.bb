@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/storage/create_metadata_task.h"
 
+#include <numeric>
 #include <set>
 #include <utility>
 
@@ -236,6 +237,11 @@ void CreateMetadataTask::InitializeMetadataProto() {
       proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
       proto::BackgroundFetchRegistration_BackgroundFetchFailureReason_NONE);
+  registration_proto->set_upload_total(
+      std::accumulate(requests_.begin(), requests_.end(), 0u,
+                      [](uint64_t sum, const auto& request) {
+                        return sum + (request->blob ? request->blob->size : 0u);
+                      }));
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
