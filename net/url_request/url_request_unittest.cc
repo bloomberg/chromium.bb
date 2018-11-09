@@ -9793,7 +9793,6 @@ class TestSSLPrivateKey : public SSLPrivateKey {
   void set_fail_signing(bool fail_signing) { fail_signing_ = fail_signing; }
   int sign_count() const { return sign_count_; }
 
-  std::string GetProviderName() override { return key_->GetProviderName(); }
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return key_->GetAlgorithmPreferences();
   }

@@ -94,13 +94,11 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
 
     DCHECK((cert && private_key) || (!cert && !private_key));
 
-    std::string provider_name;
     std::vector<uint16_t> algorithm_preferences;
     network::mojom::SSLPrivateKeyPtr ssl_private_key;
     auto ssl_private_key_request = mojo::MakeRequest(&ssl_private_key);
 
     if (private_key) {
-      provider_name = private_key->GetProviderName();
       algorithm_preferences = private_key->GetAlgorithmPreferences();
       mojo::MakeStrongBinding(
           std::make_unique<SSLPrivateKeyImpl>(std::move(private_key)),
@@ -110,8 +108,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SSLClientAuthDelegate::RunCallback,
-                       base::Unretained(this), cert, std::move(provider_name),
-                       std::move(algorithm_preferences),
+                       base::Unretained(this), cert, algorithm_preferences,
                        std::move(ssl_private_key),
                        false /* cancel_certificate_selection */));
   }
@@ -125,17 +122,16 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SSLClientAuthDelegate::RunCallback,
-                       base::Unretained(this), nullptr, std::string(),
-                       std::vector<uint16_t>(), std::move(ssl_private_key),
+                       base::Unretained(this), nullptr, std::vector<uint16_t>(),
+                       std::move(ssl_private_key),
                        true /* cancel_certificate_selection */));
   }
 
   void RunCallback(scoped_refptr<net::X509Certificate> cert,
-                   std::string provider_name,
                    std::vector<uint16_t> algorithm_preferences,
                    network::mojom::SSLPrivateKeyPtr ssl_private_key,
                    bool cancel_certificate_selection) {
-    std::move(callback_).Run(cert, provider_name, algorithm_preferences,
+    std::move(callback_).Run(cert, algorithm_preferences,
                              std::move(ssl_private_key),
                              cancel_certificate_selection);
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
@@ -383,7 +379,7 @@ void NetworkServiceClient::OnCertificateRequested(
   if (!web_contents_getter.Run()) {
     network::mojom::SSLPrivateKeyPtr ssl_private_key;
     mojo::MakeRequest(&ssl_private_key);
-    std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
+    std::move(callback).Run(nullptr, std::vector<uint16_t>(),
                             std::move(ssl_private_key),
                             true /* cancel_certificate_selection */);
     return;

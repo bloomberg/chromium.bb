@@ -21,11 +21,6 @@ import java.security.interfaces.RSAPrivateKey;
 public class AndroidKeyStore {
     private static final String TAG = "AndroidKeyStore";
 
-    @CalledByNative
-    private static String getPrivateKeyClassName(PrivateKey privateKey) {
-        return privateKey.getClass().getName();
-    }
-
     /**
      * Sign a given message with a given PrivateKey object.
      *
