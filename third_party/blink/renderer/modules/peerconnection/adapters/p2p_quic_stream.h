@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_STREAM_H_
 
 #include <stdint.h>
-#include <vector>
+
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -39,7 +40,7 @@ class P2PQuicStream {
     // If the stream has already finished writing, then upon receiving the FIN
     // bit the stream can no longer read or write and is deleted by the
     // quic::QuicSession.
-    virtual void OnDataReceived(std::vector<uint8_t> data, bool fin) {}
+    virtual void OnDataReceived(Vector<uint8_t> data, bool fin) {}
 
     // Called when data written with WriteData() has been consumed by QUIC.
     //
@@ -74,7 +75,7 @@ class P2PQuicStream {
   // writing. After sending the FIN bit, the P2PQuicStream can no longer write.
   // Once the P2PQuicStream has sent AND received the FIN bit it will be closed
   // for reading and writing and deleted by the quic::QuicSession.
-  virtual void WriteData(std::vector<uint8_t> data, bool fin) = 0;
+  virtual void WriteData(Vector<uint8_t> data, bool fin) = 0;
 
   // Sets the delegate object, which must outlive the P2PQuicStream.
   virtual void SetDelegate(Delegate* delegate) = 0;

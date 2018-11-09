@@ -24,7 +24,7 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
 
   void Reset() override;
 
-  void WriteData(std::vector<uint8_t> data, bool fin) override;
+  void WriteData(Vector<uint8_t> data, bool fin) override;
 
   void MarkReceivedDataConsumed(uint32_t amount) override;
 

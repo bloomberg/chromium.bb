@@ -57,7 +57,7 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
 
   void Reset();
   void MarkReceivedDataConsumed(uint32_t amount);
-  void WriteData(std::vector<uint8_t> data, bool fin);
+  void WriteData(Vector<uint8_t> data, bool fin);
 
  private:
   // Instruct the QuicTransportHost to remove and delete this stream host.
@@ -65,7 +65,7 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
 
   // P2PQuicStream::Delegate overrides.
   void OnRemoteReset() override;
-  void OnDataReceived(std::vector<uint8_t> data, bool fin) override;
+  void OnDataReceived(Vector<uint8_t> data, bool fin) override;
   void OnWriteDataConsumed(uint32_t amount) override;
 
   // Up reference. Owned by QuicTransportProxy.

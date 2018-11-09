@@ -55,7 +55,7 @@ void QuicStreamHost::MarkReceivedDataConsumed(uint32_t amount) {
   p2p_stream_->MarkReceivedDataConsumed(amount);
 }
 
-void QuicStreamHost::WriteData(std::vector<uint8_t> data, bool fin) {
+void QuicStreamHost::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(p2p_stream_);
   p2p_stream_->WriteData(data, fin);
@@ -76,7 +76,7 @@ void QuicStreamHost::OnRemoteReset() {
   Delete();
 }
 
-void QuicStreamHost::OnDataReceived(std::vector<uint8_t> data, bool fin) {
+void QuicStreamHost::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*proxy_thread(), FROM_HERE,
                       CrossThreadBind(&QuicStreamProxy::OnDataReceived,

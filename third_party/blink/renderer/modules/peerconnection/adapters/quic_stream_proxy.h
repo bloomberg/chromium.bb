@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -44,7 +45,7 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
     // Called when the remote side resets the stream.
     virtual void OnRemoteReset() {}
     // Called when the remote side receives data and/or the finish bit.
-    virtual void OnDataReceived(std::vector<uint8_t> data, bool fin) {}
+    virtual void OnDataReceived(Vector<uint8_t> data, bool fin) {}
     // Called when data written with WriteData() has been consumed by QUIC.
     virtual void OnWriteDataConsumed(uint32_t amount) {}
   };
@@ -70,7 +71,7 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
 
   void Reset();
   void MarkReceivedDataConsumed(uint32_t amount);
-  void WriteData(std::vector<uint8_t> data, bool fin);
+  void WriteData(Vector<uint8_t> data, bool fin);
 
  private:
   // Instruct the QuicTransportProxy to remove and delete this stream proxy.
@@ -79,7 +80,7 @@ class QuicStreamProxy final : public base::SupportsWeakPtr<QuicStreamProxy> {
   // Callbacks from QuicStreamHost.
   friend class QuicStreamHost;
   void OnRemoteReset();
-  void OnDataReceived(std::vector<uint8_t> data, bool fin);
+  void OnDataReceived(Vector<uint8_t> data, bool fin);
   void OnWriteDataConsumed(uint32_t amount);
 
   // Up reference. Owned by the QuicTransportProxy client.
