@@ -98,9 +98,6 @@ const char kDisableGLExtensions[] = "disable-gl-extensions";
 // Enables SwapBuffersWithBounds if it is supported.
 const char kEnableSwapBuffersWithBounds[] = "enable-swap-buffers-with-bounds";
 
-// Disables DirectComposition surface.
-const char kDisableDirectComposition[] = "disable-direct-composition";
-
 // Enables using DirectComposition layers, even if hardware overlays aren't
 // supported.
 const char kEnableDirectCompositionLayers[] =
@@ -125,7 +122,6 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kOverrideUseSoftwareGLForTests,
     kUseANGLE,
     kEnableSwapBuffersWithBounds,
-    kDisableDirectComposition,
     kEnableDirectCompositionLayers,
     kDisableDirectCompositionLayers,
 };

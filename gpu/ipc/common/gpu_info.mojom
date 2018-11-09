@@ -128,9 +128,7 @@ struct GpuInfo {
   bool can_support_threaded_texture_mailbox;
 
   [EnableIf=is_win]
-  bool direct_composition;
-  [EnableIf=is_win]
-  bool supports_overlays;
+  bool direct_composition_overlays;
   [EnableIf=is_win]
   array<OverlayCapability> overlay_capabilities;
   [EnableIf=is_win]

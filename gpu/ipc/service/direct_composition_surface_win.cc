@@ -139,18 +139,65 @@ OverlaySupportInfo g_overlay_support_info[] = {
     {OverlayFormat::kBGRA, DXGI_FORMAT_B8G8R8A8_UNORM, 0},
 };
 
+bool IsDirectCompositionSupported() {
+  static bool initialized = false;
+  static bool supported = false;
+  if (initialized)
+    return supported;
+  initialized = true;
+
+  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
+  // be assigned to non-UWP apps.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    return false;
+
+  // Blacklist direct composition if MCTU.dll or MCTUX.dll are injected. These
+  // are user mode drivers for display adapters from Magic Control Technology
+  // Corporation.
+  if (GetModuleHandle(TEXT("MCTU.dll")) || GetModuleHandle(TEXT("MCTUX.dll"))) {
+    DLOG(ERROR) << "Blacklisted due to third party modules";
+    return false;
+  }
+
+  // Flexible surface compatibility is required to be able to MakeCurrent with
+  // the default pbuffer surface.
+  if (!gl::GLSurfaceEGL::IsEGLFlexibleSurfaceCompatibilitySupported()) {
+    DLOG(ERROR) << "EGL_ANGLE_flexible_surface_compatibility not supported";
+    return false;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Failed to retrieve D3D11 device";
+    return false;
+  }
+
+  // This will fail if DirectComposition DLL can't be loaded.
+  Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device =
+      gl::QueryDirectCompositionDevice(d3d11_device);
+  if (!dcomp_device) {
+    DLOG(ERROR) << "Failed to retrieve direct composition device";
+    return false;
+  }
+
+  // This will fail if the D3D device is "Microsoft Basic Display Adapter".
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+  if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
+    DLOG(ERROR) << "Failed to retrieve video device";
+    return false;
+  }
+
+  supported = true;
+  return true;
+}
+
 void InitializeHardwareOverlaySupport() {
   if (g_overlay_support_initialized)
     return;
   g_overlay_support_initialized = true;
 
-  // Check for DirectComposition support first to prevent likely crashes.
-  if (!DirectCompositionSurfaceWin::IsDirectCompositionSupported())
-    return;
-
-  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
-  // be assigned to non-UWP apps.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+  if (!IsDirectCompositionSupported())
     return;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
@@ -169,13 +216,6 @@ void InitializeHardwareOverlaySupport() {
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
   if (FAILED(dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf()))) {
     DLOG(ERROR) << "Failed to retrieve DXGI adapter";
-    return;
-  }
-
-  // This will fail if the D3D device is "Microsoft Basic Display Adapter".
-  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
-  if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
-    DLOG(ERROR) << "Failed to retrieve video device";
     return;
   }
 
@@ -364,14 +404,6 @@ class DCLayerTree {
   bool InitializeVideoProcessor(const gfx::Size& input_size,
                                 const gfx::Size& output_size);
 
-  const Microsoft::WRL::ComPtr<ID3D11VideoDevice>& video_device() const {
-    return video_device_;
-  }
-
-  const Microsoft::WRL::ComPtr<ID3D11VideoContext>& video_context() const {
-    return video_context_;
-  }
-
   const Microsoft::WRL::ComPtr<ID3D11VideoProcessor>& video_processor() const {
     return video_processor_;
   }
@@ -436,7 +468,9 @@ class DCLayerTree::SwapChainPresenter {
  public:
   SwapChainPresenter(DCLayerTree* layer_tree,
                      Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
-                     Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device);
+                     Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device,
+                     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+                     Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context);
   ~SwapChainPresenter();
 
   // Present the given overlay to swap chain.  |needs_commit| is true if direct
@@ -458,6 +492,12 @@ class DCLayerTree::SwapChainPresenter {
   // success.
   bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
                          gl::GLImageMemory* uv_image_memory);
+
+  // Initialize video processor to handle at least the given input and output
+  // size.  Can reuse existing video processor if it's large enough.  Returns
+  // true on success.
+  bool InitializeVideoProcessor(const gfx::Size& in_size,
+                                const gfx::Size& out_size);
 
   // Recreate swap chain using given size.  Use preferred YUV format if |yuv| is
   // true, or BGRA otherwise.  Set protected video flags if |protected_video| is
@@ -499,6 +539,10 @@ class DCLayerTree::SwapChainPresenter {
 
   // Current size of swap chain.
   gfx::Size swap_chain_size_;
+
+  // Current minimum input and output size of the video processor.
+  gfx::Size processor_input_size_;
+  gfx::Size processor_output_size_;
 
   // Whether the current swap chain is using the preferred YUV format.
   bool is_yuv_swapchain_ = false;
@@ -548,6 +592,12 @@ class DCLayerTree::SwapChainPresenter {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> out_view_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessor> video_processor_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator>
+      video_processor_enumerator_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
 
   // Handle returned by DCompositionCreateSurfaceHandle() used to create swap
   // chain that can be used for direct composition.
@@ -564,6 +614,19 @@ bool DCLayerTree::Initialize(
   d3d11_device_ = std::move(d3d11_device);
   DCHECK(dcomp_device);
   dcomp_device_ = std::move(dcomp_device);
+
+  // This can fail if the D3D device is "Microsoft Basic Display Adapter".
+  if (FAILED(d3d11_device_.CopyTo(video_device_.GetAddressOf()))) {
+    DLOG(ERROR) << "Failed to retrieve video device from D3D11 device";
+    return false;
+  }
+  DCHECK(video_device_);
+
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+  d3d11_device_->GetImmediateContext(context.GetAddressOf());
+  DCHECK(context);
+  context.CopyTo(video_context_.GetAddressOf());
+  DCHECK(video_context_);
 
   Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
   dcomp_device_.CopyTo(desktop_device.GetAddressOf());
@@ -585,21 +648,6 @@ bool DCLayerTree::Initialize(
 
 bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
                                            const gfx::Size& output_size) {
-  if (!video_device_) {
-    // This can fail if the D3D device is "Microsoft Basic Display Adapter".
-    if (FAILED(d3d11_device_.CopyTo(video_device_.GetAddressOf()))) {
-      DLOG(ERROR) << "Failed to retrieve video device from D3D11 device";
-      return false;
-    }
-    DCHECK(video_device_);
-
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-    d3d11_device_->GetImmediateContext(context.GetAddressOf());
-    DCHECK(context);
-    context.CopyTo(video_context_.GetAddressOf());
-    DCHECK(video_context_);
-  }
-
   if (video_processor_ && SizeContains(video_input_size_, input_size) &&
       SizeContains(video_output_size_, output_size))
     return true;
@@ -651,10 +699,14 @@ DCLayerTree::GetLayerSwapChainForTesting(size_t index) const {
 DCLayerTree::SwapChainPresenter::SwapChainPresenter(
     DCLayerTree* layer_tree,
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
-    Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device)
+    Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device,
+    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+    Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context)
     : layer_tree_(layer_tree),
       d3d11_device_(d3d11_device),
-      dcomp_device_(dcomp_device) {}
+      dcomp_device_(dcomp_device),
+      video_device_(video_device),
+      video_context_(video_context) {}
 
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
@@ -959,6 +1011,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
       swap_chain_size_ = swap_chain_size;
       swap_chain_handle_.Close();
       swap_chain_.Reset();
+      out_view_.Reset();
       content_visual_->SetContent(nullptr);
       *needs_commit = true;
     }
@@ -1089,19 +1142,50 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   return true;
 }
 
+bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
+    const gfx::Size& in_size,
+    const gfx::Size& out_size) {
+  if (video_processor_ && SizeContains(processor_input_size_, in_size) &&
+      SizeContains(processor_output_size_, out_size))
+    return true;
+  processor_input_size_ = in_size;
+  processor_output_size_ = out_size;
+
+  if (!layer_tree_->InitializeVideoProcessor(in_size, out_size))
+    return false;
+
+  video_processor_enumerator_ = layer_tree_->video_processor_enumerator();
+  video_processor_ = layer_tree_->video_processor();
+  // out_view_ depends on video_processor_enumerator_, so ensure it's
+  // recreated if the enumerator is.
+  out_view_.Reset();
+  return true;
+}
+
 bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture,
     UINT input_level,
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
     const gfx::Size& input_size,
     const gfx::ColorSpace& src_color_space) {
-  if (!layer_tree_->InitializeVideoProcessor(input_size, swap_chain_size_))
+  if (!InitializeVideoProcessor(input_size, swap_chain_size_))
     return false;
 
-  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context =
-      layer_tree_->video_context();
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessor> video_processor =
-      layer_tree_->video_processor();
+  if (!out_view_) {
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.GetAddressOf()));
+    D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
+    out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
+    out_desc.Texture2D.MipSlice = 0;
+    HRESULT hr = video_device_->CreateVideoProcessorOutputView(
+        texture.Get(), video_processor_enumerator_.Get(), &out_desc,
+        out_view_.GetAddressOf());
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error 0x"
+                  << std::hex << hr;
+      return false;
+    }
+  }
 
   gfx::ColorSpace output_color_space =
       is_yuv_swapchain_ ? src_color_space : gfx::ColorSpace::CreateSRGB();
@@ -1114,19 +1198,19 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
   Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain3;
   Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
   if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf())) &&
-      SUCCEEDED(video_context.CopyTo(context1.GetAddressOf()))) {
+      SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {
     DCHECK(swap_chain3);
     DCHECK(context1);
     // Set input color space.
     context1->VideoProcessorSetStreamColorSpace1(
-        video_processor.Get(), 0,
+        video_processor_.Get(), 0,
         gfx::ColorSpaceWin::GetDXGIColorSpace(src_color_space));
     // Set output color space.
     DXGI_COLOR_SPACE_TYPE output_dxgi_color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(
             output_color_space, is_yuv_swapchain_ /* force_yuv */);
     if (SUCCEEDED(swap_chain3->SetColorSpace1(output_dxgi_color_space))) {
-      context1->VideoProcessorSetOutputColorSpace1(video_processor.Get(),
+      context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
                                                    output_dxgi_color_space);
     }
   } else {
@@ -1134,12 +1218,12 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     // only if ID3D11VideoContext1 isn't available.
     D3D11_VIDEO_PROCESSOR_COLOR_SPACE src_d3d11_color_space =
         gfx::ColorSpaceWin::GetD3D11ColorSpace(src_color_space);
-    video_context->VideoProcessorSetStreamColorSpace(video_processor.Get(), 0,
-                                                     &src_d3d11_color_space);
+    video_context_->VideoProcessorSetStreamColorSpace(video_processor_.Get(), 0,
+                                                      &src_d3d11_color_space);
     D3D11_VIDEO_PROCESSOR_COLOR_SPACE output_d3d11_color_space =
         gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
-    video_context->VideoProcessorSetOutputColorSpace(video_processor.Get(),
-                                                     &output_d3d11_color_space);
+    video_context_->VideoProcessorSetOutputColorSpace(
+        video_processor_.Get(), &output_d3d11_color_space);
   }
 
   {
@@ -1159,18 +1243,12 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
       release_keyed_mutex.emplace(keyed_mutex, 0);
     }
 
-    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device =
-        layer_tree_->video_device();
-    Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator>
-        video_processor_enumerator = layer_tree_->video_processor_enumerator();
-
     D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
     in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
     in_desc.Texture2D.ArraySlice = input_level;
-
     Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> in_view;
-    HRESULT hr = video_device->CreateVideoProcessorInputView(
-        input_texture.Get(), video_processor_enumerator.Get(), &in_desc,
+    HRESULT hr = video_device_->CreateVideoProcessorInputView(
+        input_texture.Get(), video_processor_enumerator_.Get(), &in_desc,
         in_view.GetAddressOf());
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateVideoProcessorInputView failed with error 0x"
@@ -1186,32 +1264,16 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     stream.FutureFrames = 0;
     stream.pInputSurface = in_view.Get();
     RECT dest_rect = gfx::Rect(swap_chain_size_).ToRECT();
-    video_context->VideoProcessorSetOutputTargetRect(video_processor.Get(),
-                                                     TRUE, &dest_rect);
-    video_context->VideoProcessorSetStreamDestRect(video_processor.Get(), 0,
-                                                   TRUE, &dest_rect);
+    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.Get(),
+                                                      TRUE, &dest_rect);
+    video_context_->VideoProcessorSetStreamDestRect(video_processor_.Get(), 0,
+                                                    TRUE, &dest_rect);
     RECT source_rect = gfx::Rect(input_size).ToRECT();
-    video_context->VideoProcessorSetStreamSourceRect(video_processor.Get(), 0,
-                                                     TRUE, &source_rect);
+    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.Get(), 0,
+                                                      TRUE, &source_rect);
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.GetAddressOf()));
-    D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
-    out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
-    out_desc.Texture2D.MipSlice = 0;
-
-    Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> out_view;
-    hr = video_device->CreateVideoProcessorOutputView(
-        texture.Get(), video_processor_enumerator.Get(), &out_desc,
-        out_view.GetAddressOf());
-    if (FAILED(hr)) {
-      DLOG(ERROR) << "CreateVideoProcessorOutputView failed with error 0x"
-                  << std::hex << hr;
-      return false;
-    }
-
-    hr = video_context->VideoProcessorBlt(video_processor.Get(), out_view.Get(),
-                                          0, 1, &stream);
+    hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
+                                           out_view_.Get(), 0, 1, &stream);
     if (FAILED(hr)) {
       DLOG(ERROR) << "VideoProcessorBlt failed with error 0x" << std::hex << hr;
       return false;
@@ -1228,6 +1290,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
   swap_chain_size_ = swap_chain_size;
 
+  out_view_.Reset();
   swap_chain_.Reset();
   swap_chain_handle_.Close();
 
@@ -1367,7 +1430,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
         new_video_swap_chains.emplace_back(std::move(video_swap_chains_[i]));
       } else {
         new_video_swap_chains.emplace_back(std::make_unique<SwapChainPresenter>(
-            this, d3d11_device_, dcomp_device_));
+            this, d3d11_device_, dcomp_device_, video_device_, video_context_));
       }
     }
     video_swap_chains_.swap(new_video_swap_chains);
@@ -1444,50 +1507,11 @@ DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
 }
 
 // static
-bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
-  static const bool supported = [] {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kDisableDirectComposition))
-      return false;
-
-    // Blacklist direct composition if MCTU.dll or MCTUX.dll are injected. These
-    // are user mode drivers for display adapters from Magic Control Technology
-    // Corporation.
-    if (GetModuleHandle(TEXT("MCTU.dll")) ||
-        GetModuleHandle(TEXT("MCTUX.dll"))) {
-      DLOG(ERROR) << "Blacklisted due to third party modules";
-      return false;
-    }
-
-    // Flexible surface compatibility is required to be able to MakeCurrent with
-    // the default pbuffer surface.
-    if (!gl::GLSurfaceEGL::IsEGLFlexibleSurfaceCompatibilitySupported()) {
-      DLOG(ERROR) << "EGL_ANGLE_flexible_surface_compatibility not supported";
-      return false;
-    }
-
-    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        gl::QueryD3D11DeviceObjectFromANGLE();
-    if (!d3d11_device) {
-      DLOG(ERROR) << "Failed to retrieve D3D11 device";
-      return false;
-    }
-
-    // This will fail if DirectComposition DLL can't be loaded.
-    Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device =
-        gl::QueryDirectCompositionDevice(d3d11_device);
-    if (!dcomp_device) {
-      DLOG(ERROR) << "Failed to retrieve direct composition device";
-      return false;
-    }
-
-    return true;
-  }();
-  return supported;
-}
-
-// static
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
+  // Check for DirectComposition support first to prevent likely crashes.
+  if (!IsDirectCompositionSupported())
+    return false;
+
   // Always initialize and record overlay support information irrespective of
   // command line flags.
   InitializeHardwareOverlaySupport();
@@ -1504,6 +1528,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 // static
 OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
   InitializeHardwareOverlaySupport();
+
   OverlayCapabilities capabilities;
   for (const auto& info : g_overlay_support_info) {
     if (info.flags) {
@@ -1514,6 +1539,7 @@ OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
       capabilities.push_back(cap);
     }
   }
+
   return capabilities;
 }
 

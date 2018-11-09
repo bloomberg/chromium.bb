@@ -36,12 +36,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
       HWND parent_window);
 
-  // Returns true if direct composition is supported.  We prefer to use direct
-  // composition event without hardware overlays, because it allows us to bypass
-  // blitting by DWM to the window redirection surface by using a flip mode swap
-  // chain.  Overridden with --disable-direct-composition.
-  static bool IsDirectCompositionSupported();
-
   // Returns true if hardware overlays are supported, and DirectComposition
   // surface and layers should be used.  Overridden with
   // --enable-direct-composition-layers and --disable-direct-composition-layers.
