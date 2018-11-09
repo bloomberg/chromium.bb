@@ -1391,54 +1391,6 @@ class ForwardDeclarationTest(unittest.TestCase):
     self.assertEqual(4, len(warnings))
 
 
-class RiskyJsTest(unittest.TestCase):
-  def testArrowWarnInIos9Code(self):
-    mock_input_api = MockInputApi()
-    mock_output_api = MockOutputApi()
-
-    mock_input_api.files = [
-      MockAffectedFile('components/blah.js', ["shouldn't use => here"]),
-    ]
-    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
-        mock_input_api, mock_output_api)
-    self.assertEqual(1, len(warnings))
-
-    mock_input_api.files = [
-      MockAffectedFile('ios/blee.js', ['might => break folks']),
-    ]
-    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
-        mock_input_api, mock_output_api)
-    self.assertEqual(1, len(warnings))
-
-    mock_input_api.files = [
-      MockAffectedFile('ui/webui/resources/blarg.js', ['on => iOS9']),
-    ]
-    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
-        mock_input_api, mock_output_api)
-    self.assertEqual(1, len(warnings))
-
-  def testArrowsAllowedInChromeCode(self):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = [
-      MockAffectedFile('chrome/browser/resources/blah.js', 'arrow => OK here'),
-    ]
-    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
-        mock_input_api, MockOutputApi())
-    self.assertEqual(0, len(warnings))
-
-  def testConstLetWarningIos9Code(self):
-    mock_input_api = MockInputApi()
-    mock_output_api = MockOutputApi()
-
-    mock_input_api.files = [
-      MockAffectedFile('components/blah.js', [" const foo = 'bar';"]),
-      MockAffectedFile('ui/webui/resources/blah.js', [" let foo = 3;"]),
-    ]
-    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
-        mock_input_api, mock_output_api)
-    self.assertEqual(2, len(warnings))
-
-
 class RelativeIncludesTest(unittest.TestCase):
   def testThirdPartyNotWebKitIgnored(self):
     mock_input_api = MockInputApi()
