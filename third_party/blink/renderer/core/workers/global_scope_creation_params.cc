@@ -13,7 +13,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
     mojom::ScriptType script_type,
     const String& user_agent,
-    std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context,
+    scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
     ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,

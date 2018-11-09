@@ -289,7 +289,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                  const KURL&,
                                  const String&) override;
 
-  std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() override;
+  scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() override;
   std::unique_ptr<WebContentSettingsClient> CreateWorkerContentSettingsClient()
       override;
 

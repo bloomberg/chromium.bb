@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -31,12 +32,20 @@ class WebDocumentSubresourceFilter;
 // the worker thread by InitializeOnWorkerThread(). It contains information
 // about the resource fetching context (ex: service worker provider id), and is
 // used to create a new WebURLLoader instance in the worker thread.
-class WebWorkerFetchContext {
+//
+// A single WebWorkerFetchContext is used for both worker
+// subresource fetch (i.e. "insideSettings") and off-the-main-thread top-level
+// worker script fetch (i.e. fetch as "outsideSettings"), as they both should be
+// e.g. controlled by the same ServiceWorker (if any) and thus can share a
+// single WebURLLoaderFactory.
+class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
  public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
   virtual ~WebWorkerFetchContext() = default;
 
   // Used to copy a worker fetch context between worker threads.
-  virtual std::unique_ptr<WebWorkerFetchContext> CloneForNestedWorker() {
+  virtual scoped_refptr<WebWorkerFetchContext> CloneForNestedWorker() {
     return nullptr;
   }
 

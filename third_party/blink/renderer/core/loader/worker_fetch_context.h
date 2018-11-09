@@ -31,7 +31,7 @@ enum class ResourceType : uint8_t;
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&,
-                                    std::unique_ptr<WebWorkerFetchContext>);
+                                    scoped_refptr<WebWorkerFetchContext>);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -128,12 +128,12 @@ class WorkerFetchContext final : public BaseFetchContext {
 
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
-                     std::unique_ptr<WebWorkerFetchContext>);
+                     scoped_refptr<WebWorkerFetchContext>);
 
   void SetFirstPartyCookie(ResourceRequest&);
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
-  const std::unique_ptr<WebWorkerFetchContext> web_context_;
+  const scoped_refptr<WebWorkerFetchContext> web_context_;
 
   // Responsible for regular loads from the worker (i.e., Fetch API).
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

@@ -80,10 +80,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
       std::unique_ptr<service_manager::Connector> service_manager_connection);
-  ~WebWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
-  std::unique_ptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
+  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
@@ -134,6 +133,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
  private:
   class Factory;
+
+  ~WebWorkerFetchContextImpl() override;
 
   bool Send(IPC::Message* message);
 

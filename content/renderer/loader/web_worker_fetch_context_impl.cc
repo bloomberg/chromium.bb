@@ -186,7 +186,7 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
   terminate_sync_load_event_ = terminate_sync_load_event;
 }
 
-std::unique_ptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebWorkerFetchContext>
 WebWorkerFetchContextImpl::CloneForNestedWorker() {
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
@@ -206,7 +206,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
   }
 
   mojom::RendererPreferenceWatcherPtr preference_watcher;
-  auto new_context = std::make_unique<WebWorkerFetchContextImpl>(
+  auto new_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
       renderer_preferences_, mojo::MakeRequest(&preference_watcher),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),

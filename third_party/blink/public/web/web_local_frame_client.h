@@ -169,7 +169,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Returns a new WebWorkerFetchContext for a dedicated worker. Ownership of
   // the returned object is transferred to the caller.
-  virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+  virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
     return nullptr;
   }
 

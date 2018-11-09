@@ -40,7 +40,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(v8::Isolate*,
                              WorkerClients*,
-                             std::unique_ptr<WebWorkerFetchContext>,
+                             scoped_refptr<WebWorkerFetchContext>,
                              WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
 
@@ -124,7 +124,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<ResourceFetcher> resource_fetcher_;
 
-  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context_;
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context_;
 
   Member<WorkerOrWorkletScriptController> script_controller_;
 

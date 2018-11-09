@@ -80,7 +80,7 @@ class WebSharedWorkerClient {
   // loading requests from the shared worker (e.g., fetch and XHR). Requests for
   // script loading (i.e., the main script and importScripts) go through
   // WebServiceWorkerNetworkProvider.
-  virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext(
+  virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext(
       WebServiceWorkerNetworkProvider*) = 0;
 
   // Called on the main thread during initialization. The browser process is

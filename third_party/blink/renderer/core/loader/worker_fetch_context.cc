@@ -37,7 +37,7 @@ WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext* WorkerFetchContext::Create(
     WorkerOrWorkletGlobalScope& global_scope,
-    std::unique_ptr<WebWorkerFetchContext> web_context) {
+    scoped_refptr<WebWorkerFetchContext> web_context) {
   if (!web_context)
     return nullptr;
   return new WorkerFetchContext(global_scope, std::move(web_context));
@@ -45,7 +45,7 @@ WorkerFetchContext* WorkerFetchContext::Create(
 
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
-    std::unique_ptr<WebWorkerFetchContext> web_context)
+    scoped_refptr<WebWorkerFetchContext> web_context)
     : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
       global_scope_(global_scope),
       web_context_(std::move(web_context)),

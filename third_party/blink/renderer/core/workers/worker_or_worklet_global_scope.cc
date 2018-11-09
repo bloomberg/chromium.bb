@@ -24,7 +24,7 @@ namespace blink {
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     WorkerClients* worker_clients,
-    std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context,
+    scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : worker_clients_(worker_clients),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),

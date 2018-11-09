@@ -17,8 +17,9 @@ class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
-class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext,
-                                      public mojom::RendererPreferenceWatcher {
+class ServiceWorkerFetchContextImpl final
+    : public blink::WebWorkerFetchContext,
+      public mojom::RendererPreferenceWatcher {
  public:
   // |url_loader_factory_info| is used for regular loads from the service worker
   // (i.e., Fetch API). It typically goes to network, but it might internally
@@ -39,7 +40,6 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
       mojom::RendererPreferenceWatcherRequest preference_watcher_request);
-  ~ServiceWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
@@ -57,6 +57,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   CreateWebSocketHandshakeThrottle() override;
 
  private:
+  ~ServiceWorkerFetchContextImpl() override;
+
   // Implements mojom::RendererPreferenceWatcher.
   void NotifyUpdate(const RendererPreferences& new_prefs) override;
 

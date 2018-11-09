@@ -3722,7 +3722,7 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
       this);
 }
 
-std::unique_ptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {
   blink::WebServiceWorkerNetworkProvider* web_provider =
       frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
@@ -3754,7 +3754,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       mojo::MakeRequest(&watcher);
   render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
 
-  auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
+  auto worker_fetch_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
       render_view_->renderer_preferences(), std::move(watcher_request),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),

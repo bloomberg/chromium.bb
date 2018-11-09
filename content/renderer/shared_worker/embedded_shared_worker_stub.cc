@@ -400,7 +400,7 @@ void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(
   context->PingContainerHost(std::move(callback));
 }
 
-std::unique_ptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(web_network_provider);
@@ -429,7 +429,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       subresource_loader_factories_->CloneWithoutDefaultFactory();
 
-  auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
+  auto worker_fetch_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
       std::move(renderer_preferences_), std::move(preference_watcher_request_),
       std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
