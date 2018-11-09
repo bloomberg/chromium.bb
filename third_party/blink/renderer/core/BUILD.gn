@@ -1839,6 +1839,7 @@ jumbo_source_set("unit_tests") {
     "exported/web_frame_serializer_sanitization_test.cc",
     "exported/web_frame_serializer_test.cc",
     "exported/web_frame_test.cc",
+    "exported/web_layer_test.cc",
     "exported/web_meaningful_layouts_test.cc",
     "exported/web_node_test.cc",
     "exported/web_plugin_container_test.cc",
