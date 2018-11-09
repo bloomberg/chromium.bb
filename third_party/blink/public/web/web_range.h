@@ -45,7 +45,7 @@ class Range;
 class WebRange final {
  public:
   BLINK_EXPORT WebRange(int start, int length);
-  BLINK_EXPORT WebRange() {}
+  BLINK_EXPORT WebRange();
 
   int StartOffset() const { return start_; }
   int EndOffset() const { return end_; }
