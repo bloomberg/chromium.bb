@@ -207,8 +207,7 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   // or for the document to actually finish loading.
   if (focus && focus == focus->manager()->GetRoot() &&
       focus->PlatformChildCount() == 0 &&
-      !focus->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      !focus->manager()->GetTreeData().loaded) {
+      focus->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy)) {
     focus = nullptr;
   }
 
