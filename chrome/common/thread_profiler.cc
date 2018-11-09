@@ -201,9 +201,17 @@ ThreadProfiler::ThreadProfiler(
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  auto profile_builder =
-      std::make_unique<LegacyCallStackProfileBuilder>(CallStackProfileParams(
-          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
+  std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder> profile_builder;
+  // Enable the new profile builder 1% of the time.
+  if (base::RandInt(0, 99) == 0) {
+    profile_builder =
+        std::make_unique<CallStackProfileBuilder>(CallStackProfileParams(
+            GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
+  } else {
+    profile_builder =
+        std::make_unique<LegacyCallStackProfileBuilder>(CallStackProfileParams(
+            GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
+  }
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
