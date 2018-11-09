@@ -10,7 +10,7 @@
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/local_ntp_resources.h"
 #include "url/gurl.h"
 
 namespace {

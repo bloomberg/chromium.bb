@@ -126,6 +126,16 @@ if (!is_android) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("local_ntp_resources") {
+    source = "local_ntp_resources.grd"
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/local_ntp_resources.h",
+      "local_ntp_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("settings_resources") {
     if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"

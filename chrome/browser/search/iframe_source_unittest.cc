@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/local_ntp_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
