@@ -185,6 +185,11 @@ class VariationsService
   // the response. This calls DoFetchToURL with the set url.
   virtual void DoActualFetch();
 
+  // Attempts a seed fetch from the set |url|. Returns true if the fetch was
+  // started successfully, false otherwise. |is_http_retry| should be true if
+  // this is a retry over HTTP, false otherwise.
+  virtual bool DoFetchFromURL(const GURL& url, bool is_http_retry);
+
   // Stores the seed to prefs. Set as virtual and protected so that it can be
   // overridden by tests.
   virtual bool StoreSeed(const std::string& seed_data,
@@ -217,9 +222,23 @@ class VariationsService
     variations_server_url_ = url;
   }
 
+  // Sets the URL for querying the variations server when doing HTTP retries.
+  // Used for testing.
+  void set_insecure_variations_server_url(const GURL& url) {
+    insecure_variations_server_url_ = url;
+  }
+
+  // Sets the |last_request_was_http_retry_| flag. Used for testing.
+  void set_last_request_was_http_retry(bool was_http_retry) {
+    last_request_was_http_retry_ = was_http_retry;
+  }
+
   // The client that provides access to the embedder's environment.
   // Protected so testing subclasses can access it.
   VariationsServiceClient* client() { return client_.get(); }
+
+  // Exposes MaybeRetryOverHTTP for testing.
+  bool CallMaybeRetryOverHTTPForTesting();
 
   // Records a successful fetch:
   //   (1) Resets failure streaks for Safe Mode.
@@ -246,6 +265,9 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            InsecurelyFetchedNotSetWhenHTTPS);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotRetryAfterARetry);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
+                           DoNotRetryIfInsecureURLIsHTTPS);
 
   // Set of different possible values to report for the
   // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
@@ -266,11 +288,6 @@ class VariationsService
 
   void InitResourceRequestedAllowedNotifier();
 
-  // Attempts a seed fetch from the set |url|. Returns true if the fetch was
-  // started successfully, false otherwise. |is_http_retry| should be true if
-  // this is a retry over HTTP, false otherwise.
-  bool DoFetchFromURL(const GURL& url, bool is_http_retry);
-
   // Calls FetchVariationsSeed once and repeats this periodically. See
   // implementation for details on the period.
   void StartRepeatedVariationsSeedFetch();
@@ -285,6 +302,11 @@ class VariationsService
 
   // Called by SimpleURLLoader when |pending_seed_request_| load completes.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+
+  // Retry the fetch over HTTP, called by OnSimpleLoaderComplete when a request
+  // fails. Returns true is the fetch was successfully started, this does not
+  // imply the actual fetch was successful.
+  bool MaybeRetryOverHTTP();
 
   // ResourceRequestAllowedNotifier::Observer implementation:
   void OnResourceRequestsAllowed() override;
@@ -372,6 +394,9 @@ class VariationsService
 
   // Member responsible for creating trials from a variations seed.
   VariationsFieldTrialCreator field_trial_creator_;
+
+  // True if the last request was a retry over http.
+  bool last_request_was_http_retry_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
