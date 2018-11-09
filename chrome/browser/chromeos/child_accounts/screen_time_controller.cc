@@ -47,6 +47,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kUsageTimeLimit,
@@ -57,6 +58,8 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
 ScreenTimeController::~ScreenTimeController() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
+      this);
 }
 
 base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
@@ -312,6 +315,10 @@ void ScreenTimeController::OnSessionStateChanged() {
 
 void ScreenTimeController::TimezoneChanged(const icu::TimeZone& timezone) {
   CheckTimeLimit("TimezoneChanged");
+}
+
+void ScreenTimeController::SystemClockUpdated() {
+  CheckTimeLimit("SystemClockUpdated");
 }
 
 }  // namespace chromeos
