@@ -739,8 +739,10 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
   SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
   SkRect quad_rect = gfx::RectToSkRect(quad->visible_rect);
 
-  if (quad->y_flipped)
+  if (quad->y_flipped) {
+    current_canvas_->translate(0, quad_rect.bottom());
     current_canvas_->scale(1, -1);
+  }
 
   bool blend_background =
       quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
