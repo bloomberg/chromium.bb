@@ -24,6 +24,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -197,24 +198,36 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
+  // These colors vary based on the tab and frame active states.
+  SkColor background_color;
+  SkColor default_color;
   if (state == TAB_ACTIVE) {
     const int color_id = ShouldPaintAsActive()
                              ? ThemeProperties::COLOR_TAB_TEXT
                              : ThemeProperties::COLOR_TAB_TEXT_INACTIVE;
-    return GetThemeOrDefaultColor(color_id);
+
+    background_color = GetTabBackgroundColor(TAB_ACTIVE);
+    default_color = GetThemeOrDefaultColor(color_id);
+  } else {
+    const int color_id =
+        ShouldPaintAsActive()
+            ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
+            : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
+    if (GetThemeProvider()->HasCustomColor(color_id))
+      return GetThemeOrDefaultColor(color_id);
+
+    background_color = GetTabBackgroundColor(TAB_INACTIVE);
+    default_color = color_utils::IsDark(background_color) ? gfx::kGoogleGrey400
+                                                          : gfx::kGoogleGrey800;
   }
 
-  const int color_id =
-      ShouldPaintAsActive()
-          ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
-          : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
-  if (GetThemeProvider()->HasCustomColor(color_id))
-    return GetThemeOrDefaultColor(color_id);
+  if (!ShouldPaintAsActive()) {
+    // For inactive frames, we draw text at 75%.
+    constexpr SkAlpha inactive_alpha = 0.75 * SK_AlphaOPAQUE;
+    default_color = color_utils::AlphaBlend(default_color, background_color,
+                                            inactive_alpha);
+  }
 
-  const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
-  const SkColor default_color = color_utils::IsDark(background_color)
-                                    ? gfx::kGoogleGrey500
-                                    : gfx::kGoogleGrey700;
   return color_utils::GetColorWithMinimumContrast(default_color,
                                                   background_color);
 }
