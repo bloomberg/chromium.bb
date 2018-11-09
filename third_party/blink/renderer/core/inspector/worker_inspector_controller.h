@@ -54,7 +54,7 @@ struct WorkerDevToolsParams;
 
 class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
-      public TraceEvent::EnabledStateObserver,
+      public trace_event::EnabledStateObserver,
       public DevToolsAgent::Client,
       private Thread::TaskObserver {
  public:
@@ -81,7 +81,7 @@ class WorkerInspectorController final
   void WillProcessTask(const base::PendingTask&) override;
   void DidProcessTask(const base::PendingTask&) override;
 
-  // blink::TraceEvent::EnabledStateObserver implementation:
+  // blink::trace_event::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 

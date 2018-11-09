@@ -241,6 +241,7 @@ _CONFIG = [
             'style_change_extra_data::.+',
             'style_change_reason::.+',
             'svg_path_parser::.+',
+            'trace_event::.+',
             'touch_action_util::.+',
             'vector_math::.+',
             'web_core_test_support::.+',

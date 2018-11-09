@@ -93,13 +93,13 @@ WorkerInspectorController::WorkerInspectorController(
                         std::move(devtools_params->agent_request),
                         thread->GetTaskRunner(TaskType::kInternalInspector));
   }
-  TraceEvent::AddEnabledStateObserver(this);
+  trace_event::AddEnabledStateObserver(this);
   EmitTraceEvent();
 }
 
 WorkerInspectorController::~WorkerInspectorController() {
   DCHECK(!thread_);
-  TraceEvent::RemoveEnabledStateObserver(this);
+  trace_event::RemoveEnabledStateObserver(this);
 }
 
 void WorkerInspectorController::AttachSession(DevToolsSession* session,

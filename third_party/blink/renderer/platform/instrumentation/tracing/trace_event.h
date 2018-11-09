@@ -26,7 +26,7 @@ static inline void SetTraceValue(const CString& arg,
 }  // namespace WTF
 
 namespace blink {
-namespace TraceEvent {
+namespace trace_event {
 
 using base::trace_event::TraceScopedTrackableObject;
 using AsyncEnabledStateObserver =
@@ -51,7 +51,7 @@ PLATFORM_EXPORT void RemoveAsyncEnabledStateObserver(
 PLATFORM_EXPORT void AddEnabledStateObserver(EnabledStateObserver*);
 PLATFORM_EXPORT void RemoveEnabledStateObserver(EnabledStateObserver*);
 
-}  // namespace TraceEvent
+}  // namespace trace_event
 }  // namespace blink
 
 #endif
