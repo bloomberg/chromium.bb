@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -23,6 +24,21 @@
 namespace sync_bookmarks {
 
 namespace {
+
+// Enumeration of possible reasons why persisted metadata are considered
+// corrupted and don't match the bookmark model. Used in UMA metrics. Do not
+// re-order or delete these entries; they are used in a UMA histogram. Please
+// edit SyncBookmarkModelMetadataCorruptionReason in enums.xml if a value is
+// added.
+enum class CorruptionReason {
+  NO_CORRUPTION = 0,
+  MISSING_SERVER_ID = 1,
+  BOOKMARK_ID_IN_TOMBSTONE = 2,
+  MISSING_BOOKMARK_ID = 3,
+  COUNT_MISMATCH = 4,
+  IDS_MISMATCH = 5,
+  kMaxValue = IDS_MISMATCH
+};
 
 void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
                    std::string* hash) {
@@ -115,6 +131,7 @@ bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
     const bookmarks::BookmarkModel* model,
     const sync_pb::BookmarkModelMetadata& model_metadata) {
   DCHECK(model_metadata.model_type_state().initial_sync_done());
+  CorruptionReason corruption_reason = CorruptionReason::NO_CORRUPTION;
 
   // Collect ids of non-deletion entries in the metadata.
   std::vector<int> metadata_node_ids;
@@ -123,46 +140,62 @@ bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
     if (!bookmark_metadata.metadata().has_server_id()) {
       DLOG(ERROR) << "Error when decoding sync metadata: Entities must contain "
                      "server id.";
-      return false;
+      corruption_reason = CorruptionReason::MISSING_SERVER_ID;
+      break;
     }
     if (bookmark_metadata.metadata().is_deleted() &&
         bookmark_metadata.has_id()) {
       DLOG(ERROR) << "Error when decoding sync metadata: Tombstones "
                      "shouldn't have a bookmark id.";
-      return false;
+      corruption_reason = CorruptionReason::BOOKMARK_ID_IN_TOMBSTONE;
+      break;
     }
     if (!bookmark_metadata.metadata().is_deleted() &&
         !bookmark_metadata.has_id()) {
       DLOG(ERROR)
           << "Error when decoding sync metadata: Bookmark id is missing.";
-      return false;
+      corruption_reason = CorruptionReason::MISSING_BOOKMARK_ID;
+      break;
     }
     // The entry is valid. If it's not a tombstone, collect its node id to
-    // compare it later with the ids in the model.
+    // compare it later with the ids in the bookmark model.
     if (!bookmark_metadata.metadata().is_deleted()) {
       metadata_node_ids.push_back(bookmark_metadata.id());
     }
   }
 
-  // Collect ids of nodes in the model.
-  std::vector<int> model_node_ids;
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      model->root_node());
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* node = iterator.Next();
-    if (!model->client()->CanSyncNode(node)) {
-      continue;
+  if (corruption_reason == CorruptionReason::NO_CORRUPTION) {
+    // Metadata entities are not corrupted themselves. Check if they match the
+    // local bookmark model.
+
+    // Collect ids of syncable nodes in the bookmark model.
+    std::vector<int> model_node_ids;
+    ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+        model->root_node());
+    while (iterator.has_next()) {
+      const bookmarks::BookmarkNode* node = iterator.Next();
+      if (!model->client()->CanSyncNode(node)) {
+        continue;
+      }
+      model_node_ids.push_back(node->id());
     }
-    model_node_ids.push_back(node->id());
+
+    if (model_node_ids.size() != metadata_node_ids.size()) {
+      corruption_reason = CorruptionReason::COUNT_MISMATCH;
+    } else {
+      std::sort(model_node_ids.begin(), model_node_ids.end());
+      std::sort(metadata_node_ids.begin(), metadata_node_ids.end());
+      if (!std::equal(model_node_ids.begin(), model_node_ids.end(),
+                      metadata_node_ids.begin())) {
+        corruption_reason = CorruptionReason::IDS_MISMATCH;
+      }
+    }
   }
 
-  if (model_node_ids.size() != metadata_node_ids.size()) {
-    return false;
-  }
-  std::sort(model_node_ids.begin(), model_node_ids.end());
-  std::sort(metadata_node_ids.begin(), metadata_node_ids.end());
-  return std::equal(model_node_ids.begin(), model_node_ids.end(),
-                    metadata_node_ids.begin());
+  UMA_HISTOGRAM_ENUMERATION("Sync.BookmarksModelMetadataCorruptionReason",
+                            corruption_reason);
+
+  return corruption_reason == CorruptionReason::NO_CORRUPTION;
 }
 
 const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
