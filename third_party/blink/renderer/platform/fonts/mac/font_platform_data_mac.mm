@@ -161,7 +161,7 @@ void FontPlatformData::SetupSkPaint(SkPaint* paint,
   if (font &&
       (font->GetFontDescription().FontSmoothing() == kAntialiased ||
        font->GetFontDescription().TextRendering() == kGeometricPrecision))
-    paint->setHinting(SkPaint::kNo_Hinting);
+    paint->setHinting(SkFontHinting::kNone);
 }
 
 void FontPlatformData::SetupSkFont(SkFont* skfont,
@@ -213,7 +213,7 @@ void FontPlatformData::SetupSkFont(SkFont* skfont,
   if (font &&
       (font->GetFontDescription().FontSmoothing() == kAntialiased ||
        font->GetFontDescription().TextRendering() == kGeometricPrecision))
-    skfont->setHinting(SkFont::kNo_Hinting);
+    skfont->setHinting(SkFontHinting::kNone);
 }
 
 FontPlatformData::FontPlatformData(NSFont* ns_font,

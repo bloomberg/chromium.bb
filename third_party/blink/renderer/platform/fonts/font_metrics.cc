@@ -66,9 +66,8 @@ void FontMetrics::AscentDescentWithHacks(
   // done.  This code should be pushed into FreeType (hinted font metrics).
   static const uint32_t kVdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
   int pixel_size = platform_data.size() + 0.5;
-  if (!paint.isAutohinted() &&
-      (paint.getHinting() == SkPaint::kFull_Hinting ||
-       paint.getHinting() == SkPaint::kNormal_Hinting)) {
+  if (!paint.isAutohinted() && (paint.getHinting() == SkFontHinting::kFull ||
+                                paint.getHinting() == SkFontHinting::kNormal)) {
     size_t vdmx_size = face->getTableSize(kVdmxTag);
     if (vdmx_size && vdmx_size < kMaxVDMXTableSize) {
       uint8_t* vdmx_table = (uint8_t*)WTF::Partitions::FastMalloc(
