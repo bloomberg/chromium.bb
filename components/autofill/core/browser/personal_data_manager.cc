@@ -396,15 +396,11 @@ class PersonalDatabaseHelper
   }
 
   // Returns the database that should be used for storing local data.
-  // Until server addresses are using the server database, this should also
-  // be used for server addresses.
   scoped_refptr<AutofillWebDataService> GetLocalDatabase() {
     return profile_database_;
   }
 
   // Returns the database that should be used for storing server data.
-  // Until server addresses are using the server database, this should *not*
-  // be used for server addresses.
   scoped_refptr<AutofillWebDataService> GetServerDatabase() {
     return server_database_;
   }
@@ -525,8 +521,8 @@ void PersonalDataManager::Init(
 
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingLocalQuery(&pending_profiles_query_);
-  CancelPendingLocalQuery(&pending_server_profiles_query_);
   CancelPendingLocalQuery(&pending_creditcards_query_);
+  CancelPendingServerQuery(&pending_server_profiles_query_);
   CancelPendingServerQuery(&pending_server_creditcards_query_);
   CancelPendingServerQuery(&pending_customer_data_query_);
 }
@@ -1050,18 +1046,10 @@ void PersonalDataManager::ClearAllServerData() {
 
   // TODO(crbug.com/864519): Move this nullcheck logic to the database helper.
   // The server database can be null for a limited amount of time before the
-  // sync service gets initialize. Not clearing it does not matter in that case
-  // since it will either point to the local database (cleared next), or not
-  // have been created yet (nothing to clear).
+  // sync service gets initialized. Not clearing it does not matter in that case
+  // since it will not have been created yet (nothing to clear).
   if (database_helper_->GetServerDatabase())
     database_helper_->GetServerDatabase()->ClearAllServerData();
-
-  // TODO(crbug.com/864519): Remove this call once addresses support account
-  // storage, and also use the database_helper_->GetServerDatabase()
-  if (database_helper_->GetServerDatabase() !=
-      database_helper_->GetLocalDatabase()) {
-    database_helper_->GetLocalDatabase()->ClearAllServerData();
-  }
 
   // The above call will eventually clear our server data by notifying us
   // that the data changed and then this class will re-fetch. Preemptively
@@ -1911,12 +1899,14 @@ void PersonalDataManager::LoadProfiles() {
   }
 
   CancelPendingLocalQuery(&pending_profiles_query_);
-  CancelPendingLocalQuery(&pending_server_profiles_query_);
+  CancelPendingServerQuery(&pending_server_profiles_query_);
 
   pending_profiles_query_ =
       database_helper_->GetLocalDatabase()->GetAutofillProfiles(this);
-  pending_server_profiles_query_ =
-      database_helper_->GetLocalDatabase()->GetServerProfiles(this);
+  if (database_helper_->GetServerDatabase()) {
+    pending_server_profiles_query_ =
+        database_helper_->GetServerDatabase()->GetServerProfiles(this);
+  }
 }
 
 void PersonalDataManager::LoadCreditCards() {
@@ -1961,14 +1951,15 @@ void PersonalDataManager::CancelPendingServerQuery(
 }
 
 void PersonalDataManager::CancelPendingServerQueries() {
+  if (pending_server_profiles_query_) {
+    CancelPendingServerQuery(&pending_server_profiles_query_);
+  }
   if (pending_server_creditcards_query_) {
     CancelPendingServerQuery(&pending_server_creditcards_query_);
   }
   if (pending_customer_data_query_) {
     CancelPendingServerQuery(&pending_customer_data_query_);
   }
-  // TODO(crbug.com/864519): also cancel the server addresses query once they
-  // use the account storage.
 }
 
 void PersonalDataManager::LoadPaymentsCustomerData() {
@@ -2502,7 +2493,7 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
 
       // Update the wallet addresses metadata to record the conversion.
       wallet_address->set_has_converted(true);
-      database_helper_->GetLocalDatabase()->UpdateServerAddressMetadata(
+      database_helper_->GetServerDatabase()->UpdateServerAddressMetadata(
           *wallet_address);
 
       has_converted_addresses = true;
