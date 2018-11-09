@@ -119,9 +119,16 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Sum of all scales. Used to normalize the final computed weight.
   const int sum_scales_;
 
+  // True if device is a low end device.
+  const bool is_low_end_device_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;
+
+  // True if the source webpage (i.e., the page on which we are trying to
+  // predict the next navigation) is a page from user's default search engine.
+  bool source_is_default_search_engine_page_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/sys_info.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -36,7 +37,7 @@ struct NavigationPredictor::NavigationScore {
   const size_t area_rank;
 
   // Calculated navigation score, based on |area_rank| and other metrics.
-  const double score;
+  double score;
 
   // Multiple anchor elements may point to the same |url|. |contains_image| is
   // true if at least one of the anchor elements pointing to |url| contains an
@@ -87,7 +88,8 @@ NavigationPredictor::NavigationPredictor(
       sum_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
                   is_same_host_scale_ + contains_image_scale_ +
                   is_url_incremented_scale_ + source_engagement_score_scale_ +
-                  target_engagement_score_scale_ + area_rank_scale_) {
+                  target_engagement_score_scale_ + area_rank_scale_),
+      is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -155,6 +157,11 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     return;
   }
 
+  source_is_default_search_engine_page_ =
+      GetTemplateURLService() &&
+      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
+          metrics->source_url);
+
   RecordTimingOnClick();
 
   SiteEngagementService* engagement_service = GetEngagementService();
@@ -202,10 +209,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
         (number_of_anchors_same_host_ * 100) / number_of_anchors);
   }
 
-  bool source_is_search_results_page =
-      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
-          metrics->source_url);
-  if (source_is_search_results_page) {
+  if (source_is_default_search_engine_page_) {
     UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.OnDSE.SameHost",
                           metrics->is_same_host);
   } else {
@@ -353,6 +357,10 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
 
   document_loaded_timing_ = base::TimeTicks::Now();
 
+  source_is_default_search_engine_page_ =
+      GetTemplateURLService() &&
+      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
+          metrics[0]->source_url);
   MergeMetricsSameTargetUrl(&metrics);
 
   if (metrics.empty())
@@ -388,6 +396,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   // Loop |metrics| to compute navigation scores.
   std::vector<std::unique_ptr<NavigationScore>> navigation_scores;
   navigation_scores.reserve(metrics.size());
+  double total_score = 0.0;
   for (size_t i = 0; i != metrics.size(); ++i) {
     const auto& metric = metrics[i];
     RecordMetricsOnLoad(*metric);
@@ -413,9 +422,18 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     double score = CalculateAnchorNavigationScore(
         *metric, document_engagement_score, target_engagement_score, area_rank,
         metrics.size());
+    total_score += score;
 
     navigation_scores.push_back(std::make_unique<NavigationScore>(
         metric->target_url, area_rank, score, metric->contains_image));
+  }
+
+  // Normalize |score| to a total sum of 100.0 across all anchor elements
+  // received.
+  if (total_score > 0.0) {
+    for (auto& navigation_score : navigation_scores) {
+      navigation_score->score = navigation_score->score / total_score * 100.0;
+    }
   }
 
   // Sort scores by the calculated navigation score in descending order. This
@@ -476,17 +494,13 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   DCHECK_LE(0, area_rank_score);
   DCHECK_GE(1, area_rank_score);
 
-  bool source_is_search_results_page =
-      GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
-          metrics.source_url);
-
   double host_score = 0.0;
   // On pages from default search engine, give higher weight to target URLs that
   // link to a different host. On non-default search engine pages, give higher
   // weight to target URLs that link to the same host.
-  if (!source_is_search_results_page && metrics.is_same_host) {
+  if (!source_is_default_search_engine_page_ && metrics.is_same_host) {
     host_score = is_same_host_scale_;
-  } else if (source_is_search_results_page && !metrics.is_same_host) {
+  } else if (source_is_default_search_engine_page_ && !metrics.is_same_host) {
     host_score = is_same_host_scale_;
   }
 
