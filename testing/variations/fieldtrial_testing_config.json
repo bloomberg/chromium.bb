@@ -4650,7 +4650,6 @@
                         "mainThreadTaskLoadLowThreshold": "25"
                     },
                     "enable_features": [
-                        "PageLifecycle",
                         "ProactiveTabFreezeAndDiscard",
                         "stop-non-timers-in-background"
                     ]
