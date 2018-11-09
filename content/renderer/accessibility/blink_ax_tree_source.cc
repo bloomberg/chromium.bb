@@ -443,6 +443,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
                ui::ToString(dst->role));
 
+  if (src.Equals(GetRoot()) && !GetRoot().IsLoaded())
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, true);
+
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
@@ -451,7 +454,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                         container_transform, &clips_children);
   dst->location = bounds_in_container;
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
-  if (src.Equals(root())) {
+  if (src.Equals(GetRoot())) {
     WebView* web_view = render_frame_->GetRenderView()->GetWebView();
     std::unique_ptr<gfx::Transform> container_transform_gfx =
         std::make_unique<gfx::Transform>(container_transform);
