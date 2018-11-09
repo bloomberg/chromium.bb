@@ -2855,6 +2855,12 @@ const char kEnableWebAuthenticationTestingAPIDescription[] =
     "implementation from the real world, and allows configuring virtual "
     "authenticator devices for testing";
 
+const char kEnableWebAuthenticationBleSupportName[] =
+    "Web Authentication API BLE support";
+const char kEnableWebAuthenticationBleSupportDescription[] =
+    "Enable support for using Web Authentication API via Bluetooth security "
+    "keys";
+
 const char kHappinessTrackingSurveysForDesktopName[] =
     "Happiness Tracking Surveys";
 const char kHappinessTrackingSurveysForDesktopDescription[] =
