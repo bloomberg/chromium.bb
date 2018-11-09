@@ -2229,10 +2229,10 @@ enum class ShowTabSwitcherSnapshotResult {
   Tab* currentTabInTargetBVC = [[targetBVC tabModel] currentTab];
   if (!(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
+    [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:NSNotFound
-                                 transition:transition
-                         tabAddedCompletion:tabOpenedCompletion];
+                                 transition:transition];
   }
 
   Tab* newTab = currentTabInTargetBVC;
@@ -2325,10 +2325,10 @@ enum class ShowTabSwitcherSnapshotResult {
           targetMode == ApplicationMode::NORMAL
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
+      [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
       tab = [targetBVC addSelectedTabWithURL:url
                                      atIndex:tabIndex
-                                  transition:transition
-                          tabAddedCompletion:tabOpenedCompletion];
+                                  transition:transition];
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.

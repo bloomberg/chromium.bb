@@ -77,11 +77,11 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)completion;
+                   transition:(ui::PageTransition)transition;
 - (void)expectNewForegroundTab;
 - (void)setActive:(BOOL)active;
 - (TabModel*)tabModel;
+- (void)appendTabAddedCompletion:(ProceduralBlock)completion;
 - (void)browserStateDestroyed;
 - (void)shutdown;
 @end
@@ -96,12 +96,10 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)completion {
+                   transition:(ui::PageTransition)transition {
   self.tabURL = url;
   self.position = position;
   self.transition = transition;
-  self.foregroundTabWasAddedCompletionBlock = completion;
   return nil;
 }
 
@@ -125,6 +123,10 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 
 - (TabModel*)tabModel {
   return nil;
+}
+
+- (void)appendTabAddedCompletion:(ProceduralBlock)completion {
+  self.foregroundTabWasAddedCompletionBlock = completion;
 }
 
 - (void)browserStateDestroyed {
