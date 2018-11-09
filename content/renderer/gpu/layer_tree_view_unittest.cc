@@ -26,8 +26,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
 using testing::AllOf;
 using testing::Field;
@@ -214,7 +214,7 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
             blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
             /*compositor_thread=*/nullptr,
             &test_task_graph_runner_,
-            &fake_renderer_scheduler_) {
+            &fake_thread_scheduler_) {
     cc::LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
     layer_tree_view_.Initialize(settings,
@@ -258,7 +258,7 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
-  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
+  blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   FakeLayerTreeViewDelegate layer_tree_view_delegate_;
   LayerTreeViewWithFrameSinkTracking layer_tree_view_;
 
@@ -334,14 +334,14 @@ TEST(LayerTreeViewTest, VisibilityTest) {
   base::test::ScopedTaskEnvironment task_environment;
 
   cc::TestTaskGraphRunner test_task_graph_runner;
-  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler;
+  blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler;
   // Synchronously callback with null FrameSink.
   StubLayerTreeViewDelegate layer_tree_view_delegate;
   VisibilityTestLayerTreeView layer_tree_view(
       &layer_tree_view_delegate,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner,
-      &fake_renderer_scheduler);
+      &fake_thread_scheduler);
 
   layer_tree_view.Initialize(cc::LayerTreeSettings(),
                              std::make_unique<cc::TestUkmRecorderFactory>());
@@ -383,7 +383,7 @@ class NotifySwapTimesLayerTreeViewTest : public ::testing::Test {
             blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
             nullptr /* compositor_thread */,
             &test_task_graph_runner_,
-            &fake_renderer_scheduler_) {
+            &fake_thread_scheduler_) {
     layer_tree_view_delegate_.add_request();
   }
 
@@ -433,7 +433,7 @@ class NotifySwapTimesLayerTreeViewTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
-  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
+  blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   FakeLayerTreeViewDelegate layer_tree_view_delegate_;
   LayerTreeView layer_tree_view_;
 };

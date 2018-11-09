@@ -44,7 +44,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -175,7 +175,7 @@ class LayerTreeViewFactory {
  private:
   content::StubLayerTreeViewDelegate delegate_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
-  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
+  blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   std::unique_ptr<content::LayerTreeView> layer_tree_view_;
 };
 

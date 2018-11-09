@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_FAKE_RENDERER_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_FAKE_RENDERER_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_FAKE_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_FAKE_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -14,10 +14,10 @@
 namespace blink {
 namespace scheduler {
 
-class FakeRendererScheduler : public WebThreadScheduler {
+class WebFakeThreadScheduler : public WebThreadScheduler {
  public:
-  FakeRendererScheduler();
-  ~FakeRendererScheduler() override;
+  WebFakeThreadScheduler();
+  ~WebFakeThreadScheduler() override;
 
   // RendererScheduler implementation.
   std::unique_ptr<Thread> CreateMainThread() override;
@@ -57,10 +57,10 @@ class FakeRendererScheduler : public WebThreadScheduler {
   void OnMainFrameRequestedForInput() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);
+  DISALLOW_COPY_AND_ASSIGN(WebFakeThreadScheduler);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_FAKE_RENDERER_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_FAKE_THREAD_SCHEDULER_H_

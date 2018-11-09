@@ -12,7 +12,7 @@
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
 namespace content {
 
@@ -41,11 +41,11 @@ TEST_F(LocalStorageCachedAreasTest, CacheLimit) {
   const std::string kStorageAreaId("7");
   const size_t kCacheLimit = 100;
 
-  blink::scheduler::FakeRendererScheduler renderer_scheduler;
+  blink::scheduler::WebFakeThreadScheduler thread_scheduler;
 
   MockLevelDBWrapper mock_leveldb_wrapper;
   LocalStorageCachedAreas cached_areas(&mock_leveldb_wrapper,
-                                       &renderer_scheduler);
+                                       &thread_scheduler);
   cached_areas.set_cache_limit_for_testing(kCacheLimit);
 
   scoped_refptr<LocalStorageCachedArea> cached_area1 =
@@ -79,11 +79,11 @@ TEST_F(LocalStorageCachedAreasTest, CloneBeforeGetArea) {
   const std::string kNamespace2 = base::GenerateGUID();
   const url::Origin kOrigin = url::Origin::Create(GURL("http://dom_storage1/"));
 
-  blink::scheduler::FakeRendererScheduler renderer_scheduler;
+  blink::scheduler::WebFakeThreadScheduler thread_scheduler;
 
   MockLevelDBWrapper mock_leveldb_wrapper;
   LocalStorageCachedAreas cached_areas(&mock_leveldb_wrapper,
-                                       &renderer_scheduler);
+                                       &thread_scheduler);
 
   cached_areas.CloneNamespace(kNamespace1, kNamespace2);
 
