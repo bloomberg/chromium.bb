@@ -40,6 +40,9 @@ namespace content {
 
 namespace {
 
+constexpr char kServiceWorkerSubresourceLoaderScope[] =
+    "ServiceWorkerSubresourceLoader";
+
 network::ResourceResponseHead RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
@@ -193,7 +196,9 @@ void ServiceWorkerSubresourceLoader::OnConnectionError() {
 void ServiceWorkerSubresourceLoader::StartRequest(
     const network::ResourceRequest& resource_request) {
   TRACE_EVENT_WITH_FLOW1(
-      "ServiceWorker", "ServiceWorkerSubresourceLoader::StartRequest", this,
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::StartRequest",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request.url.spec());
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
@@ -278,10 +283,12 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     blink::mojom::ServiceWorkerEventStatus status) {
-  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                         "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
-                         this, TRACE_EVENT_FLAG_FLOW_IN, "status",
-                         ServiceWorkerUtils::MojoEnumToString(status));
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
+      TRACE_EVENT_FLAG_FLOW_IN, "status",
+      ServiceWorkerUtils::MojoEnumToString(status));
 
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
   // fetch event dispatch reached the renderer.
@@ -347,9 +354,11 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 void ServiceWorkerSubresourceLoader::OnResponse(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
-                         "ServiceWorkerSubresourceLoader::OnResponse", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponse",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   UpdateResponseTiming(std::move(timing));
   StartResponse(std::move(response), nullptr /* body_as_stream */);
@@ -360,7 +369,9 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   UpdateResponseTiming(std::move(timing));
@@ -385,7 +396,9 @@ void ServiceWorkerSubresourceLoader::OnFallback(
        !resource_request_.request_initiator->IsSameOriginWith(
            url::Origin::Create(resource_request_.url)))) {
     TRACE_EVENT_WITH_FLOW0(
-        "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback", this,
+        "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback",
+        TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                            TRACE_ID_LOCAL(request_id_)),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
     //  Add "Service Worker Fallback Required" which DevTools knows means to not
     //  show the response in the Network tab as it's just an internal
@@ -398,9 +411,11 @@ void ServiceWorkerSubresourceLoader::OnFallback(
     CommitCompleted(net::OK);
     return;
   }
-  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
-                         "ServiceWorkerSubresourceLoader::OnFallback", this,
-                         TRACE_EVENT_FLAG_FLOW_IN);
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
+      TRACE_EVENT_FLAG_FLOW_IN);
 
   // Hand over to the network loader.
   network::mojom::URLLoaderClientPtr client;
@@ -524,7 +539,9 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
   TRACE_EVENT_WITH_FLOW1(
-      "ServiceWorker", "ServiceWorkerSubresourceLoader::CommitCompleted", this,
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::CommitCompleted",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
 
   if (error_code == net::OK)
@@ -608,10 +625,12 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                         "ServiceWorkerSubresourceLoader::FollowRedirect", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "new_url", redirect_info_->new_url.spec());
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::FollowRedirect",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "new_url",
+      redirect_info_->new_url.spec());
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
@@ -654,7 +673,9 @@ void ServiceWorkerSubresourceLoader::ResumeReadingBodyFromNet() {}
 int ServiceWorkerSubresourceLoader::StartBlobReading(
     mojo::ScopedDataPipeConsumerHandle* body_pipe) {
   TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerSubresourceLoader::StartBlobReading", this,
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::StartBlobReading",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(body_pipe);
   DCHECK(!blob_reading_complete_);
@@ -675,7 +696,9 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
     const base::Optional<std::vector<uint8_t>>& metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
-      "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete", this,
+      "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "metadata size",
       (metadata ? metadata->size() : 0));
   DCHECK(url_loader_client_);
@@ -720,7 +743,9 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
 void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnBlobReadingComplete",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+      TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
+                          TRACE_ID_LOCAL(request_id_)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(body_as_blob_);
   blob_reading_complete_ = true;
   // If the side data has not completed reading yet, then we need to delay
