@@ -914,15 +914,18 @@ void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
   const std::string stop_timer_query =
       l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_TIMER_QUERY);
 
+  const std::string action_url = kQueryDeeplinkPrefix + stop_timer_query;
   action::Notification notification(
       /*title=*/notification_title,
       /*text=*/notification_content,
-      /*action_url=*/kQueryDeeplinkPrefix + stop_timer_query,
+      /*action_url=*/action_url,
       /*notification_id=*/{},
       /*consistency_token=*/{},
       /*opaque_token=*/{},
       /*grouping_key=*/kTimerFireNotificationGroupId,
-      /*obfuscated_gaia_id=*/{});
+      /*obfuscated_gaia_id=*/{},
+      /*buttons=*/
+      {{l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_BUTTON_TEXT), action_url}});
   OnShowNotification(notification);
 }
 
