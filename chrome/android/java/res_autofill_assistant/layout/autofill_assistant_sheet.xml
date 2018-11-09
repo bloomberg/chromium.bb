@@ -121,7 +121,6 @@
                     android:textAppearance="@style/BlackCaptionDefault"
                     android:textStyle="bold"
                     android:maxLines="1"
-                    android:background="@color/modern_grey_100"
                     android:ellipsize="end"/>
                 <TextView
                     android:id="@+id/details_text"
@@ -129,7 +128,6 @@
                     android:layout_height="16dp"
                     android:gravity="top"
                     android:textAppearance="@style/BlackCaption"
-                    android:background="@color/modern_grey_100"
                     android:maxLines="1"
                     android:ellipsize="end"/>
             </LinearLayout>

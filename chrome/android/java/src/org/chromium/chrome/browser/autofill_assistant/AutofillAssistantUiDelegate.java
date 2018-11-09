@@ -4,10 +4,16 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -33,6 +39,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
 import org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -51,6 +58,7 @@ class AutofillAssistantUiDelegate {
     private static final String FEEDBACK_CATEGORY_TAG =
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
     private static final int PROGRESS_BAR_INITIAL_PROGRESS = 10;
+    private static final int DETAILS_PULSING_DURATION_MS = 1_000;
 
     // TODO(crbug.com/806868): Use correct user locale.
     private static final SimpleDateFormat sDetailsTimeFormat =
@@ -79,6 +87,7 @@ class AutofillAssistantUiDelegate {
 
     private final BottomBarAnimations mBottomBarAnimations;
     private final boolean mIsRightToLeftLayout;
+    private ValueAnimator mDetailsPulseAnimation = null;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -459,19 +468,15 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show contextual information. */
     public void showDetails(Details details) {
-        // TODO(crbug.com/806868): Add loading animation for placeholders if isFinal == false.
-        mDetailsTitle.setText(details.getTitle());
-        if (!details.getTitle().isEmpty() || details.isFinal()) {
-            mDetailsTitle.setBackgroundColor(Color.WHITE);
-        }
+        Drawable defaultImage = AppCompatResources.getDrawable(
+                mActivity, R.drawable.autofill_assistant_default_details);
 
+        updateDetailsAnimation(details, (GradientDrawable) defaultImage);
+
+        mDetailsTitle.setText(details.getTitle());
         String detailsText = getDetailsText(details);
         mDetailsText.setText(detailsText);
-        if (!detailsText.isEmpty() || details.isFinal()) {
-            mDetailsText.setBackgroundColor(Color.WHITE);
-        }
 
-        mDetailsImage.setVisibility(View.GONE);
         String url = details.getUrl();
         if (!url.isEmpty()) {
             // The URL is safe given because it comes from the knowledge graph and is hosted on
@@ -480,17 +485,59 @@ class AutofillAssistantUiDelegate {
                 if (image != null) {
                     mDetailsImage.setImageDrawable(getRoundedImage(image));
                     mDetailsImage.setVisibility(View.VISIBLE);
+                } else {
+                    mDetailsImage.setVisibility(View.GONE);
                 }
             });
-        } else if (!details.isFinal()) {
-            mDetailsImage.setImageDrawable(AppCompatResources.getDrawable(
-                    mActivity, R.drawable.autofill_assistant_default_details));
-            mDetailsImage.setVisibility(View.VISIBLE);
+        } else {
+            mDetailsImage.setVisibility(View.GONE);
+            if (!details.isFinal()) {
+                mDetailsImage.setImageDrawable(defaultImage);
+                mDetailsImage.setVisibility(View.VISIBLE);
+            }
         }
 
         // Make sure the Autofill Assistant is visible.
         show();
         mBottomBarAnimations.showDetails();
+    }
+
+    private void updateDetailsAnimation(Details details, GradientDrawable defaultImage) {
+        if (details.isFinal()) {
+            if (mDetailsPulseAnimation != null) {
+                mDetailsPulseAnimation.cancel();
+            }
+            return;
+        } else {
+            @ColorInt
+            int startColor = mActivity.getColor(R.color.modern_grey_100);
+            @ColorInt
+            int endColor = mActivity.getColor(R.color.modern_grey_50);
+
+            mDetailsPulseAnimation = ValueAnimator.ofInt(startColor, endColor);
+            mDetailsPulseAnimation.setDuration(DETAILS_PULSING_DURATION_MS);
+            mDetailsPulseAnimation.setEvaluator(new ArgbEvaluator());
+            mDetailsPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
+            mDetailsPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
+            mDetailsPulseAnimation.setInterpolator(ChromeAnimation.getAccelerateInterpolator());
+            mDetailsPulseAnimation.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    mDetailsTitle.setBackgroundColor(Color.WHITE);
+                    mDetailsText.setBackgroundColor(Color.WHITE);
+                }
+            });
+            mDetailsPulseAnimation.addUpdateListener(animation -> {
+                if (details.getTitle().isEmpty()) {
+                    mDetailsTitle.setBackgroundColor((int) animation.getAnimatedValue());
+                }
+                if (getDetailsText(details).isEmpty()) {
+                    mDetailsText.setBackgroundColor((int) animation.getAnimatedValue());
+                }
+                defaultImage.setColor((int) animation.getAnimatedValue());
+            });
+            mDetailsPulseAnimation.start();
+        }
     }
 
     private String getDetailsText(Details details) {
