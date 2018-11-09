@@ -129,15 +129,17 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
   if (base::FeatureList::IsEnabled(
           blink::features::kRecordAnchorMetricsVisible)) {
     histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 
     RetryForHistogramUntilCountReached(
         &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 4);
 
     histogram_tester.ExpectTotalCount("AnchorElementMetrics.IsAdFrameElement",
-                                      4);
+                                      7);
     histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
-                                       0 /* false */, 2);
+                                       0 /* false */, 5);
     histogram_tester.ExpectBucketCount("AnchorElementMetrics.IsAdFrameElement",
                                        1 /* true */, 2);
 
@@ -160,13 +162,15 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
   if (base::FeatureList::IsEnabled(
           blink::features::kRecordAnchorMetricsVisible)) {
     histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 4, 1);
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 7, 1);
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 
     RetryForHistogramUntilCountReached(
-        &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 4);
+        &histogram_tester, "AnchorElementMetrics.IsAdFrameElement", 7);
 
     histogram_tester.ExpectUniqueSample("AnchorElementMetrics.IsAdFrameElement",
-                                        0 /* false */, 4);
+                                        0 /* false */, 7);
 
   } else {
     histogram_tester.ExpectTotalCount(
