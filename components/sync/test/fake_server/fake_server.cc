@@ -404,6 +404,10 @@ bool FakeServer::TriggerActionableError(
   return true;
 }
 
+void FakeServer::ClearActionableError() {
+  triggered_actionable_error_.reset();
+}
+
 bool FakeServer::EnableAlternatingTriggeredErrors() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (error_type_ == sync_pb::SyncEnums::SUCCESS &&
