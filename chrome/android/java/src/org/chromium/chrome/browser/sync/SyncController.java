@@ -15,7 +15,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -98,11 +97,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 }
             }
         });
-
-        GmsCoreSyncListener gmsCoreSyncListener = AppHooks.get().createGmsCoreSyncListener();
-        if (gmsCoreSyncListener != null) {
-            mProfileSyncService.addSyncStateChangedListener(gmsCoreSyncListener);
-        }
 
         SigninManager.get().addSignInStateObserver(new SigninManager.SignInStateObserver() {
             @Override

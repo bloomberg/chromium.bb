@@ -447,10 +447,6 @@ class ProfileSyncService : public syncer::SyncService,
   // to OpenTabsUIDelegate by introducing a similar observer mechanism.
   virtual void NotifyForeignSessionUpdated();
 
-  // Returns a serialized NigoriKey proto generated from the bootstrap token in
-  // SyncPrefs. Will return the empty string if no bootstrap token exists.
-  std::string GetCustomPassphraseKey() const;
-
   // Set whether sync is currently allowed by the platform.
   void SetSyncAllowedByPlatform(bool allowed);
 
