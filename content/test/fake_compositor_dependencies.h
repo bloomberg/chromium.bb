@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
 namespace content {
 
@@ -45,7 +45,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
 
  private:
   cc::TestTaskGraphRunner task_graph_runner_;
-  blink::scheduler::FakeRendererScheduler renderer_scheduler_;
+  blink::scheduler::WebFakeThreadScheduler main_thread_scheduler_;
   bool use_zoom_for_dsf_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorDependencies);

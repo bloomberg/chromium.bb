@@ -516,7 +516,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
       specified_delegate ? specified_delegate : &delegate_,
       Thread::Current()->GetTaskRunner(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
-      &fake_renderer_scheduler_);
+      &fake_thread_scheduler_);
   layer_tree_view_->Initialize(settings,
                                std::make_unique<cc::TestUkmRecorderFactory>());
   return layer_tree_view_.get();
