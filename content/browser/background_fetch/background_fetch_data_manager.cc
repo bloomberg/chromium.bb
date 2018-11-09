@@ -94,7 +94,7 @@ void BackgroundFetchDataManager::GetInitializationData(
 
 void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     bool start_paused,
@@ -102,7 +102,7 @@ void BackgroundFetchDataManager::CreateRegistration(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
-      this, registration_id, requests, options, icon, start_paused,
+      this, registration_id, std::move(requests), options, icon, start_paused,
       std::move(callback)));
 }
 

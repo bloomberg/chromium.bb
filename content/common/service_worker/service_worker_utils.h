@@ -83,9 +83,9 @@ class ServiceWorkerUtils {
       int load_flags);
 
   CONTENT_EXPORT static std::string SerializeFetchRequestToString(
-      const ServiceWorkerFetchRequest& request);
+      const blink::mojom::FetchAPIRequest& request);
 
-  CONTENT_EXPORT static ServiceWorkerFetchRequest
+  CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
   DeserializeFetchRequestFromString(const std::string& serialized);
 
   // TODO(https://crbug.com/789854) Remove this once ServiceWorkerHeaderMap is

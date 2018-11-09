@@ -51,7 +51,8 @@ void MatchRequestsTask::DidOpenCache(CacheStorageCacheHandle handle,
   std::unique_ptr<ServiceWorkerFetchRequest> request;
   if (match_params_->FilterByRequest()) {
     request = std::make_unique<ServiceWorkerFetchRequest>(
-        match_params_->request_to_match());
+        mojo::ConvertTo<ServiceWorkerFetchRequest>(
+            *(match_params_->request_to_match())));
   }
 
   handle_.value()->GetAllMatchedEntries(

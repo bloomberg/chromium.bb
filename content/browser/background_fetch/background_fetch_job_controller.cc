@@ -35,7 +35,7 @@ bool IsMixedContent(const BackgroundFetchRequestInfo& request) {
 // checks. TODO(crbug.com/711354): Remove this temporary block.
 bool RequiresCORSPreflight(const BackgroundFetchRequestInfo& request,
                            const url::Origin& origin) {
-  auto fetch_request = request.fetch_request();
+  const blink::mojom::FetchAPIRequest& fetch_request = request.fetch_request();
 
   // Same origin requests don't require a CORS preflight.
   // https://fetch.spec.whatwg.org/#main-fetch

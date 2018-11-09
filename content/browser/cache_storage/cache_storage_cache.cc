@@ -1426,7 +1426,7 @@ void CacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
 
   std::unique_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest(
-          mojo::ConvertTo<ServiceWorkerFetchRequest>(operation->request)));
+          mojo::ConvertTo<ServiceWorkerFetchRequest>(*(operation->request))));
 
   Put(std::move(request), std::move(operation->response), std::move(callback));
 }

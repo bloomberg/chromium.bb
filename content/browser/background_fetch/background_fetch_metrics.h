@@ -21,7 +21,7 @@ void RecordRegistrationsOnStartup(int num_registrations);
 // does not identify a valid, live frame.
 void RecordBackgroundFetchUkmEvent(
     const url::Origin& origin,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    int requests_size,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,

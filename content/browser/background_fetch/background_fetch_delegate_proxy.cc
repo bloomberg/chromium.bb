@@ -108,7 +108,8 @@ class BackgroundFetchDelegateProxy::Core
     if (!delegate_)
       return;
 
-    const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
+    const blink::mojom::FetchAPIRequest& fetch_request =
+        request->fetch_request();
 
     const net::NetworkTrafficAnnotationTag traffic_annotation(
         net::DefineNetworkTrafficAnnotation("background_fetch_context",

@@ -805,7 +805,7 @@ TEST_P(CacheStorageCacheTestP, PutBody_Multiple) {
   operation1->response = CreateBlobBodyResponse();
   operation1->response->url_list.push_back(GURL("http://example.com/1"));
   ServiceWorkerFetchRequest request1 =
-      mojo::ConvertTo<ServiceWorkerFetchRequest>(operation1->request);
+      mojo::ConvertTo<ServiceWorkerFetchRequest>(*(operation1->request));
 
   blink::mojom::BatchOperationPtr operation2 =
       blink::mojom::BatchOperation::New();
@@ -816,7 +816,7 @@ TEST_P(CacheStorageCacheTestP, PutBody_Multiple) {
   operation2->response = CreateBlobBodyResponse();
   operation2->response->url_list.push_back(GURL("http://example.com/2"));
   ServiceWorkerFetchRequest request2 =
-      mojo::ConvertTo<ServiceWorkerFetchRequest>(operation2->request);
+      mojo::ConvertTo<ServiceWorkerFetchRequest>(*(operation2->request));
 
   blink::mojom::BatchOperationPtr operation3 =
       blink::mojom::BatchOperation::New();
@@ -827,7 +827,7 @@ TEST_P(CacheStorageCacheTestP, PutBody_Multiple) {
   operation3->response = CreateBlobBodyResponse();
   operation3->response->url_list.push_back(GURL("http://example.com/3"));
   ServiceWorkerFetchRequest request3 =
-      mojo::ConvertTo<ServiceWorkerFetchRequest>(operation3->request);
+      mojo::ConvertTo<ServiceWorkerFetchRequest>(*(operation3->request));
 
   std::vector<blink::mojom::BatchOperationPtr> operations;
   operations.push_back(std::move(operation1));

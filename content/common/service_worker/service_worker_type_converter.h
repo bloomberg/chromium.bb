@@ -17,14 +17,14 @@ template <>
 struct TypeConverter<blink::mojom::FetchAPIRequestPtr,
                      content::ServiceWorkerFetchRequest> {
   CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr Convert(
-      content::ServiceWorkerFetchRequest request);
+      const content::ServiceWorkerFetchRequest& request);
 };
 
 template <>
 struct TypeConverter<content::ServiceWorkerFetchRequest,
-                     blink::mojom::FetchAPIRequestPtr> {
+                     blink::mojom::FetchAPIRequest> {
   CONTENT_EXPORT static content::ServiceWorkerFetchRequest Convert(
-      const blink::mojom::FetchAPIRequestPtr& request_ptr);
+      const blink::mojom::FetchAPIRequest& request);
 };
 
 }  // namespace mojo

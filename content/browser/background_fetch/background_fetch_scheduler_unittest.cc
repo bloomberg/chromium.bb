@@ -16,8 +16,10 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 using ::testing::ElementsAre;
 
@@ -89,11 +91,13 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
  protected:
   void InitializeControllerWithRequests(
       const std::vector<std::string>& requests) {
-    std::vector<ServiceWorkerFetchRequest> fetch_requests;
+    std::vector<blink::mojom::FetchAPIRequestPtr> fetch_requests;
     for (auto& request : requests) {
-      ServiceWorkerFetchRequest fetch_request;
-      fetch_request.url = GURL(origin().GetURL().spec() + request);
-      CreateRequestWithProvidedResponse(fetch_request.method, fetch_request.url,
+      auto fetch_request = blink::mojom::FetchAPIRequest::New();
+      fetch_request->referrer = blink::mojom::Referrer::New();
+      fetch_request->url = GURL(origin().GetURL().spec() + request);
+      CreateRequestWithProvidedResponse(fetch_request->method,
+                                        fetch_request->url,
                                         TestResponseBuilder(200).Build());
       fetch_requests.push_back(std::move(fetch_request));
     }
@@ -102,7 +106,8 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
     BackgroundFetchRegistrationId registration_id(
         sw_id, origin(), base::GenerateGUID(), base::GenerateGUID());
     data_manager_->CreateRegistration(
-        registration_id, fetch_requests, BackgroundFetchOptions(), SkBitmap(),
+        registration_id, std::move(fetch_requests), BackgroundFetchOptions(),
+        SkBitmap(),
         /* start_paused= */ false, base::DoNothing());
     thread_bundle_.RunUntilIdle();
 

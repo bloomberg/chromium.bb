@@ -155,9 +155,9 @@ class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
 
 scoped_refptr<BackgroundFetchRequestInfo> CreateRequestInfo(
     int request_index,
-    const ServiceWorkerFetchRequest& fetch_request) {
+    blink::mojom::FetchAPIRequestPtr fetch_request) {
   auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      request_index, fetch_request);
+      request_index, std::move(fetch_request));
   request->InitializeDownloadGuid();
   return request;
 }
@@ -170,8 +170,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, SetDelegate) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -194,8 +195,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -220,10 +222,12 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
 TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   FakeController controller;
   FakeController controller2;
-  ServiceWorkerFetchRequest fetch_request;
-  ServiceWorkerFetchRequest fetch_request2;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
-  auto request2 = CreateRequestInfo(1 /* request_index */, fetch_request2);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto fetch_request2 = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
+  auto request2 =
+      CreateRequestInfo(1 /* request_index */, std::move(fetch_request2));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -272,9 +276,10 @@ TEST_F(BackgroundFetchDelegateProxyTest, GetIconDisplaySize) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
 
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId, "Job 1 Started.", url::Origin(), SkBitmap(),
       0 /* completed_parts */, 1 /* total_parts */,
