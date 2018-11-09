@@ -2372,7 +2372,6 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
        child = child->NextSibling()) {
     if (!child->IsAnonymous() || child->StyleRef().StyleType() != kPseudoIdNone)
       continue;
-
     if (child->AnonymousHasStylePropagationOverride())
       continue;
 
@@ -2393,6 +2392,24 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
     UpdateAnonymousChildStyle(child, *new_style);
 
     child->SetStyle(std::move(new_style));
+  }
+
+  if (StyleRef().StyleType() == kPseudoIdNone)
+    return;
+
+  // Propagate style from pseudo elements to generated content. We skip children
+  // with pseudo element StyleType() in the for-loop above and skip over
+  // descendants which are not generated content in this subtree traversal.
+  //
+  // TODO(futhark): It's possible we could propagate anonymous style from pseudo
+  // elements through anonymous table layout objects in the recursive
+  // implementation above, but it would require propagating the StyleType()
+  // somehow because there is code relying on generated content having a certain
+  // StyleType().
+  for (LayoutObject* child = NextInPreOrder(this); child;
+       child = child->NextInPreOrder(this)) {
+    if (child->IsText() || child->IsQuote() || child->IsImage())
+      child->SetPseudoStyle(MutableStyle());
   }
 }
 
