@@ -490,13 +490,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                 });
             }
         } else {
-            // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
-            // a consequence the omnibox is unfocused).
-            stopAutocomplete(true);
-
             mCanShowSuggestions = false;
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
+            // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
+            // a consequence the omnibox is unfocused).
             hideSuggestions();
             mImageFetcher.clearCache();
         }
@@ -815,7 +813,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     @Override
     public void onSuggestionsReceived(
             List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
-        if (mShouldPreventOmniboxAutocomplete) return;
+        if (mShouldPreventOmniboxAutocomplete || !mCanShowSuggestions) return;
 
         // This is a callback from a listener that is set up by onNativeLibraryReady,
         // so can only be called once the native side is set up unless we are showing
