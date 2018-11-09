@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -96,12 +97,32 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
   ReportingProxy().CountDeprecation(feature);
 }
 
+void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
+  if (web_fetch_context_initialized_)
+    return;
+  web_fetch_context_initialized_ = true;
+
+  if (!web_worker_fetch_context_)
+    return;
+
+  DCHECK(!subresource_filter_);
+  web_worker_fetch_context_->InitializeOnWorkerThread();
+  std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
+      web_worker_fetch_context_->TakeSubresourceFilter();
+  if (web_filter) {
+    subresource_filter_ =
+        SubresourceFilter::Create(*this, std::move(web_filter));
+  }
+}
+
 ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
   if (resource_fetcher_)
     return resource_fetcher_;
-  WorkerFetchContext* fetch_context =
-      WorkerFetchContext::Create(*this, std::move(web_worker_fetch_context_));
+
+  InitializeWebFetchContextIfNeeded();
+  WorkerFetchContext* fetch_context = WorkerFetchContext::Create(
+      *this, web_worker_fetch_context_, subresource_filter_);
   resource_fetcher_ = ResourceFetcher::Create(fetch_context);
   if (IsContextPaused())
     resource_fetcher_->SetDefersLoading(true);
@@ -218,6 +239,7 @@ void WorkerOrWorkletGlobalScope::TasksWereUnpaused() {
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_);
+  visitor->Trace(subresource_filter_);
   visitor->Trace(script_controller_);
   visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);

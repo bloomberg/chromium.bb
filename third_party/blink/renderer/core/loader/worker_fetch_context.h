@@ -19,7 +19,6 @@ namespace blink {
 class Resource;
 class SubresourceFilter;
 class WebURLLoader;
-class WebURLLoaderFactory;
 class WebWorkerFetchContext;
 class WorkerContentSettingsClient;
 class WorkerSettings;
@@ -31,7 +30,8 @@ enum class ResourceType : uint8_t;
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&,
-                                    scoped_refptr<WebWorkerFetchContext>);
+                                    scoped_refptr<WebWorkerFetchContext>,
+                                    SubresourceFilter*);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -128,22 +128,14 @@ class WorkerFetchContext final : public BaseFetchContext {
 
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
-                     scoped_refptr<WebWorkerFetchContext>);
+                     scoped_refptr<WebWorkerFetchContext>,
+                     SubresourceFilter*);
 
   void SetFirstPartyCookie(ResourceRequest&);
 
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
+
   const scoped_refptr<WebWorkerFetchContext> web_context_;
-
-  // Responsible for regular loads from the worker (i.e., Fetch API).
-  std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
-
-  // Responsible for handling script loads in certian situations (i.e.,
-  // script import from service workers, which invole special processing
-  // to persist the script in storage). May be null, fallback to
-  // url_loader_factory_ in that case.
-  std::unique_ptr<WebURLLoaderFactory> script_loader_factory_;
-
   Member<SubresourceFilter> subresource_filter_;
 
   const Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;

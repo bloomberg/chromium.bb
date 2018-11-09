@@ -9,6 +9,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -26,6 +27,7 @@ class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
+class SubresourceFilter;
 class WebWorkerFetchContext;
 class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
@@ -121,10 +123,26 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void TasksWereUnpaused() override;
 
  private:
+  void InitializeWebFetchContextIfNeeded();
+
+  bool web_fetch_context_initialized_ = false;
+
   CrossThreadPersistent<WorkerClients> worker_clients_;
+
   Member<ResourceFetcher> resource_fetcher_;
 
+  // A WorkerOrWorkletGlobalScope has one WebWorkerFetchContext and one
+  // corresponding SubresourceFilter, which are shared by all
+  // WorkerFetchContexts of |this| global scope after crbug.com/880027.
+  // As all references to |web_worker_fetch_context_| are on the context
+  // thread, |web_worker_fetch_context_| is destructed on the context
+  // thread.
+  //
+  // TODO(crbug/903579): Consider putting WebWorkerFetchContext-originated
+  // things at a single place. Currently they are placed here and subclasses of
+  // WebWorkerFetchContext.
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context_;
+  Member<SubresourceFilter> subresource_filter_;
 
   Member<WorkerOrWorkletScriptController> script_controller_;
 
