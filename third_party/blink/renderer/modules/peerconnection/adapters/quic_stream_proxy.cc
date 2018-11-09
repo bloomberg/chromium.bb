@@ -58,7 +58,7 @@ void QuicStreamProxy::MarkReceivedDataConsumed(uint32_t amount) {
                                       stream_host_, amount));
 }
 
-void QuicStreamProxy::WriteData(std::vector<uint8_t> data, bool fin) {
+void QuicStreamProxy::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*host_thread(), FROM_HERE,
                       CrossThreadBind(&QuicStreamHost::WriteData, stream_host_,
@@ -80,7 +80,7 @@ void QuicStreamProxy::OnRemoteReset() {
   delegate_copy->OnRemoteReset();
 }
 
-void QuicStreamProxy::OnDataReceived(std::vector<uint8_t> data, bool fin) {
+void QuicStreamProxy::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
   // Need to copy the |delegate_| member since Delete() will destroy |this|.

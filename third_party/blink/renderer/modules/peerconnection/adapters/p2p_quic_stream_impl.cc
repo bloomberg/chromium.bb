@@ -27,7 +27,7 @@ void P2PQuicStreamImpl::OnDataAvailable() {
     // We have consumed all data from the sequencer up to the FIN bit. This can
     // only occur by receiving an empty STREAM frame with the FIN bit set.
     quic::QuicStream::OnFinRead();
-    delegate_->OnDataReceived(std::vector<uint8_t>(), /*fin=*/true);
+    delegate_->OnDataReceived({}, /*fin=*/true);
     consumed_fin_ = true;
   }
 
@@ -41,7 +41,7 @@ void P2PQuicStreamImpl::OnDataAvailable() {
   if (total_read_amount == 0 || consumed_fin_) {
     return;
   }
-  std::vector<uint8_t> data(total_read_amount);
+  Vector<uint8_t> data(total_read_amount);
   uint32_t current_data_offset = 0;
   struct iovec iov;
 
@@ -106,7 +106,7 @@ void P2PQuicStreamImpl::MarkReceivedDataConsumed(uint32_t amount) {
   }
 }
 
-void P2PQuicStreamImpl::WriteData(std::vector<uint8_t> data, bool fin) {
+void P2PQuicStreamImpl::WriteData(Vector<uint8_t> data, bool fin) {
   // It is up to the delegate to not write more data than the
   // |write_buffer_size_|.
   DCHECK_GE(write_buffer_size_, data.size() + write_buffered_amount_);

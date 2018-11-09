@@ -21,12 +21,14 @@ namespace blink {
 namespace {
 
 using testing::_;
+using testing::ElementsAreArray;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using ::testing::MakePolymorphicAction;
 using ::testing::PolymorphicAction;
 
-const std::string kTriggerRemoteStreamPhrase = "open sesame";
+const uint8_t kTriggerRemoteStreamPhrase[] = {'o', 'p', 'e', 'n', ' ', 's',
+                                              'e', 's', 'a', 'm', 'e'};
 const uint32_t kTransportWriteBufferSize = 100 * 1024;
 const uint32_t kTransportDelegateReadBufferSize = 100 * 1024;
 
@@ -528,8 +530,7 @@ class P2PQuicTransportTest : public testing::Test {
         }));
 
     client_peer_->stream()->WriteData(
-        std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
-                             kTriggerRemoteStreamPhrase.end()),
+        VectorFromArray(kTriggerRemoteStreamPhrase),
         /*fin=*/false);
     run_loop.RunUntilCallbacksFired();
     // Set the stream and delegate to the |server_peer_|, so that it can be
@@ -582,6 +583,13 @@ class P2PQuicTransportTest : public testing::Test {
   }
 
   scoped_refptr<net::test::TestTaskRunner> runner() { return runner_; }
+
+  template <wtf_size_t Size>
+  static Vector<uint8_t> VectorFromArray(const uint8_t (&array)[Size]) {
+    Vector<uint8_t> vector;
+    vector.Append(array, Size);
+    return vector;
+  }
 
  private:
   quic::MockClock clock_;
@@ -869,8 +877,7 @@ TEST_F(P2PQuicTransportTest, ClientCreatesStream) {
           }));
 
   client_peer()->stream()->WriteData(
-      std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
-                           kTriggerRemoteStreamPhrase.end()),
+      VectorFromArray(kTriggerRemoteStreamPhrase),
       /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
@@ -906,8 +913,7 @@ TEST_F(P2PQuicTransportTest, ServerCreatesStream) {
           }));
 
   server_peer()->stream()->WriteData(
-      std::vector<uint8_t>(kTriggerRemoteStreamPhrase.begin(),
-                           kTriggerRemoteStreamPhrase.end()),
+      VectorFromArray(kTriggerRemoteStreamPhrase),
       /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
@@ -1079,18 +1085,17 @@ TEST_F(P2PQuicTransportTest, StreamDataSentThenReceivedOnRemoteSide) {
   Connect();
   SetupConnectedStreams();
   CallbackRunLoop run_loop(runner());
-  std::string message = "howdy partner";
+  const uint8_t kMessage[] = {'h', 'o', 'w', 'd', 'y'};
 
   EXPECT_CALL(*server_peer()->stream_delegate(),
-              OnDataReceived(
-                  std::vector<uint8_t>(message.begin(), message.end()), false))
+              OnDataReceived(ElementsAreArray(kMessage), false))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
   EXPECT_CALL(*client_peer()->stream_delegate(),
-              OnWriteDataConsumed(message.size()))
+              OnWriteDataConsumed(base::size(kMessage)))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  client_peer()->stream()->WriteData(
-      std::vector<uint8_t>(message.begin(), message.end()), /* fin= */ false);
+  client_peer()->stream()->WriteData(VectorFromArray(kMessage),
+                                     /* fin= */ false);
   run_loop.RunUntilCallbacksFired();
 }
 
@@ -1101,33 +1106,27 @@ TEST_F(P2PQuicTransportTest, StreamDataSentWithFinClosesStreams) {
   Connect();
   SetupConnectedStreams();
   CallbackRunLoop run_loop(runner());
-  std::string server_message = "some server data";
-  std::string client_message = "client data";
+  const uint8_t kServerMessage[] = {'s', 'e', 'r', 'v', 'e', 'r'};
+  const uint8_t kClientMessage[] = {'c', 'l', 'i', 'e', 'n', 't'};
 
   EXPECT_CALL(*server_peer()->stream_delegate(),
-              OnDataReceived(std::vector<uint8_t>(client_message.begin(),
-                                                  client_message.end()),
-                             true))
+              OnDataReceived(VectorFromArray(kClientMessage), true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
   EXPECT_CALL(*server_peer()->stream_delegate(),
-              OnWriteDataConsumed(server_message.size()))
+              OnWriteDataConsumed(base::size(kServerMessage)))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
   EXPECT_CALL(*client_peer()->stream_delegate(),
-              OnDataReceived(std::vector<uint8_t>(server_message.begin(),
-                                                  server_message.end()),
-                             true))
+              OnDataReceived(ElementsAreArray(kServerMessage), true))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
   EXPECT_CALL(*client_peer()->stream_delegate(),
-              OnWriteDataConsumed(client_message.size()))
+              OnWriteDataConsumed(base::size(kClientMessage)))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  client_peer()->stream()->WriteData(
-      std::vector<uint8_t>(client_message.begin(), client_message.end()),
-      /*fin=*/true);
-  server_peer()->stream()->WriteData(
-      std::vector<uint8_t>(server_message.begin(), server_message.end()),
-      /*fin=*/true);
+  client_peer()->stream()->WriteData(VectorFromArray(kClientMessage),
+                                     /*fin=*/true);
+  server_peer()->stream()->WriteData(VectorFromArray(kServerMessage),
+                                     /*fin=*/true);
   run_loop.RunUntilCallbacksFired();
 
   ExpectStreamsClosed();

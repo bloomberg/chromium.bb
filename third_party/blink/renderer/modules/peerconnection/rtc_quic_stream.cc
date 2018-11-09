@@ -92,7 +92,7 @@ void RTCQuicStream::OnRemoteReset() {
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
-void RTCQuicStream::OnDataReceived(std::vector<uint8_t> data, bool fin) {
+void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
   if (!fin) {
     return;
   }

@@ -15,7 +15,7 @@ class MockP2PQuicStream : public testing::NiceMock<P2PQuicStream> {
   // P2PQuicStream overrides.
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD1(SetDelegate, void(Delegate*));
-  MOCK_METHOD2(WriteData, void(std::vector<uint8_t>, bool));
+  MOCK_METHOD2(WriteData, void(Vector<uint8_t>, bool));
   MOCK_METHOD1(MarkReceivedDataConsumed, void(uint32_t));
 };
 
