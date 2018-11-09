@@ -381,7 +381,7 @@ ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
 
   Vector<String> results;
   value.Split(",", results);
-  if (results[0].StripWhiteSpace().LowerASCII() == "nosniff")
+  if (results.size() && results[0].StripWhiteSpace().LowerASCII() == "nosniff")
     return kContentTypeOptionsNosniff;
   return kContentTypeOptionsNone;
 }

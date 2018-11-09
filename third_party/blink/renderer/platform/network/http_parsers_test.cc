@@ -599,6 +599,7 @@ TEST(HTTPParsersTest, ParseContentTypeOptionsTest) {
                {"nosniff , not-nosniff", kContentTypeOptionsNosniff},
                {" nosniff , none", kContentTypeOptionsNosniff},
                {"", kContentTypeOptionsNone},
+               {",", kContentTypeOptionsNone},
                {"none", kContentTypeOptionsNone},
                {"none, nosniff", kContentTypeOptionsNone}};
   for (const auto& test : cases) {
