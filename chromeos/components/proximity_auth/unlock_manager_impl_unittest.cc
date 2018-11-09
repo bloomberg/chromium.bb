@@ -201,7 +201,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
 
   void SetMultiDeviceApi(bool enabled) {
     static const std::vector<base::Feature> kFeatures{
-        chromeos::features::kMultiDeviceApi,
         chromeos::features::kEnableUnifiedMultiDeviceSetup};
 
     scoped_feature_list_.InitWithFeatures(

@@ -109,8 +109,6 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   ~ProximityAuthProximityMonitorImplTest() override {}
 
   void InitializeTest(bool multidevice_flags_enabled) {
-    SetMultiDeviceApiState(multidevice_flags_enabled /* enabled */);
-
     fake_multidevice_setup_client_ = std::make_unique<
         chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
     pref_manager_ = std::make_unique<NiceMock<MockProximityAuthPrefManager>>(
@@ -126,16 +124,6 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
     monitor_->AddObserver(&observer_);
     ON_CALL(*pref_manager_, GetProximityThreshold())
         .WillByDefault(Return(kProximityThresholdPrefValue));
-  }
-
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
   }
 
   void RunPendingTasks() { task_runner_->RunPendingTasks(); }

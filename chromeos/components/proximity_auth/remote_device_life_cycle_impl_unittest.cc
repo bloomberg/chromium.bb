@@ -182,16 +182,6 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
         std::move(fake_connection_attempt));
   }
 
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
-  }
-
   void StartLifeCycle() {
     EXPECT_EQ(RemoteDeviceLifeCycle::State::STOPPED, life_cycle_.GetState());
     life_cycle_.AddObserver(this);
@@ -274,7 +264,6 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Success) {
-  SetMultiDeviceApiState(true /* enabled */);
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -283,7 +272,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure) {
-  SetMultiDeviceApiState(true /* enabled */);
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -296,7 +284,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure_BluetoothNotPresent) {
-  SetMultiDeviceApiState(true /* enabled */);
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -308,7 +295,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure_BluetoothNotPowered) {
-  SetMultiDeviceApiState(true /* enabled */);
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();

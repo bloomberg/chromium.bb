@@ -80,19 +80,7 @@ class ProximityAuthMessengerImplTest : public testing::Test {
  protected:
   ProximityAuthMessengerImplTest() = default;
 
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
-  }
-
   void CreateMessenger(bool is_multi_device_api_enabled) {
-    SetMultiDeviceApiState(is_multi_device_api_enabled);
-
     auto fake_channel =
         std::make_unique<chromeos::secure_channel::FakeClientChannel>();
     fake_channel_ = fake_channel.get();
