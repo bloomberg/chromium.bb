@@ -252,11 +252,11 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
 
   // Handle deprecated positioning fields. Relevant only for bookmarks.
   bool has_position_scheme = false;
-  SyncPositioningScheme syncPositioningScheme;
+  SyncPositioningScheme sync_positioning_scheme;
   if (update_entity.has_unique_position()) {
     data.unique_position = update_entity.unique_position();
     has_position_scheme = true;
-    syncPositioningScheme = SyncPositioningScheme::UNIQUE_POSITION;
+    sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
   } else if (update_entity.has_position_in_parent() ||
              update_entity.has_insert_after_item_id()) {
     bool missing_originator_fields = false;
@@ -279,23 +279,23 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
           UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
               .ToProto();
       has_position_scheme = true;
-      syncPositioningScheme = SyncPositioningScheme::POSITION_IN_PARENT;
+      sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
     } else {
       // If update_entity has insert_after_item_id, use 0 index.
       DCHECK(update_entity.has_insert_after_item_id());
       data.unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
       has_position_scheme = true;
-      syncPositioningScheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
+      sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
     }
   } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
              !update_entity.deleted()) {
     DLOG(ERROR) << "Missing required position information in update.";
     has_position_scheme = true;
-    syncPositioningScheme = SyncPositioningScheme::MISSING;
+    sync_positioning_scheme = SyncPositioningScheme::MISSING;
   }
   if (has_position_scheme) {
     UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                              syncPositioningScheme);
+                              sync_positioning_scheme);
   }
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
