@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 namespace {
@@ -582,20 +583,18 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
     if (item_result.has_only_trailing_spaces)
       break;
     if (item_result.shape_result) {
-      // Mutate the existing shape result if only used here, if not create a
-      // copy.
       scoped_refptr<ShapeResult> shape_result =
-          item_result.shape_result->MutableUnique();
+          item_result.shape_result->CreateShapeResult();
       DCHECK_GE(item_result.start_offset, line_info->StartOffset());
       // |shape_result| has more characters if it's hyphenated.
       DCHECK(item_result.text_end_effect != NGTextEndEffect::kNone ||
              shape_result->NumCharacters() ==
                  item_result.end_offset - item_result.start_offset);
-      shape_result->ApplySpacing(
-          spacing, item_result.start_offset - line_info->StartOffset() -
-                       shape_result->StartIndexForResult());
+      shape_result->ApplySpacing(spacing, item_result.start_offset -
+                                              line_info->StartOffset() -
+                                              shape_result->StartIndex());
       item_result.inline_size = shape_result->SnappedWidth();
-      item_result.shape_result = std::move(shape_result);
+      item_result.shape_result = ShapeResultView::Create(shape_result.get());
     } else if (item_result.item->Type() == NGInlineItem::kAtomicInline) {
       float offset = 0.f;
       DCHECK_LE(line_info->StartOffset(), item_result.start_offset);

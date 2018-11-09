@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -585,7 +586,7 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   // Even If |fragment| is before linebreak, if its direction differs to line
   // direction, we don't paint line break. See
   // paint/selection/text-selection-newline-mixed-ltr-rtl.html.
-  const ShapeResult* shape_result =
+  const ShapeResultView* shape_result =
       ToNGPhysicalTextFragment(fragment.PhysicalFragment()).TextShapeResult();
   return physical_line_box.BaseDirection() == shape_result->Direction();
 }

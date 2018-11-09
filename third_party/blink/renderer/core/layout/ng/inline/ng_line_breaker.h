@@ -98,7 +98,7 @@ class CORE_EXPORT NGLineBreaker {
                  const NGInlineItem&,
                  LayoutUnit available_width);
 
-  scoped_refptr<ShapeResult> TruncateLineEndResult(
+  scoped_refptr<ShapeResultView> TruncateLineEndResult(
       const NGInlineItemResult& item_result,
       unsigned end_offset);
   void UpdateShapeResult(NGInlineItemResult*);
@@ -212,7 +212,7 @@ class CORE_EXPORT NGLineBreaker {
   // multiple times.
   struct TrailingCollapsibleSpace {
     NGInlineItemResult* item_result;
-    scoped_refptr<const ShapeResult> collapsed_shape_result;
+    scoped_refptr<const ShapeResultView> collapsed_shape_result;
   };
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 

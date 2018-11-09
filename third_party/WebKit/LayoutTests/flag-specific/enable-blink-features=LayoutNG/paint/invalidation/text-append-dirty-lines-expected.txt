@@ -29,7 +29,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat'",
-          "rect": [8, 64, 749, 19],
+          "rect": [8, 64, 748, 19],
           "reason": "full"
         },
         {

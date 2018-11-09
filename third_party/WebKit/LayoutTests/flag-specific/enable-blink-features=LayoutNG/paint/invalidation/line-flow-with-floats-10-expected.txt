@@ -23,16 +23,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 540, 407, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
-          "rect": [14, 520, 407, 19],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
           "rect": [14, 580, 406, 19],
           "reason": "geometry"
@@ -40,6 +30,16 @@
         {
           "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
           "rect": [14, 560, 406, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 540, 406, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
+          "rect": [14, 520, 406, 19],
           "reason": "geometry"
         },
         {
@@ -124,12 +124,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'for turns, quarrelling all the while, and fighting'",
-          "rect": [65, 420, 305, 19],
+          "rect": [65, 420, 304, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting'",
-          "rect": [65, 400, 305, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "geometry"
         },
         {
@@ -179,7 +179,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'difficult'",
-          "rect": [371, 360, 50, 19],
+          "rect": [371, 360, 49, 19],
           "reason": "geometry"
         },
         {

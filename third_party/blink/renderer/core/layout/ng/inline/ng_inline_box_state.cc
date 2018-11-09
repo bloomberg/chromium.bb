@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -67,7 +68,7 @@ void NGInlineBoxState::EnsureTextMetrics(const ComputedStyle& style,
     ComputeTextMetrics(style, baseline_type);
 }
 
-void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
+void NGInlineBoxState::AccumulateUsedFonts(const ShapeResultView* shape_result,
                                            FontBaseline baseline_type) {
   HashSet<const SimpleFontData*> fallback_fonts;
   shape_result->FallbackFonts(&fallback_fonts);

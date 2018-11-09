@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -76,7 +77,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
-  const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
+  const ShapeResultView* TextShapeResult() const { return shape_result_.get(); }
 
   // Start/end offset to the text of the block container.
   unsigned StartOffset() const { return start_offset_; }
@@ -148,7 +149,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          NGPhysicalSize size,
                          NGLineOrientation line_orientation,
                          NGTextEndEffect end_effect,
-                         scoped_refptr<const ShapeResult> shape_result);
+                         scoped_refptr<const ShapeResultView> shape_result);
 
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
@@ -166,7 +167,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const unsigned start_offset_;
   const unsigned end_offset_;
   NGPhysicalOffsetRect self_ink_overflow_;
-  const scoped_refptr<const ShapeResult> shape_result_;
+  const scoped_refptr<const ShapeResultView> shape_result_;
 
   const unsigned line_orientation_ : 2;  // NGLineOrientation
   const unsigned end_effect_ : 1;        // NGTextEndEffect

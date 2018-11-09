@@ -69,10 +69,6 @@ class ShapeResult;
 class PLATFORM_EXPORT ShapeResultView final
     : public RefCounted<ShapeResultView> {
  public:
-  static scoped_refptr<ShapeResultView> Create(
-      scoped_refptr<const SimpleFontData>,
-      TextDirection);
-
   // Create a new ShapeResultView from a pre-defined list of segments.
   // The segments list is assumed to be in logical order.
   struct Segment {
@@ -81,6 +77,12 @@ class PLATFORM_EXPORT ShapeResultView final
     unsigned end_index;
   };
   static scoped_refptr<ShapeResultView> Create(const Segment*, size_t);
+
+  // Creates a new ShapeResultView from a single segment.
+  static scoped_refptr<ShapeResultView> Create(const ShapeResult*);
+  static scoped_refptr<ShapeResultView> Create(const ShapeResult*,
+                                               unsigned start_index,
+                                               unsigned end_index);
 
   ~ShapeResultView();
 
@@ -98,6 +100,7 @@ class PLATFORM_EXPORT ShapeResultView final
   }
   bool Rtl() const { return Direction() == TextDirection::kRtl; }
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
+  void FallbackFonts(HashSet<const SimpleFontData*>* fallback) const;
 
   unsigned PreviousSafeToBreakOffset(unsigned index) const;
 
@@ -124,16 +127,15 @@ class PLATFORM_EXPORT ShapeResultView final
 
  private:
   ShapeResultView(const ShapeResult*);
-
   unsigned ComputeStartIndex() const;
-  float LineLeftBounds() const;
-  float LineRightBounds() const;
 
   struct RunInfoPart;
   void CreateViewsForResult(const ShapeResult*,
                             unsigned start_index,
                             unsigned end_index);
   void AddSegments(const Segment*, size_t);
+  template <bool is_horizontal_run>
+  void ComputeBoundsForPart(const RunInfoPart&, float origin);
 
   scoped_refptr<const SimpleFontData> primary_font_;
 

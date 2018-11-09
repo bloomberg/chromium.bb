@@ -23,26 +23,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 540, 407, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
-          "rect": [14, 540, 407, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
-          "rect": [14, 520, 407, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 520, 407, 19],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
           "rect": [14, 580, 406, 19],
           "reason": "geometry"
@@ -60,6 +40,26 @@
         {
           "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
           "rect": [14, 560, 406, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 540, 406, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+          "rect": [14, 540, 406, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
+          "rect": [14, 520, 406, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 520, 406, 19],
           "reason": "geometry"
         },
         {
@@ -98,11 +98,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'passion, and went stamping about, and shouting \u2018Off'",
-          "rect": [14, 460, 356, 19],
-          "reason": "appeared"
-        },
-        {
           "object": "NGPhysicalTextFragment 'minute.'",
           "rect": [14, 480, 355, 19],
           "reason": "geometry"
@@ -111,6 +106,11 @@
           "object": "NGPhysicalTextFragment 'with his head!\u2019 or \u2018Off with her head!\u2019 about once in a'",
           "rect": [14, 480, 355, 19],
           "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'passion, and went stamping about, and shouting \u2018Off'",
+          "rect": [14, 460, 355, 19],
+          "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'with his head!\u2019 or \u2018Off with her head!\u2019 about once in a'",
@@ -159,12 +159,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'and in a very short time '",
-          "rect": [65, 420, 305, 19],
+          "rect": [65, 420, 304, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'The players all played at once without waiting'",
-          "rect": [65, 400, 305, 19],
+          "rect": [65, 400, 304, 19],
           "reason": "disappeared"
         },
         {
@@ -209,7 +209,7 @@
         },
         {
           "object": "NGPhysicalTextFragment ' was in a furious'",
-          "rect": [252, 440, 118, 19],
+          "rect": [252, 440, 117, 19],
           "reason": "appeared"
         },
         {
@@ -239,7 +239,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'difficult'",
-          "rect": [371, 360, 50, 19],
+          "rect": [371, 360, 49, 19],
           "reason": "disappeared"
         },
         {

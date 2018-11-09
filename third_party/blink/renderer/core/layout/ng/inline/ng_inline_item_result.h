@@ -45,7 +45,7 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // ShapeResult for text items. Maybe different from NGInlineItem if re-shape
   // is needed in the line breaker.
-  scoped_refptr<const ShapeResult> shape_result;
+  scoped_refptr<const ShapeResultView> shape_result;
 
   // NGLayoutResult for atomic inline items.
   scoped_refptr<NGLayoutResult> layout_result;

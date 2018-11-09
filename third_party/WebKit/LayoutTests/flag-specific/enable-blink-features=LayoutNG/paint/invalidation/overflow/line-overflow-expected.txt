@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'sollicitudin nisi ut urna blandit'",
-          "rect": [8, 182, 195, 19],
+          "rect": [8, 182, 194, 19],
           "reason": "geometry"
         },
         {
@@ -29,7 +29,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'pulvinar velit. Integer'",
-          "rect": [8, 162, 168, 19],
+          "rect": [8, 162, 167, 19],
           "reason": "geometry"
         },
         {

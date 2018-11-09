@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
 
 namespace blink {
@@ -402,8 +403,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   // has item-specific info as context. Should they be part of ShapeLine() to
   // instantiate once, or is this just fine since instatiation is not
   // expensive?
-  DCHECK_EQ(item.TextShapeResult()->StartIndexForResult(), item.StartOffset());
-  DCHECK_EQ(item.TextShapeResult()->EndIndexForResult(), item.EndOffset());
+  DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
+  DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
   RunSegmenter::RunSegmenterRange segment_range =
       item.CreateRunSegmenterRange();
   ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
@@ -424,7 +425,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
     options |= ShapingLineBreaker::kNoResultIfOverflow;
   ShapingLineBreaker::Result result;
-  scoped_refptr<const ShapeResult> shape_result = breaker.ShapeLine(
+  scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
       item_result->start_offset, available_width, options, &result);
 
   // If this item overflows and 'break-word' is set, this line will be
@@ -484,33 +485,37 @@ scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
 
 // Compute a new ShapeResult for the specified end offset.
 // The end is re-shaped if it is not safe-to-break.
-scoped_refptr<ShapeResult> NGLineBreaker::TruncateLineEndResult(
+scoped_refptr<ShapeResultView> NGLineBreaker::TruncateLineEndResult(
     const NGInlineItemResult& item_result,
     unsigned end_offset) {
   DCHECK(item_result.item);
   DCHECK(item_result.shape_result);
-  const ShapeResult& source_result = *item_result.shape_result;
+  // TODO(layout-dev): Add support for subsetting a ShapeResultView thereby
+  // avoiding extra copy to create a new full ShapeResult here.
+  auto source_result = item_result.shape_result->CreateShapeResult();
   const unsigned start_offset = item_result.start_offset;
-  DCHECK_GE(start_offset, source_result.StartIndexForResult());
-  DCHECK_LE(end_offset, source_result.EndIndexForResult());
-  DCHECK(start_offset > source_result.StartIndexForResult() ||
-         end_offset < source_result.EndIndexForResult());
+  DCHECK_GE(start_offset, source_result->StartIndex());
+  DCHECK_LE(end_offset, source_result->EndIndex());
+  DCHECK(start_offset > source_result->StartIndex() ||
+         end_offset < source_result->EndIndex());
 
-  scoped_refptr<ShapeResult> new_result;
-  unsigned last_safe = source_result.PreviousSafeToBreakOffset(end_offset);
+  ShapeResultView::Segment segments[2];
+  unsigned count = 0;
+
+  unsigned last_safe = source_result->PreviousSafeToBreakOffset(end_offset);
   DCHECK_LE(last_safe, end_offset);
   if (last_safe > start_offset)
-    new_result = source_result.SubRange(start_offset, last_safe);
+    segments[count++] = {source_result.get(), start_offset, last_safe};
+
+  scoped_refptr<ShapeResult> end_result;
   if (last_safe < end_offset) {
-    scoped_refptr<ShapeResult> end_result = ShapeText(
-        *item_result.item, std::max(last_safe, start_offset), end_offset);
-    if (new_result)
-      end_result->CopyRange(0, end_offset, new_result.get());
-    else
-      new_result = std::move(end_result);
+    end_result = ShapeText(*item_result.item, std::max(last_safe, start_offset),
+                           end_offset);
+    segments[count++] = {end_result.get(), 0, end_offset};
+    DCHECK_EQ(end_result->Direction(), source_result->Direction());
   }
-  DCHECK(new_result);
-  return new_result;
+  DCHECK_GE(count, 1u);
+  return ShapeResultView::Create(&segments[0], count);
 }
 
 // Update |ShapeResult| in |item_result| to match to its |start_offset| and
@@ -558,7 +563,8 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item) {
 
     NGInlineItemResult* item_result = AddItem(item, end);
     item_result->has_only_trailing_spaces = true;
-    item_result->shape_result = item.TextShapeResult();
+    item_result->shape_result =
+        ShapeResultView::Create(item.TextShapeResult().get());
     if (item_result->start_offset == item.StartOffset() &&
         item_result->end_offset == item.EndOffset())
       item_result->inline_size = item_result->shape_result->SnappedWidth();
@@ -594,11 +600,11 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace() {
   // We have a trailing collapsible space. Remove it.
   NGInlineItemResult* item_result = trailing_collapsible_space_->item_result;
   position_ -= item_result->inline_size;
-  if (scoped_refptr<const ShapeResult>& collapsed_shape_result =
+  if (scoped_refptr<const ShapeResultView>& collapsed_shape_result =
           trailing_collapsible_space_->collapsed_shape_result) {
     DCHECK_GE(item_result->end_offset, item_result->start_offset + 2);
     --item_result->end_offset;
-    item_result->shape_result = std::move(collapsed_shape_result);
+    item_result->shape_result = collapsed_shape_result;
     item_result->inline_size = item_result->shape_result->SnappedWidth();
     position_ += item_result->inline_size;
   } else {
@@ -619,7 +625,7 @@ LayoutUnit NGLineBreaker::TrailingCollapsibleSpaceWidth() {
   // Normally, the width of new_reuslt is smaller, but technically it can be
   // larger. In such case, it means the trailing spaces has negative width.
   NGInlineItemResult* item_result = trailing_collapsible_space_->item_result;
-  if (scoped_refptr<const ShapeResult>& collapsed_shape_result =
+  if (scoped_refptr<const ShapeResultView>& collapsed_shape_result =
           trailing_collapsible_space_->collapsed_shape_result) {
     return item_result->inline_size - collapsed_shape_result->SnappedWidth();
   }
@@ -673,7 +679,8 @@ void NGLineBreaker::AppendHyphen(const NGInlineItem& item) {
       shaper.Shape(&style.GetFont(), direction);
   NGTextFragmentBuilder builder(node_, constraint_space_.GetWritingMode());
   builder.SetText(item.GetLayoutObject(), hyphen_string, &style,
-                  /* is_ellipsis_style */ false, std::move(hyphen_result));
+                  /* is_ellipsis_style */ false,
+                  ShapeResultView::Create(hyphen_result.get()));
   SetLineEndFragment(builder.ToTextFragment());
 }
 

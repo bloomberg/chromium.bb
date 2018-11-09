@@ -70,8 +70,7 @@ void CheckShapeResultRange(const ShapeResult* result,
   DCHECK_LE(start, end);
   unsigned length = end - start;
   if (length == result->NumCharacters() &&
-      (!length || (start == result->StartIndexForResult() &&
-                   end == result->EndIndexForResult())))
+      (!length || (start == result->StartIndex() && end == result->EndIndex())))
     return;
 
   // Log font-family/size as specified.
@@ -99,8 +98,7 @@ void CheckShapeResultRange(const ShapeResult* result,
 
   // Log the text to shape.
   log.Append(String::Format(": %u-%u -> %u-%u:", start, end,
-                            result->StartIndexForResult(),
-                            result->EndIndexForResult()));
+                            result->StartIndex(), result->EndIndex()));
   for (unsigned i = start; i < end; ++i)
     log.Append(String::Format(" %02X", text[i]));
 

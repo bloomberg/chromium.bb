@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ void NGTextFragmentBuilder::SetText(
     const String& text,
     scoped_refptr<const ComputedStyle> style,
     bool is_ellipsis_style,
-    scoped_refptr<const ShapeResult> shape_result) {
+    scoped_refptr<const ShapeResultView> shape_result) {
   DCHECK(layout_object);
   DCHECK(style);
   DCHECK(shape_result);
@@ -46,8 +47,8 @@ void NGTextFragmentBuilder::SetText(
   text_type_ = NGPhysicalTextFragment::kGeneratedText;
   text_ = text;
   item_index_ = std::numeric_limits<unsigned>::max();
-  start_offset_ = shape_result->StartIndexForResult();
-  end_offset_ = shape_result->EndIndexForResult();
+  start_offset_ = shape_result->StartIndex();
+  end_offset_ = shape_result->EndIndex();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
                                     : NGStyleVariant::kStandard);
   size_ = {shape_result->SnappedWidth(),
