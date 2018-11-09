@@ -274,11 +274,13 @@ bool VideoFrameSubmitter::SubmitFrame(
                                           &compositor_frame.resource_list);
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
   compositor_frame.metadata.local_surface_id_allocation_time =
-      child_local_surface_id_allocator_.allocation_time();
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .allocation_time();
 
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
   compositor_frame_sink_->SubmitCompositorFrame(
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
       std::move(compositor_frame), nullptr, 0);
   resource_provider_->ReleaseFrameResources();
 
@@ -304,7 +306,8 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   compositor_frame_sink_->SubmitCompositorFrame(
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
       std::move(compositor_frame), nullptr, 0);
   waiting_for_compositor_ack_ = true;
 }

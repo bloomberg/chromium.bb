@@ -149,7 +149,8 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
 }
 
 base::TimeTicks SurfaceLayerBridge::GetLocalSurfaceIdAllocationTime() const {
-  return parent_local_surface_id_allocator_.allocation_time();
+  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+      .allocation_time();
 }
 
 }  // namespace blink

@@ -714,11 +714,12 @@ void LayerTreeTest::PostAddOpacityAnimationToMainThreadDelayed(
                      base::Unretained(animation_to_receive_animation), 1.0));
 }
 
-void LayerTreeTest::PostSetLocalSurfaceIdToMainThread(
-    const viz::LocalSurfaceId& local_surface_id) {
+void LayerTreeTest::PostSetLocalSurfaceIdAllocationToMainThread(
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetLocalSurfaceId,
-                                main_thread_weak_ptr_, local_surface_id));
+      FROM_HERE,
+      base::BindOnce(&LayerTreeTest::DispatchSetLocalSurfaceIdAllocation,
+                     main_thread_weak_ptr_, local_surface_id_allocation));
 }
 
 void LayerTreeTest::PostRequestNewLocalSurfaceIdToMainThread() {
@@ -921,13 +922,13 @@ void LayerTreeTest::DispatchAddOpacityAnimation(
   }
 }
 
-void LayerTreeTest::DispatchSetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id) {
+void LayerTreeTest::DispatchSetLocalSurfaceIdAllocation(
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (layer_tree_host_)
+  if (layer_tree_host_) {
     layer_tree_host_->SetLocalSurfaceIdAllocationFromParent(
-        viz::LocalSurfaceIdAllocation(local_surface_id,
-                                      base::TimeTicks::Now()));
+        local_surface_id_allocation);
+  }
 }
 
 void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {

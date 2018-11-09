@@ -1076,7 +1076,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   uint32_t next_frame_token_ = 1u;
 
-  viz::LocalSurfaceId last_draw_local_surface_id_;
+  viz::LocalSurfaceIdAllocation last_draw_local_surface_id_allocation_;
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;

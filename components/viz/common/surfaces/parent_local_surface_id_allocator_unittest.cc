@@ -184,7 +184,9 @@ TEST_F(ParentLocalSurfaceIdAllocatorTest,
         LocalSurfaceIdAllocation(child_allocated_id, child_allocation_time));
     EXPECT_TRUE(changed);
     EXPECT_EQ(child_allocated_id, allocator().GetCurrentLocalSurfaceId());
-    EXPECT_EQ(child_allocation_time, allocator().allocation_time());
+    EXPECT_EQ(
+        child_allocation_time,
+        allocator().GetCurrentLocalSurfaceIdAllocation().allocation_time());
   }
 
   LocalSurfaceId child_allocated_id2 = GenerateChildLocalSurfaceId();
@@ -196,7 +198,9 @@ TEST_F(ParentLocalSurfaceIdAllocatorTest,
     EXPECT_NE(child_allocated_id2, allocator().GetCurrentLocalSurfaceId());
     EXPECT_EQ(child_allocated_id2.child_sequence_number(),
               allocator().GetCurrentLocalSurfaceId().child_sequence_number());
-    EXPECT_EQ(Now(), allocator().allocation_time());
+    EXPECT_EQ(
+        Now(),
+        allocator().GetCurrentLocalSurfaceIdAllocation().allocation_time());
   }
 }
 

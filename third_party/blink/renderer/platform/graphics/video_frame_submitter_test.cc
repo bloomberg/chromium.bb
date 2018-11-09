@@ -766,7 +766,8 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
     viz::LocalSurfaceId local_surface_id =
         submitter_->child_local_surface_id_allocator_
-            .GetCurrentLocalSurfaceId();
+            .GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
@@ -795,7 +796,8 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
     viz::LocalSurfaceId local_surface_id =
         submitter_->child_local_surface_id_allocator_
-            .GetCurrentLocalSurfaceId();
+            .GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
@@ -819,7 +821,8 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
     viz::LocalSurfaceId local_surface_id =
         submitter_->child_local_surface_id_allocator_
-            .GetCurrentLocalSurfaceId();
+            .GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber + 1,

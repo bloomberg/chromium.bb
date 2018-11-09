@@ -80,8 +80,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
       SingleKeyframeEffectAnimation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThreadDelayed(
       SingleKeyframeEffectAnimation* animation_to_receive_animation);
-  void PostSetLocalSurfaceIdToMainThread(
-      const viz::LocalSurfaceId& local_surface_id);
+  void PostSetLocalSurfaceIdAllocationToMainThread(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void PostRequestNewLocalSurfaceIdToMainThread();
   void PostGetDeferCommitsToMainThread(
       std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
@@ -184,7 +184,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void DispatchAddOpacityAnimation(
       SingleKeyframeEffectAnimation* animation_to_receive_animation,
       double animation_duration);
-  void DispatchSetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
+  void DispatchSetLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void DispatchRequestNewLocalSurfaceId();
   void DispatchGetDeferCommits(
       std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
