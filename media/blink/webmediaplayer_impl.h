@@ -341,8 +341,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnPipelineResumed();
   void OnDemuxerOpened();
 
-  bool HasSingleSecurityOrigin() const;
-
   // Pipeline::Client overrides.
   void OnError(PipelineStatus status) override;
   void OnEnded() override;

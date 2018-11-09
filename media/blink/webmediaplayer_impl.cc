@@ -1186,27 +1186,25 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
       context_support);
 }
 
-bool WebMediaPlayerImpl::HasSingleSecurityOrigin() const {
+bool WebMediaPlayerImpl::WouldTaintOrigin() const {
   if (demuxer_found_hls_) {
     // HLS manifests might pull segments from a different origin. We can't know
     // for sure, so we conservatively say no here.
-    return false;
-  }
-
-  if (data_source_)
-    return data_source_->HasSingleOrigin();
-  return true;
-}
-
-bool WebMediaPlayerImpl::WouldTaintOrigin() const {
-  if (!HasSingleSecurityOrigin()) {
-    // When the resource is redirected to another origin we think it as
-    // tainted. This is actually not specified, and is under discussion.
-    // See https://github.com/whatwg/fetch/issues/737.
     return true;
   }
 
-  return data_source_ && data_source_->IsCorsCrossOrigin();
+  if (!data_source_)
+    return false;
+
+  // When the resource is redirected to another origin we think it as
+  // tainted. This is actually not specified, and is under discussion.
+  // See https://github.com/whatwg/fetch/issues/737.
+  if (!data_source_->HasSingleOrigin() &&
+      data_source_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
+    return true;
+  }
+
+  return data_source_->IsCorsCrossOrigin();
 }
 
 double WebMediaPlayerImpl::MediaTimeForTimeValue(double timeValue) const {
