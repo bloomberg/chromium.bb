@@ -1021,7 +1021,10 @@ void DesktopWindowTreeHostMus::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void DesktopWindowTreeHostMus::ShowImpl() {
-  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
+  // This code path is hit when the server initiated the change. In such a case
+  // the window should not be made active. If the server wants the window to be
+  // active, it will make the window active.
+  Show(ui::SHOW_STATE_INACTIVE, gfx::Rect());
 }
 
 void DesktopWindowTreeHostMus::HideImpl() {
