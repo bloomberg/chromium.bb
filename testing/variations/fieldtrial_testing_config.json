@@ -596,6 +596,45 @@
             ]
         }
     ],
+    "AutofillDropdownLayout": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_LeadingIcon",
+                    "params": {
+                        "variant": "leading-icon"
+                    },
+                    "enable_features": [
+                        "AutofillDropdownLayout"
+                    ]
+                },
+                {
+                    "name": "Enabled_TrailingIcon",
+                    "params": {
+                        "variant": "trailing-icon"
+                    },
+                    "enable_features": [
+                        "AutofillDropdownLayout"
+                    ]
+                },
+                {
+                    "name": "Enabled_TwoLinesLeadingIcon",
+                    "params": {
+                        "variant": "two-lines-leading-icon"
+                    },
+                    "enable_features": [
+                        "AutofillDropdownLayout"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDynamicForms": [
         {
             "platforms": [
@@ -709,6 +748,21 @@
                     },
                     "enable_features": [
                         "AutofillPrimaryInfoStyleExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillRefreshStyleAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillRefreshStyleAndroid"
                     ]
                 }
             ]
