@@ -127,7 +127,7 @@ void VerifyTaskEnvironment(const TaskTraits& traits, SchedulerState state) {
                       ? "Background"
                       : "Foreground"));
   }
-  // TaskScheduler only handles |kMergeBlockingNonBlockingPools| once started 
+  // TaskScheduler only handles |kMergeBlockingNonBlockingPools| once started
   // (early task runners are not merged for this experiment).
   // TODO(etiennep): Simplify this after the experiment.
   // Merging pools does not affect SingleThread workers.
@@ -248,20 +248,17 @@ std::vector<TaskSchedulerImplTestParams> GetTaskSchedulerImplTestParams() {
 class TaskSchedulerImplTest
     : public testing::TestWithParam<TaskSchedulerImplTestParams> {
  protected:
-  TaskSchedulerImplTest() : scheduler_("Test"), field_trial_list_(nullptr) {
-    if (GetParam().pool_config == PoolConfiguration::kMergeBlockingNonBlocking)
-      feature_list.InitWithFeatures({kMergeBlockingNonBlockingPools}, {});
+  TaskSchedulerImplTest() : scheduler_("Test") {
+    feature_list_.emplace();
+    feature_list_->InitWithFeatures(GetFeaturesEnabledByConstructor(), {});
   }
 
   void EnableAllTasksUserBlocking() {
-    constexpr char kFieldTrialName[] = "BrowserScheduler";
-    constexpr char kFieldTrialTestGroup[] = "DummyGroup";
-    std::map<std::string, std::string> variation_params;
-    variation_params["AllTasksUserBlocking"] = "true";
-    base::AssociateFieldTrialParams(kFieldTrialName, kFieldTrialTestGroup,
-                                    variation_params);
-    base::FieldTrialList::CreateFieldTrial(kFieldTrialName,
-                                           kFieldTrialTestGroup);
+    feature_list_.reset();
+    feature_list_.emplace();
+    std::vector<Feature> enabled_features = GetFeaturesEnabledByConstructor();
+    enabled_features.push_back(kAllTasksUserBlocking);
+    feature_list_->InitWithFeatures(enabled_features, {});
   }
 
   void set_scheduler_worker_observer(
@@ -296,8 +293,14 @@ class TaskSchedulerImplTest
   TaskSchedulerImpl scheduler_;
 
  private:
-  base::FieldTrialList field_trial_list_;
-  base::test::ScopedFeatureList feature_list;
+  std::vector<Feature> GetFeaturesEnabledByConstructor() {
+    if (GetParam().pool_config == PoolConfiguration::kMergeBlockingNonBlocking)
+      return {kMergeBlockingNonBlockingPools};
+    else
+      return {};
+  }
+
+  Optional<base::test::ScopedFeatureList> feature_list_;
   SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
   bool did_tear_down_ = false;
 

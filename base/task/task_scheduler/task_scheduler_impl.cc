@@ -115,10 +115,8 @@ void TaskSchedulerImpl::Start(
     SchedulerWorkerObserver* scheduler_worker_observer) {
   // This is set in Start() and not in the constructor because variation params
   // are usually not ready when TaskSchedulerImpl is instantiated in a process.
-  if (base::GetFieldTrialParamValue("BrowserScheduler",
-                                    "AllTasksUserBlocking") == "true") {
+  if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     all_tasks_user_blocking_.Set();
-  }
 
   const bool use_blocking_pools =
       !base::FeatureList::IsEnabled(kMergeBlockingNonBlockingPools);

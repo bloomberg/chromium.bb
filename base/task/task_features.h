@@ -10,7 +10,9 @@
 namespace base {
 
 struct Feature;
-extern const BASE_EXPORT base::Feature kMergeBlockingNonBlockingPools;
+
+extern const BASE_EXPORT Feature kAllTasksUserBlocking;
+extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
 
 }  // namespace base
 
