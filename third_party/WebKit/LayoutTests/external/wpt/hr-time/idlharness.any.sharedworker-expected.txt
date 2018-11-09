@@ -16,19 +16,8 @@ PASS Performance interface: performance must inherit property "now()" with the p
 PASS Performance interface: performance must inherit property "timeOrigin" with the proper type
 PASS Performance interface: performance must inherit property "toJSON()" with the proper type
 PASS Test default toJSON operation of Performance
-PASS HTMLElement interface: existence and properties of interface object
-PASS HTMLBodyElement interface: existence and properties of interface object
 PASS Window interface: existence and properties of interface object
 FAIL WorkerGlobalScope interface: attribute performance assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
 PASS WorkerGlobalScope interface: self must inherit property "performance" with the proper type
-PASS HTMLFrameSetElement interface: existence and properties of interface object
-PASS Node interface: existence and properties of interface object
-PASS Document interface: existence and properties of interface object
-PASS DocumentType interface: existence and properties of interface object
-PASS DocumentFragment interface: existence and properties of interface object
-PASS ShadowRoot interface: existence and properties of interface object
-PASS Element interface: existence and properties of interface object
-PASS CharacterData interface: existence and properties of interface object
-PASS Text interface: existence and properties of interface object
 Harness: the test ran to completion.
 

@@ -19,6 +19,5 @@ FAIL HTMLMediaElement interface: media must inherit property "captureStream()" w
 PASS HTMLCanvasElement interface: operation captureStream(double)
 PASS HTMLCanvasElement interface: canvas must inherit property "captureStream(double)" with the proper type
 PASS HTMLCanvasElement interface: calling captureStream(double) on canvas with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 
