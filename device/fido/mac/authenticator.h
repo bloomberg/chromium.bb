@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   void Cancel() override;
   std::string GetId() const override;
   base::string16 GetDisplayName() const override;
-  const AuthenticatorSupportedOptions& Options() const override;
+  const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
   FidoTransportProtocol AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;

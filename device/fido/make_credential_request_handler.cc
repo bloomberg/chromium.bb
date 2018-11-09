@@ -22,39 +22,35 @@ namespace {
 
 bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
     FidoAuthenticator* authenticator,
-    const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
-    CtapMakeCredentialRequest* request) {
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
   using AuthenticatorAttachment =
       AuthenticatorSelectionCriteria::AuthenticatorAttachment;
   using UvAvailability =
       AuthenticatorSupportedOptions::UserVerificationAvailability;
 
-  const auto& options = authenticator->Options();
+  const auto& opt_options = authenticator->Options();
+  if (!opt_options) {
+    // This authenticator doesn't know its capabilities yet, so we need
+    // to assume it can handle the request. This is the case for Windows,
+    // where we proxy the request to the native API.
+    return true;
+  }
+
   if ((authenticator_selection_criteria.authenticator_attachement() ==
            AuthenticatorAttachment::kPlatform &&
-       !options.is_platform_device()) ||
+       !opt_options->is_platform_device()) ||
       (authenticator_selection_criteria.authenticator_attachement() ==
            AuthenticatorAttachment::kCrossPlatform &&
-       options.is_platform_device())) {
+       opt_options->is_platform_device()))
     return false;
-  }
 
   if (authenticator_selection_criteria.require_resident_key() &&
-      !options.supports_resident_key()) {
+      !opt_options->supports_resident_key())
     return false;
-  }
-  request->SetResidentKeySupported(
-      authenticator_selection_criteria.require_resident_key());
 
-  const auto& user_verification_requirement =
-      authenticator_selection_criteria.user_verification_requirement();
-  if (user_verification_requirement == UserVerificationRequirement::kRequired) {
-    request->SetUserVerificationRequired(true);
-  }
-
-  return user_verification_requirement !=
+  return authenticator_selection_criteria.user_verification_requirement() !=
              UserVerificationRequirement::kRequired ||
-         options.user_verification_availability() ==
+         opt_options->user_verification_availability() ==
              UvAvailability::kSupportedAndConfigured;
 }
 
@@ -112,16 +108,12 @@ MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 
 void MakeCredentialRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
-  // The user verification field of the request may be adjusted to the
-  // authenticator, so we need to make a copy.
-  CtapMakeCredentialRequest request_copy = request_parameter_;
   if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
-          authenticator, authenticator_selection_criteria_, &request_copy)) {
+          authenticator, authenticator_selection_criteria_))
     return;
-  }
 
   authenticator->MakeCredential(
-      std::move(request_copy),
+      request_parameter_,
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator));
 }

@@ -155,8 +155,9 @@ AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
 
 }  // namespace
 
-const AuthenticatorSupportedOptions& TouchIdAuthenticator::Options() const {
-  static const AuthenticatorSupportedOptions options =
+const base::Optional<AuthenticatorSupportedOptions>&
+TouchIdAuthenticator::Options() const {
+  static const base::Optional<AuthenticatorSupportedOptions> options =
       TouchIdAuthenticatorOptions();
   return options;
 }

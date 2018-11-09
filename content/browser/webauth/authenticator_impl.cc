@@ -224,6 +224,19 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
   make_credential_param.SetExcludeList(std::move(exclude_list));
   make_credential_param.SetIsIndividualAttestation(is_individual_attestation);
   make_credential_param.SetHmacSecret(options->hmac_create_secret);
+  // TODO(martinkr): Rename to (Set)ResidentKeyRequired.
+  make_credential_param.SetResidentKeySupported(
+      options->authenticator_selection &&
+      options->authenticator_selection->require_resident_key);
+  // TODO(martinkr): Change CtapMakeCredentialRequest to store the
+  // enum-valued UV requirement; then compute the "effective" requirement for
+  // CTAP devices in FidoDeviceAuthenticator, as it is already done for
+  // GetAssertion. As it is, this will default to uv=false for kPreferred,
+  // which is wrong if the authenticator actually does support UV.
+  make_credential_param.SetUserVerificationRequired(
+      options->authenticator_selection &&
+      options->authenticator_selection->user_verification ==
+          blink::mojom::UserVerificationRequirement::REQUIRED);
   return make_credential_param;
 }
 

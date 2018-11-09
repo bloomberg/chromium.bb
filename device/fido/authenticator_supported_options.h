@@ -33,7 +33,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   };
 
   AuthenticatorSupportedOptions();
+  AuthenticatorSupportedOptions(const AuthenticatorSupportedOptions& other);
   AuthenticatorSupportedOptions(AuthenticatorSupportedOptions&& other);
+  AuthenticatorSupportedOptions& operator=(
+      const AuthenticatorSupportedOptions& other);
   AuthenticatorSupportedOptions& operator=(
       AuthenticatorSupportedOptions&& other);
   ~AuthenticatorSupportedOptions();
@@ -74,8 +77,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // optional if client pin capability is not supported by the authenticator.
   ClientPinAvailability client_pin_availability_ =
       ClientPinAvailability::kNotSupported;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorSupportedOptions);
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

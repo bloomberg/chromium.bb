@@ -35,25 +35,6 @@ base::string16 OptionalGURLToUTF16(const base::Optional<GURL>& in) {
   return in ? base::UTF8ToUTF16(in->spec()) : base::string16();
 }
 
-AuthenticatorSupportedOptions WinNativeCrossPlatformAuthenticatorOptions() {
-  AuthenticatorSupportedOptions options;
-  // Both MakeCredential and GetAssertion force CROSS_PLATFORM (in CTAP- and in
-  // U2F mode).
-  options.SetIsPlatformDevice(false);
-  // We don't know whether any of the connected USB devices support certain
-  // features such as resident keys, client PINs or UV/UP; but they might, and
-  // the platform supports them, so we set the "maximum" feature set here.
-  options.SetSupportsResidentKey(true);
-  options.SetClientPinAvailability(
-      AuthenticatorSupportedOptions::ClientPinAvailability::
-          kSupportedButPinNotSet);
-  options.SetUserVerificationAvailability(
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured);
-  options.SetUserPresenceRequired(true);
-  return options;
-}
-
 }  // namespace
 
 WinNativeCrossPlatformAuthenticator::WinNativeCrossPlatformAuthenticator(
@@ -389,11 +370,14 @@ WinNativeCrossPlatformAuthenticator::AuthenticatorTransport() const {
   return FidoTransportProtocol::kUsbHumanInterfaceDevice;
 }
 
-const AuthenticatorSupportedOptions&
+const base::Optional<AuthenticatorSupportedOptions>&
 WinNativeCrossPlatformAuthenticator::Options() const {
-  static const AuthenticatorSupportedOptions options =
-      WinNativeCrossPlatformAuthenticatorOptions();
-  return options;
+  // The request can potentially be fulfilled by any device that Windows
+  // communicates with, so returning AuthenticatorSupportedOptions really
+  // doesn't make much sense.
+  static const base::Optional<AuthenticatorSupportedOptions> no_options =
+      base::nullopt;
+  return no_options;
 }
 
 base::WeakPtr<FidoAuthenticator>

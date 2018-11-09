@@ -11,13 +11,14 @@
 namespace device {
 
 AuthenticatorSupportedOptions::AuthenticatorSupportedOptions() = default;
-
+AuthenticatorSupportedOptions::AuthenticatorSupportedOptions(
+    const AuthenticatorSupportedOptions& other) = default;
 AuthenticatorSupportedOptions::AuthenticatorSupportedOptions(
     AuthenticatorSupportedOptions&& other) = default;
-
+AuthenticatorSupportedOptions& AuthenticatorSupportedOptions::operator=(
+    const AuthenticatorSupportedOptions& other) = default;
 AuthenticatorSupportedOptions& AuthenticatorSupportedOptions::operator=(
     AuthenticatorSupportedOptions&& other) = default;
-
 AuthenticatorSupportedOptions::~AuthenticatorSupportedOptions() = default;
 
 AuthenticatorSupportedOptions&
