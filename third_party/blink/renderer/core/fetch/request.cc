@@ -859,7 +859,7 @@ Request* Request::clone(ScriptState* script_state,
 
 FetchRequestData* Request::PassRequestData(ScriptState* script_state,
                                            ExceptionState& exception_state) {
-  DCHECK(!IsBodyUsedForDCheck());
+  DCHECK(!IsBodyUsedForDCheck(exception_state));
   FetchRequestData* data = request_->Pass(script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;

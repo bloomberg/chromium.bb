@@ -16,6 +16,7 @@ namespace blink {
 class ExceptionState;
 class ScriptPromise;
 class ScriptState;
+class UnderlyingSourceBase;
 
 // This is an implementation of the corresponding IDL interface.
 // Use TraceWrapperMember to hold a reference to an instance of this class.
@@ -33,6 +34,14 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                 ScriptValue underlying_source,
                                 ScriptValue strategy,
                                 ExceptionState&);
+
+  // This function doesn't take ExceptionState because the caller cannot have
+  // one. Returns null when an error happens.
+  static ReadableStream* CreateWithCountQueueingStrategy(
+      ScriptState*,
+      UnderlyingSourceBase* underlying_source,
+      size_t high_water_mark);
+
   ~ReadableStream() override = default;
 
   void Trace(Visitor* visitor) override;
@@ -64,10 +73,22 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
   base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const;
   base::Optional<bool> IsDisturbed(ScriptState*, ExceptionState&) const;
+  base::Optional<bool> IsReadable(ScriptState*, ExceptionState&) const;
+  base::Optional<bool> IsClosed(ScriptState*, ExceptionState&) const;
+  base::Optional<bool> IsErrored(ScriptState*, ExceptionState&) const;
 
- private:
+  // Makes this stream locked and disturbed.
+  void LockAndDisturb(ScriptState*, ExceptionState&);
+
   ScriptValue AsScriptValue(ScriptState* script_state) const;
 
+  // In some cases we are known to fail to trace the stream correctly. In such
+  // cases |object_| will be silently gone. This function is for detecting the
+  // issue. Use this function at places where an actual crash happens. Do not
+  // use this function to write "just in case" code.
+  bool IsInternalStreamMissing() const { return object_.IsEmpty(); }
+
+ private:
   TraceWrapperV8Reference<v8::Object> object_;
 };
 

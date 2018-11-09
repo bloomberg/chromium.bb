@@ -74,7 +74,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns
   // false. Should never be used outside DCHECK().
-  virtual bool IsBodyUsedForDCheck();
+  virtual bool IsBodyUsedForDCheck(ExceptionState& exception_state);
 
  private:
   // TODO(e_hakkinen): Fix |MimeType()| to always contain parameters and

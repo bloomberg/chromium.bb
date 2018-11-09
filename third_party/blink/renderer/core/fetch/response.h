@@ -105,7 +105,7 @@ class CORE_EXPORT Response final : public Body {
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns
   // false. Should never be used outside DCHECK().
-  bool IsBodyUsedForDCheck() override;
+  bool IsBodyUsedForDCheck(ExceptionState&) override;
 
  private:
   explicit Response(ExecutionContext*);

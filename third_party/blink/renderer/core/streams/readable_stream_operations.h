@@ -132,16 +132,6 @@ class CORE_EXPORT ReadableStreamOperations {
   // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
   static ScriptValue Tee(ScriptState*, ScriptValue stream, ExceptionState&);
 
-  // ReadableStreamTee
-  // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
-  // Returns without setting new_stream1 or new_stream2 if an error occurs.
-  // Exceptions are caught and rethrown on |exception_state|.
-  static void Tee(ScriptState*,
-                  ScriptValue stream,
-                  ScriptValue* new_stream1,
-                  ScriptValue* new_stream2,
-                  ExceptionState&);
-
   // ReadableStreamSerialize. Returns a MessagePort which can be passed to
   // ReadableStreamDeserialize to produce an equivalent ReadableStream in a
   // different context.
