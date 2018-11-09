@@ -637,11 +637,31 @@ void LayerTreeView::RecordWheelAndTouchScrollingCount(
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
-  // If the host is closing, then no more compositing is possible.  This
-  // prevents shutdown races between handling the close message and
-  // the CreateLayerTreeFrameSink task.
-  if (delegate_->IsClosing())
+  // When the compositor is not visible it would not request a
+  // LayerTreeFrameSink so this is a race where it requested one then became
+  // not-visible. In that case, we can wait for it to become visible again
+  // before replying.
+  //
+  // This deals with an insidious race when the RenderWidget is swapped-out
+  // after this task was posted from the compositor. When swapped-out the
+  // compositor is stopped by making it not visible, and the RenderWidget (our
+  // delegate) is a zombie which can not be used (https://crbug.com/894899).
+  // Eventually the RenderWidget/LayerTreeView will not exist at all in this
+  // case (https://crbug.com/419087). So this handles the case for now since the
+  // compositor is not visible, and we can avoid using the RenderWidget until
+  // it marks the compositor visible again, indicating that it is valid to use
+  // the RenderWidget again.
+  //
+  // If there is no compositor thread, then this is a test-only path where
+  // composite is controlled directly by blink, and visibility is not
+  // considered. We don't expect blink to ever try composite on a swapped-out
+  // RenderWidget, which would be a bug, but the race condition can't happen
+  // in the single-thread case since this isn't a posted task.
+  if (!layer_tree_host_->IsVisible() && !!compositor_thread_) {
+    layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
+  }
+
   delegate_->RequestNewLayerTreeFrameSink(base::BindOnce(
       &LayerTreeView::SetLayerTreeFrameSink, weak_factory_.GetWeakPtr()));
 }
