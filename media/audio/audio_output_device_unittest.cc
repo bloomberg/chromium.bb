@@ -371,7 +371,13 @@ struct TestEnvironment {
 
 }  // namespace
 
-TEST_F(AudioOutputDeviceTest, VerifyDataFlow) {
+#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/903696): Flaky, at least on CrOS ASAN.
+#define MAYBE_VerifyDataFlow DISABLED_VerifyDataFlow
+#else
+#define MAYBE_VerifyDataFlow VerifyDataFlow
+#endif
+TEST_F(AudioOutputDeviceTest, MAYBE_VerifyDataFlow) {
   // The test fixture isn't used in this test, but we still have to clean up
   // after it.
   StopAudioDevice();
