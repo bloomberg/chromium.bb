@@ -273,8 +273,8 @@ void CastDialogView::ShowScrollView() {
   }
   scroll_view_ = new views::ScrollView();
   AddChildView(scroll_view_);
-  constexpr int kSinkButtonHeight = 50;
-  scroll_view_->ClipHeightTo(0, kSinkButtonHeight * 10);
+  constexpr int kSinkButtonHeight = 56;
+  scroll_view_->ClipHeightTo(0, kSinkButtonHeight * 6.5);
 }
 
 void CastDialogView::RestoreSinkListState() {
