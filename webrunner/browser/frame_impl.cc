@@ -245,6 +245,10 @@ void FrameImpl::GetNavigationController(
   controller_bindings_.AddBinding(this, std::move(controller));
 }
 
+void FrameImpl::SetJavaScriptLogLevel(chromium::web::LogLevel level) {
+  log_level_ = level;
+}
+
 void FrameImpl::LoadUrl(fidl::StringPtr url,
                         std::unique_ptr<chromium::web::LoadUrlParams> params) {
   GURL validated_url(*url);
@@ -424,6 +428,44 @@ void FrameImpl::ReadyToCommitNavigation(
       before_load_script_injector->AddOnLoadScript(script.script);
     }
   }
+}
+
+bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
+                                       int32_t level,
+                                       const base::string16& message,
+                                       int32_t line_no,
+                                       const base::string16& source_id) {
+  if (static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+          log_level_) > static_cast<uint32_t>(level)) {
+    return false;
+  }
+
+  std::string message_formatted =
+      base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
+                         line_no, base::UTF16ToUTF8(message).data());
+  switch (level) {
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::DEBUG):
+      LOG(INFO) << "debug:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::INFO):
+      LOG(INFO) << "info:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::WARN):
+      LOG(WARNING) << "warn:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::ERROR):
+      LOG(ERROR) << "error:" << message;
+      break;
+    default:
+      DLOG(WARNING) << "Unknown log level: " << level;
+      return false;
+  }
+
+  return true;
 }
 
 FrameImpl::OriginScopedScript::OriginScopedScript(

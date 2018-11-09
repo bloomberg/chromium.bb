@@ -1659,6 +1659,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
                  r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
                  r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
+                 r"^webrunner[\\/]browser[\\/]frame_impl.cc$",
                  r"^storage[\\/]browser[\\/]fileapi[\\/]" +
                      r"dump_file_system.cc$",
                  r"^headless[\\/]app[\\/]headless_shell\.cc$"))

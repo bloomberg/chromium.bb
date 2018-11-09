@@ -13,6 +13,14 @@ enum ExecuteMode {
   ON_PAGE_LOAD = 2;    // Will evaluate the script on all subsequent page loads.
 };
 
+enum LogLevel {
+  NONE = 100;  // No logging.
+  DEBUG = -1;  // Outputs messages from console.debug().
+  INFO = 0;    // Outputs messages from console.log().
+  WARN = 1;    // Outputs messages from console.warn().
+  ERROR = 2;   // Outputs messages from console.error().
+};
+
 interface Frame {
   // Creates a new view using the specified |view_token|. Caller should pass the
   // other end of the token to CreateViewHolderCmd() to attach the new view to a
@@ -66,4 +74,9 @@ interface Frame {
   // |observer|: The observer to use. Unregisters any existing observers
   //             if null.
   100: SetNavigationEventObserver(NavigationEventObserver? observer);
+
+  // If set to a value other than NONE, allows web content to log messages
+  // to the system logger using console.log(), console.info(), console.warn(),
+  // and console.error().
+  101: SetJavaScriptLogLevel(LogLevel level);
 };
