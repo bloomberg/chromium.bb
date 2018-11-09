@@ -86,7 +86,9 @@ IN_PROC_BROWSER_TEST_F(HasBeforeUnloadHandlerTest,
                                 true /* has_beforeunload_helper */);
 }
 
-IN_PROC_BROWSER_TEST_F(HasBeforeUnloadHandlerTest, EmptyBeforeUnloadDetected) {
+// TODO(https://crbug.com/902355): Re-enable this test.
+IN_PROC_BROWSER_TEST_F(HasBeforeUnloadHandlerTest,
+                       DISABLED_EmptyBeforeUnloadDetected) {
   TestDiscardBeforeUnloadHelper("/emptybeforeunload.html",
                                 false /* has_beforeunload_helper */);
 }
