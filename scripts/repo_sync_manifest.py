@@ -20,10 +20,12 @@ the same options.
 from __future__ import print_function
 
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
+from chromite.lib import gerrit
 from chromite.lib import osutils
 
 
@@ -58,6 +60,16 @@ def GetParser():
       help='Sync to the external version of a manifest. Switch from '
            'manifest-versions-internal to manifest-versions for buildspecs. '
            'Not usable with --manifest.')
+
+  patch_group = parser.add_argument_group(
+      'Patch',
+      description='Which patches should be included with the build?')
+  patch_group.add_argument(
+      '-g', '--gerrit-patches', action='split_extend', default=[],
+      metavar='Id1 *int_Id2...IdN',
+      help='Space-separated list of short-form Gerrit '
+           "Change-Id's or change numbers to patch. "
+           "Please prepend '*' to internal Change-Id's")
 
   resources_group = parser.add_argument_group(
       'Resources',
@@ -187,4 +199,14 @@ def main(argv):
 
   repo.Sync(local_manifest=local_manifest, detach=True)
 
-  # TODO: Cherry-pick in changes.
+  if options.gerrit_patches:
+    patches = gerrit.GetGerritPatchInfo(options.gerrit_patches)
+    # TODO: Extract patches from manifest synced.
+
+    helper_pool = patch_series.HelperPool.SimpleCreate(
+        cros_internal=not options.external, cros=True)
+
+    series = patch_series.PatchSeries(
+        path=options.repo_root, helper_pool=helper_pool, forced_manifest=None)
+
+    series.Apply(patches)
