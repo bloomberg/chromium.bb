@@ -5,7 +5,8 @@
  * and in these tests, we use the below variables to represent
  * the exposed values in a readable way.
  */
-const kLow = 1,
+const kVeryLow = 0,
+      kLow = 1,
       kMedium = 2,
       kHigh = 3,
       kVeryHigh = 4;
@@ -14,6 +15,10 @@ function reportPriority(url, optionalDoc) {
   const documentToUse = optionalDoc ? optionalDoc : document;
   const loadPriority = internals.getResourcePriority(url, documentToUse);
   window.opener.postMessage(loadPriority, '*');
+}
+
+function reportLoaded() {
+  window.opener.postMessage('LOADED', '*');
 }
 
 function reportFailure() {
