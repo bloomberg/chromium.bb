@@ -8,8 +8,10 @@ js_type_check("closure_compile") {
   deps = [
     ":downloads_browser_proxy",
     ":downloads_page",
-    ":smb_shares_page",
   ]
+  if (is_chromeos) {
+    deps += [ ":smb_shares_page" ]
+  }
 }
 
 js_library("downloads_browser_proxy") {
@@ -19,12 +21,14 @@ js_library("downloads_browser_proxy") {
   ]
 }
 
-js_library("smb_shares_page") {
-  deps = [
-    "..:route",
-    "//ui/webui/resources/cr_components/chromeos/smb_shares:smb_browser_proxy",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-  ]
+if (is_chromeos) {
+  js_library("smb_shares_page") {
+    deps = [
+      "..:route",
+      "//ui/webui/resources/cr_components/chromeos/smb_shares:smb_browser_proxy",
+      "//ui/webui/resources/js:web_ui_listener_behavior",
+    ]
+  }
 }
 
 js_library("downloads_page") {
