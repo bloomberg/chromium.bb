@@ -46,6 +46,8 @@ WebRange::WebRange(int start, int length)
       << "These values are reserved to indicate that the range is null";
 }
 
+WebRange::WebRange() = default;
+
 WebRange::WebRange(const EphemeralRange& range) {
   if (range.IsNull())
     return;
