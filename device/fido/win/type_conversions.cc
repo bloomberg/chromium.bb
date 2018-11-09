@@ -4,7 +4,6 @@
 
 #include "device/fido/win/type_conversions.h"
 
-#include <webauthn.h>
 #include <vector>
 
 #include "base/containers/span.h"

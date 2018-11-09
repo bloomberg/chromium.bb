@@ -5,6 +5,7 @@
 #include "device/fido/win/authenticator.h"
 
 #include <Combaseapi.h>
+#include <windows.h>
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
@@ -20,7 +21,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/win/type_conversions.h"
-#include "device/fido/win/webauthn.h"
+#include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
 
@@ -182,7 +183,7 @@ void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
       WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, request.client_data_json().size(),
       const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(
           request.client_data_json().data())),
-      WEBAUTHN_HASH_ALGORITHM_SHA256};
+      WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
   std::vector<WEBAUTHN_CREDENTIAL> exclude_list;
   if (request.exclude_list()) {
@@ -314,7 +315,7 @@ void WinNativeCrossPlatformAuthenticator::GetAssertionBlocking(
       WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, request.client_data_json().size(),
       const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(
           request.client_data_json().data())),
-      WEBAUTHN_HASH_ALGORITHM_SHA256};
+      WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
   static BOOL kUseAppIdTrue = TRUE;
   WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS get_assertion_options{
