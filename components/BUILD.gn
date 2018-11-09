@@ -105,6 +105,7 @@ test("components_unittests") {
     "//components/gcm_driver/crypto:unit_tests",
     "//components/google/core/browser:unit_tests",
     "//components/grpc_support/test:unit_tests",
+    "//components/gwp_asan:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
     "//components/image_fetcher/core:unit_tests",
@@ -339,10 +340,7 @@ test("components_unittests") {
   }
 
   if (is_win) {
-    deps += [
-      "//components/browser_watcher:unit_tests",
-      "//components/gwp_asan/common:unit_tests",
-    ]
+    deps += [ "//components/browser_watcher:unit_tests" ]
   }
 
   if (enable_basic_printing) {
