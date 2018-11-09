@@ -35,6 +35,7 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   void SetRendererBackgrounded(bool backgrounded);
   bool IsRendererBackgrounded() const;
+  void ResetForTesting();
 
   // Whether a string is parkable or not. Can be called from any thread.
   static bool ShouldPark(const StringImpl& string);
@@ -51,10 +52,13 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   void ParkAllIfRendererBackgrounded();
   size_t Size() const;
+  void RecordStatistics();
 
   ParkableStringManager();
 
   bool backgrounded_;
+  bool waiting_to_record_stats_;
+  bool should_record_stats_;
   HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
