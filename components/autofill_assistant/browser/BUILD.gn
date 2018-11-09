@@ -63,6 +63,8 @@ jumbo_static_library("browser") {
     "payment_information.h",
     "protocol_utils.cc",
     "protocol_utils.h",
+    "rectf.cc",
+    "rectf.h",
     "script.cc",
     "script.h",
     "script_executor.cc",

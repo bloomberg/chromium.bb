@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/rectf.h"
 
 namespace autofill_assistant {
 class WebController;
@@ -50,19 +52,27 @@ class ElementArea {
   // exist.
   bool IsEmpty() const;
 
+  // Returns true if there are elements to check.
+  bool HasElements() const { return !element_positions_.empty(); }
+
+  // Defines a callback that'll be run every time the set of element coordinates
+  // changes.
+  //
+  // The first argument is true if there are any elements in the area. The
+  // second reports the areas that corresponds to currently known elements,
+  // which might be empty.
+  void SetOnUpdate(
+      base::RepeatingCallback<void(bool, const std::vector<RectF>& areas)> cb) {
+    on_update_ = cb;
+  }
+
  private:
   // A rectangle that corresponds to the area of the visual viewport covered by
   // an element. Coordinates are values between 0 and 1, relative to the size of
   // the visible viewport.
   struct ElementPosition {
     std::vector<std::string> selector;
-
-    float left;
-    float top;
-    float right;
-    float bottom;
-
-    bool is_not_empty() const { return right > left && bottom > top; }
+    RectF rect;
 
     ElementPosition();
     ElementPosition(const ElementPosition& orig);
@@ -72,16 +82,17 @@ class ElementArea {
   void KeepUpdatingPositions();
   void OnGetElementPosition(const std::vector<std::string>& selector,
                             bool found,
-                            float left,
-                            float top,
-                            float right,
-                            float bottom);
+                            const RectF& rect);
+  void ReportUpdate();
 
   WebController* const web_controller_;
   std::vector<ElementPosition> element_positions_;
 
   // If true, regular updates are currently scheduled.
   bool scheduled_update_;
+
+  base::RepeatingCallback<void(bool, const std::vector<RectF>& areas)>
+      on_update_;
 
   base::WeakPtrFactory<ElementArea> weak_ptr_factory_;
 

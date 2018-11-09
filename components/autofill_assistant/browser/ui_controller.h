@@ -85,6 +85,15 @@ class UiController {
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;
 
+  // Updates the area of the visible viewport that is accessible.
+  //
+  // If |enabled| is false, the visible viewport is accessible.
+  //
+  // |areas| is expressed in coordinates relative to the width or height of the
+  // visible viewport, as a number between 0 and 1. It can be empty.
+  virtual void UpdateTouchableArea(bool enabled,
+                                   const std::vector<RectF>& areas) = 0;
+
   // Returns a string describing the current execution context. This is useful
   // when analyzing feedback forms and for debugging in general.
   virtual std::string GetDebugContext() const = 0;

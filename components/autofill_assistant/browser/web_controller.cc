@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -1055,7 +1056,7 @@ WebController::CreateBatchElementChecker() {
 
 void WebController::GetElementPosition(
     const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool, float, float, float, float)> callback) {
+    base::OnceCallback<void(bool, const RectF&)> callback) {
   FindElement(
       selectors, /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForPosition,
@@ -1063,10 +1064,11 @@ void WebController::GetElementPosition(
 }
 
 void WebController::OnFindElementForPosition(
-    base::OnceCallback<void(bool, float, float, float, float)> callback,
+    base::OnceCallback<void(bool, const RectF&)> callback,
     std::unique_ptr<FindElementResult> result) {
   if (result->object_id.empty()) {
-    std::move(callback).Run(false, 0, 0, 0, 0);
+    RectF empty;
+    std::move(callback).Run(false, empty);
     return;
   }
 
@@ -1085,10 +1087,11 @@ void WebController::OnFindElementForPosition(
 }
 
 void WebController::OnGetElementPositionResult(
-    base::OnceCallback<void(bool, float, float, float, float)> callback,
+    base::OnceCallback<void(bool, const RectF&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
-    std::move(callback).Run(false, 0, 0, 0, 0);
+    RectF empty;
+    std::move(callback).Run(false, empty);
     return;
   }
   const auto* value = result->GetResult()->GetValue();
@@ -1108,12 +1111,13 @@ void WebController::OnGetElementPositionResult(
   float visual_w = static_cast<float>(list[6].GetDouble());
   float visual_h = static_cast<float>(list[7].GetDouble());
 
-  float left = std::max(0.0f, left_layout - visual_left_offset) / visual_w;
-  float top = std::max(0.0f, top_layout - visual_top_offset) / visual_h;
-  float right = std::max(0.0f, right_layout - visual_left_offset) / visual_w;
-  float bottom = std::max(0.0f, bottom_layout - visual_top_offset) / visual_h;
+  RectF rect;
+  rect.left = std::max(0.0f, left_layout - visual_left_offset) / visual_w;
+  rect.top = std::max(0.0f, top_layout - visual_top_offset) / visual_h;
+  rect.right = std::max(0.0f, right_layout - visual_left_offset) / visual_w;
+  rect.bottom = std::max(0.0f, bottom_layout - visual_top_offset) / visual_h;
 
-  std::move(callback).Run(true, left, top, right, bottom);
+  std::move(callback).Run(true, rect);
 }
 
 void WebController::OnFindElementForGetOuterHtml(

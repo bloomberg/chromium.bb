@@ -31,13 +31,15 @@ ElementArea::~ElementArea() = default;
 void ElementArea::SetElements(
     const std::vector<std::vector<std::string>>& elements) {
   element_positions_.clear();
-  if (elements.empty())
-    return;
 
   for (const auto& selector : elements) {
     element_positions_.emplace_back();
     element_positions_.back().selector = selector;
   }
+  ReportUpdate();
+
+  if (element_positions_.empty())
+    return;
 
   if (!scheduled_update_) {
     // Check once and schedule regular updates.
@@ -64,15 +66,14 @@ void ElementArea::UpdatePositions() {
 
 bool ElementArea::IsEmpty() const {
   for (const auto& position : element_positions_) {
-    if (position.is_not_empty()) {
+    if (!position.rect.empty()) {
       return false;
     }
   }
   return true;
 }
 
-ElementArea::ElementPosition::ElementPosition()
-    : left(0.0), top(0.0), right(0.0), bottom(0.0) {}
+ElementArea::ElementPosition::ElementPosition() = default;
 ElementArea::ElementPosition::ElementPosition(const ElementPosition& orig) =
     default;
 ElementArea::ElementPosition::~ElementPosition() = default;
@@ -93,17 +94,19 @@ void ElementArea::KeepUpdatingPositions() {
 
 void ElementArea::OnGetElementPosition(const std::vector<std::string>& selector,
                                        bool found,
-                                       float left,
-                                       float top,
-                                       float right,
-                                       float bottom) {
+                                       const RectF& rect) {
   for (auto& position : element_positions_) {
     if (position.selector == selector) {
       // found == false, has all coordinates set to 0.0, which clears the area.
-      position.left = left;
-      position.top = top;
-      position.right = right;
-      position.bottom = bottom;
+      if (position.rect.left == rect.left && position.rect.top == rect.top &&
+          position.rect.right == rect.right &&
+          position.rect.bottom == rect.bottom) {
+        // Avoid reporting unnecessary updates
+        return;
+      }
+
+      position.rect = rect;
+      ReportUpdate();
       return;
     }
   }
@@ -113,12 +116,24 @@ void ElementArea::OnGetElementPosition(const std::vector<std::string>& selector,
 
 bool ElementArea::Contains(float x, float y) const {
   for (const auto& position : element_positions_) {
-    if (position.is_not_empty() && x >= position.left && x <= position.right &&
-        y >= position.top && y <= position.bottom) {
+    if (position.rect.Contains(x, y)) {
       return true;
     }
   }
   return false;
+}
+
+void ElementArea::ReportUpdate() {
+  if (!on_update_)
+    return;
+
+  std::vector<RectF> areas;
+  for (auto& position : element_positions_) {
+    if (!position.rect.empty()) {
+      areas.emplace_back(position.rect);
+    }
+  }
+  on_update_.Run(!element_positions_.empty(), areas);
 }
 
 }  // namespace autofill_assistant

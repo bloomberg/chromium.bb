@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_input.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
+#include "components/autofill_assistant/browser/rectf.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -134,7 +135,7 @@ class WebController {
   // height of the visible viewport.
   virtual void GetElementPosition(
       const std::vector<std::string>& selectors,
-      base::OnceCallback<void(bool, float, float, float, float)> callback);
+      base::OnceCallback<void(bool, const RectF&)> callback);
 
  protected:
   friend class BatchElementChecker;
@@ -355,11 +356,11 @@ class WebController {
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   void OnFindElementForPosition(
-      base::OnceCallback<void(bool, float, float, float, float)> callback,
+      base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<FindElementResult> result);
 
   void OnGetElementPositionResult(
-      base::OnceCallback<void(bool, float, float, float, float)> callback,
+      base::OnceCallback<void(bool, const RectF&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which

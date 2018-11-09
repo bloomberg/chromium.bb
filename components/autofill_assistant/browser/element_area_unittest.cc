@@ -24,7 +24,7 @@ class ElementAreaTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         element_area_(&mock_web_controller_) {
     ON_CALL(mock_web_controller_, OnGetElementPosition(_, _))
-        .WillByDefault(RunOnceCallback<1>(false, 0.0f, 0.0f, 0.0f, 0.0f));
+        .WillByDefault(RunOnceCallback<1>(false, RectF()));
   }
 
   // scoped_task_environment_ must be first to guarantee other field
@@ -49,7 +49,7 @@ TEST_F(ElementAreaTest, ElementNotFound) {
 TEST_F(ElementAreaTest, OneElement) {
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(ElementsAre("#found"), _))
-      .WillOnce(RunOnceCallback<1>(true, 0.25f, 0.25f, 0.75f, 0.75f));
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.25f, 0.25f, 0.75f, 0.75f)));
 
   element_area_.SetElements({{"#found"}});
   EXPECT_FALSE(element_area_.IsEmpty());
@@ -63,10 +63,10 @@ TEST_F(ElementAreaTest, OneElement) {
 TEST_F(ElementAreaTest, TwoElements) {
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(ElementsAre("#top_left"), _))
-      .WillOnce(RunOnceCallback<1>(true, 0.0f, 0.0f, 0.25f, 0.25f));
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.0f, 0.25f, 0.25f)));
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(ElementsAre("#bottom_right"), _))
-      .WillOnce(RunOnceCallback<1>(true, 0.25f, 0.25f, 1.0f, 1.0f));
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.25f, 0.25f, 1.0f, 1.0f)));
 
   element_area_.SetElements({{"#top_left"}, {"#bottom_right"}});
   EXPECT_FALSE(element_area_.IsEmpty());
@@ -80,8 +80,8 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
   testing::InSequence seq;
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(ElementsAre("#element"), _))
-      .WillOnce(RunOnceCallback<1>(true, 0.0f, 0.25f, 1.0f, 0.5f))
-      .WillOnce(RunOnceCallback<1>(true, 0.0f, 0.5f, 1.0f, 0.75f));
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.25f, 1.0f, 0.5f)))
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.5f, 1.0f, 0.75f)));
 
   element_area_.SetElements({{"#element"}});
 
@@ -102,8 +102,8 @@ TEST_F(ElementAreaTest, ElementMovesWithTime) {
   testing::InSequence seq;
   EXPECT_CALL(mock_web_controller_,
               OnGetElementPosition(ElementsAre("#element"), _))
-      .WillOnce(RunOnceCallback<1>(true, 0.0f, 0.25f, 1.0f, 0.5f))
-      .WillOnce(RunOnceCallback<1>(true, 0.0f, 0.5f, 1.0f, 0.75f));
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.25f, 1.0f, 0.5f)))
+      .WillOnce(RunOnceCallback<1>(true, RectF(0.0f, 0.5f, 1.0f, 0.75f)));
 
   element_area_.SetElements({{"#element"}});
 

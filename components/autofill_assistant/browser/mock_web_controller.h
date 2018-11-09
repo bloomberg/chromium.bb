@@ -13,6 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+struct RectF;
 
 class MockWebController : public WebController {
  public:
@@ -63,15 +64,13 @@ class MockWebController : public WebController {
 
   void GetElementPosition(
       const std::vector<std::string>& selectors,
-      base::OnceCallback<void(bool, float, float, float, float)> callback)
-      override {
+      base::OnceCallback<void(bool, const RectF&)> callback) override {
     OnGetElementPosition(selectors, callback);
   }
 
   MOCK_METHOD2(OnGetElementPosition,
                void(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(bool, float, float, float, float)>&
-                        callback));
+                    base::OnceCallback<void(bool, const RectF&)>& callback));
 };
 
 }  // namespace autofill_assistant

@@ -5,7 +5,10 @@
       Something went wrong. You can finish your order on the website.
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP" desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action." formatter_data="android_java">
-      It looks like you want to do this by yourself. It's ok to continue on without my help.
+      I cannot help anymore, please continue manually.
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own." formatter_data="android_java">
+      Continue manually?
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_LOADING" desc="Text label that is shown during the loading of the first page, right after being triggered.">
       Opening <ph name="SITE_NAME">$1<ex>google.com</ex></ph>…
