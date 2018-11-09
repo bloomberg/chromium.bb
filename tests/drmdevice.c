@@ -115,8 +115,9 @@ main(void)
     max_devices = drmGetDevices2(0, NULL, 0);
 
     if (max_devices <= 0) {
-        printf("drmGetDevices2() has returned %d\n", max_devices);
-        return -1;
+        printf("drmGetDevices2() has not found any devices (errno=%d)\n",
+               -max_devices);
+        return 77;
     }
     printf("--- Devices reported %d ---\n", max_devices);
 
