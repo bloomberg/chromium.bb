@@ -31,6 +31,7 @@ group("closure_compile") {
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",
     "select_to_speak:closure_compile",
+    "smb_shares:closure_compile",
     "switch_access:closure_compile",
     "sys_internals:closure_compile",
   ]
