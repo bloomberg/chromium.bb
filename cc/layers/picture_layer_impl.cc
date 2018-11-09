@@ -720,6 +720,7 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
     // can cause activation flickering issues. So, if we're in this situation
     // adjust the visible rect by the the controls height.
     if (layer_tree_impl()->IsPendingTree() &&
+        layer_tree_impl()->IsActivelyScrolling() &&
         layer_tree_impl()->browser_controls_shrink_blink_size()) {
       viewport_rect_for_tile_priority_in_content_space_.Inset(
           0,                        // left
