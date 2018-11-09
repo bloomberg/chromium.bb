@@ -175,40 +175,65 @@ void WebController::OnFindElementForClickOrTap(
     base::OnceCallback<void(bool)> callback,
     bool is_a_click,
     std::unique_ptr<FindElementResult> result) {
-  if (result->object_id.empty()) {
+  // Found element must belong to a frame.
+  if (!result->container_frame_host || result->object_id.empty()) {
     DLOG(ERROR) << "Failed to find the element to click or tap.";
     OnResult(false, std::move(callback));
     return;
   }
 
-  ClickOrTapObject(result->object_id, is_a_click, std::move(callback));
+  ClickOrTapElement(std::move(result), is_a_click, std::move(callback));
 }
 
-void WebController::ClickOrTapObject(const std::string& object_id,
-                                     bool is_a_click,
-                                     base::OnceCallback<void(bool)> callback) {
+void WebController::ClickOrTapElement(
+    std::unique_ptr<FindElementResult> target_element,
+    bool is_a_click,
+    base::OnceCallback<void(bool)> callback) {
+  std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+      runtime::CallArgument::Builder().SetObjectId(element_object_id).Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(object_id)
+          .SetObjectId(element_object_id)
           .SetArguments(std::move(argument))
           .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     object_id, is_a_click));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(target_element),
+                     std::move(callback), is_a_click));
 }
 
 void WebController::OnScrollIntoView(
+    std::unique_ptr<FindElementResult> target_element,
     base::OnceCallback<void(bool)> callback,
-    std::string object_id,
     bool is_a_click,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to scroll the element.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  // Wait for a roundtrips through the renderer and compositor pipeline,
+  // otherwise touch event may be dropped because of missing handler.
+  // Note that mouse left button will always be send to the renderer, but it is
+  // slightly better to wait for the changes, like scroll, to be visualized in
+  // compositor as real interaction.
+  target_element->container_frame_host->InsertVisualStateCallback(
+      base::BindOnce(&WebController::OnVisualStateCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     target_element->object_id, is_a_click));
+}
+
+void WebController::OnVisualStateCallback(
+    base::OnceCallback<void(bool)> callback,
+    std::string object_id,
+    bool is_a_click,
+    bool state) {
+  if (!state) {
+    DLOG(ERROR) << "Wait for visual state failed unexpectedly.";
     OnResult(false, std::move(callback));
     return;
   }

@@ -24,6 +24,11 @@ found in the LICENSE file.
         var button = document.getElementById("button");
         button.parentNode.removeChild(button);
       }
+
+      var removeTouchArea = function() {
+        var touch_area = document.getElementById("touch_area");
+        touch_area.parentNode.removeChild(touch_area);
+      }
     </script>
 
     <style>
@@ -60,6 +65,11 @@ found in the LICENSE file.
 
     <div>
       <button id="button" type="button">Test Button</button><br>
+    </div>
+
+    <div>
+      <p id="touch_area" ontouchend="removeTouchArea()">Touchable Area</p>
+      <br>
     </div>
 
     <hr>

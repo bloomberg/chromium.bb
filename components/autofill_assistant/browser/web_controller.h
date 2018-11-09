@@ -72,8 +72,6 @@ class WebController {
   // Perform a touch tap on the element given by |selectors| and return the
   // result through callback. CSS selectors in |selectors| are ordered from top
   // frame to the frame contains the element and the element.
-  //
-  // TODO(crbug.com/806868): Add WebControllerBrowserTest for this interface.
   virtual void TapElement(const std::vector<std::string>& selectors,
                           base::OnceCallback<void(bool)> callback);
 
@@ -202,13 +200,17 @@ class WebController {
                                   std::unique_ptr<FindElementResult> result);
   void OnFindElementForTap(base::OnceCallback<void(bool)> callback,
                            std::unique_ptr<FindElementResult> result);
-  void ClickOrTapObject(const std::string& object_id,
-                        bool is_a_click,
-                        base::OnceCallback<void(bool)> callback);
-  void OnScrollIntoView(base::OnceCallback<void(bool)> callback,
-                        std::string object_id,
+  void ClickOrTapElement(std::unique_ptr<FindElementResult> target_element,
+                         bool is_a_click,
+                         base::OnceCallback<void(bool)> callback);
+  void OnScrollIntoView(std::unique_ptr<FindElementResult> target_element,
+                        base::OnceCallback<void(bool)> callback,
                         bool is_a_click,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnVisualStateCallback(base::OnceCallback<void(bool)> callback,
+                             std::string object_id,
+                             bool is_a_click,
+                             bool state);
   void OnGetBoxModelForClickOrTap(
       base::OnceCallback<void(bool)> callback,
       bool is_a_click,
