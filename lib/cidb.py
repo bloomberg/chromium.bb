@@ -1902,26 +1902,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._GetBuildMessagesWithClause(' AND '.join(where_clause))
 
   @minimum_schema(42)
-  def GetSlaveBuildMessages(self, master_build_id):
-    """Gets build messages from buildMessageTable.
-
-    Args:
-      master_build_id: The build to get all slave messages for.
-
-    Returns:
-      A list of build message dictionaries, where each dictionary contains
-      keys build_id, build_config, waterfall, builder_name, build_number,
-      message_type, message_subtype, message_value, timestamp, board.
-    """
-    # Currently we only retry slave builds in Buildbucket which fail to pass
-    # SyncStage. It means if a build fails to pass HWTestStage, where it posts
-    # messages to buildMessageTable, we won't retry it. So there won't be
-    # duplicated messages for one slave build.
-    # TODO(nxia): it'll be good to have the buildbucket_ids filter.
-    return self._GetBuildMessagesWithClause(
-        'master_build_id = %s' % master_build_id)
-
-  @minimum_schema(42)
   def GetBuildMessagesNewerThan(self, message_type, timestamp):
     """Returns build messages newer than |timestamp|.
 
