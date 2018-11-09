@@ -24,8 +24,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/public/keyboard_switches.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 

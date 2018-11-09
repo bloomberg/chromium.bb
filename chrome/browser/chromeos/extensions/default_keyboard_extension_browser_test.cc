@@ -22,7 +22,7 @@
 #include "extensions/common/extension.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace {
 const base::FilePath::CharType kWebuiTestDir[] = FILE_PATH_LITERAL("webui");

@@ -26,7 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
-#include "ui/keyboard/keyboard_resource_util.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 namespace {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_KEYBOARD_KEYBOARD_RESOURCE_UTIL_H_
-#define UI_KEYBOARD_KEYBOARD_RESOURCE_UTIL_H_
+#ifndef UI_KEYBOARD_RESOURCES_KEYBOARD_RESOURCE_UTIL_H_
+#define UI_KEYBOARD_RESOURCES_KEYBOARD_RESOURCE_UTIL_H_
 
 #include <stddef.h>
 
@@ -31,4 +31,4 @@ KEYBOARD_EXPORT void InitializeKeyboardResources();
 
 }  // namespace keyboard
 
-#endif  // UI_KEYBOARD_KEYBOARD_RESOURCE_UTIL_H_
+#endif  // UI_KEYBOARD_RESOURCES_KEYBOARD_RESOURCE_UTIL_H_
