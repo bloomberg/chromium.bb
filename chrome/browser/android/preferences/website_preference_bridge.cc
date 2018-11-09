@@ -427,6 +427,11 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
     const JavaParamRef<jstring>& origin,
     jint value,
     jboolean is_incognito) {
+  // Note: For Android O+, SetNotificationSettingForOrigin is only called when
+  // the "Clear & Reset" button in Site Settings is pressed. Otherwise, we rely
+  // on ReportNotificationRevokedForOrigin to explicitly record metrics
+  // when we detect changes initiated in Android.
+  //
   // Note: Web Notification permission behaves differently from all other
   // permission types. See https://crbug.com/416894.
   Profile* profile = GetActiveUserProfile(is_incognito);
@@ -438,14 +443,40 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
         url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   }
 
-  if (MaybeResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, url,
+  if (MaybeResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, GURL(),
                               is_incognito, setting)) {
     return;
   }
 
+  PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
+      profile, url, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      PermissionSourceUI::SITE_SETTINGS);
+
   NotificationPermissionContext::UpdatePermission(profile, url, setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+}
+
+// In Android O+, Android is responsible for revoking notification settings--
+// We detect this change and explicitly report it back for UMA reporting.
+static void JNI_WebsitePreferenceBridge_ReportNotificationRevokedForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& origin,
+    jint new_setting_value,
+    jboolean is_incognito) {
+  Profile* profile = GetActiveUserProfile(is_incognito);
+  GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
+
+  ContentSetting setting = static_cast<ContentSetting>(new_setting_value);
+  DCHECK_NE(setting, CONTENT_SETTING_ALLOW);
+
+  WebSiteSettingsUmaUtil::LogPermissionChange(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+
+  PermissionUmaUtil::PermissionRevoked(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                       PermissionSourceUI::ANDROID_SETTINGS,
+                                       url.GetOrigin(), profile);
 }
 
 static void JNI_WebsitePreferenceBridge_GetCameraOrigins(

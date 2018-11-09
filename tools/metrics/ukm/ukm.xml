@@ -3805,7 +3805,6 @@ be describing additional metrics about the same event.
   <metric name="Source">
     <summary>
       An enum of type PermissionSourceUI. The UI surface for this action.
-      Currently we only record when this is PROMPT.
     </summary>
   </metric>
 </event>
