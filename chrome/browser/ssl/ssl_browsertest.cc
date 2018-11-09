@@ -6129,13 +6129,18 @@ IN_PROC_BROWSER_TEST_P(SSLUITestNoCert, NewCertificateAuthority) {
           }));
   run_loop.Run();
 
-  scoped_refptr<net::X509Certificate> cert =
-      net::CreateCertificateChainFromFile(
-          net::GetTestCertsDirectory(), "root_ca_cert.pem",
-          net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  scoped_refptr<net::X509Certificate> cert;
+  net::ScopedCERTCertificateList nss_certs;
 
-  net::ScopedCERTCertificateList nss_certs =
-      net::x509_util::CreateCERTCertificateListFromX509Certificate(cert.get());
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    cert = net::CreateCertificateChainFromFile(
+        net::GetTestCertsDirectory(), "root_ca_cert.pem",
+        net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+
+    nss_certs = net::x509_util::CreateCERTCertificateListFromX509Certificate(
+        cert.get());
+  }
 
   net::NSSCertDatabase::ImportCertFailureList not_imported;
   EXPECT_TRUE(model->ImportCACerts(nss_certs, net::NSSCertDatabase::TRUSTED_SSL,
