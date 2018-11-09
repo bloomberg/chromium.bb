@@ -83,6 +83,9 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // This must be called after the response arrives.
   bool IsCorsCrossOrigin() const;
 
+  // Returns the CORSMode of the underlying UrlData.
+  UrlData::CORSMode cors_mode() const;
+
   // Notifies changes in playback state for controlling media buffering
   // behavior.
   void MediaPlaybackRateChanged(double playback_rate);
