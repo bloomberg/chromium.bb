@@ -60,7 +60,7 @@ bool VerifyAlsConfig() {
   }
 
   const std::vector<base::StringPiece> num_steps = base::SplitStringPiece(
-      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   return num_steps.size() == 7;
 }
 
@@ -79,6 +79,8 @@ std::string GetAlsPath() {
     LOG(ERROR) << "Cannot run backlight_tool --get_ambient_light_path";
     return "";
   }
+
+  base::TrimWhitespaceASCII(output, base::TRIM_ALL, &output);
 
   if (exit_code != 0 || output.empty()) {
     LOG(ERROR) << "Missing ambient light path";
