@@ -34,6 +34,17 @@ public class LocalizationUtilsTest {
 
     @Test
     @SmallTest
+    public void testGetSplitLanguageForAndroid() {
+        assertEquals("en", LocalizationUtils.getSplitLanguageForAndroid("en"));
+        assertEquals("es", LocalizationUtils.getSplitLanguageForAndroid("es"));
+        assertEquals("fr", LocalizationUtils.getSplitLanguageForAndroid("fr"));
+        assertEquals("iw", LocalizationUtils.getSplitLanguageForAndroid("he"));
+        assertEquals("ji", LocalizationUtils.getSplitLanguageForAndroid("yi"));
+        assertEquals("tl", LocalizationUtils.getSplitLanguageForAndroid("fil"));
+    }
+
+    @Test
+    @SmallTest
     public void testChromiumLocaleMatchesLanguage() {
         assertTrue(LocalizationUtils.chromiumLocaleMatchesLanguage("en-US", "en"));
         assertTrue(LocalizationUtils.chromiumLocaleMatchesLanguage("en-GB", "en"));
