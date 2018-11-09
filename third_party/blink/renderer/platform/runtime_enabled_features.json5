@@ -825,10 +825,6 @@
       status: "test",
     },
     {
-      name: "NotificationInlineReplies",
-      status: "stable",
-    },
-    {
       name: "Notifications",
       status: "stable",
     },
