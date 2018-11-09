@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -278,6 +279,16 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
+  // When showing the location bar, display the name of the app, instead of the
+  // current page as the title.
+  // Note: We only do this when the CustomTab UI is enabled, as otherwise the
+  // title of the current page will not be displayed anywhere.
+  if (ShouldShowLocationBar() &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI)) {
+    const Extension* extension = GetExtension();
+    return base::UTF8ToUTF16(extension->name());
+  }
+
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
