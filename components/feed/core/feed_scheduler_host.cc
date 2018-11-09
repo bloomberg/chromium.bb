@@ -296,10 +296,6 @@ void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
   }
 }
 
-void FeedSchedulerHost::OnTaskReschedule() {
-  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::kFixedTimer));
-}
-
 void FeedSchedulerHost::OnSuggestionConsumed() {
   user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsUsed);
 }

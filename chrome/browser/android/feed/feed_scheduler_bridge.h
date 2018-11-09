@@ -53,9 +53,6 @@ class FeedSchedulerBridge {
                     const base::android::JavaRef<jobject>& j_this,
                     const base::android::JavaRef<jobject>& j_callback);
 
-  void OnTaskReschedule(JNIEnv* env,
-                        const base::android::JavaRef<jobject>& j_this);
-
   void OnSuggestionConsumed(JNIEnv* env,
                             const base::android::JavaRef<jobject>& j_this);
 

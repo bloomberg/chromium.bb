@@ -640,12 +640,6 @@ TEST_F(FeedSchedulerHostTest, ScheduleFixedTimerWakeUpOnSuccess) {
   EXPECT_EQ(2U, schedule_wake_up_times().size());
 }
 
-TEST_F(FeedSchedulerHostTest, OnTaskReschedule) {
-  EXPECT_EQ(1U, schedule_wake_up_times().size());
-  scheduler()->OnTaskReschedule();
-  EXPECT_EQ(2U, schedule_wake_up_times().size());
-}
-
 TEST_F(FeedSchedulerHostTest, ShouldRefreshOffline) {
   {
     ForceDeviceOffline forceDeviceOffline;
