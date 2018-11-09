@@ -502,4 +502,322 @@ TEST_F(AXTableInfoTest, ExtraMacNodes) {
   EXPECT_EQ(5, indirect_child_ids[1]);
 }
 
+TEST_F(AXTableInfoTest, TableWithNoIndices) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kTable;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kRow;
+  initial_state.nodes[1].child_ids = {4, 5};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kRow;
+  initial_state.nodes[2].child_ids = {6, 7};
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kColumnHeader;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kColumnHeader;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[5].role = ax::mojom::Role::kCell;
+  initial_state.nodes[6].id = 7;
+  initial_state.nodes[6].role = ax::mojom::Role::kCell;
+
+  AXTree tree(initial_state);
+  AXNode* table = tree.root();
+
+  EXPECT_TRUE(table->IsTable());
+  EXPECT_FALSE(table->IsTableRow());
+  EXPECT_FALSE(table->IsTableCellOrHeader());
+  EXPECT_EQ(2, table->GetTableColCount());
+  EXPECT_EQ(2, table->GetTableRowCount());
+
+  EXPECT_EQ(4, table->GetTableCellFromCoords(0, 0)->id());
+  EXPECT_EQ(5, table->GetTableCellFromCoords(0, 1)->id());
+  EXPECT_EQ(6, table->GetTableCellFromCoords(1, 0)->id());
+  EXPECT_EQ(7, table->GetTableCellFromCoords(1, 1)->id());
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(2, 1));
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(1, -1));
+
+  EXPECT_EQ(4, table->GetTableCellFromIndex(0)->id());
+  EXPECT_EQ(5, table->GetTableCellFromIndex(1)->id());
+  EXPECT_EQ(6, table->GetTableCellFromIndex(2)->id());
+  EXPECT_EQ(7, table->GetTableCellFromIndex(3)->id());
+  EXPECT_EQ(nullptr, table->GetTableCellFromIndex(-1));
+  EXPECT_EQ(nullptr, table->GetTableCellFromIndex(4));
+
+  AXNode* cell_0_0 = tree.GetFromId(4);
+  EXPECT_EQ(0, cell_0_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_0_0->GetTableCellColIndex());
+  AXNode* cell_0_1 = tree.GetFromId(5);
+  EXPECT_EQ(0, cell_0_1->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_0_1->GetTableCellColIndex());
+  AXNode* cell_1_0 = tree.GetFromId(6);
+  EXPECT_EQ(1, cell_1_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_1_0->GetTableCellColIndex());
+  AXNode* cell_1_1 = tree.GetFromId(7);
+  EXPECT_EQ(1, cell_1_1->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_1_1->GetTableCellColIndex());
+}
+
+TEST_F(AXTableInfoTest, TableWithPartialIndices) {
+  // Start with a table with no indices.
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kTable;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kRow;
+  initial_state.nodes[1].child_ids = {4, 5};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kRow;
+  initial_state.nodes[2].child_ids = {6, 7};
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kColumnHeader;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kColumnHeader;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[5].role = ax::mojom::Role::kCell;
+  initial_state.nodes[6].id = 7;
+  initial_state.nodes[6].role = ax::mojom::Role::kCell;
+
+  AXTree tree(initial_state);
+  AXNode* table = tree.root();
+
+  EXPECT_EQ(2, table->GetTableColCount());
+  EXPECT_EQ(2, table->GetTableRowCount());
+
+  AXNode* cell_0_0 = tree.GetFromId(4);
+  EXPECT_EQ(0, cell_0_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_0_0->GetTableCellColIndex());
+  AXNode* cell_0_1 = tree.GetFromId(5);
+  EXPECT_EQ(0, cell_0_1->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_0_1->GetTableCellColIndex());
+  AXNode* cell_1_0 = tree.GetFromId(6);
+  EXPECT_EQ(1, cell_1_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_1_0->GetTableCellColIndex());
+  AXNode* cell_1_1 = tree.GetFromId(7);
+  EXPECT_EQ(1, cell_1_1->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_1_1->GetTableCellColIndex());
+
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount,
+                                  5);
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount, 2);
+  update.nodes[5].AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
+                                  2);
+  update.nodes[5].AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
+  update.nodes[6].AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
+                                  2);
+  update.nodes[6].AddIntAttribute(
+      ax::mojom::IntAttribute::kTableCellColumnIndex, 2);
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  // The largest column index in the table is 2, but the
+  // table claims it has a column count of 5. That's allowed.
+  EXPECT_EQ(5, table->GetTableColCount());
+
+  // While the table claims it has a row count of 2, the
+  // last row has an index of 2, so the correct row count is 3.
+  EXPECT_EQ(3, table->GetTableRowCount());
+
+  // All of the specified row and cell indices are legal
+  // so they're respected.
+  EXPECT_EQ(0, cell_0_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_0_0->GetTableCellColIndex());
+  EXPECT_EQ(0, cell_0_1->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_0_1->GetTableCellColIndex());
+  EXPECT_EQ(2, cell_1_0->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_1_0->GetTableCellColIndex());
+  EXPECT_EQ(2, cell_1_1->GetTableCellRowIndex());
+  EXPECT_EQ(2, cell_1_1->GetTableCellColIndex());
+
+  // Fetching cells by coordinates works.
+  EXPECT_EQ(4, table->GetTableCellFromCoords(0, 0)->id());
+  EXPECT_EQ(5, table->GetTableCellFromCoords(0, 1)->id());
+  EXPECT_EQ(6, table->GetTableCellFromCoords(2, 0)->id());
+  EXPECT_EQ(7, table->GetTableCellFromCoords(2, 2)->id());
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(0, 2));
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(1, 0));
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(1, 1));
+  EXPECT_EQ(nullptr, table->GetTableCellFromCoords(2, 1));
+}
+
+TEST_F(AXTableInfoTest, BadRowIndicesIgnored) {
+  // The table claims it has two rows and two columns, but
+  // the cell indices for both the first and second rows
+  // are for row 2 (zero-based).
+  //
+  // The cell indexes for the first row should be
+  // respected, and for the second row it will get the
+  // next row index.
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  MakeTable(&initial_state.nodes[0], 1, 2, 2);
+  initial_state.nodes[0].child_ids = {2, 3};
+  MakeRow(&initial_state.nodes[1], 2, 0);
+  initial_state.nodes[1].child_ids = {4, 5};
+  MakeRow(&initial_state.nodes[2], 3, 0);
+  initial_state.nodes[2].child_ids = {6, 7};
+  MakeCell(&initial_state.nodes[3], 4, 2, 0);
+  MakeCell(&initial_state.nodes[4], 5, 2, 1);
+  MakeCell(&initial_state.nodes[5], 6, 2, 0);
+  MakeCell(&initial_state.nodes[6], 7, 2, 1);
+  AXTree tree(initial_state);
+  AXNode* table = tree.root();
+
+  EXPECT_EQ(2, table->GetTableColCount());
+  EXPECT_EQ(4, table->GetTableRowCount());
+
+  AXNode* cell_id_4 = tree.GetFromId(4);
+  EXPECT_EQ(2, cell_id_4->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_id_4->GetTableCellColIndex());
+  AXNode* cell_id_5 = tree.GetFromId(5);
+  EXPECT_EQ(2, cell_id_5->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_id_5->GetTableCellColIndex());
+  AXNode* cell_id_6 = tree.GetFromId(6);
+  EXPECT_EQ(3, cell_id_6->GetTableCellRowIndex());
+  EXPECT_EQ(0, cell_id_6->GetTableCellColIndex());
+  AXNode* cell_id_7 = tree.GetFromId(7);
+  EXPECT_EQ(3, cell_id_7->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_id_7->GetTableCellColIndex());
+}
+
+TEST_F(AXTableInfoTest, BadColIndicesIgnored) {
+  // The table claims it has two rows and two columns, but
+  // the cell indices for the columns either repeat or
+  // go backwards.
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  MakeTable(&initial_state.nodes[0], 1, 2, 2);
+  initial_state.nodes[0].child_ids = {2, 3};
+  MakeRow(&initial_state.nodes[1], 2, 0);
+  initial_state.nodes[1].child_ids = {4, 5};
+  MakeRow(&initial_state.nodes[2], 3, 0);
+  initial_state.nodes[2].child_ids = {6, 7};
+  MakeCell(&initial_state.nodes[3], 4, 0, 1);
+  MakeCell(&initial_state.nodes[4], 5, 0, 1);
+  MakeCell(&initial_state.nodes[5], 6, 1, 2);
+  MakeCell(&initial_state.nodes[6], 7, 1, 1);
+  AXTree tree(initial_state);
+  AXNode* table = tree.root();
+
+  EXPECT_EQ(4, table->GetTableColCount());
+  EXPECT_EQ(2, table->GetTableRowCount());
+
+  AXNode* cell_id_4 = tree.GetFromId(4);
+  EXPECT_EQ(0, cell_id_4->GetTableCellRowIndex());
+  EXPECT_EQ(1, cell_id_4->GetTableCellColIndex());
+  AXNode* cell_id_5 = tree.GetFromId(5);
+  EXPECT_EQ(0, cell_id_5->GetTableCellRowIndex());
+  EXPECT_EQ(2, cell_id_5->GetTableCellColIndex());
+  AXNode* cell_id_6 = tree.GetFromId(6);
+  EXPECT_EQ(1, cell_id_6->GetTableCellRowIndex());
+  EXPECT_EQ(2, cell_id_6->GetTableCellColIndex());
+  AXNode* cell_id_7 = tree.GetFromId(7);
+  EXPECT_EQ(1, cell_id_7->GetTableCellRowIndex());
+  EXPECT_EQ(3, cell_id_7->GetTableCellColIndex());
+}
+
+TEST_F(AXTableInfoTest, AriaIndicesinferred) {
+  // Note that ARIA indices are 1-based, whereas the rest of
+  // the table indices are zero-based.
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(13);
+  MakeTable(&initial_state.nodes[0], 1, 3, 3);
+  initial_state.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
+                                         5);
+  initial_state.nodes[0].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaColumnCount, 5);
+  initial_state.nodes[0].child_ids = {2, 3, 4};
+  MakeRow(&initial_state.nodes[1], 2, 0);
+  initial_state.nodes[1].child_ids = {5, 6, 7};
+  MakeRow(&initial_state.nodes[2], 3, 1);
+  initial_state.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellRowIndex, 4);
+  initial_state.nodes[2].child_ids = {8, 9, 10};
+  MakeRow(&initial_state.nodes[3], 4, 2);
+  initial_state.nodes[3].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellRowIndex, 4);
+  initial_state.nodes[3].child_ids = {11, 12, 13};
+  MakeCell(&initial_state.nodes[4], 5, 0, 0);
+  initial_state.nodes[4].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellRowIndex, 2);
+  initial_state.nodes[4].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex, 2);
+  MakeCell(&initial_state.nodes[5], 6, 0, 1);
+  MakeCell(&initial_state.nodes[6], 7, 0, 2);
+  MakeCell(&initial_state.nodes[7], 8, 1, 0);
+  MakeCell(&initial_state.nodes[8], 9, 1, 1);
+  MakeCell(&initial_state.nodes[9], 10, 1, 2);
+  MakeCell(&initial_state.nodes[10], 11, 2, 0);
+  initial_state.nodes[10].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex, 3);
+  MakeCell(&initial_state.nodes[11], 12, 2, 1);
+  initial_state.nodes[11].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex, 2);
+  MakeCell(&initial_state.nodes[12], 13, 2, 2);
+  initial_state.nodes[12].AddIntAttribute(
+      ax::mojom::IntAttribute::kAriaCellColumnIndex, 1);
+  AXTree tree(initial_state);
+  AXNode* table = tree.root();
+
+  EXPECT_EQ(5, table->GetTableAriaColCount());
+  EXPECT_EQ(5, table->GetTableAriaRowCount());
+
+  // The first row has the first cell ARIA row and column index
+  // specified as (2, 2). The rest of the row is inferred.
+
+  AXNode* cell_0_0 = tree.GetFromId(5);
+  EXPECT_EQ(2, cell_0_0->GetTableCellAriaRowIndex());
+  EXPECT_EQ(2, cell_0_0->GetTableCellAriaColIndex());
+
+  AXNode* cell_0_1 = tree.GetFromId(6);
+  EXPECT_EQ(2, cell_0_1->GetTableCellAriaRowIndex());
+  EXPECT_EQ(3, cell_0_1->GetTableCellAriaColIndex());
+
+  AXNode* cell_0_2 = tree.GetFromId(7);
+  EXPECT_EQ(2, cell_0_2->GetTableCellAriaRowIndex());
+  EXPECT_EQ(4, cell_0_2->GetTableCellAriaColIndex());
+
+  // The next row has the ARIA row index set to 4 on the row
+  // element. The rest is inferred.
+
+  AXNode* cell_1_0 = tree.GetFromId(8);
+  EXPECT_EQ(4, cell_1_0->GetTableCellAriaRowIndex());
+  EXPECT_EQ(1, cell_1_0->GetTableCellAriaColIndex());
+
+  AXNode* cell_1_1 = tree.GetFromId(9);
+  EXPECT_EQ(4, cell_1_1->GetTableCellAriaRowIndex());
+  EXPECT_EQ(2, cell_1_1->GetTableCellAriaColIndex());
+
+  AXNode* cell_1_2 = tree.GetFromId(10);
+  EXPECT_EQ(4, cell_1_2->GetTableCellAriaRowIndex());
+  EXPECT_EQ(3, cell_1_2->GetTableCellAriaColIndex());
+
+  // The last row has the ARIA row index set to 4 again, which is
+  // illegal so we should get 5. The cells have column indices of
+  // 3, 2, 1 which is illegal so we ignore the latter two and should
+  // end up with column indices of 3, 4, 5.
+
+  AXNode* cell_2_0 = tree.GetFromId(11);
+  EXPECT_EQ(5, cell_2_0->GetTableCellAriaRowIndex());
+  EXPECT_EQ(3, cell_2_0->GetTableCellAriaColIndex());
+
+  AXNode* cell_2_1 = tree.GetFromId(12);
+  EXPECT_EQ(5, cell_2_1->GetTableCellAriaRowIndex());
+  EXPECT_EQ(4, cell_2_1->GetTableCellAriaColIndex());
+
+  AXNode* cell_2_2 = tree.GetFromId(13);
+  EXPECT_EQ(5, cell_2_2->GetTableCellAriaRowIndex());
+  EXPECT_EQ(5, cell_2_2->GetTableCellAriaColIndex());
+}
+
 }  // namespace ui

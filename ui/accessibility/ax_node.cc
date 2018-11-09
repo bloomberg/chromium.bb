@@ -199,6 +199,22 @@ int32_t AXNode::GetTableRowCount() const {
   return table_info->row_count;
 }
 
+int32_t AXNode::GetTableAriaColCount() const {
+  AXTableInfo* table_info = tree_->GetTableInfo(this);
+  if (!table_info)
+    return 0;
+
+  return table_info->aria_col_count;
+}
+
+int32_t AXNode::GetTableAriaRowCount() const {
+  AXTableInfo* table_info = tree_->GetTableInfo(this);
+  if (!table_info)
+    return 0;
+
+  return table_info->aria_row_count;
+}
+
 int32_t AXNode::GetTableCellCount() const {
   AXTableInfo* table_info = tree_->GetTableInfo(this);
   if (!table_info)
@@ -319,17 +335,27 @@ int32_t AXNode::GetTableCellIndex() const {
 }
 
 int32_t AXNode::GetTableCellColIndex() const {
-  // TODO(dmazzoni): Compute from AXTableInfo. http://crbug.com/832289
-  int32_t col_index = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex, &col_index);
-  return col_index;
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return 0;
+
+  int32_t index = GetTableCellIndex();
+  if (index == -1)
+    return 0;
+
+  return table_info->cell_data_vector[index].col_index;
 }
 
 int32_t AXNode::GetTableCellRowIndex() const {
-  // TODO(dmazzoni): Compute from AXTableInfo. http://crbug.com/832289
-  int32_t row_index = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, &row_index);
-  return row_index;
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return 0;
+
+  int32_t index = GetTableCellIndex();
+  if (index == -1)
+    return 0;
+
+  return table_info->cell_data_vector[index].row_index;
 }
 
 int32_t AXNode::GetTableCellColSpan() const {
@@ -360,15 +386,27 @@ int32_t AXNode::GetTableCellRowSpan() const {
 }
 
 int32_t AXNode::GetTableCellAriaColIndex() const {
-  int32_t col_index = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex, &col_index);
-  return col_index;
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return -0;
+
+  int32_t index = GetTableCellIndex();
+  if (index == -1)
+    return 0;
+
+  return table_info->cell_data_vector[index].aria_col_index;
 }
 
 int32_t AXNode::GetTableCellAriaRowIndex() const {
-  int32_t row_index = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex, &row_index);
-  return row_index;
+  AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return -0;
+
+  int32_t index = GetTableCellIndex();
+  if (index == -1)
+    return 0;
+
+  return table_info->cell_data_vector[index].aria_row_index;
 }
 
 void AXNode::GetTableCellColHeaderNodeIds(
