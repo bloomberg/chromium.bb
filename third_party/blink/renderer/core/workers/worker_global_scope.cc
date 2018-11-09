@@ -499,9 +499,11 @@ WorkerGlobalScope::WorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread,
     base::TimeTicks time_origin)
-    : WorkerOrWorkletGlobalScope(thread->GetIsolate(),
-                                 creation_params->worker_clients,
-                                 thread->GetWorkerReportingProxy()),
+    : WorkerOrWorkletGlobalScope(
+          thread->GetIsolate(),
+          creation_params->worker_clients,
+          std::move(creation_params->web_worker_fetch_context),
+          thread->GetWorkerReportingProxy()),
       url_(creation_params->script_url),
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),

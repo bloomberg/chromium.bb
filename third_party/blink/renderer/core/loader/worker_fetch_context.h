@@ -21,21 +21,17 @@ class SubresourceFilter;
 class WebURLLoader;
 class WebURLLoaderFactory;
 class WebWorkerFetchContext;
-class WorkerClients;
 class WorkerContentSettingsClient;
 class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
 enum class ResourceType : uint8_t;
 
-CORE_EXPORT void ProvideWorkerFetchContextToWorker(
-    WorkerClients*,
-    std::unique_ptr<WebWorkerFetchContext>);
-
 // The WorkerFetchContext is a FetchContext for workers (dedicated, shared and
 // service workers) and threaded worklets (animation and audio worklets).
 class WorkerFetchContext final : public BaseFetchContext {
  public:
-  static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&);
+  static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&,
+                                    std::unique_ptr<WebWorkerFetchContext>);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:

@@ -326,8 +326,12 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
   mojom::ScriptType script_type = (options_->type() == "classic")
                                       ? mojom::ScriptType::kClassic
                                       : mojom::ScriptType::kModule;
+
+  // WebWorkerFetchContext is provided later in
+  // ThreadedMessagingProxyBase::InitializeWorkerThread().
   return std::make_unique<GlobalScopeCreationParams>(
       script_url, script_type, GetExecutionContext()->UserAgent(),
+      nullptr /* web_worker_fetch_context */,
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       kReferrerPolicyDefault, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),

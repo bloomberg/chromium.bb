@@ -83,9 +83,13 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   if (web_worker_fetch_context) {
     web_worker_fetch_context->SetTerminateSyncLoadEvent(
         &terminate_sync_load_event_);
-    ProvideWorkerFetchContextToWorker(
-        global_scope_creation_params->worker_clients,
-        std::move(web_worker_fetch_context));
+
+    // In some cases |web_worker_fetch_context| has already been provided and is
+    // overwritten here, and in other cases |web_worker_fetch_context| has been
+    // nullptr and is set here.
+    // TODO(hiroshige): Clean up this.
+    global_scope_creation_params->web_worker_fetch_context =
+        std::move(web_worker_fetch_context);
   }
 
   worker_thread_ = CreateWorkerThread();

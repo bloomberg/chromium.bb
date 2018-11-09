@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -23,8 +24,10 @@ namespace blink {
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
     WorkerClients* worker_clients,
+    std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : worker_clients_(worker_clients),
+      web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),
       reporting_proxy_(reporting_proxy),
@@ -97,7 +100,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
   if (resource_fetcher_)
     return resource_fetcher_;
-  WorkerFetchContext* fetch_context = WorkerFetchContext::Create(*this);
+  WorkerFetchContext* fetch_context =
+      WorkerFetchContext::Create(*this, std::move(web_worker_fetch_context_));
   resource_fetcher_ = ResourceFetcher::Create(fetch_context);
   if (IsContextPaused())
     resource_fetcher_->SetDefersLoading(true);

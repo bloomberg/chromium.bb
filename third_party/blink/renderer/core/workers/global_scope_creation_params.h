@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -42,6 +43,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const KURL& script_url,
       mojom::ScriptType script_type,
       const String& user_agent,
+      std::unique_ptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
@@ -77,6 +79,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   mojom::ScriptType script_type;
   String user_agent;
+
+  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context;
 
   // |content_security_policy_parsed_headers| and
   // |content_security_policy_raw_headers| are mutually exclusive.
