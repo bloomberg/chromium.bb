@@ -26,6 +26,7 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,6 +36,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPaymentRequest;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.DimmingDialog;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
@@ -43,7 +45,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.Client;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUiErrorView;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
@@ -100,7 +101,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private static final int DIALOG_EXIT_ANIMATION_MS = 195;
 
     private final Context mContext;
-    private final Client mClient;
+    private final AutofillAssistantPaymentRequest mClient;
     private final boolean mRequestShipping;
     private final boolean mRequestShippingOption;
     private final boolean mRequestContactDetails;
@@ -121,6 +122,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private Button mPayButton;
     private View mCloseButton;
     private View mSpinnyLayout;
+    private CheckBox mTermsCheckBox;
 
     private LineItemBreakdownSection mOrderSummarySection;
     private OptionSection mShippingAddressSection;
@@ -171,10 +173,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param securityLevel   The security level of the page that invoked PaymentRequest.
      * @param shippingStrings The string resource identifiers to use in the shipping sections.
      */
-    public PaymentRequestUI(Activity activity, Client client, boolean requestShipping,
-            boolean requestShippingOption, boolean requestContact, boolean canAddCards,
-            boolean showDataSource, String title, String origin, int securityLevel,
-            ShippingStrings shippingStrings) {
+    public PaymentRequestUI(Activity activity, AutofillAssistantPaymentRequest client,
+            boolean requestShipping, boolean requestShippingOption, boolean requestContact,
+            boolean canAddCards, boolean showDataSource, String title, String origin,
+            int securityLevel, ShippingStrings shippingStrings) {
         mContext = activity;
         mClient = client;
         mRequestShipping = requestShipping;
@@ -304,6 +306,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPayButton.setOnClickListener(this);
         mEditButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
         mEditButton.setOnClickListener(this);
+
+        // Terms and services accepted checkbox. The state is passively propagated along to the
+        // client when the pay/continue button is clicked.
+        mTermsCheckBox = (CheckBox) mRequestView.findViewById(R.id.terms_checkbox);
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
@@ -648,7 +654,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mShippingOptionsSectionInformation == null
                         ? null
                         : mShippingOptionsSectionInformation.getSelectedItem(),
-                mPaymentMethodSectionInformation.getSelectedItem());
+                mPaymentMethodSectionInformation.getSelectedItem(), mTermsCheckBox.isChecked());
 
         if (shouldShowSpinner) {
             changeSpinnerVisibility(true);

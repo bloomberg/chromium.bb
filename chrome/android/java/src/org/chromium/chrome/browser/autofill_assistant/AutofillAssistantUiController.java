@@ -325,7 +325,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                         selectedPaymentInformation.succeed, selectedPaymentInformation.card,
                         selectedPaymentInformation.address, selectedPaymentInformation.payerName,
                         selectedPaymentInformation.payerPhone,
-                        selectedPaymentInformation.payerEmail);
+                        selectedPaymentInformation.payerEmail,
+                        selectedPaymentInformation.isTermsAndConditionsAccepted);
                 mAutofillAssistantPaymentRequest.close();
                 mAutofillAssistantPaymentRequest = null;
             });
@@ -585,7 +586,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
             boolean succeed, @Nullable PersonalDataManager.CreditCard card,
             @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
-            @Nullable String payerPhone, @Nullable String payerEmail);
+            @Nullable String payerPhone, @Nullable String payerEmail,
+            boolean isTermsAndConditionsAccepted);
     private native void nativeOnAccessToken(
             long nativeUiControllerAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);

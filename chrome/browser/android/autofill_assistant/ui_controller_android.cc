@@ -183,12 +183,15 @@ void UiControllerAndroid::OnGetPaymentInformation(
     const JavaParamRef<jobject>& jaddress,
     const JavaParamRef<jstring>& jpayer_name,
     const JavaParamRef<jstring>& jpayer_phone,
-    const JavaParamRef<jstring>& jpayer_email) {
+    const JavaParamRef<jstring>& jpayer_email,
+    jboolean jis_terms_and_services_accepted) {
   DCHECK(get_payment_information_callback_);
 
   std::unique_ptr<PaymentInformation> payment_info =
       std::make_unique<PaymentInformation>();
   payment_info->succeed = jsucceed;
+  payment_info->is_terms_and_conditions_accepted =
+      jis_terms_and_services_accepted;
   if (payment_info->succeed) {
     if (jcard != nullptr) {
       payment_info->card = std::make_unique<autofill::CreditCard>();

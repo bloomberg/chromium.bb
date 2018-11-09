@@ -34,6 +34,14 @@
 
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
 
+    <CheckBox
+        android:id="@+id/terms_checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:padding="2dp"
+        android:text="@string/autofill_assistant_terms" />
+
     <include layout="@layout/autofill_assistant_payment_request_bottom_bar" />
 
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>

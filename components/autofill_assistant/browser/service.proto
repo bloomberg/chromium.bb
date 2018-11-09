@@ -220,6 +220,13 @@ message ActionProto {
   optional bool clean_contextual_ui = 33;
 }
 
+// Result message used to send payment request related data to the server.
+message PaymentDetails {
+  optional string card_issuer_network = 1;
+  // Whether the integrated terms and conditions approval checkbox was checked.
+  optional bool is_terms_and_conditions_accepted = 2;
+}
+
 message ProcessedActionProto {
   // The action that was processed.
   optional ActionProto action = 1;
@@ -229,7 +236,7 @@ message ProcessedActionProto {
   oneof result_data {
     string html_source = 12;
     // Should be set as a result of GetPaymentInformationAction.
-    string card_issuer_network = 13;
+    PaymentDetails payment_details = 15;
   }
 }
 
