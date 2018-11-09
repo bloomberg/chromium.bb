@@ -306,7 +306,7 @@
 <translation id="142758023928848008">Habilitar teclas persistentes (para utilizar combinaciones de teclas sin tocarlas simultáneamente)</translation>
 <translation id="143027896309062157">Leer y modificar todos tus datos en tu ordenador y en los sitios web que visites</translation>
 <translation id="1430915738399379752">Imprimir</translation>
-<translation id="1432581352905426595">Administrar motores de búsqueda</translation>
+<translation id="1432581352905426595">Administrar buscadores</translation>
 <translation id="1433811987160647649">Preguntar antes de acceder</translation>
 <translation id="1434696352799406980">Se restablecerán la página de inicio, la página Nueva pestaña, el motor de búsqueda y las pestañas fijadas. También se inhabilitarán todas las extensiones y se borrarán los datos temporales como las cookies. Los marcadores, el historial y las contraseñas guardadas no se borrarán.</translation>
 <translation id="1434886155212424586">La página de inicio es la página Nueva pestaña</translation>
@@ -936,7 +936,7 @@
 <translation id="236117173274098341">Optimizar</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
 <translation id="2365507699358342471">Este sitio web puede ver el texto y las imágenes que se hayan copiado en el portapapeles.</translation>
-<translation id="2367199180085172140">Añadir uso compartido de archivo</translation>
+<translation id="2367199180085172140">Añadir sistema de archivos compartidos</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369536625682139252">Se eliminarán todos los datos que almacena <ph name="SITE" />, excepto las cookies.</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
@@ -5320,7 +5320,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8983677657449185470">Ayudar a mejorar la función Navegación Segura</translation>
 <translation id="8984179138335769204">Inicio rápido</translation>
 <translation id="8986362086234534611">Dejar de recordar</translation>
-<translation id="8986494364107987395">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
+<translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8991520179165052608">El sitio web puede usar tu micrófono</translation>
 <translation id="899403249577094719">URL base de certificado de Netscape</translation>

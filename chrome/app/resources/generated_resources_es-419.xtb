@@ -917,7 +917,7 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> desea sincronizarse</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
 <translation id="2345723121311404059">1 página a <ph name="PRINTER_NAME" /></translation>
-<translation id="2347644257713614136">El uso de Hangouts y Cast for Education está regido por la Política de privacidad de Google.</translation>
+<translation id="2347644257713614136">El uso de Hangouts y Cast for Education está regido por la Política de Privacidad de Google.</translation>
 <translation id="2348176352564285430">App: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="2350182423316644347">Iniciando aplicación...</translation>
 <translation id="2350796302381711542">¿Deseas permitir que <ph name="HANDLER_HOSTNAME" /> abra todos los vínculos de <ph name="PROTOCOL" /> en lugar de <ph name="REPLACED_HANDLER_TITLE" />?</translation>
@@ -3901,7 +3901,7 @@
 <translation id="6828860976882136098">No se pudieron configurar actualizaciones automáticas para todos los usuarios (error de ejecución preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">Obtén ayuda con tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6829270497922309893">Registro en tu organización</translation>
-<translation id="682971198310367122">Política de privacidad de Google</translation>
+<translation id="682971198310367122">Política de Privacidad de Google</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="683373380308365518">Cambia a un navegador inteligente y seguro</translation>
 <translation id="6835762382653651563">Conéctate a Internet para actualizar tu <ph name="DEVICE_TYPE" />.</translation>
@@ -5481,7 +5481,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932508678520956232">No se pudo iniciar la impresión.</translation>
-<translation id="93343527085570547">Para solicitar cambios en el contenido por motivos legales, visita la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" />. Es posible que se envíe a Google información sobre el sistema y la cuenta. Según lo establecido en nuestra <ph name="BEGIN_LINK2" />Política de privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />, la información que nos brindes se usará para solucionar problemas técnicos y mejorar nuestros servicios.</translation>
+<translation id="93343527085570547">Para solicitar cambios en el contenido por motivos legales, visita la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" />. Es posible que se envíe a Google información sobre el sistema y la cuenta. Según lo establecido en nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />, la información que nos brindes se usará para solucionar problemas técnicos y mejorar nuestros servicios.</translation>
 <translation id="93393615658292258">Solo contraseña</translation>
 <translation id="934503638756687833">Los elementos que no se muestran aquí también se quitarán si es necesario. Obtén más información sobre &lt;a href="<ph name="URL" />"&gt;la protección contra software no deseado&lt;/a&gt; en el informe de privacidad de Chrome.</translation>
 <translation id="935490618240037774">Tus favoritos, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos.</translation>

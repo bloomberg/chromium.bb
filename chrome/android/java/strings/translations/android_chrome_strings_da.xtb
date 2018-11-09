@@ -161,7 +161,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2120297377148151361">Aktivitet og interaktioner</translation>
 <translation id="2122601567107267586">Appen kunne ikke åbnes</translation>
 <translation id="2126426811489709554">Leveret af Chrome</translation>
-<translation id="2131665479022868825"><ph name="DATA" /> gemt</translation>
+<translation id="2131665479022868825"><ph name="DATA" /> sparet</translation>
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Føj til startskærm</translation>
 <translation id="2142289305367051020">Dine favoritsider vises her</translation>
@@ -224,7 +224,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2612676031748830579">Kortnummer</translation>
 <translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
-<translation id="2631006050119455616">Gemt</translation>
+<translation id="2631006050119455616">Sparet</translation>
 <translation id="2633278372998075009">Private faner</translation>
 <translation id="2647434099613338025">Tilføj sprog</translation>
 <translation id="2650751991977523696">Vil du downloade filen igen?</translation>
@@ -645,7 +645,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
-<translation id="5937580074298050696">Du sparede <ph name="AMOUNT" /></translation>
+<translation id="5937580074298050696">Du har sparet <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5942872142862698679">Søgning via Google</translation>
 <translation id="5952764234151283551">Sender webadressen på en side, du forsøger at åbne, til Google</translation>

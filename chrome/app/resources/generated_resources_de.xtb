@@ -1769,7 +1769,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3627320433825461852">Noch weniger als 1 Minute</translation>
 <translation id="3627588569887975815">Link in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="3627671146180677314">Verlängerungszeit für Netscape-Zertifikate</translation>
-<translation id="3627879631695760395"><ph name="APP" /> installieren</translation>
+<translation id="3627879631695760395"><ph name="APP" /> installieren...</translation>
 <translation id="3630132874740063857">Meine Telefonnummer</translation>
 <translation id="3630995161997703415">Fügen Sie diese Website Ihrer Ablage hinzu, um sie jederzeit zu verwenden</translation>
 <translation id="3635030235490426869">Tab 1</translation>
@@ -4603,7 +4603,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7885253890047913815">Letzte Ziele</translation>
 <translation id="7887334752153342268">Duplizieren</translation>
 <translation id="7887864092952184874">Bluetooth-Maus ist gekoppelt</translation>
-<translation id="7889565820482017512">Displayanzeige</translation>
+<translation id="7889565820482017512">Anzeigegröße</translation>
 <translation id="7889966925761734854">Suche</translation>
 <translation id="7892100671754994880">Nächster Nutzer</translation>
 <translation id="7893008570150657497">Auf Fotos, Musik und andere Medien auf Ihrem Computer zugreifen</translation>

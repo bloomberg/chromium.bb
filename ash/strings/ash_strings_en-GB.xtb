@@ -139,6 +139,7 @@
 <translation id="315116470104423982">Mobile data</translation>
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">You can only have up to <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts in multiple sign-in.</translation>
+<translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connected to a device}other{Connected to # devices}}</translation>
 <translation id="3236488194889173876">No mobile network available</translation>
 <translation id="3255483164551725916">What can you do?</translation>
@@ -216,7 +217,6 @@
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">The administrator of this device has access to all activity, including passwords and communications.</translation>
 <translation id="4774338217796918551">Come back tomorrow at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>

@@ -139,6 +139,7 @@
 <translation id="315116470104423982">Мобилни подаци</translation>
 <translation id="3151786313568798007">Положај</translation>
 <translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
+<translation id="3154351730702813399">Администратор уређаја може да прати активности прегледања.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Повезани сте са једним уређајем}one{Повезани сте са # уређајем}few{Повезани сте са # уређаја}other{Повезани сте са # уређаја}}</translation>
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
 <translation id="3255483164551725916">Шта можеш да радиш?</translation>
@@ -216,7 +217,6 @@
 <translation id="4628757576491864469">Уређаји</translation>
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
-<translation id="476166673298332917">Администратор овог уређаја има приступ свим активностима, укључујући лозинке и комуникацију.</translation>
 <translation id="4774338217796918551">Вратите се сутра у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google помоћник није доступан у сесији демонстрације.</translation>

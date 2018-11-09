@@ -139,6 +139,7 @@
 <translation id="315116470104423982">Data sa mobile</translation>
 <translation id="3151786313568798007">Oryentasyon</translation>
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
+<translation id="3154351730702813399">Maaaring subaybayan ng admin ng device ang iyong aktibidad sa pag-browse.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Nakakonekta sa isang device}one{Nakakonekta sa # device}other{Nakakonekta sa # na device}}</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3255483164551725916">Ano'ng maaari mong gawin?</translation>
@@ -216,7 +217,6 @@
 <translation id="4628757576491864469">Mga Device</translation>
 <translation id="4659419629803378708">Na-enable ang ChromeVox</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">May access ang administrator ng device na ito sa lahat ng aktibidad, kabilang ang mga password at komunikasyon.</translation>
 <translation id="4774338217796918551">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Hindi available ang Google Assistant sa demo session.</translation>
