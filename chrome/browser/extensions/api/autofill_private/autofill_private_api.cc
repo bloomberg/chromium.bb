@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -37,7 +38,7 @@ namespace {
 static const char kSettingsOrigin[] = "Chrome settings";
 static const char kErrorDataUnavailable[] = "Autofill data unavailable.";
 
-// TODO(mad): This does basically the same thing as
+// TODO(crbug.com/903594): This does basically the same thing as
 //            components/autofill/core/browser/autofill_address_util.cc, we
 //            should refactor to use a single code path for this.
 // Fills |components| with the address UI components that should be used to
@@ -71,6 +72,11 @@ void PopulateAddressComponents(
 
   autofill_private::AddressComponentRow* row = nullptr;
   for (size_t i = 0; i < components.size(); ++i) {
+    if (components[i].field == ::i18n::addressinput::ORGANIZATION &&
+        !base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableCompanyName)) {
+      continue;
+    }
     if (!row ||
         components[i - 1].length_hint ==
             addressinput::AddressUiComponent::HINT_LONG ||
