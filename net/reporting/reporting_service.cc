@@ -84,10 +84,6 @@ class ReportingServiceImpl : public ReportingService {
                                                         data_type_mask);
   }
 
-  int GetUploadDepth(const URLRequest& request) override {
-    return context_->uploader()->GetUploadDepth(request);
-  }
-
   const ReportingPolicy& GetPolicy() const override {
     return context_->policy();
   }

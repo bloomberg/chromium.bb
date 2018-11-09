@@ -45,11 +45,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_service.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
 using base::Time;
 using std::string;
 
@@ -489,6 +484,13 @@ void URLRequest::set_method(const std::string& method) {
   method_ = method;
 }
 
+#if BUILDFLAG(ENABLE_REPORTING)
+void URLRequest::set_reporting_upload_depth(int reporting_upload_depth) {
+  DCHECK(!is_pending_);
+  reporting_upload_depth_ = reporting_upload_depth;
+}
+#endif
+
 void URLRequest::SetReferrer(const std::string& referrer) {
   DCHECK(!is_pending_);
   GURL referrer_url(referrer);
@@ -577,6 +579,9 @@ URLRequest::URLRequest(const GURL& url,
       referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
       first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
       load_flags_(LOAD_NORMAL),
+#if BUILDFLAG(ENABLE_REPORTING)
+      reporting_upload_depth_(0),
+#endif
       delegate_(delegate),
       status_(URLRequestStatus::FromError(OK)),
       is_pending_(false),
@@ -1163,10 +1168,6 @@ void URLRequest::NotifyRequestCompleted() {
   if (network_delegate_)
     network_delegate_->NotifyCompleted(this, job_.get() != NULL,
                                        status_.error());
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  MaybeGenerateNetworkErrorLoggingReport();
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
 void URLRequest::OnCallToDelegate(NetLogEventType type) {
@@ -1186,68 +1187,6 @@ void URLRequest::OnCallToDelegateComplete() {
   net_log_.EndEvent(delegate_event_type_);
   delegate_event_type_ = NetLogEventType::FAILED;
 }
-
-#if BUILDFLAG(ENABLE_REPORTING)
-std::string URLRequest::GetUserAgent() const {
-  // This should be kept in sync with the corresponding code in
-  // URLRequestHttpJob::Start.
-  // TODO(dcreager): Consider whether we can share code instead of copy-pasting
-  std::string user_agent;
-  if (extra_request_headers_.GetHeader(net::HttpRequestHeaders::kUserAgent,
-                                       &user_agent))
-    return user_agent;
-  if (context()->http_user_agent_settings())
-    return context()->http_user_agent_settings()->GetUserAgent();
-  return std::string();
-}
-
-void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
-  NetworkErrorLoggingService* service =
-      context()->network_error_logging_service();
-  if (!service) {
-    NetworkErrorLoggingService::
-        RecordRequestDiscardedForNoNetworkErrorLoggingService();
-    return;
-  }
-
-  // TODO(juliatuttle): Figure out whether we should be ignoring errors from
-  // non-HTTPS origins.
-
-  NetworkErrorLoggingService::RequestDetails details;
-
-  details.uri = url();
-  details.referrer = GURL(referrer());
-  details.user_agent = GetUserAgent();
-  IPEndPoint endpoint;
-  if (GetRemoteEndpoint(&endpoint))
-    details.server_ip = endpoint.address();
-  if (response_headers()) {
-    // HttpResponseHeaders::response_code() returns 0 if response code couldn't
-    // be parsed, which is also how NEL represents the same.
-    details.status_code = response_headers()->response_code();
-    // If we got response headers, assume that the connection used HTTP/1.1
-    // unless ALPN negotation tells us otherwise (handled below).
-    details.protocol = "http/1.1";
-  } else {
-    details.status_code = 0;
-  }
-  if (response_info().was_alpn_negotiated)
-    details.protocol = response_info().alpn_negotiated_protocol;
-  details.method = method();
-  details.elapsed_time =
-      base::TimeTicks::Now() - load_timing_info_.request_start;
-  details.type = status().ToNetError();
-
-  if (context()->reporting_service()) {
-    details.reporting_upload_depth =
-        context()->reporting_service()->GetUploadDepth(*this);
-  } else {
-    details.reporting_upload_depth = 0;
-  }
-
-  service->OnRequest(std::move(details));
-}
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {
   if (job_)

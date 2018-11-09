@@ -19,7 +19,6 @@ class Origin;
 
 namespace net {
 
-class URLRequest;
 class URLRequestContext;
 
 // Uploads already-serialized reports and converts responses to one of the
@@ -41,9 +40,6 @@ class NET_EXPORT ReportingUploader {
                            const std::string& json,
                            int max_depth,
                            UploadCallback callback) = 0;
-
-  // Returns whether |request| is an upload request sent by this uploader.
-  virtual int GetUploadDepth(const URLRequest& request) = 0;
 
   // Creates a real implementation of |ReportingUploader| that uploads reports
   // using |context|.

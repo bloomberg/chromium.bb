@@ -213,6 +213,11 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // network errors will be reported to a specified group of endpoints using the
   // Reporting API.
   void ProcessNetworkErrorLoggingHeader();
+
+  // Generates a NEL report about this request.  The NetworkErrorLoggingService
+  // will discard the report if there is no NEL policy registered for this
+  // origin.
+  void GenerateNetworkErrorLoggingReport(int rv);
 #endif
 
   // Writes a log message to help debugging in the field when we block a proxy
@@ -350,6 +355,15 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   SSLConfig proxy_ssl_config_;
 
   HttpRequestHeaders request_headers_;
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Cache some fields from |request_| that we'll need to construct a NEL
+  // report about the request.  (NEL report construction happens after we've
+  // cleared the |request_| pointer.)
+  std::string request_method_;
+  std::string request_referrer_;
+  std::string request_user_agent_;
+  int request_reporting_upload_depth_;
+#endif
 
   // The size in bytes of the buffer we use to drain the response body that
   // we want to throw away.  The response body is typically a small error

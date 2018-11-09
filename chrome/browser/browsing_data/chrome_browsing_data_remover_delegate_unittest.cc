@@ -1018,11 +1018,6 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
   }
 
-  int GetUploadDepth(const net::URLRequest& request) override {
-    NOTREACHED();
-    return 0;
-  }
-
   const net::ReportingPolicy& GetPolicy() const override {
     static net::ReportingPolicy dummy_policy_;
     NOTREACHED();

@@ -286,6 +286,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
     }
 
+    DVLOG(1) << "Created NEL report (" << type_string
+             << ", status=" << details.status_code
+             << ", depth=" << details.reporting_upload_depth << ") for "
+             << details.uri;
     reporting_service_->QueueReport(
         details.uri, details.user_agent, policy->report_to, kReportType,
         CreateReportBody(phase_string, type_string, sampling_fraction, details),

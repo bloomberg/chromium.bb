@@ -96,11 +96,6 @@ class TestReportingService : public ReportingService {
 
   void RemoveAllBrowsingData(int data_type_mask) override { NOTREACHED(); }
 
-  int GetUploadDepth(const URLRequest& request) override {
-    NOTREACHED();
-    return 0;
-  }
-
   const ReportingPolicy& GetPolicy() const override {
     NOTREACHED();
     return dummy_policy_;

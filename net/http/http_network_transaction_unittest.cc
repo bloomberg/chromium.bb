@@ -17337,6 +17337,7 @@ TEST_F(HttpNetworkTransactionTest, NoSupportedProxies) {
 class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
  protected:
   void SetUp() override {
+    HttpNetworkTransactionTest::SetUp();
     auto test_reporting_context = std::make_unique<TestReportingContext>(
         &clock_, &tick_clock_, ReportingPolicy());
     test_reporting_context_ = test_reporting_context.get();
@@ -17454,6 +17455,7 @@ class HttpNetworkTransactionNetworkErrorLoggingTest
     : public HttpNetworkTransactionTest {
  protected:
   void SetUp() override {
+    HttpNetworkTransactionTest::SetUp();
     auto network_error_logging_service =
         std::make_unique<TestNetworkErrorLoggingService>();
     test_network_error_logging_service_ = network_error_logging_service.get();
@@ -17472,6 +17474,7 @@ class HttpNetworkTransactionNetworkErrorLoggingTest
 
   // Makes an HTTPS request that should install a valid NEL policy.
   void RequestPolicy() {
+    std::string extra_header_string = extra_headers_.ToString();
     MockRead data_reads[] = {
         MockRead("HTTP/1.0 200 OK\r\n"),
         MockRead("NEL: {\"report_to\": \"nel\", \"max_age\": 86400}\r\n"),
@@ -17482,12 +17485,16 @@ class HttpNetworkTransactionNetworkErrorLoggingTest
     MockWrite data_writes[] = {
         MockWrite("GET / HTTP/1.1\r\n"
                   "Host: www.example.org\r\n"
-                  "Connection: keep-alive\r\n\r\n"),
+                  "Connection: keep-alive\r\n"),
+        MockWrite(ASYNC, extra_header_string.data(),
+                  extra_header_string.size()),
     };
 
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL(url_);
+    request.extra_headers = extra_headers_;
+    request.reporting_upload_depth = reporting_upload_depth_;
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -17514,6 +17521,8 @@ class HttpNetworkTransactionNetworkErrorLoggingTest
  protected:
   std::string url_ = "https://www.example.org/";
   CertStatus cert_status_ = 0;
+  HttpRequestHeaders extra_headers_;
+  int reporting_upload_depth_ = 0;
 
  private:
   TestNetworkErrorLoggingService* test_network_error_logging_service_;
@@ -17560,6 +17569,48 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
       NetworkErrorLoggingService::kHeaderOutcomeHistogram,
       NetworkErrorLoggingService::HeaderOutcome::DISCARDED_CERT_STATUS_ERROR,
       1);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, CreateReportHttps) {
+  RequestPolicy();
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  const auto& error = network_error_logging_service()->errors()[0];
+  EXPECT_EQ(GURL("https://www.example.org/"), error.uri);
+  EXPECT_TRUE(error.referrer.is_empty());
+  EXPECT_EQ("", error.user_agent);
+  EXPECT_EQ(IPAddress::IPv4Localhost(), error.server_ip);
+  EXPECT_EQ("http/1.1", error.protocol);
+  EXPECT_EQ("GET", error.method);
+  EXPECT_EQ(200, error.status_code);
+  EXPECT_EQ(OK, error.type);
+  EXPECT_EQ(0, error.reporting_upload_depth);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportContainsReferrer) {
+  constexpr char kReferrer[] = "https://www.example.org/login/";
+  extra_headers_.SetHeader("Referer", kReferrer);
+  RequestPolicy();
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  const auto& error = network_error_logging_service()->errors()[0];
+  EXPECT_EQ(GURL(kReferrer), error.referrer);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       ReportContainsUploadDepth) {
+  reporting_upload_depth_ = 7;
+  RequestPolicy();
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  const auto& error = network_error_logging_service()->errors()[0];
+  EXPECT_EQ(7, error.reporting_upload_depth);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportContainsUserAgent) {
+  constexpr char kUserAgent[] = "Mozilla/1.0";
+  extra_headers_.SetHeader("User-Agent", kUserAgent);
+  RequestPolicy();
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  const auto& error = network_error_logging_service()->errors()[0];
+  EXPECT_EQ(kUserAgent, error.user_agent);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

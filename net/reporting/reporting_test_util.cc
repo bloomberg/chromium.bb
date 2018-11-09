@@ -112,11 +112,6 @@ void TestReportingUploader::StartUpload(const url::Origin& report_origin,
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
-int TestReportingUploader::GetUploadDepth(const URLRequest& request) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 TestReportingDelegate::TestReportingDelegate()
     : test_request_context_(std::make_unique<TestURLRequestContext>()) {}
 

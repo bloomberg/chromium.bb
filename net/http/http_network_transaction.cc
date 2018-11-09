@@ -150,6 +150,14 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   net_log_ = net_log;
   request_ = request_info;
   url_ = request_->url;
+#if BUILDFLAG(ENABLE_REPORTING)
+  request_method_ = request_->method;
+  request_->extra_headers.GetHeader(HttpRequestHeaders::kReferer,
+                                    &request_referrer_);
+  request_->extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
+                                    &request_user_agent_);
+  request_reporting_upload_depth_ = request_->reporting_upload_depth;
+#endif
 
   // Now that we have an HttpRequestInfo object, update server_ssl_config_.
   session_->GetSSLConfig(*request_, &server_ssl_config_, &proxy_ssl_config_);
@@ -650,6 +658,12 @@ bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
 void HttpNetworkTransaction::DoCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!callback_.is_null());
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Just before invoking the caller's completion callback, generate a NEL
+  // report about this network request.
+  GenerateNetworkErrorLoggingReport(rv);
+#endif
 
   // Since Run may result in Read being called, clear user_callback_ up front.
   base::ResetAndReturn(&callback_).Run(rv);
@@ -1366,6 +1380,50 @@ void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
 
   service->OnHeader(url::Origin::Create(url_), remote_endpoint_.address(),
                     value);
+}
+
+void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
+  NetworkErrorLoggingService* service =
+      session_->network_error_logging_service();
+  if (!service) {
+    NetworkErrorLoggingService::
+        RecordRequestDiscardedForNoNetworkErrorLoggingService();
+    return;
+  }
+
+  // TODO(crbug.com/903893): Ignore errors from non-HTTPS origins.
+
+  NetworkErrorLoggingService::RequestDetails details;
+
+  details.uri = url_;
+  if (!request_referrer_.empty())
+    details.referrer = GURL(request_referrer_);
+  details.user_agent = request_user_agent_;
+  IPEndPoint endpoint;
+  if (!remote_endpoint_.address().empty())
+    details.server_ip = remote_endpoint_.address();
+  // HttpResponseHeaders::response_code() returns 0 if response code couldn't
+  // be parsed, which is also how NEL represents the same.
+  if (response_.headers)
+    details.status_code = response_.headers->response_code();
+  else
+    details.status_code = 0;
+  // If we got response headers, assume that the connection used HTTP/1.1
+  // unless ALPN negotiation tells us otherwise (handled below).
+  if (response_.was_alpn_negotiated)
+    details.protocol = response_.alpn_negotiated_protocol;
+  else
+    details.protocol = "http/1.1";
+  details.method = request_method_;
+  if (stream_) {
+    LoadTimingInfo timing;
+    stream_->GetLoadTimingInfo(&timing);
+    details.elapsed_time = base::TimeTicks::Now() - timing.request_start;
+  }
+  details.type = static_cast<Error>(rv);
+  details.reporting_upload_depth = request_reporting_upload_depth_;
+
+  service->OnRequest(std::move(details));
 }
 #endif
 
