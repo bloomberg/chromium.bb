@@ -873,6 +873,8 @@ class BBJSONGenerator(object):
       'Optional Mac Retina Release (NVIDIA)',
       'Optional Win10 Release (Intel HD 630)',
       'Optional Win10 Release (NVIDIA)',
+      'Dawn GPU Win10 Release (Intel HD 630)',
+      'Dawn GPU Win10 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
       # chromium.fyi
       'linux-blink-rel-dummy',

@@ -1984,6 +1984,28 @@
           'gtest_tests': 'gpu_angle_deqp_android_gtests',
         },
       },
+      # BEGIN Fake builder used as mirror targets for Dawn's GPU tryservers
+      'Dawn GPU Win10 Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      'Dawn GPU Win10 Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_dawn_end2end_tests',
+        },
+      },
+      # END Fake builder used as mirror targets for Dawn's GPU tryservers
       'GPU FYI Linux Builder' : {},
       'GPU FYI Linux Builder (dbg)' : {},
       'GPU FYI Linux Ozone Builder' : {},
@@ -2313,6 +2335,7 @@
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
+      # BEGIN Fake builder used as mirror targets for Optional GPU tryservers
       'Optional Android Release (Nexus 5X)': {
         'os_type': 'android',
         'mixins': [
@@ -2406,6 +2429,7 @@
         },
         'use_multi_dimension_trigger_script': True,
       },
+      # END Fake builder used as mirror targets for Optional GPU tryservers
       'Win10 FYI Debug (NVIDIA)': {
         'os_type': 'win',
         'browser_config': 'debug',

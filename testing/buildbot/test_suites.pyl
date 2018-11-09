@@ -1297,6 +1297,19 @@
       },
     },
 
+    'gpu_dawn_end2end_tests': {
+      'dawn_end2end_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0'
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+      },
+    },
+
     'gpu_default_and_optional_win_specific_gtests': {
       'xr_browser_tests': {
         'args': [

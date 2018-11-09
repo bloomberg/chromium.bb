@@ -3546,6 +3546,50 @@
       }
     ]
   },
+  "Dawn GPU Win10 Release (Intel HD 630)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      }
+    ]
+  },
+  "Dawn GPU Win10 Release (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      }
+    ]
+  },
   "GPU FYI Linux Builder": {},
   "GPU FYI Linux Builder (dbg)": {},
   "GPU FYI Linux Ozone Builder": {},
