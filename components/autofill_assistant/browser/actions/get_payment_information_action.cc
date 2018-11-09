@@ -42,10 +42,7 @@ void GetPaymentInformationAction::InternalProcessAction(
     payment_options->request_payer_phone =
         contact_details.request_payer_phone();
   }
-  bool ask_for_payment = get_payment_information.ask_for_payment();
-  payment_options->request_payer_email = ask_for_payment;
-  payment_options->request_payer_name = ask_for_payment;
-  payment_options->request_payer_phone = ask_for_payment;
+
   std::vector<std::string> supported_basic_card_networks;
   std::copy(get_payment_information.supported_basic_card_networks().begin(),
             get_payment_information.supported_basic_card_networks().end(),
