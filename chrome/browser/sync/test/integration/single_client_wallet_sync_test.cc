@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   // PersonalDataManager should use (ephemeral) account storage.
   EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   auto account_data = GetAccountWebDataService(0);
   ASSERT_NE(nullptr, account_data);
@@ -1048,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   // PersonalDataManager should have switched to persistent storage.
   EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // The data should now be in the profile storage (persisted).
   EXPECT_EQ(0U, GetServerCards(account_data).size());
@@ -1079,7 +1079,7 @@ IN_PROC_BROWSER_TEST_F(
   // PersonalDataManager should use (ephemeral) account storage.
   EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   auto account_data = GetAccountWebDataService(0);
   ASSERT_NE(nullptr, account_data);
@@ -1133,7 +1133,7 @@ IN_PROC_BROWSER_TEST_F(
   // PersonalDataManager should have switched to persistent storage.
   EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // The card should now be in the profile storage (persisted).
   EXPECT_EQ(0U, GetServerCards(account_data).size());
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // PersonalDataManager should use the regular persisted (non-account) storage.
   EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   auto account_data = GetAccountWebDataService(0);
   ASSERT_NE(nullptr, account_data);
@@ -1208,7 +1208,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // PersonalDataManager should have switched to ephemeral storage.
   EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // The card should now be in the account storage (ephemeral). Note that even
   // though we specified KEEP_DATA above, the card is *not* in the profile
@@ -1233,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // PersonalDataManager should have switched back to persistent storage.
   EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // And the card should be in the profile i.e. persistent storage again.
   EXPECT_EQ(0U, GetServerCards(account_data).size());
@@ -1255,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // PersonalDataManager should have switched to ephemeral storage.
   EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // The card should now be in the account storage (ephemeral).
   EXPECT_EQ(1U, GetServerCards(account_data).size());
@@ -1278,7 +1278,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   // PersonalDataManager should have switched back to persistent storage.
   EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(
-      GetPersonalDataManager(0)->IsUsingAccountStorageForServerCardsForTest());
+      GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
   // And the card should be in the profile i.e. persistent storage again.
   EXPECT_EQ(0U, GetServerCards(account_data).size());

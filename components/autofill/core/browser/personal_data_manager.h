@@ -203,7 +203,7 @@ class PersonalDataManager : public KeyedService,
 
   // Returns whether server credit cards are stored in account (i.e. ephemeral)
   // storage.
-  bool IsUsingAccountStorageForServerCardsForTest() const;
+  bool IsUsingAccountStorageForServerDataForTest() const;
 
   // Sets which SyncService to use and observe in a test. |sync_service| is not
   // owned by this class and must outlive |this|.

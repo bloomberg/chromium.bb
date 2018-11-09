@@ -378,8 +378,8 @@ class PersonalDatabaseHelper
     if (!account_database_) {
       server_database_ = profile_database_;
     } else {
-      // Wait for the call to SetUseAccountStorageForServerCards to decide
-      // which database to use for server cards.
+      // Wait for the call to SetUseAccountStorageForServerData to decide
+      // which database to use for server data.
       server_database_ = nullptr;
     }
   }
@@ -406,8 +406,8 @@ class PersonalDatabaseHelper
   }
 
   // Whether we're currently using the ephemeral account storage for saving
-  // server cards.
-  bool IsUsingAccountStorageForServerCards() {
+  // server data.
+  bool IsUsingAccountStorageForServerData() {
     return server_database_ != profile_database_;
   }
 
@@ -415,7 +415,7 @@ class PersonalDatabaseHelper
   // addresses. If false, this will use the profile_storage.
   // It's an error to call this if no account storage was passed in at
   // construction time.
-  void SetUseAccountStorageForServerCards(
+  void SetUseAccountStorageForServerData(
       bool use_account_storage_for_server_cards) {
     if (!profile_database_) {
       // In some tests, there are no dbs.
@@ -425,7 +425,7 @@ class PersonalDatabaseHelper
         use_account_storage_for_server_cards ? account_database_
                                              : profile_database_;
     DCHECK(new_server_database != nullptr)
-        << "SetUseAccountStorageForServerCards("
+        << "SetUseAccountStorageForServerData("
         << use_account_storage_for_server_cards << "): storage not available.";
 
     if (new_server_database == server_database_) {
@@ -570,7 +570,7 @@ void PersonalDataManager::OnSyncServiceInitialized(
             autofill::features::kAutofillEnableAccountWalletStorage)) {
       // Use the ephemeral account storage when the user didn't enable the sync
       // feature explicitly.
-      database_helper_->SetUseAccountStorageForServerCards(
+      database_helper_->SetUseAccountStorageForServerData(
           !sync_service->IsSyncFeatureEnabled());
     }
   }
@@ -651,7 +651,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 
   // If all requests have responded, then all personal data is loaded.
   // We need to check if the server database is set here, because we won't have
-  // the server cards yet if we don't have the database.
+  // the server data yet if we don't have the database.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0 &&
@@ -713,7 +713,7 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
           autofill::features::kAutofillEnableAccountWalletStorage)) {
     // Use the ephemeral account storage when the user didn't enable the sync
     // feature explicitly.
-    database_helper_->SetUseAccountStorageForServerCards(
+    database_helper_->SetUseAccountStorageForServerData(
         !sync_service->IsSyncFeatureEnabled());
   }
 }
@@ -741,7 +741,7 @@ bool PersonalDataManager::IsSyncFeatureEnabled() const {
     return false;
 
   return !sync_service_->GetAuthenticatedAccountInfo().IsEmpty() &&
-         !database_helper_->IsUsingAccountStorageForServerCards();
+         !database_helper_->IsUsingAccountStorageForServerData();
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
@@ -1070,8 +1070,8 @@ void PersonalDataManager::AddServerCreditCardForTest(
   server_credit_cards_.push_back(std::move(credit_card));
 }
 
-bool PersonalDataManager::IsUsingAccountStorageForServerCardsForTest() const {
-  return database_helper_->IsUsingAccountStorageForServerCards();
+bool PersonalDataManager::IsUsingAccountStorageForServerDataForTest() const {
+  return database_helper_->IsUsingAccountStorageForServerData();
 }
 
 void PersonalDataManager::SetSyncServiceForTest(
