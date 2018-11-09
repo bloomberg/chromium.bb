@@ -34,6 +34,7 @@ import android.widget.TextView;
 
 import org.json.JSONObject;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -47,6 +48,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.components.variations.VariationsAssociatedData;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -96,6 +99,7 @@ class AutofillAssistantUiDelegate {
     @Nullable
     private Details mDetails;
     private String mStatusMessage;
+    private AutofillAssistantPaymentRequest mPaymentRequest;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -705,5 +709,34 @@ class AutofillAssistantUiDelegate {
         CheckBox checkBox = initView.findViewById(R.id.checkbox_dont_show_init_again);
         controller.onInitFinished(initOk, checkBox.isChecked());
         mCoordinatorView.removeView(initView);
+    }
+
+    /**
+     * Show the payment request UI.
+     *
+     * Show the UI and return the selected information via |callback| when done.
+     *
+     * @param webContents The webContents.
+     * @param paymentOptions Options to request payment information.
+     * @param title Unused title.
+     * @param supportedBasicCardNetworks Optional array of supported basic card networks.
+     * @param callback Callback to return selected info.
+     */
+    public void showPaymentRequest(WebContents webContents, PaymentOptions paymentOptions,
+            String unusedTitle, String[] supportedBasicCardNetworks,
+            Callback<AutofillAssistantPaymentRequest.SelectedPaymentInformation> callback) {
+        assert mPaymentRequest == null;
+        mPaymentRequest = new AutofillAssistantPaymentRequest(
+                webContents, paymentOptions, unusedTitle, supportedBasicCardNetworks);
+        // Make sure we wrap content in the container.
+        mBottomBarAnimations.setBottomBarHeightToWrapContent();
+        mPaymentRequest.show(mCarouselScroll, callback);
+    }
+
+    /** Close and destroy the payment request UI. */
+    public void closePaymentRequest() {
+        mPaymentRequest.close();
+        mPaymentRequest = null;
+        mBottomBarAnimations.setBottomBarHeightToFixed();
     }
 }

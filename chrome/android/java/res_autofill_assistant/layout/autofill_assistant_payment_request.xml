@@ -16,7 +16,7 @@
     app:maxWidthPortrait="@dimen/payments_ui_max_dialog_width"
     android:background="@android:color/white" >
 
-    <include layout="@layout/payment_request_header" />
+    <!-- TODO(crbug.com/806868): Spinny is probably also obsolete. -->
     <include layout="@layout/payment_request_spinny" />
 
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView

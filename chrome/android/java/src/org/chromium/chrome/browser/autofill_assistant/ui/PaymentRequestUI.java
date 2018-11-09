@@ -20,6 +20,7 @@ import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -38,9 +39,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPaymentRequest;
 import org.chromium.chrome.browser.payments.ShippingStrings;
-import org.chromium.chrome.browser.payments.ui.DimmingDialog;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestHeader;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
@@ -107,7 +106,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final boolean mRequestContactDetails;
     private final boolean mShowDataSource;
 
-    private final DimmingDialog mDialog;
     private final EditorDialog mEditorDialog;
     private final EditorDialog mCardEditorDialog;
     private final ViewGroup mRequestView;
@@ -120,9 +118,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private ViewGroup mBottomBar;
     private Button mEditButton;
     private Button mPayButton;
-    private View mCloseButton;
     private View mSpinnyLayout;
     private CheckBox mTermsCheckBox;
+    // View used to store a view to be replaced with the current payment request UI.
+    private ViewGroup mBackupView;
 
     private LineItemBreakdownSection mOrderSummarySection;
     private OptionSection mShippingAddressSection;
@@ -153,7 +152,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Builds the UI for PaymentRequest.
      *
      * @param activity              The activity on top of which the UI should be displayed.
-     * @param client                The consumer of the PaymentRequest UI.
+     * @param client                The AutofillAssistantPaymentRequest.
      * @param requestShipping       Whether the UI should show the shipping address selection.
      * @param requestShippingOption Whether the UI should show the shipping option selection.
      * @param requestContact        Whether the UI should show the payer name, email address and
@@ -223,26 +222,42 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         mEditorDialog = new EditorDialog(activity, null,
                 /*deleteRunnable =*/null);
-        DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
 
         mCardEditorDialog = new EditorDialog(activity, null,
                 /*deleteRunnable =*/null);
-        DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
         if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
             mCardEditorDialog.disableScreenshots();
         }
-
-        mDialog = new DimmingDialog(activity, this);
     }
 
     /**
      * Shows the PaymentRequest UI. This will dim the background behind the PaymentRequest UI.
+     *
+     * The show replaces the |container| view with the payment request view. The original content of
+     * |container| is saved and restored when the payment request UI is closed.
+     * restore it when the payment request UI is closed.
+     *
+     * TODO(crbug.com/806868): Move the mBackupView handling to the AutofillAssistantUiDelegate.
+     *
+     * @param container View to replace with the payment request UI.
      */
-    public void show() {
-        mDialog.addBottomSheetView(mRequestView);
-        mDialog.show();
+    public void show(ViewGroup container) {
+        // Clear the current Autofill Assistant sheet and show the request view.
+        LinearLayout.LayoutParams sheetParams =
+                new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        sheetParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+
+        // Swap the horizontal scroll view |container| with the payment request view and save the
+        // original.
+        ViewGroup parent = (ViewGroup) container.getParent();
+        assert parent != null;
+        final int index = parent.indexOfChild(container);
+        mBackupView = container;
+        parent.removeView(container);
+        parent.addView(mRequestView, index, sheetParams);
+
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {
@@ -295,12 +310,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         TextView messageView = (TextView) mRequestView.findViewById(R.id.message);
         messageView.setText(R.string.payments_loading_message);
 
-        ((PaymentRequestHeader) mRequestView.findViewById(R.id.header))
-                .setTitleAndOrigin(title, origin, securityLevel);
-
         // Set up the buttons.
-        mCloseButton = mRequestView.findViewById(R.id.close_button);
-        mCloseButton.setOnClickListener(this);
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
@@ -401,6 +411,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void close(boolean shouldCloseImmediately, final Runnable callback) {
         mIsClientClosing = true;
 
+        // Restore the UI before we showed the payment request.
+        ViewGroup parent = (ViewGroup) mRequestView.getParent();
+        assert parent != null;
+        final int index = parent.indexOfChild(mRequestView);
+        parent.removeView(mRequestView);
+        parent.addView(mBackupView, index);
+        mBackupView = null;
+
         Runnable dismissRunnable = new Runnable() {
             @Override
             public void run() {
@@ -415,8 +433,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // in JavaScript.
             dismissRunnable.run();
         } else {
-            // Show the error dialog.
-            mDialog.showOverlay(mErrorView);
+            // TODO(crbug.com/806868): Show the mErrorView error dialog.
             mErrorView.setDismissRunnable(dismissRunnable);
         }
     }
@@ -598,11 +615,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void onClick(View v) {
         if (!isAcceptingCloseButton()) return;
 
-        if (v == mCloseButton) {
-            dismissDialog(true);
-            return;
-        }
-
         if (!isAcceptingUserInput()) return;
 
         // Users can only expand incomplete sections by clicking on their edit buttons.
@@ -641,7 +653,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     private void dismissDialog(boolean isAnimated) {
         mIsClosing = true;
-        mDialog.dismiss(isAnimated);
     }
 
     private void processPayButton() {
@@ -658,8 +669,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         if (shouldShowSpinner) {
             changeSpinnerVisibility(true);
-        } else {
-            mDialog.hide();
         }
     }
 
@@ -670,7 +679,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         assert mIsProcessingPayClicked;
         mIsProcessingPayClicked = false;
         changeSpinnerVisibility(false);
-        mDialog.show();
         updatePayButtonEnabled();
     }
 
@@ -692,7 +700,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         assert mIsProcessingPayClicked;
 
         changeSpinnerVisibility(true);
-        mDialog.show();
     }
 
     private void changeSpinnerVisibility(boolean showSpinner) {
@@ -702,7 +709,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (showSpinner) {
             mPaymentContainer.setVisibility(View.GONE);
             mBottomBar.setVisibility(View.GONE);
-            mCloseButton.setVisibility(View.GONE);
             mSpinnyLayout.setVisibility(View.VISIBLE);
 
             // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
@@ -713,7 +719,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else {
             mPaymentContainer.setVisibility(View.VISIBLE);
             mBottomBar.setVisibility(View.VISIBLE);
-            mCloseButton.setVisibility(View.VISIBLE);
             mSpinnyLayout.setVisibility(View.GONE);
 
             if (mIsExpandedToFullHeight) {
@@ -742,9 +747,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** @return Whether or not the dialog can be closed via the X close button. */
     private boolean isAcceptingCloseButton() {
-        return !mDialog.isAnimatingDisappearance() && mSheetAnimator == null
-                && mSectionAnimator == null && !mIsProcessingPayClicked && !mIsEditingPaymentItem
-                && !mIsClosing;
+        return mSheetAnimator == null && mSectionAnimator == null && !mIsProcessingPayClicked
+                && !mIsEditingPaymentItem && !mIsClosing;
     }
 
     /** @return Whether or not the dialog is accepting user input. */

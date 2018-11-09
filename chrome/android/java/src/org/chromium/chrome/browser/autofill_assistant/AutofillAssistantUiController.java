@@ -73,8 +73,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      */
     private final long mUiControllerAndroid;
 
-    private AutofillAssistantPaymentRequest mAutofillAssistantPaymentRequest;
-
     /**
      * Indicates whether {@link mAccount} has been initialized.
      */
@@ -312,29 +310,25 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private void onRequestPaymentInformation(boolean requestShipping, boolean requestPayerName,
             boolean requestPayerPhone, boolean requestPayerEmail, int shippingType, String title,
             String[] supportedBasicCardNetworks) {
-        PaymentOptions paymentOtions = new PaymentOptions();
-        paymentOtions.requestShipping = requestShipping;
-        paymentOtions.requestPayerName = requestPayerName;
-        paymentOtions.requestPayerPhone = requestPayerPhone;
-        paymentOtions.requestPayerEmail = requestPayerEmail;
-        paymentOtions.shippingType = shippingType;
-        mAutofillAssistantPaymentRequest = new AutofillAssistantPaymentRequest(
-                mWebContents, paymentOtions, title, supportedBasicCardNetworks);
+        PaymentOptions paymentOptions = new PaymentOptions();
+        paymentOptions.requestShipping = requestShipping;
+        paymentOptions.requestPayerName = requestPayerName;
+        paymentOptions.requestPayerPhone = requestPayerPhone;
+        paymentOptions.requestPayerEmail = requestPayerEmail;
+        paymentOptions.shippingType = shippingType;
 
         mUiDelegateHolder.performUiOperation(uiDelegate -> {
-            boolean overlayVisible = uiDelegate.isOverlayVisible();
-            if (overlayVisible) uiDelegate.hideOverlay();
-            mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {
-                if (overlayVisible) uiDelegate.showOverlay();
-                nativeOnGetPaymentInformation(mUiControllerAndroid,
-                        selectedPaymentInformation.succeed, selectedPaymentInformation.card,
-                        selectedPaymentInformation.address, selectedPaymentInformation.payerName,
-                        selectedPaymentInformation.payerPhone,
-                        selectedPaymentInformation.payerEmail,
-                        selectedPaymentInformation.isTermsAndConditionsAccepted);
-                mAutofillAssistantPaymentRequest.close();
-                mAutofillAssistantPaymentRequest = null;
-            });
+            uiDelegate.showPaymentRequest(mWebContents, paymentOptions, title,
+                    supportedBasicCardNetworks, (selectedPaymentInformation -> {
+                        nativeOnGetPaymentInformation(mUiControllerAndroid,
+                                selectedPaymentInformation.succeed, selectedPaymentInformation.card,
+                                selectedPaymentInformation.address,
+                                selectedPaymentInformation.payerName,
+                                selectedPaymentInformation.payerPhone,
+                                selectedPaymentInformation.payerEmail,
+                                selectedPaymentInformation.isTermsAndConditionsAccepted);
+                        uiDelegate.closePaymentRequest();
+                    }));
         });
     }
 
