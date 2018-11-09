@@ -168,10 +168,6 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   }
 
  protected:
-  void SensorsCreated(scoped_refptr<PlatformSensor> sensor) {
-    platform_sensor_vector_.push_back(sensor);
-  }
-
   void SensorCreated(scoped_refptr<PlatformSensor> sensor) {
     platform_sensor_ = sensor;
     run_loop_->Quit();
@@ -306,7 +302,6 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   MockSensorDeviceManager* manager_;
   scoped_refptr<PlatformSensor> platform_sensor_;
-  std::vector<scoped_refptr<PlatformSensor>> platform_sensor_vector_;
   base::MessageLoop message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   PlatformSensorProviderLinux* provider_;
