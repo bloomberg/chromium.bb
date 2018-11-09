@@ -36,6 +36,7 @@ source_set("search_engines") {
   ]
   deps = [
     "//base",
+    "//components/favicon/ios",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/core",
@@ -75,9 +76,11 @@ source_set("unit_tests") {
     ":search_engines",
     "//base:base",
     "//base/test:test_support",
+    "//components/favicon/ios",
     "//components/search_engines",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/favicon:favicon",
     "//ios/chrome/browser/web:test_support",
     "//ios/web",
     "//ios/web/public/test",

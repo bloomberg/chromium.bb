@@ -103,10 +103,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ImageFetchTabHelper::CreateForWebState(web_state);
   }
 
-  if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {
-    SearchEngineTabHelper::CreateForWebState(web_state);
-  }
-
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
   ReadingListWebStateObserver::CreateForWebState(web_state, model);
@@ -124,6 +120,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PasswordTabHelper::CreateForWebState(web_state);
 
   AutofillTabHelper::CreateForWebState(web_state, nullptr);
+
+  // Depends on favicon::WebFaviconDriver, must be created after it.
+  if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {
+    SearchEngineTabHelper::CreateForWebState(web_state);
+  }
 
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),

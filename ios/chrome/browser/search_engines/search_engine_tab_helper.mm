@@ -82,12 +82,31 @@ SearchEngineTabHelper::SearchEngineTabHelper(web::WebState* web_state)
       base::BindRepeating(&SearchEngineTabHelper::OnJsMessage,
                           base::Unretained(this)),
       kCommandPrefix);
+  DCHECK(favicon::WebFaviconDriver::FromWebState(web_state));
+  favicon_driver_observer_.Add(
+      favicon::WebFaviconDriver::FromWebState(web_state));
 }
 
 void SearchEngineTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveScriptCommandCallback(kCommandPrefix);
   web_state->RemoveObserver(this);
   web_state_ = nullptr;
+  favicon_driver_observer_.RemoveAll();
+}
+
+// When favicon is updated, notify TemplateURLService about the change.
+void SearchEngineTabHelper::OnFaviconUpdated(
+    favicon::FaviconDriver* driver,
+    NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  TemplateURLService* url_service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  if (url_service && url_service->loaded())
+    url_service->UpdateProviderFavicons(driver->GetActiveURL(), icon_url);
 }
 
 // When the page is loaded, checks if |searchable_url_| has a value generated

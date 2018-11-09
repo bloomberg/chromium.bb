@@ -6,9 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/favicon/ios/web_favicon_driver.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -50,6 +53,10 @@ class SearchEngineTabHelperTest : public ChromeWebTest {
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
+    favicon::WebFaviconDriver::CreateForWebState(
+        web_state(), ios::FaviconServiceFactory::GetForBrowserState(
+                         chrome_browser_state_->GetOriginalChromeBrowserState(),
+                         ServiceAccessType::IMPLICIT_ACCESS));
     SearchEngineTabHelper::CreateForWebState(web_state());
     server_.ServeFilesFromSourceDirectory(".");
     ASSERT_TRUE(server_.Start());

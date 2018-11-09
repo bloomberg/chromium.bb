@@ -6,7 +6,8 @@
 #define IOS_CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINE_TAB_HELPER_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #import "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -33,7 +34,8 @@ class WebState;
 //
 class SearchEngineTabHelper
     : public web::WebStateObserver,
-      public web::WebStateUserData<SearchEngineTabHelper> {
+      public web::WebStateUserData<SearchEngineTabHelper>,
+      public favicon::FaviconDriverObserver {
  public:
   ~SearchEngineTabHelper() override;
 
@@ -61,6 +63,17 @@ class SearchEngineTabHelper
                    bool has_user_gesture,
                    bool form_in_main_frame,
                    web::WebFrame* sender_frame);
+
+  // favicon::FaviconDriverObserver implementation.
+  void OnFaviconUpdated(favicon::FaviconDriver* driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override;
+
+  // Manages observation relationship between |this| and WebFaviconDriver.
+  ScopedObserver<favicon::WebFaviconDriver, favicon::FaviconDriverObserver>
+      favicon_driver_observer_{this};
 
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
