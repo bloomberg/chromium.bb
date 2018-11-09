@@ -311,6 +311,12 @@ void AutofillAgent::Shutdown() {
 }
 
 void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
+  // Sometimes "blur" events are side effects of the password generation
+  // handling the page. They should not affect any UI in the browser.
+  if (password_generation_agent_ &&
+      password_generation_agent_->ShouldIgnoreBlur()) {
+    return;
+  }
   GetAutofillDriver()->DidEndTextFieldEditing();
   password_autofill_agent_->DidEndTextFieldEditing();
   if (password_generation_agent_)
