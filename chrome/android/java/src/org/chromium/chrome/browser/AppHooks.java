@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmark;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksProviderIterator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsUIProvider;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -182,6 +183,14 @@ public abstract class AppHooks {
      */
     public LocaleManager createLocaleManager() {
         return new LocaleManager();
+    }
+
+    /**
+     * @return An instance of {@link ManagePasswordsUIProvider} that can be used to show one of
+     *         the two possible UI surfaces for managing passwords.
+     */
+    public ManagePasswordsUIProvider createManagePasswordsUIProvider() {
+        return new ManagePasswordsUIProvider();
     }
 
     /**

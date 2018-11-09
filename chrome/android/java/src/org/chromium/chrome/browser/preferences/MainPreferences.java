@@ -15,6 +15,7 @@ import android.provider.Settings;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -111,6 +112,8 @@ public class MainPreferences extends PreferenceFragment
         setManagedPreferenceDelegateForPreference(PREF_SEARCH_ENGINE);
         setManagedPreferenceDelegateForPreference(PREF_SAVED_PASSWORDS);
         setManagedPreferenceDelegateForPreference(PREF_DATA_REDUCTION);
+
+        updatePasswordsPreference();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // If we are on Android O+ the Notifications preference should lead to the Android
@@ -245,6 +248,14 @@ public class MainPreferences extends PreferenceFragment
         Preference searchEnginePreference = findPreference(PREF_SEARCH_ENGINE);
         searchEnginePreference.setEnabled(true);
         searchEnginePreference.setSummary(defaultSearchEngineName);
+    }
+
+    private void updatePasswordsPreference() {
+        Preference passwordsPreference = findPreference(PREF_SAVED_PASSWORDS);
+        passwordsPreference.setOnPreferenceClickListener(preference -> {
+            AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(getActivity());
+            return true;
+        });
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {
