@@ -8,10 +8,11 @@
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "device/fido/buildflags.h"
 
 namespace device {
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
 #endif  // defined(OS_WIN)

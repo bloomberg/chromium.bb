@@ -5,13 +5,13 @@
 #ifndef DEVICE_FIDO_WIN_WEBAUTHN_API_H_
 #define DEVICE_FIDO_WIN_WEBAUTHN_API_H_
 
+#include <webauthn.h>
 #include <windows.h>
 #include <functional>
 #include <memory>
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
 

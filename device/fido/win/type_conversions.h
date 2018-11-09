@@ -5,7 +5,7 @@
 #ifndef DEVICE_FIDO_WIN_TYPE_CONVERSIONS_H_
 #define DEVICE_FIDO_WIN_TYPE_CONVERSIONS_H_
 
-#include <windows.h>
+#include <webauthn.h>
 
 #include "base/component_export.h"
 #include "base/optional.h"
@@ -13,7 +13,6 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_constants.h"
-#include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
 

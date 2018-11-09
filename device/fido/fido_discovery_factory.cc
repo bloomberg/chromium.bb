@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
+#include "device/fido/buildflags.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
@@ -16,11 +17,11 @@
 #include "device/fido/hid/fido_hid_discovery.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 #include <Winuser.h>
 #include "device/fido/win/discovery.h"
 #include "device/fido/win/webauthn_api.h"
-#endif  // defined(OS_WIN)
+#endif
 
 namespace device {
 
@@ -33,7 +34,7 @@ std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
   return nullptr;
 #else
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
   // On platforms where the Windows webauthn.dll is present, access to USB
   // devices is blocked and we use a special authenticator that forwards
   // requests to the Windows WebAuthn API instead.
@@ -44,7 +45,7 @@ std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
         // TODO(martinkr): Inject the window from which the request originated.
         GetForegroundWindow());
   }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 
   DCHECK(connector);
   return std::make_unique<FidoHidDiscovery>(connector);

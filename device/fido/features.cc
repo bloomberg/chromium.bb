@@ -6,10 +6,11 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "device/fido/buildflags.h"
 
 namespace device {
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 // Controls whether on Windows, U2F/CTAP2 requests are forwarded to the
 // native WebAuthentication API, where available.
 const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",

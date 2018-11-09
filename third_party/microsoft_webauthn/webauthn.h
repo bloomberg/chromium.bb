@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef THIRD_PARTY_MICROSOFT_WEBAUTHN_WEBAUTHN_H_
-#define THIRD_PARTY_MICROSOFT_WEBAUTHN_WEBAUTHN_H_
-
 #pragma once
 
 #include <winapifamily.h>
@@ -554,5 +551,3 @@ WebAuthNGetW3CExceptionDOMError(
 
 #endif // WINAPI_FAMILY_PARTITION
 #pragma endregion
-
-#endif  // THIRD_PARTY_MICROSOFT_WEBAUTHN_WEBAUTHN_H_
