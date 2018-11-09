@@ -295,7 +295,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
       worker_clients, std::make_unique<SharedWorkerContentSettingsProxy>(
                           std::move(content_settings_info_)));
 
-  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
   DCHECK(web_worker_fetch_context);

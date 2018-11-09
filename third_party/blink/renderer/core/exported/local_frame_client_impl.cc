@@ -1129,7 +1129,7 @@ bool LocalFrameClientImpl::IsPluginHandledExternally(
       &plugin_element, resource_url, suggesed_mime_type);
 }
 
-std::unique_ptr<WebWorkerFetchContext>
+scoped_refptr<WebWorkerFetchContext>
 LocalFrameClientImpl::CreateWorkerFetchContext() {
   DCHECK(web_frame_->Client());
   return web_frame_->Client()->CreateWorkerFetchContext();

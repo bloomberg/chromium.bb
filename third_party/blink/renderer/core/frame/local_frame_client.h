@@ -442,7 +442,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   };
 
   // Returns a new WebWorkerFetchContext for a dedicated worker or worklet.
-  virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+  virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
     return nullptr;
   }
 

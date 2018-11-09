@@ -43,7 +43,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const KURL& script_url,
       mojom::ScriptType script_type,
       const String& user_agent,
-      std::unique_ptr<WebWorkerFetchContext>,
+      scoped_refptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
@@ -80,7 +80,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   mojom::ScriptType script_type;
   String user_agent;
 
-  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context;
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
 
   // |content_security_policy_parsed_headers| and
   // |content_security_policy_raw_headers| are mutually exclusive.

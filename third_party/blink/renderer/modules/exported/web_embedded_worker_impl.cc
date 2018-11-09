@@ -380,7 +380,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       new ServiceWorkerGlobalScopeClient(*worker_context_client_));
 
   // |web_worker_fetch_context| is null in some unit tests.
-  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       worker_context_client_->CreateServiceWorkerFetchContext(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
 

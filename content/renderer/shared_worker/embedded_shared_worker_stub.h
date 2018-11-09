@@ -92,7 +92,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
-  std::unique_ptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
+  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
   void WaitForServiceWorkerControllerInfo(
       blink::WebServiceWorkerNetworkProvider* web_network_provider,
