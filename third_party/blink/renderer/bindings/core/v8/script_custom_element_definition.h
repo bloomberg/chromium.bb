@@ -17,8 +17,10 @@ namespace blink {
 
 class CustomElementDescriptor;
 class CustomElementRegistry;
+class V8CustomElementAdoptedCallback;
+class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
-class V8Function;
+class V8VoidFunction;
 
 class CORE_EXPORT ScriptCustomElementDefinition final
     : public CustomElementDefinition {
@@ -36,20 +38,21 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       const CustomElementDescriptor&,
       CustomElementDefinition::Id,
       V8CustomElementConstructor* constructor,
-      V8Function* connected_callback,
-      V8Function* disconnected_callback,
-      V8Function* adopted_callback,
-      V8Function* attribute_changed_callback,
+      V8VoidFunction* connected_callback,
+      V8VoidFunction* disconnected_callback,
+      V8CustomElementAdoptedCallback* adopted_callback,
+      V8CustomElementAttributeChangedCallback* attribute_changed_callback,
       HashSet<AtomicString>&& observed_attributes);
 
-  ScriptCustomElementDefinition(ScriptState*,
-                                const CustomElementDescriptor&,
-                                V8CustomElementConstructor* constructor,
-                                V8Function* connected_callback,
-                                V8Function* disconnected_callback,
-                                V8Function* adopted_callback,
-                                V8Function* attribute_changed_callback,
-                                HashSet<AtomicString>&& observed_attributes);
+  ScriptCustomElementDefinition(
+      ScriptState*,
+      const CustomElementDescriptor&,
+      V8CustomElementConstructor* constructor,
+      V8VoidFunction* connected_callback,
+      V8VoidFunction* disconnected_callback,
+      V8CustomElementAdoptedCallback* adopted_callback,
+      V8CustomElementAttributeChangedCallback* attribute_changed_callback,
+      HashSet<AtomicString>&& observed_attributes);
   ~ScriptCustomElementDefinition() override = default;
 
   void Trace(Visitor*) override;
@@ -88,10 +91,11 @@ class CORE_EXPORT ScriptCustomElementDefinition final
 
   Member<ScriptState> script_state_;
   TraceWrapperMember<V8CustomElementConstructor> constructor_;
-  TraceWrapperMember<V8Function> connected_callback_;
-  TraceWrapperMember<V8Function> disconnected_callback_;
-  TraceWrapperMember<V8Function> adopted_callback_;
-  TraceWrapperMember<V8Function> attribute_changed_callback_;
+  TraceWrapperMember<V8VoidFunction> connected_callback_;
+  TraceWrapperMember<V8VoidFunction> disconnected_callback_;
+  TraceWrapperMember<V8CustomElementAdoptedCallback> adopted_callback_;
+  TraceWrapperMember<V8CustomElementAttributeChangedCallback>
+      attribute_changed_callback_;
 };
 
 }  // namespace blink

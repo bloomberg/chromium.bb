@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -74,10 +77,10 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     const CustomElementDescriptor& descriptor,
     CustomElementDefinition::Id id,
     V8CustomElementConstructor* constructor,
-    V8Function* connected_callback,
-    V8Function* disconnected_callback,
-    V8Function* adopted_callback,
-    V8Function* attribute_changed_callback,
+    V8VoidFunction* connected_callback,
+    V8VoidFunction* disconnected_callback,
+    V8CustomElementAdoptedCallback* adopted_callback,
+    V8CustomElementAttributeChangedCallback* attribute_changed_callback,
     HashSet<AtomicString>&& observed_attributes) {
   ScriptCustomElementDefinition* definition =
       MakeGarbageCollected<ScriptCustomElementDefinition>(
@@ -101,10 +104,10 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     ScriptState* script_state,
     const CustomElementDescriptor& descriptor,
     V8CustomElementConstructor* constructor,
-    V8Function* connected_callback,
-    V8Function* disconnected_callback,
-    V8Function* adopted_callback,
-    V8Function* attribute_changed_callback,
+    V8VoidFunction* connected_callback,
+    V8VoidFunction* disconnected_callback,
+    V8CustomElementAdoptedCallback* adopted_callback,
+    V8CustomElementAttributeChangedCallback* attribute_changed_callback,
     HashSet<AtomicString>&& observed_attributes)
     : CustomElementDefinition(descriptor, std::move(observed_attributes)),
       script_state_(script_state),
@@ -265,15 +268,14 @@ void ScriptCustomElementDefinition::RunConnectedCallback(Element* element) {
   if (!connected_callback_)
     return;
 
-  connected_callback_->InvokeAndReportException(element, Vector<ScriptValue>());
+  connected_callback_->InvokeAndReportException(element);
 }
 
 void ScriptCustomElementDefinition::RunDisconnectedCallback(Element* element) {
   if (!disconnected_callback_)
     return;
 
-  disconnected_callback_->InvokeAndReportException(element,
-                                                   Vector<ScriptValue>());
+  disconnected_callback_->InvokeAndReportException(element);
 }
 
 void ScriptCustomElementDefinition::RunAdoptedCallback(Element* element,
@@ -282,15 +284,7 @@ void ScriptCustomElementDefinition::RunAdoptedCallback(Element* element,
   if (!adopted_callback_)
     return;
 
-  ScriptState* script_state = adopted_callback_->CallbackRelevantScriptState();
-  if (!script_state->ContextIsValid())
-    return;
-  ScriptState::Scope scope(script_state);
-  Vector<ScriptValue> args({
-      ScriptValue(script_state, ToV8(old_owner, script_state)),
-      ScriptValue(script_state, ToV8(new_owner, script_state)),
-  });
-  adopted_callback_->InvokeAndReportException(element, args);
+  adopted_callback_->InvokeAndReportException(element, old_owner, new_owner);
 }
 
 void ScriptCustomElementDefinition::RunAttributeChangedCallback(
@@ -301,19 +295,8 @@ void ScriptCustomElementDefinition::RunAttributeChangedCallback(
   if (!attribute_changed_callback_)
     return;
 
-  v8::Isolate* isolate = attribute_changed_callback_->GetIsolate();
-  ScriptState* script_state =
-      attribute_changed_callback_->CallbackRelevantScriptState();
-  if (!script_state->ContextIsValid())
-    return;
-  ScriptState::Scope scope(script_state);
-  Vector<ScriptValue> args({
-      ScriptValue(script_state, V8String(isolate, name.LocalName())),
-      ScriptValue(script_state, V8StringOrNull(isolate, old_value)),
-      ScriptValue(script_state, V8StringOrNull(isolate, new_value)),
-      ScriptValue(script_state, V8StringOrNull(isolate, name.NamespaceURI())),
-  });
-  attribute_changed_callback_->InvokeAndReportException(element, args);
+  attribute_changed_callback_->InvokeAndReportException(
+      element, name.LocalName(), old_value, new_value, name.NamespaceURI());
 }
 
 }  // namespace blink
