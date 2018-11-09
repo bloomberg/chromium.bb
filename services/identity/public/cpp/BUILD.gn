@@ -25,9 +25,8 @@ source_set("cpp") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
-    "//components/signin/core/browser:account_info",
     "//components/signin/core/browser:internals",
-    "//components/signin/core/browser:signin_metrics",
+    "//components/signin/core/browser:shared",
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
   ]

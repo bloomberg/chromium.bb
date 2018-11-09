@@ -189,7 +189,7 @@ source_set("eg_test_support") {
     ":authentication_ui",
     "unified_consent",
     "//components/signin/core/browser",
-    "//components/signin/core/browser:account_info",
+    "//components/signin/core/browser:shared",
     "//components/unified_consent",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",

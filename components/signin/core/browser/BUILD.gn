@@ -17,30 +17,23 @@ buildflag_header("signin_buildflags") {
   ]
 }
 
-# Split into its own target to allow the Identity Service to depend on it in
-# typemaps without introducing a dependency on all of
-# //components/signin/core/browser, which is undesirable. In the long term
-# this file will move to be part of the Identity Service client library.
-static_library("account_info") {
+# This target contains code that will be shared between the Identity Service
+# implementation and its client library/clients. Currently, this code is used
+# both by IdentityManager and by its clients.
+static_library("shared") {
   sources = [
     "account_info.cc",
     "account_info.h",
+    "signin_metrics.cc",
+    "signin_metrics.h",
   ]
   deps = [
     "//components/account_id",
   ]
-}
-
-# Split into its own target to allow browser clients of the Identity Service to
-# record browser-specific signin metrics without having to depend on all of
-# //components/signin/core/browser.
-static_library("signin_metrics") {
-  sources = [
-    "signin_metrics.cc",
-    "signin_metrics.h",
-  ]
   public_deps = [
     "//base",
+
+    # TODO(blundell): Analyze this dependency.
     "//google_apis",
   ]
 }
@@ -84,9 +77,8 @@ static_library("internals") {
   }
 
   deps = [
-    ":account_info",
+    ":shared",
     ":signin_buildflags",
-    ":signin_metrics",
     "//base",
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
@@ -152,10 +144,9 @@ static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
-    ":account_info",
     ":internals",
+    ":shared",
     ":signin_buildflags",
-    ":signin_metrics",
     "//base",
     "//components/account_id",
     "//components/content_settings/core/browser",
@@ -236,7 +227,7 @@ static_library("internals_test_support") {
 
   public_deps = [
     ":internals",
-    ":signin_metrics",
+    ":shared",
     "//base",
     "//services/network:test_support",
   ]
