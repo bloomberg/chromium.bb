@@ -5,20 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 
-#include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
-#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
@@ -73,11 +62,15 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAllowImageChromiumPresentationMode  // Use CHROMIUM_image gl extension
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum ResourceProviderType {
     kTexture = 0,
     kBitmap = 1,
     kSharedBitmap = 2,
-    kMaxValue = kSharedBitmap,
+    kTextureGpuMemoryBuffer = 3,
+    kBitmapGpuMemoryBuffer = 4,
+    kMaxValue = kBitmapGpuMemoryBuffer,
   };
 
   void static RecordTypeToUMA(ResourceProviderType type);
