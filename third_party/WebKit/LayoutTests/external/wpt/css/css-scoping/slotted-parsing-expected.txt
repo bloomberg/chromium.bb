@@ -15,7 +15,7 @@ PASS Should be a valid selector: '::slotted([attr]:hover)'
 PASS Should be a valid selector: '::slotted(:not(.a))'
 PASS Should be a valid selector: '::slotted(*)::before'
 PASS Should be a valid selector: '::slotted(*)::after'
-FAIL Should be a valid selector: '::slotted(*)::placeholder' assert_true: expected true got false
+PASS Should be a valid selector: '::slotted(*)::placeholder'
 FAIL Should be a valid selector: '::slotted(*)::marker' assert_true: expected true got false
 PASS Should be an invalid selector: '::slotted(*)::first-line'
 PASS Should be an invalid selector: '::slotted(*)::first-letter'

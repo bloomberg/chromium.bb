@@ -266,12 +266,8 @@ bool IsSimpleSelectorValidAfterPseudoElement(
     return true;
   if (compound_pseudo_element == CSSSelector::kPseudoContent)
     return simple_selector.Match() != CSSSelector::kPseudoElement;
-  if (compound_pseudo_element == CSSSelector::kPseudoSlotted) {
-    return simple_selector.Match() == CSSSelector::kPseudoElement &&
-           (simple_selector.GetPseudoType() == CSSSelector::kPseudoBefore ||
-            simple_selector.GetPseudoType() == CSSSelector::kPseudoAfter);
-  }
-
+  if (compound_pseudo_element == CSSSelector::kPseudoSlotted)
+    return simple_selector.IsTreeAbidingPseudoElement();
   if (simple_selector.Match() != CSSSelector::kPseudoClass)
     return false;
   CSSSelector::PseudoType pseudo = simple_selector.GetPseudoType();
@@ -917,12 +913,16 @@ CSSSelectorParser::SplitCompoundAtImplicitShadowCrossingCombinator(
   if (!split_after || !split_after->TagHistory())
     return compound_selector;
 
-  std::unique_ptr<CSSParserSelector> second_compound =
+  std::unique_ptr<CSSParserSelector> remaining =
       split_after->ReleaseTagHistory();
-  second_compound->AppendTagHistory(
-      second_compound->GetImplicitShadowCombinatorForMatching(),
-      std::move(compound_selector));
-  return second_compound;
+  CSSSelector::RelationType relation =
+      remaining->GetImplicitShadowCombinatorForMatching();
+  // We might need to split the compound twice since ::placeholder is allowed
+  // after ::slotted and they both need an implicit combinator for matching.
+  remaining =
+      SplitCompoundAtImplicitShadowCrossingCombinator(std::move(remaining));
+  remaining->AppendTagHistory(relation, std::move(compound_selector));
+  return remaining;
 }
 
 void CSSSelectorParser::RecordUsageAndDeprecations(
