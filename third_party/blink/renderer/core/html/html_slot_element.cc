@@ -184,15 +184,17 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
   DCHECK(host_child.IsSlotable());
+  assigned_nodes_index_.insert(&host_child, assigned_nodes_.size());
   assigned_nodes_.push_back(&host_child);
 }
 
 void HTMLSlotElement::ClearAssignedNodes() {
   assigned_nodes_.clear();
+  assigned_nodes_index_.clear();
 }
 
 void HTMLSlotElement::ClearAssignedNodesAndFlatTreeChildren() {
-  assigned_nodes_.clear();
+  ClearAssignedNodes();
   flat_tree_children_.clear();
 }
 
@@ -223,9 +225,9 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
 Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(hayato): Use {node -> index} map to avoid O(N) linear search
-  wtf_size_t index = assigned_nodes_.Find(&node);
-  DCHECK(index != WTF::kNotFound);
+  auto it = assigned_nodes_index_.find(&node);
+  DCHECK(it != assigned_nodes_index_.end());
+  unsigned index = it->value;
   if (index + 1 == assigned_nodes_.size())
     return nullptr;
   return assigned_nodes_[index + 1].Get();
@@ -234,9 +236,9 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
 Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
   DCHECK(SupportsAssignment());
   ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(hayato): Use {node -> index} map to avoid O(N) linear search
-  wtf_size_t index = assigned_nodes_.Find(&node);
-  DCHECK(index != WTF::kNotFound);
+  auto it = assigned_nodes_index_.find(&node);
+  DCHECK(it != assigned_nodes_index_.end());
+  unsigned index = it->value;
   if (index == 0)
     return nullptr;
   return assigned_nodes_[index - 1].Get();
@@ -554,6 +556,7 @@ int HTMLSlotElement::tabIndex() const {
 
 void HTMLSlotElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
+  visitor->Trace(assigned_nodes_index_);
   visitor->Trace(flat_tree_children_);
   visitor->Trace(assigned_nodes_candidates_);
   HTMLElement::Trace(visitor);
