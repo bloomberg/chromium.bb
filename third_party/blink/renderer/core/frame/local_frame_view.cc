@@ -2558,6 +2558,14 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   return target_state > DocumentLifecycle::kPrePaintClean;
 }
 
+template <typename Function>
+static void ForAllGraphicsLayers(GraphicsLayer& layer,
+                                 const Function& function) {
+  function(layer);
+  for (auto* child : layer.Children())
+    ForAllGraphicsLayers(*child, function);
+}
+
 void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
   // While printing a document, the paint walk is done by the printing
@@ -2603,8 +2611,18 @@ void LocalFrameView::RunPaintLifecyclePhase() {
         // Property tree changed state is typically cleared through
         // |PaintController::FinishCycle| but that will be a no-op because
         // the paint controller is transient, so force the changed state to be
-        // updated here.
-        paint_controller_->ClearPropertyTreeChangedState();
+        // cleared here.
+        paint_controller_->ClearPropertyTreeChangedStateTo(
+            PropertyTreeState::Root());
+        auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
+        if (root) {
+          ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
+            if (layer.DrawsContent() && layer.HasLayerState()) {
+              layer.GetPaintController().ClearPropertyTreeChangedStateTo(
+                  layer.GetPropertyTreeState());
+            }
+          });
+        }
         paint_controller_ = nullptr;
       }
     }

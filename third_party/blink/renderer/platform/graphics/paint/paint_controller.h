@@ -178,7 +178,7 @@ class PLATFORM_EXPORT PaintController {
   // BlinkGenPropertyTrees and this function provides a hook for clearing
   // the property tree changed state after paint.
   // TODO(pdr): Remove this when BlinkGenPropertyTrees ships.
-  void ClearPropertyTreeChangedState();
+  void ClearPropertyTreeChangedStateTo(const PropertyTreeState&);
 
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebPaintController.
