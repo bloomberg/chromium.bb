@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
@@ -267,8 +268,8 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestData::RecordHitTestRect(paint_info.context, background_client,
-                                 HitTestRect(paint_rect, touch_action));
+  HitTestDisplayItem::Record(paint_info.context, background_client,
+                             HitTestRect(paint_rect, touch_action));
 }
 
 }  // namespace blink

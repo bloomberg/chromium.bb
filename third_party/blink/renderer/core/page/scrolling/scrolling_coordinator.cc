@@ -272,7 +272,7 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
     return;
   }
   for (const auto& chunk : layer.GetPaintController().PaintChunks()) {
-    const auto* hit_test_data = chunk.GetHitTestData();
+    const auto* hit_test_data = chunk.hit_test_data.get();
     if (!hit_test_data || hit_test_data->touch_action_rects.IsEmpty())
       continue;
 

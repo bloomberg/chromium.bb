@@ -251,6 +251,7 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGTransform)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
 
+  bool IsHitTest() const { return type_ == kHitTest; }
   bool IsScrollHitTest() const { return type_ == kScrollHitTest; }
 
   bool IsCacheable() const { return is_cacheable_; }

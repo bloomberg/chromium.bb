@@ -34,6 +34,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -59,7 +60,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
-class Layer;
 class PictureImageLayer;
 class PictureLayer;
 }

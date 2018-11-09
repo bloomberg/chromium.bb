@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_model_object.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 
 namespace blink {
 
@@ -44,8 +44,8 @@ void SVGModelObjectPainter::RecordHitTestData(
 
   auto rect =
       LayoutRect(layout_svg_model_object.VisualRectInLocalSVGCoordinates());
-  HitTestData::RecordHitTestRect(paint_info.context, layout_svg_model_object,
-                                 HitTestRect(rect, touch_action));
+  HitTestDisplayItem::Record(paint_info.context, layout_svg_model_object,
+                             HitTestRect(rect, touch_action));
 }
 
 void SVGModelObjectPainter::PaintOutline(const PaintInfo& paint_info) {

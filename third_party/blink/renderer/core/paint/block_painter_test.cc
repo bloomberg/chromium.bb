@@ -236,6 +236,68 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
 }
 
+TEST_F(BlockPainterTestWithPaintTouchAction,
+       TouchActionRectSubsequenceCaching) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #touchaction {
+        width: 100px;
+        height: 100px;
+        touch-action: none;
+      }
+      #sibling {
+        width: 100px;
+        height: 100px;
+        background: blue;
+      }
+    </style>
+    <div id='touchaction'></div>
+  )HTML");
+
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
+  const auto* touchaction = GetLayoutObjectByElementId("touchaction");
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
+                          IsSameId(touchaction, DisplayItem::kHitTest)));
+
+  const auto& hit_test_client = *touchaction->EnclosingLayer();
+  EXPECT_SUBSEQUENCE(hit_test_client, 1u, 2u);
+
+  PaintChunk::Id root_chunk_id(scrolling_client, kDocumentBackgroundType);
+  auto root_chunk_properties =
+      GetLayoutView().FirstFragment().ContentsProperties();
+
+  PaintChunk::Id hit_test_chunk_id(hit_test_client,
+                                   kNonScrollingBackgroundChunkType);
+  auto hit_test_chunk_properties = touchaction->EnclosingLayer()
+                                       ->GetLayoutObject()
+                                       .FirstFragment()
+                                       .ContentsProperties();
+  HitTestData hit_test_data;
+  hit_test_data.touch_action_rects.emplace_back(LayoutRect(0, 0, 100, 100));
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(IsPaintChunk(0, 1, root_chunk_id, root_chunk_properties),
+                  IsPaintChunk(1, 2, hit_test_chunk_id,
+                               hit_test_chunk_properties, hit_test_data)));
+
+  // Trigger a repaint with the whole HTML subsequence cached.
+  GetLayoutView().Layer()->SetNeedsRepaint();
+  EXPECT_TRUE(PaintWithoutCommit());
+  EXPECT_EQ(2, NumCachedNewItems());
+  CommitAndFinishCycle();
+
+  EXPECT_SUBSEQUENCE(hit_test_client, 1u, 2u);
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(IsPaintChunk(0, 1, root_chunk_id, root_chunk_properties),
+                  IsPaintChunk(1, 2, hit_test_chunk_id,
+                               hit_test_chunk_properties, hit_test_data)));
+}
+
 TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>

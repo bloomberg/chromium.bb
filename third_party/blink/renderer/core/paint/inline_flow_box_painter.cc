@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 
 namespace blink {
 
@@ -345,7 +346,7 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestData::RecordHitTestRect(
+  HitTestDisplayItem::Record(
       paint_info.context, inline_flow_box_,
       HitTestRect(AdjustedPaintRect(paint_offset), touch_action));
 }
