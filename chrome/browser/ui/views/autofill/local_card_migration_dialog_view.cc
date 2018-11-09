@@ -306,6 +306,7 @@ void LocalCardMigrationDialogView::ShowDialog() {
 }
 
 void LocalCardMigrationDialogView::CloseDialog() {
+  controller_ = nullptr;
   GetWidget()->Close();
 }
 
@@ -370,7 +371,10 @@ bool LocalCardMigrationDialogView::Cancel() {
 }
 
 void LocalCardMigrationDialogView::WindowClosing() {
-  controller_->OnDialogClosed();
+  if (controller_) {
+    controller_->OnDialogClosed();
+    controller_ = nullptr;
+  }
 }
 
 // TODO(crbug/867194): Add button pressed logic for kDeleteCardButtonTag.
