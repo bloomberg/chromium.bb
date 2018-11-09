@@ -151,14 +151,15 @@
     </style>
 
     <!-- Blue Text Styles -->
+    <style name="BlueTitle2" parent="RobotoMediumStyle">
+        <item name="android:textColor">@color/blue_when_enabled</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
     <style name="BlueButtonText1" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="BlueButtonText2" parent="RobotoMediumStyle">
-        <item name="android:textColor">@color/blue_when_enabled</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
-    </style>
+    <style name="BlueButtonText2" parent="BlueTitle2" />
     <style name="BlueLink1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/blue_when_enabled</item>
         <item name="android:textSize">@dimen/text_size_large</item>
