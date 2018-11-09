@@ -67,6 +67,7 @@ class ReportingServiceImpl : public ReportingService {
       return;
     }
 
+    DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
     ReportingHeaderParser::ParseHeader(context_.get(), url,
                                        std::move(header_value));
   }

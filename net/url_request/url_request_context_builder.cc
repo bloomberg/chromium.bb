@@ -251,6 +251,7 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
             ->GetSocketPerformanceWatcherFactory();
   }
 #if BUILDFLAG(ENABLE_REPORTING)
+  session_context->reporting_service = request_context->reporting_service();
   session_context->network_error_logging_service =
       request_context->network_error_logging_service();
 #endif

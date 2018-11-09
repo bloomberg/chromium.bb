@@ -20,7 +20,6 @@
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_info.h"
-#include "net/net_buildflags.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
@@ -89,12 +88,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // indicates that the server wants the user agent to send a report
   // when a connection violates the Expect CT policy.
   void ProcessExpectCTHeader();
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  // Processes the Report-To header, if one exists. This header configures where
-  // the Reporting API (in //net/reporting) will send reports for the origin.
-  void ProcessReportToHeader();
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // |result| should be OK, or the request is canceled.
   void OnHeadersReceivedCallback(int result);
