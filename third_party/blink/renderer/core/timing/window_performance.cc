@@ -178,8 +178,6 @@ bool WindowPerformance::shouldYield() const {
 
 PerformanceNavigationTiming*
 WindowPerformance::CreateNavigationTimingInstance() {
-  if (!RuntimeEnabledFeatures::PerformanceNavigationTiming2Enabled())
-    return nullptr;
   if (!GetFrame())
     return nullptr;
   const DocumentLoader* document_loader =
