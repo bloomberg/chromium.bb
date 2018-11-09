@@ -2921,7 +2921,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale) {
       base_url_ + "viewport/viewport-limits-adjusted-for-no-user-scale.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
 
-  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
@@ -2939,7 +2939,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
       base_url_ + "viewport/viewport-limits-adjusted-for-user-scale.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
 
-  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   Page* page = web_view_helper.GetWebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 

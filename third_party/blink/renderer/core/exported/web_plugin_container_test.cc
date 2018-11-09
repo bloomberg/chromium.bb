@@ -104,7 +104,7 @@ class WebPluginContainerTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
-    web_view->UpdateAllLifecyclePhases();
+    web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
   }
 
  protected:
@@ -241,8 +241,8 @@ void TestPlugin::PrintPage(int page_number, cc::PaintCanvas* canvas) {
 void EnablePlugins(WebView* web_view, const WebSize& size) {
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
-  web_view->Resize(size);
-  web_view->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->Resize(size);
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
   RunPendingTasks();
 }
 
@@ -1092,7 +1092,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
-  web_view->Resize(WebSize(300, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
   UpdateAllLifecyclePhases(web_view);
@@ -1133,7 +1133,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
-  web_view->Resize(WebSize(300, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
   UpdateAllLifecyclePhases(web_view);

@@ -3368,6 +3368,10 @@ void WebViewImpl::SetPageFrozen(bool frozen) {
   Scheduler()->SetPageFrozen(frozen);
 }
 
+WebWidget* WebViewImpl::MainFrameWidget() {
+  return this;
+}
+
 void WebViewImpl::AddAutoplayFlags(int32_t value) {
   page_->AddAutoplayFlags(value);
 }

@@ -152,9 +152,7 @@ class WebWidget {
   virtual void ThemeChanged() {}
 
   // Do a hit test at given point and return the WebHitTestResult.
-  virtual WebHitTestResult HitTestResultAt(const WebPoint&) {
-    return WebHitTestResult();
-  }
+  virtual WebHitTestResult HitTestResultAt(const WebPoint&) = 0;
 
   // Called to inform the WebWidget of an input event.
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) {

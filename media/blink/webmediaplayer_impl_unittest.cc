@@ -58,6 +58,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -425,7 +426,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
 
-    web_view_->Close();
+    web_view_->MainFrameWidget()->Close();
   }
 
  protected:

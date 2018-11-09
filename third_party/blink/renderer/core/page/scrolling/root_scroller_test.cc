@@ -113,7 +113,7 @@ class RootScrollerTest : public testing::Test,
 
   void ExecuteScript(const WebString& code, WebLocalFrame& frame) {
     frame.ExecuteScript(WebScriptSource(code));
-    frame.View()->UpdateAllLifecyclePhases();
+    frame.View()->MainFrameWidget()->UpdateAllLifecyclePhases();
     RunPendingTasks();
   }
 

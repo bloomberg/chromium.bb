@@ -519,7 +519,10 @@ bool BlinkTestRunner::CaptureLocalPixelsDump() {
     return false;
   }
 
-  CHECK(render_view()->GetWebView()->IsAcceleratedCompositingActive());
+  CHECK(render_view()
+            ->GetWebView()
+            ->MainFrameWidget()
+            ->IsAcceleratedCompositingActive());
 
   // Test finish should only be processed in the BlinkTestRunner associated
   // with the current, non-swapped-out RenderView.

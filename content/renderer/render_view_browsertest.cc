@@ -423,7 +423,7 @@ class RenderViewImplTest : public RenderViewTest {
 
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
-    return webview->Size().width -
+    return webview->MainFrameWidget()->Size().width -
            webview->MainFrame()->VisibleContentRect().width;
   }
 
@@ -973,7 +973,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   base::string16 get_width =
       base::ASCIIToUTF16("Number(document.documentElement.clientWidth)");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
-  EXPECT_EQ(view()->webview()->Size().width, width * device_scale);
+  EXPECT_EQ(view()->webview()->MainFrameWidget()->Size().width,
+            width * device_scale);
 }
 
 // Test that when a parent detaches a remote child after the provisional

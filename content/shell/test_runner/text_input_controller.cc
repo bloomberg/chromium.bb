@@ -372,7 +372,8 @@ void TextInputController::SetComposition(const std::string& text) {
                                    ui::EventTimeForNow());
 
   key_down.windows_key_code = 0xE5;  // VKEY_PROCESSKEY
-  view()->HandleInputEvent(blink::WebCoalescedInputEvent(key_down));
+  view()->MainFrameWidget()->HandleInputEvent(
+      blink::WebCoalescedInputEvent(key_down));
 
   // The value returned by std::string::length() may not correspond to the
   // actual number of encoded characters in sequences of multi-byte or

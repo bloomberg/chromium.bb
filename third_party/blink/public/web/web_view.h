@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
@@ -52,14 +51,17 @@ class WebRemoteFrame;
 class WebSettings;
 class WebString;
 class WebViewClient;
+class WebWidget;
 class WebWidgetClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
+struct WebFloatSize;
 struct WebPluginAction;
 struct WebPoint;
+struct WebSize;
 struct WebWindowFeatures;
 
-class WebView : protected WebWidget {
+class WebView {
  public:
   BLINK_EXPORT static const double kTextSizeMultiplierRatio;
   BLINK_EXPORT static const double kMinTextSizeMultiplier;
@@ -69,38 +71,6 @@ class WebView : protected WebWidget {
     kInjectStyleInAllFrames,
     kInjectStyleInTopFrameOnly
   };
-
-  // WebWidget overrides.
-  using WebWidget::Close;
-  using WebWidget::LifecycleUpdate;
-  using WebWidget::Size;
-  using WebWidget::Resize;
-  using WebWidget::ResizeVisualViewport;
-  using WebWidget::DidEnterFullscreen;
-  using WebWidget::DidExitFullscreen;
-  using WebWidget::BeginFrame;
-  using WebWidget::UpdateAllLifecyclePhases;
-  using WebWidget::UpdateLifecycle;
-  using WebWidget::PaintContent;
-  using WebWidget::LayoutAndPaintAsync;
-  using WebWidget::CompositeAndReadbackAsync;
-  using WebWidget::ThemeChanged;
-  using WebWidget::HandleInputEvent;
-  using WebWidget::DispatchBufferedTouchEvents;
-  using WebWidget::SetCursorVisibilityState;
-  using WebWidget::ApplyViewportChanges;
-  using WebWidget::MouseCaptureLost;
-  using WebWidget::SetFocus;
-  using WebWidget::SelectionBounds;
-  using WebWidget::IsAcceleratedCompositingActive;
-  using WebWidget::IsWebView;
-  using WebWidget::IsPagePopup;
-  using WebWidget::WillCloseLayerTreeView;
-  using WebWidget::DidAcquirePointerLock;
-  using WebWidget::DidNotAcquirePointerLock;
-  using WebWidget::DidLosePointerLock;
-  using WebWidget::BackgroundColor;
-  using WebWidget::GetPagePopup;
 
   // Initialization ------------------------------------------------------
 
@@ -322,9 +292,6 @@ class WebView : protected WebWidget {
 
   // Data exchange -------------------------------------------------------
 
-  // Do a hit test at given point and return the HitTestResult.
-  WebHitTestResult HitTestResultAt(const WebPoint&) override = 0;
-
   // Do a hit test equivalent to what would be done for a GestureTap event
   // that has width/height corresponding to the supplied |tapArea|.
   virtual WebHitTestResult HitTestResultForTap(const WebPoint& tap_point,
@@ -448,7 +415,7 @@ class WebView : protected WebWidget {
 
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
   // completed.
-  WebWidget* GetWidget() { return this; }
+  virtual WebWidget* MainFrameWidget() = 0;
 
  protected:
   ~WebView() = default;

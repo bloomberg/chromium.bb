@@ -562,7 +562,7 @@ void TestRunnerForSpecificView::SetPointerLockWillRespondAsynchronously() {
 
 void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
   pointer_locked_ = true;
-  web_view()->DidAcquirePointerLock();
+  web_view()->MainFrameWidget()->DidAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -571,7 +571,7 @@ void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
 void TestRunnerForSpecificView::DidNotAcquirePointerLockInternal() {
   DCHECK(!pointer_locked_);
   pointer_locked_ = false;
-  web_view()->DidNotAcquirePointerLock();
+  web_view()->MainFrameWidget()->DidNotAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -581,7 +581,7 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
   bool was_locked = pointer_locked_;
   pointer_locked_ = false;
   if (was_locked)
-    web_view()->DidLosePointerLock();
+    web_view()->MainFrameWidget()->DidLosePointerLock();
 }
 
 bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {

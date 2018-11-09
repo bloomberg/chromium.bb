@@ -109,7 +109,9 @@ class LinkHighlightImplTest : public testing::Test,
   }
 
   void UpdateAllLifecyclePhases() {
-    web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
+    web_view_helper_.GetWebView()
+        ->MainFrameWidget()
+        ->UpdateAllLifecyclePhases();
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;

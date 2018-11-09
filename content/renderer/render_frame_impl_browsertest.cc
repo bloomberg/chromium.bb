@@ -204,7 +204,8 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   frame_widget()->OnMessageReceived(resize_message);
 
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
-  EXPECT_EQ(view_->GetWebView()->Size(), blink::WebSize(size));
+  EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
+            blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.

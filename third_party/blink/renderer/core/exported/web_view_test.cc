@@ -295,7 +295,9 @@ class WebViewTest : public testing::Test {
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
 
   void UpdateAllLifecyclePhases() {
-    web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
+    web_view_helper_.GetWebView()
+        ->MainFrameWidget()
+        ->UpdateAllLifecyclePhases();
   }
 
   std::string base_url_;
@@ -304,13 +306,15 @@ class WebViewTest : public testing::Test {
 
 static bool HitTestIsContentEditable(WebView* view, int x, int y) {
   WebPoint hit_point(x, y);
-  WebHitTestResult hit_test_result = view->HitTestResultAt(hit_point);
+  WebHitTestResult hit_test_result =
+      view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.IsContentEditable();
 }
 
 static std::string HitTestElementId(WebView* view, int x, int y) {
   WebPoint hit_point(x, y);
-  WebHitTestResult hit_test_result = view->HitTestResultAt(hit_point);
+  WebHitTestResult hit_test_result =
+      view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.GetNode().To<WebElement>().GetAttribute("id").Utf8();
 }
 
@@ -319,7 +323,7 @@ TEST_F(WebViewTest, HitTestVideo) {
   // element itself as opposed to its child elements.
   std::string url = RegisterMockedHttpURLLoad("video_200x200.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
-  web_view->Resize(WebSize(200, 200));
+  web_view->MainFrameWidget()->Resize(WebSize(200, 200));
 
   // Center of video.
   EXPECT_EQ("video", HitTestElementId(web_view, 100, 100));
@@ -335,7 +339,7 @@ TEST_F(WebViewTest, HitTestContentEditableImageMaps) {
   std::string url =
       RegisterMockedHttpURLLoad("content-editable-image-maps.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
-  web_view->Resize(WebSize(500, 500));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 500));
 
   EXPECT_EQ("areaANotEditable", HitTestElementId(web_view, 25, 25));
   EXPECT_FALSE(HitTestIsContentEditable(web_view, 25, 25));
@@ -360,20 +364,22 @@ TEST_F(WebViewTest, HitTestContentEditableImageMaps) {
 
 static std::string HitTestAbsoluteUrl(WebView* view, int x, int y) {
   WebPoint hit_point(x, y);
-  WebHitTestResult hit_test_result = view->HitTestResultAt(hit_point);
+  WebHitTestResult hit_test_result =
+      view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.AbsoluteImageURL().GetString().Utf8();
 }
 
 static WebElement HitTestUrlElement(WebView* view, int x, int y) {
   WebPoint hit_point(x, y);
-  WebHitTestResult hit_test_result = view->HitTestResultAt(hit_point);
+  WebHitTestResult hit_test_result =
+      view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.UrlElement();
 }
 
 TEST_F(WebViewTest, ImageMapUrls) {
   std::string url = RegisterMockedHttpURLLoad("image-map.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
 
   std::string image_url =
       "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
@@ -635,18 +641,20 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale) {
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   WebPoint hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
-  WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);
+  WebHitTestResult negative_result =
+      web_view->MainFrameWidget()->HitTestResultAt(hit_point);
   EXPECT_FALSE(
       negative_result.GetNode().To<WebElement>().HasHTMLTagName("img"));
   negative_result.Reset();
 
   // Scale page up 2x so image should occupy the whole viewport.
   web_view->SetPageScaleFactor(2.0f);
-  WebHitTestResult positive_result = web_view->HitTestResultAt(hit_point);
+  WebHitTestResult positive_result =
+      web_view->MainFrameWidget()->HitTestResultAt(hit_point);
   EXPECT_TRUE(positive_result.GetNode().To<WebElement>().HasHTMLTagName("img"));
   positive_result.Reset();
 }
@@ -683,11 +691,12 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
 TEST_F(WebViewTest, HitTestResultForTapWithTapArea) {
   std::string url = RegisterMockedHttpURLLoad("hit_test.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   WebPoint hit_point(55, 55);
 
   // Image is at top left quandrant, so should not hit it.
-  WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);
+  WebHitTestResult negative_result =
+      web_view->MainFrameWidget()->HitTestResultAt(hit_point);
   EXPECT_FALSE(
       negative_result.GetNode().To<WebElement>().HasHTMLTagName("img"));
   negative_result.Reset();
@@ -2247,7 +2256,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
@@ -2292,7 +2301,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "back_forward_restore_scroll.html");
   web_view_impl->Resize(WebSize(640, 480));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   // Emulate a user scroll
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
@@ -2345,7 +2354,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   // Scroll the page down.
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
@@ -2358,7 +2367,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   // Assert the scroll position on the document element doesn't change.
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
@@ -2366,7 +2375,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
@@ -2377,7 +2386,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
   EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
 
   // Enter fullscreen.
@@ -2388,7 +2397,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
 }
@@ -2524,14 +2533,14 @@ TEST_F(WebViewTest, ClientTapHandling) {
                         WebInputEvent::GetStaticTimeStampForTests(),
                         kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(3, 8));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
   EXPECT_EQ(3, client.TapX());
   EXPECT_EQ(8, client.TapY());
   client.Reset();
   event.SetType(WebInputEvent::kGestureLongPress);
   event.SetPositionInWidget(WebFloatPoint(25, 7));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
   EXPECT_EQ(25, client.LongpressX());
   EXPECT_EQ(7, client.LongpressY());
@@ -2977,7 +2986,7 @@ TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu) {
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking is still suspended after showing context menu.
-  web_view->GetWidget()->ShowContextMenu(kMenuSourceMouse);
+  web_view->MainFrameWidget()->ShowContextMenu(kMenuSourceMouse);
   EXPECT_TRUE(main_frame->GetFrame()->Selection().IsCaretBlinkingSuspended());
 
   // Caret blinking will be resumed only after context menu is closed.
@@ -3501,10 +3510,12 @@ static void OpenDateTimeChooser(WebView* web_view,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
   key_event.windows_key_code = VKEY_SPACE;
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 }
 
 // TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
@@ -4244,7 +4255,7 @@ class ShowUnhandledTapTest : public WebViewTest {
 
     web_view_ = mojo_test_helper_->WebView();
     web_view_->Resize(WebSize(500, 300));
-    web_view_->UpdateAllLifecyclePhases();
+    web_view_->MainFrameWidget()->UpdateAllLifecyclePhases();
     RunPendingTasks();
 
     mojo_test_helper_->BindTestApi(

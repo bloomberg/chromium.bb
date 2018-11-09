@@ -93,7 +93,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   // local root in WebFrameTestProxy instead of having only the WebWidget for
   // the main frame in WebViewTestProxy.
   proxy->web_widget_test_proxy_base()->set_web_widget(
-      render_view->GetWebView()->GetWidget());
+      render_view->GetWebView()->MainFrameWidget());
   proxy->Reset();
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);

@@ -1198,7 +1198,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -1211,7 +1211,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   desc = document->GetViewportData().GetViewportDescription();
   EXPECT_FLOAT_EQ(device_scale * min_width, desc.min_width.GetFloatValue());

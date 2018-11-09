@@ -112,7 +112,9 @@ class VisualViewportTest : public testing::Test,
     frame_test_helpers::LoadFrame(WebView()->MainFrameImpl(), url);
   }
 
-  void UpdateAllLifecyclePhases() { WebView()->UpdateAllLifecyclePhases(); }
+  void UpdateAllLifecyclePhases() {
+    WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  }
 
   void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
 
@@ -886,7 +888,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
   RegisterMockedHttpURLLoad("200-by-300-min-scale-2.html");
   NavigateTo(base_url_ + "200-by-300-min-scale-2.html");
 
-  WebView()->Resize(IntSize(100, 160));
+  WebView()->MainFrameWidget()->Resize(IntSize(100, 160));
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(IntSize(50, 80),
@@ -947,7 +949,7 @@ TEST_P(VisualViewportTest, TestTextSelectionHandles) {
 // and scale.
 TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   InitializeWithDesktopSettings();
-  WebView()->Resize(IntSize(200, 300));
+  WebView()->MainFrameWidget()->Resize(IntSize(200, 300));
   UpdateAllLifecyclePhases();
 
   RegisterMockedHttpURLLoad("200-by-300.html");
@@ -1041,7 +1043,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
 TEST_P(VisualViewportTest,
        TestNavigateToSmallerFrameViewHistoryItemClobberBug) {
   InitializeWithAndroidSettings();
-  WebView()->Resize(IntSize(400, 400));
+  WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   UpdateAllLifecyclePhases();
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
@@ -1681,7 +1683,7 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
 // viewport.
 TEST_P(VisualViewportTest, ResizeVisualViewportStaysWithinOuterViewport) {
   InitializeWithDesktopSettings();
-  WebView()->Resize(IntSize(100, 200));
+  WebView()->MainFrameWidget()->Resize(IntSize(100, 200));
 
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
@@ -1750,7 +1752,7 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
-  web_view_impl->Resize(IntSize(200, 300));
+  web_view_impl->MainFrameWidget()->Resize(IntSize(200, 300));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -1765,7 +1767,7 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
       "  }"
       "</style>",
       base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   LocalDOMWindow* window =
       web_view_impl->MainFrameImpl()->GetFrame()->DomWindow();
@@ -1912,7 +1914,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   RegisterMockedHttpURLLoad("hit-test.html");
   NavigateTo(base_url_ + "hit-test.html");
 
-  WebView()->Resize(IntSize(500, 500));
+  WebView()->MainFrameWidget()->Resize(IntSize(500, 500));
   UpdateAllLifecyclePhases();
 
   WebDocument web_doc = WebView()->MainFrameImpl()->GetDocument();
@@ -2025,7 +2027,7 @@ TEST_P(VisualViewportTest, WindowDimensionsOnLoadWideContent) {
 
 TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
   InitializeWithDesktopSettings();
-  WebView()->Resize(IntSize(800, 600));
+  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
 
   RegisterMockedHttpURLLoad("icb-relative-content.html");
   NavigateTo(base_url_ + "icb-relative-content.html");
@@ -2075,7 +2077,7 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
   ScopedSetRootScrollerForTest root_scroller(true);
 
   InitializeWithAndroidSettings();
-  WebView()->Resize(IntSize(800, 600));
+  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
 
   RegisterMockedHttpURLLoad("root-scroller-div.html");
   NavigateTo(base_url_ + "root-scroller-div.html");
@@ -2128,7 +2130,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -2204,7 +2206,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -2276,7 +2278,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -2292,7 +2294,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                               total_objects, is_subtree);
   EXPECT_EQ(0u, needs_layout_objects);
 
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   // Do a real resize to check for invalidations.
   document->View()->SetTracksPaintInvalidations(true);
@@ -2327,7 +2329,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
                                            browser_controls_height, 0, true);
 
   frame_test_helpers::LoadFrame(web_view_impl->MainFrameImpl(), "about:blank");
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -2377,7 +2379,7 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
     return;
 
   InitializeWithAndroidSettings();
-  WebView()->Resize(IntSize(400, 400));
+  WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
 
@@ -2395,7 +2397,7 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
     return;
 
   InitializeWithAndroidSettings();
-  WebView()->Resize(IntSize(400, 400));
+  WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
 
