@@ -1601,6 +1601,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // session history and UI.
   if (!targetURL.is_valid()) {
     [self didFinishWithURL:targetURL loadSuccess:NO context:nullptr];
+    _webStateImpl->SetIsLoading(false);
+    _webStateImpl->OnPageLoaded(targetURL, NO);
     return;
   }
 
@@ -1787,6 +1789,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     context->SetUrl(item->GetURL());
   }
   [self loadNativeViewWithSuccess:NO navigationContext:context];
+  _webStateImpl->SetIsLoading(false);
+  _webStateImpl->OnPageLoaded(currentURL, NO);
 }
 
 // Loads the current URL in a native controller if using the legacy navigation
@@ -2176,17 +2180,29 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   [self restoreStateFromHistory];
+
   // Placeholder and restore session URLs are implementation details so should
   // not notify WebStateObservers. If |context| is nullptr, don't skip
   // placeholder URLs because this may be the only opportunity to update
   // |isLoading| for native view reload.
-  if ((context && !IsWKInternalUrl(context->GetUrl())) ||
-      (!context && !IsRestoreSessionUrl(net::GURLWithNSURL(_webView.URL)))) {
-    _webStateImpl->SetIsLoading(false);
-    if (!context || !context->IsLoadingErrorPage()) {
-      _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
-    }
+
+  if (context && IsWKInternalUrl(context->GetUrl()))
+    return;
+
+  if (IsRestoreSessionUrl(net::GURLWithNSURL(_webView.URL)))
+    return;
+
+  if (context && context->IsLoadingErrorPage())
+    return;
+
+  if (!loadSuccess) {
+    // WebStateObserver callbacks will be called for load failure after
+    // loading placeholder URL.
+    return;
   }
+
+  _webStateImpl->SetIsLoading(false);
+  _webStateImpl->OnPageLoaded(currentURL, YES);
 }
 
 - (void)rendererInitiatedGoDelta:(int)delta
