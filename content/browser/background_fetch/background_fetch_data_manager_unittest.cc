@@ -25,6 +25,7 @@
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -36,7 +37,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
@@ -704,6 +707,20 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
+  blink::mojom::SerializedBlobPtr BuildBlob(const std::string data) {
+    auto blob_data = std::make_unique<storage::BlobDataBuilder>(
+        "blob-id:" + base::GenerateGUID());
+    blob_data->AppendData(data);
+    std::unique_ptr<storage::BlobDataHandle> blob_handle =
+        background_fetch_data_manager_->blob_storage_context_->context()
+            ->AddFinishedBlob(std::move(blob_data));
+
+    auto blob = blink::mojom::SerializedBlob::New();
+    blob->uuid = blob_handle->uuid();
+    blob->size = blob_handle->size();
+    return blob;
+  }
+
   std::unique_ptr<BackgroundFetchTestDataManager>
       background_fetch_data_manager_;
 };
@@ -955,6 +972,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
 
   EXPECT_EQ(kExampleUniqueId, registration.unique_id);
   EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
+  EXPECT_EQ(0u, registration.upload_total);
 
   // Verify that retrieving using the wrong developer id doesn't work.
   registration =
@@ -1007,6 +1025,38 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(num_requests));
+}
+
+TEST_F(BackgroundFetchDataManagerTest, RegistrationUploadInfo) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  const std::string upload_data = "Upload!";
+  // Create a single registration.
+  {
+    // One upload and one download.
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests =
+        CreateValidRequests(origin(), 2u);
+    requests[0]->blob = BuildBlob(upload_data);
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
+
+    CreateRegistration(registration_id, std::move(requests), options,
+                       SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  auto registration =
+      GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  EXPECT_EQ(registration.unique_id, kExampleUniqueId);
+  EXPECT_EQ(registration.developer_id, kExampleDeveloperId);
+  EXPECT_EQ(registration.upload_total, upload_data.size());
 }
 
 TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
