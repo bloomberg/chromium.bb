@@ -82,6 +82,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/controller.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_manager.h"
@@ -1021,6 +1022,9 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
         std::make_unique<power::ml::UserActivityController>();
   }
 
+  auto_screen_brightness_controller_ =
+      std::make_unique<power::auto_screen_brightness::Controller>();
+
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
@@ -1081,6 +1085,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
   diagnosticsd_bridge_.reset();
+  auto_screen_brightness_controller_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

@@ -1604,6 +1604,8 @@ source_set("chromeos") {
     "power/auto_screen_brightness/brightness_monitor.h",
     "power/auto_screen_brightness/brightness_monitor_impl.cc",
     "power/auto_screen_brightness/brightness_monitor_impl.h",
+    "power/auto_screen_brightness/controller.cc",
+    "power/auto_screen_brightness/controller.h",
     "power/auto_screen_brightness/fake_als_reader.cc",
     "power/auto_screen_brightness/fake_als_reader.h",
     "power/auto_screen_brightness/fake_brightness_monitor.cc",

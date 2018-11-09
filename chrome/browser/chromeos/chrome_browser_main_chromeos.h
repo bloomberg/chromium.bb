@@ -62,6 +62,10 @@ namespace ml {
 class AdaptiveScreenBrightnessManager;
 class UserActivityController;
 }  // namespace ml
+
+namespace auto_screen_brightness {
+class Controller;
+}  // namespace auto_screen_brightness
 }  // namespace power
 
 // ChromeBrowserMainParts implementation for chromeos specific code.
@@ -141,6 +145,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       adaptive_screen_brightness_manager_;
 
   std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
+  std::unique_ptr<power::auto_screen_brightness::Controller>
+      auto_screen_brightness_controller_;
 
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
