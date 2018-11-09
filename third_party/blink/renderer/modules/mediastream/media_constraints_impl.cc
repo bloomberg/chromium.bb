@@ -645,6 +645,10 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyStringConstraint(constraints_in->facingMode(), naked_treatment,
                          constraint_buffer.facing_mode);
   }
+  if (constraints_in->hasResizeMode()) {
+    CopyStringConstraint(constraints_in->resizeMode(), naked_treatment,
+                         constraint_buffer.resize_mode);
+  }
   if (constraints_in->hasVolume()) {
     CopyDoubleConstraint(constraints_in->volume(), naked_treatment,
                          constraint_buffer.volume);
@@ -919,6 +923,8 @@ void ConvertConstraintSet(const WebMediaTrackConstraintSet& input,
     output->setFrameRate(ConvertDouble(input.frame_rate, naked_treatment));
   if (!input.facing_mode.IsEmpty())
     output->setFacingMode(ConvertString(input.facing_mode, naked_treatment));
+  if (!input.resize_mode.IsEmpty())
+    output->setResizeMode(ConvertString(input.resize_mode, naked_treatment));
   if (!input.volume.IsEmpty())
     output->setVolume(ConvertDouble(input.volume, naked_treatment));
   if (!input.sample_rate.IsEmpty())
