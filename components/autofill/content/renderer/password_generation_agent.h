@@ -79,6 +79,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Called right before PasswordAutofillAgent filled |password_element|.
   void OnFieldAutofilled(const blink::WebInputElement& password_element);
 
+  // Returns true iff the currently handled 'blur' event is fake and should be
+  // ignored.
+  bool ShouldIgnoreBlur() const;
+
 #if defined(UNIT_TEST)
   // This method requests the autofill::mojom::PasswordManagerClient which binds
   // requests the binding if it wasn't bound yet.

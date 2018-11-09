@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -237,6 +238,11 @@ struct PasswordGenerationAgent::GenerationItemInfo {
   // interesting.
   bool editing_popup_shown_ = false;
 
+  // True when PasswordGenerationAgent updates other password fields on the page
+  // due to the generated password being edited. It's used to suppress the fake
+  // blur events coming from there.
+  bool updating_other_password_fileds_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(GenerationItemInfo);
 };
 
@@ -335,6 +341,11 @@ void PasswordGenerationAgent::OnFieldAutofilled(
     current_generation_item_->generation_element_.SetShouldRevealPassword(
         false);
   }
+}
+
+bool PasswordGenerationAgent::ShouldIgnoreBlur() const {
+  return current_generation_item_ &&
+         current_generation_item_->updating_other_password_fileds_;
 }
 
 void PasswordGenerationAgent::FindPossibleGenerationForm() {
@@ -711,6 +722,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       PasswordNoLongerGenerated();
     } else if (current_generation_item_->password_is_generated_) {
       current_generation_item_->password_edited_ = true;
+      base::AutoReset<bool> auto_reset_update_confirmation_password(
+          &current_generation_item_->updating_other_password_fileds_, true);
       // Mirror edits to any confirmation password fields.
       CopyElementValueToOtherInputElements(
           &element, &current_generation_item_->password_elements_);
@@ -786,6 +799,8 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   // Clear all other password fields.
   for (WebInputElement& element :
        current_generation_item_->password_elements_) {
+    base::AutoReset<bool> auto_reset_update_confirmation_password(
+        &current_generation_item_->updating_other_password_fileds_, true);
     if (current_generation_item_->generation_element_ != element)
       element.SetAutofillValue(blink::WebString());
   }

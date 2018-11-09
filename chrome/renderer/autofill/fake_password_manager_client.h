@@ -66,6 +66,9 @@ class FakePasswordManagerClient
                void(const autofill::PasswordForm& password_form));
   MOCK_METHOD1(PasswordNoLongerGenerated,
                void(const autofill::PasswordForm& password_form));
+  MOCK_METHOD2(ShowPasswordEditingPopup,
+               void(const gfx::RectF& bounds,
+                    const autofill::PasswordForm& form));
 
  private:
   // autofill::mojom::PasswordManagerClient:
@@ -78,9 +81,6 @@ class FakePasswordManagerClient
   void ShowManualPasswordGenerationPopup(
       const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
-
-  void ShowPasswordEditingPopup(const gfx::RectF& bounds,
-                                const autofill::PasswordForm& form) override;
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
 
