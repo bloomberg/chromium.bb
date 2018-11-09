@@ -76,6 +76,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     done_callback.Run();
   }
 
+  void TapElement(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    web_controller_->TapElement(
+        selectors,
+        base::BindOnce(&WebControllerBrowserTest::ClickElementCallback,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void TapElementCallback(const base::Closure& done_callback, bool result) {
+    ASSERT_TRUE(result);
+    done_callback.Run();
+  }
+
   void WaitForElementRemove(const std::vector<std::string>& selectors) {
     base::RunLoop run_loop;
     web_controller_->ElementCheck(
@@ -385,6 +399,23 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selectors.clear();
   selectors.emplace_back("#iframe");
   selectors.emplace_back("#button");
+  WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#touch_area");
+  TapElement(selectors);
+
+  WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementInIFrame) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#touch_area");
+  TapElement(selectors);
+
   WaitForElementRemove(selectors);
 }
 
