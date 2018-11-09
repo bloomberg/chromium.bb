@@ -172,7 +172,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   int64_t memory_usage_reported_to_v8_ = 0;
 
   int32_t net_error_ = 0;  // net::OK
-  file_error::ErrorCode error_code_ = file_error::kOK;
+  file_error::ErrorCode error_code_ = file_error::ErrorCode::kOK;
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher handle_watcher_;

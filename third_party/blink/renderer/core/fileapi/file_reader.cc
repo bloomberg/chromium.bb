@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -337,7 +338,7 @@ void FileReader::abort() {
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // Setting error implicitly makes |result| return null.
-  error_ = file_error::CreateDOMException(file_error::kAbortErr);
+  error_ = file_error::CreateDOMException(file_error::ErrorCode::kAbortErr);
 
   // Unregister the reader.
   ThrottlingController::FinishReaderType final_step =

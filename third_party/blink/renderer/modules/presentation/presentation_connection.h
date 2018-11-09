@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -22,6 +21,10 @@ class AtomicString;
 }  // namespace WTF
 
 namespace blink {
+
+namespace file_error {
+enum class ErrorCode;
+}
 
 class DOMArrayBuffer;
 class DOMArrayBufferView;

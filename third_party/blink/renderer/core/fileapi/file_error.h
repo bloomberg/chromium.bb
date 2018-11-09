@@ -42,7 +42,7 @@ class ExceptionState;
 
 namespace file_error {
 
-enum ErrorCode {
+enum class ErrorCode {
   kOK = 0,
   kNotFoundErr = 1,
   kSecurityErr = 2,

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -83,11 +84,11 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   DCHECK(data);
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting) {
-    SetError(file_error::kInvalidStateErr, exception_state);
+    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(file_error::kSecurityErr, exception_state);
+    SetError(file_error::ErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -111,7 +112,7 @@ void FileWriter::seek(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
   if (ready_state_ == kWriting) {
-    SetError(file_error::kInvalidStateErr, exception_state);
+    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
     return;
   }
 
@@ -125,11 +126,11 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     return;
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting || position < 0) {
-    SetError(file_error::kInvalidStateErr, exception_state);
+    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(file_error::kSecurityErr, exception_state);
+    SetError(file_error::ErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -319,7 +320,7 @@ void FileWriter::FireEvent(const AtomicString& type) {
 
 void FileWriter::SetError(file_error::ErrorCode error_code,
                           ExceptionState& exception_state) {
-  DCHECK(error_code);
+  DCHECK_NE(error_code, file_error::ErrorCode::kOK);
   file_error::ThrowDOMException(exception_state, error_code);
   error_ = file_error::CreateDOMException(error_code);
 }
