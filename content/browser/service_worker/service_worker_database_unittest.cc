@@ -972,7 +972,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
   database->LazyOpen(true);
 
   // Should be failed because the database is not initialized.
-  ASSERT_EQ(ServiceWorkerDatabase::UNINITIALIZED, database->state_);
+  ASSERT_EQ(ServiceWorkerDatabase::DATABASE_STATE_UNINITIALIZED,
+            database->state_);
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadRegistration(
                 100, origin, &data_out, &resources_out));
@@ -1659,7 +1660,8 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
   database->LazyOpen(true);
 
   // Should be failed because the database is not initialized.
-  ASSERT_EQ(ServiceWorkerDatabase::UNINITIALIZED, database->state_);
+  ASSERT_EQ(ServiceWorkerDatabase::DATABASE_STATE_UNINITIALIZED,
+            database->state_);
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
             database->ReadUserData(100, {"key"}, &user_data_out));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,

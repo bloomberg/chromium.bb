@@ -563,10 +563,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   int64_t next_resource_id_;
 
   enum State {
-    UNINITIALIZED,
-    INITIALIZING,
-    INITIALIZED,
-    DISABLED,
+    STORAGE_STATE_UNINITIALIZED,
+    STORAGE_STATE_INITIALIZING,
+    STORAGE_STATE_INITIALIZED,
+    STORAGE_STATE_DISABLED,
   };
   State state_;
 
