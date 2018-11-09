@@ -60,6 +60,11 @@ class ScriptExecutor : public ActionDelegate {
   struct Result {
     bool success = false;
     AtEnd at_end = AtEnd::CONTINUE;
+    std::vector<std::vector<std::string>> touchable_elements;
+
+    Result();
+    Result(const Result& other);
+    ~Result();
   };
 
   using RunScriptCallback = base::OnceCallback<void(Result)>;
@@ -95,6 +100,8 @@ class ScriptExecutor : public ActionDelegate {
                         base::OnceCallback<void(bool)> callback) override;
   void FocusElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
+  void SetTouchableElements(
+      const std::vector<std::vector<std::string>>& element_selectors) override;
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
                      bool simulate_key_presses,
@@ -140,6 +147,7 @@ class ScriptExecutor : public ActionDelegate {
   bool should_stop_script_;
   bool should_clean_contextual_ui_on_finish_;
   ActionProto::ActionInfoCase previous_action_type_;
+  std::vector<std::vector<std::string>> touchable_elements_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

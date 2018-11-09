@@ -46,6 +46,10 @@ ScriptExecutor::ScriptExecutor(const std::string& script_path,
 }
 ScriptExecutor::~ScriptExecutor() {}
 
+ScriptExecutor::Result::Result() = default;
+ScriptExecutor::Result::Result(const Result& other) = default;
+ScriptExecutor::Result::~Result() = default;
+
 void ScriptExecutor::Run(RunScriptCallback callback) {
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
@@ -137,6 +141,11 @@ void ScriptExecutor::HighlightElement(const std::vector<std::string>& selectors,
 void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
+}
+
+void ScriptExecutor::SetTouchableElements(
+    const std::vector<std::vector<std::string>>& element_selectors) {
+  touchable_elements_ = element_selectors;
 }
 
 void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
@@ -260,6 +269,7 @@ void ScriptExecutor::RunCallback(bool success) {
   ScriptExecutor::Result result;
   result.success = success;
   result.at_end = at_end_;
+  result.touchable_elements = touchable_elements_;
   std::move(callback_).Run(result);
 }
 

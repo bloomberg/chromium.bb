@@ -8,21 +8,29 @@
     android:id="@+id/autofill_assistant"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="@dimen/control_container_height"
     android:visibility="invisible"
     android:gravity="bottom">
+  <org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter
+      android:id="@+id/touch_event_filter"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:clickable="true"
+      android:visibility="visible"
+      android:focusable="false"
+      android:orientation="vertical"/>
 
-    <LinearLayout
-        android:id="@+id/overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/black_alpha_65"
-        android:gravity="center"
-        android:clickable="true"
-        android:visibility="gone"
-        android:focusable="false"
-        android:orientation="vertical">
-    </LinearLayout>
+  <LinearLayout
+      android:id="@+id/overlay"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginTop="@dimen/control_container_height"
+      android:background="@color/black_alpha_65"
+      android:gravity="center"
+      android:clickable="true"
+      android:visibility="gone"
+      android:focusable="false"
+      android:orientation="vertical"/>
 
     <LinearLayout
         android:id="@+id/bottombar"

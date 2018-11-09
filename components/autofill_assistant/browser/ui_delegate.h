@@ -31,6 +31,12 @@ class UiDelegate {
   // Called when a script was selected for execution.
   virtual void OnScriptSelected(const std::string& script_path) = 0;
 
+  // Checks whether a touch event at the given position should be allowed.
+  //
+  // Coordinates are values between 0 and 1 relative to the size of the visible
+  // viewport.
+  virtual bool AllowTouchEvent(float x, float y) = 0;
+
  protected:
   UiDelegate() = default;
 };

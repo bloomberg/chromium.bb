@@ -47,11 +47,20 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
   delegate->FocusElement(
       ExtractVector(proto_.focus_element().element().selectors()),
       base::BindOnce(&FocusElementAction::OnFocusElement,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
+                     std::move(callback)));
 }
 
-void FocusElementAction::OnFocusElement(ProcessActionCallback callback,
+void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
+                                        ProcessActionCallback callback,
                                         bool status) {
+  std::vector<std::vector<std::string>> touchable_elements;
+  for (const auto& ref : proto().focus_element().touchable_element_area()) {
+    touchable_elements.emplace_back(ExtractVector(ref.selectors()));
+  }
+  if (!touchable_elements.empty())
+    delegate->SetTouchableElements(touchable_elements);
+
   UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

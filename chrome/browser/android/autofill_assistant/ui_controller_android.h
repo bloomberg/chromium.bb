@@ -100,6 +100,10 @@ class UiControllerAndroid : public UiController,
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
+  jboolean AllowTouchEvent(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& jcaller,
+                           float x,
+                           float y);
 
  private:
   // Java-side AutofillAssistantUiController object.

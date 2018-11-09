@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/web_controller.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/callback.h"
@@ -21,17 +22,25 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
+const char* const kGetBoundingClientRectAsList =
+    R"(function(node) {
+      const r = node.getBoundingClientRect();
+      const v = window.visualViewport;
+      return [r.left, r.top, r.right, r.bottom,
+              v.offsetLeft, v.offsetTop, v.width, v.height];
+    })";
+
 const char* const kScrollIntoViewScript =
-    "function(node) {\
-    const rect = node.getBoundingClientRect();\
-    if (rect.height < window.innerHeight) {\
-      window.scrollBy({top: rect.top - window.innerHeight * 0.25, \
-        behavior: 'smooth'});\
-    } else {\
-      window.scrollBy({top: rect.top, behavior: 'smooth'});\
-    }\
-    node.scrollIntoViewIfNeeded();\
-  }";
+    R"(function(node) {
+    const rect = node.getBoundingClientRect();
+    if (rect.height < window.innerHeight) {
+      window.scrollBy({top: rect.top - window.innerHeight * 0.25,
+        behavior: 'smooth'});
+    } else {
+      window.scrollBy({top: rect.top, behavior: 'smooth'});
+    }
+    node.scrollIntoViewIfNeeded();
+  })";
 
 // Javascript to select a value from a select box. Also fires a "change" event
 // to trigger any listeners. Changing the index directly does not trigger this.
@@ -1017,6 +1026,69 @@ void WebController::GetOuterHtml(
 std::unique_ptr<BatchElementChecker>
 WebController::CreateBatchElementChecker() {
   return std::make_unique<BatchElementChecker>(this);
+}
+
+void WebController::GetElementPosition(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool, float, float, float, float)> callback) {
+  FindElement(
+      selectors, /* strict_mode= */ true,
+      base::BindOnce(&WebController::OnFindElementForPosition,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnFindElementForPosition(
+    base::OnceCallback<void(bool, float, float, float, float)> callback,
+    std::unique_ptr<FindElementResult> result) {
+  if (result->object_id.empty()) {
+    std::move(callback).Run(false, 0, 0, 0, 0);
+    return;
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(result->object_id).Build());
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(result->object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kGetBoundingClientRectAsList))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnGetElementPositionResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetElementPositionResult(
+    base::OnceCallback<void(bool, float, float, float, float)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || result->HasExceptionDetails()) {
+    std::move(callback).Run(false, 0, 0, 0, 0);
+    return;
+  }
+  const auto* value = result->GetResult()->GetValue();
+  DCHECK(value);
+  DCHECK(value->is_list());
+  const auto& list = value->GetList();
+  DCHECK_EQ(list.size(), 8u);
+
+  // getBoundingClientRect returns coordinates in the layout viewport. They need
+  // to be transformed into coordinates in the visual viewport, between 0 and 1.
+  float left_layout = static_cast<float>(list[0].GetDouble());
+  float top_layout = static_cast<float>(list[1].GetDouble());
+  float right_layout = static_cast<float>(list[2].GetDouble());
+  float bottom_layout = static_cast<float>(list[3].GetDouble());
+  float visual_left_offset = static_cast<float>(list[4].GetDouble());
+  float visual_top_offset = static_cast<float>(list[5].GetDouble());
+  float visual_w = static_cast<float>(list[6].GetDouble());
+  float visual_h = static_cast<float>(list[7].GetDouble());
+
+  float left = std::max(0.0f, left_layout - visual_left_offset) / visual_w;
+  float top = std::max(0.0f, top_layout - visual_top_offset) / visual_h;
+  float right = std::max(0.0f, right_layout - visual_left_offset) / visual_w;
+  float bottom = std::max(0.0f, bottom_layout - visual_top_offset) / visual_h;
+
+  std::move(callback).Run(true, left, top, right, bottom);
 }
 
 void WebController::OnFindElementForGetOuterHtml(

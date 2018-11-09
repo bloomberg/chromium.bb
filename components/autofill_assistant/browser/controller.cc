@@ -97,6 +97,7 @@ Controller::Controller(
                                                       /* listener= */ this)),
       parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
+      touchable_element_area_(web_controller_.get()),
       weak_ptr_factory_(this) {
   DCHECK(parameters_);
 
@@ -235,7 +236,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     GetUiController()->ShutdownGracefully();
     return;
   }
-
+  touchable_element_area_.SetElements(result.touchable_elements);
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
       GetUiController()->Shutdown();  // indirectly deletes this
@@ -272,6 +273,8 @@ void Controller::OnScriptSelected(const std::string& script_path) {
   DCHECK(!script_tracker_->running());
 
   GetUiController()->ShowOverlay();
+  touchable_element_area_.ClearElements();
+
   StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
@@ -282,6 +285,17 @@ void Controller::OnScriptSelected(const std::string& script_path) {
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.
                                   base::Unretained(this), script_path));
+}
+
+bool Controller::AllowTouchEvent(float x, float y) {
+  if (touchable_element_area_.IsEmpty()) {
+    // Allow all touch events if there is no touchable element area.
+    //
+    // TODO(crbug.com/806868): Enforce the use of touchable elements area once
+    // the feature is complete.
+    return true;
+  }
+  return touchable_element_area_.Contains(x, y);
 }
 
 void Controller::OnDestroy() {
@@ -309,6 +323,13 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
         script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
         StartPeriodicScriptChecks();
       }
+      break;
+
+    case blink::WebInputEvent::kGestureScrollEnd:
+    case blink::WebInputEvent::kGesturePinchEnd:
+      // This speeds up update of the area in case where we know something has
+      // happened.
+      touchable_element_area_.UpdatePositions();
       break;
 
     default:

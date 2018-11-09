@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
@@ -84,6 +85,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnDestroy() override;
   void OnGiveUp() override;
   void OnScriptSelected(const std::string& script_path) override;
+  bool AllowTouchEvent(float x, float y) override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;
@@ -130,6 +132,10 @@ class Controller : public ScriptExecutorDelegate,
   // Whether we should hide the overlay and show an error message after a first
   // unsuccessful round of preconditions checking.
   bool should_fail_after_checking_scripts_ = false;
+
+  // Area of the screen that corresponds to the current set of touchable
+  // elements.
+  ElementArea touchable_element_area_;
 
   bool started_ = false;
 
