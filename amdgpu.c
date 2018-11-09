@@ -137,7 +137,6 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	uint32_t plane, stride;
 	struct combination *combo;
 	union drm_amdgpu_gem_create gem_create;
-	struct amdgpu_priv *priv = bo->drv->priv;
 
 	combo = drv_get_combination(bo->drv, format, use_flags);
 	if (!combo)
@@ -176,12 +175,6 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
 	if (!(use_flags & (BO_USE_SW_READ_OFTEN | BO_USE_SCANOUT)))
 		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
-
-	/* If drm_version >= 21 everything exposes explicit synchronization primitives
-	   and chromeos/arc++ will use them. Disable implicit synchronization. */
-	if (priv->drm_version >= 21) {
-		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_EXPLICIT_SYNC;
-	}
 
 	/* Allocate the buffer with the preferred heap. */
 	ret = drmCommandWriteRead(drv_get_fd(bo->drv), DRM_AMDGPU_GEM_CREATE, &gem_create,
