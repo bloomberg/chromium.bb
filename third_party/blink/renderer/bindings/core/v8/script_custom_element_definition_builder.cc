@@ -9,8 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -67,7 +69,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     return false;
   if (v8_connected_callback_->IsFunction()) {
     connected_callback_ =
-        V8Function::Create(v8_connected_callback_.As<v8::Function>());
+        V8VoidFunction::Create(v8_connected_callback_.As<v8::Function>());
   }
   v8_disconnected_callback_ =
       retriever.GetMethodOrUndefined("disconnectedCallback", exception_state_);
@@ -75,15 +77,15 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     return false;
   if (v8_disconnected_callback_->IsFunction()) {
     disconnected_callback_ =
-        V8Function::Create(v8_disconnected_callback_.As<v8::Function>());
+        V8VoidFunction::Create(v8_disconnected_callback_.As<v8::Function>());
   }
   v8_adopted_callback_ =
       retriever.GetMethodOrUndefined("adoptedCallback", exception_state_);
   if (exception_state_.HadException())
     return false;
   if (v8_adopted_callback_->IsFunction()) {
-    adopted_callback_ =
-        V8Function::Create(v8_adopted_callback_.As<v8::Function>());
+    adopted_callback_ = V8CustomElementAdoptedCallback::Create(
+        v8_adopted_callback_.As<v8::Function>());
   }
   v8_attribute_changed_callback_ = retriever.GetMethodOrUndefined(
       "attributeChangedCallback", exception_state_);
@@ -91,7 +93,8 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     return false;
   if (v8_attribute_changed_callback_->IsFunction()) {
     attribute_changed_callback_ =
-        V8Function::Create(v8_attribute_changed_callback_.As<v8::Function>());
+        V8CustomElementAttributeChangedCallback::Create(
+            v8_attribute_changed_callback_.As<v8::Function>());
   }
 
   // step 10.6. If the value of the entry in lifecycleCallbacks with key

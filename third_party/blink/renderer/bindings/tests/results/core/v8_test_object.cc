@@ -2039,7 +2039,7 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
   String cppValue(impl->cachedStringOrNoneAttribute());
 
   // [CachedAttribute]
-  v8::Local<v8::Value> v8Value(cppValue.IsNull() ? v8::Local<v8::Value>(v8::Null(info.GetIsolate())) : V8String(info.GetIsolate(), cppValue));
+  v8::Local<v8::Value> v8Value((cppValue.IsNull() ? v8::Null(info.GetIsolate()).As<v8::Value>() : V8String(info.GetIsolate(), cppValue).As<v8::Value>()));
   propertySymbol.Set(holder, v8Value);
 
   V8SetReturnValue(info, v8Value);

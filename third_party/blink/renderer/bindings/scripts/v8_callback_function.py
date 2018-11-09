@@ -12,6 +12,7 @@ import v8_types
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
     'platform/bindings/callback_function_base.h',
+    'platform/wtf/forward.h',
 ])
 CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
     'base/stl_util.h',
