@@ -105,36 +105,6 @@ TEST_F(CallStackProfileMetricsProviderTest,
             uma_proto.sampled_profile(1).trigger_event());
 }
 
-// Checks that the unserialized pending profiles whose number exceeds the
-// associated cap are still encoded in the session data.
-TEST_F(CallStackProfileMetricsProviderTest,
-       ProvideCurrentSessionDataExceedUnserializedCap) {
-  // The value must be consistent with that in
-  // call_stack_profile_metrics_provider.cc so that this test is meaningful.
-  constexpr int kMaxPendingUnserializedProfiles = 250;
-
-  CallStackProfileMetricsProvider provider;
-  provider.OnRecordingEnabled();
-
-  // Receive (kMaxPendingUnserializedProfiles + 1) unserialized profiles.
-  for (int i = 0; i < kMaxPendingUnserializedProfiles + 1; ++i) {
-    SampledProfile profile;
-    profile.set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-    CallStackProfileMetricsProvider::ReceiveProfile(base::TimeTicks::Now(),
-                                                    std::move(profile));
-  }
-
-  ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
-
-  ASSERT_EQ(kMaxPendingUnserializedProfiles + 1,
-            uma_proto.sampled_profile().size());
-  for (int i = 0; i < kMaxPendingUnserializedProfiles + 1; ++i) {
-    EXPECT_EQ(SampledProfile::PERIODIC_COLLECTION,
-              uma_proto.sampled_profile(i).trigger_event());
-  }
-}
-
 // Checks that the pending profiles above the total cap are dropped therefore
 // not encoded in the session data.
 TEST_F(CallStackProfileMetricsProviderTest,
