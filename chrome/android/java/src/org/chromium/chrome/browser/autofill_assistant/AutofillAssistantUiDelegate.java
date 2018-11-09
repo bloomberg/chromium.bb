@@ -500,6 +500,11 @@ class AutofillAssistantUiDelegate {
         mBottomBarAnimations.hideDetails();
     }
 
+    /** Called to show a message in the status bar that autofill assistant is done. */
+    public void showGiveUpMessage() {
+        showStatusMessage(mActivity.getString(R.string.autofill_assistant_give_up));
+    }
+
     /** Called to show contextual information. */
     public void showDetails(Details details) {
         // keep a copy of most recent movie details for feedback purposes
