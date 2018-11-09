@@ -1388,21 +1388,6 @@
       ]
     },
     {
-      "id": 149,
-      "description": "Direct composition flashes black initially on Win <10",
-      "cr_bugs": [588588],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<",
-          "value": "10.0"
-        }
-      },
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
       "id": 150,
       "cr_bugs": [563714],
       "description": "Alignment works incorrectly with unpack buffer bound",
@@ -2590,32 +2575,6 @@
       ]
     },
     {
-      "id": 248,
-      "description": "Direct composition causes slow presents on Intel Sandybridge",
-      "cr_bugs": [775898, 785648],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0116"],
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
-      "id": 249,
-      "description": "Direct composition causes slow presents on old Nvidia GPUs",
-      "cr_bugs": [775898],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x10de",
-      "device_id": ["0x10d8"],
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
       "id": 250,
       "description": "Depth/stencil renderbuffers can't be resized on NVIDIA on early macOS 10.13",
       "cr_bugs": [775202],
@@ -2948,35 +2907,6 @@
       "gl_vendor": "ARM.*",
       "features": [
         "disable_aimagereader"
-      ]
-    },
-    {
-      "id": 277,
-      "description": "Direct composition path is buggy on certain AMD devices/drivers",
-      "cr_bugs": [800950],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "op": "=",
-        "value": "8.970.100.9001"
-      },
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
-      "id": 278,
-      "description": "Direct composition path is buggy on certain AMD devices/drivers",
-      "cr_bugs": [800950],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x6900"],
-      "features": [
-        "disable_direct_composition"
       ]
     },
     {

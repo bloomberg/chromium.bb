@@ -62,9 +62,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
 
 #if defined(OS_WIN)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
-    gpu_info->direct_composition =
-        DirectCompositionSurfaceWin::IsDirectCompositionSupported();
-    gpu_info->supports_overlays =
+    gpu_info->direct_composition_overlays =
         DirectCompositionSurfaceWin::AreOverlaysSupported();
     gpu_info->overlay_capabilities =
         DirectCompositionSurfaceWin::GetOverlayCapabilities();
