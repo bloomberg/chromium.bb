@@ -76,9 +76,11 @@ AppListControllerImpl::AppListControllerImpl()
   }
 
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
@@ -545,15 +547,8 @@ void AppListControllerImpl::OnTabletModeStarted() {
   if (!is_home_launcher_enabled_)
     return;
 
-  SessionController const* session_controller =
-      Shell::Get()->session_controller();
-  if (session_controller && !session_controller->IsActiveUserSessionStarted())
-    return;
-
   // Show the app list if the tablet mode starts.
-  Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
-  UpdateHomeLauncherVisibility();
-  Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
+  ShowHomeLauncher();
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
@@ -596,6 +591,27 @@ void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
 void AppListControllerImpl::OnAssistantFeatureAllowedChanged(
     mojom::AssistantAllowedState state) {
   UpdateAssistantVisibility();
+}
+
+void AppListControllerImpl::OnDisplayConfigurationChanged() {
+  // Entering tablet mode triggers a display configuration change when we
+  // automatically switch to mirror mode. Switching to mirror mode happens
+  // asynchronously (see DisplayConfigurationObserver::OnTabletModeStarted()).
+  // This may result in the removal of a window tree host, as in the example of
+  // switching to tablet mode while Unified Desktop mode is on; the Unified host
+  // will be destroyed and the Home Launcher (which was created earlier when we
+  // entered tablet mode) will be dismissed.
+  // To avoid crashes, we must ensure that the Home Launcher shown status is as
+  // expected if it's enabled and we're still in tablet mode.
+  // https://crbug.com/900956.
+  const bool should_be_shown = IsHomeLauncherEnabledInTabletMode();
+  if (should_be_shown == GetTargetVisibility())
+    return;
+
+  if (should_be_shown)
+    ShowHomeLauncher();
+  else
+    DismissAppList();
 }
 
 bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
@@ -943,7 +959,8 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
-  if (IsHomeLauncherEnabledInTabletMode()) {
+  if (IsHomeLauncherEnabledInTabletMode() &&
+      !Shell::Get()->display_manager()->IsInUnifiedMode()) {
     return display::Display::HasInternalDisplay()
                ? display::Display::InternalDisplayId()
                : display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -952,6 +969,17 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
       .id();
+}
+
+void AppListControllerImpl::ShowHomeLauncher() {
+  DCHECK(IsHomeLauncherEnabledInTabletMode());
+
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+    return;
+
+  Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
+  UpdateHomeLauncherVisibility();
+  Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
 }
 
 }  // namespace ash
