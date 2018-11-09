@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef IOS_CHROME_BROWSER_WEB_SAD_TAB_TAB_HELPER_H_
+#define IOS_CHROME_BROWSER_WEB_SAD_TAB_TAB_HELPER_H_
+
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
@@ -105,6 +108,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Whether a Sad Tab is being shown over |web_state_|'s content area.
   bool showing_sad_tab_ = false;
 
+  // true if Sad Tab is presented and presented for repeated load failure.
+  bool repeated_failure_ = false;
+
   // The fullscreen disabler for when the sad tab is visible.
   std::unique_ptr<ScopedFullscreenDisabler> fullscreen_disabler_;
 
@@ -126,3 +132,5 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   DISALLOW_COPY_AND_ASSIGN(SadTabTabHelper);
 };
+
+#endif  // IOS_CHROME_BROWSER_WEB_SAD_TAB_TAB_HELPER_H_
