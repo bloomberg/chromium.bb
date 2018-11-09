@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -93,6 +94,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
       is_incognito_(incognito),
       store_last_modified_(store_last_modified),
       clock_(base::DefaultClock::GetInstance()) {
+  TRACE_EVENT_BEGIN0("startup", "PrefProvider::PrefProvider");
   DCHECK(prefs_);
   // Verify preferences version.
   if (!prefs_->HasPrefPath(prefs::kContentSettingsVersion)) {
@@ -101,6 +103,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
   }
   if (prefs_->GetInteger(prefs::kContentSettingsVersion) >
       ContentSettingsPattern::kContentSettingsPatternVersion) {
+    TRACE_EVENT_END0("startup", "PrefProvider::PrefProvider");
     return;
   }
 
@@ -135,14 +138,17 @@ PrefProvider::PrefProvider(PrefService* prefs,
     }
   }
 
+  size_t num_exceptions = 0;
   if (!is_incognito_) {
-    size_t num_exceptions = 0;
     for (const auto& pref : content_settings_prefs_)
       num_exceptions += pref.second->GetNumExceptions();
 
     UMA_HISTOGRAM_COUNTS_1M("ContentSettings.NumberOfExceptions",
                             num_exceptions);
   }
+
+  TRACE_EVENT_END1("startup", "PrefProvider::PrefProvider",
+                   "NumberOfExceptions", num_exceptions);
 }
 
 PrefProvider::~PrefProvider() {
