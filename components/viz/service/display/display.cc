@@ -51,6 +51,43 @@ int64_t GetStartingTraceId() {
   return ((++client & 0xffffffff) << 32);
 }
 
+gfx::PresentationFeedback SanitizePresentationFeedback(
+    const gfx::PresentationFeedback& feedback,
+    base::TimeTicks swap_time) {
+  // Temporary to investigate large presentation times.
+  // https://crbug.com/894440
+  DCHECK(!swap_time.is_null());
+  if (feedback.timestamp.is_null())
+    return feedback;
+
+  // If the presentation-timestamp is from the future, or from the past (i.e.
+  // before swap-time), then invalidate the feedback. Also report how far into
+  // the future (or from the past) the timestamps are.
+  // https://crbug.com/894440
+  const auto now = base::TimeTicks::Now();
+  if (feedback.timestamp > now) {
+    const auto diff = feedback.timestamp - now;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Graphics.PresentationTimestamp.InvalidFromFuture", diff);
+    return gfx::PresentationFeedback::Failure();
+  }
+
+  if (feedback.timestamp < swap_time) {
+    const auto diff = swap_time - feedback.timestamp;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Graphics.PresentationTimestamp.InvalidBeforeSwap", diff);
+    return gfx::PresentationFeedback::Failure();
+  }
+
+  const auto difference = feedback.timestamp - swap_time;
+  if (difference.InMinutes() > 3) {
+    base::debug::DumpWithoutCrashing();
+    // In debug builds, just crash immediately.
+    DCHECK(false);
+  }
+  return feedback;
+}
+
 }  // namespace
 
 Display::Display(
@@ -528,37 +565,8 @@ void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());
   auto& callbacks = pending_presented_callbacks_.front().second;
-  auto copy_feedback = feedback;
-#if defined(OS_ANDROID)
-  // Temporary to investigate large presentation times.
-  // https://crbug.com/894440
   const auto swap_time = pending_presented_callbacks_.front().first;
-  DCHECK(!swap_time.is_null());
-  if (!feedback.timestamp.is_null()) {
-    const auto now = base::TimeTicks::Now();
-    if (feedback.timestamp > now) {
-      const auto diff = feedback.timestamp - now;
-      // This collects the time-delta in buckets from 10ms up-to 3minutes. This
-      // should provide sufficient information about the spread.
-      // https://crbug.com/894440
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Graphics.PresentationTimestamp.InvalidFromFuture", diff);
-      base::debug::DumpWithoutCrashing();
-      // In debug builds, just crash immediately.
-      DCHECK(false);
-
-      // Invalidate the feedback.
-      copy_feedback = gfx::PresentationFeedback::Failure();
-    }
-
-    const auto difference = feedback.timestamp - swap_time;
-    if (difference.InMinutes() > 3) {
-      base::debug::DumpWithoutCrashing();
-      // In debug builds, just crash immediately.
-      DCHECK(false);
-    }
-  }
-#endif
+  auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
   for (auto& callback : callbacks) {
     std::move(callback).Run(copy_feedback);
   }
