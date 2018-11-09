@@ -48566,6 +48566,18 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Did not expect restored types but found some"/>
 </enum>
 
+<enum name="SyncBookmarkModelMetadataCorruptionReason">
+  <int value="0" label="No corruption"/>
+  <int value="1" label="Entity missing server id"/>
+  <int value="2" label="Tombstone has a bookmark id"/>
+  <int value="3" label="Non-tombstone is missing a bookmark id"/>
+  <int value="4"
+      label="Number of bookmarks doesn't match number of metadata entities"/>
+  <int value="5"
+      label="Ids in the bookmarks model don't match the ids in the metadata
+             entities"/>
+</enum>
+
 <enum name="SyncBookmarkModelSyncState">
   <summary>
     The state of the local bookmark model version compared to Sync. Corresponds
