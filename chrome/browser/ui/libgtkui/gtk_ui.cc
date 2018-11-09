@@ -327,57 +327,6 @@ views::LinuxUI::NonClientWindowFrameAction GetDefaultMiddleClickAction() {
   }
 }
 
-// COLOR_TOOLBAR_TOP_SEPARATOR represents the border between tabs and the
-// frame, as well as the border between tabs and the toolbar.  For this
-// reason, it is difficult to calculate the One True Color that works well on
-// all themes and is opaque.  However, we can cheat to get a good color that
-// works well for both borders.  The idea is we have two variables: alpha and
-// lightness.  And we have two constraints (on lightness):
-// 1. the border color, when painted on |header_bg|, should give |header_fg|
-// 2. the border color, when painted on |tab_bg|, should give |tab_fg|
-// This gives the equations:
-// alpha*lightness + (1 - alpha)*header_bg = header_fg
-// alpha*lightness + (1 - alpha)*tab_bg = tab_fg
-// The algorithm below is just a result of solving those equations for alpha
-// and lightness.  If a problem is encountered, like division by zero, or
-// |a| or |l| not in [0, 1], then fallback on |header_fg| or |tab_fg|.
-SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
-                                    SkColor header_bg,
-                                    SkColor tab_fg,
-                                    SkColor tab_bg) {
-  using namespace color_utils;
-
-  SkColor default_color = SkColorGetA(header_fg) ? header_fg : tab_fg;
-  if (!SkColorGetA(default_color))
-    return SK_ColorTRANSPARENT;
-
-  auto get_lightness = [](SkColor color) {
-    HSL hsl;
-    SkColorToHSL(color, &hsl);
-    return hsl.l;
-  };
-
-  double f1 = get_lightness(GetResultingPaintColor(header_fg, header_bg));
-  double b1 = get_lightness(header_bg);
-  double f2 = get_lightness(GetResultingPaintColor(tab_fg, tab_bg));
-  double b2 = get_lightness(tab_bg);
-
-  if (b1 == b2)
-    return default_color;
-  double a = (f1 - f2 - b1 + b2) / (b2 - b1);
-  if (a == 0)
-    return default_color;
-  double l = (f1 - (1 - a) * b1) / a;
-  if (a < 0 || a > 1 || l < 0 || l > 1)
-    return default_color;
-  // Take the hue and saturation from |default_color|, but use the
-  // calculated lightness.
-  HSL border;
-  SkColorToHSL(default_color, &border);
-  border.l = l;
-  return HSLToSkColor(border, a * 0xff);
-}
-
 }  // namespace
 
 GtkUi::GtkUi() {
@@ -1012,13 +961,6 @@ void GtkUi::UpdateColors() {
         GetBorderColor(header_selector + " GtkButton#button");
     SkColor toolbar_top_separator_inactive =
         GetBorderColor(header_selector + ":backdrop GtkButton#button");
-    if (!ui::MaterialDesignController::IsRefreshUi()) {
-      toolbar_top_separator = GetToolbarTopSeparatorColor(
-          toolbar_top_separator, frame_color, tab_border, tab_color);
-      toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
-          toolbar_top_separator_inactive, frame_color_inactive, tab_border,
-          tab_color);
-    }
 
     // Unlike with toolbars, we always want a border around tabs, so let
     // ThemeService choose the border color if the theme doesn't provide one.
