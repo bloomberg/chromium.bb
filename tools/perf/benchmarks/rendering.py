@@ -30,6 +30,10 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     return page_sets.RenderingStorySet(platform='desktop')
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--touch-events=enabled')
+
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
@@ -57,6 +61,10 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
 
   def CreateStorySet(self, options):
     return page_sets.RenderingStorySet(platform='mobile')
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--touch-events=enabled')
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
