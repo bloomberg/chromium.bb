@@ -174,11 +174,12 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  if (browser_view->IsBrowserTypeHostedApp()) {
+  extensions::HostedAppBrowserController* controller =
+      browser_view->browser()->hosted_app_controller();
+  if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
         frame, browser_view, GetReadableFrameForegroundColor(kActive),
         GetReadableFrameForegroundColor(kInactive)));
-    hosted_app_button_container()->set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
     AddChildView(hosted_app_button_container());
   }
 }

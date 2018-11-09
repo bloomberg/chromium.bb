@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -58,10 +59,14 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
                           base::Unretained(this), true));
 
   if (browser_view->IsBrowserTypeHostedApp()) {
-    set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, GetReadableFrameForegroundColor(kActive),
-        GetReadableFrameForegroundColor(kInactive), kHostedAppMenuMargin));
-    AddChildView(hosted_app_button_container());
+    if (browser_view->browser()
+            ->hosted_app_controller()
+            ->ShouldShowHostedAppButtonContainer()) {
+      set_hosted_app_button_container(new HostedAppButtonContainer(
+          frame, browser_view, GetReadableFrameForegroundColor(kActive),
+          GetReadableFrameForegroundColor(kInactive), kHostedAppMenuMargin));
+      AddChildView(hosted_app_button_container());
+    }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
     window_title_ = new views::Label(browser_view->GetWindowTitle());
@@ -114,9 +119,11 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  if (browser_view()->IsBrowserTypeHostedApp())
+  if (hosted_app_button_container()) {
+    DCHECK(browser_view()->IsBrowserTypeHostedApp());
     return hosted_app_button_container()->GetPreferredSize().height() +
            kHostedAppMenuMargin * 2;
+  }
 
   if (!browser_view()->IsTabStripVisible())
     return 0;

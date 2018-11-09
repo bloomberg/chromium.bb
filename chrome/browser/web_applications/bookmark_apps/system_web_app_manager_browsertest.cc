@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager_browsertest.h"
 
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
@@ -43,7 +44,7 @@ constexpr char kSystemAppManifestText[] =
           "type": "image/png"
         }
       ],
-      "start_url": "/",
+      "start_url": "/pwa.html",
       "theme_color": "#00FF00"
     })";
 
@@ -106,44 +107,44 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };
 
-class SystemWebAppManagerIntegrationTest
-    : public extensions::ExtensionBrowserTest {
- public:
-  SystemWebAppManagerIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
-    content::WebUIControllerFactory::RegisterFactory(&factory_);
-  }
-  ~SystemWebAppManagerIntegrationTest() override {
-    content::WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-  }
+SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
+    : factory_(std::make_unique<TestWebUIControllerFactory>()) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
+  content::WebUIControllerFactory::RegisterFactory(factory_.get());
+}
+SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() {
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(factory_.get());
+}
 
-  void SetUpOnMainThread() override {
-    extensions::ExtensionBrowserTest::SetUpOnMainThread();
+void SystemWebAppManagerBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
 
-    // Reset WebAppProvider so that its SystemWebAppManager doesn't interfere
-    // with tests.
-    WebAppProvider::Get(profile())->Reset();
-  }
+  // Reset WebAppProvider so that its SystemWebAppManager doesn't interfere
+  // with tests.
+  WebAppProvider::Get(browser()->profile())->Reset();
+}
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestWebUIControllerFactory factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerIntegrationTest);
-};
-
-// Test that System Apps install correctly with a manifest.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerIntegrationTest, WithManifest) {
+Browser* SystemWebAppManagerBrowserTest::InstallAndLaunchSystemApp() {
+  Profile* profile = browser()->profile();
   std::vector<GURL> system_apps;
   system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
-  extensions::PendingBookmarkAppManager pending_app_manager(profile());
-  TestSystemWebAppManager system_web_app_manager(
-      profile(), &pending_app_manager, std::move(system_apps));
+  extensions::PendingBookmarkAppManager pending_app_manager(profile);
+  TestSystemWebAppManager system_web_app_manager(profile, &pending_app_manager,
+                                                 std::move(system_apps));
   const extensions::Extension* app =
       extensions::TestExtensionRegistryObserver(
-          extensions::ExtensionRegistry::Get(profile()))
+          extensions::ExtensionRegistry::Get(profile))
           .WaitForExtensionInstalled();
+
+  return extensions::browsertest_util::LaunchAppBrowser(profile, app);
+}
+
+// Test that System Apps install correctly with a manifest.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
+  const extensions::Extension* app = InstallAndLaunchSystemApp()
+                                         ->hosted_app_controller()
+                                         ->GetExtensionForTesting();
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
             extensions::AppThemeColorInfo::GetThemeColor(app));
@@ -152,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerIntegrationTest, WithManifest) {
 
   // The app should be a PWA.
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
-                profile(), GURL("chrome://test-system-app/")),
+                browser()->profile(), GURL("chrome://test-system-app/")),
             app);
 }
 

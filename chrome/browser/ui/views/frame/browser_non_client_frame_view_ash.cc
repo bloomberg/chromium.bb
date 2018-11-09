@@ -804,6 +804,9 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
         ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
 
+  if (!browser->hosted_app_controller()->ShouldShowHostedAppButtonContainer())
+    return;
+
   // Add the container for extra hosted app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
