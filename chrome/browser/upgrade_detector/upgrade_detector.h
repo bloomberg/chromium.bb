@@ -77,6 +77,13 @@ class UpgradeDetector {
     return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU;
   }
 
+  // Returns true if the detector has found that a newer version of Chrome is
+  // installed and a relaunch would complete the update.
+  bool is_upgrade_available() const {
+    return upgrade_available_ == UPGRADE_AVAILABLE_REGULAR ||
+           upgrade_available_ == UPGRADE_AVAILABLE_CRITICAL;
+  }
+
   // Notify this object that the user has acknowledged the critical update so we
   // don't need to complain about it for now.
   void acknowledge_critical_update() { critical_update_acknowledged_ = true; }

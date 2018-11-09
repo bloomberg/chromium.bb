@@ -54,6 +54,10 @@
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#endif
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -100,7 +104,7 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       storage_partition_(nullptr) {
   if (OmniboxFieldTrial::GetPedalSuggestionMode() !=
       OmniboxFieldTrial::PedalSuggestionMode::NONE)
-    pedal_provider_ = std::make_unique<OmniboxPedalProvider>();
+    pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this);
 }
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
@@ -429,6 +433,14 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
   }
 #endif  // !defined(OS_ANDROID)
   return false;
+}
+
+bool ChromeAutocompleteProviderClient::IsBrowserUpdateAvailable() const {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return UpgradeDetector::GetInstance()->is_upgrade_available();
+#endif
 }
 
 bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
