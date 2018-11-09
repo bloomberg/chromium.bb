@@ -51,6 +51,22 @@ bool g_updated_from_variations = false;
 // Length of time between metrics logging.
 const int kMetricsIntervalInMinutes = 60;
 
+// A clock that keeps showing the time it was constructed with.
+class StoppedClock : public base::Clock {
+ public:
+  explicit StoppedClock(base::Time time) : time_(time) {}
+  ~StoppedClock() override = default;
+
+ protected:
+  // base::Clock:
+  base::Time Now() const override { return time_; }
+
+ private:
+  const base::Time time_;
+
+  DISALLOW_COPY_AND_ASSIGN(StoppedClock);
+};
+
 // Helpers for fetching content settings for one type.
 ContentSettingsForOneType GetContentSettingsFromMap(HostContentSettingsMap* map,
                                                     ContentSettingsType type) {
@@ -113,9 +129,9 @@ std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
 // Takes a scoped_refptr to keep HostContentSettingsMap alive. See
 // crbug.com/901287.
 std::vector<mojom::SiteEngagementDetails> GetAllDetailsImplInBackground(
-    base::Clock* clock,
+    std::unique_ptr<base::Clock> clock,
     scoped_refptr<HostContentSettingsMap> map) {
-  return GetAllDetailsImpl(clock, map.get());
+  return GetAllDetailsImpl(clock.get(), map.get());
 }
 
 // Only accept a navigation event for engagement if it is one of:
@@ -453,16 +469,21 @@ void SiteEngagementService::MaybeRecordMetrics() {
 
   // Retrieve details on a background thread as this is expensive. We may end up
   // with minor data inconsistency but this doesn't really matter for metrics
-  // purposes. Use base::Unretained on our member variables since this class is
-  // a profile-bound service and should live until the profile is torn down. See
-  // https://crbug.com/900022.
+  // purposes.
+  //
+  // The profile and its KeyedServices are normally destroyed before the
+  // TaskScheduler shuts down background threads, so the task needs to hold a
+  // strong reference to HostContentSettingsMap (which supports outliving the
+  // profile), and needs to avoid using any members of SiteEngagementService
+  // (which does not). See https://crbug.com/900022.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &GetAllDetailsImplInBackground, base::Unretained(clock_),
-          scoped_refptr<HostContentSettingsMap>(
+          &GetAllDetailsImplInBackground,
+          std::make_unique<StoppedClock>(clock_->Now()),
+          base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&SiteEngagementService::RecordMetrics,
                      weak_factory_.GetWeakPtr()));
