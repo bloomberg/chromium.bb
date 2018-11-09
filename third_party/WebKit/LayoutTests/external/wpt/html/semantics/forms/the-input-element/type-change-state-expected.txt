@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 462 tests; 436 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 462 tests; 441 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS change state from hidden to text
 PASS change state from hidden to search
 PASS change state from hidden to tel
@@ -85,11 +85,11 @@ PASS change state from tel to image
 PASS change state from tel to reset
 PASS change state from tel to button
 PASS change state from url to hidden
-FAIL change state from url to text assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
-FAIL change state from url to search assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
-FAIL change state from url to tel assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
+PASS change state from url to text
+PASS change state from url to search
+PASS change state from url to tel
 PASS change state from url to email
-FAIL change state from url to password assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
+PASS change state from url to password
 PASS change state from url to datetime-local
 PASS change state from url to date
 PASS change state from url to month
@@ -106,11 +106,11 @@ PASS change state from url to image
 PASS change state from url to reset
 PASS change state from url to button
 PASS change state from email to hidden
-FAIL change state from email to text assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
-FAIL change state from email to search assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
-FAIL change state from email to tel assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
+FAIL change state from email to text assert_equals: selectionStart should be 0 expected 0 but got 6
+FAIL change state from email to search assert_equals: selectionStart should be 0 expected 0 but got 6
+FAIL change state from email to tel assert_equals: selectionStart should be 0 expected 0 but got 6
 FAIL change state from email to url assert_equals: selectionStart should be 0 expected 0 but got 6
-FAIL change state from email to password assert_equals: input.value should be '  foobar  ' after change of state expected "  foobar  " but got "foobar"
+FAIL change state from email to password assert_equals: selectionStart should be 0 expected 0 but got 6
 PASS change state from email to datetime-local
 PASS change state from email to date
 PASS change state from email to month
@@ -285,7 +285,7 @@ PASS change state from range to date
 PASS change state from range to month
 PASS change state from range to week
 PASS change state from range to time
-FAIL change state from range to number assert_equals: input.value should be '' after change of state expected "" but got "50"
+PASS change state from range to number
 PASS change state from range to color
 PASS change state from range to checkbox
 PASS change state from range to radio
