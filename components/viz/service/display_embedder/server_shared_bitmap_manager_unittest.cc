@@ -148,5 +148,17 @@ TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
   manager()->ChildDeletedSharedBitmap(id);
 }
 
+TEST_F(ServerSharedBitmapManagerTest, InvalidScopedSharedBufferHandle) {
+  SharedBitmapId id = SharedBitmap::GenerateId();
+  mojo::ScopedSharedBufferHandle invalid_handle(
+      mojo::SharedBufferHandle(0x1234567));
+  EXPECT_FALSE(
+      manager()->ChildAllocatedSharedBitmap(std::move(invalid_handle), id));
+
+  // The client could still send an IPC to say it deleted the shared bitmap,
+  // even though it wasn't valid, which should be ignored.
+  manager()->ChildDeletedSharedBitmap(id);
+}
+
 }  // namespace
 }  // namespace viz
