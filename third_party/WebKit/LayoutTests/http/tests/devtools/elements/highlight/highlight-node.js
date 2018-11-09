@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(
-      `This test verifies the position and size of the highlight rectangles overlayed on an inspected div.\n`);
+      `This test verifies the position and size of the highlight rectangles overlaid on an inspected node.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
@@ -29,12 +29,69 @@
       }
       #description {
           clear: both;
+          height: 10px;
+          font-size: 20px;
+          font-family: Arial;
       }
 
       </style>
       <div id="inspectedElement"></div>
-      <p id="description"></p>
+      <p id="description">foo<br />bar</p>
     `);
 
-  ElementsTestRunner.dumpInspectorHighlightJSON('inspectedElement', TestRunner.completeTest.bind(TestRunner));
+  const div = await ElementsTestRunner.nodeWithIdPromise('inspectedElement');
+  await nodeResolved(div, 'inspectedElement');
+
+  let textNode = await ElementsTestRunner.findNodePromise(node => {
+      return node.nodeType() === Node.TEXT_NODE && node.parentNode && node.parentNode.nodeName() === 'P' && node.parentNode.children()[0] === node;
+  });
+  await nodeResolvedApproximate(textNode, '\nFirst text node', 28, 25);
+
+  textNode = await ElementsTestRunner.findNodePromise(node => {
+    return node.nodeType() === Node.TEXT_NODE && node.parentNode && node.parentNode.nodeName() === 'P' && node.parentNode.children()[2] === node;
+  });
+  await nodeResolvedApproximate(textNode, '\nSecond text node', 30, 24);
+
+  TestRunner.completeTest();
+
+  /**
+   * @param {!Node} node
+   * @param {string} name
+   * @param {!Promise}
+   */
+  async function nodeResolved(node, name) {
+    const result = await TestRunner.OverlayAgent.getHighlightObjectForTest(node.id);
+    TestRunner.addResult(name + JSON.stringify(result, null, 2));
+  }
+
+  /**
+   * @param {!Node} node
+   * @param {string} name
+   * @param {number} expectedWidth
+   * @param {number} expectedHeight
+   * @param {number=} tolerance
+   * @param {!Promise}
+   */
+  async function nodeResolvedApproximate(node, name, expectedWidth, expectedHeight, tolerance = 3) {
+    const result = await TestRunner.OverlayAgent.getHighlightObjectForTest(node.id);
+
+    if (result['paths']) {
+      for (const path of result['paths']) {
+        path['path'] = path['path'].map(value => {
+          return typeof value === 'number' ? '<number>' : value;
+        });
+      }
+    }
+
+    if (result['elementInfo']) {
+      const actualWidth = result['elementInfo']['nodeWidth'];
+      const actualHeight = result['elementInfo']['nodeHeight'];
+      const widthInTolerance = Math.abs(actualWidth - expectedWidth) < tolerance;
+      const heightInTolerance = Math.abs(actualHeight - expectedHeight) < tolerance;
+      result['elementInfo']['nodeWidth'] = `Width within ${tolerance}px from ${expectedWidth}? ${widthInTolerance}`;
+      result['elementInfo']['nodeHeight'] = `Height within ${tolerance}px from ${expectedHeight}? ${heightInTolerance}`;
+    }
+
+    TestRunner.addResult(name + JSON.stringify(result, null, 2));
+  }
 })();
