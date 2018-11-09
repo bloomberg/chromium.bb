@@ -1828,6 +1828,10 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
       frame_token, std::move(all_callbacks), feedback);
 }
 
+void LayerTreeHostImpl::DidNotNeedBeginFrame() {
+  skipped_frame_tracker_.WillNotProduceFrame();
+}
+
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   resource_provider_.ReceiveReturnsFromParent(resources);
@@ -3014,7 +3018,6 @@ void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawOnImplThread();
-  skipped_frame_tracker_.WillProduceFrame();
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
