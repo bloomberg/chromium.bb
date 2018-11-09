@@ -25,6 +25,47 @@ extern "C" {
 #endif
 
 //+------------------------------------------------------------------------------------------
+// API Version Information.
+// Caller should check for WebAuthNGetApiVersionNumber to check the presence of relevant APIs
+// and features for their usage.
+//-------------------------------------------------------------------------------------------
+
+#define WEBAUTHN_API_VERSION_1          1
+// WEBAUTHN_API_VERSION_1 : Baseline Version
+//      Data Structures and their sub versions:
+//          - WEBAUTHN_RP_ENTITY_INFORMATION                    :   1
+//          - WEBAUTHN_USER_ENTITY_INFORMATION                  :   1
+//          - WEBAUTHN_CLIENT_DATA                              :   1
+//          - WEBAUTHN_COSE_CREDENTIAL_PARAMETER                :   1
+//          - WEBAUTHN_COSE_CREDENTIAL_PARAMETERS               :   Not Applicable
+//          - WEBAUTHN_CREDENTIAL                               :   1
+//          - WEBAUTHN_CREDENTIALS                              :   Not Applicable
+//          - WEBAUTHN_CREDENTIAL_EX                            :   1
+//          - WEBAUTHN_CREDENTIAL_LIST                          :   Not Applicable
+//          - WEBAUTHN_EXTENSION                                :   Not Applicable
+//          - WEBAUTHN_EXTENSIONS                               :   Not Applicable
+//          - WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS    :   3
+//          - WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS      :   4
+//          - WEBAUTHN_COMMON_ATTESTATION                       :   1
+//          - WEBAUTHN_CREDENTIAL_ATTESTATION                   :   2
+//          - WEBAUTHN_ASSERTION                                :   1
+//      Extensions:
+//          - WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET
+//      APIs:
+//          - WebAuthNGetApiVersionNumber
+//          - WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable
+//          - WebAuthNAuthenticatorMakeCredential
+//          - WebAuthNAuthenticatorGetAssertion
+//          - WebAuthNFreeCredentialAttestation
+//          - WebAuthNFreeAssertion
+//          - WebAuthNGetCancellationId
+//          - WebAuthNCancelCurrentOperation
+//          - WebAuthNGetErrorName
+//          - WebAuthNGetW3CExceptionDOMError
+
+#define WEBAUTHN_API_CURRENT_VERSION    WEBAUTHN_API_VERSION_1
+
+//+------------------------------------------------------------------------------------------
 // Information about an RP Entity
 //-------------------------------------------------------------------------------------------
 
@@ -169,6 +210,48 @@ typedef struct _WEBAUTHN_CREDENTIALS {
 typedef const WEBAUTHN_CREDENTIALS *PCWEBAUTHN_CREDENTIALS;
 
 //+------------------------------------------------------------------------------------------
+// Information about credential with extra information, such as, dwTransports
+//-------------------------------------------------------------------------------------------
+
+#define WEBAUTHN_CTAP_TRANSPORT_USB         0x00000001
+#define WEBAUTHN_CTAP_TRANSPORT_NFC         0x00000002
+#define WEBAUTHN_CTAP_TRANSPORT_BLE         0x00000004
+#define WEBAUTHN_CTAP_TRANSPORT_TEST        0x00000008
+#define WEBAUTHN_CTAP_TRANSPORT_INTERNAL    0x00000010
+#define WEBAUTHN_CTAP_TRANSPORT_FLAGS_MASK  0x0000001F
+
+#define WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION                         1
+
+typedef struct _WEBAUTHN_CREDENTIAL_EX {
+    // Version of this structure, to allow for modifications in the future.
+    DWORD dwVersion;
+
+    // Size of pbID.
+    DWORD cbId;
+    // Unique ID for this particular credential.
+    _Field_size_bytes_(cbId)
+    PBYTE pbId;
+
+    // Well-known credential type specifying what this particular credential is.
+    LPCWSTR pwszCredentialType;
+
+    // Transports. 0 implies no transport restrictions.
+    DWORD dwTransports;
+} WEBAUTHN_CREDENTIAL_EX, *PWEBAUTHN_CREDENTIAL_EX;
+typedef const WEBAUTHN_CREDENTIAL_EX *PCWEBAUTHN_CREDENTIAL_EX;
+
+//+------------------------------------------------------------------------------------------
+// Information about credential list with extra information
+//-------------------------------------------------------------------------------------------
+
+typedef struct _WEBAUTHN_CREDENTIAL_LIST {
+    DWORD cCredentials;
+    _Field_size_(cCredentials)
+    PWEBAUTHN_CREDENTIAL_EX *ppCredentials;
+} WEBAUTHN_CREDENTIAL_LIST, *PWEBAUTHN_CREDENTIAL_LIST;
+typedef const WEBAUTHN_CREDENTIAL_LIST *PCWEBAUTHN_CREDENTIAL_LIST;
+
+//+------------------------------------------------------------------------------------------
 // Hmac-Secret extension
 //-------------------------------------------------------------------------------------------
 
@@ -222,7 +305,8 @@ typedef const WEBAUTHN_EXTENSIONS *PCWEBAUTHN_EXTENSIONS;
 
 #define WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_1            1
 #define WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_2            2
-#define WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_CURRENT_VERSION      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_2
+#define WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3            3
+#define WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_CURRENT_VERSION      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3
 
 typedef struct _WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS {
     // Version of this structure, to allow for modifications in the future.
@@ -260,6 +344,13 @@ typedef struct _WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS {
     // Cancellation Id - Optional - See WebAuthNGetCancellationId
     GUID *pCancellationId;
 
+    //
+    // The following fields have been added in WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3
+    //
+
+    // Exclude Credential List. If present, "CredentialList" will be ignored.
+    PWEBAUTHN_CREDENTIAL_LIST pExcludeCredentialList;
+
 } WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS, *PWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS;
 typedef const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS *PCWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS;
 
@@ -267,7 +358,8 @@ typedef const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS *PCWEBAUTHN_AUTHENT
 #define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_1          1
 #define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_2          2
 #define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_3          3
-#define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_CURRENT_VERSION    WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_3
+#define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4          4
+#define WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_CURRENT_VERSION    WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4
 
 typedef struct _WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS {
     // Version of this structure, to allow for modifications in the future.
@@ -309,6 +401,13 @@ typedef struct _WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS {
 
     // Cancellation Id - Optional - See WebAuthNGetCancellationId
     GUID *pCancellationId;
+
+    //
+    // The following fields have been added in WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4
+    //
+
+    // Allow Credential List. If present, "CredentialList" will be ignored.
+    PWEBAUTHN_CREDENTIAL_LIST pAllowCredentialList;
 
 } WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS,  *PWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS;
 typedef const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS  *PCWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS;
@@ -471,6 +570,10 @@ typedef const WEBAUTHN_ASSERTION *PCWEBAUTHN_ASSERTION;
 //+------------------------------------------------------------------------------------------
 // APIs.
 //-------------------------------------------------------------------------------------------
+
+DWORD
+WINAPI
+WebAuthNGetApiVersionNumber();
 
 HRESULT
 WINAPI
