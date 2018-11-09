@@ -240,6 +240,13 @@ UiControllerAndroid::GetPrimaryAccountName(
   return base::android::ConvertUTF8ToJavaString(env, account_info.email);
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+UiControllerAndroid::OnRequestDebugContext(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  return base::android::ConvertUTF8ToJavaString(env, GetDebugContext());
+}
+
 jboolean UiControllerAndroid::AllowTouchEvent(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
@@ -318,6 +325,10 @@ void UiControllerAndroid::HideProgressBar() {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onHideProgressBar(
       env, java_autofill_assistant_ui_controller_);
+}
+
+std::string UiControllerAndroid::GetDebugContext() const {
+  return ui_delegate_->GetDebugContext();
 }
 
 std::string UiControllerAndroid::GetApiKey() {

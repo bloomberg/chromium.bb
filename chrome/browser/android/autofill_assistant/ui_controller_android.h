@@ -54,6 +54,7 @@ class UiControllerAndroid : public UiController,
   void ShowDetails(const DetailsProto& details) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;
+  std::string GetDebugContext() const override;
 
   // Overrides Client:
   std::string GetApiKey() override;
@@ -99,6 +100,9 @@ class UiControllerAndroid : public UiController,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+  base::android::ScopedJavaLocalRef<jstring> OnRequestDebugContext(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
   jboolean AllowTouchEvent(JNIEnv* env,

@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -285,6 +287,23 @@ void Controller::OnScriptSelected(const std::string& script_path) {
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.
                                   base::Unretained(this), script_path));
+}
+
+std::string Controller::GetDebugContext() {
+  base::Value dict(base::Value::Type::DICTIONARY);
+
+  std::vector<base::Value> parameters_js;
+  for (const auto& entry : *parameters_) {
+    base::Value parameter_js = base::Value(base::Value::Type::DICTIONARY);
+    parameter_js.SetKey(entry.first, base::Value(entry.second));
+    parameters_js.push_back(std::move(parameter_js));
+  }
+  dict.SetKey("parameters", base::Value(parameters_js));
+  dict.SetKey("scripts", script_tracker_->GetDebugContext());
+
+  std::string output_js;
+  base::JSONWriter::Write(dict, &output_js);
+  return output_js;
 }
 
 bool Controller::AllowTouchEvent(float x, float y) {

@@ -32,6 +32,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -50,8 +52,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /** Delegate to interact with the assistant UI. */
 class AutofillAssistantUiDelegate {
@@ -78,7 +82,7 @@ class AutofillAssistantUiDelegate {
     private final TextView mStatusMessageView;
     private final AnimatedProgressBar mProgressBar;
 
-    private final ViewGroup mDetails;
+    private final ViewGroup mDetailsViewContainer;
     private final ImageView mDetailsImage;
     private final TextView mDetailsTitle;
     private final TextView mDetailsText;
@@ -88,6 +92,10 @@ class AutofillAssistantUiDelegate {
     private final BottomBarAnimations mBottomBarAnimations;
     private final boolean mIsRightToLeftLayout;
     private ValueAnimator mDetailsPulseAnimation = null;
+
+    @Nullable
+    private Details mDetails;
+    private String mStatusMessage;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -125,6 +133,13 @@ class AutofillAssistantUiDelegate {
          * @param guid The GUID of the selected card.
          */
         void onCardSelected(String guid);
+
+        /**
+         * Used to access information relevant for debugging purposes.
+         *
+         * @return A string describing the current execution context.
+         */
+        String getDebugContext();
 
         /**
          * Called when the init was successful.
@@ -203,6 +218,16 @@ class AutofillAssistantUiDelegate {
             return mDescription;
         }
 
+        JSONObject toJSONObject() {
+            // Details are part of the feedback form, hence they need a JSON representation.
+            Map<String, String> movieDetails = new HashMap<>();
+            movieDetails.put("title", mTitle);
+            movieDetails.put("url", mUrl);
+            if (mDate != null) movieDetails.put("date", mDate.toString());
+            movieDetails.put("description", mDescription);
+            return new JSONObject(movieDetails);
+        }
+
         /**
          * Whether the details are not subject to change anymore. If set to false the animated
          * placeholders will be displayed in place of missing data.
@@ -247,7 +272,9 @@ class AutofillAssistantUiDelegate {
                 .setOnClickListener(unusedView
                         -> HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity,
                                 Profile.getLastUsedProfile(), mActivity.getActivityTab().getUrl(),
-                                FEEDBACK_CATEGORY_TAG));
+                                FEEDBACK_CATEGORY_TAG,
+                                FeedbackContext.buildContextString(
+                                        mActivity, mClient, mDetails, mStatusMessage, 4)));
         mCarouselScroll = mBottomBar.findViewById(R.id.carousel_scroll);
         mChipsViewContainer = mCarouselScroll.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
@@ -255,17 +282,17 @@ class AutofillAssistantUiDelegate {
                 mActivity.getColor(R.color.modern_blue_600),
                 mActivity.getColor(R.color.modern_blue_600_alpha_38_opaque));
 
-        mDetails = (ViewGroup) mBottomBar.findViewById(R.id.details);
-        mDetailsImage = mDetails.findViewById(R.id.details_image);
-        mDetailsTitle = (TextView) mDetails.findViewById(R.id.details_title);
-        mDetailsText = (TextView) mDetails.findViewById(R.id.details_text);
+        mDetailsViewContainer = (ViewGroup) mBottomBar.findViewById(R.id.details);
+        mDetailsImage = mDetailsViewContainer.findViewById(R.id.details_image);
+        mDetailsTitle = (TextView) mDetailsViewContainer.findViewById(R.id.details_title);
+        mDetailsText = (TextView) mDetailsViewContainer.findViewById(R.id.details_text);
         mDetailsImageWidth = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
         mDetailsImageHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
 
-        mBottomBarAnimations = new BottomBarAnimations(mBottomBar, mDetails, mChipsViewContainer,
-                mActivity.getResources().getDisplayMetrics());
+        mBottomBarAnimations = new BottomBarAnimations(mBottomBar, mDetailsViewContainer,
+                mChipsViewContainer, mActivity.getResources().getDisplayMetrics());
         mIsRightToLeftLayout = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
                 == ViewCompat.LAYOUT_DIRECTION_RTL;
 
@@ -288,6 +315,9 @@ class AutofillAssistantUiDelegate {
      * @param message Message to display.
      */
     public void showStatusMessage(@Nullable String message) {
+        /// keep a copy of the most recent status message for feedback purposes
+        mStatusMessage = message;
+
         show();
 
         mStatusMessageView.setText(message);
@@ -468,6 +498,9 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show contextual information. */
     public void showDetails(Details details) {
+        // keep a copy of most recent movie details for feedback purposes
+        mDetails = details;
+
         Drawable defaultImage = AppCompatResources.getDrawable(
                 mActivity, R.drawable.autofill_assistant_default_details);
 
