@@ -579,4 +579,62 @@ TEST_P(WebLayerListSimTest, LayerSubtreeClipPropertyChanged) {
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
 }
 
+TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
+  // TODO(crbug.com/765003): SPV2 may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // SPV2 gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          position: absolute;
+          overflow: hidden;
+        }
+        #inner {
+          width: 200px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Modifying the clip width should set |subtree_property_changed| on
+  // both layers.
+  outer_element->setAttribute(html_names::kStyleAttr, "width: 200px;");
+  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
 }  // namespace blink

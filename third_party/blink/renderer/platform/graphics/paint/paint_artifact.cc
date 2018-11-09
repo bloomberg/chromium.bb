@@ -103,9 +103,15 @@ void PaintArtifact::AppendToDisplayItemList(const FloatSize& visual_rect_offset,
 }
 
 void PaintArtifact::FinishCycle() {
+  // BlinkGenPropertyTrees uses PaintController::ClearPropertyTreeChangedStateTo
+  // for clearing the property tree changed state at the end of paint instead of
+  // in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
+  bool clear_property_tree_changed =
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
   for (auto& chunk : chunks_) {
     chunk.client_is_just_created = false;
-    chunk.properties.ClearChangedToRoot();
+    if (clear_property_tree_changed)
+      chunk.properties.ClearChangedToRoot();
   }
 }
 
