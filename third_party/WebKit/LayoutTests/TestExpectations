@@ -4442,6 +4442,8 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
+# Fails on Mac but might be removed altogether crbug.com/903837
+crbug.com/903837 [ Mac ] virtual/gpu/fast/canvas/color-space/display_linear-rgb.html [ Skip ]
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 #TODO(michaelludwig) 11/08/18, remove after Skia roll

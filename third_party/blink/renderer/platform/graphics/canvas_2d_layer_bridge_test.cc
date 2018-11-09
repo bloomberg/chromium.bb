@@ -1041,6 +1041,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
+  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1));
   if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     constexpr GLuint image_2d_id_for_copy = 17;
     EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
@@ -1055,6 +1056,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
+  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2));
   if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     constexpr GLuint image_2d_id_for_copy = 19;
     EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
@@ -1069,7 +1071,6 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   // Check that release resources does not result in destruction due
   // to recycling.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   bool lost_resource = false;
   release_callback1->Run(gpu::SyncToken(), lost_resource);
@@ -1077,7 +1078,6 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   release_callback2->Run(gpu::SyncToken(), lost_resource);
   release_callback2 = nullptr;
@@ -1085,10 +1085,8 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Destroying the bridge results in destruction of cached resources.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1))).Times(1);
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2))).Times(1);
+  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1)));
+  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2)));
   bridge.reset();
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -1121,6 +1119,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
+  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1));
   if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     constexpr GLuint image_2d_id_for_copy = 17;
     EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
@@ -1135,6 +1134,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
+  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2));
   if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     constexpr GLuint image_2d_id_for_copy = 19;
     EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
@@ -1148,7 +1148,6 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Release first frame to cache
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   bool lost_resource = false;
   release_callback1->Run(gpu::SyncToken(), lost_resource);
@@ -1157,16 +1156,14 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Switching to Hidden frees cached resources immediately
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1))).Times(1);
+  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1)));
   bridge->SetIsHidden(true);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Release second frame and verify that its resource is destroyed immediately
   // due to the layer bridge being hidden
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2))).Times(1);
+  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2)));
   release_callback2->Run(gpu::SyncToken(), lost_resource);
   release_callback2 = nullptr;
 
@@ -1196,7 +1193,7 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
 
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
   EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
-
+  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id));
   if (texture_target == GL_TEXTURE_EXTERNAL_OES) {
     constexpr GLuint image_2d_id_for_copy = 17;
     EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _))
@@ -1210,15 +1207,13 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Tearing down the bridge does not destroy unreleased resources.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
   EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
   bridge.reset();
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id))).Times(1);
-  bool lost_resource = false;
+  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id)));
+  constexpr bool lost_resource = false;
   release_callback->Run(gpu::SyncToken(), lost_resource);
   release_callback = nullptr;
 

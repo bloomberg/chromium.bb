@@ -236,7 +236,6 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   void* buffer_base_address_ = nullptr;
   sk_sp<SkSurface> surface_;
-  GLuint image_id_ = 0;
   GLuint texture_id_ = 0;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
   bool is_accelerated_;

@@ -327,20 +327,18 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 
   gpu_memory_buffer_->SetColorSpace(color_params.GetStorageGfxColorSpace());
 
-  image_id_ = gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
-                                      size.Width(), size.Height(),
-                                      ColorParams().GLUnsizedInternalFormat());
-  if (!image_id_) {
+  const GLuint image_id = gl->CreateImageCHROMIUM(
+      gpu_memory_buffer_->AsClientBuffer(), size.Width(), size.Height(),
+      ColorParams().GLUnsizedInternalFormat());
+  if (!image_id) {
     gpu_memory_buffer_ = nullptr;
     return;
   }
   gl->GenTextures(1, &texture_id_);
   const GLenum target = TextureTarget();
   gl->BindTexture(target, texture_id_);
-  // TODO(mcasas): consider making |image_id_| a local variable and balancing
-  // BindTexImage2DCHROMIUM() with DestroyImageCHROMIUM(), leaving |texture_id_|
-  // to keep alive the Image2DCHROMIUM.
-  gl->BindTexImage2DCHROMIUM(target, image_id_);
+  gl->BindTexImage2DCHROMIUM(target, image_id);
+  gl->DestroyImageCHROMIUM(image_id);
 
   if (is_accelerated_ && target == GL_TEXTURE_EXTERNAL_OES) {
     // We can't CopyTextureCHROMIUM() into a GL_TEXTURE_EXTERNAL_OES; create
@@ -362,7 +360,7 @@ CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
 }
 
 bool CanvasResourceGpuMemoryBuffer::IsValid() const {
-  return !!context_provider_wrapper_ && image_id_;
+  return !!context_provider_wrapper_ && gpu_memory_buffer_;
 }
 
 GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
@@ -393,16 +391,13 @@ void CanvasResourceGpuMemoryBuffer::TearDown() {
   DCHECK(!surface_ || surface_->unique());
 
   surface_ = nullptr;
-  if (context_provider_wrapper_ && image_id_) {
+  if (context_provider_wrapper_) {
     auto* gl = ContextGL();
-    if (gl && image_id_)
-      gl->DestroyImageCHROMIUM(image_id_);
     if (gl && texture_id_)
       gl->DeleteTextures(1, &texture_id_);
     if (gl && texture_2d_id_for_copy_)
       gl->DeleteTextures(1, &texture_2d_id_for_copy_);
   }
-  image_id_ = 0;
   texture_id_ = 0;
   texture_2d_id_for_copy_ = 0;
   gpu_memory_buffer_ = nullptr;
@@ -410,7 +405,6 @@ void CanvasResourceGpuMemoryBuffer::TearDown() {
 
 void CanvasResourceGpuMemoryBuffer::Abandon() {
   surface_ = nullptr;
-  image_id_ = 0;
   texture_id_ = 0;
   texture_2d_id_for_copy_ = 0;
   gpu_memory_buffer_ = nullptr;
