@@ -39,9 +39,10 @@ NOTICE_VERSION_CHANGE_HEADER = (
   '* Please review the changes and opt-in again.       *'
 )
 NOTICE_FOOTER = (
-  '* For more information, and for how to disable this *\n'
-  '* message, please see metrics.README.md in your     *\n'
-  '* depot_tools checkout or visit                     *\n'
+  '* To suppress this message opt in or out using:     *\n'
+  '* $ gclient metrics [--opt-in] [--opt-out]          *\n'
+  '* For more information please see metrics.README.md *\n'
+  '* in your depot_tools checkout or visit             *\n'
   '* https://bit.ly/2ufRS4p.                           *\n'
   '*****************************************************\n'
 )
