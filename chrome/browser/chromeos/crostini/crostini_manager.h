@@ -128,6 +128,7 @@ class CrostiniManager : public KeyedService,
   // The type of the callback for CrostiniManager::CreateDiskImage.
   using CreateDiskImageCallback =
       base::OnceCallback<void(CrostiniResult result,
+                              vm_tools::concierge::DiskImageStatus,
                               const base::FilePath& disk_path)>;
   // The type of the callback for CrostiniManager::DestroyDiskImage.
   using DestroyDiskImageCallback = CrostiniResultCallback;
@@ -172,7 +173,9 @@ class CrostiniManager : public KeyedService,
     virtual ~RestartObserver() {}
     virtual void OnComponentLoaded(CrostiniResult result) = 0;
     virtual void OnConciergeStarted(CrostiniResult result) = 0;
-    virtual void OnDiskImageCreated(CrostiniResult result) = 0;
+    virtual void OnDiskImageCreated(
+        CrostiniResult result,
+        vm_tools::concierge::DiskImageStatus status) = 0;
     virtual void OnVmStarted(CrostiniResult result) = 0;
     virtual void OnContainerDownloading(int32_t download_percent) = 0;
     virtual void OnContainerCreated(CrostiniResult result) = 0;

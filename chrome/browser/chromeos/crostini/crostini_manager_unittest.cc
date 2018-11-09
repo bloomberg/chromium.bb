@@ -28,11 +28,15 @@ const char kContainerName[] = "container_name";
 
 class CrostiniManagerTest : public testing::Test {
  public:
-  void CreateDiskImageClientErrorCallback(base::OnceClosure closure,
-                                          CrostiniResult result,
-                                          const base::FilePath& file_path) {
+  void CreateDiskImageClientErrorCallback(
+      base::OnceClosure closure,
+      CrostiniResult result,
+      vm_tools::concierge::DiskImageStatus status,
+      const base::FilePath& file_path) {
     EXPECT_FALSE(fake_concierge_client_->create_disk_image_called());
     EXPECT_EQ(result, CrostiniResult::CLIENT_ERROR);
+    EXPECT_EQ(status,
+              vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN);
     std::move(closure).Run();
   }
 
@@ -65,9 +69,11 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void CreateDiskImageSuccessCallback(base::OnceClosure closure,
-                                      CrostiniResult result,
-                                      const base::FilePath& file_path) {
+  void CreateDiskImageSuccessCallback(
+      base::OnceClosure closure,
+      CrostiniResult result,
+      vm_tools::concierge::DiskImageStatus status,
+      const base::FilePath& file_path) {
     EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
     std::move(closure).Run();
   }
@@ -361,7 +367,9 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnDiskImageCreated(CrostiniResult result) override {
+  void OnDiskImageCreated(
+      CrostiniResult result,
+      vm_tools::concierge::DiskImageStatus status) override {
     if (abort_on_disk_image_created_) {
       Abort();
     }
