@@ -22,8 +22,7 @@ namespace {
 constexpr size_t kNumOfYUVPlanes = 3;
 
 uint8_t* Mmap(const size_t length, const int fd) {
-  void* addr =
-      mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0u);
+  void* addr = mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0u);
   if (addr == MAP_FAILED) {
     VLOGF(1) << "Failed to mmap.";
     return nullptr;

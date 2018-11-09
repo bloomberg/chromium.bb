@@ -67,13 +67,6 @@
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "media/gpu/test/video_encode_accelerator_unittest_helpers.h"
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-#endif
-
 namespace media {
 namespace {
 
@@ -179,11 +172,6 @@ bool g_needs_encode_latency = false;
 bool g_verify_all_output = false;
 
 bool g_fake_encoder = false;
-
-// This identifies the storage type of inputting VideoFrame on Encode().
-// If |native_input| is true, inputting VideoFrame on Encode() is DmaBuf-backed
-// VideoFrame. Otherwise, it is MEM-backed VideoFrame.
-bool g_native_input = false;
 
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
@@ -514,16 +502,6 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
       LOG_ASSERT(log_file_->IsValid());
     }
     ParseAndReadTestStreamData(*test_stream_data_, &test_streams_);
-
-    if (g_native_input) {
-#if defined(USE_OZONE)
-      // If |g_native_input| is true, Ozone needs to be initialized so that
-      // DmaBufs is able to be created through Ozone DRM.
-      ui::OzonePlatform::InitParams params;
-      params.single_process = false;
-      ui::OzonePlatform::InitializeForUI(params);
-#endif
-    }
   }
 
   virtual void TearDown() {
@@ -1518,13 +1496,11 @@ void VEAClient::CreateEncoder() {
   LOG_ASSERT(!has_encoder());
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
            << ", initial bitrate: " << requested_bitrate_;
-  auto storage_type = g_native_input
-                          ? VideoEncodeAccelerator::Config::StorageType::kDmabuf
-                          : VideoEncodeAccelerator::Config::StorageType::kShmem;
+
   const VideoEncodeAccelerator::Config config(
       test_stream_->pixel_format, test_stream_->visible_size,
-      test_stream_->requested_profile, requested_bitrate_, requested_framerate_,
-      base::nullopt, storage_type);
+      test_stream_->requested_profile, requested_bitrate_,
+      requested_framerate_);
   encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
@@ -1793,10 +1769,6 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
       base::TimeDelta().FromMilliseconds((next_input_id_ + 1) *
                                          base::Time::kMillisecondsPerSecond /
                                          current_framerate_));
-  if (g_native_input) {
-    video_frame = test::CreateDmabufFrameFromVideoFrame(std::move(video_frame));
-  }
-
   EXPECT_NE(nullptr, video_frame.get());
   return video_frame;
 }
@@ -2340,38 +2312,6 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   encoder_->Encode(video_frame, false);
 }
 
-#if defined(USE_OZONE)
-void SetupOzone(base::WaitableEvent* done) {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-  done->Signal();
-}
-#endif
-
-void StartVEAThread(base::Thread* vea_client_thread) {
-  if (g_native_input) {
-#if defined(USE_OZONE)
-    // If |g_native_input_| is true, we create DmaBufs through Ozone DRM on
-    // Chrome OS. For initializing Ozone DRM, some additional setups are
-    // required. Otherwise, a thread should be started with a default settings.
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
-    ASSERT_TRUE(vea_client_thread->StartWithOptions(options));
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    vea_client_thread->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&SetupOzone, &done));
-    done.Wait();
-#endif
-  } else {
-    ASSERT_TRUE(vea_client_thread->Start());
-  }
-}
-
 // Test parameters:
 // - Number of concurrent encoders. The value takes effect when there is only
 //   one input stream; otherwise, one encoder per input stream will be
@@ -2404,16 +2344,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   std::vector<std::unique_ptr<ClientStateNotification<ClientState>>> notes;
   std::vector<std::unique_ptr<VEAClient>> clients;
   base::Thread vea_client_thread("EncoderClientThread");
-  StartVEAThread(&vea_client_thread);
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  if (g_native_input) {
-    // To create dmabuf through gbm, Ozone needs to be set up.
-    gpu_helper.reset(new ui::OzoneGpuTestHelper());
-    gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
-  }
-#endif
+  ASSERT_TRUE(vea_client_thread.Start());
 
   if (g_env->test_streams_.size() > 1)
     num_concurrent_encoders = g_env->test_streams_.size();
@@ -2637,12 +2568,7 @@ class VEATestSuite : public base::TestSuite {
   VEATestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
   int Run() {
-#if defined(OS_CHROMEOS)
-    base::test::ScopedTaskEnvironment scoped_task_environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::UI);
-#else
     base::test::ScopedTaskEnvironment scoped_task_environment;
-#endif
     media::g_env =
         reinterpret_cast<media::VideoEncodeAcceleratorTestEnvironment*>(
             testing::AddGlobalTestEnvironment(
@@ -2712,16 +2638,6 @@ int main(int argc, char** argv) {
       media::g_verify_all_output = true;
       continue;
     }
-
-    if (it->first == "native_input") {
-#if defined(OS_CHROMEOS)
-      media::g_native_input = true;
-#else
-      LOG(FATAL) << "Unsupported option";
-#endif
-      continue;
-    }
-
     if (it->first == "v" || it->first == "vmodule")
       continue;
     if (it->first == "ozone-platform" || it->first == "ozone-use-surfaceless")
