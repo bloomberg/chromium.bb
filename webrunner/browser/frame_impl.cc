@@ -160,6 +160,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       context_(context),
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
+  Observe(web_contents_.get());
   binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
 }
 
@@ -317,13 +318,10 @@ void FrameImpl::SetNavigationEventObserver(
   if (observer) {
     navigation_observer_.Bind(std::move(observer));
     navigation_observer_.set_error_handler([this]() {
-      // Stop observing on Observer connection loss.
       SetNavigationEventObserver(nullptr);
     });
-    Observe(web_contents_.get());
   } else {
     navigation_observer_.Unbind();
-    Observe(nullptr);  // Stop receiving WebContentsObserver events.
   }
 }
 
@@ -383,27 +381,28 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                              &pending_navigation_event_);
   cached_navigation_state_ = std::move(current_navigation_state);
 
-  if (pending_navigation_event_is_dirty_ &&
-      !waiting_for_navigation_event_ack_) {
-    MaybeSendNavigationEvent();
-  }
+  MaybeSendNavigationEvent();
 }
 
 void FrameImpl::MaybeSendNavigationEvent() {
-  if (pending_navigation_event_is_dirty_) {
-    pending_navigation_event_is_dirty_ = false;
-    waiting_for_navigation_event_ack_ = true;
-
-    // Send the event to the observer and, upon acknowledgement, revisit this
-    // function to send another update.
-    navigation_observer_->OnNavigationStateChanged(
-        std::move(pending_navigation_event_),
-        [this]() { MaybeSendNavigationEvent(); });
+  if (!navigation_observer_)
     return;
-  } else {
-    // No more changes to report.
-    waiting_for_navigation_event_ack_ = false;
+
+  if (!pending_navigation_event_is_dirty_ ||
+      waiting_for_navigation_event_ack_) {
+    return;
   }
+
+  pending_navigation_event_is_dirty_ = false;
+  waiting_for_navigation_event_ack_ = true;
+
+  // Send the event to the observer and, upon acknowledgement, revisit this
+  // function to send another update.
+  navigation_observer_->OnNavigationStateChanged(
+      std::move(pending_navigation_event_), [this]() {
+        waiting_for_navigation_event_ack_ = false;
+        MaybeSendNavigationEvent();
+      });
 }
 
 void FrameImpl::ReadyToCommitNavigation(
