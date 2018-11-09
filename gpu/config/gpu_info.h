@@ -275,8 +275,11 @@ struct GPU_EXPORT GPUInfo {
   bool can_support_threaded_texture_mailbox = false;
 
 #if defined(OS_WIN)
+  // True if we use direct composition surface on Windows.
+  bool direct_composition = false;
+
   // True if we use direct composition surface overlays on Windows.
-  bool direct_composition_overlays = false;
+  bool supports_overlays = false;
 
   OverlayCapabilities overlay_capabilities;
 

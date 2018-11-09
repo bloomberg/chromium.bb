@@ -286,8 +286,12 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   }
 
 #if defined(OS_WIN)
-  static bool direct_composition_overlays(const gpu::GPUInfo& input) {
-    return input.direct_composition_overlays;
+  static bool direct_composition(const gpu::GPUInfo& input) {
+    return input.direct_composition;
+  }
+
+  static bool supports_overlays(const gpu::GPUInfo& input) {
+    return input.supports_overlays;
   }
 
   static const gpu::OverlayCapabilities& overlay_capabilities(
