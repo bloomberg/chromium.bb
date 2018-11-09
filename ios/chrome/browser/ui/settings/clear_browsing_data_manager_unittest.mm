@@ -69,7 +69,6 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
   }
 
   identity::IdentityTestEnvironment* identity_test_env() {
-    DCHECK(identity_test_env_adaptor_);
     return identity_test_env_adaptor_->identity_test_env();
   }
 

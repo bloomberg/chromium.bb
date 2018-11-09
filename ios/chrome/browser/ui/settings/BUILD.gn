@@ -314,7 +314,6 @@ source_set("unit_tests") {
     "//components/pref_registry",
     "//components/prefs:test_support",
     "//components/search_engines",
-    "//components/signin/core/browser:test_support",
     "//components/strings",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
