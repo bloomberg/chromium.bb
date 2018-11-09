@@ -235,6 +235,7 @@ TextOffsetMapping::ForwardRange TextOffsetMapping::ForwardRangeOf(
 // static
 TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
     const PositionInFlatTree& position) {
+  // TODO(xiaochengh): Make this function not cross text control boundaries.
   for (const Node* node = position.NodeAsRangeLastNode(); node;
        node = FlatTreeTraversal::Previous(*node)) {
     const InlineContents inline_contents = ComputeInlineContentsFromNode(*node);
@@ -249,6 +250,7 @@ TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
 // with AfterNode(IMG) for <body><img></body>
 TextOffsetMapping::InlineContents TextOffsetMapping::FindForwardInlineContents(
     const PositionInFlatTree& position) {
+  // TODO(xiaochengh): Make this function not cross text control boundaries.
   for (const Node* node = position.NodeAsRangeFirstNode(); node;
        node = FlatTreeTraversal::Next(*node)) {
     const InlineContents inline_contents = ComputeInlineContentsFromNode(*node);
@@ -323,38 +325,38 @@ EphemeralRangeInFlatTree TextOffsetMapping::InlineContents::GetRange() const {
           : PositionInFlatTree::AfterNode(last_node));
 }
 
+PositionInFlatTree
+TextOffsetMapping::InlineContents::LastPositionBeforeBlockFlow() const {
+  DCHECK(block_flow_);
+  if (const Node* node = block_flow_->NonPseudoNode())
+    return PositionInFlatTree::BeforeNode(*node);
+  DCHECK(first_);
+  DCHECK(first_->NonPseudoNode());
+  return PositionInFlatTree::BeforeNode(*first_->NonPseudoNode());
+}
+
+PositionInFlatTree
+TextOffsetMapping::InlineContents::FirstPositionAfterBlockFlow() const {
+  DCHECK(block_flow_);
+  if (const Node* node = block_flow_->NonPseudoNode())
+    return PositionInFlatTree::AfterNode(*node);
+  DCHECK(last_);
+  DCHECK(last_->NonPseudoNode());
+  return PositionInFlatTree::AfterNode(*last_->NonPseudoNode());
+}
+
 // static
 TextOffsetMapping::InlineContents TextOffsetMapping::InlineContents::NextOf(
     const InlineContents& inline_contents) {
-  for (LayoutObject* runner =
-           inline_contents.block_flow_->NextInPreOrderAfterChildren();
-       runner; runner = runner->NextInPreOrder()) {
-    if (!CanBeInlineContentsContainer(*runner))
-      continue;
-    const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(*runner);
-    if (block_flow.IsFloatingOrOutOfFlowPositioned())
-      continue;
-    DCHECK(!block_flow.IsAtomicInlineLevel()) << block_flow;
-    return CreateInlineContentsFromBlockFlow(block_flow);
-  }
-  return InlineContents();
+  return TextOffsetMapping::FindForwardInlineContents(
+      inline_contents.FirstPositionAfterBlockFlow());
 }
 
 // static
 TextOffsetMapping::InlineContents TextOffsetMapping::InlineContents::PreviousOf(
     const InlineContents& inline_contents) {
-  for (LayoutObject* runner = inline_contents.block_flow_->PreviousInPreOrder();
-       runner; runner = runner->PreviousInPreOrder()) {
-    const LayoutBlockFlow* const block_flow =
-        ComputeInlineContentsAsBlockFlow(*runner);
-    if (!block_flow || block_flow->IsFloatingOrOutOfFlowPositioned())
-      continue;
-    DCHECK(!block_flow->IsDescendantOf(inline_contents.block_flow_))
-        << block_flow;
-    DCHECK(!block_flow->IsAtomicInlineLevel()) << block_flow;
-    return CreateInlineContentsFromBlockFlow(*block_flow);
-  }
-  return InlineContents();
+  return TextOffsetMapping::FindBackwardInlineContents(
+      inline_contents.LastPositionBeforeBlockFlow());
 }
 
 std::ostream& operator<<(
