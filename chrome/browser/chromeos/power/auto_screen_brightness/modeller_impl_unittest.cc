@@ -206,7 +206,7 @@ class ModellerImplTest : public testing::Test {
  protected:
   void WriteCurveToFile(const MonotoneCubicSpline& curve) {
     const base::FilePath curve_path =
-        modeller_->GetCurvePathForTesting(profile_.get());
+        ModellerImpl::ModellerImpl::GetCurvePathFromProfile(profile_.get());
     CHECK(!curve_path.empty());
 
     const std::string data = curve.ToString();

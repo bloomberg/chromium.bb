@@ -112,7 +112,7 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kDisabled
   };
 
-  Adapter(Profile* profile,
+  Adapter(const Profile* profile,
           AlsReader* als_reader,
           BrightnessMonitor* brightness_monitor,
           Modeller* modeller,
@@ -183,7 +183,7 @@ class Adapter : public AlsReader::Observer,
   base::Optional<double> GetBrightnessBasedOnAmbientLogLux(
       double ambient_lux) const;
 
-  Profile* const profile_;
+  const Profile* const profile_;
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
   ScopedObserver<BrightnessMonitor, BrightnessMonitor::Observer>
