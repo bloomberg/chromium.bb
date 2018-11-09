@@ -320,7 +320,7 @@ void BleConnectionManagerImpl::ProcessPotentialLingeringChannel(
     return;
 
   // Extract the map value and remove the entry from the map.
-  SecureChannelWithRole channel_with_roll =
+  SecureChannelWithRole channel_with_role =
       std::move(remote_device_id_to_secure_channel_map_[remote_device_id]);
   remote_device_id_to_secure_channel_map_.erase(remote_device_id);
 
@@ -331,9 +331,9 @@ void BleConnectionManagerImpl::ProcessPotentialLingeringChannel(
       << "channel which is no longer associated with any active "
       << "requests. Remote device ID: "
       << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(remote_device_id);
-  channel_with_roll.first->RemoveObserver(this);
+  channel_with_role.first->RemoveObserver(this);
   secure_channel_disconnector_->DisconnectSecureChannel(
-      std::move(channel_with_roll.first));
+      std::move(channel_with_role.first));
 }
 
 std::string BleConnectionManagerImpl::GetRemoteDeviceIdForSecureChannel(
