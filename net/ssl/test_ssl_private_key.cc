@@ -31,8 +31,6 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
 
   ~TestSSLPlatformKey() override = default;
 
-  std::string GetProviderName() override { return "EVP_PKEY"; }
-
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()),
                                                       true /* supports PSS */);
@@ -76,8 +74,6 @@ class FailingSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
  public:
   FailingSSLPlatformKey() = default;
   ~FailingSSLPlatformKey() override = default;
-
-  std::string GetProviderName() override { return "FailingSSLPlatformKey"; }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA,

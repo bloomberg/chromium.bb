@@ -483,8 +483,7 @@ EVENT_TYPE(SSL_CLIENT_CERT_REQUESTED)
 // The SSL stack blocked on a private key operation. The following parameters
 // are attached to the event.
 //   {
-//     "algorithm": <TLS signature algorithm used>,
-//     "provider": <Human-readable name of the crypto provider>,
+//     "hash": <hash function used>,
 //   }
 EVENT_TYPE(SSL_PRIVATE_KEY_OP)
 
