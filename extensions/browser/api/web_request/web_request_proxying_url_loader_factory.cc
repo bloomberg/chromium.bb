@@ -244,6 +244,17 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   }
 
   if (!redirect_url_.is_empty()) {
+    // The extension requested a redirect. Close the connexion with the current
+    // URLLoader and inform the URLLoaderClient the WebRequest API generated a
+    // redirect. To load |redirect_url_|, a new URLLoader will be recreated
+    // after receiving FollowRedirect().
+
+    // Forgetting to close the connexion with the current URLLoader caused bugs.
+    // The latter doesn't know anything about the redirect. Continuing the load
+    // with it gives unexpected results. See https://crbug.com/882661#c72.
+    proxied_client_binding_.Close();
+    target_loader_.reset();
+
     constexpr int kInternalRedirectStatusCode = 307;
 
     net::RedirectInfo redirect_info;
