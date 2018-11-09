@@ -2442,6 +2442,7 @@ source_set("unit_tests") {
     "//base",
     "//chrome/browser/chromeos/android_sms:unit_tests",
     "//chrome/browser/resources/chromeos/zip_archiver:char_coding",
+    "//chrome/browser/ui:ash_test_support",
     "//chrome/browser/web_applications/components:test_support",
     "//chrome/common",
     "//chromeos:login_manager_proto",

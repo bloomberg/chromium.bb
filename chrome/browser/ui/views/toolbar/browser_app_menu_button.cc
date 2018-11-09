@@ -38,7 +38,7 @@
 #include "ui/views/metrics.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/keyboard/keyboard_controller.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 // static
@@ -86,13 +86,9 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
     return;
 
 #if defined(OS_CHROMEOS)
-  // On platforms other than ChromeOS or when running under MASH, there is no
-  // KeyboardController in the browser process.
-  if (!features::IsUsingWindowService()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->IsKeyboardVisible())
-      keyboard_controller->HideKeyboardExplicitlyBySystem();
-  }
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_visible())
+    keyboard_client->HideKeyboard(ash::mojom::HideReason::kSystem);
 #endif
 
   Browser* browser = toolbar_view_->browser();
