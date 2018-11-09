@@ -393,6 +393,10 @@ void AccessibilitySelectionTest::RunSelectionTest(
   std::string test_file_contents;
   std::copy(test_file_chars.begin(), test_file_chars.end(),
             std::back_inserter(test_file_contents));
+  ASSERT_FALSE(test_file_contents.empty())
+      << "Test file cannot be empty.\n"
+      << test_file.Utf8().data()
+      << "\nDid you forget to add a data dependency to the BUILD file?";
 
   const String ax_file = test_path + String::FromUTF8(kAXTestExpectationSuffix);
   scoped_refptr<SharedBuffer> ax_file_buffer = ReadFromFile(ax_file);
@@ -400,6 +404,10 @@ void AccessibilitySelectionTest::RunSelectionTest(
   std::string ax_file_contents;
   std::copy(ax_file_chars.begin(), ax_file_chars.end(),
             std::back_inserter(ax_file_contents));
+  ASSERT_FALSE(ax_file_contents.empty())
+      << "Expectations file cannot be empty.\n"
+      << ax_file.Utf8().data()
+      << "\nDid you forget to add a data dependency to the BUILD file?";
 
   HTMLElement* body = GetDocument().body();
   ASSERT_NE(nullptr, body);
