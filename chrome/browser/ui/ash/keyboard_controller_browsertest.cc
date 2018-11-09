@@ -85,10 +85,6 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
   }
 
-  bool IsKeyboardVisible() const {
-    return keyboard::KeyboardController::Get()->IsKeyboardVisible();
-  }
-
  private:
   std::unique_ptr<ui::DummyTextInputClient> client;
 
@@ -101,26 +97,27 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
                        EnableIMEInDifferentExtension) {
   gfx::Rect test_bounds(0, 0, 0, kKeyboardHeightForTest);
   FocusEditableNodeAndShowKeyboard(test_bounds);
-  EXPECT_TRUE(IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
   FocusNonEditableNode();
-  EXPECT_FALSE(IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
 
   MockEnableIMEInDifferentExtension("chrome-extension://domain-1", test_bounds);
   // Keyboard should not become visible if previous keyboard is not.
-  EXPECT_FALSE(IsKeyboardVisible());
+  EXPECT_FALSE(keyboard::IsKeyboardShowing());
 
   FocusEditableNodeAndShowKeyboard(test_bounds);
   // Keyboard should become visible after focus on an editable node.
-  EXPECT_TRUE(IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Simulate hide keyboard by pressing hide key on the virtual keyboard.
   keyboard::KeyboardController::Get()->HideKeyboardByUser();
-  EXPECT_FALSE(IsKeyboardVisible());
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
 
   MockEnableIMEInDifferentExtension("chrome-extension://domain-2", test_bounds);
   // Keyboard should not become visible if previous keyboard is not, even if it
   // is currently focused on an editable node.
-  EXPECT_FALSE(IsKeyboardVisible());
+  EXPECT_FALSE(keyboard::IsKeyboardShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
@@ -130,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
                                base::DoNothing());
 
   controller->ShowKeyboard(false);
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   aura::Window* contents_window = controller->GetKeyboardWindow();
   contents_window->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -272,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenTwice) {
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
 
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::SHOWN);
 }
@@ -282,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, StateResolvesAfterPreload) {
 
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::HIDDEN);
+  ASSERT_TRUE(keyboard::WaitUntilLoaded());
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::HIDDEN);
 }
@@ -294,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenAndCloseAndOpen) {
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   controller->HideKeyboardExplicitlyBySystem();
   EXPECT_EQ(controller->GetStateForTest(),

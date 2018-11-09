@@ -89,7 +89,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnKeyboardWorkspaceDisplacingBoundsChanged(
       const gfx::Rect& new_bounds) override;
-  void OnStateChanged(keyboard::KeyboardControllerState state) override;
 
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,

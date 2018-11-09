@@ -917,8 +917,6 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
     weak_factory_will_hide_.InvalidateWeakPtrs();
   if (state != KeyboardControllerState::LOADING_EXTENSION)
     show_on_keyboard_window_load_ = false;
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnStateChanged(state);
 
   weak_factory_report_lingering_state_.InvalidateWeakPtrs();
   switch (state_) {

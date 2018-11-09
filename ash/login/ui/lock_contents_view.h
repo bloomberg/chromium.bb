@@ -193,7 +193,7 @@ class ASH_EXPORT LockContentsView
   void OnLockStateChanged(bool locked) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnStateChanged(const keyboard::KeyboardControllerState state) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
@@ -302,7 +302,7 @@ class ASH_EXPORT LockContentsView
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
   // displayed in this window.
-  keyboard::KeyboardController* GetKeyboardController() const;
+  keyboard::KeyboardController* GetKeyboardControllerForView() const;
 
   // Called when the public account is tapped.
   void OnPublicAccountTapped(bool is_primary);
@@ -397,9 +397,8 @@ class ASH_EXPORT LockContentsView
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;
 
-  // Whether the virtual keyboard is currently shown. Only changes when the
-  // keyboard state changes to KeyboardControllerState::SHOWN or to
-  // KeyboardControllerState::HIDDEN.
+  // Whether the virtual keyboard is currently shown. Used to determine whether
+  // to show the PIN keyboard or not.
   bool keyboard_shown_ = false;
 
   // Accelerators handled by login screen.

@@ -251,14 +251,6 @@ void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
   }
 }
 
-void WorkspaceLayoutManager::OnStateChanged(
-    keyboard::KeyboardControllerState state) {
-  auto* keyboard_window =
-      keyboard::KeyboardController::Get()->GetKeyboardWindow();
-  if (keyboard_window && keyboard_window->GetRootWindow() == root_window_)
-    NotifySystemUiAreaChanged();
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, aura::WindowObserver implementation:
 
