@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
@@ -196,7 +197,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
-  DCHECK(browser_view_->IsBrowserTypeHostedApp());
+  DCHECK(browser_view_->browser()
+             ->hosted_app_controller()
+             ->IsForExperimentalHostedAppBrowser());
+
+  set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,

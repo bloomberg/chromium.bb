@@ -122,7 +122,7 @@ const char kPwaWindowEngagementTypeHistogram[] =
 bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
   return browser && browser->hosted_app_controller() &&
-         base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+         browser->hosted_app_controller()->IsForExperimentalHostedAppBrowser();
 }
 
 // static
@@ -170,6 +170,17 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
 
 HostedAppBrowserController::~HostedAppBrowserController() {
   browser_->tab_strip_model()->RemoveObserver(this);
+}
+
+bool HostedAppBrowserController::IsForSystemWebApp() const {
+  const Extension* extension = GetExtension();
+
+  return extension && extension->from_bookmark() &&
+         extension->location() == Manifest::EXTERNAL_COMPONENT;
+}
+
+bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
+  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
 }
 
 bool HostedAppBrowserController::ShouldShowLocationBar() const {
@@ -234,6 +245,11 @@ void HostedAppBrowserController::UpdateLocationBarVisibility(
     bool animate) const {
   browser_->window()->GetLocationBar()->UpdateLocationBarVisibility(
       ShouldShowLocationBar(), animate);
+}
+
+bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
+  // System Web Apps don't get the Hosted App buttons.
+  return IsForExperimentalHostedAppBrowser() && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
