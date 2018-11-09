@@ -709,8 +709,8 @@ typedef struct AV1_COMP {
 
   // Relevant for an inter frame.
   // - Index '0' corresponds to the values for the currently coded frame.
-  // - Indices 1 ... REF_FRAMES are used to store values for all the possible
-  // reference frames.
+  // - Indices LAST_FRAME ... EXTREF_FRAMES are used to store values for all the
+  // possible inter reference frames.
   int interp_filter_selected[REF_FRAMES + 1][SWITCHABLE];
 
   struct aom_codec_pkt_list *output_pkt_list;

@@ -3444,18 +3444,17 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
 // to clear a space to store the closest bwdref
 static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
   // TODO(isbs): shift the scaled indices as well
-  static const int ordered_bwd[3] = { BWDREF_FRAME - 1, ALTREF2_FRAME - 1,
-                                      EXTREF_FRAME - 1 };
+  static const int ordered_bwd[3] = { BWDREF_FRAME, ALTREF2_FRAME,
+                                      EXTREF_FRAME };
 
   for (int i = 2; i > 0; --i) {
     // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(
-        cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
-        cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME],
-        sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME]));
+    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
+           cpi->interp_filter_selected[ordered_bwd[i - 1]],
+           sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1]]));
 
-    cpi->remapped_ref_idx[ordered_bwd[i]] =
-        cpi->remapped_ref_idx[ordered_bwd[i - 1]];
+    cpi->remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
+        cpi->remapped_ref_idx[ordered_bwd[i - 1] - LAST_FRAME];
   }
 }
 
@@ -3465,18 +3464,17 @@ static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
 // to update the bwd reference frame for coding the next frame.
 static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
   // TODO(isbs): shift the scaled indices as well
-  static const int ordered_bwd[3] = { BWDREF_FRAME - 1, ALTREF2_FRAME - 1,
-                                      EXTREF_FRAME - 1 };
+  static const int ordered_bwd[3] = { BWDREF_FRAME, ALTREF2_FRAME,
+                                      EXTREF_FRAME };
 
   for (int i = 0; i < 2; ++i) {
     // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(
-        cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
-        cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME],
-        sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME]));
+    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
+           cpi->interp_filter_selected[ordered_bwd[i + 1]],
+           sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1]]));
 
-    cpi->remapped_ref_idx[ordered_bwd[i]] =
-        cpi->remapped_ref_idx[ordered_bwd[i + 1]];
+    cpi->remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
+        cpi->remapped_ref_idx[ordered_bwd[i + 1] - LAST_FRAME];
   }
 }
 #endif  // USE_SYMM_MULTI_LAYER
