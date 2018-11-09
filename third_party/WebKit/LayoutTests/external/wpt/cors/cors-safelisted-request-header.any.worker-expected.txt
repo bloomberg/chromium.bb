@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+FAIL Preflight for {"content-type":"text /plain"} assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Preflight for {"content-type":"text\t/\tplain"} assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS No preflight for {"content-type":"text/plain;"}
+PASS No preflight for {"content-type":"text/plain;garbage"}
+FAIL Preflight for {"content-type":"text/plain;garbage\u0001\u0002"} assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS Preflight for {"content-type":"text/plain,"}
+PASS Preflight for {"content-type":",text/plain"}
+PASS Preflight for {"content-type":"text/plain,text/plain"}
+PASS Preflight for {"content-type":"text/plain,x/x"}
+FAIL Preflight for {"content-type":"text/plain\u000b"} assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL Preflight for {"content-type":"text/plain\f"} assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS Preflight for {"content-type":"application/www-form-urlencoded"}
+FAIL Preflight for {"content-type":"application/x-www-form-urlencoded;"} assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS No preflight for {"content-type":"multipart/form-data"}
+FAIL Preflight for {"content-type":"multipart/form-data;\""} assert_unreached: Should have rejected: undefined Reached unreachable code
+Harness: the test ran to completion.
+
