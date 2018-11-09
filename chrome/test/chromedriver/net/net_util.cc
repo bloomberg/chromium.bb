@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -20,6 +21,9 @@
 
 namespace {
 
+base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky
+    g_io_capable_task_runner_for_tests = LAZY_INSTANCE_INITIALIZER;
+
 class SyncUrlFetcher {
  public:
   SyncUrlFetcher(const GURL& url,
@@ -27,8 +31,10 @@ class SyncUrlFetcher {
                  std::string* response)
       : url_(url),
         url_loader_factory_(url_loader_factory),
-        network_task_runner_(
-            base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+        network_task_runner_(g_io_capable_task_runner_for_tests.Get()
+                                 ? g_io_capable_task_runner_for_tests.Get()
+                                 : base::CreateSequencedTaskRunnerWithTraits(
+                                       {base::MayBlock()})),
         response_(response),
         event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
@@ -102,6 +108,11 @@ const std::string& NetAddress::host() const {
 
 int NetAddress::port() const {
   return port_;
+}
+
+void SetIOCapableTaskRunnerForTest(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  g_io_capable_task_runner_for_tests.Get() = task_runner;
 }
 
 bool FetchUrl(const std::string& url,

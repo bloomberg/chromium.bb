@@ -7,6 +7,12 @@
 
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
@@ -32,6 +38,9 @@ class NetAddress {
   std::string host_;
   int port_;
 };
+
+void SetIOCapableTaskRunnerForTest(
+    scoped_refptr<base::SequencedTaskRunner> task_runner);
 
 // Synchronously fetches data from a GET HTTP request to the given URL.
 // Returns true if response is 200 OK and sets response body to |response|.
