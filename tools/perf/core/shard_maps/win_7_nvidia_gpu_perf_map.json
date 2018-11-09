@@ -21,14 +21,14 @@
             "kraken": {},
             "loading.desktop": {},
             "loading.mobile": {
-                "end": 90
+                "end": 81
             }
         }
     },
     "1": {
         "benchmarks": {
             "loading.mobile": {
-                "begin": 90
+                "begin": 81
             },
             "media.desktop": {},
             "media.mobile": {},
@@ -77,14 +77,14 @@
             "tab_switching.typical_25": {},
             "tracing.tracing_with_background_memory_infra": {},
             "v8.browsing_desktop": {
-                "end": 25
+                "end": 27
             }
         }
     },
     "4": {
         "benchmarks": {
             "v8.browsing_desktop": {
-                "begin": 25
+                "begin": 27
             },
             "v8.browsing_desktop-future": {},
             "v8.browsing_mobile": {},
@@ -95,15 +95,15 @@
         }
     },
     "extra_infos": {
-        "num_stories": 1960,
-        "predicted_min_shard_time": 15184.0,
+        "num_stories": 1995,
+        "predicted_min_shard_time": 15188.0,
         "predicted_min_shard_index": 4,
-        "predicted_max_shard_time": 15372.0,
+        "predicted_max_shard_time": 15376.0,
         "predicted_max_shard_index": 2,
-        "shard #0": 15256.0,
-        "shard #1": 15246.0,
-        "shard #2": 15372.0,
-        "shard #3": 15226.0,
-        "shard #4": 15184.0
+        "shard #0": 15274.0,
+        "shard #1": 15282.0,
+        "shard #2": 15376.0,
+        "shard #3": 15242.0,
+        "shard #4": 15188.0
     }
 }
