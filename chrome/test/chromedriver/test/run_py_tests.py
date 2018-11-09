@@ -3037,7 +3037,9 @@ class ZChromeStartRetryCountTest(unittest.TestCase):
 
   def testChromeStartRetryCount(self):
     self.assertEquals(0, chromedriver.ChromeDriver.retry_count,
-                      "Chrome was retried to start during suite execution")
+                      "Chrome was retried to start during suite execution "
+                      "in following tests:\n" +
+                      ', \n'.join(chromedriver.ChromeDriver.retried_tests))
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()
