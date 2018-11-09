@@ -191,14 +191,22 @@ class AX_EXPORT AXNode final {
   // Most of these functions construct and cache an AXTableInfo behind
   // the scenes to infer many properties of tables.
   //
-  // TODO(dmazzoni): Make these const - not trivial because AXTableInfo
-  // does need to modify the AXTree.
+  // These interfaces use attributes provided by the source of the
+  // AX tree where possible, but fills in missing details and ignores
+  // specified attributes when they're bad or inconsistent. That way
+  // you're guaranteed to get a valid, consistent table when using these
+  // interfaces.
   //
 
-  // Table-like nodes (including grids).
+  // Table-like nodes (including grids). All indices are 0-based except
+  // ARIA indices are all 1-based. In other words, the top-left corner
+  // of the table is row 0, column 0, cell index 0 - but that same cell
+  // has a minimum ARIA row index of 1 and column index of 1.
   bool IsTable() const;
   int32_t GetTableColCount() const;
   int32_t GetTableRowCount() const;
+  int32_t GetTableAriaColCount() const;
+  int32_t GetTableAriaRowCount() const;
   int32_t GetTableCellCount() const;
   AXNode* GetTableCellFromIndex(int32_t index) const;
   AXNode* GetTableCellFromCoords(int32_t row_index, int32_t col_index) const;
