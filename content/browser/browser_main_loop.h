@@ -174,9 +174,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
-  net::NetworkChangeNotifier* network_change_notifier() const {
-    return network_change_notifier_.get();
-  }
 
 #if defined(OS_CHROMEOS)
   KeyboardMicRegistration* keyboard_mic_registration() {

@@ -194,11 +194,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns |error_| if valid, otherwise returns |last_error_|.
   std::string GetErrorState() const;
 
-  // Setters for testing.
-  void set_network_technology_for_testing(const std::string& technology) {
-    network_technology_ = technology;
-  }
-
   // Helpers (used e.g. when a state, error, or shill dictionary is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
@@ -210,6 +205,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
  private:
   friend class MobileActivatorTest;
   friend class NetworkStateHandler;
+  friend class NetworkChangeNotifierChromeosUpdateTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateTest, TetherProperties);
 
   // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, which must
