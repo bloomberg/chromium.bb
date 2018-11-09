@@ -700,4 +700,75 @@ TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
               WebFeature::kCSSSelectorWebkitUnknownPseudo);
 }
 
+TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
+  struct ShadowCombinatorTest {
+    const char* input;
+    std::vector<std::pair<AtomicString, CSSSelector::RelationType>> expectation;
+  };
+
+  const ShadowCombinatorTest test_cases[] = {
+      {
+          "*::placeholder",
+          {
+              {"placeholder", CSSSelector::kShadowPseudo},
+              {g_null_atom, CSSSelector::kSubSelector},
+          },
+      },
+      {
+          "div::slotted(*)",
+          {
+              {"slotted", CSSSelector::kShadowSlot},
+              {"div", CSSSelector::kSubSelector},
+          },
+      },
+      {
+          "::slotted(*)::placeholder",
+          {
+              {"placeholder", CSSSelector::kShadowPseudo},
+              {"slotted", CSSSelector::kShadowSlot},
+              {g_null_atom, CSSSelector::kSubSelector},
+          },
+      },
+      {
+          "span::part(my-part)",
+          {
+              {"part", CSSSelector::kShadowPart},
+              {"span", CSSSelector::kSubSelector},
+          },
+      },
+      {
+          "video::-webkit-media-controls",
+          {
+              {"-webkit-media-controls", CSSSelector::kShadowPseudo},
+              {"video", CSSSelector::kSubSelector},
+          },
+      },
+  };
+
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.input);
+    CSSTokenizer tokenizer(test_case.input);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_TRUE(list.IsValid());
+    const CSSSelector* selector = list.First();
+    for (auto sub_expectation : test_case.expectation) {
+      ASSERT_TRUE(selector);
+      AtomicString selector_value = selector->Match() == CSSSelector::kTag
+                                        ? selector->TagQName().LocalName()
+                                        : selector->Value();
+      EXPECT_EQ(sub_expectation.first, selector_value);
+      EXPECT_EQ(sub_expectation.second, selector->Relation());
+      selector = selector->TagHistory();
+    }
+    EXPECT_FALSE(selector);
+  }
+}
+
 }  // namespace blink

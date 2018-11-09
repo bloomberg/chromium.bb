@@ -380,6 +380,7 @@ class CORE_EXPORT CSSSelector {
   }
 
   bool MatchesPseudoElement() const;
+  bool IsTreeAbidingPseudoElement() const;
 
   bool HasContentPseudo() const;
   bool HasSlottedPseudo() const;

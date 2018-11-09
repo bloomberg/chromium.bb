@@ -239,12 +239,44 @@ static void MatchHostAndCustomElementRules(const Element& element,
   collector.FinishAddingAuthorRulesForTreeScope();
 }
 
+static void MatchSlottedRules(const Element&, ElementRuleCollector&);
+static void MatchSlottedRulesForUAHost(const Element& element,
+                                       ElementRuleCollector& collector) {
+  if (element.ShadowPseudoId() != "-webkit-input-placeholder")
+    return;
+
+  // We allow ::placeholder pseudo element after ::slotted(). Since we are
+  // matching such pseudo elements starting from inside the UA shadow DOM of
+  // the element having the placeholder, we need to match ::slotted rules from
+  // the scopes to which the placeholder's host element may be slotted.
+  //
+  // Example:
+  //
+  // <div id=host>
+  //   <:shadow-root>
+  //     <style>::slotted(input)::placeholder { color: green }</style>
+  //     <slot />
+  //   </:shadow-root>
+  //   <input placeholder="PLACEHOLDER-TEXT">
+  //     <:ua-shadow-root>
+  //       ... <placeholder>PLACEHOLDER-TEXT</placeholder> ...
+  //     </:ua-shadow-root>
+  //   </input>
+  // </div>
+  //
+  // Here we need to match the ::slotted rule from the #host shadow tree where
+  // the input is slotted on the placeholder element.
+  DCHECK(element.OwnerShadowHost());
+  MatchSlottedRules(*element.OwnerShadowHost(), collector);
+}
+
 // Matches `::slotted` selectors. It matches rules in the element's slot's
 // scope. If that slot is itself slotted it will match rules in the slot's
 // slot's scope and so on. The result is that it considers a chain of scopes
 // descending from the element's own scope.
 static void MatchSlottedRules(const Element& element,
                               ElementRuleCollector& collector) {
+  MatchSlottedRulesForUAHost(element, collector);
   HTMLSlotElement* slot = element.AssignedSlot();
   if (!slot)
     return;
