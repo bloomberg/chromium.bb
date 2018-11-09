@@ -3,7 +3,7 @@
     "Runs tests on 64-bit iOS 10, 11 and 12 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-full-configs."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -32,7 +32,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
@@ -54,7 +54,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
@@ -76,7 +76,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
@@ -98,7 +98,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
