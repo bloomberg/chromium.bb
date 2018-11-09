@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
+#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -691,11 +693,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
       new FakeSafeBrowsingDatabaseManager(true));
   Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
 
-  blacklist_db->SetUnsafe("gllekhaobjnhgeagipipnkpmmmpchacm");
+  const std::string extension_id = "gllekhaobjnhgeagipipnkpmmmpchacm";
+  blacklist_db->SetUnsafe(extension_id);
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
                                           .AppendASCII("theme_hidpi.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
+
+  auto installation_failure =
+      InstallationFailures::Get(profile(), extension_id);
+  EXPECT_EQ(InstallationFailures::Reason::CRX_INSTALL_ERROR_DECLINED,
+            installation_failure.first);
+  EXPECT_EQ(CrxInstallErrorDetail::EXTENSION_IS_BLOCKLISTED,
+            installation_failure.second);
 }
 #endif
 
@@ -952,6 +962,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const Extension* extension = GetInstalledExtension(extension_id);
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ("0.0", extension->VersionString());
+
+  auto installation_failure =
+      InstallationFailures::Get(profile(), extension_id);
+  EXPECT_EQ(InstallationFailures::Reason::
+                CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE,
+            installation_failure.first);
+  EXPECT_EQ(base::nullopt, installation_failure.second);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
@@ -988,6 +1005,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const Extension* extension = GetInstalledExtension(extension_id);
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ("0.0", extension->VersionString());
+
+  auto installation_failure =
+      InstallationFailures::Get(profile(), extension_id);
+  EXPECT_EQ(InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
+            installation_failure.first);
+  EXPECT_EQ(CrxInstallErrorDetail::UNEXPECTED_ID, *installation_failure.second);
 }
 
 #if defined(OS_CHROMEOS)

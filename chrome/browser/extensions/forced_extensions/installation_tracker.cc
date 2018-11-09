@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
 
 namespace {
@@ -97,10 +98,16 @@ void InstallationTracker::ReportResults(bool succeeded) {
           "Extensions.ForceInstalledTimedOutAndNotInstalledCount",
           installed_missing_count);
       for (const auto& extension_id : pending_forced_extensions_) {
-        InstallationFailures::Reason reason =
-            InstallationFailures::Get(profile_, extension_id);
+        std::pair<InstallationFailures::Reason,
+                  base::Optional<CrxInstallErrorDetail>>
+            reason = InstallationFailures::Get(profile_, extension_id);
         UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason",
-                                  reason);
+                                  reason.first);
+        if (reason.second) {
+          CrxInstallErrorDetail detail = reason.second.value();
+          UMA_HISTOGRAM_ENUMERATION(
+              "Extensions.ForceInstalledFailureCrxInstallError", detail);
+        }
       }
     }
   }

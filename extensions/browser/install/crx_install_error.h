@@ -28,6 +28,7 @@ enum class CrxInstallErrorType {
 
 // Extended error code that may help explain the error type.
 // Do not change the order of the entries or remove entries in this list.
+// Don't forget to update enums.xml when adding new entries.
 enum class CrxInstallErrorDetail {
   NONE,                                     // 0
   CONVERT_USER_SCRIPT_TO_EXTENSION_FAILED,  // 1
@@ -54,6 +55,10 @@ enum class CrxInstallErrorDetail {
   USER_CANCELED,                            // 22
   USER_ABORTED,                             // 23
   UPDATE_NON_EXISTING_EXTENSION,            // 24
+
+  // Magic constant used by the histogram macros.
+  // Always update it to the max value.
+  kMaxValue = UPDATE_NON_EXISTING_EXTENSION,
 };
 
 // Simple error class for CrxInstaller.
