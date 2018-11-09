@@ -15,7 +15,7 @@ namespace autofill_assistant {
 
 namespace {
 // Waiting period between two checks.
-static constexpr base::TimeDelta kCheckPeriod =
+static constexpr base::TimeDelta kCheckDelay =
     base::TimeDelta::FromMilliseconds(100);
 }  // namespace
 
@@ -89,7 +89,7 @@ void ElementArea::KeepUpdatingPositions() {
       FROM_HERE,
       base::BindOnce(&ElementArea::KeepUpdatingPositions,
                      weak_ptr_factory_.GetWeakPtr()),
-      kCheckPeriod);
+      kCheckDelay);
 }
 
 void ElementArea::OnGetElementPosition(const std::vector<std::string>& selector,
