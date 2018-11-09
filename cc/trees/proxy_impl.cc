@@ -503,6 +503,11 @@ void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   host_impl_->DidNotProduceFrame(ack);
 }
 
+void ProxyImpl::WillNotReceiveBeginFrame() {
+  DCHECK(IsImplThread());
+  host_impl_->DidNotNeedBeginFrame();
+}
+
 void ProxyImpl::ScheduledActionSendBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());

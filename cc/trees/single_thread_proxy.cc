@@ -898,6 +898,10 @@ void SingleThreadProxy::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   host_impl_->DidNotProduceFrame(ack);
 }
 
+void SingleThreadProxy::WillNotReceiveBeginFrame() {
+  host_impl_->DidNotNeedBeginFrame();
+}
+
 void SingleThreadProxy::DidReceiveCompositorFrameAck() {
   layer_tree_host_->DidReceiveCompositorFrameAck();
 }

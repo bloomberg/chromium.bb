@@ -130,6 +130,8 @@ class FakeSchedulerClient : public SchedulerClient,
     last_begin_frame_ack_ = ack;
   }
 
+  void WillNotReceiveBeginFrame() override {}
+
   void ScheduledActionSendBeginMainFrame(
       const viz::BeginFrameArgs& args) override {
     EXPECT_FALSE(inside_action_);

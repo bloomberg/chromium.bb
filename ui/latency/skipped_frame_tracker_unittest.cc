@@ -75,6 +75,12 @@ class SkippedFrameTrackerTest : public testing::Test {
     return MaybeCallCountFailure(call_count);
   }
 
+  ::testing::AssertionResult WillNotProduceFrame() {
+    int call_count = client_.call_count_;
+    tracker_.WillNotProduceFrame();
+    return MaybeCallCountFailure(call_count);
+  }
+
   ::testing::AssertionResult WillProduceFrame() {
     int call_count = client_.call_count_;
     tracker_.WillProduceFrame();
@@ -231,6 +237,47 @@ TEST_F(SkippedFrameTrackerTest, NoSkips_ActiveIdleActive_JumpInIdle) {
 
   EXPECT_TRUE(BeginFrame(110, 10));
   EXPECT_TRUE(FinishFrame());
+  EXPECT_FALSE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(BeginFrame(200, 10));
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(200, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+}
+
+// Active, Set idle after WillProduceFrame, then active again.
+TEST_F(SkippedFrameTrackerTest, WillNotProduceFrame) {
+  EXPECT_TRUE(BeginFrame(100, 10));
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(100, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+
+  EXPECT_TRUE(BeginFrame(110, 10));
+  EXPECT_TRUE(WillNotProduceFrame());
+  EXPECT_FALSE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(BeginFrame(200, 10));
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(200, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+}
+
+// Active, idle, then active again.
+TEST_F(SkippedFrameTrackerTest, WillNotProduceFrame2) {
+  EXPECT_TRUE(BeginFrame(100, 10));
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(100, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillNotProduceFrame());
   EXPECT_FALSE(tracker_.IsActive());
 
   EXPECT_TRUE(WillProduceFrame());

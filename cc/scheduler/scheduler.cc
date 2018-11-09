@@ -258,6 +258,7 @@ void Scheduler::StartOrStopBeginFrames() {
     BeginImplFrameNotExpectedSoon();
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
+    client_->WillNotReceiveBeginFrame();
   }
 }
 

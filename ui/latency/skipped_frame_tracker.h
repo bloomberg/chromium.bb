@@ -41,13 +41,15 @@ class SkippedFrameTracker {
 
   // WillProduceFrame should be called when the source knows it wants to
   // produce a frame. DidProduceFrame should be called when the source has
-  // actually submitted the frame.
+  // actually submitted the frame. WillNotProduceFrame should be called when
+  // the source knows if doesn't need a new frame.
   // It is okay for DidProduceFrame to be called without WillProduceFrame,
   // which can happen in cases where a frame is "pulled" from later in the
   // pipeline rather than pushed from the source. Such calls to DidProduceFrame
   // will be ignored.
   void WillProduceFrame();
   void DidProduceFrame();
+  void WillNotProduceFrame();
 
  protected:
   Client* client_;
