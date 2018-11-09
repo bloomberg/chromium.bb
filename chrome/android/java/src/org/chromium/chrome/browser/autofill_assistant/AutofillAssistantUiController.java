@@ -320,14 +320,24 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mUiDelegateHolder.performUiOperation(uiDelegate -> {
             uiDelegate.showPaymentRequest(mWebContents, paymentOptions, title,
                     supportedBasicCardNetworks, (selectedPaymentInformation -> {
-                        nativeOnGetPaymentInformation(mUiControllerAndroid,
-                                selectedPaymentInformation.succeed, selectedPaymentInformation.card,
-                                selectedPaymentInformation.address,
-                                selectedPaymentInformation.payerName,
-                                selectedPaymentInformation.payerPhone,
-                                selectedPaymentInformation.payerEmail,
-                                selectedPaymentInformation.isTermsAndConditionsAccepted);
                         uiDelegate.closePaymentRequest();
+                        if (selectedPaymentInformation.succeed) {
+                            nativeOnGetPaymentInformation(mUiControllerAndroid,
+                                    selectedPaymentInformation.succeed,
+                                    selectedPaymentInformation.card,
+                                    selectedPaymentInformation.address,
+                                    selectedPaymentInformation.payerName,
+                                    selectedPaymentInformation.payerPhone,
+                                    selectedPaymentInformation.payerEmail,
+                                    selectedPaymentInformation.isTermsAndConditionsAccepted);
+                        } else {
+                            // A failed payment request flow indicates that the UI was either
+                            // dismissed or the back button was clicked. In that case we gracefully
+                            // shut down.
+                            onHideOverlay();
+                            uiDelegate.showGiveUpMessage();
+                            onShutdownGracefully();
+                        }
                     }));
         });
     }

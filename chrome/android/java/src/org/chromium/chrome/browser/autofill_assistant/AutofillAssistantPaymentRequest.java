@@ -244,7 +244,7 @@ public class AutofillAssistantPaymentRequest {
     /* package */ void close() {
         if (mUI != null) {
             // Close the UI immediately and do not wait for finishing animations.
-            mUI.close(/* shouldCloseImmediately = */ true, () -> {});
+            mUI.close();
             mUI = null;
         }
 
@@ -518,7 +518,6 @@ public class AutofillAssistantPaymentRequest {
             mCallback.onResult(selectedPaymentInformation);
             mCallback = null;
         }
-
         close();
     }
 

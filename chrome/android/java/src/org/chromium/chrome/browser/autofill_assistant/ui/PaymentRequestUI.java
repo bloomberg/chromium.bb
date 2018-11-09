@@ -116,7 +116,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private FadingEdgeScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
     private ViewGroup mBottomBar;
-    private Button mEditButton;
+    private Button mCancelButton;
     private Button mPayButton;
     private View mSpinnyLayout;
     private CheckBox mTermsCheckBox;
@@ -314,8 +314,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
-        mEditButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
-        mEditButton.setOnClickListener(this);
+        mCancelButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
+        mCancelButton.setOnClickListener(this);
 
         // Terms and services accepted checkbox. The state is passively propagated along to the
         // client when the pay/continue button is clicked.
@@ -403,14 +403,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Does not call Client.onDismissed().
      *
      * Should not be called multiple times.
-     *
-     * @param shouldCloseImmediately If true, this function will immediately dismiss the dialog
-     *        without describing the error.
-     * @param callback The callback to notify of finished animations.
      */
-    public void close(boolean shouldCloseImmediately, final Runnable callback) {
-        mIsClientClosing = true;
-
+    public void close() {
         // Restore the UI before we showed the payment request.
         ViewGroup parent = (ViewGroup) mRequestView.getParent();
         assert parent != null;
@@ -418,24 +412,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         parent.removeView(mRequestView);
         parent.addView(mBackupView, index);
         mBackupView = null;
-
-        Runnable dismissRunnable = new Runnable() {
-            @Override
-            public void run() {
-                dismissDialog(false);
-                if (callback != null) callback.run();
-            }
-        };
-
-        if (shouldCloseImmediately) {
-            // The shouldCloseImmediately boolean is true when the merchant calls
-            // instrumentResponse.complete("success") or instrumentResponse.complete("")
-            // in JavaScript.
-            dismissRunnable.run();
-        } else {
-            // TODO(crbug.com/806868): Show the mErrorView error dialog.
-            mErrorView.setDismissRunnable(dismissRunnable);
-        }
     }
 
     /**
@@ -635,24 +611,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             expand(mPaymentMethodSection);
         } else if (v == mPayButton) {
             processPayButton();
-        } else if (v == mEditButton) {
-            if (mIsExpandedToFullHeight) {
-                dismissDialog(true);
-            } else {
-                expand(mOrderSummarySection);
-            }
+        } else if (v == mCancelButton) {
+            dismiss();
+            return;
         }
 
         updatePayButtonEnabled();
-    }
-
-    /**
-     * Dismiss the dialog.
-     *
-     * @param isAnimated If true, the dialog dismissal is animated.
-     */
-    private void dismissDialog(boolean isAnimated) {
-        mIsClosing = true;
     }
 
     private void processPayButton() {
@@ -787,7 +751,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mPaymentContainerLayout.requestLayout();
 
             // Switch the 'edit' button to a 'cancel' button.
-            mEditButton.setText(mContext.getString(R.string.cancel));
+            mCancelButton.setText(mContext.getString(R.string.cancel));
 
             // Disable all but the first button.
             updateSectionButtons();
@@ -907,10 +871,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
+        dismiss();
+    }
+
+    private void dismiss() {
         mIsClosing = true;
         if (mEditorDialog.isShowing()) mEditorDialog.dismiss();
         if (mCardEditorDialog.isShowing()) mCardEditorDialog.dismiss();
-        if (!mIsClientClosing) mClient.onDismiss();
+        mClient.onDismiss();
     }
 
     @Override
