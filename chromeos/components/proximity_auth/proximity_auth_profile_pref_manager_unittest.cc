@@ -46,7 +46,6 @@ class ProximityAuthProfilePrefManagerTest : public testing::Test {
     scoped_feature_list_.InitWithFeatures(
         std::vector<base::Feature>() /* enable_features */,
         std::vector<base::Feature>{
-            chromeos::features::kMultiDeviceApi,
             chromeos::features::
                 kEnableUnifiedMultiDeviceSetup} /* disable_features */);
   }
