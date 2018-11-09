@@ -36,7 +36,8 @@ void RunCallbackOnIOThread(
     std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
-  CHECK(callback);  // Remove after fixing https://crbug.com/889972
+  CHECK(callback);              // Remove after fixing crbug.com/889972
+  CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(*callback), threat_type, metadata));
