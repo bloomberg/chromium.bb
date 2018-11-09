@@ -13,7 +13,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
-class ChannelIDService;
 class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
@@ -48,7 +47,6 @@ class SafeBrowsingURLRequestContextGetter
  private:
   base::FilePath GetBaseFilename();
   base::FilePath CookieFilePath();
-  base::FilePath ChannelIDFilePath();
 
   bool shut_down_;
   base::FilePath user_data_dir_;
@@ -57,7 +55,6 @@ class SafeBrowsingURLRequestContextGetter
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   std::unique_ptr<net::URLRequestContext> safe_browsing_request_context_;
   std::unique_ptr<net::CookieStore> safe_browsing_cookie_store_;
-  std::unique_ptr<net::ChannelIDService> channel_id_service_;
   std::unique_ptr<net::HttpNetworkSession> http_network_session_;
   std::unique_ptr<net::HttpTransactionFactory> http_transaction_factory_;
 };
