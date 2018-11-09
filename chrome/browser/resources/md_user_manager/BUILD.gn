@@ -44,6 +44,9 @@ js_library("profile_browser_proxy") {
 }
 
 js_library("user_manager_pages") {
+  deps = [
+    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
+  ]
 }
 
 js_library("user_manager_tutorial") {
