@@ -34,10 +34,22 @@
  * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
  */
 
-.type PushAllRegisters, %function
-.global PushAllRegisters
-.hidden PushAllRegisters
-PushAllRegisters:
+/* Supplementary macro for setting function attributes */
+.macro asm_function fname
+#ifdef __APPLE__
+    .globl _\fname
+_\fname:
+#else
+    .global \fname
+#ifdef __ELF__
+    .hidden \fname
+    .type \fname, %function
+#endif
+\fname:
+#endif
+.endm
+
+asm_function PushAllRegisters
         /* Save return address. */
         sub sp, sp, #96
         stp x19, x20, [sp, #80]
