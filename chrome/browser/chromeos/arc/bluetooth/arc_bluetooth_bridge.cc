@@ -1060,58 +1060,6 @@ void ArcBluetoothBridge::SetAdapterProperty(
   }
 }
 
-void ArcBluetoothBridge::GetRemoteDeviceProperty(
-    mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothPropertyType type) {
-  DCHECK(bluetooth_adapter_);
-  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnRemoteDeviceProperties);
-  if (!bluetooth_instance)
-    return;
-
-  std::string addr_str = remote_addr->To<std::string>();
-  BluetoothDevice* device = bluetooth_adapter_->GetDevice(addr_str);
-
-  std::vector<mojom::BluetoothPropertyPtr> properties =
-      GetDeviceProperties(type, device);
-  mojom::BluetoothStatus status = mojom::BluetoothStatus::SUCCESS;
-
-  if (!device) {
-    VLOG(1) << __func__ << ": device " << addr_str << " not available";
-    status = mojom::BluetoothStatus::FAIL;
-  }
-
-  bluetooth_instance->OnRemoteDeviceProperties(status, std::move(remote_addr),
-                                               std::move(properties));
-}
-
-void ArcBluetoothBridge::SetRemoteDeviceProperty(
-    mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothPropertyPtr property) {
-  DCHECK(bluetooth_adapter_);
-  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnRemoteDeviceProperties);
-  if (!bluetooth_instance)
-    return;
-
-  // Unsupported. Only used by Android hidden API, BluetoothDevice.SetAlias().
-  // And only Android Settings App / Android TV / NFC used that.
-  bluetooth_instance->OnRemoteDeviceProperties(
-      mojom::BluetoothStatus::UNSUPPORTED, std::move(remote_addr),
-      std::vector<mojom::BluetoothPropertyPtr>());
-}
-
-void ArcBluetoothBridge::GetRemoteServiceRecord(
-    mojom::BluetoothAddressPtr remote_addr,
-    const BluetoothUUID& uuid) {
-  // TODO(smbarber): Implement GetRemoteServiceRecord
-}
-
-void ArcBluetoothBridge::GetRemoteServices(
-    mojom::BluetoothAddressPtr remote_addr) {
-  // TODO(smbarber): Implement GetRemoteServices
-}
-
 void ArcBluetoothBridge::StartDiscovery() {
   discovery_queue_.Push(base::BindOnce(&ArcBluetoothBridge::StartDiscoveryImpl,
                                        weak_factory_.GetWeakPtr(), false));
