@@ -33,7 +33,7 @@ bool IsStatefulRequestHeader(base::StringPiece name) {
 
   const char* const kStatefulRequestHeaders[] = {
       "authorization", "cookie", "cookie2", "proxy-authorization",
-      "sec-webSocket-key"};
+      "sec-websocket-key"};
 
   for (const char* field : kStatefulRequestHeaders) {
     if (name == field)
