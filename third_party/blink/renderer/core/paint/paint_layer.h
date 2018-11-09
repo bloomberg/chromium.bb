@@ -975,47 +975,30 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never
   // had descendant outlines.  The flag is set during paint invalidation on a
-  // self painting layer if any contained object has outline.  It's cleared
-  // during painting if PaintPhaseDescendantOutlinesOnly painted nothing.
+  // self painting layer if any contained object has outline.
   // For more details, see core/paint/REAME.md#Empty paint phase optimization.
   bool NeedsPaintPhaseDescendantOutlines() const {
-    return needs_paint_phase_descendant_outlines_ &&
-           !previous_paint_phase_descendant_outlines_was_empty_;
+    return needs_paint_phase_descendant_outlines_;
   }
   void SetNeedsPaintPhaseDescendantOutlines() {
     DCHECK(IsSelfPaintingLayer());
     needs_paint_phase_descendant_outlines_ = true;
-    previous_paint_phase_descendant_outlines_was_empty_ = false;
-  }
-  void SetPreviousPaintPhaseDescendantOutlinesEmpty(bool is_empty) {
-    previous_paint_phase_descendant_outlines_was_empty_ = is_empty;
   }
 
   // Similar to above, but for PaintPhaseFloat.
-  bool NeedsPaintPhaseFloat() const {
-    return needs_paint_phase_float_ && !previous_paint_phase_float_was_empty_;
-  }
+  bool NeedsPaintPhaseFloat() const { return needs_paint_phase_float_; }
   void SetNeedsPaintPhaseFloat() {
     DCHECK(IsSelfPaintingLayer());
     needs_paint_phase_float_ = true;
-    previous_paint_phase_float_was_empty_ = false;
-  }
-  void SetPreviousPaintPhaseFloatEmpty(bool is_empty) {
-    previous_paint_phase_float_was_empty_ = is_empty;
   }
 
   // Similar to above, but for PaintPhaseDescendantBlockBackgroundsOnly.
   bool NeedsPaintPhaseDescendantBlockBackgrounds() const {
-    return needs_paint_phase_descendant_block_backgrounds_ &&
-           !previous_paint_phase_descendant_block_backgrounds_was_empty_;
+    return needs_paint_phase_descendant_block_backgrounds_;
   }
   void SetNeedsPaintPhaseDescendantBlockBackgrounds() {
     DCHECK(IsSelfPaintingLayer());
     needs_paint_phase_descendant_block_backgrounds_ = true;
-    previous_paint_phase_descendant_block_backgrounds_was_empty_ = false;
-  }
-  void SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(bool is_empty) {
-    previous_paint_phase_descendant_block_backgrounds_was_empty_ = is_empty;
   }
 
   bool DescendantHasDirectOrScrollingCompositingReason() const {
@@ -1285,11 +1268,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                 "Should update number of bits of previous_paint_result_");
 
   unsigned needs_paint_phase_descendant_outlines_ : 1;
-  unsigned previous_paint_phase_descendant_outlines_was_empty_ : 1;
   unsigned needs_paint_phase_float_ : 1;
-  unsigned previous_paint_phase_float_was_empty_ : 1;
   unsigned needs_paint_phase_descendant_block_backgrounds_ : 1;
-  unsigned previous_paint_phase_descendant_block_backgrounds_was_empty_ : 1;
 
   // These bitfields are part of ancestor/descendant dependent compositing
   // inputs.
