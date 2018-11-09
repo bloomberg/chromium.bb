@@ -295,6 +295,24 @@
     <message name="IDS_SETTINGS_AUTOCLICK_REVERT_TO_LEFT_CLICK" desc="Description of a checkbox that gives the option to return to the default left click action after taking another action.">
       Revert to left click after action
     </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_LABEL" desc="Label for a dropdown menu which that has options for how much mouse movement can occur before a new autoclick is initiated.">
+      Movement threshold
+    </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_EXTRA_SMALL" desc="Description of an extra small mouse movement threshold for autoclick mouse movements.">
+      Extra small
+    </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_SMALL" desc="Description of a small mouse movement threshold for autoclick mouse movements">
+      Small
+    </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_DEFAULT" desc="Description of the default mouse movement threshold for autoclick mouse movements">
+      Default
+    </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_LARGE" desc="Description of a large mouse movement threshold for autoclick mouse movements">
+      Large
+    </message>
+    <message name="IDS_SETTINGS_AUTOCLICK_MOVEMENT_THRESHOLD_EXTRA_LARGE" desc="Description of an extra large mouse movement threshold for autoclick mouse movements">
+      Extra large
+    </message>
     <message name="IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL" desc="Label for checkbox which enables an on-screen keyboard.">
       Enable on-screen keyboard
     </message>

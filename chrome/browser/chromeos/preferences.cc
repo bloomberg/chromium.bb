@@ -280,6 +280,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityAutoclickRevertToLeftClick, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilityAutoclickMovementThreshold,
+      ash::kDefaultAutoclickMovementThreshold,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);

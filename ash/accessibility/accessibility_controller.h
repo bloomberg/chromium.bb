@@ -192,6 +192,7 @@ class ASH_EXPORT AccessibilityController
   void UpdateAutoclickDelayFromPref();
   void UpdateAutoclickEventTypeFromPref();
   void UpdateAutoclickRevertToLeftClickFromPref();
+  void UpdateAutoclickMovementThresholdFromPref();
   void UpdateCaretHighlightFromPref();
   void UpdateCursorHighlightFromPref();
   void UpdateDictationFromPref();

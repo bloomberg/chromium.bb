@@ -263,6 +263,9 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   static_cast<int>(kDefaultAutoclickEventType));
     registry->RegisterBooleanPref(
         prefs::kAccessibilityAutoclickRevertToLeftClick, true);
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilityAutoclickMovementThreshold,
+        kDefaultAutoclickMovementThreshold);
     registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
@@ -309,6 +312,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
   registry->RegisterForeignPref(
       prefs::kAccessibilityAutoclickRevertToLeftClick);
+  registry->RegisterForeignPref(
+      prefs::kAccessibilityAutoclickMovementThreshold);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
@@ -838,6 +843,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickMovementThreshold,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickMovementThresholdFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateCaretHighlightFromPref,
@@ -896,6 +906,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickDelayFromPref();
   UpdateAutoclickEventTypeFromPref();
   UpdateAutoclickRevertToLeftClickFromPref();
+  UpdateAutoclickMovementThresholdFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
@@ -960,6 +971,15 @@ void AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref() {
 
   Shell::Get()->autoclick_controller()->set_revert_to_left_click(
       revert_to_left_click);
+}
+
+void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {
+  DCHECK(active_user_prefs_);
+  int movement_threshold = active_user_prefs_->GetInteger(
+      prefs::kAccessibilityAutoclickMovementThreshold);
+
+  Shell::Get()->autoclick_controller()->set_movement_threshold(
+      movement_threshold);
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {

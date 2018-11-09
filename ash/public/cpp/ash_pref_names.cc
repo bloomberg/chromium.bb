@@ -57,6 +57,10 @@ const char kAccessibilityAutoclickEventType[] =
 // another event type action, or whether it should stay as the other event type.
 const char kAccessibilityAutoclickRevertToLeftClick[] =
     "settings.a11y.autoclick_revert_to_left_click";
+// The default threshold of mouse movement, measured in DIP, that will initiate
+// a new autoclick.
+const char kAccessibilityAutoclickMovementThreshold[] =
+    "settings.a11y.autoclick_movement_threshold";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";

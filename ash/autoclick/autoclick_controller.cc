@@ -25,10 +25,6 @@ namespace ash {
 
 namespace {
 
-// The threshold of mouse movement measured in DIP that will
-// initiate a new autoclick.
-const int kMovementThreshold = 20;
-
 bool IsModifierKey(const ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
          key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
@@ -47,10 +43,12 @@ AutoclickController::AutoclickController()
     : enabled_(false),
       event_type_(kDefaultAutoclickEventType),
       revert_to_left_click_(true),
+      movement_threshold_(kDefaultAutoclickMovementThreshold),
       tap_down_target_(nullptr),
       delay_(GetDefaultAutoclickDelay()),
       mouse_event_flags_(ui::EF_NONE),
-      anchor_location_(-kMovementThreshold, -kMovementThreshold),
+      anchor_location_(-kDefaultAutoclickMovementThreshold,
+                       -kDefaultAutoclickMovementThreshold),
       autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()),
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
@@ -285,7 +283,6 @@ void AutoclickController::RecordUserAction(
       // the events logged.
       if (DragInProgress())
         return;
-      LOG(ERROR) << "Recording a drag&drop";
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
@@ -314,7 +311,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     // 2. prevent the autoclick from ever occurring when the mouse
     //    arrives at the target.
     gfx::Vector2d delta = point_in_screen - anchor_location_;
-    if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
+    if (delta.LengthSquared() >= movement_threshold_ * movement_threshold_) {
       anchor_location_ = point_in_screen;
       autoclick_timer_->Reset();
       autoclick_ring_handler_->StartGesture(delay_, anchor_location_,

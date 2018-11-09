@@ -47,6 +47,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityAutoclickDelayMs,
     ash::prefs::kAccessibilityAutoclickEventType,
     ash::prefs::kAccessibilityAutoclickRevertToLeftClick,
+    ash::prefs::kAccessibilityAutoclickMovementThreshold,
     ash::prefs::kAccessibilityCaretHighlightEnabled,
     ash::prefs::kAccessibilityCursorHighlightEnabled,
     ash::prefs::kAccessibilityFocusHighlightEnabled,
