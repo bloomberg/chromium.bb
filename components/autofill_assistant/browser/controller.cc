@@ -360,12 +360,10 @@ void Controller::OnNoRunnableScriptsAnymore() {
   if (script_tracker_->running())
     return;
 
-  // We're on a page that has no scripts or the scripts have reached a state
-  // from which they cannot recover through a DOM change. This should never
-  // happen with a consistent set of scripts; there should always be an explicit
-  // end.
+  // We're navigated to a page that has no scripts or the scripts have reached a
+  // state from which they cannot recover through a DOM change.
   GetUiController()->ShowStatusMessage(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
   GetUiController()->ShutdownGracefully();
   return;
 }
@@ -442,13 +440,18 @@ void Controller::DidStartNavigation(
   //  - server redirections, which might happen outside of a script, but
   //    because of a load triggered by a previously-running script.
   //  - same-document modifications, which might happen automatically
-  ///
-  // Everything else, such as clicking on a link, going back to a previous page,
-  // or refreshing the page is considered an end condition.
+  //  - javascript-initiated navigation or refresh
+  //  - navigation by clicking on a link
+  //  In the last two cases, autofill assistant might still give up later on if
+  //  it discovers that the new page has no scripts.
+  //
+  // Everything else, such as going back to a previous page, or refreshing the
+  // page is considered an end condition.
   if (navigation_handle->IsInMainFrame() &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !script_tracker_->running() && !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsSameDocument()) {
+      !navigation_handle->IsSameDocument() &&
+      !navigation_handle->IsRendererInitiated()) {
     OnGiveUp();
     return;
   }
