@@ -19,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -2079,5 +2080,73 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
   return result;
 }
 
+namespace {
+
+// Returns the coalesced child of the elements who's ids are founc in |id_list|.
+//
+// For example, given this document...
+//
+//      <div id="billing">Billing</div>
+//      <div>
+//        <div id="name">Name</div>
+//        <input id="field1" type="text" aria-labelledby="billing name"/>
+//     </div>
+//     <div>
+//       <div id="address">Address</div>
+//       <input id="field2" type="text" aria-labelledby="billing address"/>
+//     </div>
+//
+// The coalesced text by the id_list found in the aria-labelledby attribute
+// of the field1 input element would be "Billing Name" and for field2 it would
+// be "Billing Address".
+base::string16 CoalesceTextByIdList(const WebDocument& document,
+                                    const WebString& id_list) {
+  const base::string16 kSpace = base::ASCIIToUTF16(" ");
+
+  base::string16 text;
+  base::string16 id_list_utf16 = id_list.Utf16();
+  for (const auto& id : base::SplitStringPiece(
+           id_list_utf16, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
+    auto node = document.GetElementById(WebString(id.data(), id.length()));
+    if (!node.IsNull()) {
+      base::string16 child_text = FindChildText(node);
+      if (!child_text.empty()) {
+        if (!text.empty())
+          text.append(kSpace);
+        text.append(child_text);
+      }
+    }
+  }
+  base::TrimWhitespace(text, base::TRIM_ALL, &text);
+  return text;
+}
+
+}  // namespace
+
+base::string16 GetAriaLabel(const blink::WebDocument& document,
+                            const WebFormControlElement& element) {
+  static const base::NoDestructor<WebString> kAriaLabelledBy("aria-labelledby");
+  if (element.HasAttribute(*kAriaLabelledBy)) {
+    base::string16 text =
+        CoalesceTextByIdList(document, element.GetAttribute(*kAriaLabelledBy));
+    if (!text.empty())
+      return text;
+  }
+
+  static const base::NoDestructor<WebString> kAriaLabel("aria-label");
+  if (element.HasAttribute(*kAriaLabel))
+    return element.GetAttribute(*kAriaLabel).Utf16();
+
+  return base::string16();
+}
+
+base::string16 GetAriaDescription(const blink::WebDocument& document,
+                                  const WebFormControlElement& element) {
+  static const base::NoDestructor<WebString> kAriaDescribedBy(
+      "aria-describedby");
+  return CoalesceTextByIdList(document,
+                              element.GetAttribute(*kAriaDescribedBy));
+}
 }  // namespace form_util
 }  // namespace autofill
