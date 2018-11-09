@@ -1318,7 +1318,6 @@ void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
     }
   }
   quic::QuicSpdySession::CloseStream(stream_id);
-  OnClosedStream();
 }
 
 void QuicChromiumClientSession::SendRstStream(
@@ -1334,10 +1333,9 @@ void QuicChromiumClientSession::SendRstStream(
     }
   }
   quic::QuicSpdySession::SendRstStream(id, error, bytes_written);
-  OnClosedStream();
 }
 
-void QuicChromiumClientSession::OnClosedStream() {
+void QuicChromiumClientSession::OnCanCreateNewOutgoingStream() {
   if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams() &&
       !stream_requests_.empty() && crypto_stream_->encryption_established() &&
       !goaway_received() && !going_away_ && connection()->connected()) {
@@ -1468,7 +1466,9 @@ void QuicChromiumClientSession::OnGoAway(const quic::QuicGoAwayFrame& frame) {
 void QuicChromiumClientSession::OnRstStream(
     const quic::QuicRstStreamFrame& frame) {
   quic::QuicSession::OnRstStream(frame);
-  OnClosedStream();
+  // TODO(zhongyi): remove the call to OnCanCreateNewOutgoingStream when
+  // b/119278038 is fixed and the bugfix is merged to chromium.
+  OnCanCreateNewOutgoingStream();
 }
 
 void QuicChromiumClientSession::OnConnectionClosed(
