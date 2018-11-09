@@ -92,12 +92,6 @@ void FeedSchedulerBridge::OnFixedTimer(
   scheduler_host_->OnFixedTimer(std::move(callback));
 }
 
-void FeedSchedulerBridge::OnTaskReschedule(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& j_this) {
-  scheduler_host_->OnTaskReschedule();
-}
-
 void FeedSchedulerBridge::OnSuggestionConsumed(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_this) {

@@ -100,10 +100,6 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // is started for this trigger, |on_completion| is run immediately.
   void OnFixedTimer(base::OnceClosure on_completion);
 
-  // Called when the background task may need to be rescheduled, such as on OS
-  // upgrades that change the way tasks are stored.
-  void OnTaskReschedule();
-
   // Should be called when a suggestion is consumed. This is a signal the
   // scheduler users to track the kind of user, and optimize refresh frequency.
   void OnSuggestionConsumed();
