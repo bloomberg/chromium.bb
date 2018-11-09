@@ -21,8 +21,7 @@ namespace {
 class FillJsTest : public web::WebJsTest<web::WebTestWithWebState> {
  public:
   FillJsTest()
-      : web::WebJsTest<web::WebTestWithWebState>(
-            @[ @"chrome_bundle_all_frames" ]) {}
+      : web::WebJsTest<web::WebTestWithWebState>(@[ @"form_util_js" ]) {}
 };
 
 }  // namespace
