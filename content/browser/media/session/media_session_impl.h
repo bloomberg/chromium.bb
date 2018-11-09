@@ -289,8 +289,9 @@ class MediaSessionImpl : public MediaSession,
   // Notify all information that an observer needs to know when it's added.
   void NotifyAddedObserver(MediaSessionObserver* observer);
 
-  // Notifies observers about the state change of the media session.
-  void NotifyAboutStateChange();
+  // Notifies legacy (non-mojo) observers about the state change of the media
+  // session.
+  void NotifyLegacyObserversStateChange();
 
   // Internal method that should be used instead of setting audio_focus_state_.
   // It sets audio_focus_state_ and notifies observers about the state change.
@@ -300,7 +301,8 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT void FlushForTesting();
 
   // Notifies mojo observers that the MediaSessionInfo has changed.
-  void NotifyObserversInfoChanged();
+  void OnMediaSessionInfoChanged();
+  void NotifyMojoObserversMediaSessionInfoChanged();
 
   // Update the volume multiplier when ducking state changes.
   void UpdateVolumeMultiplier();
@@ -377,6 +379,9 @@ class MediaSessionImpl : public MediaSession,
 
   mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver>
       mojo_observers_;
+
+  // Timer used for debouncing MediaSessionInfoChanged events.
+  std::unique_ptr<base::OneShotTimer> info_changed_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };

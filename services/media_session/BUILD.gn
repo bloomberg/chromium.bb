@@ -47,8 +47,6 @@ source_set("tests") {
     "audio_focus_manager_unittest.cc",
     "media_controller_unittest.cc",
     "media_session_service_unittest.cc",
-    "mock_media_session.cc",
-    "mock_media_session.h",
   ]
 
   deps = [

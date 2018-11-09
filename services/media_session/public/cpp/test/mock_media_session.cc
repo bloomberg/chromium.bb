@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/media_session/mock_media_session.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 
 #include <utility>
 
