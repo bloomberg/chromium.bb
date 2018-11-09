@@ -112,9 +112,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // True if the response came from cache.
   bool was_fetched_via_cache = false;
 
-  // True if the response was delivered through a proxy.
-  bool was_fetched_via_proxy;
-
   // The proxy server used for this request, if any.
   net::ProxyServer proxy_server;
 

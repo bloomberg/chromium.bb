@@ -198,7 +198,10 @@ void ThreatDetailsCacheCollector::ReadResponse(
     pb_header->set_value(value);
   }
 
-  if (!current_load_->ResponseInfo()->was_fetched_via_proxy) {
+  bool was_fetched_via_proxy =
+      current_load_->ResponseInfo()->proxy_server.is_valid() &&
+      !current_load_->ResponseInfo()->proxy_server.is_direct();
+  if (!was_fetched_via_proxy) {
     pb_response->set_remote_ip(
         current_load_->ResponseInfo()->socket_address.ToString());
   }
