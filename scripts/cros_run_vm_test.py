@@ -102,8 +102,8 @@ class VMTest(object):
     if not self.build:
       return
 
-    cros_build_lib.RunCommand(['autoninja', '-C', self.build_dir, 'chrome',
-                               'chrome_sandbox', 'nacl_helper'])
+    cros_build_lib.RunCommand(['autoninja', '-C', self.build_dir,
+                               'chromiumos_preflight'])
 
   def _Deploy(self):
     """Deploy chrome."""
