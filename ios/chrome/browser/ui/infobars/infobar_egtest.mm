@@ -56,7 +56,7 @@ bool AddTestInfoBarToCurrentTabWithMessage(NSString* message) {
 // on the current tab.
 void VerifyTestInfoBarVisibleForCurrentTab(bool visible, NSString* message) {
   id<GREYMatcher> expected_visibility =
-      visible ? grey_sufficientlyVisible() : grey_notVisible();
+      visible ? grey_minimumVisiblePercent(1.0f) : grey_notVisible();
   NSString* condition_name =
       visible ? @"Waiting for infobar to show" : @"Waiting for infobar to hide";
 
@@ -220,6 +220,38 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   VerifyTestInfoBarVisibleForCurrentTab(true, secondInfoBarMessage);
   VerifyTestInfoBarVisibleForCurrentTab(false, firstInfoBarMessage);
   VerifyNumberOfInfobarsInManager(2);
+}
+
+// Tests that a taller Infobar layout is correct and the OK button is tappable.
+- (void)testInfobarTallerLayout {
+  web::test::SetUpFileBasedHttpServer();
+
+  // Open a new tab and navigate to the test page.
+  const GURL testURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // Infobar Message
+  NSString* firstInfoBarMessage =
+      @"This is a really long message that will cause this infobar height to "
+      @"increase since Confirm Infobar heights changes depending on its "
+      @"message.";
+
+  // Add a test infobar to the current tab. Verify that the infobar is present
+  // in the model and that the infobar view is visible on screen.
+  GREYAssert(AddTestInfoBarToCurrentTabWithMessage(firstInfoBarMessage),
+             @"Failed to add infobar to test tab.");
+  VerifyTestInfoBarVisibleForCurrentTab(true, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(1);
+
+  // Dismiss the Infobar.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"OK"),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  VerifyTestInfoBarVisibleForCurrentTab(false, firstInfoBarMessage);
+  VerifyNumberOfInfobarsInManager(0);
 }
 
 // Tests that adding an Infobar of lower height on top of a taller Infobar only

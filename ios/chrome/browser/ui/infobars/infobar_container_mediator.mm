@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 
-#include "ios/chrome/browser/infobars/infobar_container_delegate_ios.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
-#include "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -23,11 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarContainerMediator ()<InfobarContainerStateDelegate,
-                                       TabModelObserver,
+@interface InfobarContainerMediator ()<TabModelObserver,
                                        WebStateListObserving> {
-  // Bridge class to deliver container change notifications.
-  std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
   // A single infobar container handles all infobars in all tabs. It keeps
   // track of infobars for current tab (accessed via infobar helper of
   // the current tab).
@@ -61,9 +56,7 @@
     _tabModel = tabModel;
     _webStateList = _tabModel.webStateList;
 
-    _infoBarContainerDelegate.reset(new InfoBarContainerDelegateIOS(self));
-    _infoBarContainer.reset(
-        new InfoBarContainerIOS(_infoBarContainerDelegate.get(), _consumer));
+    _infoBarContainer.reset(new InfoBarContainerIOS(_consumer));
     infobars::InfoBarManager* infoBarManager = nullptr;
     if (_tabModel.currentTab) {
       DCHECK(_tabModel.currentTab.webState);
@@ -83,12 +76,6 @@
   [_tabModel removeObserver:self];
   _webStateList->RemoveObserver(_webStateListObserver.get());
   _webStateListObserver.reset();
-}
-
-#pragma mark - InfobarContainerStateDelegate
-
-- (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
-  [self.consumer updateLayoutAnimated:animated];
 }
 
 #pragma mark - TabModelObserver

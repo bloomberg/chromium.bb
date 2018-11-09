@@ -7,8 +7,6 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#import "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
-
 namespace infobars {
 class InfoBarManager;
 }
