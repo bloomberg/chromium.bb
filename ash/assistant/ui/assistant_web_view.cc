@@ -11,10 +11,8 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
-#include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/callback.h"
-#include "base/unguessable_token.h"
+#include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -28,12 +26,12 @@ namespace ash {
 
 namespace {
 
-// ContentViewMaskPainter -------------------------------------------------
+// ContentsMaskPainter ---------------------------------------------------------
 
-class ContentViewMaskPainter : public views::Painter {
+class ContentsMaskPainter : public views::Painter {
  public:
-  ContentViewMaskPainter() = default;
-  ~ContentViewMaskPainter() override = default;
+  ContentsMaskPainter() = default;
+  ~ContentsMaskPainter() override = default;
 
   // views::Painter:
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
@@ -56,7 +54,7 @@ class ContentViewMaskPainter : public views::Painter {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContentViewMaskPainter);
+  DISALLOW_COPY_AND_ASSIGN(ContentsMaskPainter);
 };
 
 }  // namespace
@@ -64,8 +62,7 @@ class ContentViewMaskPainter : public views::Painter {
 // AssistantWebView ------------------------------------------------------------
 
 AssistantWebView::AssistantWebView(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      web_contents_request_factory_(this) {
+    : assistant_controller_(assistant_controller), weak_factory_(this) {
   InitLayout();
 
   assistant_controller_->AddObserver(this);
@@ -73,7 +70,8 @@ AssistantWebView::AssistantWebView(AssistantController* assistant_controller)
 
 AssistantWebView::~AssistantWebView() {
   assistant_controller_->RemoveObserver(this);
-  ReleaseWebContents();
+
+  RemoveContents();
 }
 
 const char* AssistantWebView::GetClassName() const {
@@ -101,38 +99,19 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
   SchedulePaint();
 }
 
-void AssistantWebView::OnViewIsDeleting(views::View* view) {
-  DCHECK_EQ(content_view_, view);
-
-  // It's possible for |content_view_| to be deleted before AssistantWebView.
-  // When this happens, we need to perform clean up on |content_view_| before
-  // it is destroyed and clear references so that we don't try to perform
-  // clean up on the destroyed instance when destroying AssistantWebView.
-  content_view_->RemoveObserver(this);
-  content_view_ = nullptr;
-}
-
 void AssistantWebView::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& old_bounds,
                                              const gfx::Rect& new_bounds,
                                              ui::PropertyChangeReason reason) {
-  DCHECK_EQ(native_content_view_, window);
-
-  // The mask layer should always match the bounds of the native content view.
-  content_view_mask_->layer()->SetBounds(gfx::Rect(new_bounds.size()));
+  // The mask layer should always match the bounds of the contents' native view.
+  contents_mask_->layer()->SetBounds(gfx::Rect(new_bounds.size()));
 }
 
 void AssistantWebView::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(native_content_view_, window);
-
-  // It's possible for |native_content_view_| to be deleted before
-  // AssistantWebView. When this happens, we need to perform clean up on
-  // |native_content_view_| before it is destroyed and clear references so that
-  // we don't try to perform clean up on the destroyed instance when destroying
-  // AssistantWebView.
-  native_content_view_->RemoveObserver(this);
-  native_content_view_->layer()->SetMaskLayer(nullptr);
-  native_content_view_ = nullptr;
+  // It's possible for |window| to be deleted before AssistantWebView. When this
+  // happens, we need to perform clean up on |window| before it is destroyed.
+  window->RemoveObserver(this);
+  window->layer()->SetMaskLayer(nullptr);
 }
 
 void AssistantWebView::InitLayout() {
@@ -145,36 +124,33 @@ void AssistantWebView::InitLayout() {
   caption_bar_->SetButtonVisible(CaptionButtonId::kMinimize, false);
   AddChildView(caption_bar_);
 
-  // Content mask.
-  // This is used to enforce corner radius on the contents' layer.
-  content_view_mask_ = views::Painter::CreatePaintedLayer(
-      std::make_unique<ContentViewMaskPainter>());
-  content_view_mask_->layer()->SetFillsBoundsOpaquely(false);
+  // Contents mask.
+  // This is used to enforce corner radius on the contents' native view layer.
+  contents_mask_ = views::Painter::CreatePaintedLayer(
+      std::make_unique<ContentsMaskPainter>());
+  contents_mask_->layer()->SetFillsBoundsOpaquely(false);
 }
 
 bool AssistantWebView::OnCaptionButtonPressed(CaptionButtonId id) {
-  CaptionBarDelegate* delegate = assistant_controller_->ui_controller();
-
   // We need special handling of the back button. When possible, the back button
-  // should navigate backwards in the managed WebContents' history stack.
-  if (id == CaptionButtonId::kBack && web_contents_id_token_.has_value()) {
-    assistant_controller_->NavigateWebContentsBack(
-        web_contents_id_token_.value(),
-        base::BindOnce(
-            [](CaptionBarDelegate* delegate, bool navigated) {
-              // If the WebContents' did not navigate it is because we are
-              // already at the first entry in the history stack and we cannot
-              // navigate back any further. In this case, we give back control
-              // to our primary caption button delegate.
-              if (!navigated)
-                delegate->OnCaptionButtonPressed(CaptionButtonId::kBack);
-            },
-            base::Unretained(delegate)));
+  // should navigate backwards in the web contents' history stack.
+  if (id == CaptionButtonId::kBack && contents_) {
+    contents_->GoBack(base::BindOnce(
+        [](const base::WeakPtr<AssistantWebView>& assistant_web_view,
+           bool success) {
+          // If we can't navigate back in the web contents' history stack we
+          // defer back to our primary caption button delegate.
+          if (!success && assistant_web_view) {
+            assistant_web_view->assistant_controller_->ui_controller()
+                ->OnCaptionButtonPressed(CaptionButtonId::kBack);
+          }
+        },
+        weak_factory_.GetWeakPtr()));
     return true;
   }
 
   // For all other buttons we defer to our primary caption button delegate.
-  return delegate->OnCaptionButtonPressed(id);
+  return assistant_controller_->ui_controller()->OnCaptionButtonPressed(id);
 }
 
 void AssistantWebView::OnDeepLinkReceived(
@@ -183,86 +159,91 @@ void AssistantWebView::OnDeepLinkReceived(
   if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
-  ReleaseWebContents();
+  RemoveContents();
 
-  web_contents_id_token_ = base::UnguessableToken::Create();
+  assistant_controller_->GetNavigableContentsFactory(
+      mojo::MakeRequest(&contents_factory_));
 
-  gfx::Size preferred_size_dip =
+  const gfx::Size preferred_size =
       gfx::Size(kPreferredWidthDip,
                 kMaxHeightDip - caption_bar_->GetPreferredSize().height());
 
-  ash::mojom::ManagedWebContentsParamsPtr web_contents_params(
-      ash::mojom::ManagedWebContentsParams::New());
-  web_contents_params->url = GetWebUrl(type).value();
-  web_contents_params->min_size_dip = preferred_size_dip;
-  web_contents_params->max_size_dip = preferred_size_dip;
+  auto contents_params = content::mojom::NavigableContentsParams::New();
+  contents_params->enable_view_auto_resize = true;
+  contents_params->auto_resize_min_size = preferred_size;
+  contents_params->auto_resize_max_size = preferred_size;
+  contents_params->suppress_navigations = true;
 
-  assistant_controller_->ManageWebContents(
-      web_contents_id_token_.value(), std::move(web_contents_params),
-      base::BindOnce(&AssistantWebView::OnWebContentsReady,
-                     web_contents_request_factory_.GetWeakPtr()));
+  contents_ = std::make_unique<content::NavigableContents>(
+      contents_factory_.get(), std::move(contents_params));
+
+  // We observe |contents_| so that we can handle events from the underlying
+  // web contents.
+  contents_->AddObserver(this);
+
+  // Navigate to the url associated with the received deep link.
+  contents_->Navigate(assistant::util::GetWebUrl(type).value());
 }
 
-void AssistantWebView::OnWebContentsReady(
-    const base::Optional<base::UnguessableToken>& embed_token) {
-  // TODO(dmblack): In the event that rendering fails, we should show a useful
-  // message to the user (and perhaps close the UI).
-  if (!embed_token.has_value())
-    return;
-
-  // When web contents are rendered in process, the WebView associated with the
-  // returned |embed_token| is found in the AnswerCardContentsRegistry.
-  if (app_list::AnswerCardContentsRegistry::Get()) {
-    content_view_ = app_list::AnswerCardContentsRegistry::Get()->GetView(
-        embed_token.value());
-    content_view_->AddObserver(this);
-
-    // Cache a reference to the content's native view and observe it so that
-    // we can monitor changes to bounds and lifecycle.
-    native_content_view_ =
-        app_list::AnswerCardContentsRegistry::Get()->GetNativeView(
-            embed_token.value());
-    native_content_view_->AddObserver(this);
-
-    // Apply a mask layer to enforce corner radius. The mask bounds must always
-    // match the bounds of |native_content_view_|. We sync bounds prior to
-    // applying the mask to prevent a DCHECK failure in cc::Layer.
-    content_view_mask_->layer()->SetBounds(
-        gfx::Rect(native_content_view_->GetBoundsInScreen().size()));
-    native_content_view_->layer()->SetMaskLayer(content_view_mask_->layer());
-
-    AddChildView(content_view_);
-  }
-
-  // TODO(dmblack): Handle mash case.
+void AssistantWebView::DidAutoResizeView(const gfx::Size& new_size) {
+  contents_->GetView()->view()->SetPreferredSize(new_size);
 }
 
-void AssistantWebView::ReleaseWebContents() {
-  web_contents_request_factory_.InvalidateWeakPtrs();
+void AssistantWebView::DidStopLoading() {
+  AddChildView(contents_->GetView()->view());
 
-  if (!web_contents_id_token_.has_value())
+  gfx::NativeView native_view = contents_->GetView()->native_view();
+
+  // We apply a layer mask to the contents' native view to enforce our desired
+  // corner radius. We need to sync the bounds of mask layer with the bounds
+  // of the native view prior to application to prevent DCHECK failure.
+  contents_mask_->layer()->SetBounds(
+      gfx::Rect(native_view->GetBoundsInScreen().size()));
+  native_view->layer()->SetMaskLayer(contents_mask_->layer());
+
+  // We observe |native_view| to ensure we keep the mask layer bounds in sync
+  // with the native view layer's bounds across size changes.
+  native_view->AddObserver(this);
+}
+
+void AssistantWebView::DidSuppressNavigation(const GURL& url,
+                                             WindowOpenDisposition disposition,
+                                             bool from_user_gesture) {
+  if (!from_user_gesture)
     return;
 
-  if (content_view_) {
-    content_view_->RemoveObserver(this);
-    RemoveChildView(content_view_);
+  // We defer to |assistant_controller_| to tell us if we should allow
+  // navigation to continue or not as we, in some cases, intercept navigation
+  // to perform special handling for deep links, etc.
+  assistant_controller_->ShouldOpenUrlFromTab(
+      url, disposition,
+      base::BindOnce(
+          [](const base::WeakPtr<AssistantWebView>& assistant_web_view,
+             const GURL& url, bool should_navigate) {
+            // If the navigation attempt hasn't been specially handled we can
+            // allow the web contents to continue navigating.
+            if (should_navigate && assistant_web_view)
+              assistant_web_view->contents_->Navigate(url);
+          },
+          weak_factory_.GetWeakPtr(), url));
+}
 
-    // In Mash, |content_view_| was owned by the view hierarchy prior to its
-    // removal. Otherwise the view is owned by the WebContentsManager.
-    if (!content_view_->owned_by_client())
-      delete content_view_;
+void AssistantWebView::RemoveContents() {
+  if (!contents_)
+    return;
 
-    content_view_ = nullptr;
+  gfx::NativeView native_view = contents_->GetView()->native_view();
+  if (native_view) {
+    native_view->RemoveObserver(this);
+    native_view->layer()->SetMaskLayer(nullptr);
   }
 
-  if (native_content_view_) {
-    native_content_view_->RemoveObserver(this);
-    native_content_view_->layer()->SetMaskLayer(nullptr);
-    native_content_view_ = nullptr;
-  }
+  views::View* view = contents_->GetView()->view();
+  if (view)
+    RemoveChildView(view);
 
-  assistant_controller_->ReleaseWebContents(web_contents_id_token_.value());
-  web_contents_id_token_.reset();
+  contents_->RemoveObserver(this);
+  contents_.reset();
 }
 
 }  // namespace ash

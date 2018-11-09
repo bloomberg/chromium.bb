@@ -62,6 +62,11 @@ class TestNavigableContentsDelegate : public NavigableContentsDelegate {
       navigation_callback_.Run();
   }
 
+  void GoBack(
+      content::mojom::NavigableContents::GoBackCallback callback) override {
+    std::move(callback).Run(false /* success */);
+  }
+
   gfx::NativeView GetNativeView() override { return nullptr; }
 
  private:

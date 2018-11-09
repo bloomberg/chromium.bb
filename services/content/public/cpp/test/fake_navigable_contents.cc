@@ -36,6 +36,11 @@ void FakeNavigableContents::Navigate(const GURL& url,
   client_->DidStopLoading();
 }
 
+void FakeNavigableContents::GoBack(
+    mojom::NavigableContents::GoBackCallback callback) {
+  std::move(callback).Run(false /* success */);
+}
+
 void FakeNavigableContents::CreateView(bool in_service_process,
                                        CreateViewCallback callback) {
   auto token = base::UnguessableToken::Create();

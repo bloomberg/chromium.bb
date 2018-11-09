@@ -53,6 +53,11 @@ void NavigableContentsImpl::Navigate(const GURL& url,
   delegate_->Navigate(url, std::move(params));
 }
 
+void NavigableContentsImpl::GoBack(
+    mojom::NavigableContents::GoBackCallback callback) {
+  delegate_->GoBack(std::move(callback));
+}
+
 void NavigableContentsImpl::CreateView(bool in_service_process,
                                        CreateViewCallback callback) {
   DCHECK(native_content_view_);

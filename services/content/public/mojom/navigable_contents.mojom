@@ -26,6 +26,11 @@ interface NavigableContents {
   // Initiates a navigation to |url|.
   Navigate(url.mojom.Url url, NavigateParams params);
 
+  // Attempts to navigate the web contents back in its history stack. The
+  // supplied |callback| is run to indicate success/failure of the attempt. The
+  // navigation attempt will fail if the history stack is empty.
+  GoBack() => (bool success);
+
   // Creates a visual representation of the navigated contents, which is
   // maintained by the Content Service. Responds with a |embed_token| which can
   // be given to Mus in order to authorize embedding of that visual

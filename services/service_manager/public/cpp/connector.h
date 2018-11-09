@@ -110,6 +110,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
     BindInterface(target, Interface::Name_, std::move(pipe.handle1));
   }
   template <typename Interface>
+  void BindInterface(const Identity& target,
+                     mojo::InterfaceRequest<Interface> request) {
+    BindInterface(target, Interface::Name_, request.PassMessagePipe());
+  }
+  template <typename Interface>
   void BindInterface(const std::string& name,
                      mojo::InterfacePtr<Interface>* ptr) {
     return BindInterface(Identity(name, mojom::kInheritUserID), ptr);

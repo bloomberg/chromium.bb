@@ -52,6 +52,11 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   void Navigate(const GURL& url);
   void NavigateWithParams(const GURL& url, mojom::NavigateParamsPtr params);
 
+  // Attempts to navigate back in the web contents' history stack. The supplied
+  // |callback| is run to indicate success/failure of the navigation attempt.
+  // The navigation attempt will fail if the history stack is empty.
+  void GoBack(content::mojom::NavigableContents::GoBackCallback callback);
+
  private:
   // mojom::NavigableContentsClient:
   void DidFinishNavigation(

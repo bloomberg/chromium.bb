@@ -24,6 +24,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
+#include "services/content/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 
@@ -307,6 +309,28 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
   Shell::Get()->new_window_controller()->NewTabWithUrl(
       url, /*from_user_interaction=*/true);
   NotifyUrlOpened(url, from_server);
+}
+
+void AssistantController::GetNavigableContentsFactory(
+    content::mojom::NavigableContentsFactoryRequest request) {
+  const mojom::UserSession* user_session =
+      Shell::Get()->session_controller()->GetUserSession(0);
+
+  if (!user_session) {
+    LOG(WARNING) << "Unable to retrieve active user session.";
+    return;
+  }
+
+  const std::string& service_user_id = user_session->user_info->service_user_id;
+
+  if (service_user_id.empty()) {
+    LOG(ERROR) << "Unable to retrieve service user id.";
+    return;
+  }
+
+  Shell::Get()->connector()->BindInterface(
+      service_manager::Identity(content::mojom::kServiceName, service_user_id),
+      std::move(request));
 }
 
 void AssistantController::NotifyConstructed() {
