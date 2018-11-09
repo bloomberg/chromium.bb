@@ -385,6 +385,9 @@ cr.define('omnibox_output', function() {
               return OutputMatch.renderJsonProperty_(value);
             if (typeof value === 'boolean')
               return OutputMatch.renderBooleanProperty_(value);
+            const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
+            if (LINK_REGEX.test(value))
+              return OutputMatch.renderLinkProperty_(value);
             return OutputMatch.renderTextProperty_(value);
           })
           .forEach(cell => row.appendChild(cell));
@@ -433,6 +436,20 @@ cr.define('omnibox_output', function() {
       icon.className = propertyValue ? 'check-mark' : 'x-mark';
       icon.textContent = propertyValue;
       cell.appendChild(icon);
+      return cell;
+    }
+
+    /**
+     * @private
+     * @param {string} propertyValue
+     * @return {Element}
+     */
+    static renderLinkProperty_(propertyValue) {
+      let cell = document.createElement('td');
+      let link = document.createElement('a');
+      link.textContent = propertyValue;
+      link.href = propertyValue;
+      cell.appendChild(link);
       return cell;
     }
 
