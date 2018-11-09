@@ -73,6 +73,7 @@ class TabIcon : public views::View, public gfx::AnimationDelegate {
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Paints the attention indicator and |favicon_| at the given location.
   void PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
