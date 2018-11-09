@@ -25,6 +25,7 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -116,8 +117,11 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   MockOAuth2MintTokenFlow* mock_;
 };
 
-class MockDriveFs : public mojom::DriveFsInterceptorForTesting {
+class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
+                    public mojom::SearchQuery {
  public:
+  MockDriveFs() : search_binding_(this) {}
+
   DriveFs* GetForwardingInterface() override {
     NOTREACHED();
     return nullptr;
@@ -136,6 +140,28 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting {
       FetchChangeLogImpl,
       void(const std::vector<std::pair<int64_t, std::string>>& options));
   MOCK_METHOD0(FetchAllChangeLogs, void());
+
+  MOCK_CONST_METHOD1(OnStartSearchQuery, void(const mojom::QueryParameters&));
+  void StartSearchQuery(mojom::SearchQueryRequest query,
+                        mojom::QueryParametersPtr query_params) override {
+    if (search_binding_.is_bound())
+      search_binding_.Unbind();
+    OnStartSearchQuery(*query_params);
+    search_binding_.Bind(std::move(query));
+  }
+
+  MOCK_METHOD1(OnGetNextPage,
+               drive::FileError(
+                   base::Optional<std::vector<mojom::QueryItemPtr>>* items));
+
+  void GetNextPage(GetNextPageCallback callback) override {
+    base::Optional<std::vector<mojom::QueryItemPtr>> items;
+    auto error = OnGetNextPage(&items);
+    std::move(callback).Run(error, std::move(items));
+  }
+
+ private:
+  mojo::Binding<mojom::SearchQuery> search_binding_;
 };
 
 class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
@@ -442,6 +468,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
+  net::test::MockNetworkChangeNotifier network_;
 
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
   MockDriveFs mock_drivefs_;
@@ -1119,6 +1146,153 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
+}
+
+ACTION_P(PopulateSearch, count) {
+  if (count < 0)
+    return;
+  std::vector<mojom::QueryItemPtr> items;
+  for (int i = 0; i < count; ++i) {
+    items.emplace_back(mojom::QueryItem::New());
+    items.back()->metadata = mojom::FileMetadata::New();
+    items.back()->metadata->capabilities = mojom::Capabilities::New();
+  }
+  *arg0 = std::move(items);
+}
+
+MATCHER_P5(MatchQuery, source, text, title, shared, offline, "") {
+  if (arg.query_source != source)
+    return false;
+  if (text != nullptr) {
+    if (!arg.text_content || *arg.text_content != base::StringPiece(text))
+      return false;
+  } else {
+    if (arg.text_content)
+      return false;
+  }
+  if (title != nullptr) {
+    if (!arg.title || *arg.title != base::StringPiece(title))
+      return false;
+  } else {
+    if (arg.title)
+      return false;
+  }
+  return arg.shared_with_me == shared && arg.available_offline == offline;
+};
+
+TEST_F(DriveFsHostTest, Search) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kLocalOnly;
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kLocalOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, Search_Fail) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(testing::Return(drive::FileError::FILE_ERROR_ACCESS_DENIED));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_ACCESS_DENIED, err);
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, Search_OnlineToOffline) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  network_.SetConnectionType(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+
+  EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_));
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kLocalOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, Search_OnlineToOfflineFallback) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kCloudOnly,
+                             "foobar", nullptr, false, false)));
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kLocalOnly,
+                             nullptr, "foobar", false, false)));
+
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(testing::Return(drive::FileError::FILE_ERROR_NO_CONNECTION))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->text_content = "foobar";
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
 }
 
 }  // namespace

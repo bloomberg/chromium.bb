@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "net/base/network_change_notifier.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -200,7 +201,8 @@ class DriveFsHost::MountState
         mojo_connection_delegate_(
             host_->delegate_->CreateMojoConnectionDelegate()),
         pending_token_(base::UnguessableToken::Create()),
-        binding_(this) {
+        binding_(this),
+        weak_ptr_factory_(this) {
     host_->disk_mount_manager_->AddObserver(this);
     source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
     std::string datadir_option =
@@ -219,9 +221,8 @@ class DriveFsHost::MountState
 
     // If unconsumed, the registration is cleaned up when |this| is destructed.
     PendingConnectionManager::Get().ExpectOpenIpcChannel(
-        pending_token_,
-        base::BindOnce(&DriveFsHost::MountState::AcceptMojoConnection,
-                       base::Unretained(this)));
+        pending_token_, base::BindOnce(&MountState::AcceptMojoConnection,
+                                       base::Unretained(this)));
 
     host_->disk_mount_manager_->MountPath(
         source_path_, "",
@@ -266,6 +267,27 @@ class DriveFsHost::MountState
     DCHECK(pending_token_);
     pending_token_ = {};
     mojo_connection_delegate_->AcceptMojoConnection(std::move(handle));
+  }
+
+  mojom::QueryParameters::QuerySource SearchDriveFs(
+      mojom::QueryParametersPtr query,
+      mojom::SearchQuery::GetNextPageCallback callback) {
+    drivefs::mojom::SearchQueryPtr search;
+    drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
+    if (net::NetworkChangeNotifier::IsOffline() &&
+        source != drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
+      // No point trying cloud query if we know we are offline.
+      source = drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
+      OnSearchDriveFs(std::move(search), std::move(query), std::move(callback),
+                      drive::FILE_ERROR_NO_CONNECTION, {});
+    } else {
+      drivefs_->StartSearchQuery(mojo::MakeRequest(&search), query.Clone());
+      auto* raw_search = search.get();
+      raw_search->GetNextPage(base::BindOnce(
+          &MountState::OnSearchDriveFs, weak_ptr_factory_.GetWeakPtr(),
+          std::move(search), std::move(query), std::move(callback)));
+    }
+    return source;
   }
 
  private:
@@ -428,6 +450,30 @@ class DriveFsHost::MountState
 
   void OnNotificationTimerFired() override { drivefs_->FetchAllChangeLogs(); }
 
+  void OnSearchDriveFs(
+      drivefs::mojom::SearchQueryPtr search,
+      drivefs::mojom::QueryParametersPtr query,
+      mojom::SearchQuery::GetNextPageCallback callback,
+      drive::FileError error,
+      base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+    if (error == drive::FILE_ERROR_NO_CONNECTION &&
+        query->query_source !=
+            drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
+      // Retry with offline query.
+      query->query_source =
+          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
+      if (query->text_content) {
+        // Full-text searches not supported offline.
+        std::swap(query->text_content, query->title);
+        query->text_content.reset();
+      }
+      SearchDriveFs(std::move(query), std::move(callback));
+      return;
+    }
+
+    std::move(callback).Run(error, std::move(items));
+  }
+
   // Owns |this|.
   DriveFsHost* const host_;
 
@@ -451,6 +497,8 @@ class DriveFsHost::MountState
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
   bool token_fetch_attempted_ = false;
+
+  base::WeakPtrFactory<MountState> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
@@ -523,6 +571,12 @@ mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
     return nullptr;
   }
   return mount_state_->GetDriveFsInterface();
+}
+
+mojom::QueryParameters::QuerySource DriveFsHost::PerformSearch(
+    mojom::QueryParametersPtr query,
+    mojom::SearchQuery::GetNextPageCallback callback) {
+  return mount_state_->SearchDriveFs(std::move(query), std::move(callback));
 }
 
 }  // namespace drivefs
