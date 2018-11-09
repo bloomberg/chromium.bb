@@ -124,6 +124,7 @@ class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
   retry_count = 0
+  retried_tests = []
 
   def __init__(self, *args, **kwargs):
     try:
@@ -134,6 +135,7 @@ class ChromeDriver(object):
       else:
         if ChromeDriver.retry_count < MAX_RETRY_COUNT:
           ChromeDriver.retry_count = ChromeDriver.retry_count + 1
+          ChromeDriver.retried_tests.append(kwargs.get('test_name'))
           self._InternalInit(*args, **kwargs)
         else:
           raise
