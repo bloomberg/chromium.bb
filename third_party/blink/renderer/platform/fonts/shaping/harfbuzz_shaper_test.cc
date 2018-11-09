@@ -517,9 +517,6 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
-
   // Shape each run and merge them using CopyRange. Bounds() should match.
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
   scoped_refptr<ShapeResult> result2 =
@@ -549,8 +546,8 @@ TEST_P(ShapeStringTest, MissingGlyph) {
   String string(GetParam());
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
-  EXPECT_EQ(0u, result->StartIndexForResult());
-  EXPECT_EQ(string.length(), result->EndIndexForResult());
+  EXPECT_EQ(0u, result->StartIndex());
+  EXPECT_EQ(string.length(), result->EndIndex());
 }
 
 // Test splitting runs by kMaxCharacterIndex using a simple string that has code
@@ -649,8 +646,8 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
   const unsigned length = base::size(string);
   HarfBuzzShaper shaper(String(string, length));
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
-  EXPECT_EQ(0u, result->StartIndexForResult());
-  EXPECT_EQ(length, result->EndIndexForResult());
+  EXPECT_EQ(0u, result->StartIndex());
+  EXPECT_EQ(length, result->EndIndex());
 #if DCHECK_IS_ON()
   result->CheckConsistency();
 #endif
@@ -1115,14 +1112,14 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
   scoped_refptr<ShapeResult> result1 = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(0, test_data.break_point, result1.get());
   EXPECT_EQ(test_data.break_point, result1->NumCharacters());
-  EXPECT_EQ(0u, result1->StartIndexForResult());
-  EXPECT_EQ(test_data.break_point, result1->EndIndexForResult());
+  EXPECT_EQ(0u, result1->StartIndex());
+  EXPECT_EQ(test_data.break_point, result1->EndIndex());
 
   scoped_refptr<ShapeResult> result2 = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(test_data.break_point, string.length(), result2.get());
   EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
-  EXPECT_EQ(test_data.break_point, result2->StartIndexForResult());
-  EXPECT_EQ(string.length(), result2->EndIndexForResult());
+  EXPECT_EQ(test_data.break_point, result2->StartIndex());
+  EXPECT_EQ(string.length(), result2->EndIndex());
 
   // Combine them.
   scoped_refptr<ShapeResult> composite_result =
@@ -1310,8 +1307,8 @@ TEST_F(HarfBuzzShaperTest, SubRange) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> sub_range = result->SubRange(4, 7);
-  DCHECK_EQ(4u, sub_range->StartIndexForResult());
-  DCHECK_EQ(7u, sub_range->EndIndexForResult());
+  DCHECK_EQ(4u, sub_range->StartIndex());
+  DCHECK_EQ(7u, sub_range->EndIndex());
   DCHECK_EQ(3u, sub_range->NumCharacters());
   DCHECK_EQ(result->Direction(), sub_range->Direction());
 }
@@ -1515,8 +1512,8 @@ TEST_P(ShapeParameterTest, MAYBE_SafeToBreakMissingRun) {
   result->CheckConsistency();
 #endif
 
-  EXPECT_EQ(2u, result->StartIndexForResult());
-  EXPECT_EQ(10u, result->EndIndexForResult());
+  EXPECT_EQ(2u, result->StartIndex());
+  EXPECT_EQ(10u, result->EndIndex());
 
   EXPECT_EQ(2u, result->NextSafeToBreakOffset(2));
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));

@@ -159,8 +159,15 @@ void ShapeResultView::CreateViewsForResult(const ShapeResult* other,
       }
 
       // Adjust start_index for runs to be continuous.
-      unsigned part_start_index = start_index_ + num_characters_;
-      unsigned part_offset = adjusted_start;
+      unsigned part_start_index;
+      unsigned part_offset;
+      if (!run->Rtl()) {  // Left-to-right
+        part_start_index = start_index_ + num_characters_;
+        part_offset = adjusted_start;
+      } else {  // Right-to-left
+        part_start_index = run->start_index_ + adjusted_start;
+        part_offset = adjusted_start;
+      }
 
       parts_.push_back(std::make_unique<RunInfoPart>(
           run, range, part_start_index, part_offset, part_characters,
@@ -183,6 +190,26 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(const Segment* segments,
   return base::AdoptRef(out);
 }
 
+scoped_refptr<ShapeResultView> ShapeResultView::Create(
+    const ShapeResult* result,
+    unsigned start_index,
+    unsigned end_index) {
+  Segment segment = {result, start_index, end_index};
+  return Create(&segment, 1);
+}
+
+scoped_refptr<ShapeResultView> ShapeResultView::Create(
+    const ShapeResult* result) {
+  // This specialization is an optimization to allow the bounding box to be
+  // re-used.
+  ShapeResultView* out = new ShapeResultView(result);
+  out->char_index_offset_ = out->Rtl() ? 0 : result->StartIndex();
+  out->CreateViewsForResult(result, 0, std::numeric_limits<unsigned>::max());
+  out->has_vertical_offsets_ = result->has_vertical_offsets_;
+  out->glyph_bounding_box_ = result->glyph_bounding_box_;
+  return base::AdoptRef(out);
+}
+
 void ShapeResultView::AddSegments(const Segment* segments,
                                   size_t segment_count) {
   // This method assumes that no parts have been added yet.
@@ -192,12 +219,15 @@ void ShapeResultView::AddSegments(const Segment* segments,
   // over segments back-to-front for RTL.
   DCHECK_GT(segment_count, 0u);
   unsigned last_segment_index = segment_count - 1;
-  float min_y = 0, max_height = 0;
 
   // Compute start index offset for the overall run. This is added to the start
   // index of each glyph to ensure consistency with ShapeResult::SubRange
-  char_index_offset_ = std::max(segments[0].result->StartIndexForResult(),
-                                segments[0].start_index);
+  if (!Rtl()) {  // Left-to-right
+    char_index_offset_ =
+        std::max(segments[0].result->StartIndex(), segments[0].start_index);
+  } else {  // Right to left
+    char_index_offset_ = 0;
+  }
 
   for (unsigned i = 0; i < segment_count; i++) {
     const Segment& segment = segments[Rtl() ? last_segment_index - i : i];
@@ -205,18 +235,36 @@ void ShapeResultView::AddSegments(const Segment* segments,
     CreateViewsForResult(segment.result, segment.start_index,
                          segment.end_index);
     has_vertical_offsets_ |= segment.result->has_vertical_offsets_;
-
-    const FloatRect& bounds = segment.result->glyph_bounding_box_;
-    min_y = std::min(min_y, bounds.Y());
-    max_height = std::max(max_height, bounds.Height());
   }
 
-  // TODO(layout-dev): Reuse left/right when possible, perhaps by reusing logic
-  // in ShapeResult::CopyRange.
-  float left = LineLeftBounds();
-  float right = LineRightBounds();
-  FloatRect adjusted_box(left, min_y, std::max(right - left, 0.0f), max_height);
-  glyph_bounding_box_.UniteIfNonZero(adjusted_box);
+  float origin = 0;
+  for (const auto& part : parts_) {
+    if (part->IsHorizontal())
+      ComputeBoundsForPart<true>(*part, origin);
+    else
+      ComputeBoundsForPart<false>(*part, origin);
+    origin += part->width_;
+  }
+}
+
+template <bool is_horizontal_run>
+void ShapeResultView::ComputeBoundsForPart(const RunInfoPart& part,
+                                           float origin) {
+  GlyphBoundsAccumulator bounds(origin);
+  const auto& run = part.run_;
+  const SimpleFontData* font_data = run->font_data_.get();
+  for (const auto& glyph_data : part) {
+    FloatRect glyph_bounds = glyph_data.HasValidGlyphBounds()
+                                 ? FloatRect(glyph_data.GlyphBoundsBefore(), 0,
+                                             glyph_data.GlyphBoundsAfter(), 0)
+                                 : font_data->BoundsForGlyph(glyph_data.glyph);
+
+    bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
+    bounds.origin += glyph_data.advance;
+  }
+  if (!is_horizontal_run)
+    bounds.ConvertVerticalRunToLogical(font_data->GetFontMetrics());
+  glyph_bounding_box_.Unite(bounds.bounds);
 }
 
 unsigned ShapeResultView::ComputeStartIndex() const {
@@ -264,63 +312,23 @@ void ShapeResultView::GetRunFontData(
   }
 }
 
-// Returns the left of the glyph bounding box of the left most character.
-float ShapeResultView::LineLeftBounds() const {
-  DCHECK(!parts_.IsEmpty());
-  const auto& part = *parts_.front();
-  const auto& run = *part.run_;
-  const bool is_horizontal_run = run.IsHorizontal();
-  const SimpleFontData& font_data = *run.font_data_;
-  DCHECK_GT(part.NumGlyphs(), 0u);
-  const unsigned character_index = part.GlyphAt(0).character_index;
-  GlyphBoundsAccumulator bounds(0.f);
-  for (const auto& glyph : part) {
-    if (character_index != glyph.character_index)
-      break;
-    bounds.Unite(is_horizontal_run, glyph,
-                 font_data.BoundsForGlyph(glyph.glyph));
-    bounds.origin += glyph.advance;
+void ShapeResultView::FallbackFonts(
+    HashSet<const SimpleFontData*>* fallback) const {
+  DCHECK(fallback);
+  DCHECK(primary_font_);
+  for (const auto& part : parts_) {
+    if (part->run_->font_data_ && part->run_->font_data_ != primary_font_) {
+      fallback->insert(part->run_->font_data_.get());
+    }
   }
-  if (UNLIKELY(!is_horizontal_run))
-    bounds.ConvertVerticalRunToLogical(font_data.GetFontMetrics());
-  return bounds.bounds.X();
-}
-
-// Returns the right of the glyph bounding box of the right most character.
-float ShapeResultView::LineRightBounds() const {
-  DCHECK(!parts_.IsEmpty());
-  const auto& part = *parts_.back();
-  const auto& run = *part.run_;
-  const bool is_horizontal_run = run.IsHorizontal();
-  const SimpleFontData& font_data = *run.font_data_;
-  DCHECK_GT(part.NumGlyphs(), 0u);
-  const unsigned character_index =
-      part.GlyphAt(part.NumGlyphs() - 1).character_index;
-  GlyphBoundsAccumulator bounds(width_);
-  for (const auto& glyph : base::Reversed(run.glyph_data_)) {
-    if (character_index != glyph.character_index)
-      break;
-    bounds.origin -= glyph.advance;
-    bounds.Unite(is_horizontal_run, glyph,
-                 font_data.BoundsForGlyph(glyph.glyph));
-  }
-  // If the last character has no ink (e.g., space character), assume the
-  // character before will not overflow more than the width of the space.
-  if (UNLIKELY(bounds.bounds.IsEmpty()))
-    return width_;
-  if (UNLIKELY(!is_horizontal_run))
-    bounds.ConvertVerticalRunToLogical(font_data.GetFontMetrics());
-  return bounds.bounds.MaxX();
 }
 
 float ShapeResultView::ForEachGlyph(float initial_advance,
                                     GlyphCallback glyph_callback,
                                     void* context) const {
   auto total_advance = initial_advance;
-
   for (const auto& part : parts_) {
     const auto& run = part->run_;
-    // int part_offset = part->StartIndexOffset();
     bool is_horizontal = HB_DIRECTION_IS_HORIZONTAL(run->direction_);
     const SimpleFontData* font_data = run->font_data_.get();
     for (const auto& glyph_data : *part) {

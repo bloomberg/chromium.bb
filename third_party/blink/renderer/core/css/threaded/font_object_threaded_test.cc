@@ -130,16 +130,16 @@ TSAN_TEST(FontObjectThreadedTest, WordShaperTest) {
     CachingWordShapeIterator iter(&cache, text_run, &font);
 
     ASSERT_TRUE(iter.Next(&result));
-    EXPECT_EQ(0u, result->StartIndexForResult());
-    EXPECT_EQ(3u, result->EndIndexForResult());
+    EXPECT_EQ(0u, result->StartIndex());
+    EXPECT_EQ(3u, result->EndIndex());
 
     ASSERT_TRUE(iter.Next(&result));
-    EXPECT_EQ(0u, result->StartIndexForResult());
-    EXPECT_EQ(1u, result->EndIndexForResult());
+    EXPECT_EQ(0u, result->StartIndex());
+    EXPECT_EQ(1u, result->EndIndex());
 
     ASSERT_TRUE(iter.Next(&result));
-    EXPECT_EQ(0u, result->StartIndexForResult());
-    EXPECT_EQ(4u, result->EndIndexForResult());
+    EXPECT_EQ(0u, result->StartIndex());
+    EXPECT_EQ(4u, result->EndIndex());
 
     ASSERT_FALSE(iter.Next(&result));
   });

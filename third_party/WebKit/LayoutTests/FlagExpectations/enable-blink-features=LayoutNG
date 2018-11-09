@@ -29,6 +29,9 @@ crbug.com/873957 http/tests/devtools/network/network-cookies-pane.js [ Failure ]
 
 # rightsizing-grid.html is truly flaky, show flakiness on reload
 
+# Needs rebaselining.
+crbug.com/900015 fast/table/dynamic-caption-add-before-child.xhtml [ Pass Failure ]
+
 # Features that do not have active plans to support or turn on.
 crbug.com/591099 fast/css3-text/css3-text-indent/text-indent-out-of-flow-each-line-hanging.html [ Skip ]
 crbug.com/591099 fast/css3-text/css3-text-justify/text-justify-distribute.html [ Skip ]

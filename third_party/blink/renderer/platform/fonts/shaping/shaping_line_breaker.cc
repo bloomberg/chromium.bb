@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
@@ -215,14 +216,14 @@ inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direct
 //   If we further assume that the font kerns with space then even though it's a
 //   valid break opportunity reshaping is required as the combined width of the
 //   two segments "Line " and "breaking" may be different from "Line breaking".
-scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
+scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
     unsigned options,
     ShapingLineBreaker::Result* result_out) {
   DCHECK_GE(available_space, LayoutUnit(0));
-  unsigned range_start = result_->StartIndexForResult();
-  unsigned range_end = result_->EndIndexForResult();
+  unsigned range_start = result_->StartIndex();
+  unsigned range_end = result_->EndIndex();
   DCHECK_GE(start, range_start);
   DCHECK_LT(start, range_end);
   result_out->is_hyphenated = false;
@@ -287,7 +288,8 @@ scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
     if (first_safe >= break_opportunity.offset) {
       // There is no safe-to-break, reshape the whole range.
       result_out->break_offset = break_opportunity.offset;
-      return Shape(direction, start, break_opportunity.offset);
+      return ShapeResultView::Create(
+          Shape(direction, start, break_opportunity.offset).get());
     }
     LayoutUnit original_width = FlipRtl(
         SnapEnd(result_->CachedPositionForOffset(first_safe - range_start),
@@ -354,14 +356,16 @@ scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
 
   // Create shape results for the line by copying from the re-shaped result (if
   // reshaping was needed) and the original shape results.
-  scoped_refptr<ShapeResult> line_result = ShapeResult::Create(font_, 0, direction);
+  ShapeResultView::Segment segments[3];
   unsigned max_length = std::numeric_limits<unsigned>::max();
+  unsigned count = 0;
   if (line_start_result)
-    line_start_result->CopyRange(0, max_length, line_result.get());
+    segments[count++] = {line_start_result.get(), 0, max_length};
   if (last_safe > first_safe)
-    result_->CopyRange(first_safe, last_safe, line_result.get());
+    segments[count++] = {result_.get(), first_safe, last_safe};
   if (line_end_result)
-    line_end_result->CopyRange(last_safe, max_length, line_result.get());
+    segments[count++] = {line_end_result.get(), last_safe, max_length};
+  auto line_result = ShapeResultView::Create(&segments[0], count);
 
   DCHECK_GT(break_opportunity.offset, start);
   DCHECK_LE(break_opportunity.offset, range_end);
@@ -376,37 +380,40 @@ scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
 
 // Shape from the specified offset to the end of the ShapeResult.
 // If |start| is safe-to-break, this copies the subset of the result.
-scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeToEnd(
+scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeToEnd(
     unsigned start,
     unsigned first_safe,
     unsigned range_start,
     unsigned range_end) {
   DCHECK(result_);
-  DCHECK_EQ(range_start, result_->StartIndexForResult());
-  DCHECK_EQ(range_end, result_->EndIndexForResult());
+  DCHECK_EQ(range_start, result_->StartIndex());
+  DCHECK_EQ(range_end, result_->EndIndex());
   DCHECK_GE(start, range_start);
   DCHECK_LT(start, range_end);
   DCHECK_GE(first_safe, start);
 
   // If |start| is at the start of the range the entire result object may be
-  // reused, which avoids creating an extra copy an the sub-range logic.
+  // reused, which avoids the sub-range logic and bounds computation.
   if (start == range_start)
-    return result_;
+    return ShapeResultView::Create(result_.get());
 
   // If |start| is safe-to-break, no reshape is needed.
   if (start == first_safe)
-    return result_->SubRange(start, range_end);
+    return ShapeResultView::Create(result_.get(), start, range_end);
 
   // If no safe-to-break offset is found in range, reshape the entire range.
   TextDirection direction = result_->Direction();
-  if (first_safe >= range_end)
-    return Shape(direction, start, range_end);
+  if (first_safe >= range_end) {
+    scoped_refptr<ShapeResult> line_result = Shape(direction, start, range_end);
+    return ShapeResultView::Create(line_result.get());
+  }
 
   // Otherwise reshape to |first_safe|, then copy the rest.
-  scoped_refptr<ShapeResult> line_result = Shape(direction, start, first_safe);
-  result_->CopyRange(first_safe, range_end, line_result.get());
-  DCHECK_EQ(range_end - start, line_result->NumCharacters());
-  return line_result;
+  scoped_refptr<ShapeResult> line_start = Shape(direction, start, first_safe);
+  ShapeResultView::Segment segments[2] = {
+      {line_start.get(), 0, std::numeric_limits<unsigned>::max()},
+      {result_.get(), first_safe, range_end}};
+  return ShapeResultView::Create(&segments[0], 2);
 }
 
 }  // namespace blink

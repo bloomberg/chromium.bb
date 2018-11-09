@@ -49,12 +49,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
-          "rect": [10, 258, 262, 19],
+          "rect": [10, 258, 261, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
-          "rect": [10, 158, 246, 19],
+          "rect": [10, 158, 245, 19],
           "reason": "geometry"
         },
         {
@@ -74,7 +74,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
-          "rect": [10, 138, 235, 19],
+          "rect": [10, 138, 234, 19],
           "reason": "geometry"
         },
         {

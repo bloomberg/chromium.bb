@@ -15,7 +15,7 @@
 namespace blink {
 
 class LayoutObject;
-class ShapeResult;
+class ShapeResultView;
 struct NGInlineItemResult;
 
 class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
@@ -37,7 +37,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
                const String& text,
                scoped_refptr<const ComputedStyle>,
                bool is_ellipsis_style,
-               scoped_refptr<const ShapeResult>);
+               scoped_refptr<const ShapeResultView>);
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();
@@ -48,7 +48,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   unsigned item_index_;
   unsigned start_offset_;
   unsigned end_offset_;
-  scoped_refptr<const ShapeResult> shape_result_;
+  scoped_refptr<const ShapeResultView> shape_result_;
 
   NGPhysicalTextFragment::NGTextType text_type_ =
       NGPhysicalTextFragment::kNormalText;

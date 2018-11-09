@@ -18,7 +18,7 @@ namespace blink {
 class LayoutObject;
 class NGInlineItem;
 struct NGInlineItemResult;
-class ShapeResult;
+class ShapeResultView;
 
 // Fragments that require the layout position/size of ancestor are packed in
 // this struct.
@@ -85,7 +85,7 @@ struct NGInlineBoxState {
   void EnsureTextMetrics(const ComputedStyle&, FontBaseline);
   void ResetTextMetrics();
 
-  void AccumulateUsedFonts(const ShapeResult*, FontBaseline);
+  void AccumulateUsedFonts(const ShapeResultView*, FontBaseline);
 
   // 'text-top' offset for 'vertical-align'.
   LayoutUnit TextTop(FontBaseline baseline_type) const;

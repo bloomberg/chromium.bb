@@ -308,8 +308,7 @@ TEST_F(ShapeResultViewTest, LatinCompositeView) {
   };
   auto composite_view = ShapeResultView::Create(&segments[0], 4);
 
-  EXPECT_EQ(composite_view->StartIndex(),
-            composite_copy->StartIndexForResult());
+  EXPECT_EQ(composite_view->StartIndex(), composite_copy->StartIndex());
   EXPECT_EQ(composite_view->NumCharacters(), reference_result->NumCharacters());
   EXPECT_EQ(composite_view->NumGlyphs(), reference_result->NumGlyphs());
 

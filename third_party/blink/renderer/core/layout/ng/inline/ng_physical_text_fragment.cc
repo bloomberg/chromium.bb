@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -55,7 +56,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
     NGPhysicalSize size,
     NGLineOrientation line_orientation,
     NGTextEndEffect end_effect,
-    scoped_refptr<const ShapeResult> shape_result)
+    scoped_refptr<const ShapeResultView> shape_result)
     : NGPhysicalFragment(layout_object,
                          style,
                          style_variant,
@@ -116,8 +117,11 @@ LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
 
   offset -= start_offset_;
   if (shape_result_) {
-    return round(shape_result_->CaretPositionForOffset(offset, Text(),
-                                                       adjust_mid_cluster));
+    // TODO(layout-dev): Move caret position out of ShapeResult and into a
+    // separate support class that can take a ShapeResult or ShapeResultView.
+    // Allows for better code separation and avoids the extra copy below.
+    return round(shape_result_->CreateShapeResult()->CaretPositionForOffset(
+        offset, Text(), adjust_mid_cluster));
   }
 
   // This fragment is a flow control because otherwise ShapeResult exists.
@@ -232,15 +236,19 @@ scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
   DCHECK_GE(new_start_offset, StartOffset());
   DCHECK_GT(new_end_offset, new_start_offset);
   DCHECK_LE(new_end_offset, EndOffset());
+  // TODO(layout-dev): Add sub-range version of CreateShapeResult to avoid
+  // this double copy.
   scoped_refptr<ShapeResult> new_shape_result =
-      shape_result_->SubRange(new_start_offset, new_end_offset);
+      shape_result_->CreateShapeResult()->SubRange(new_start_offset,
+                                                   new_end_offset);
   LayoutUnit new_inline_size = new_shape_result->SnappedWidth();
   return base::AdoptRef(new NGPhysicalTextFragment(
       layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
       TextType(), text_, new_start_offset, new_end_offset,
       IsHorizontal() ? NGPhysicalSize{new_inline_size, size_.height}
                      : NGPhysicalSize{size_.width, new_inline_size},
-      LineOrientation(), EndEffect(), std::move(new_shape_result)));
+      LineOrientation(), EndEffect(),
+      ShapeResultView::Create(new_shape_result.get())));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
@@ -248,8 +256,10 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
   const ComputedStyle& style = Style();
   const LayoutUnit& point_in_line_direction =
       style.IsHorizontalWritingMode() ? point.left : point.top;
-  if (const ShapeResult* shape_result = TextShapeResult()) {
-    return shape_result->CaretOffsetForHitTest(
+  if (const ShapeResultView* shape_result = TextShapeResult()) {
+    // TODO(layout-dev): Move caret logic out of ShapeResult into separate
+    // support class for code health and to avoid this copy.
+    return shape_result->CreateShapeResult()->CaretOffsetForHitTest(
                point_in_line_direction.ToFloat(), Text(), BreakGlyphs) +
            StartOffset();
   }

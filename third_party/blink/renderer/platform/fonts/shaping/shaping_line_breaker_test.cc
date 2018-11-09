@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_test_utilities.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -19,12 +20,12 @@ namespace blink {
 
 namespace {
 
-scoped_refptr<const ShapeResult> ShapeLine(ShapingLineBreaker* breaker,
-                                           unsigned start_offset,
-                                           LayoutUnit available_space,
-                                           unsigned* break_offset) {
+scoped_refptr<const ShapeResultView> ShapeLine(ShapingLineBreaker* breaker,
+                                               unsigned start_offset,
+                                               LayoutUnit available_space,
+                                               unsigned* break_offset) {
   ShapingLineBreaker::Result result;
-  scoped_refptr<const ShapeResult> shape_result =
+  scoped_refptr<const ShapeResultView> shape_result =
       breaker->ShapeLine(start_offset, available_space, &result);
   *break_offset = result.break_offset;
   return shape_result;
@@ -109,7 +110,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatin) {
   ASSERT_LT(first1->SnappedWidth(), first2->SnappedWidth());
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
-  scoped_refptr<const ShapeResult> line;
+  scoped_refptr<const ShapeResultView> line;
   unsigned break_offset = 0;
 
   // Test the case where the entire string fits.
@@ -195,7 +196,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinBreakAll) {
       shaper.Shape(&font, direction, 0, 16);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
-  scoped_refptr<const ShapeResult> line;
+  scoped_refptr<const ShapeResultView> line;
   unsigned break_offset = 0;
 
   line = ShapeLine(&breaker, 0, midpoint->SnappedWidth(), &break_offset);
@@ -216,7 +217,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineZeroAvailableWidth) {
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
-  scoped_refptr<const ShapeResult> line;
+  scoped_refptr<const ShapeResultView> line;
   unsigned break_offset = 0;
   LayoutUnit zero(0);
 
@@ -288,7 +289,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
       shaper.Shape(&font, direction, 0, 2);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
-  scoped_refptr<const ShapeResult> line;
+  scoped_refptr<const ShapeResultView> line;
   unsigned break_offset = 0;
 
   line = ShapeLine(&breaker, 0, LayoutUnit::Max(), &break_offset);

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -55,8 +56,8 @@ void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
       return;
     DCHECK(shape_result);
     DCHECK_EQ(end_offset - start_offset, shape_result->NumCharacters());
-    DCHECK_EQ(start_offset, shape_result->StartIndexForResult());
-    DCHECK_EQ(end_offset, shape_result->EndIndexForResult());
+    DCHECK_EQ(start_offset, shape_result->StartIndex());
+    DCHECK_EQ(end_offset, shape_result->EndIndex());
   }
 }
 #endif

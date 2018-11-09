@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -56,8 +57,8 @@ LayoutUnit NGLineTruncator::TruncateLine(
           ? String(&kHorizontalEllipsisCharacter, 1)
           : String(u"...");
   HarfBuzzShaper shaper(ellipsis_text);
-  scoped_refptr<ShapeResult> ellipsis_shape_result =
-      shaper.Shape(&font, line_direction_);
+  scoped_refptr<ShapeResultView> ellipsis_shape_result =
+      ShapeResultView::Create(shaper.Shape(&font, line_direction_).get());
   LayoutUnit ellipsis_width = ellipsis_shape_result->SnappedWidth();
 
   // Loop children from the logical last to the logical first to determine where
@@ -204,7 +205,10 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   if (!child->fragment)
     return is_first_child;
   auto& fragment = ToNGPhysicalTextFragment(*child->fragment);
-  const ShapeResult* shape_result = fragment.TextShapeResult();
+  // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
+  // this copy.
+  scoped_refptr<blink::ShapeResult> shape_result =
+      fragment.TextShapeResult()->CreateShapeResult();
   if (!shape_result)
     return is_first_child;
 

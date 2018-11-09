@@ -74,17 +74,17 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [138, 148, 619, 19],
+          "rect": [138, 148, 618, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [148, 148, 618, 19],
+          "rect": [148, 148, 617, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [148, 148, 618, 19],
+          "rect": [148, 148, 617, 19],
           "reason": "geometry"
         },
         {
@@ -134,7 +134,7 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [400, 148, 384, 19],
+          "rect": [400, 148, 383, 19],
           "reason": "geometry"
         },
         {

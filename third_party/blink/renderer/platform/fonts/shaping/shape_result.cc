@@ -39,6 +39,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -53,6 +54,18 @@ namespace blink {
 
 constexpr unsigned HarfBuzzRunGlyphData::kMaxCharacterIndex;
 constexpr unsigned HarfBuzzRunGlyphData::kMaxGlyphs;
+
+struct SameSizeAsHarfBuzzRunGlyphData {
+  uint16_t unsigned_int16;
+  unsigned bit_fields : 2;
+  int16_t signed_int16[2];
+  float advance;
+  FloatSize offset;
+};
+
+static_assert(sizeof(HarfBuzzRunGlyphData) ==
+                  sizeof(SameSizeAsHarfBuzzRunGlyphData),
+              "HarfBuzzRunGlyphData should stay small");
 
 unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
   DCHECK_LE(offset, num_characters_);
@@ -130,7 +143,7 @@ void ShapeResult::EnsureGraphemes(const StringView& text) const {
   if (is_computed)
     return;
 
-  unsigned result_start_index = StartIndexForResult();
+  unsigned result_start_index = StartIndex();
   for (const auto& run : runs_) {
     if (!run)
       continue;
@@ -361,6 +374,20 @@ void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t glyph_id,
   this->advance = advance;
   this->offset = offset;
   this->safe_to_break_before = safe_to_break_before;
+  this->bounds_before_raw_value = std::numeric_limits<int16_t>::max();
+  this->bounds_after_raw_value = std::numeric_limits<int16_t>::max();
+}
+
+void HarfBuzzRunGlyphData::SetGlyphBounds(LayoutUnit bounds_before,
+                                          LayoutUnit bounds_after) {
+  this->bounds_before_raw_value =
+      base::IsValueInRangeForNumericType<int16_t>(bounds_before.RawValue())
+          ? bounds_before.RawValue()
+          : std::numeric_limits<int16_t>::max();
+  this->bounds_after_raw_value =
+      base::IsValueInRangeForNumericType<int16_t>(bounds_after.RawValue())
+          ? bounds_after.RawValue()
+          : std::numeric_limits<int16_t>::max();
 }
 
 ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
@@ -439,7 +466,7 @@ unsigned ShapeResult::NextSafeToBreakOffset(unsigned index) const {
     }
   }
 
-  return EndIndexForResult();
+  return EndIndex();
 }
 
 unsigned ShapeResult::PreviousSafeToBreakOffset(unsigned index) const {
@@ -465,7 +492,7 @@ unsigned ShapeResult::PreviousSafeToBreakOffset(unsigned index) const {
     }
   }
 
-  return StartIndexForResult();
+  return StartIndex();
 }
 
 // If the position is outside of the result, returns the start or the end offset
@@ -1077,8 +1104,10 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 #if defined(OS_MACOSX)
     FloatRect glyph_bounds = current_font_data.BoundsForGlyph(glyph_data.glyph);
 #else
-    FloatRect glyph_bounds = FloatRect(bounds_list[i]);
+    FloatRect glyph_bounds(bounds_list[i]);
 #endif
+    glyph_data.SetGlyphBounds(LayoutUnit(glyph_bounds.X()),
+                              LayoutUnit(glyph_bounds.MaxX()));
     bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
     bounds.origin += advance;
 
@@ -1273,10 +1302,10 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
   // When |target| is empty, its character indexes are the specified sub range
   // of |this|. Otherwise the character indexes are renumbered to be continuous.
-  int index_diff = !target->num_characters_
-                       ? 0
-                       : target->EndIndexForResult() -
-                             std::max(start_offset, StartIndexForResult());
+  int index_diff =
+      !target->num_characters_
+          ? 0
+          : target->EndIndex() - std::max(start_offset, StartIndex());
   unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
   for (const auto& run : runs_) {
@@ -1314,8 +1343,8 @@ void ShapeResult::CopyRange(unsigned start_offset,
   // operations. If |start_offset| or |end_offset| are the start/end of |this|,
   // use the current |glyph_bounding_box_| for the side.
   DCHECK(primary_font_.get() == target->primary_font_.get());
-  bool know_left_edge = start_offset <= StartIndexForResult();
-  bool know_right_edge = end_offset >= EndIndexForResult();
+  bool know_left_edge = start_offset <= StartIndex();
+  bool know_right_edge = end_offset >= EndIndex();
   if (UNLIKELY(Rtl()))
     std::swap(know_left_edge, know_right_edge);
   float left = know_left_edge ? target->width_ + glyph_bounding_box_.X()
@@ -1333,9 +1362,9 @@ void ShapeResult::CopyRange(unsigned start_offset,
   target->UpdateStartIndex();
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(target->num_characters_ - target_num_characters_before,
-            std::min(end_offset, EndIndexForResult()) -
-                std::max(start_offset, StartIndexForResult()));
+  DCHECK_EQ(
+      target->num_characters_ - target_num_characters_before,
+      std::min(end_offset, EndIndex()) - std::max(start_offset, StartIndex()));
 
   target->CheckConsistency();
 #endif
@@ -1353,12 +1382,12 @@ scoped_refptr<ShapeResult> ShapeResult::CopyAdjustedOffset(
     unsigned start_index) const {
   scoped_refptr<ShapeResult> result = base::AdoptRef(new ShapeResult(*this));
 
-  if (start_index > result->StartIndexForResult()) {
-    unsigned delta = start_index - result->StartIndexForResult();
+  if (start_index > result->StartIndex()) {
+    unsigned delta = start_index - result->StartIndex();
     for (auto& run : result->runs_)
       run->start_index_ += delta;
   } else {
-    unsigned delta = result->StartIndexForResult() - start_index;
+    unsigned delta = result->StartIndex() - start_index;
     for (auto& run : result->runs_) {
       DCHECK(run->start_index_ >= delta);
       run->start_index_ -= delta;
@@ -1378,7 +1407,7 @@ void ShapeResult::CheckConsistency() const {
   }
 
   DCHECK_EQ(start_index_, ComputeStartIndex());
-  const unsigned start_index = StartIndexForResult();
+  const unsigned start_index = StartIndex();
   unsigned index = start_index;
   unsigned num_glyphs = 0;
   if (!Rtl()) {
@@ -1397,7 +1426,7 @@ void ShapeResult::CheckConsistency() const {
       num_glyphs += run->glyph_data_.size();
     }
   }
-  const unsigned end_index = EndIndexForResult();
+  const unsigned end_index = EndIndex();
   DCHECK_LE(index, end_index);
   DCHECK_EQ(end_index - start_index, num_characters_);
   DCHECK_EQ(num_glyphs, num_glyphs_);
@@ -1490,7 +1519,7 @@ std::ostream& operator<<(std::ostream& ostream,
 template <bool rtl>
 void ShapeResult::ComputePositionData() const {
   auto& data = character_position_->data_;
-  unsigned start_offset = StartIndexForResult();
+  unsigned start_offset = StartIndex();
   unsigned next_character_index = 0;
   float run_advance = 0;
   float last_x_position = 0;

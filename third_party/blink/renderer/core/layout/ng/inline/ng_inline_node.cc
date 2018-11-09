@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
@@ -502,9 +503,9 @@ void NGInlineNode::ShapeText(const String& text_content,
     if (previous_text && end_offset == start_item.EndOffset() &&
         !NeedsShaping(start_item)) {
       DCHECK_EQ(start_item.StartOffset(),
-                start_item.TextShapeResult()->StartIndexForResult());
+                start_item.TextShapeResult()->StartIndex());
       DCHECK_EQ(start_item.EndOffset(),
-                start_item.TextShapeResult()->EndIndexForResult());
+                start_item.TextShapeResult()->EndIndex());
       index++;
       continue;
     }

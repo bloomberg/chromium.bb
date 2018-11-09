@@ -37,7 +37,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   float FillGlyphs(const StringView&,
                    unsigned from,
                    unsigned to,
-                   const ShapeResult*);
+                   const ShapeResultView*);
   void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                               unsigned from,
                               unsigned to,
                               const GlyphData& emphasis_data,
-                              const ShapeResult*);
+                              const ShapeResultView*);
   void Add(Glyph glyph,
            const SimpleFontData* font_data,
            CanvasRotationInVertical canvas_rotation,
@@ -104,20 +104,13 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  float FillGlyphsForResult(const ShapeResult*,
-                            const StringView&,
-                            unsigned from,
-                            unsigned to,
-                            float initial_advance,
-                            unsigned run_offset);
-
   // Whether the FillFastHorizontalGlyphs can be used. Only applies for full
   // runs with no vertical offsets and no text intercepts.
   bool CanUseFastPath(unsigned from,
                       unsigned to,
                       unsigned length,
                       bool has_vertical_offsets);
-  bool CanUseFastPath(unsigned from, unsigned to, const ShapeResult*);
+  bool CanUseFastPath(unsigned from, unsigned to, const ShapeResultView*);
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
 

@@ -15,6 +15,7 @@ namespace blink {
 
 class Font;
 class ShapeResult;
+class ShapeResultView;
 class HarfBuzzShaper;
 class Hyphenation;
 class LazyLineBreakIterator;
@@ -76,13 +77,13 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
     // suppress if ShapeResult is not needed when this line overflows.
     kNoResultIfOverflow = 2,
   };
-  scoped_refptr<const ShapeResult> ShapeLine(unsigned start_offset,
-                                             LayoutUnit available_space,
-                                             unsigned options,
-                                             Result* result_out);
-  scoped_refptr<const ShapeResult> ShapeLine(unsigned start_offset,
-                                             LayoutUnit available_space,
-                                             Result* result_out) {
+  scoped_refptr<const ShapeResultView> ShapeLine(unsigned start_offset,
+                                                 LayoutUnit available_space,
+                                                 unsigned options,
+                                                 Result* result_out);
+  scoped_refptr<const ShapeResultView> ShapeLine(unsigned start_offset,
+                                                 LayoutUnit available_space,
+                                                 Result* result_out) {
     return ShapeLine(start_offset, available_space, kDefaultOptions,
                      result_out);
   }
@@ -116,10 +117,10 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                      bool backwards) const;
 
   scoped_refptr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
-  scoped_refptr<const ShapeResult> ShapeToEnd(unsigned start,
-                                              unsigned first_safe,
-                                              unsigned range_start,
-                                              unsigned range_end);
+  scoped_refptr<const ShapeResultView> ShapeToEnd(unsigned start,
+                                                  unsigned first_safe,
+                                                  unsigned range_start,
+                                                  unsigned range_end);
 
   const HarfBuzzShaper* shaper_;
   const Font* font_;

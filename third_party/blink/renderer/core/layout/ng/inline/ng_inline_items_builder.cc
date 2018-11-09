@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -335,8 +336,8 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     DCHECK_EQ(start, adjusted_item.StartOffset());
     DCHECK_EQ(end, adjusted_item.EndOffset());
     if (adjusted_item.TextShapeResult()) {
-      DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndexForResult());
-      DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndexForResult());
+      DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndex());
+      DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndex());
     }
     DCHECK_EQ(item->IsEmptyItem(), adjusted_item.IsEmptyItem());
 #endif

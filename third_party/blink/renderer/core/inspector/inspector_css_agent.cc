@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
@@ -1187,7 +1188,7 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
         DCHECK(fragment->PhysicalFragment().IsText());
         const NGPhysicalTextFragment& text_fragment =
             ToNGPhysicalTextFragment(fragment->PhysicalFragment());
-        const ShapeResult* shape_result = text_fragment.TextShapeResult();
+        const ShapeResultView* shape_result = text_fragment.TextShapeResult();
         if (!shape_result)
           continue;
         Vector<ShapeResult::RunFontData> run_font_data_list;
