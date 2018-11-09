@@ -14,8 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/authenticator.h"
-
-typedef struct spake2_ctx_st SPAKE2_CTX;
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace remoting {
 
