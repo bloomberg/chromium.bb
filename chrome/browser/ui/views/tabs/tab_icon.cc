@@ -108,6 +108,7 @@ void TabIcon::SetData(const TabRendererData& data) {
   const bool showing_load = ShowingLoadingAnimation();
 
   RefreshLayer();
+
   if (was_showing_load && !showing_load) {
     // Loading animation transitioning from on to off.
     loading_start_time_ = base::TimeTicks();
@@ -201,6 +202,12 @@ void TabIcon::OnThemeChanged() {
 
 void TabIcon::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
+}
+
+void TabIcon::AnimationEnded(const gfx::Animation* animation) {
+  // After the last animation ends it's possible we should not paint to a layer
+  // anymore.
+  RefreshLayer();
 }
 
 void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
