@@ -131,7 +131,7 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // This reloads virtual keyboard even if it exists. This ensures virtual
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
-  ChromeKeyboardControllerClient::Get()->ReloadKeyboard();
+  ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 }
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
@@ -389,7 +389,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
     // keyboard gets the correct state through
     // chrome.virtualKeyboardPrivate.getKeyboardConfig.
     // TODO(oka): Extension should reload on it's own by receiving event
-    ChromeKeyboardControllerClient::Get()->ReloadKeyboard();
+    ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
   }
   return update;
 }
