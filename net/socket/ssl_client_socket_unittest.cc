@@ -4259,23 +4259,99 @@ TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTConfirmedAfterRead) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
-// Wait to read ServerHello until after the client writes application data.
-TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTWaitForEarlyDataSend) {
+// Test that the client sends application data before the ServerHello comes in.
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataBeforeServerHello) {
   ASSERT_TRUE(StartServer());
   ASSERT_TRUE(RunInitialConnection());
 
   // 0-RTT Connection
   FakeBlockingStreamSocket* socket = MakeClient(true);
+
+  // Block the ServerHello.
   socket->BlockReadResult();
+
+  // The handshake still completes.
   ASSERT_THAT(Connect(), IsOk());
+
+  // Writes still complete.
   constexpr base::StringPiece kRequest = "GET /zerortt HTTP/1.0\r\n\r\n";
   EXPECT_EQ(static_cast<int>(kRequest.size()), WriteAndWait(kRequest));
-  socket->UnblockReadResult();
 
+  // Release the ServerHello. Now reads complete.
+  socket->UnblockReadResult();
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
   int size = ReadAndWait(buf.get(), 4096);
   EXPECT_GT(size, 0);
   EXPECT_EQ('1', buf->data()[size - 1]);
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+}
+
+// Test that writes wait for the ServerHello once it has reached the early data
+// limit.
+TEST_F(SSLClientSocketZeroRTTTest, ZeroRTTEarlyDataLimit) {
+  ASSERT_TRUE(StartServer());
+  ASSERT_TRUE(RunInitialConnection());
+
+  // 0-RTT Connection
+  FakeBlockingStreamSocket* socket = MakeClient(true);
+
+  // Block the ServerHello.
+  socket->BlockReadResult();
+
+  // The handshake still completes.
+  ASSERT_THAT(Connect(), IsOk());
+
+  // EmbeddedTestServer uses BoringSSL's hard-coded early data limit, which is
+  // below 16k.
+  constexpr size_t kRequestSize = 16 * 1024;
+  std::string request = "GET /zerortt HTTP/1.0\r\n";
+  while (request.size() < kRequestSize) {
+    request += "The-Answer-To-Life-The-Universe-And-Everything: 42\r\n";
+  }
+  request += "\r\n";
+
+  // Writing the large input should not succeed. It is blocked on the
+  // ServerHello.
+  TestCompletionCallback write_callback;
+  auto write_buf = base::MakeRefCounted<StringIOBuffer>(request);
+  int write_rv = ssl_socket()->Write(write_buf.get(), request.size(),
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
+  ASSERT_THAT(write_rv, IsError(ERR_IO_PENDING));
+
+  // The Write should have issued a read for the ServerHello, so
+  // WaitForReadResult has something to wait for.
+  socket->WaitForReadResult();
+  EXPECT_TRUE(socket->pending_read_result());
+
+  // Queue a read. It should be blocked on the ServerHello.
+  TestCompletionCallback read_callback;
+  auto read_buf = base::MakeRefCounted<IOBuffer>(4096);
+  int read_rv =
+      ssl_socket()->Read(read_buf.get(), 4096, read_callback.callback());
+  ASSERT_THAT(read_rv, IsError(ERR_IO_PENDING));
+
+  // Also queue a ConfirmHandshake. It should also be blocked on ServerHello.
+  TestCompletionCallback confirm_callback;
+  int confirm_rv = ssl_socket()->ConfirmHandshake(confirm_callback.callback());
+  ASSERT_THAT(confirm_rv, IsError(ERR_IO_PENDING));
+
+  // Double-check the write was not accidentally blocked on the network.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(write_callback.have_result());
+
+  // At this point, the maximum possible number of events are all blocked on the
+  // same thing. Release the ServerHello. All three should complete.
+  socket->UnblockReadResult();
+  EXPECT_EQ(static_cast<int>(request.size()),
+            write_callback.GetResult(write_rv));
+  EXPECT_THAT(confirm_callback.GetResult(confirm_rv), IsOk());
+  int size = read_callback.GetResult(read_rv);
+  ASSERT_GT(size, 0);
+  EXPECT_EQ('1', read_buf->data()[size - 1]);
 
   SSLInfo ssl_info;
   ASSERT_TRUE(GetSSLInfo(&ssl_info));
