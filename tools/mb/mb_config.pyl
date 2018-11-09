@@ -1093,6 +1093,7 @@
 
     'clang_code_coverage_trybot': [
       'gpu_tests', 'use_dummy_lastchange', 'release_trybot', 'clang', 'use_clang_coverage', 'no_symbols',
+      'partial_clang_instrumentation'
     ],
 
     'clang_release_bot_minimal_symbols_x86': [
@@ -2060,6 +2061,15 @@
 
     'ozone_platform_headless': {
       'gn_args': 'ozone_platform_headless=true',
+    },
+
+    # Used to pass the list of files to instrument for coverage to the compile
+    # wrapper. See:
+    # https://cs.chromium.org/chromium/build/scripts/slave/recipe_modules/clang_coverage/api.py
+    # and
+    # https://cs.chromium.org/chromium/src/docs/clang_code_coverage_wrapper.md
+    'partial_clang_instrumentation': {
+      'gn_args': 'coverage_instrumentation_input_file="//.clang-coverage/files_to_instrument.txt"'
     },
 
     'pdf_xfa': {
