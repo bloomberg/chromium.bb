@@ -835,8 +835,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                      postData:(TemplateURLRef::PostContent*)postData
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
+                   transition:(ui::PageTransition)transition;
 // Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
 // Returns the view to use when animating a page in or out, positioning it to
@@ -1439,34 +1438,32 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
   [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
+                      atIndex:self.tabModel.count
                    transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                             atIndex:self.tabModel.count
-                          transition:transition];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                             atIndex:position
-                          transition:transition
-                  tabAddedCompletion:nil];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
   return [self addSelectedTabWithURL:url
                             postData:NULL
                              atIndex:position
-                          transition:transition
-                  tabAddedCompletion:tabAddedCompletion];
+                          transition:transition];
+}
+
+- (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
+  if (tabAddedCompletion) {
+    if (self.foregroundTabWasAddedCompletionBlock) {
+      ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
+          self.foregroundTabWasAddedCompletionBlock;
+      self.foregroundTabWasAddedCompletionBlock = ^{
+        oldForegroundTabWasAddedCompletionBlock();
+        tabAddedCompletion();
+      };
+    } else {
+      self.foregroundTabWasAddedCompletionBlock = tabAddedCompletion;
+    }
+  }
 }
 
 - (void)expectNewForegroundTab {
@@ -2852,15 +2849,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return [self addSelectedTabWithURL:url
                             postData:postData
                              atIndex:self.tabModel.count
-                          transition:transition
-                  tabAddedCompletion:nil];
+                          transition:transition];
 }
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)URL
                      postData:(TemplateURLRef::PostContent*)postData
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
+                   transition:(ui::PageTransition)transition {
   if (position == NSNotFound)
     position = self.tabModel.count;
   DCHECK(position <= self.tabModel.count);
@@ -2875,19 +2870,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                   length:postData->second.length()];
     params.post_data = data;
     params.extra_headers = @{@"Content-Type" : contentType};
-  }
-
-  if (tabAddedCompletion) {
-    if (self.foregroundTabWasAddedCompletionBlock) {
-      ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
-          self.foregroundTabWasAddedCompletionBlock;
-      self.foregroundTabWasAddedCompletionBlock = ^{
-        oldForegroundTabWasAddedCompletionBlock();
-        tabAddedCompletion();
-      };
-    } else {
-      self.foregroundTabWasAddedCompletionBlock = tabAddedCompletion;
-    }
   }
 
   Tab* tab = [self.tabModel insertTabWithLoadParams:params
@@ -5323,7 +5305,9 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 - (void)captivePortalDetectorTabHelper:
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
-  [self addSelectedTabWithURL:landingURL transition:ui::PAGE_TRANSITION_TYPED];
+  [self addSelectedTabWithURL:landingURL
+                      atIndex:self.tabModel.count
+                   transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 #pragma mark - PageInfoPresentation

@@ -112,11 +112,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;
 
-// Add a new tab with the given url, appends it to the end of the model,
-// and makes it the selected tab. The selected tab is returned.
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition;
-
 // Add a new tab with the given url, at the given |position|,
 // and makes it the selected tab. The selected tab is returned.
 // If |position| == NSNotFound the tab will be added at the end of the stack.
@@ -124,14 +119,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition;
 
-// Add a new tab with the given url, at the given |position|,
-// and makes it the selected tab. The selected tab is returned.
-// If |position| == NSNotFound the tab will be added at the end of the stack.
-// |tabAddedCompletion| is called after the tab is added (if not nil).
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
+// Adds |tabAddedCompletion| to the completion block (if any) that will be run
+// the next time a tab is added to the TabModel this object was initialized
+// with.
+- (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
 
 // Informs the BVC that a new foreground tab is about to be opened. This is
 // intended to be called before setWebUsageSuspended:NO in cases where a new tab
