@@ -14,6 +14,14 @@ CSSPropertyRef::CSSPropertyRef(const String& name, const Document& document)
     custom_property_ = CustomProperty(AtomicString(name), document);
 }
 
+CSSPropertyRef::CSSPropertyRef(const CSSPropertyName& name,
+                               const Document& document)
+    : property_id_(name.Id()) {
+  DCHECK_NE(name.Id(), CSSPropertyInvalid);
+  if (property_id_ == CSSPropertyVariable)
+    custom_property_ = CustomProperty(name.ToAtomicString(), document);
+}
+
 CSSPropertyRef::CSSPropertyRef(const CSSProperty& property)
     : property_id_(property.PropertyID()) {
   if (property.PropertyID() == CSSPropertyVariable) {

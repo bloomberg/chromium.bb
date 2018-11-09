@@ -28,6 +28,10 @@ class CORE_EXPORT CustomProperty : public Variable {
   bool IsInherited() const override;
   const AtomicString& GetPropertyNameAtomicString() const override;
 
+  void ApplyInitial(StyleResolverState&) const override;
+  void ApplyInherit(StyleResolverState&) const override;
+  void ApplyValue(StyleResolverState&, const CSSValue&) const override;
+
   void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
 
  private:

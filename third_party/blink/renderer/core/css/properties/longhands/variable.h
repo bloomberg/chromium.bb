@@ -37,9 +37,6 @@ class CORE_EXPORT Variable : public Longhand {
     return nullptr;
   }
 
-  void ApplyValue(StyleResolverState& state,
-                  const CSSValue& value) const override;
-
   static bool IsStaticInstance(const CSSProperty&);
 };
 

@@ -59,6 +59,12 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
       ImmutableCSSPropertyValueSet(properties, count, css_parser_mode);
 }
 
+CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
+  if (Id() != CSSPropertyVariable)
+    return CSSPropertyName(Id());
+  return CSSPropertyName(ToCSSCustomPropertyDeclaration(Value()).GetName());
+}
+
 ImmutableCSSPropertyValueSet* CSSPropertyValueSet::ImmutableCopyIfNeeded()
     const {
   if (!IsMutable()) {

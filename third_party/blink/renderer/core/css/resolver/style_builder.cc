@@ -42,7 +42,10 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/variable.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -50,9 +53,21 @@
 
 namespace blink {
 
+void StyleBuilder::ApplyProperty(const CSSPropertyName& name,
+                                 StyleResolverState& state,
+                                 const CSSValue& value) {
+  CSSPropertyRef ref(name, state.GetDocument());
+  DCHECK(ref.IsValid());
+
+  ApplyProperty(ref.GetProperty(), state, value);
+}
+
 void StyleBuilder::ApplyProperty(const CSSProperty& property,
                                  StyleResolverState& state,
                                  const CSSValue& value) {
+  DCHECK(!Variable::IsStaticInstance(property))
+      << "Please use a CustomProperty instance to apply custom properties";
+
   CSSPropertyID id = property.PropertyID();
   bool is_inherited = property.IsInherited();
   if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||

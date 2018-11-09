@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/animated_style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
@@ -860,7 +861,7 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    StyleBuilder::ApplyProperty(property.GetCSSProperty(), state, *value);
+    StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
     state.GetFontBuilder().CreateFont(
         state.GetDocument().GetStyleEngine().GetFontSelector(),
         state.StyleRef());
@@ -1491,6 +1492,25 @@ void StyleResolver::ApplyAllProperty(
   }
 }
 
+template <CSSPropertyPriority priority>
+static inline void ApplyProperty(
+    const CSSPropertyValueSet::PropertyReference& reference,
+    StyleResolverState& state) {
+  static_assert(
+      priority != kResolveVariables,
+      "Application of custom properties must use specialized template");
+  DCHECK_NE(reference.Id(), CSSPropertyVariable);
+  StyleBuilder::ApplyProperty(reference.Property(), state, reference.Value());
+}
+
+template <>
+inline void ApplyProperty<kResolveVariables>(
+    const CSSPropertyValueSet::PropertyReference& reference,
+    StyleResolverState& state) {
+  CSSPropertyRef ref(reference.Name(), state.GetDocument());
+  StyleBuilder::ApplyProperty(ref.GetProperty(), state, reference.Value());
+}
+
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyProperties(
@@ -1543,7 +1563,7 @@ void StyleResolver::ApplyProperties(
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
       continue;
 
-    StyleBuilder::ApplyProperty(current.Property(), state, current.Value());
+    ApplyProperty<priority>(current, state);
   }
 }
 
