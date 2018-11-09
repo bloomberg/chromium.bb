@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
-import org.chromium.chrome.browser.browserservices.TrustedWebActivityUi;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.CustomTabBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -21,6 +21,6 @@ import dagger.Subcomponent;
                       CustomTabActivityModule.class})
 @ActivityScope
 public interface CustomTabActivityComponent extends ChromeActivityComponent {
-    TrustedWebActivityUi resolveTrustedWebActivityUi();
+    TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();
     CustomTabBrowserControlsVisibilityDelegate resolveControlsVisibilityDelegate();
 }

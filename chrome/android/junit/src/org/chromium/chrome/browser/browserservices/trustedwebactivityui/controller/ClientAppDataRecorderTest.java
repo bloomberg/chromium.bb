@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.browserservices;
+package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -29,6 +29,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 
 /**
