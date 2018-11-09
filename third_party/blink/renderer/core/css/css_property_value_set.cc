@@ -416,12 +416,8 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
 
 bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
                                              CSSPropertyValue* slot) {
-  const AtomicString& name =
-      (property.Id() == CSSPropertyVariable)
-          ? ToCSSCustomPropertyDeclaration(property.Value())->GetName()
-          : g_null_atom;
   CSSPropertyValue* to_replace =
-      slot ? slot : FindCSSPropertyWithID(property.Id(), name);
+      slot ? slot : FindCSSPropertyWithName(property.Name());
   if (to_replace && *to_replace == property)
     return false;
   if (to_replace) {
@@ -485,8 +481,7 @@ void MutableCSSPropertyValueSet::MergeAndOverrideOnConflict(
   unsigned size = other->PropertyCount();
   for (unsigned n = 0; n < size; ++n) {
     PropertyReference to_merge = other->PropertyAt(n);
-    // TODO(leviw): This probably doesn't work correctly with Custom Properties
-    CSSPropertyValue* old = FindCSSPropertyWithID(to_merge.Id());
+    CSSPropertyValue* old = FindCSSPropertyWithName(to_merge.Name());
     if (old) {
       SetProperty(
           CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()), old);
@@ -543,18 +538,11 @@ bool MutableCSSPropertyValueSet::RemovePropertiesInSet(const CSSProperty** set,
   return false;
 }
 
-CSSPropertyValue* MutableCSSPropertyValueSet::FindCSSPropertyWithID(
-    CSSPropertyID property_id,
-    const AtomicString& custom_property_name) {
-  int found_property_index = -1;
-  if (property_id == CSSPropertyVariable && !custom_property_name.IsNull()) {
-    // TODO(shanestephens): fix call sites so we always have a
-    // customPropertyName here.
-    found_property_index = FindPropertyIndex(custom_property_name);
-  } else {
-    DCHECK(custom_property_name.IsNull());
-    found_property_index = FindPropertyIndex(property_id);
-  }
+CSSPropertyValue* MutableCSSPropertyValueSet::FindCSSPropertyWithName(
+    const CSSPropertyName& name) {
+  int found_property_index = name.IsCustomProperty()
+                                 ? FindPropertyIndex(name.ToAtomicString())
+                                 : FindPropertyIndex(name.Id());
   if (found_property_index == -1)
     return nullptr;
   return &property_vector_.at(found_property_index);
