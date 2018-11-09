@@ -502,14 +502,15 @@ in our product, so it is unlikely that many of them will be sent upstream.</p>
     background color specified in the stylesheet.  In our product, we didn't
     want the list markers to be highlighted when selected.
     </li>
-    <li><b>Change layout of list items and list markers</b><br/>
-    The way list elements and list items are laid out has been changed so that,
-    instead of <code>OL</code>/<code>UL</code> elements having 40px padding,
-    the <code>LI</code> elements will receive an additional (intrinsic) margin
-    equivalent to the width of the list marker.  This matches more closely what
-    other software like Microsoft Word does, and also prevents issues like
-    <a href="repros/listMarkerEnhancements1.html">this link</a> where the list
-    marker gets pushed outside the page.
+    <li><b>Change list items to be marker-based left alignment</b><br/>
+    The change deals with alignment when list markers exist. Instead of aligned to
+    the list data (such as text), a list item is left aligned to the list item marker.
+    For the first list item, its marker also occupies part of the padding region of
+    its parent <code>OL</code>/<code>UL</code>. Then the follow-up list items are
+    left aligned to the first sibling. <a href="repros/MarkerLeftAlignedListItem.html">this link</a>
+    contains the test case of list items with different font sizes. The image below shows the
+    rendering difference between Chrome (top) and the updated renderer (bottom).<br/>
+    <img src="repros/LeftAlignedListMarker.png" alt="Marker based left alignment">
     </li>
 </ul>
 </p>
