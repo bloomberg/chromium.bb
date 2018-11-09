@@ -13,7 +13,6 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
-#include "components/exo/shell_surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -31,9 +30,6 @@
 namespace arc {
 
 namespace {
-
-// TODO(yhanada): Remove this once IsArcAppWindow is fixed for ARC++ Kiosk app.
-constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
 
 base::Optional<double> g_override_default_device_scale_factor;
 
@@ -53,24 +49,9 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   ~ArcWindowDelegateImpl() override = default;
 
   bool IsInArcAppWindow(const aura::Window* window) const override {
-    aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
     for (; window; window = window->parent()) {
       if (IsArcAppWindow(window))
         return true;
-
-      // IsArcAppWindow returns false for a window of ARC++ Kiosk app, so we
-      // have to check application id of the active window to cover that case.
-      // TODO(yhanada): Make IsArcAppWindow support a window of ARC++ Kiosk.
-      // Specifically, a window of ARC++ Kiosk should have ash::AppType::ARC_APP
-      // property. Please see implementation of IsArcAppWindow().
-      if (window == active) {
-        const std::string* app_id = exo::ShellSurface::GetApplicationId(window);
-        if (IsArcKioskMode() && app_id &&
-            base::StartsWith(*app_id, kArcAppIdPrefix,
-                             base::CompareCase::SENSITIVE)) {
-          return true;
-        }
-      }
     }
     return false;
   }
