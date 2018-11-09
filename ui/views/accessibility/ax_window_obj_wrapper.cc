@@ -18,26 +18,25 @@
 
 namespace views {
 
-void FireLocationChanges(aura::Window* window) {
+// A helper to fire an event on a window, taking into account its associated
+// widget and that widget's root view.
+void FireEvent(aura::Window* window, ax::mojom::Event event_type) {
   AXAuraObjCache::GetInstance()->FireEvent(
-      AXAuraObjCache::GetInstance()->GetOrCreate(window),
-      ax::mojom::Event::kLocationChanged);
+      AXAuraObjCache::GetInstance()->GetOrCreate(window), event_type);
 
   Widget* widget = Widget::GetWidgetForNativeView(window);
   if (widget) {
     AXAuraObjCache::GetInstance()->FireEvent(
-        AXAuraObjCache::GetInstance()->GetOrCreate(widget),
-        ax::mojom::Event::kLocationChanged);
+        AXAuraObjCache::GetInstance()->GetOrCreate(widget), event_type);
 
     views::View* root_view = widget->GetRootView();
     if (root_view)
-      root_view->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
-                                          true);
+      root_view->NotifyAccessibilityEvent(event_type, true);
   }
 
   aura::Window::Windows children = window->children();
   for (size_t i = 0; i < children.size(); ++i)
-    FireLocationChanges(children[i]);
+    FireEvent(children[i], ax::mojom::Event::kLocationChanged);
 }
 
 AXWindowObjWrapper::AXWindowObjWrapper(aura::Window* window)
@@ -143,7 +142,7 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(
   if (window != window_)
     return;
 
-  FireLocationChanges(window_);
+  FireEvent(window_, ax::mojom::Event::kLocationChanged);
 }
 
 void AXWindowObjWrapper::OnWindowPropertyChanged(aura::Window* window,
@@ -166,7 +165,11 @@ void AXWindowObjWrapper::OnWindowTransformed(aura::Window* window,
   if (window != window_)
     return;
 
-  FireLocationChanges(window_);
+  FireEvent(window_, ax::mojom::Event::kLocationChanged);
+}
+
+void AXWindowObjWrapper::OnWindowTitleChanged(aura::Window* window) {
+  FireEvent(window, ax::mojom::Event::kTextChanged);
 }
 
 }  // namespace views
