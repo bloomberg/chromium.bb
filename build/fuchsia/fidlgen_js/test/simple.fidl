@@ -100,6 +100,10 @@ struct AfterPreviousReference {
   int32 an_int;
 };
 
+interface AnotherInterface {
+  1: TimesTwo(int32 a) -> (int32 b);
+};
+
 interface Testola {
   1: DoSomething();
 
@@ -133,4 +137,6 @@ interface Testola {
 
   14: PassVectorOfVMO(VectorOfHandleToVMO input)
         -> (VectorOfHandleToVMO output);
+
+  15: GetAnother(request<AnotherInterface> another);
 };

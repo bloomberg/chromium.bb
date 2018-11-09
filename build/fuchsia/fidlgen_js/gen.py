@@ -402,7 +402,7 @@ function %(name)s(%(param_names)s) {
       compound = _ParseCompoundIdentifier(t.identifier)
       name = _CompileCompoundIdentifier(compound)
       return name + ('_Nullable' if t.nullable else '')
-    elif t.kind == fidl.TypeKind.HANDLE:
+    elif t.kind == fidl.TypeKind.HANDLE or t.kind == fidl.TypeKind.REQUEST:
       return 'Handle'
     elif t.kind == fidl.TypeKind.ARRAY:
       element_ttname = self._CompileType(t.element_type)
@@ -543,6 +543,30 @@ function %(proxy_name)s() {
 
 %(proxy_name)s.prototype.$bind = function(channel) {
   this.channel = channel;
+};
+
+%(proxy_name)s.prototype.$is_bound = function() {
+  return this.channel != $ZX_HANDLE_INVALID;
+};
+
+%(proxy_name)s.prototype.$request = function() {
+  if (this.$is_bound())
+    throw "Proxy already bound";
+  var pair = $ZxChannelCreate();
+  if (pair.status != $ZX_OK)
+    throw "ChannelPair creation failed";
+  this.channel = pair.first;
+  return pair.second;
+};
+
+%(proxy_name)s.prototype.$close = function() {
+  if (!this.$is_bound())
+    return;
+  var status = $zx_handle_close(this.channel);
+  if (status !== $ZX_OK) {
+    throw "close handle failed";
+  }
+  this.channel = $ZX_HANDLE_INVALID;
 };
 
 ''' % {
