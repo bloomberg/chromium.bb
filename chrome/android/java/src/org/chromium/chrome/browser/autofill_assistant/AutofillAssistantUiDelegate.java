@@ -10,6 +10,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
@@ -66,6 +67,9 @@ class AutofillAssistantUiDelegate {
             "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
     private static final int PROGRESS_BAR_INITIAL_PROGRESS = 10;
     private static final int DETAILS_PULSING_DURATION_MS = 1_000;
+
+    /** How long the snackbars created by {@link #showAutofillAssistantStoppedSnackbar} stay up. */
+    static final int SNACKBAR_DELAY_MS = 5_000;
 
     // TODO(crbug.com/806868): Use correct user locale.
     private static final SimpleDateFormat sDetailsTimeFormat =
@@ -305,11 +309,15 @@ class AutofillAssistantUiDelegate {
                 "AutofillAssistantOverlay", "overlay_color");
         if (!overlayColor.isEmpty()) {
             try {
-                mOverlay.setBackgroundColor(Color.parseColor(overlayColor));
+                @ColorInt
+                int color = Color.parseColor(overlayColor);
+                mOverlay.setBackgroundColor(color);
+                mTouchEventFilter.setGrayOutColor(color);
             } catch (IllegalArgumentException exception) {
                 // ignore
             }
         }
+
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
     }
 
@@ -450,16 +458,14 @@ class AutofillAssistantUiDelegate {
         mFullContainer.setVisibility(View.GONE);
     }
 
-    public void showAutofillAssistantStoppedSnackbar(
-            SnackbarManager.SnackbarController controller) {
-        int durationMs = SnackbarManager.DEFAULT_SNACKBAR_DURATION_MS;
+    public void showAutofillAssistantStoppedSnackbar(SnackbarManager.SnackbarController controller,
+            int stringResourceId, Object... formatArgs) {
         Snackbar snackBar =
-                Snackbar.make(mActivity.getString(
-                                      R.string.autofill_assistant_stopped, durationMs / 1_000),
-                                controller, Snackbar.TYPE_ACTION,
-                                Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
+                Snackbar.make(mActivity.getString(stringResourceId, formatArgs), controller,
+                                Snackbar.TYPE_ACTION, Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
                         .setAction(mActivity.getString(R.string.undo), /* actionData= */ null);
-        snackBar.setDuration(durationMs);
+        snackBar.setSingleLine(false);
+        snackBar.setDuration(SNACKBAR_DELAY_MS);
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
@@ -628,6 +634,10 @@ class AutofillAssistantUiDelegate {
 
     public void disableProgressBarPulsing() {
         mProgressBar.disablePulsing();
+    }
+
+    public void updateTouchableArea(boolean enabled, List<RectF> boxes) {
+        mTouchEventFilter.updateTouchableArea(enabled, boxes);
     }
 
     /**

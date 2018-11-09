@@ -141,6 +141,12 @@ void Controller::Start(const GURL& initialUrl) {
           base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
     }
   }
+
+  touchable_element_area_.SetOnUpdate(base::BindRepeating(
+      &UiController::UpdateTouchableArea,
+      // Unretained is safe, since touchable_element_area_ is guaranteed to be
+      // deleted before the UI controller.
+      base::Unretained(GetUiController())));
 }
 
 void Controller::GetOrCheckScripts(const GURL& url) {
@@ -304,17 +310,6 @@ std::string Controller::GetDebugContext() {
   std::string output_js;
   base::JSONWriter::Write(dict, &output_js);
   return output_js;
-}
-
-bool Controller::AllowTouchEvent(float x, float y) {
-  if (touchable_element_area_.IsEmpty()) {
-    // Allow all touch events if there is no touchable element area.
-    //
-    // TODO(crbug.com/806868): Enforce the use of touchable elements area once
-    // the feature is complete.
-    return true;
-  }
-  return touchable_element_area_.Contains(x, y);
 }
 
 void Controller::OnDestroy() {

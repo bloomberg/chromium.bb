@@ -86,7 +86,6 @@ class Controller : public ScriptExecutorDelegate,
   void OnGiveUp() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
-  bool AllowTouchEvent(float x, float y) override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;

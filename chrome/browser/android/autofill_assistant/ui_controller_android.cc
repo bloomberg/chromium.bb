@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/rectf.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/channel.h"
@@ -247,14 +248,6 @@ UiControllerAndroid::OnRequestDebugContext(
   return base::android::ConvertUTF8ToJavaString(env, GetDebugContext());
 }
 
-jboolean UiControllerAndroid::AllowTouchEvent(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    float x,
-    float y) {
-  return ui_delegate_->AllowTouchEvent(x, y);
-}
-
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(!address_or_card_callback_);
@@ -325,6 +318,21 @@ void UiControllerAndroid::HideProgressBar() {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onHideProgressBar(
       env, java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::UpdateTouchableArea(bool enabled,
+                                              const std::vector<RectF>& areas) {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<float> flattened;
+  for (const auto& rect : areas) {
+    flattened.emplace_back(rect.left);
+    flattened.emplace_back(rect.top);
+    flattened.emplace_back(rect.right);
+    flattened.emplace_back(rect.bottom);
+  }
+  Java_AutofillAssistantUiController_updateTouchableArea(
+      env, java_autofill_assistant_ui_controller_, enabled,
+      base::android::ToJavaFloatArray(env, flattened));
 }
 
 std::string UiControllerAndroid::GetDebugContext() const {

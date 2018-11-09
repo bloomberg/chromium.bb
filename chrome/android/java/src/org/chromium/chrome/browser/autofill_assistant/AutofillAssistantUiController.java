@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.accounts.Account;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -13,6 +14,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
@@ -162,7 +165,13 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void onDismiss() {
-        mUiDelegateHolder.dismiss();
+        mUiDelegateHolder.dismiss(R.string.autofill_assistant_stopped,
+                AutofillAssistantUiDelegate.SNACKBAR_DELAY_MS / 1_000);
+    }
+
+    @Override
+    public void onUnexpectedTaps() {
+        mUiDelegateHolder.dismiss(R.string.autofill_assistant_maybe_give_up);
     }
 
     @Override
@@ -183,11 +192,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @Override
     public String getDebugContext() {
         return nativeOnRequestDebugContext(mUiControllerAndroid);
-    }
-
-    @Override
-    public boolean allowTouchEvent(float x, float y) {
-        return nativeAllowTouchEvent(mUiControllerAndroid, x, y);
     }
 
     /** Return the value if the given boolean parameter from the extras. */
@@ -376,6 +380,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideProgressBar);
     }
 
+    @CalledByNative
+    private void updateTouchableArea(boolean enabled, float[] coords) {
+        List<RectF> boxes = new ArrayList<>();
+        for (int i = 0; i < coords.length; i += 4) {
+            boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
+                    /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
+        }
+        mUiDelegateHolder.performUiOperation(
+                uiDelegate -> { uiDelegate.updateTouchableArea(enabled, boxes); });
+    }
+
     /**
      * Class holder for the AutofillAssistantUiDelegate to make sure we don't make UI changes when
      * we are in a pause state (i.e. few seconds before stopping completely).
@@ -419,11 +434,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
          * In normal mode, hides the UI, pauses UI operations and, unless undone within the time
          * delay, eventually destroy everything. In graceful shutdown mode, shutdown immediately.
          */
-        public void dismiss() {
+        public void dismiss(int stringResourceId, Object... formatArgs) {
             assert !mHasBeenShutdown;
 
             if (mIsShuttingDown) {
                 shutdown();
+                return;
+            }
+
+            if (mDismissSnackbar != null) {
+                // Remove duplicate calls.
                 return;
             }
 
@@ -443,7 +463,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                     shutdown();
                 }
             };
-            mUiDelegate.showAutofillAssistantStoppedSnackbar(mDismissSnackbar);
+            mUiDelegate.showAutofillAssistantStoppedSnackbar(
+                    mDismissSnackbar, stringResourceId, formatArgs);
         }
 
         /** Enters graceful shutdown mode once we can again perform UI operations. */
@@ -601,5 +622,4 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             long nativeUiControllerAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);
     private native String nativeOnRequestDebugContext(long nativeUiControllerAndroid);
-    private native boolean nativeAllowTouchEvent(long nativeUiControllerAndroid, float x, float y);
 }
