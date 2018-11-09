@@ -237,6 +237,8 @@ enum MetricEnrollment {
   kMetricEnrollmentLicenseRequestFailed = 57,
   // Registration failed: Consumer account with packaged license.
   kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense = 58,
+  // Device was not pre-provisioned for Zero-Touch.
+  kMetricEnrollmentDeviceNotPreProvisioned = 59,
 };
 
 // Events related to policy refresh.

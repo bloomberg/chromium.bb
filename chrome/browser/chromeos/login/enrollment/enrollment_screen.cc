@@ -267,24 +267,27 @@ void EnrollmentScreen::ProcessRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
-  if (AdvanceToNextAuth()) {
-    Show();
-    return;
-  }
-
   if (enrollment_succeeded_) {
     // Cancellation is the same to confirmation after the successful enrollment.
     OnConfirmationClosed();
     return;
   }
 
+  // Record cancellation for that one enrollment mode.
+  UMA(policy::kMetricEnrollmentCancelled);
+
+  if (AdvanceToNextAuth()) {
+    Show();
+    return;
+  }
+
+  // Record the total time for all auth attempts until final cancellation.
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
+
   on_joined_callback_.Reset();
   if (authpolicy_login_helper_)
     authpolicy_login_helper_->CancelRequestsAndRestart();
-
-  UMA(policy::kMetricEnrollmentCancelled);
-  if (elapsed_timer_)
-    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
 
   const ScreenExitCode exit_code =
       config_.is_forced() ? ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK
@@ -343,13 +346,17 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   // based enrollment and we have a fallback authentication, show it.
   if (status.status() == policy::EnrollmentStatus::REGISTRATION_FAILED &&
       status.client_status() == policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND &&
-      current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth()) {
-    Show();
-  } else {
-    view_->ShowEnrollmentStatus(status);
-    if (WizardController::UsingHandsOffEnrollment())
-      AutomaticRetry();
+      current_auth_ == AUTH_ATTESTATION) {
+    UMA(policy::kMetricEnrollmentDeviceNotPreProvisioned);
+    if (AdvanceToNextAuth()) {
+      Show();
+      return;
+    }
   }
+
+  view_->ShowEnrollmentStatus(status);
+  if (WizardController::UsingHandsOffEnrollment())
+    AutomaticRetry();
 }
 
 void EnrollmentScreen::OnOtherError(
@@ -491,8 +498,8 @@ void EnrollmentScreen::ShowSigninScreen() {
 
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
   enrollment_failed_once_ = true;
-  //  TODO(drcrash): Maybe create multiple metrics (http://crbug.com/640313)?
-  if (elapsed_timer_)
+  //  TODO(crbug.com/896793): Have other metrics for each auth mechanism.
+  if (elapsed_timer_ && current_auth_ == last_auth_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
 }
 
