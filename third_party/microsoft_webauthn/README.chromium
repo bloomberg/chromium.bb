@@ -15,6 +15,4 @@ not yet been released into a Windows SDK that Chromium can depend on. We
 therefore include the header via this open source repository for the time
 being.
 
-Local Modifications:
-- added BUILD.gn and README.chromium
-- added an ifndef header include guard to webauthn.h
+Local Modifications: none

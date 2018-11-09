@@ -4,6 +4,15 @@
 
 import("//build/config/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//build/buildflag_header.gni")
+
+import("buildflags.gni")
+
+# Generate a buildflag header for compile-time checking of Windows WebAuthn API integration.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "USE_WIN_WEBAUTHN_API=$use_win_webauthn_api" ]
+}
 
 component("fido") {
   sources = [
@@ -142,11 +151,11 @@ component("fido") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/boringssl",
-    "//third_party/microsoft_webauthn",
     "//ui/base",
   ]
 
   public_deps = [
+    ":buildflags",
     "//base",
     "//device/bluetooth",
     "//services/device/public/mojom",
@@ -199,7 +208,7 @@ component("fido") {
     ]
   }
 
-  if (is_win) {
+  if (is_win && use_win_webauthn_api) {
     sources += [
       "win/authenticator.cc",
       "win/authenticator.h",
@@ -323,7 +332,7 @@ source_set("test_support") {
     ]
   }
 
-  if (is_win) {
+  if (is_win && use_win_webauthn_api) {
     sources += [
       "win/fake_webauthn_api.cc",
       "win/fake_webauthn_api.h",

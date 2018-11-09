@@ -15,6 +15,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/buildflags.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -30,9 +31,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 #include "device/fido/win/fake_webauthn_api.h"
-#endif  // defined(OS_WIN)
+#endif
 
 namespace device {
 
@@ -719,7 +720,7 @@ TEST_F(FidoGetAssertionHandlerTest,
             get_assertion_callback().status());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 class GetAssertionRequestHandlerWinTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -776,6 +777,6 @@ TEST_F(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
               handler->AuthenticatorsForTesting().begin()->second->GetId());
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_WIN_WEBAUTHN_API)
 
 }  // namespace device
