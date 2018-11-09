@@ -59,7 +59,8 @@ void SchedulerWorkerPool::PostTaskWithSequenceNow(
   // in the past).
   DCHECK_LE(task.delayed_run_time, TimeTicks::Now());
 
-  const bool sequence_was_empty = sequence->PushTask(std::move(task));
+  const bool sequence_was_empty =
+      sequence->BeginTransaction()->PushTask(std::move(task));
   if (sequence_was_empty) {
     // Try to schedule |sequence| if it was empty before |task| was inserted
     // into it. Otherwise, one of these must be true:

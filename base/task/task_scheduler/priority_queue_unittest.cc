@@ -59,23 +59,27 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   // Create test sequences.
   scoped_refptr<Sequence> sequence_a =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_VISIBLE));
-  sequence_a->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
-  SequenceSortKey sort_key_a = sequence_a->GetSortKey();
+  sequence_a->BeginTransaction()->PushTask(
+      Task(FROM_HERE, DoNothing(), TimeDelta()));
+  SequenceSortKey sort_key_a = sequence_a->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_b =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_BLOCKING));
-  sequence_b->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
-  SequenceSortKey sort_key_b = sequence_b->GetSortKey();
+  sequence_b->BeginTransaction()->PushTask(
+      Task(FROM_HERE, DoNothing(), TimeDelta()));
+  SequenceSortKey sort_key_b = sequence_b->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_c =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_BLOCKING));
-  sequence_c->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
-  SequenceSortKey sort_key_c = sequence_c->GetSortKey();
+  sequence_c->BeginTransaction()->PushTask(
+      Task(FROM_HERE, DoNothing(), TimeDelta()));
+  SequenceSortKey sort_key_c = sequence_c->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_d =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::BEST_EFFORT));
-  sequence_d->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
-  SequenceSortKey sort_key_d = sequence_d->GetSortKey();
+  sequence_d->BeginTransaction()->PushTask(
+      Task(FROM_HERE, DoNothing(), TimeDelta()));
+  SequenceSortKey sort_key_d = sequence_d->BeginTransaction()->GetSortKey();
 
   // Create a PriorityQueue and a Transaction.
   PriorityQueue pq;

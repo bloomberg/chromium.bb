@@ -280,7 +280,7 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
     scoped_refptr<Sequence> sequence) {
   DCHECK(sequence);
-  const auto sequence_sort_key = sequence->GetSortKey();
+  const auto sequence_sort_key = sequence->BeginTransaction()->GetSortKey();
   shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
                                                   sequence_sort_key);
 }

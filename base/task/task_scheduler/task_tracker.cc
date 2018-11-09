@@ -457,7 +457,7 @@ scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
     scoped_refptr<Sequence> sequence,
     CanScheduleSequenceObserver* observer) {
   DCHECK(sequence);
-  const SequenceSortKey sort_key = sequence->GetSortKey();
+  const SequenceSortKey sort_key = sequence->BeginTransaction()->GetSortKey();
   const int priority_index = static_cast<int>(sort_key.priority());
 
   AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
@@ -483,7 +483,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   DCHECK(sequence);
 
   // Run the next task in |sequence|.
-  Optional<Task> task = sequence->TakeTask();
+  Optional<Task> task = sequence->BeginTransaction()->TakeTask();
   // TODO(fdoray): Support TakeTask() returning null. https://crbug.com/783309
   DCHECK(task);
 
@@ -502,7 +502,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   if (task->delayed_run_time.is_null())
     DecrementNumIncompleteUndelayedTasks();
 
-  const bool sequence_is_empty_after_pop = sequence->Pop();
+  const bool sequence_is_empty_after_pop = sequence->BeginTransaction()->Pop();
   const TaskPriority priority = sequence->traits().priority();
 
   // Never reschedule a Sequence emptied by Pop(). The contract is such that
@@ -870,9 +870,10 @@ scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
     CanScheduleSequenceObserver* observer,
     TaskPriority task_priority) {
   const TimeTicks next_task_sequenced_time =
-      just_ran_sequence
-          ? just_ran_sequence->GetSortKey().next_task_sequenced_time()
-          : TimeTicks();
+      just_ran_sequence ? just_ran_sequence->BeginTransaction()
+                              ->GetSortKey()
+                              .next_task_sequenced_time()
+                        : TimeTicks();
   PreemptedSequence sequence_to_schedule;
   int priority_index = static_cast<int>(task_priority);
 
