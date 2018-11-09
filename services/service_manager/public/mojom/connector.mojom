@@ -4,6 +4,7 @@
 
 module service_manager.mojom;
 
+import "mojo/public/mojom/base/token.mojom";
 import "services/service_manager/public/mojom/constants.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 
@@ -59,6 +60,28 @@ struct Identity {
   // May be (and is typically) empty, indicating the default and singular
   // instance of the service within the target instance group.
   string instance_id;
+
+  // A Token which globally and uniquely identifies a service instance across
+  // space and time.
+  //
+  // This value is generated and assigned by the Service Manager when starting
+  // a new instance and is given in the Identity passed to the instance via
+  // |Service.OnStart()|.
+  //
+  // This may also be used to reliably correlate events on a
+  // ServiceManagerListener interface with a specific service instance, given
+  // that other metadata (like |instance_id| above, or service process PID) may
+  // be reused over short periods of time and can thus lead to ambiguity in the
+  // relationship among multiple such events.
+  //
+  // NOTE: If a specific |globally_unique_id| is provided in an Identity passed
+  // to |Connector.BindInterface()|, the Service Manager will only establish a
+  // connection to the target service if all other provided fields above match a
+  // running instance AND that instance has the provided |globally_unique_id|.
+  // The Service Manager will never start a new instance on behalf of such a
+  // request. That is to say, clients cannot elicit new instance creation with
+  // a specific |globally_unique_id|.
+  mojo_base.mojom.Token? globally_unique_id;
 };
 
 // Implemented by an object in the service manager associated with a specific

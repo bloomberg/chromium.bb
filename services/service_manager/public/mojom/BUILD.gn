@@ -20,6 +20,7 @@ mojom_component("mojom") {
 
   public_deps = [
     ":constants",
+    "//mojo/public/mojom/base",
   ]
 }
 

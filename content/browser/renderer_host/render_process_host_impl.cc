@@ -3811,7 +3811,7 @@ RenderProcessHost* RenderProcessHost::FromRendererIdentity(
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* process = i.GetCurrentValue();
-    if (process->GetChildIdentity() == identity)
+    if (process->GetChildIdentity().Matches(identity))
       return process;
   }
   return nullptr;
