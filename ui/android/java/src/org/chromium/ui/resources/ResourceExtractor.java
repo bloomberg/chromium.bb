@@ -180,7 +180,8 @@ public class ResourceExtractor {
         //
         AssetManager assetManager = ContextUtils.getApplicationAssets();
         String localesSrcDir;
-        String langSpecificPath = COMPRESSED_LOCALES_DIR + "#lang_" + uiLanguage;
+        String androidSplitLanguage = LocalizationUtils.getSplitLanguageForAndroid(uiLanguage);
+        String langSpecificPath = COMPRESSED_LOCALES_DIR + "#lang_" + androidSplitLanguage;
         String defaultLocalePakName =
                 LocalizationUtils.getDefaultCompressedPakLocaleForLanguage(uiLanguage) + ".pak";
 
