@@ -66,10 +66,11 @@ void NavigateToNTPAndWaitUntilLoaded(Browser* browser, int delay) {
         if (tilesAreLoaded) {
           return true;
         }
-        window.addEventListener('message', function(event) {
+        let loaded = window.addEventListener('message', function(event) {
           if (event.data.cmd == 'loaded') {
+            window.removeEventListener('message', loaded);
             setTimeout(() => {
-             domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
+              domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
             }, %d);
           }
         });
