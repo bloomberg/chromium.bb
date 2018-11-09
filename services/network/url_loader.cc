@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -42,11 +44,15 @@
 namespace network {
 
 namespace {
+
 constexpr size_t kDefaultAllocationSize = 512 * 1024;
 
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
+
+// Used to dump when we get too many requests, once.
+bool g_reported_too_many_requests = false;
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -403,6 +409,18 @@ URLLoader::URLLoader(
 
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id);
+
+  // Record some debug info in hope of tracing down leaks.
+  int32_t annotation_hash =
+      url_request_->traffic_annotation().unique_id_hash_code;
+  size_t num_running_requests = url_request_context_->url_requests()->size();
+  base::debug::Alias(&annotation_hash);
+  base::debug::Alias(&num_running_requests);
+  DEBUG_ALIAS_FOR_GURL(url_buf, url_request_->url());
+  if (!g_reported_too_many_requests && num_running_requests > 10000) {
+    g_reported_too_many_requests = true;
+    base::debug::DumpWithoutCrashing();
+  }
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {
