@@ -74,6 +74,8 @@ interface NetworkServiceClient {
                  AuthChallengeResponder auth_challenge_responder);
   // Called when an SSL certificate requested message is received for client
   // authentication.
+  // The |provider_name| parameter corresponses to the return value of
+  // net::SSLPrivateKey::GetProviderName().
   // The |algorithm_preferences| parameter corresponds to the return value
   // of net::SSLPrivateKey::GetAlgorithmPreferences().
   // The |cancel_certificate_selection| parameter is used to distinguish
@@ -89,6 +91,7 @@ interface NetworkServiceClient {
                          uint32 request_id,
                          network.mojom.SSLCertRequestInfo cert_info) => (
                              network.mojom.X509Certificate x509_certificate,
+                             string provider_name,
                              array<uint16> algorithm_preferences,
                              SSLPrivateKey ssl_private_key,
                              bool cancel_certificate_selection);

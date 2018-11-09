@@ -34,16 +34,27 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     Delegate() {}
     virtual ~Delegate() {}
 
+    // Returns a human-readable name of the provider that backs this
+    // SSLPrivateKey, for debugging. If not applicable or available, return the
+    // empty string.
+    //
+    // This method must be efficiently callable on any thread.
+    virtual std::string GetProviderName() = 0;
+
     // Returns the algorithms that are supported by the key in decreasing
     // preference for TLS 1.2 and later. Note that
     // |SSL_SIGN_RSA_PKCS1_MD5_SHA1| is only used by TLS 1.1 and earlier and
     // should not be in this list.
+    //
+    // This method must be efficiently callable on any thread.
     virtual std::vector<uint16_t> GetAlgorithmPreferences() = 0;
 
-    // Signs an |input| with the specified TLS signing algorithm. |input| is
-    // the unhashed message to be signed. On success it returns OK and sets
+    // Signs an |input| with the specified TLS signing algorithm. |input| is the
+    // unhashed message to be signed. On success it returns OK and sets
     // |signature| to the resulting signature. Otherwise it returns a net error
-    // code. It will only be called on the task runner passed to the owning
+    // code.
+    //
+    // This method will only be called on the task runner passed to the owning
     // ThreadedSSLPrivateKey.
     virtual Error Sign(uint16_t algorithm,
                        base::span<const uint8_t> input,
@@ -58,6 +69,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // SSLPrivateKey implementation.
+  std::string GetProviderName() override;
   std::vector<uint16_t> GetAlgorithmPreferences() override;
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
