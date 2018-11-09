@@ -7,10 +7,10 @@
 #include <utility>
 #include <vector>
 
-#if defined(OS_CHROMEOS)
-#include <libdrm/drm_fourcc.h>
-
 #include "media/gpu/format_utils.h"
+#include "media/gpu/test/rendering_helper.h"
+
+#if defined(OS_CHROMEOS)
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -43,8 +43,7 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
     uint32_t texture_id,
     base::OnceClosure no_longer_needed_cb,
     VideoPixelFormat pixel_format,
-    const gfx::Size& size,
-    gfx::BufferUsage buffer_usage) {
+    const gfx::Size& size) {
   scoped_refptr<TextureRef> texture_ref;
 #if defined(OS_CHROMEOS)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
@@ -55,7 +54,8 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   gfx::BufferFormat buffer_format =
       VideoPixelFormatToGfxBufferFormat(pixel_format);
   texture_ref->pixmap_ = factory->CreateNativePixmap(
-      gfx::kNullAcceleratedWidget, size, buffer_format, buffer_usage);
+      gfx::kNullAcceleratedWidget, size, buffer_format,
+      gfx::BufferUsage::SCANOUT_VDA_WRITE);
   LOG_ASSERT(texture_ref->pixmap_);
   texture_ref->coded_size_ = size;
 #endif
@@ -134,14 +134,6 @@ scoped_refptr<VideoFrame> TextureRef::CreateVideoFrame(
       base::TimeDelta());
 #endif
   return video_frame;
-}
-
-bool TextureRef::IsDirectlyMappable() const {
-#if defined(OS_CHROMEOS)
-  return pixmap_->GetDmaBufModifier(0) == DRM_FORMAT_MOD_LINEAR;
-#else
-  return false;
-#endif
 }
 
 }  // namespace test
