@@ -409,6 +409,9 @@ void URLRequestHttpJob::Start() {
   request_info_.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
   request_info_.socket_tag = request_->socket_tag();
+#if BUILDFLAG(ENABLE_REPORTING)
+  request_info_.reporting_upload_depth = request_->reporting_upload_depth();
+#endif
 
   // Enable privacy mode if cookie settings or flags tell us not send or
   // save cookies.

@@ -50,15 +50,6 @@ constexpr net::NetworkTrafficAnnotationTag kReportUploadTrafficAnnotation =
           policy_exception_justification: "Not implemented."
         })");
 
-class UploadUserData : public base::SupportsUserData::Data {
- public:
-  static const void* const kUserDataKey;
-
-  UploadUserData(int depth) : depth(depth) {}
-
-  int depth;
-};
-
 // Returns true if |request| contains any of the |allowed_values| in a response
 // header field named |header|. |allowed_values| are expected to be lower-case
 // and the check is case-insensitive.
@@ -76,10 +67,6 @@ bool HasHeaderValues(URLRequest* request,
   }
   return false;
 }
-
-// SetUserData needs a unique const void* to serve as the key, so create a const
-// void* and use its own address as the unique pointer.
-const void* const UploadUserData::kUserDataKey = &UploadUserData::kUserDataKey;
 
 ReportingUploader::Outcome ResponseCodeToOutcome(int response_code) {
   if (response_code >= 200 && response_code <= 299)
@@ -192,9 +179,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // about reports" can get.  (Without this, a Reporting policy that uploads
     // reports to the same origin can cause an infinite stack of reports about
     // reports.)
-    upload->request->SetUserData(
-        UploadUserData::kUserDataKey,
-        std::make_unique<UploadUserData>(upload->max_depth));
+    upload->request->set_reporting_upload_depth(upload->max_depth + 1);
 
     URLRequest* raw_request = upload->request.get();
     uploads_[raw_request] = std::move(upload);
@@ -225,19 +210,11 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // about reports" can get.  (Without this, a Reporting policy that uploads
     // reports to the same origin can cause an infinite stack of reports about
     // reports.)
-    upload->request->SetUserData(
-        UploadUserData::kUserDataKey,
-        std::make_unique<UploadUserData>(upload->max_depth));
+    upload->request->set_reporting_upload_depth(upload->max_depth + 1);
 
     URLRequest* raw_request = upload->request.get();
     uploads_[raw_request] = std::move(upload);
     raw_request->Start();
-  }
-
-  int GetUploadDepth(const net::URLRequest& request) override {
-    UploadUserData* data = static_cast<UploadUserData*>(
-        request.GetUserData(UploadUserData::kUserDataKey));
-    return data ? data->depth + 1 : 0;
   }
 
   // URLRequest::Delegate implementation:

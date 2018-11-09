@@ -24,6 +24,9 @@ void TestNetworkErrorLoggingService::OnHeader(
 }
 
 void TestNetworkErrorLoggingService::OnRequest(RequestDetails details) {
+  VLOG(1) << "Created NEL report (status=" << details.status_code
+          << ", depth=" << details.reporting_upload_depth << ") for "
+          << details.uri;
   errors_.push_back(std::move(details));
 }
 

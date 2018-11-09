@@ -332,6 +332,18 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   const std::string& method() const { return method_; }
   void set_method(const std::string& method);
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Reporting upload nesting depth of this request.
+  //
+  // If the request is not a Reporting upload, the depth is 0.
+  //
+  // If the request is a Reporting upload, the depth is the max of the depth
+  // of the requests reported within it plus 1. (Non-NEL reports are
+  // considered to have depth 0.)
+  int reporting_upload_depth() const { return reporting_upload_depth_; }
+  void set_reporting_upload_depth(int reporting_upload_depth);
+#endif
+
   // The referrer URL for the request
   const std::string& referrer() const { return referrer_; }
   // Sets the referrer URL for the request. Can only be changed before Start()
@@ -827,11 +839,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // cancellation.
   void OnCallToDelegateComplete();
 
-#if BUILDFLAG(ENABLE_REPORTING)
-  std::string GetUserAgent() const;
-  void MaybeGenerateNetworkErrorLoggingReport();
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
   // Contextual information used for this request. Cannot be NULL. This contains
   // most of the dependencies which are shared between requests (disk cache,
   // cookie store, socket pool, etc.)
@@ -857,6 +864,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   HttpRequestHeaders extra_request_headers_;
   int load_flags_;  // Flags indicating the request type for the load;
                     // expected values are LOAD_* enums above.
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  int reporting_upload_depth_;
+#endif
 
   // Never access methods of the |delegate_| directly. Always use the
   // Notify... methods for this.
