@@ -75,8 +75,8 @@ WebUIDataSource* CreateGpuHTMLSource() {
 }
 
 std::unique_ptr<base::DictionaryValue> NewDescriptionValuePair(
-    const std::string& desc,
-    const std::string& value) {
+    base::StringPiece desc,
+    base::StringPiece value) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("description", desc);
   dict->SetString("value", value);
@@ -84,7 +84,7 @@ std::unique_ptr<base::DictionaryValue> NewDescriptionValuePair(
 }
 
 std::unique_ptr<base::DictionaryValue> NewDescriptionValuePair(
-    const std::string& desc,
+    base::StringPiece desc,
     std::unique_ptr<base::Value> value) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("description", desc);
@@ -181,8 +181,11 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       NewDescriptionValuePair("Desktop compositing", compositor));
 
   basic_info->Append(NewDescriptionValuePair(
-      "Direct composition overlays",
-      std::make_unique<base::Value>(gpu_info.direct_composition_overlays)));
+      "Direct composition",
+      std::make_unique<base::Value>(gpu_info.direct_composition)));
+  basic_info->Append(NewDescriptionValuePair(
+      "Supports overlays",
+      std::make_unique<base::Value>(gpu_info.supports_overlays)));
 
   auto overlay_capabilities = std::make_unique<base::ListValue>();
   for (const auto& cap : gpu_info.overlay_capabilities) {
