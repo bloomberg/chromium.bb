@@ -75,7 +75,7 @@ class ScriptModuleTestModulator final : public DummyModulator {
 };
 
 ScriptModuleTestModulator::ScriptModuleTestModulator()
-    : resolver_(new TestScriptModuleResolver) {}
+    : resolver_(MakeGarbageCollected<TestScriptModuleResolver>()) {}
 
 void ScriptModuleTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
@@ -168,7 +168,7 @@ TEST(ScriptModuleTest, moduleRequests) {
 TEST(ScriptModuleTest, instantiateNoDeps) {
   V8TestingScope scope;
 
-  auto* modulator = new ScriptModuleTestModulator();
+  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
   auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -188,7 +188,7 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
 TEST(ScriptModuleTest, instantiateWithDeps) {
   V8TestingScope scope;
 
-  auto* modulator = new ScriptModuleTestModulator();
+  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
   auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -226,7 +226,7 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
 TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
   V8TestingScope scope;
 
-  auto* modulator = new ScriptModuleTestModulator();
+  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
   auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
@@ -263,7 +263,7 @@ TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
 TEST(ScriptModuleTest, Evaluate) {
   V8TestingScope scope;
 
-  auto* modulator = new ScriptModuleTestModulator();
+  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
@@ -297,7 +297,7 @@ TEST(ScriptModuleTest, Evaluate) {
 TEST(ScriptModuleTest, EvaluateCaptureError) {
   V8TestingScope scope;
 
-  auto* modulator = new ScriptModuleTestModulator();
+  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");

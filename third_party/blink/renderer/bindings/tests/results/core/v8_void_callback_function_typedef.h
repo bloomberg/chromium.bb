@@ -21,9 +21,11 @@ class ScriptWrappable;
 class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionTypedef* Create(v8::Local<v8::Function> callback_function) {
-    return new V8VoidCallbackFunctionTypedef(callback_function);
+    return MakeGarbageCollected<V8VoidCallbackFunctionTypedef>(callback_function);
   }
 
+  explicit V8VoidCallbackFunctionTypedef(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8VoidCallbackFunctionTypedef() override = default;
 
   // NameClient overrides:
@@ -36,10 +38,6 @@ class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionB
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg);
-
- private:
-  explicit V8VoidCallbackFunctionTypedef(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>

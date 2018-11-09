@@ -42,6 +42,14 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       V8Function* attribute_changed_callback,
       HashSet<AtomicString>&& observed_attributes);
 
+  ScriptCustomElementDefinition(ScriptState*,
+                                const CustomElementDescriptor&,
+                                V8CustomElementConstructor* constructor,
+                                V8Function* connected_callback,
+                                V8Function* disconnected_callback,
+                                V8Function* adopted_callback,
+                                V8Function* attribute_changed_callback,
+                                HashSet<AtomicString>&& observed_attributes);
   ~ScriptCustomElementDefinition() override = default;
 
   void Trace(Visitor*) override;
@@ -66,15 +74,6 @@ class CORE_EXPORT ScriptCustomElementDefinition final
                                    const AtomicString& new_value) override;
 
  private:
-  ScriptCustomElementDefinition(ScriptState*,
-                                const CustomElementDescriptor&,
-                                V8CustomElementConstructor* constructor,
-                                V8Function* connected_callback,
-                                V8Function* disconnected_callback,
-                                V8Function* adopted_callback,
-                                V8Function* attribute_changed_callback,
-                                HashSet<AtomicString>&& observed_attributes);
-
   // Implementations of |CustomElementDefinition|
   ScriptValue GetConstructorForScript() final;
   bool RunConstructor(Element*) override;

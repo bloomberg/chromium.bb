@@ -21,9 +21,11 @@ class ScriptWrappable;
 class CORE_EXPORT V8TreatNonObjectAsNullVoidFunction final : public CallbackFunctionBase {
  public:
   static V8TreatNonObjectAsNullVoidFunction* Create(v8::Local<v8::Object> callback_function) {
-    return new V8TreatNonObjectAsNullVoidFunction(callback_function);
+    return MakeGarbageCollected<V8TreatNonObjectAsNullVoidFunction>(callback_function);
   }
 
+  explicit V8TreatNonObjectAsNullVoidFunction(v8::Local<v8::Object> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8TreatNonObjectAsNullVoidFunction() override = default;
 
   // NameClient overrides:
@@ -36,10 +38,6 @@ class CORE_EXPORT V8TreatNonObjectAsNullVoidFunction final : public CallbackFunc
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value);
-
- private:
-  explicit V8TreatNonObjectAsNullVoidFunction(v8::Local<v8::Object> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>

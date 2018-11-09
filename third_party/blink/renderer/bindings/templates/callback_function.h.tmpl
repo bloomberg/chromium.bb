@@ -19,9 +19,13 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   static {{cpp_class}}* Create(
       {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
       {%- else %}v8::Local<v8::Function>{% endif %} callback_function) {
-    return new {{cpp_class}}(callback_function);
+    return MakeGarbageCollected<{{cpp_class}}>(callback_function);
   }
 
+  explicit {{cpp_class}}(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~{{cpp_class}}() override = default;
 
   // NameClient overrides:
@@ -47,12 +51,6 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   // error handler such as DevTools' console.
   void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
-
- private:
-  explicit {{cpp_class}}(
-      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
-      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
