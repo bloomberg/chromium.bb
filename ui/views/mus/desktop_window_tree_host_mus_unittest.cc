@@ -766,4 +766,15 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowMoveShouldNotTransfersBack) {
   EXPECT_EQ(2, counter.GetTotalCount());
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, ShowWindowFromServerDoesntActivate) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+
+  // This simulates what happens when a show happens from the server.
+  widget->GetNativeWindow()->GetHost()->Show();
+  EXPECT_TRUE(widget->IsVisible());
+  // The window should not be active yet.
+  EXPECT_FALSE(widget->GetNativeWindow()->HasFocus());
+  EXPECT_FALSE(widget->IsActive());
+}
+
 }  // namespace views
