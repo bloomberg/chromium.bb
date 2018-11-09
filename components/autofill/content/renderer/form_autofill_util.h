@@ -316,6 +316,17 @@ FindFormControlElementsByUniqueRendererId(
     uint32_t form_renderer_id,
     const std::vector<uint32_t>& form_control_renderer_ids);
 
+// Returns the ARIA label text of the elements denoted by the aria-labelledby
+// attribute of |element| or the value of the aria-label attribute of
+// |element|, with priority given to the aria-labelledby attribute.
+base::string16 GetAriaLabel(const blink::WebDocument& document,
+                            const blink::WebFormControlElement& element);
+
+// Returns the ARIA label text of the elements denoted by the aria-describedby
+// attribute of |element|.
+base::string16 GetAriaDescription(const blink::WebDocument& document,
+                                  const blink::WebFormControlElement& element);
+
 }  // namespace form_util
 }  // namespace autofill
 
