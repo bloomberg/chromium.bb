@@ -94,65 +94,68 @@
   "chrome/browser/resources/invalidations_resources.grd": {
     "includes": [12400],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+  "chrome/browser/resources/local_ntp_resources.grd": {
     "includes": [12440],
   },
+  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+    "includes": [12500],
+  },
   "chrome/browser/resources/md_extensions/extensions_resources.grd": {
-    "structures": [12450],
+    "structures": [12510],
   },
   "chrome/browser/resources/net_internals_resources.grd": {
-    "includes": [12540],
+    "includes": [12600],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
-    "includes": [12550],
+    "includes": [12610],
   },
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
-    "structures": [12560],
+    "structures": [12620],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [12750],
+    "includes": [12810],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [12770],
+    "includes": [12830],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [12780],
+    "structures": [12840],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [13280],
+    "includes": [13340],
   },
   "chrome/browser/resources/task_scheduler_internals/resources.grd": {
-    "includes": [13300],
+    "includes": [13360],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [13310],
+    "includes": [13370],
   },
   "chrome/browser/resources/webapks_ui_resources.grd": {
-    "includes": [13320],
+    "includes": [13380],
   },
   "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
-    "includes": [13330],
-    "structures": [13380],
+    "includes": [13390],
+    "structures": [13440],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13420],
+    "includes": [13480],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [13430],
+    "includes": [13650],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13450],
-    "messages": [13460],
+    "includes": [13670],
+    "messages": [13680],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [13500],
-    "structures": [13600],
+    "includes": [13720],
+    "structures": [13830],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [13650],
+    "includes": [13870],
   },
   # END chrome/ miscellaneous section.
 
