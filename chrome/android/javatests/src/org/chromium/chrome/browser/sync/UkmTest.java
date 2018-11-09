@@ -69,8 +69,8 @@ public class UkmTest {
     public boolean isUkmEnabled(Tab normalTab) throws Exception {
         String state = getElementContent(normalTab, "state");
         Assert.assertTrue(
-                "UKM state: " + state, state.equals("\"True\"") || state.equals("\"False\""));
-        return state.equals("\"True\"");
+                "UKM state: " + state, state.equals("\"ENABLED\"") || state.equals("\"DISABLED\""));
+        return state.equals("\"ENABLED\"");
     }
 
     public String getUkmClientId(Tab normalTab) throws Exception {

@@ -26,6 +26,13 @@ class UkmDebugDataExtractor {
   // Returns UKM data structured in a DictionaryValue.
   static base::Value GetStructuredData(const UkmService* ukm_service);
 
+  // Convert uint64 to pair of int32 to match the spec of Value. JS doesn't
+  // support uint64 while most of UKM metrics are 64 bit numbers. So,
+  // they will be passed as a pair of 32 bit ints. The first item is the
+  // 32 bit representation of the high 32 bit and the second item is the lower
+  // 32 bit of the 64 bit number.
+  static base::Value UInt64AsPairOfInt(uint64_t v);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UkmDebugDataExtractor);
 };
