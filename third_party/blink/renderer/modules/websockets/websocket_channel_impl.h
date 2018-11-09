@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
@@ -54,6 +53,10 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
+
+namespace file_error {
+enum class ErrorCode;
+}
 
 class BaseFetchContext;
 class WebSocketChannelClient;

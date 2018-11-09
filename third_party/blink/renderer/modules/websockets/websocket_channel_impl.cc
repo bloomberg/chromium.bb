@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -769,13 +770,13 @@ void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
 void WebSocketChannelImpl::DidFailLoadingBlob(
     file_error::ErrorCode error_code) {
   blob_loader_.Clear();
-  if (error_code == file_error::kAbortErr) {
+  if (error_code == file_error::ErrorCode::kAbortErr) {
     // The error is caused by cancel().
     return;
   }
   // FIXME: Generate human-friendly reason message.
   FailAsError("Failed to load Blob: error code = " +
-              String::Number(error_code));
+              String::Number(static_cast<unsigned>(error_code)));
 }
 
 void WebSocketChannelImpl::TearDownFailedConnection() {

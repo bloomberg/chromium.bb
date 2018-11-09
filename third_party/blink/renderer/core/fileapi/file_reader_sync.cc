@@ -116,7 +116,7 @@ void FileReaderSync::StartLoading(FileReaderLoader& loader,
                                   const Blob& blob,
                                   ExceptionState& exception_state) {
   loader.Start(blob.GetBlobDataHandle());
-  if (loader.GetErrorCode())
+  if (loader.GetErrorCode() != file_error::ErrorCode::kOK)
     file_error::ThrowDOMException(exception_state, loader.GetErrorCode());
 }
 
