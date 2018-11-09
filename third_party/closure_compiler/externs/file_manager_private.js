@@ -262,7 +262,10 @@ chrome.fileManagerPrivate.FileTask;
  *   canDelete: (boolean|undefined),
  *   canRename: (boolean|undefined),
  *   canAddChildren: (boolean|undefined),
- *   canShare: (boolean|undefined)
+ *   canShare: (boolean|undefined),
+ *   isMachineRoot: (boolean|undefined),
+ *   isExternalMedia: (boolean|undefined),
+ *   isArbitrarySyncFolder: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.EntryProperties;

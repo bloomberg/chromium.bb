@@ -208,6 +208,39 @@ struct AddEntriesMessage {
     }
   };
 
+  // A message that specifies the folder features for the entry, in a
+  // dictionary in JSON-parseable format.
+  struct EntryFolderFeature {
+    EntryFolderFeature()
+        : is_machine_root(false),
+          is_arbitrary_sync_folder(false),
+          is_external_media(false) {}
+
+    EntryFolderFeature(bool is_machine_root,
+                       bool is_arbitrary_sync_folder,
+                       bool is_external_media)
+        : is_machine_root(is_machine_root),
+          is_arbitrary_sync_folder(is_arbitrary_sync_folder),
+          is_external_media(is_external_media) {}
+
+    bool is_machine_root;           // Is a root entry in the Computers section.
+    bool is_arbitrary_sync_folder;  // True if this is a sync folder for
+                                    // backup and sync.
+    bool is_external_media;         // True is this is a root entry for a
+                                    // removable devices (USB, SD etc).
+
+    static void RegisterJSONConverter(
+        base::JSONValueConverter<EntryFolderFeature>* converter) {
+      converter->RegisterBoolField("isMachineRoot",
+                                   &EntryFolderFeature::is_machine_root);
+      converter->RegisterBoolField(
+          "isArbitrarySyncFolder",
+          &EntryFolderFeature::is_arbitrary_sync_folder);
+      converter->RegisterBoolField("isExternalMedia",
+                                   &EntryFolderFeature::is_external_media);
+    }
+  };
+
   // A message that specifies the metadata (name, shared options, capabilities
   // etc) for an entry, in a dictionary in JSON-parseable format.
   // This object must match TestEntryInfo in
@@ -235,7 +268,8 @@ struct AddEntriesMessage {
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Entry permissions.
-    bool pinned = false;             // Whether the file should be pinned.
+    EntryFolderFeature folder_feature;  // Entry folder feature.
+    bool pinned = false;                // Whether the file should be pinned.
 
     TestEntryInfo& SetSharedOption(SharedOption option) {
       shared_option = option;
@@ -268,6 +302,12 @@ struct AddEntriesMessage {
       return *this;
     }
 
+    TestEntryInfo& SetEntryFolderFeature(
+        const EntryFolderFeature& new_folder_feature) {
+      folder_feature = new_folder_feature;
+      return *this;
+    }
+
     TestEntryInfo& SetPinned(bool is_pinned) {
       pinned = is_pinned;
       return *this;
@@ -295,6 +335,8 @@ struct AddEntriesMessage {
                                      &MapStringToTime);
       converter->RegisterNestedField("capabilities",
                                      &TestEntryInfo::capabilities);
+      converter->RegisterNestedField("folderFeature",
+                                     &TestEntryInfo::folder_feature);
       converter->RegisterBoolField("pinned", &TestEntryInfo::pinned);
     }
 
@@ -916,7 +958,10 @@ class DriveFsTestVolume : public DriveTestVolume {
                 AddEntriesMessage::SharedOption::SHARED_WITH_ME,
         {entry.capabilities.can_share, entry.capabilities.can_copy,
          entry.capabilities.can_delete, entry.capabilities.can_rename,
-         entry.capabilities.can_add_children});
+         entry.capabilities.can_add_children},
+        {entry.folder_feature.is_machine_root,
+         entry.folder_feature.is_arbitrary_sync_folder,
+         entry.folder_feature.is_external_media});
 
     switch (entry.type) {
       case AddEntriesMessage::FILE: {
@@ -940,8 +985,10 @@ class DriveFsTestVolume : public DriveTestVolume {
             << "Failed to create a team drive: " << target_path.value();
         break;
       case AddEntriesMessage::COMPUTER:
+        DCHECK(entry.folder_feature.is_machine_root);
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a computer: " << target_path.value();
+        break;
     }
 
     ASSERT_TRUE(UpdateModifiedTime(entry));

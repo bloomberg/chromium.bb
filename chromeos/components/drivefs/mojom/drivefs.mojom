@@ -223,7 +223,7 @@ struct FolderFeature {
   bool is_machine_root = false;
 
   // Identifies a sync folder.
-  bool is_arbitary_sync_folder = false;
+  bool is_arbitrary_sync_folder = false;
 
   // Identifies an external media folder, that contains one time only uploads
   // for USB devices, SD cards etc.

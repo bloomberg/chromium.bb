@@ -710,6 +710,15 @@ class SingleEntryPropertiesGetterForDriveFs {
           std::make_unique<std::string>(*properties_->thumbnail_url);
     }
 
+    if (metadata->folder_feature) {
+      properties_->is_machine_root =
+          std::make_unique<bool>(metadata->folder_feature->is_machine_root);
+      properties_->is_external_media =
+          std::make_unique<bool>(metadata->folder_feature->is_external_media);
+      properties_->is_arbitrary_sync_folder = std::make_unique<bool>(
+          metadata->folder_feature->is_arbitrary_sync_folder);
+    }
+
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);
   }
 
