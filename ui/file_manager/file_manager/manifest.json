@@ -175,6 +175,7 @@
     "foreground/elements/files_toggle_ripple.js",
     "foreground/elements/files_tooltip.html",
     "foreground/elements/files_tooltip.js",
+    "background/js/runtime_loaded_test_util.js",
     "background/js/background_common_scripts.js",
     "foreground/js/metadata/byte_reader.js",
     "foreground/js/metadata/exif_parser.js",

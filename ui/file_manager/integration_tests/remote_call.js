@@ -25,16 +25,49 @@ function autoStep() {
  */
 function RemoteCall(extensionId) {
   this.extensionId_ = extensionId;
+  this.testRuntimeLoaded_ = false;
+
+  /**
+   * Tristate holding the cached result of isStepByStepEnabled_().
+   * @type{?bool}
+   */
+  this.cachedStepByStepEnabled_ = null;
 }
 
 /**
  * Checks whether step by step tests are enabled or not.
+ * @private
  * @return {Promise<bool>}
  */
-RemoteCall.isStepByStepEnabled = function() {
-  return new Promise(function(fulfill) {
+RemoteCall.prototype.isStepByStepEnabled_ = function() {
+  if (this.cachedStepByStepEnabled_ != null)
+    return Promise.resolve(this.cachedStepByStepEnabled_);
+
+  return new Promise((fulfill) => {
     chrome.commandLinePrivate.hasSwitch(
-        'enable-file-manager-step-by-step-tests', fulfill);
+        'enable-file-manager-step-by-step-tests', (/** bool */ result) => {
+          this.cachedStepByStepEnabled_ = result;
+          fulfill(result);
+        });
+  });
+};
+
+/**
+ * Asks the extension under test to load its testing functions.
+ * @private
+ * @return {Promise<bool>}
+ */
+RemoteCall.prototype.ensureLoaded_ = function() {
+  if (this.testRuntimeLoaded_)
+    return Promise.resolve(true);
+
+  return new Promise((fulfill) => {
+    chrome.runtime.sendMessage(
+        this.extensionId_, {enableTesting: true}, {}, (/** bool */ success) => {
+          chrome.test.assertTrue(success);
+          this.testRuntimeLoaded_ = success;
+          fulfill(success);
+        });
   });
 };
 
@@ -50,46 +83,43 @@ RemoteCall.isStepByStepEnabled = function() {
  * @return {Promise} Promise to be fulfilled with the result of the remote
  *     utility.
  */
-RemoteCall.prototype.callRemoteTestUtil =
-    function(func, appId, args, opt_callback) {
-  return RemoteCall.isStepByStepEnabled().then(function(stepByStep) {
-    if (!stepByStep)
-      return false;
-    return new Promise(function(onFulfilled) {
-      console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
-      console.info(args);
-      if (window.autostep !== true) {
-        console.info('Type step() to continue...');
-        window.step = function() {
-          window.step = null;
-          onFulfilled(stepByStep);
-        };
-      } else {
-        console.info('Auto calling step() ...');
-        onFulfilled(stepByStep);
-      }
-    });
-  }).then(function(stepByStep) {
-    return new Promise(function(onFulfilled) {
-      chrome.runtime.sendMessage(
-          this.extensionId_,
-          {
-            func: func,
-            appId: appId,
-            args: args
-          },
-          {},
-          function(var_args) {
-            if (stepByStep) {
-              console.info('Returned value:');
-              console.info(JSON.stringify(var_args));
-            }
-            if (opt_callback)
-              opt_callback.apply(null, arguments);
-            onFulfilled(arguments[0]);
-          });
-    }.bind(this));
-  }.bind(this));
+RemoteCall.prototype.callRemoteTestUtil = function(
+    func, appId, args, opt_callback) {
+  return this.ensureLoaded_()
+      .then(this.isStepByStepEnabled_.bind(this))
+      .then((stepByStep) => {
+        if (!stepByStep)
+          return false;
+        return new Promise((onFulfilled) => {
+          console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
+          console.info(args);
+          if (window.autostep !== true) {
+            console.info('Type step() to continue...');
+            window.step = function() {
+              window.step = null;
+              onFulfilled(stepByStep);
+            };
+          } else {
+            console.info('Auto calling step() ...');
+            onFulfilled(stepByStep);
+          }
+        });
+      })
+      .then((stepByStep) => {
+        return new Promise((onFulfilled) => {
+          chrome.runtime.sendMessage(
+              this.extensionId_, {func: func, appId: appId, args: args}, {},
+              function(var_args) {
+                if (stepByStep) {
+                  console.info('Returned value:');
+                  console.info(JSON.stringify(var_args));
+                }
+                if (opt_callback)
+                  opt_callback.apply(null, arguments);
+                onFulfilled(arguments[0]);
+              });
+        });
+      });
 };
 
 /**

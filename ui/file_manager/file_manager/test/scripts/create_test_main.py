@@ -149,6 +149,13 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
 includes2scripts('foreground/js/main_scripts.js')
 includes2scripts('background/js/background_common_scripts.js')
 includes2scripts('background/js/background_scripts.js')
+
+# test_util_base.js in background_common_scripts.js loads this at runtime.
+# However, test/js/test_util.js copies some functions from it into its own
+# test context, so provide it here.
+scripts += ['<script src="%s%s"></script>' %
+    (ROOT, 'background/js/runtime_loaded_test_util.js')]
+
 main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     ('<link rel="import" href="%s../../../third_party/polymer/v1_0/'
      'components-chromium/polymer/polymer.html">' % ROOT),
@@ -156,7 +163,6 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
      'components-chromium/paper-progress/paper-progress.html">' % ROOT),
     "<script>var FILE_MANAGER_ROOT = '%s';</script>" % ROOT,
     ] + scripts)
-
 
 # Get strings from grdp files.  Remove any ph/ex elements before getting text.
 # Parse private_api_strings.cc to match the string name to the grdp message.
