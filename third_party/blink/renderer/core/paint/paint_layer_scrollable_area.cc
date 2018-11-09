@@ -2038,6 +2038,18 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     if (!UserInputScrollable(kVerticalScrollbar))
       new_scroll_offset.SetHeight(old_scroll_offset.Height());
   }
+
+  FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(end_point),
+                                                  true, true);
+  end_point = GetLayoutBox()
+                  ->GetDocument()
+                  .GetSnapCoordinator()
+                  ->GetSnapPosition(*GetLayoutBox(), *strategy)
+                  .value_or(end_point);
+  new_scroll_offset = ScrollPositionToOffset(end_point);
+
   if (params.is_for_scroll_sequence) {
     DCHECK(params.GetScrollType() == kProgrammaticScroll ||
            params.GetScrollType() == kUserScroll);
