@@ -395,9 +395,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   int64_t next_avail_version_id_;
 
   enum State {
-    UNINITIALIZED,
-    INITIALIZED,
-    DISABLED,
+    DATABASE_STATE_UNINITIALIZED,
+    DATABASE_STATE_INITIALIZED,
+    DATABASE_STATE_DISABLED,
   };
   State state_;
 
