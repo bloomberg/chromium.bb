@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/timer/timer.h"
@@ -22,6 +23,8 @@ namespace auto_screen_brightness {
 // Real implementation of AlsReader.
 // It periodically reads lux values from the ambient light sensor (ALS)
 // if powerd has been configured to use it.
+// An object of this class must be used on the same sequence that created this
+// object.
 class AlsReaderImpl : public AlsReader {
  public:
   // ALS file location may not be ready immediately, so we retry every
@@ -45,9 +48,9 @@ class AlsReaderImpl : public AlsReader {
   // reads ambient light file path.
   void Init();
 
-  // Sets the task runner for testing purpose.
+  // Sets the |blocking_task_runner_| for testing purpose.
   void SetTaskRunnerForTesting(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> test_blocking_task_runner);
 
   // Sets ambient light path for testing purpose and initialize. This will cause
   // all the checks to be skipped, i.e. whether ALS is enabled and if config is
@@ -89,8 +92,13 @@ class AlsReaderImpl : public AlsReader {
   // Timer used to retry initialization and also for periodic ambient light
   // sampling.
   base::OneShotTimer als_timer_;
-  scoped_refptr<base::SequencedTaskRunner> als_task_runner_;
+
+  // Background task runner for checking ALS status and reading ALS values.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::ObserverList<Observer> observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<AlsReaderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AlsReaderImpl);

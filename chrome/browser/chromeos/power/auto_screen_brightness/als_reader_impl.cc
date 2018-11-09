@@ -106,14 +106,17 @@ constexpr int AlsReaderImpl::kMaxInitialAttempts;
 constexpr base::TimeDelta AlsReaderImpl::kAlsPollInterval;
 
 AlsReaderImpl::AlsReaderImpl()
-    : als_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {}
 
-AlsReaderImpl::~AlsReaderImpl() = default;
+AlsReaderImpl::~AlsReaderImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void AlsReaderImpl::AddObserver(Observer* const observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
   observers_.AddObserver(observer);
   if (status_ != AlsInitStatus::kInProgress)
@@ -121,24 +124,27 @@ void AlsReaderImpl::AddObserver(Observer* const observer) {
 }
 
 void AlsReaderImpl::RemoveObserver(Observer* const observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
 void AlsReaderImpl::Init() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::PostTaskAndReplyWithResult(
-      als_task_runner_.get(), FROM_HERE, base::BindOnce(&IsAlsEnabled),
+      blocking_task_runner_.get(), FROM_HERE, base::BindOnce(&IsAlsEnabled),
       base::BindOnce(&AlsReaderImpl::OnAlsEnableCheckDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::SetTaskRunnerForTesting(
-    const scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  als_task_runner_ = task_runner;
-  als_timer_.SetTaskRunner(task_runner);
+    const scoped_refptr<base::SequencedTaskRunner> test_blocking_task_runner) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blocking_task_runner_ = test_blocking_task_runner;
 }
 
 void AlsReaderImpl::InitForTesting(const base::FilePath& ambient_light_path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ambient_light_path.empty());
   ambient_light_path_ = ambient_light_path;
   status_ = AlsInitStatus::kSuccess;
@@ -147,6 +153,7 @@ void AlsReaderImpl::InitForTesting(const base::FilePath& ambient_light_path) {
 }
 
 void AlsReaderImpl::OnAlsEnableCheckDone(const bool is_enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!is_enabled) {
     status_ = AlsInitStatus::kDisabled;
     OnInitializationComplete();
@@ -154,12 +161,13 @@ void AlsReaderImpl::OnAlsEnableCheckDone(const bool is_enabled) {
   }
 
   base::PostTaskAndReplyWithResult(
-      als_task_runner_.get(), FROM_HERE, base::BindOnce(&VerifyAlsConfig),
+      blocking_task_runner_.get(), FROM_HERE, base::BindOnce(&VerifyAlsConfig),
       base::BindOnce(&AlsReaderImpl::OnAlsConfigCheckDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnAlsConfigCheckDone(const bool is_config_valid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!is_config_valid) {
     status_ = AlsInitStatus::kIncorrectConfig;
     OnInitializationComplete();
@@ -170,6 +178,7 @@ void AlsReaderImpl::OnAlsConfigCheckDone(const bool is_config_valid) {
 }
 
 void AlsReaderImpl::OnAlsPathReadAttempted(const std::string& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!path.empty()) {
     ambient_light_path_ = base::FilePath(path);
     status_ = AlsInitStatus::kSuccess;
@@ -191,27 +200,31 @@ void AlsReaderImpl::OnAlsPathReadAttempted(const std::string& path) {
 }
 
 void AlsReaderImpl::RetryAlsPath() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::PostTaskAndReplyWithResult(
-      als_task_runner_.get(), FROM_HERE, base::BindOnce(&GetAlsPath),
+      blocking_task_runner_.get(), FROM_HERE, base::BindOnce(&GetAlsPath),
       base::BindOnce(&AlsReaderImpl::OnAlsPathReadAttempted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnInitializationComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(status_, AlsInitStatus::kInProgress);
   for (auto& observer : observers_)
     observer.OnAlsReaderInitialized(status_);
 }
 
 void AlsReaderImpl::ReadAlsPeriodically() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::PostTaskAndReplyWithResult(
-      als_task_runner_.get(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ReadAlsFromFile, ambient_light_path_),
       base::BindOnce(&AlsReaderImpl::OnAlsRead,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnAlsRead(const std::string& data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string trimmed_data;
   base::TrimWhitespaceASCII(data, base::TRIM_ALL, &trimmed_data);
   int value = 0;

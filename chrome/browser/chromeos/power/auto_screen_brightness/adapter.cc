@@ -24,7 +24,7 @@ namespace auto_screen_brightness {
 constexpr base::TimeDelta Adapter::kAmbientLightShortHorizon;
 constexpr int Adapter::kNumberAmbientValuesToTrack;
 
-Adapter::Adapter(Profile* profile,
+Adapter::Adapter(const Profile* profile,
                  AlsReader* als_reader,
                  BrightnessMonitor* brightness_monitor,
                  Modeller* modeller,

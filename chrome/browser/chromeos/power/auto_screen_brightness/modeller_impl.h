@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
@@ -32,6 +34,8 @@ namespace auto_screen_brightness {
 // It monitors user-requested brightness changes, ambient light values and
 // trains personal brightness curves when user remains idle for a period of
 // time.
+// An object of this class must be used on the same thread that created this
+// object.
 class ModellerImpl : public Modeller,
                      public AlsReader::Observer,
                      public BrightnessMonitor::Observer,
@@ -64,7 +68,7 @@ class ModellerImpl : public Modeller,
   static constexpr char kCurveFileName[] = "curve";
 
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
-  ModellerImpl(Profile* profile,
+  ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
                ui::UserActivityDetector* user_activity_detector,
@@ -90,12 +94,12 @@ class ModellerImpl : public Modeller,
 
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
   static std::unique_ptr<ModellerImpl> CreateForTesting(
-      Profile* profile,
+      const Profile* profile,
       AlsReader* als_reader,
       BrightnessMonitor* brightness_monitor,
       ui::UserActivityDetector* user_activity_detector,
       std::unique_ptr<Trainer> trainer,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::TickClock* tick_clock);
 
   // Current average ambient light.
@@ -105,14 +109,16 @@ class ModellerImpl : public Modeller,
   // training.
   size_t NumberTrainingDataPointsForTesting() const;
 
-  // Calls GetCurvePathFromProfile directly.
-  base::FilePath GetCurvePathForTesting(Profile* profile) const;
-
   MonotoneCubicSpline GetGlobalCurveForTesting() const;
+
+  // Returns the path that will be used to store curves. It also creates
+  // intermediate directories if they do not exist. Returns an empty path on
+  // failures.
+  static base::FilePath GetCurvePathFromProfile(const Profile* profile);
 
  private:
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
-  ModellerImpl(Profile* profile,
+  ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
                ui::UserActivityDetector* user_activity_detector,
@@ -120,11 +126,6 @@ class ModellerImpl : public Modeller,
                scoped_refptr<base::SequencedTaskRunner> task_runner,
                const base::TickClock* tick_clock,
                bool is_testing = false);
-
-  // Returns the path that will be used to store curves. It also creates
-  // intermediate directories if they do not exist. Returns an empty path on
-  // failures.
-  base::FilePath GetCurvePathFromProfile(Profile* profile) const;
 
   // Updates |model_status_| by checking |als_init_status_| and
   // |brightness_monitor_status_| and optionally loads a curve.
@@ -156,6 +157,13 @@ class ModellerImpl : public Modeller,
   // |global_curve_|.
   void OnCurveLoadedFromDisk(const base::Optional<MonotoneCubicSpline>& curve);
 
+  void OnCurveSavedToDisk(bool is_successful);
+
+  // Called after we've set trainer's initial curves.
+  void OnSetInitialCurves(
+      const base::Optional<MonotoneCubicSpline>& loaded_curve,
+      bool is_personal_curve_valid);
+
   // Starts |model_timer_| to start training after certain inactivity period.
   void ScheduleTrainerStart();
 
@@ -178,7 +186,9 @@ class ModellerImpl : public Modeller,
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_;
 
-  scoped_refptr<base::SequencedTaskRunner> model_task_runner_;
+  // Background task runner for IO work (loading a curve from disk and writing a
+  // curve to disk) and training jobs.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<Trainer, base::OnTaskRunnerDeleter> trainer_;
 
   // This will be replaced by a mock tick clock during tests.
@@ -211,6 +221,8 @@ class ModellerImpl : public Modeller,
   std::vector<TrainingDataPoint> data_cache_;
 
   base::ObserverList<Modeller::Observer> observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ModellerImpl> weak_ptr_factory_;
 

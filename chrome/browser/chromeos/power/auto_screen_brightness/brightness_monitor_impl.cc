@@ -20,11 +20,16 @@ constexpr base::TimeDelta BrightnessMonitorImpl::kBrightnessSampleDelay;
 
 BrightnessMonitorImpl::BrightnessMonitorImpl(
     chromeos::PowerManagerClient* const power_manager_client)
-    : BrightnessMonitorImpl(
-          power_manager_client,
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+    : power_manager_client_observer_(this),
+      power_manager_client_(power_manager_client),
+      weak_ptr_factory_(this) {
+  DCHECK(power_manager_client);
+  power_manager_client_observer_.Add(power_manager_client);
+
+  power_manager_client_->WaitForServiceToBeAvailable(
+      base::BindOnce(&BrightnessMonitorImpl::OnPowerManagerServiceAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 BrightnessMonitorImpl::~BrightnessMonitorImpl() = default;
 
@@ -71,29 +76,6 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
     NotifyUserBrightnessChanged();
   }
   stable_brightness_percent_ = base::Optional<double>(change.percent());
-}
-
-std::unique_ptr<BrightnessMonitorImpl> BrightnessMonitorImpl::CreateForTesting(
-    chromeos::PowerManagerClient* const power_manager_client,
-    const scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  return base::WrapUnique(
-      new BrightnessMonitorImpl(power_manager_client, task_runner));
-}
-
-BrightnessMonitorImpl::BrightnessMonitorImpl(
-    chromeos::PowerManagerClient* const power_manager_client,
-    const scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : power_manager_client_observer_(this),
-      power_manager_client_(power_manager_client),
-      brightness_task_runner_(task_runner),
-      weak_ptr_factory_(this) {
-  DCHECK(power_manager_client);
-  power_manager_client_observer_.Add(power_manager_client);
-  brightness_sample_timer_.SetTaskRunner(brightness_task_runner_);
-
-  power_manager_client_->WaitForServiceToBeAvailable(
-      base::BindOnce(&BrightnessMonitorImpl::OnPowerManagerServiceAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrightnessMonitorImpl::OnPowerManagerServiceAvailable(
