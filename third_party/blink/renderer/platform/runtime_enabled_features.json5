@@ -939,10 +939,6 @@
       status: "experimental",
     },
     {
-      name: "PerformanceNavigationTiming2",
-      status: "stable",
-    },
-    {
       name: "PermissionDelegation",
       status: "test",
     },
