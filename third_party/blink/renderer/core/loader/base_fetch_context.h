@@ -48,8 +48,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   void Trace(blink::Visitor*) override;
 
-  virtual const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const = 0;
   virtual KURL GetSiteForCookies() const = 0;
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
   virtual PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()

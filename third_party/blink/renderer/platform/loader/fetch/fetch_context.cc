@@ -30,14 +30,45 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
 namespace blink {
 
+namespace {
+
+class NullFetchContext final : public FetchContext {
+ public:
+  explicit NullFetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : FetchContext(std::move(task_runner)),
+        fetch_client_settings_object_(
+            MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+                KURL(),
+                nullptr /* security_origin */,
+                kReferrerPolicyDefault,
+                String())) {}
+
+  const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const override {
+    return fetch_client_settings_object_;
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(fetch_client_settings_object_);
+    FetchContext::Trace(visitor);
+  }
+
+ private:
+  const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
+};
+
+}  // namespace
+
 FetchContext& FetchContext::NullInstance(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return *(new FetchContext(std::move(task_runner)));
+  return *(new NullFetchContext(std::move(task_runner)));
 }
 
 FetchContext::FetchContext(

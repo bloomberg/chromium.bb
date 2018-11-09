@@ -62,6 +62,7 @@
 namespace blink {
 
 class ClientHintsPreferences;
+class FetchClientSettingsObject;
 class KURL;
 class MHTMLArchive;
 class PlatformProbeSink;
@@ -106,6 +107,9 @@ class PLATFORM_EXPORT FetchContext
   virtual bool IsFrameFetchContext() { return false; }
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
+
+  virtual const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const = 0;
 
   // Called when the ResourceFetcher observes a data: URI load that contains an
   // octothorpe ('#') character. This is a temporary method to support an Intent
