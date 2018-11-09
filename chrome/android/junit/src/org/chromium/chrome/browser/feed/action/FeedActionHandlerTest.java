@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.feed.action;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
@@ -36,7 +40,11 @@ import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.Collections;
@@ -61,6 +69,12 @@ public class FeedActionHandlerTest {
     private OfflinePageBridge mOfflinePageBridge;
     @Mock
     private FeedLoggingBridge mLoggingBridge;
+    @Mock
+    private Tab mTab;
+    @Mock
+    private WebContents mWebContents;
+    @Mock
+    private NavigationController mNavigationController;
 
     @Captor
     private ArgumentCaptor<Integer> mDispositionCapture;
@@ -69,8 +83,11 @@ public class FeedActionHandlerTest {
     @Captor
     private ArgumentCaptor<Long> mOfflineIdCapture;
     @Captor
-    private ArgumentCaptor<Callback<LoadUrlParams>> mLoadUrlParamsCallbackCapture;
+    private ArgumentCaptor<Callback<LoadUrlParams>> mLoadUrlParamsCallbackCaptor;
+    @Captor
+    ArgumentCaptor<WebContentsObserver> mWebContentsObserverCaptor;
 
+    int mLastCommittedEntryIndex = 0;
     private FeedActionHandler mActionHandler;
 
     private void verifyOpenedOffline(int expectedDisposition) {
@@ -97,20 +114,41 @@ public class FeedActionHandlerTest {
         mActionHandler = new FeedActionHandler(mDelegate, mSuggestionConsumedObserver,
                 mOfflineIndicator, mOfflinePageBridge, mLoggingBridge);
 
-        doAnswer(invocation -> {
-            LoadUrlParams params = new LoadUrlParams("");
-            params.setExtraHeaders(Collections.singletonMap("", OFFLINE_ID.toString()));
-            mLoadUrlParamsCallbackCapture.getValue().onResult(params);
+        // Setup mocks such that when NavigationRecorder#record is called, it immediately invokes
+        // the passed callback.
+        when(mDelegate.openUrl(anyInt(), any(LoadUrlParams.class))).thenReturn(mTab);
+        when(mTab.getWebContents()).thenReturn(mWebContents);
+        when(mWebContents.getNavigationController()).thenReturn(mNavigationController);
+        when(mNavigationController.getLastCommittedEntryIndex())
+                .thenReturn(mLastCommittedEntryIndex++);
+        doAnswer((InvocationOnMock invocation) -> {
+            mWebContentsObserverCaptor.getValue().navigationEntryCommitted();
             return null;
         })
-                .when(mOfflinePageBridge)
-                .getLoadUrlParamsByOfflineId(mOfflineIdCapture.capture(), anyInt(),
-                        mLoadUrlParamsCallbackCapture.capture());
-        doNothing().when(mLoggingBridge).onContentTargetVisited(anyLong());
+                .when(mWebContents)
+                .addObserver(mWebContentsObserverCaptor.capture());
 
         Map<String, Boolean> featureMap = new ArrayMap<>();
         featureMap.put(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, true);
         ChromeFeatureList.setTestFeatures(featureMap);
+    }
+
+    private void answerWithGoodParams() {
+        LoadUrlParams params = new LoadUrlParams("");
+        params.setExtraHeaders(Collections.singletonMap("", OFFLINE_ID.toString()));
+        answerWithGivenParams(params);
+    }
+
+    // Configures mOfflinePageBridge to run the passed callback when getLoadUrlParamsByOfflineId is
+    // called. If this isn't setup, the callback will never be invoked.
+    private void answerWithGivenParams(LoadUrlParams params) {
+        doAnswer(invocation -> {
+            mLoadUrlParamsCallbackCaptor.getValue().onResult(params);
+            return null;
+        })
+                .when(mOfflinePageBridge)
+                .getLoadUrlParamsByOfflineId(mOfflineIdCapture.capture(), anyInt(),
+                        mLoadUrlParamsCallbackCaptor.capture());
     }
 
     @After
@@ -120,18 +158,32 @@ public class FeedActionHandlerTest {
 
     @Test
     @SmallTest
-    public void testOpenUrlOnline() {
+    public void testOpenUrlOffline() {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(OFFLINE_ID);
+        answerWithGoodParams();
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOffline(WindowOpenDisposition.CURRENT_TAB);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
     }
 
     @Test
     @SmallTest
-    public void testOpenUrlOffline() {
+    public void testOpenUrlOnline() {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
+    }
+
+    @Test
+    @SmallTest
+    public void testOpenUrlOfflineWithNullParams() {
+        // The indicator will give an offline id, but the model returns a null LoadUrlParams.
+        when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(OFFLINE_ID);
+        answerWithGivenParams(null);
+        mActionHandler.openUrl(TEST_URL);
+        verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
     }
 
     @Test
@@ -147,34 +199,40 @@ public class FeedActionHandlerTest {
 
     @Test
     @SmallTest
-    public void testOpenUrlInNewTabOnline() {
+    public void testOpenUrlInNewTabOffline() {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(OFFLINE_ID);
+        answerWithGoodParams();
         mActionHandler.openUrlInNewTab(TEST_URL);
         verifyOpenedOffline(WindowOpenDisposition.NEW_BACKGROUND_TAB);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
     }
 
     @Test
     @SmallTest
-    public void testOpenUrlInNewTabOffline() {
+    public void testOpenUrlInNewTabOnline() {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrlInNewTab(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.NEW_BACKGROUND_TAB);
-    }
-
-    @Test
-    @SmallTest
-    public void testOpenUrlInNewWindowOnline() {
-        when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(OFFLINE_ID);
-        mActionHandler.openUrlInNewWindow(TEST_URL);
-        verifyOpenedOffline(WindowOpenDisposition.NEW_WINDOW);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
     }
 
     @Test
     @SmallTest
     public void testOpenUrlInNewWindowOffline() {
+        when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(OFFLINE_ID);
+        answerWithGoodParams();
+        mActionHandler.openUrlInNewWindow(TEST_URL);
+        verifyOpenedOffline(WindowOpenDisposition.NEW_WINDOW);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
+    }
+
+    @Test
+    @SmallTest
+    public void testOpenUrlInNewWindowOnline() {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrlInNewWindow(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.NEW_WINDOW);
+        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
     }
 
     @Test
@@ -187,5 +245,18 @@ public class FeedActionHandlerTest {
         // Even though this page has an offlined version, this is not a request to open the page,
         // and as such the load params should not be updated with the offline id.
         verifyOpenedOnline(WindowOpenDisposition.SAVE_TO_DISK);
+    }
+
+    @Test
+    @SmallTest
+    public void testOpenUrlNullTab() {
+        // If openUrl returns null, then the {@link NavigationRecorder} logic should be skipped.
+        reset(mDelegate);
+        when(mDelegate.openUrl(anyInt(), any(LoadUrlParams.class))).thenReturn(null);
+
+        when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
+        mActionHandler.openUrl(TEST_URL);
+        verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
+        verify(mLoggingBridge, times(0)).onContentTargetVisited(anyLong(), anyBoolean());
     }
 }
