@@ -129,13 +129,21 @@ constraintSyntaxTest('Min/max double', { aspectRatio: { min: 1.5, max: 2.0 }});
 constraintSyntaxTestWithChange('Exact unwrapped double',
     { aspectRatio: { exact: 1.5 } }, { aspectRatio: 1.5 });
 
-constraintSyntaxTest('Simple String', { facingMode: "user1" });
-constraintSyntaxTest('Ideal String', { facingMode: { ideal: "user2" }});
-constraintSyntaxTest('Multiple String in Brackets', { facingMode: { ideal: ["user3", "left3"]}});
-constraintSyntaxTest('Multiple Bracketed Naked String', { facingMode: ["user4", "left4"] });
-constraintSyntaxTestWithChange('Single Bracketed string unwrapped',
+constraintSyntaxTest('Simple facingMode string', { facingMode: "user1" });
+constraintSyntaxTest('Ideal facingMode string', { facingMode: { ideal: "user2" }});
+constraintSyntaxTest('Multiple facingMode string in brackets', { facingMode: { ideal: ["user3", "left3"]}});
+constraintSyntaxTest('Multiple bracketed naked facingMode string', { facingMode: ["user4", "left4"] });
+constraintSyntaxTestWithChange('Single bracketed facingMode string unwrapped',
     { 'facingMode': ["user5"]}, { facingMode: "user5" });
-constraintSyntaxTest('Both Ideal and Exact string', { facingMode: { ideal: "user6", exact: "left6" }});
+constraintSyntaxTest('Both ideal and exact facingMode string', { facingMode: { ideal: "user6", exact: "left6" }});
+
+constraintSyntaxTest('Simple resizeMode string', { resizeMode: "none1" });
+constraintSyntaxTest('Ideal resizeMode string', { resizeMode: { ideal: "none2" }});
+constraintSyntaxTest('Multiple resizeMode string in brackets', { resizeMode: { ideal: ["none3", "crop3"]}});
+constraintSyntaxTest('Multiple bracketed naked resizeMode string', { resizeMode: ["none4", "crop4"] });
+constraintSyntaxTestWithChange('Single bracketed resizeMode string unwrapped',
+    { 'resizeMode': ["none5"]}, { resizeMode: "none5" });
+constraintSyntaxTest('Both ideal and exact resizeMode string', { resizeMode: { ideal: "none6", exact: "crop6" }});
 
 constraintSyntaxTest('echoCancellation with simple boolean value', { echoCancellation: true });
 constraintSyntaxTest('echoCancellation with ideal boolean value', { echoCancellation: { ideal: true }});

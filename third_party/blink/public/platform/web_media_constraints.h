@@ -230,6 +230,7 @@ struct WebMediaTrackConstraintSet {
   DoubleConstraint aspect_ratio;
   DoubleConstraint frame_rate;
   StringConstraint facing_mode;
+  StringConstraint resize_mode;
   DoubleConstraint volume;
   LongConstraint sample_rate;
   LongConstraint sample_size;
