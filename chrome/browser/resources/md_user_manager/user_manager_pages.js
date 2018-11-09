@@ -12,9 +12,9 @@ Polymer({
   properties: {
     /**
      * ID of the currently selected page.
-     * @private {string}
+     * @private
      */
-    selectedPage_: {type: String, value: 'user-pods-page'},
+    selectedPage_: String,
 
     /**
      * Data passed to the currently selected page.
@@ -24,6 +24,11 @@ Polymer({
   },
 
   listeners: {'change-page': 'onChangePage_'},
+
+  /** @override */
+  attached: function() {
+    this.setSelectedPage('user-pods-page');
+  },
 
   /**
    * Handler for the change-page event.
@@ -43,6 +48,8 @@ Polymer({
   setSelectedPage: function(pageId, opt_pageData) {
     this.pageData_ = opt_pageData || null;
     this.selectedPage_ = pageId;
+    /** @type {CrViewManagerElement} */ (this.$.animatedPages)
+        .switchView(this.selectedPage_);
   },
 
   /**
