@@ -161,15 +161,28 @@ class NET_EXPORT ProxyBypassRules {
   //   Examples:
   //     "127.0.1", "[0:0::1]", "[::1]", "http://[::1]:99"
   //
-  // (4)  IP_LITERAL "/" PREFIX_LENGTH_IN_BITS
+  // (4)  IPV4_LITERAL "/" PREFIX_LENGTH_IN_BITS
   //
-  //   Match any URL that is to an IP literal that falls between the
-  //   given range. IP range is specified using CIDR notation.
+  //   Match any URL that is an IPv4 literal that falls between the
+  //   given range.
   //
   //   Examples:
-  //     "192.168.1.1/16", "fefe:13::abc/33".
+  //     "192.168.1.1/16"
   //
-  // (5)  "<local>"
+  // (5)  IPV6_LITERAL "/" PREFIX_LENGTH_IN_BITS
+  //
+  //   Match any URL that is an IPv6 literal that falls between the given
+  //   range.
+  //
+  //   Note that IPV6_LITERAL must *not* be bracketed. "[fefe::/40]" for
+  //   instance is not valid, but "fefe::/40" is. This notation comes from
+  //   macOS's proxy bypass rules which supports IPv6 (Windows bypass rules do
+  //   not).
+  //
+  //   Examples:
+  //     "fefe:13::abc/33".
+  //
+  // (6)  "<local>"
   //
   //   Matches the bypass rule in Windows of the same name, which essentially
   //   means hostnames without a period in them, as well as "127.0.0.1",
@@ -177,7 +190,7 @@ class NET_EXPORT ProxyBypassRules {
   //
   // TODO(https://crbug.com/902579): Fix.
   //
-  // (6) "<-loopback>"
+  // (7) "<-loopback>"
   //
   //   Subtracts the implicit proxy bypass rules (localhost and link local
   //   addresses), so they are no longer bypassed.

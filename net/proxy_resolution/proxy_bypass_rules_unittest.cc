@@ -394,6 +394,17 @@ TEST(ProxyBypassRulesTest, ParseAndMatchCIDR_IPv6) {
   EXPECT_FALSE(rules.Matches(GURL("http://192.169.1.1")));
 }
 
+// Test that parsing an IPv6 range given a bracketed literal is not supported.
+// Whether IPv6 literals need to be bracketed or not is pretty much a coin toss
+// depending on the context, and here it is expected to be unbracketed to match
+// macOS. It would be fine to support bracketed too, however none of the
+// grammars we parse need that.
+TEST(ProxyBypassRulesTest, ParseBracketedIPv6Range) {
+  ProxyBypassRules rules;
+  rules.ParseFromString("[a:b:c:d::]/48");
+  ASSERT_EQ(0u, rules.rules().size());
+}
+
 // Check which URLs an empty ProxyBypassRules matches.
 TEST(ProxyBypassRulesTest, DefaultImplicitRules) {
   ProxyBypassRules rules;
