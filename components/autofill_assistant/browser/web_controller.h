@@ -127,6 +127,17 @@ class WebController {
   // Create a helper for checking element existence and field value.
   virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker();
 
+  // Gets the position of the element identified by the selector.
+  //
+  // If unsuccessful, the callback gets (false, 0, 0, 0, 0).
+  //
+  // If successful, the callback gets (true, left, top, right, bottom), with
+  // coordinates expressed as numbers between 0 and 1, relative to the width or
+  // height of the visible viewport.
+  virtual void GetElementPosition(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool, float, float, float, float)> callback);
+
  protected:
   friend class BatchElementChecker;
 
@@ -339,6 +350,14 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result);
   void OnGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+
+  void OnFindElementForPosition(
+      base::OnceCallback<void(bool, float, float, float, float)> callback,
+      std::unique_ptr<FindElementResult> result);
+
+  void OnGetElementPositionResult(
+      base::OnceCallback<void(bool, float, float, float, float)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which

@@ -182,6 +182,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         nativeOnCardSelected(mUiControllerAndroid, guid);
     }
 
+    @Override
+    public boolean allowTouchEvent(float x, float y) {
+        return nativeAllowTouchEvent(mUiControllerAndroid, x, y);
+    }
+
     /** Return the value if the given boolean parameter from the extras. */
     private static boolean getBooleanParameter(Bundle extras, String parameterName) {
         return extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
@@ -584,4 +589,5 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnAccessToken(
             long nativeUiControllerAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);
+    private native boolean nativeAllowTouchEvent(long nativeUiControllerAndroid, float x, float y);
 }

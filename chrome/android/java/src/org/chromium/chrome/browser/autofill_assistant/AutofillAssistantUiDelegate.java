@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
+import org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -62,6 +63,7 @@ class AutofillAssistantUiDelegate {
     private final ViewGroup mCoordinatorView;
     private final View mFullContainer;
     private final View mOverlay;
+    private final TouchEventFilter mTouchEventFilter;
     private final LinearLayout mBottomBar;
     private final HorizontalScrollView mCarouselScroll;
     private final ViewGroup mChipsViewContainer;
@@ -83,7 +85,7 @@ class AutofillAssistantUiDelegate {
      *
      * Java version of the native autofill_assistant::UiDelegate.
      */
-    public interface Client {
+    public interface Client extends TouchEventFilter.Client {
         /**
          * Called when clicking on the overlay.
          */
@@ -227,6 +229,8 @@ class AutofillAssistantUiDelegate {
         // TODO(crbug.com/806868): Set hint text on overlay.
         mOverlay = mFullContainer.findViewById(R.id.overlay);
         mOverlay.setOnClickListener(unusedView -> mClient.onClickOverlay());
+        mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
+        mTouchEventFilter.init(client, activity.getFullscreenManager());
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());

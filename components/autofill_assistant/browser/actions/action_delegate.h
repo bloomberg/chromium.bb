@@ -102,6 +102,11 @@ class ActionDelegate {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
+  // Sets selector of elements that can be manipulated after the end of the
+  // script and before the beginning of the next script.
+  virtual void SetTouchableElements(
+      const std::vector<std::vector<std::string>>& element_selectors) = 0;
+
   // Highlight the element given by |selectors|.
   virtual void HighlightElement(const std::vector<std::string>& selectors,
                                 base::OnceCallback<void(bool)> callback) = 0;

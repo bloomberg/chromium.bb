@@ -276,6 +276,9 @@ message FocusElementProto {
 
   // Optional title to show in the status bar.
   optional string title = 2;
+
+  // Restrict interaction to the area spanned by the given elements.
+  repeated ElementReferenceProto touchable_element_area = 5;
 }
 
 message AutofillStrings {

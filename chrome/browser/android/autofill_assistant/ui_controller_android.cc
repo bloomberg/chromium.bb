@@ -237,6 +237,14 @@ UiControllerAndroid::GetPrimaryAccountName(
   return base::android::ConvertUTF8ToJavaString(env, account_info.email);
 }
 
+jboolean UiControllerAndroid::AllowTouchEvent(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    float x,
+    float y) {
+  return ui_delegate_->AllowTouchEvent(x, y);
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(!address_or_card_callback_);

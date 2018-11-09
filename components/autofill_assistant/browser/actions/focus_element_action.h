@@ -25,7 +25,9 @@ class FocusElementAction : public Action {
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
                         bool element_found);
-  void OnFocusElement(ProcessActionCallback callback, bool status);
+  void OnFocusElement(ActionDelegate* delegate,
+                      ProcessActionCallback callback,
+                      bool status);
 
   base::WeakPtrFactory<FocusElementAction> weak_ptr_factory_;
 
