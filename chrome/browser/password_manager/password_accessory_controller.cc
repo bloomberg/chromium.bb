@@ -253,9 +253,6 @@ void PasswordAccessoryController::RefreshSuggestionsForField(
 }
 
 void PasswordAccessoryController::DidNavigateMainFrame() {
-  if (current_origin_.IsSameOriginWith(
-          web_contents_->GetMainFrame()->GetLastCommittedOrigin()))
-    return;  // Clean requests only if the navigation was across origins.
   favicon_tracker_.TryCancelAll();  // If there is a request pending, cancel it.
   current_origin_ = url::Origin();
   icons_request_data_.clear();
