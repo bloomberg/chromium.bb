@@ -95,9 +95,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   jboolean IsUsingSecondaryPassphrase(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jbyteArray> GetCustomPassphraseKey(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   jint GetPassphraseType(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
   void SetEncryptionPassphrase(

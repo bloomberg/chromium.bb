@@ -1457,14 +1457,6 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   return crypto_.IsUsingSecondaryPassphrase();
 }
 
-std::string ProfileSyncService::GetCustomPassphraseKey() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncer::SystemEncryptor encryptor;
-  syncer::Cryptographer cryptographer(&encryptor);
-  cryptographer.Bootstrap(sync_prefs_.GetEncryptionBootstrapToken());
-  return cryptographer.GetDefaultNigoriKeyData();
-}
-
 syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return crypto_.GetPassphraseType();
