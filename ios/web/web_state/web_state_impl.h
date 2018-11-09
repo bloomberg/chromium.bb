@@ -91,9 +91,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when page title was changed.
   void OnTitleChanged();
 
-  // Called when a dialog or child window open request was suppressed.
-  void OnDialogSuppressed();
-
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
 
@@ -189,8 +186,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SetDelegate(WebStateDelegate* delegate) override;
   bool IsWebUsageEnabled() const override;
   void SetWebUsageEnabled(bool enabled) override;
-  bool ShouldSuppressDialogs() const override;
-  void SetShouldSuppressDialogs(bool should_suppress) override;
   UIView* GetView() override;
   void WasShown() override;
   void WasHidden() override;

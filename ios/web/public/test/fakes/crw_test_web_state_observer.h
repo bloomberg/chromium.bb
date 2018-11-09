@@ -37,9 +37,6 @@
 // Arguments passed to |webStateDidChangeVisibleSecurityState:|.
 @property(nonatomic, readonly) web::TestDidChangeVisibleSecurityStateInfo*
     didChangeVisibleSecurityStateInfo;
-// Arguments passed to |webStateDidSuppressDialog:|.
-@property(nonatomic, readonly)
-    web::TestDidSuppressDialogInfo* didSuppressDialogInfo;
 // Arguments passed to |webState:didUpdateFaviconURLCandidates|.
 @property(nonatomic, readonly)
     web::TestUpdateFaviconUrlCandidatesInfo* updateFaviconUrlCandidatesInfo;

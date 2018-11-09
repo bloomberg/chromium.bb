@@ -257,19 +257,6 @@ TEST_P(WebStateImplTest, WebUsageEnabled) {
   EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
 }
 
-TEST_P(WebStateImplTest, ShouldSuppressDialogs) {
-  // Default is false.
-  ASSERT_FALSE(web_state_->ShouldSuppressDialogs());
-
-  web_state_->SetShouldSuppressDialogs(true);
-  EXPECT_TRUE(web_state_->ShouldSuppressDialogs());
-  EXPECT_TRUE(web_state_->GetWebController().shouldSuppressDialogs);
-
-  web_state_->SetShouldSuppressDialogs(false);
-  EXPECT_FALSE(web_state_->ShouldSuppressDialogs());
-  EXPECT_FALSE(web_state_->GetWebController().shouldSuppressDialogs);
-}
-
 TEST_P(WebStateImplTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");
@@ -379,13 +366,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   ASSERT_TRUE(observer->did_change_visible_security_state_info());
   EXPECT_EQ(web_state_.get(),
             observer->did_change_visible_security_state_info()->web_state);
-
-  // Test that DidSuppressDialog() is called.
-  ASSERT_FALSE(observer->did_suppress_dialog_info());
-  web_state_->SetShouldSuppressDialogs(true);
-  web_state_->OnDialogSuppressed();
-  ASSERT_TRUE(observer->did_suppress_dialog_info());
-  EXPECT_EQ(web_state_.get(), observer->did_suppress_dialog_info()->web_state);
 
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());

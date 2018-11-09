@@ -116,12 +116,6 @@ class WebState : public base::SupportsUserData {
   virtual bool IsWebUsageEnabled() const = 0;
   virtual void SetWebUsageEnabled(bool enabled) = 0;
 
-  // Whether or not JavaScript dialogs and window open requests
-  // should be suppressed. Default is false. When dialog is suppressed
-  // |WebStateObserver::DidSuppressDialog| will be called.
-  virtual bool ShouldSuppressDialogs() const = 0;
-  virtual void SetShouldSuppressDialogs(bool should_suppress) = 0;
-
   // The view containing the contents of the current web page. If the view has
   // been purged due to low memory, this will recreate it. It is up to the
   // caller to size the view.

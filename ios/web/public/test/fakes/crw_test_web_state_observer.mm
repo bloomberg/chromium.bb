@@ -45,8 +45,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   // Arguments passed to |webStateDidChangeVisibleSecurityState:|.
   std::unique_ptr<web::TestDidChangeVisibleSecurityStateInfo>
       _didChangeVisibleSecurityStateInfo;
-  // Arguments passed to |webStateDidSuppressDialog:|.
-  std::unique_ptr<web::TestDidSuppressDialogInfo> _didSuppressDialogInfo;
   // Arguments passed to |webState:didUpdateFaviconURLCandidates|.
   std::unique_ptr<web::TestUpdateFaviconUrlCandidatesInfo>
       _updateFaviconUrlCandidatesInfo;
@@ -99,10 +97,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 - (web::TestDidChangeVisibleSecurityStateInfo*)
     didChangeVisibleSecurityStateInfo {
   return _didChangeVisibleSecurityStateInfo.get();
-}
-
-- (web::TestDidSuppressDialogInfo*)didSuppressDialogInfo {
-  return _didSuppressDialogInfo.get();
 }
 
 - (web::TestUpdateFaviconUrlCandidatesInfo*)updateFaviconUrlCandidatesInfo {
@@ -207,11 +201,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _didChangeVisibleSecurityStateInfo =
       std::make_unique<web::TestDidChangeVisibleSecurityStateInfo>();
   _didChangeVisibleSecurityStateInfo->web_state = webState;
-}
-
-- (void)webStateDidSuppressDialog:(web::WebState*)webState {
-  _didSuppressDialogInfo = std::make_unique<web::TestDidSuppressDialogInfo>();
-  _didSuppressDialogInfo->web_state = webState;
 }
 
 - (void)webState:(web::WebState*)webState

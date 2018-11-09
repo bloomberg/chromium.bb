@@ -91,11 +91,6 @@ class WebStateImpl;
 // Returns the x, y offset the content has been scrolled.
 @property(nonatomic, readonly) CGPoint scrollPosition;
 
-// YES if JavaScript dialogs and window open requests should be suppressed.
-// Default is NO. When dialog is suppressed
-// |WebStateObserver::DidSuppressDialog| will be called.
-@property(nonatomic, assign) BOOL shouldSuppressDialogs;
-
 // YES if the web process backing WebView is believed to currently be crashed.
 @property(nonatomic, assign, getter=isWebProcessCrashed) BOOL webProcessCrashed;
 

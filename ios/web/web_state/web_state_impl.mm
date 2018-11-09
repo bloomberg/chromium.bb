@@ -187,12 +187,6 @@ void WebStateImpl::OnTitleChanged() {
     observer.TitleWasSet(this);
 }
 
-void WebStateImpl::OnDialogSuppressed() {
-  DCHECK(ShouldSuppressDialogs());
-  for (auto& observer : observers_)
-    observer.DidSuppressDialog(this);
-}
-
 void WebStateImpl::OnRenderProcessGone() {
   for (auto& observer : observers_)
     observer.RenderProcessGone(this);
@@ -567,14 +561,6 @@ bool WebStateImpl::IsWebUsageEnabled() const {
 
 void WebStateImpl::SetWebUsageEnabled(bool enabled) {
   [web_controller_ setWebUsageEnabled:enabled];
-}
-
-bool WebStateImpl::ShouldSuppressDialogs() const {
-  return [web_controller_ shouldSuppressDialogs];
-}
-
-void WebStateImpl::SetShouldSuppressDialogs(bool should_suppress) {
-  [web_controller_ setShouldSuppressDialogs:should_suppress];
 }
 
 UIView* WebStateImpl::GetView() {

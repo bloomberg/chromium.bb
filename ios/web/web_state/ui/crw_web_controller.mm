@@ -945,7 +945,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @synthesize webUsageEnabled = _webUsageEnabled;
 @synthesize loadPhase = _loadPhase;
-@synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 @synthesize webProcessCrashed = _webProcessCrashed;
 @synthesize visible = _visible;
 @synthesize nativeProvider = _nativeProvider;
@@ -3358,14 +3357,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  // If dialogs have been explicitly suppressed using WebState's
-  // SetShouldSuppressDialogs(), suppress the dialog and notify observers.
-  if (self.shouldSuppressDialogs) {
-    _webStateImpl->OnDialogSuppressed();
-    completionHandler(NO, nil);
-    return;
-  }
-
   self.webStateImpl->RunJavaScriptDialog(
       requestURL, type, message, defaultText,
       base::BindOnce(^(bool success, NSString* input) {
@@ -4195,11 +4186,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                forNavigationAction:(WKNavigationAction*)action
                     windowFeatures:(WKWindowFeatures*)windowFeatures {
-  if (self.shouldSuppressDialogs) {
-    _webStateImpl->OnDialogSuppressed();
-    return nil;
-  }
-
   // Do not create windows for non-empty invalid URLs.
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
   if (!requestURL.is_empty() && !requestURL.is_valid()) {
