@@ -139,7 +139,9 @@ void TestSessionControllerClient::AddUserSession(
     bool provide_pref_service,
     bool is_new_profile,
     const std::string& service_user_id) {
-  auto account_id = AccountId::FromUserEmail(GetUserIdFromEmail(display_email));
+  auto account_id = AccountId::FromUserEmail(
+      use_lower_case_user_id_ ? GetUserIdFromEmail(display_email)
+                              : display_email);
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = ++fake_session_id_;
   session->user_info = mojom::UserInfo::New();
