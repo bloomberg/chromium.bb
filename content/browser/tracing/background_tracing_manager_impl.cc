@@ -504,6 +504,11 @@ void BackgroundTracingManagerImpl::StartTracing(
   TraceConfig config = GetConfigForCategoryPreset(preset, record_mode);
   if (requires_anonymized_data_)
     config.EnableArgumentFilter();
+#if defined(OS_ANDROID)
+  // Set low trace buffer size on Android in order to upload small trace files.
+  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)
+    config.SetTraceBufferSizeInEvents(20000);
+#endif
 
   is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
       config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
