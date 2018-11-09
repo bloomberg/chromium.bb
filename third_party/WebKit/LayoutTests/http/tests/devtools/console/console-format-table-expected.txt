@@ -1,6 +1,6 @@
 Tests console.table.
 
-console-format-table.js:11 
+console-format-table.js:11 null
 console-format-table.js:13 Array of arrays
 HEADER (index) | 0 | 1 | 2 | 
 ROW 1 | 2 | 3 | 
@@ -61,4 +61,6 @@ HEADER (index) | Value | 0 |
 ROW 1 | 
 ROW "foo" | 
 ROW 2 | 
+console-format-table.js:55 Non-standard call should use fallback
+console-format-table.js:56 foo (3) [1, 2, 3]
 

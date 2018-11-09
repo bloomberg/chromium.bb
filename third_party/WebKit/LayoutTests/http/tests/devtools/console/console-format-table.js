@@ -51,6 +51,9 @@
 
       console.log("Deep and shallow array");
       console.table([1, "foo", [2]]);
+
+      console.log("Non-standard call should use fallback");
+      console.table("foo", [1,2,3]);
   `);
 
   ConsoleTestRunner.dumpConsoleMessages();
