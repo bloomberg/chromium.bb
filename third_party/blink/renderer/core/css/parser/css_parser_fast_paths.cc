@@ -678,7 +678,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
               (value_id == CSSValueBlock || value_id == CSSValueInline)) ||
              value_id == CSSValueAuto;
     case CSSPropertyScrollBehavior:
-      DCHECK(RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled());
       return value_id == CSSValueAuto || value_id == CSSValueSmooth;
     case CSSPropertyShapeRendering:
       return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||

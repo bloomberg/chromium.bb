@@ -2605,7 +2605,6 @@
     {
       name: "scroll-behavior",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSOMSmoothScroll",
       field_group: "*",
       field_size: 2, // FIXME: Convert this to a keyword field
       field_template: "primitive",

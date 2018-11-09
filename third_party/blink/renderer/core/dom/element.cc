@@ -461,10 +461,6 @@ void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
     options->setInlinePosition("nearest");
   } else if (arg.IsScrollIntoViewOptions()) {
     options = arg.GetAsScrollIntoViewOptions();
-    if (!RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled() &&
-        options->behavior() == "smooth") {
-      options->setBehavior("instant");
-    }
   }
   scrollIntoViewWithOptions(options);
 }
