@@ -101,6 +101,13 @@ void ShowInitialPasswordAccountSuggestions(
   driver->ShowInitialPasswordAccountSuggestions(fill_data);
 }
 
+// Returns true if filling the |form| is likely to be useful for the user.
+bool FormGoodForFilling(const PasswordForm& form) {
+  return !form.password_element.empty() ||
+         form.password_element_renderer_id !=
+             autofill::FormFieldData::kNotSetFormControlRendererId;
+}
+
 }  // namespace
 
 void SendFillInformationToRenderer(
@@ -134,6 +141,29 @@ void SendFillInformationToRenderer(
   bool wait_for_username = client.IsIncognito() ||
                            preferred_match->is_public_suffix_match ||
                            observed_form.IsPossibleChangePasswordForm();
+
+  // The following metric is only relevant when fill on load is not suppressed
+  // by Incognito or PSL-matched credentials. It is also only relevant for the
+  // new parser, because the tested change will only be launched for that.
+  // TODO(crbug.com/895781): Remove once the password manager team decides
+  // whether to go with the new condition or the old one.
+  if (!client.IsIncognito() && !preferred_match->is_public_suffix_match &&
+      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
+    // Old condition.
+    const bool did_fill_on_load = !observed_form.IsPossibleChangePasswordForm();
+    // New condition.
+    const bool will_fill_on_load = FormGoodForFilling(observed_form);
+    PasswordFormMetricsRecorder::FillOnLoad fill_on_load_result =
+        PasswordFormMetricsRecorder::FillOnLoad::kSame;
+    if (did_fill_on_load != will_fill_on_load) {
+      fill_on_load_result =
+          will_fill_on_load
+              ? PasswordFormMetricsRecorder::FillOnLoad::kStartsFillingOnLoad
+              : PasswordFormMetricsRecorder::FillOnLoad::kStopsFillingOnLoad;
+    }
+    metrics_recorder->RecordFillOnLoad(fill_on_load_result);
+  }
+
   if (wait_for_username) {
     metrics_recorder->SetManagerAction(
         PasswordFormMetricsRecorder::kManagerActionNone);

@@ -10,11 +10,15 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -142,6 +146,74 @@ TEST_F(PasswordFormFillingTest, Autofill) {
               fill_data.additional_logins.begin()->second.password);
     // Realm is empty for non-psl match.
     EXPECT_TRUE(fill_data.additional_logins.begin()->second.realm.empty());
+  }
+}
+
+TEST_F(PasswordFormFillingTest, TestFillOnLoadReported) {
+  const struct {
+    const char* description;
+    bool new_password_present;
+    bool current_password_present;
+    PasswordFormMetricsRecorder::FillOnLoad expected_comparison;
+  } kTestCases[] = {
+      {
+          .description = "Fills on load",
+          .new_password_present = false,
+          .current_password_present = true,
+          .expected_comparison = PasswordFormMetricsRecorder::FillOnLoad::kSame,
+      },
+      {
+          .description = "Does not fill on load",
+          .new_password_present = true,
+          .current_password_present = false,
+          .expected_comparison = PasswordFormMetricsRecorder::FillOnLoad::kSame,
+      },
+      {
+          .description = "Did not fill on load, will fill on load",
+          .new_password_present = true,
+          .current_password_present = true,
+          .expected_comparison =
+              PasswordFormMetricsRecorder::FillOnLoad::kStartsFillingOnLoad,
+      },
+  };
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  metrics_recorder_.reset();  // The recorder will be re-created below.
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.description);
+    base::TestMockTimeTaskRunner::ScopedContext scoped_context(
+        task_runner.get());
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+    metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        true, client_.GetUkmSourceId());
+    std::map<base::string16, const PasswordForm*> best_matches;
+    best_matches[saved_match_.username_value] = &saved_match_;
+
+    PasswordForm observed_form = observed_form_;
+    if (test_case.new_password_present)
+      observed_form.new_password_element = ASCIIToUTF16("New Passwd");
+    if (!test_case.current_password_present)
+      observed_form.password_element.clear();
+
+    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form));
+    EXPECT_CALL(driver_, FillPasswordForm(_));
+    EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+
+    SendFillInformationToRenderer(client_, &driver_, false, observed_form,
+                                  best_matches, federated_matches_,
+                                  &saved_match_, metrics_recorder_.get());
+
+    metrics_recorder_.reset();  // The recorder only reports on destruction.
+    auto entries = test_ukm_recorder.GetEntriesByName(
+        ukm::builders::PasswordForm::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    const int64_t* reported_value = ukm::TestUkmRecorder::GetEntryMetric(
+        entries[0], ukm::builders::PasswordForm::kFillOnLoadName);
+    ASSERT_TRUE(reported_value);
+    EXPECT_EQ(static_cast<int64_t>(test_case.expected_comparison),
+              *reported_value);
   }
 }
 
