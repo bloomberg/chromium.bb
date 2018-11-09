@@ -32,7 +32,7 @@ class CreateMetadataTask : public DatabaseTask {
 
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
-                     const std::vector<ServiceWorkerFetchRequest>& requests,
+                     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
                      const BackgroundFetchOptions& options,
                      const SkBitmap& icon,
                      bool start_paused,
@@ -72,7 +72,7 @@ class CreateMetadataTask : public DatabaseTask {
   std::string HistogramName() const override;
 
   BackgroundFetchRegistrationId registration_id_;
-  std::vector<ServiceWorkerFetchRequest> requests_;
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
   BackgroundFetchOptions options_;
   SkBitmap icon_;
   bool start_paused_;

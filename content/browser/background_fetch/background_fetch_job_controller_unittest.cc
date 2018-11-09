@@ -24,12 +24,15 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 using testing::_;
 
@@ -112,11 +115,12 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>> request_infos;
     int request_counter = 0;
     for (const auto& pair : request_data) {
-      ServiceWorkerFetchRequest fetch_request(
-          GURL(pair.first), pair.second, ServiceWorkerHeaderMap(), Referrer(),
-          false /* is_reload */);
+      blink::mojom::FetchAPIRequestPtr request_ptr =
+          CreateFetchAPIRequest(GURL(pair.first), pair.second,
+                                base::flat_map<std::string, std::string>(),
+                                blink::mojom::Referrer::New(), false);
       auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-          request_counter++, fetch_request);
+          request_counter++, std::move(request_ptr));
       request->InitializeDownloadGuid();
       request_infos.push_back(request);
     }

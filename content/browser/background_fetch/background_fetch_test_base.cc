@@ -155,7 +155,7 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
   run_loop.Run();
 }
 
-ServiceWorkerFetchRequest
+blink::mojom::FetchAPIRequestPtr
 BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
     const std::string& method,
     const GURL& url,
@@ -163,9 +163,15 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
   // Register the |response| with the faked delegate.
   delegate_->RegisterResponse(url, std::move(response));
 
-  // Create a ServiceWorkerFetchRequest request with the same information.
-  return ServiceWorkerFetchRequest(url, method, ServiceWorkerHeaderMap(),
-                                   Referrer(), false /* is_reload */);
+  // Create a blink::mojom::FetchAPIRequestPtr request with the same
+  // information.
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = url;
+  request->method = method;
+  request->is_reload = false;
+  request->referrer = blink::mojom::Referrer::New();
+  request->headers = base::flat_map<std::string, std::string>();
+  return request;
 }
 
 std::unique_ptr<BackgroundFetchRegistration>

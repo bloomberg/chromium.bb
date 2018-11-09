@@ -102,7 +102,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // fail due to invalid input or storage errors.
   void CreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<ServiceWorkerFetchRequest>& requests,
+      std::vector<blink::mojom::FetchAPIRequestPtr> requests,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
       bool start_paused,

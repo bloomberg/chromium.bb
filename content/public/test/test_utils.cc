@@ -38,6 +38,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -119,6 +120,21 @@ bool IgnoreSourceAndDetails(
 }
 
 }  // namespace
+
+blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
+    const GURL& url,
+    const std::string& method,
+    const base::flat_map<std::string, std::string>& headers,
+    blink::mojom::ReferrerPtr referrer,
+    bool is_reload) {
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = url;
+  request->method = method;
+  request->headers = headers;
+  request->referrer = std::move(referrer);
+  request->is_reload = is_reload;
+  return request;
+}
 
 void RunMessageLoop() {
   base::RunLoop run_loop;

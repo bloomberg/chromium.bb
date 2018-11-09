@@ -23,7 +23,6 @@ class BackgroundFetchContext;
 class RenderFrameHost;
 class RenderProcessHost;
 struct BackgroundFetchOptions;
-struct ServiceWorkerFetchRequest;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -91,8 +90,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   // for having sent a bad message if the values are invalid.
   bool ValidateDeveloperId(const std::string& developer_id) WARN_UNUSED_RESULT;
   bool ValidateUniqueId(const std::string& unique_id) WARN_UNUSED_RESULT;
-  bool ValidateRequests(const std::vector<ServiceWorkerFetchRequest>& requests)
-      WARN_UNUSED_RESULT;
+  bool ValidateRequests(const std::vector<blink::mojom::FetchAPIRequestPtr>&
+                            requests) WARN_UNUSED_RESULT;
   bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
 
   // The Background Fetch context on which operations will be dispatched.

@@ -16,6 +16,7 @@
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -127,14 +128,14 @@ class CanCreateRegistrationTask : public DatabaseTask {
 CreateMetadataTask::CreateMetadataTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
-      requests_(requests),
+      requests_(std::move(requests)),
       options_(options),
       icon_(icon),
       start_paused_(start_paused),
@@ -322,7 +323,7 @@ void CreateMetadataTask::StoreMetadata() {
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
     pending_request_proto.set_serialized_request(
-        ServiceWorkerUtils::SerializeFetchRequestToString(requests_[i]));
+        ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }
@@ -369,8 +370,7 @@ void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
   for (auto& request : requests_) {
     auto operation = blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request =
-        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
+    operation->request = std::move(request);
     // Empty response.
     operation->response = blink::mojom::FetchAPIResponse::New();
     operations.push_back(std::move(operation));

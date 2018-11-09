@@ -16,6 +16,7 @@
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -134,7 +135,7 @@ void BackgroundFetchContext::DidGetRegistration(
 
 void BackgroundFetchContext::StartFetch(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
@@ -154,8 +155,9 @@ void BackgroundFetchContext::StartFetch(
   GetPermissionForOrigin(
       registration_id.origin(), render_frame_host,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
-                     weak_factory_.GetWeakPtr(), registration_id, requests,
-                     options, icon, std::move(ukm_data), frame_tree_node_id));
+                     weak_factory_.GetWeakPtr(), registration_id,
+                     std::move(requests), options, icon, std::move(ukm_data),
+                     frame_tree_node_id));
 }
 
 void BackgroundFetchContext::GetPermissionForOrigin(
@@ -178,7 +180,7 @@ void BackgroundFetchContext::GetPermissionForOrigin(
 
 void BackgroundFetchContext::DidGetPermission(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
@@ -189,12 +191,12 @@ void BackgroundFetchContext::DidGetPermission(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
-                     registration_id.origin(), requests, options, icon,
+                     registration_id.origin(), requests.size(), options, icon,
                      std::move(ukm_data), frame_tree_node_id, permission));
 
   if (permission != BackgroundFetchPermission::BLOCKED) {
     data_manager_->CreateRegistration(
-        registration_id, requests, options, icon,
+        registration_id, std::move(requests), options, icon,
         permission == BackgroundFetchPermission::ASK /* start_paused */,
         base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                        weak_factory_.GetWeakPtr(), registration_id));

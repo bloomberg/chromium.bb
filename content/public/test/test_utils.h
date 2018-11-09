@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>
@@ -39,6 +40,14 @@ namespace content {
 
 class RenderFrameHost;
 class TestServiceManagerContext;
+
+// Create an blink::mojom::FetchAPIRequestPtr with given fields.
+blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
+    const GURL& url,
+    const std::string& method,
+    const base::flat_map<std::string, std::string>& headers,
+    blink::mojom::ReferrerPtr referrer,
+    bool is_reload);
 
 // Deprecated: Use RunLoop::Run(). Use RunLoop::Type::kNestableTasksAllowed to
 // force nesting in browser tests.

@@ -37,7 +37,6 @@ class BrowserContext;
 class CacheStorageContextImpl;
 class RenderFrameHost;
 class ServiceWorkerContextWrapper;
-struct ServiceWorkerFetchRequest;
 
 // The BackgroundFetchContext is the central moderator of ongoing background
 // fetch requests from the Mojo service and from other callers.
@@ -81,7 +80,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // asynchronously fetched. The |callback| will be invoked when the fetch has
   // been registered, or an error occurred that prevents it from doing so.
   void StartFetch(const BackgroundFetchRegistrationId& registration_id,
-                  const std::vector<ServiceWorkerFetchRequest>& requests,
+                  std::vector<blink::mojom::FetchAPIRequestPtr> requests,
                   const BackgroundFetchOptions& options,
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
@@ -180,7 +179,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   // Callback for GetPermissionForOrigin.
   void DidGetPermission(const BackgroundFetchRegistrationId& registration_id,
-                        const std::vector<ServiceWorkerFetchRequest>& requests,
+                        std::vector<blink::mojom::FetchAPIRequestPtr> requests,
                         const BackgroundFetchOptions& options,
                         const SkBitmap& icon,
                         blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
