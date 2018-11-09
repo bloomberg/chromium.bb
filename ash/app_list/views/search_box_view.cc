@@ -288,12 +288,12 @@ void SearchBoxView::UpdateBackground(double progress,
 void SearchBoxView::UpdateLayout(double progress,
                                  ash::AppListState current_state,
                                  ash::AppListState target_state) {
+  const int horizontal_spacing = gfx::Tween::LinearIntValueBetween(
+      progress, GetBoxLayoutPaddingForState(current_state),
+      GetBoxLayoutPaddingForState(target_state));
   box_layout()->set_inside_border_insets(
-      gfx::Insets(0,
-                  gfx::Tween::LinearIntValueBetween(
-                      progress, GetBoxLayoutPaddingForState(current_state),
-                      GetBoxLayoutPaddingForState(target_state)),
-                  0, 0));
+      gfx::Insets(0, horizontal_spacing, 0, 0));
+  box_layout()->set_between_child_spacing(horizontal_spacing);
   if (show_assistant_button()) {
     assistant_button()->layer()->SetOpacity(gfx::Tween::LinearIntValueBetween(
         progress, GetAssistantButtonOpacityForState(current_state),
