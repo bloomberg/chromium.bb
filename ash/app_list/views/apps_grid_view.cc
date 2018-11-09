@@ -738,13 +738,6 @@ void AppsGridView::EndDrag(bool cancel) {
                                  drag_source_bounds);
   }
 
-  if (!cancel) {
-    // Select the page where dragged item is dropped.
-    pagination_model_.SelectPage(
-        GetIndexFromModelIndex(GetModelIndexOfItem(drag_item)).page,
-        false /* animate */);
-  }
-
   StopPageFlipTimer();
 }
 
@@ -2207,6 +2200,9 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
   item_list_->MoveItem(current_item_index, target_item_index);
   view_model_.Move(current_model_index, target_model_index);
   item_list_->AddObserver(this);
+
+  if (pagination_model_.selected_page() != target.page)
+    pagination_model_.SelectPage(target.page, false);
 
   RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderInFolder
                                               : kReorderInTopLevel);
