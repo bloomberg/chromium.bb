@@ -35,8 +35,6 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class Browser;
 class PrefService;
@@ -639,7 +637,7 @@ class PersonalDataManager : public KeyedService,
   void DedupeProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
       std::unordered_set<AutofillProfile*>* profile_guids_to_delete,
-      std::unordered_map<std::string, std::string>* guids_merge_map);
+      std::unordered_map<std::string, std::string>* guids_merge_map) const;
 
   // Updates the credit cards' billing address reference based on the merges
   // that happened during the dedupe, as defined in |guids_merge_map|. Also
@@ -667,11 +665,12 @@ class PersonalDataManager : public KeyedService,
   // Goes through the Wallet cards to find cards where the billing address is a
   // Wallet address which was already converted in a previous pass. Looks for a
   // matching local profile and updates the |guids_merge_map| to make the card
-  // refert to it.
+  // refer to it.
   bool UpdateWalletCardsAlreadyConvertedBillingAddresses(
-      std::vector<AutofillProfile>* local_profiles,
-      std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
-      std::unordered_map<std::string, std::string>* guids_merge_map);
+      const std::vector<AutofillProfile>& local_profiles,
+      const std::unordered_map<std::string, AutofillProfile*>&
+          server_id_profiles_map,
+      std::unordered_map<std::string, std::string>* guids_merge_map) const;
 
   // Tries to merge the |server_address| into the |existing_profiles| if
   // possible. Adds it to the list if no match is found. The existing profiles
@@ -680,7 +679,7 @@ class PersonalDataManager : public KeyedService,
   // updated profile.
   std::string MergeServerAddressesIntoProfiles(
       const AutofillProfile& server_address,
-      std::vector<AutofillProfile>* existing_profiles);
+      std::vector<AutofillProfile>* existing_profiles) const;
 
   // Removes profile from web database according to |guid| and resets credit
   // card's billing address if that address is used by any credit cards.
