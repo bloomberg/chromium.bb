@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
@@ -219,7 +220,7 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (physical_fragment.IsInline())
     border_box.offset += box_fragment_.InlineOffsetToContainerBox();
   border_box.offset += NGPhysicalOffset(paint_offset);
-  HitTestData::RecordHitTestRect(
+  HitTestDisplayItem::Record(
       paint_info.context, box_fragment_,
       HitTestRect(border_box.ToLayoutRect(), touch_action));
 }

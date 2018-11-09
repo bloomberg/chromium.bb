@@ -116,6 +116,11 @@ class PaintControllerPaintTestBase : public RenderingTest {
   bool ClientCacheIsValid(const DisplayItemClient& client) {
     return RootPaintController().ClientCacheIsValid(client);
   }
+
+  using SubsequenceMarkers = PaintController::SubsequenceMarkers;
+  SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
+    return RootPaintController().GetSubsequenceMarkers(client);
+  }
 };
 
 class PaintControllerPaintTest : public PaintTestConfigurations,
@@ -136,6 +141,17 @@ const DisplayItem::Type kNonScrollingContentsBackgroundChunkType =
 const DisplayItem::Type kScrollingContentsBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(
         PaintPhase::kDescendantBlockBackgroundsOnly);
+
+#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end) \
+  do {                                                           \
+    auto* subsequence = GetSubsequenceMarkers(client);           \
+    ASSERT_NE(nullptr, subsequence);                             \
+    EXPECT_EQ(expected_start, subsequence->start);               \
+    EXPECT_EQ(expected_end, subsequence->end);                   \
+  } while (false)
+
+#define EXPECT_NO_SUBSEQUENCE(client) \
+  EXPECT_EQ(nullptr, GetSubsequenceMarkers(client)
 
 }  // namespace blink
 

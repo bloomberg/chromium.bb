@@ -119,9 +119,9 @@ inline bool CheckChunk(const PaintChunk& chunk,
                        const HitTestData* hit_test_data = nullptr) {
   return chunk.begin_index == begin && chunk.end_index == end &&
          chunk.id == id && chunk.properties == properties &&
-         ((!chunk.GetHitTestData() && !hit_test_data) ||
-          (chunk.GetHitTestData() && hit_test_data &&
-           *chunk.GetHitTestData() == *hit_test_data));
+         ((!chunk.hit_test_data && !hit_test_data) ||
+          (chunk.hit_test_data && hit_test_data &&
+           *chunk.hit_test_data == *hit_test_data));
 }
 MATCHER_P4(IsPaintChunk, begin, end, id, properties, "") {
   return CheckChunk(arg, begin, end, id, properties);

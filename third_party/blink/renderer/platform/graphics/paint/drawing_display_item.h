@@ -25,18 +25,19 @@ namespace blink {
 // PaintRecord, and is in the space of the DisplayItemList. This allows the
 // visual_rect to be compared between DrawingDisplayItems, and to give bounds
 // around what the user can actually see from the PaintRecord.
-class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
+class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
                      sk_sp<const PaintRecord> record,
-                     bool known_to_be_opaque);
+                     bool known_to_be_opaque = false,
+                     size_t derived_size = sizeof(DrawingDisplayItem));
 
-  void Replay(GraphicsContext&) const override;
+  void Replay(GraphicsContext&) const final;
   void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                               cc::DisplayItemList&) const override;
-  bool DrawsContent() const override;
+                               cc::DisplayItemList&) const final;
+  bool DrawsContent() const final;
 
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
 
@@ -45,13 +46,14 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
     return known_to_be_opaque_;
   }
 
-  bool Equals(const DisplayItem& other) const final;
+  bool Equals(const DisplayItem& other) const override;
 
- private:
+ protected:
 #if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
 
+ private:
   sk_sp<const PaintRecord> record_;
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
@@ -63,8 +65,9 @@ DISABLE_CFI_PERF
 inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
                                               sk_sp<const PaintRecord> record,
-                                              bool known_to_be_opaque = false)
-    : DisplayItem(client, type, sizeof(*this)),
+                                              bool known_to_be_opaque,
+                                              size_t derived_size)
+    : DisplayItem(client, type, derived_size),
       record_(record && record->size() ? std::move(record) : nullptr),
       known_to_be_opaque_(known_to_be_opaque) {
   DCHECK(IsDrawingType(type));

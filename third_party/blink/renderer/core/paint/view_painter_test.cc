@@ -265,15 +265,12 @@ TEST_P(ViewPainterTestWithPaintTouchAction,
             0, 2,
             PaintChunk::Id(*view->Layer(), kNonScrollingBackgroundChunkType),
             non_scrolling_properties, view_hit_test_data)));
-#if 0
-    // TODO(wangxianzhu): Enable this in crrev.com/c/1325570.
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(IsPaintChunk(
             0, 3,
             PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
             scrolling_properties, scrolling_hit_test_data)));
-#endif
   }
 }
 
