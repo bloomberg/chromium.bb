@@ -367,7 +367,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
 
   // Usage that should be fixed:
   friend class ::NativeBackendKWallet;            // http://crbug.com/125331
-  friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
   friend class ::chromeos::system::
       StatisticsProviderImpl;                      // http://crbug.com/125385
   friend class content::TextInputClientMac;        // http://crbug.com/121917
@@ -406,6 +405,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class viz::HostGpuMemoryBufferManager;
 
   // Usage that should be fixed:
+  friend class ::chromeos::BlockingMethodCaller;  // http://crbug.com/125360
   friend class cc::CompletionEvent;              // http://crbug.com/902653
   friend class cc::SingleThreadTaskGraphRunner;  // http://crbug.com/902823
   friend class content::
