@@ -14,11 +14,10 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "base/unguessable_token.h"
+#include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -89,14 +88,18 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 // aura::Window. The child widget's layer becomes the root of the card's layer
 // hierarchy.
 class CardElementViewHolder : public views::NativeViewHost,
-                              public views::ViewObserver {
+                              public views::ViewObserver,
+                              public content::NavigableContentsObserver {
  public:
-  explicit CardElementViewHolder(const AssistantCardElement* card_element)
-      : card_element_view_(app_list::AnswerCardContentsRegistry::Get()->GetView(
-            card_element->embed_token().value())) {
+  CardElementViewHolder(AssistantController* assistant_controller,
+                        AssistantCardElement* card_element,
+                        views::Widget* context)
+      : assistant_controller_(assistant_controller),
+        contents_(card_element->contents()) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
 
     params.name = GetClassName();
+    params.context = context->GetNativeWindow();
     params.delegate = new views::WidgetDelegateView();
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -106,17 +109,21 @@ class CardElementViewHolder : public views::NativeViewHost,
 
     contents_view_ = params.delegate->GetContentsView();
     contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
-    contents_view_->AddChildView(card_element_view_);
+    contents_view_->AddChildView(contents_->GetView()->view());
 
-    card_element_view_->AddObserver(this);
+    // We observe the |contents_| view to receive notification of preferred size
+    // changes and we observe |contents_| to receive events pertaining to the
+    // underlying web contents.
+    contents_->GetView()->view()->AddObserver(this);
+    contents_->AddObserver(this);
 
     // OverrideDescription() doesn't work. Only names are read automatically.
     GetViewAccessibility().OverrideName(card_element->fallback());
   }
 
   ~CardElementViewHolder() override {
-    if (card_element_view_)
-      card_element_view_->RemoveObserver(this);
+    contents_->GetView()->view()->RemoveObserver(this);
+    contents_->RemoveObserver(this);
   }
 
   // views::NativeViewHost:
@@ -165,21 +172,23 @@ class CardElementViewHolder : public views::NativeViewHost,
     cursor_manager->UnlockCursor();
   }
 
-  // views::ViewObserver:
-  void OnViewIsDeleting(views::View* view) override {
-    DCHECK_EQ(card_element_view_, view);
-
-    // It's possible for |card_element_view_| to be destroyed before
-    // CardElementViewHolder. When this happens, we need to perform clean up
-    // prior to |card_element_view_| being destroyed and remove our cached
-    // reference to prevent additional clean up attempts on the destroyed
-    // instance when destroying CardElementViewHolder.
-    card_element_view_->RemoveObserver(this);
-    card_element_view_ = nullptr;
+  // content::NavigableContentsObserver:
+  void DidAutoResizeView(const gfx::Size& new_size) override {
+    contents_->GetView()->view()->SetPreferredSize(new_size);
   }
 
+  void DidSuppressNavigation(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             bool from_user_gesture) override {
+    // We delegate navigation to the AssistantController so that it can apply
+    // special handling to deep links.
+    if (from_user_gesture)
+      assistant_controller_->OpenUrl(url);
+  }
+
+  // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* view) override {
-    DCHECK_EQ(card_element_view_, view);
+    DCHECK_EQ(contents_->GetView()->view(), view);
 
     gfx::Size preferred_size = view->GetPreferredSize();
 
@@ -213,7 +222,10 @@ class CardElementViewHolder : public views::NativeViewHost,
   }
 
  private:
-  views::View* card_element_view_;  // Owned by WebContentsManager.
+  AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  // Owned by AssistantCardElement.
+  content::NavigableContents* const contents_;
 
   std::unique_ptr<views::Widget> child_widget_;
 
@@ -397,51 +409,47 @@ void UiElementContainerView::OnResponseAdded(
 void UiElementContainerView::OnCardElementAdded(
     const AssistantCardElement* card_element) {
   // The card, for some reason, is not embeddable so we'll have to ignore it.
-  if (!card_element->embed_token().has_value())
+  if (!card_element->contents())
     return;
 
-  // When the card has been rendered in the same process, its view is
-  // available in the AnswerCardContentsRegistry's token-to-view map.
-  if (app_list::AnswerCardContentsRegistry::Get()) {
-    auto* view_holder = new CardElementViewHolder(card_element);
+  auto* view_holder = new CardElementViewHolder(
+      assistant_controller_, const_cast<AssistantCardElement*>(card_element),
+      /*context=*/GetWidget());
 
-    if (is_first_card_) {
-      is_first_card_ = false;
+  if (is_first_card_) {
+    is_first_card_ = false;
 
-      // The first card requires a top margin of |kFirstCardMarginTopDip|, but
-      // we need to account for child spacing because the first card is not
-      // necessarily the first UI element.
-      const int top_margin_dip = child_count() == 0
-                                     ? kFirstCardMarginTopDip
-                                     : kFirstCardMarginTopDip - kSpacingDip;
+    // The first card requires a top margin of |kFirstCardMarginTopDip|, but
+    // we need to account for child spacing because the first card is not
+    // necessarily the first UI element.
+    const int top_margin_dip = child_count() == 0
+                                   ? kFirstCardMarginTopDip
+                                   : kFirstCardMarginTopDip - kSpacingDip;
 
-      // We effectively create a top margin by applying an empty border.
-      view_holder->SetBorder(views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
-    }
-
-    content_view()->AddChildView(view_holder);
-    view_holder->Attach();
-
-    // Cache a reference to the attached native view host so that it can be
-    // detached prior to being removed from the view hierarchy and destroyed.
-    native_view_hosts_.push_back(view_holder);
-
-    // The view will be animated on its own layer, so we need to do some initial
-    // layer setup. We're going to fade the view in, so hide it. Note that we
-    // approximate 0% opacity by actually using 0.01%. We do this to workaround
-    // a DCHECK that requires aura::Windows to have a target opacity > 0% when
-    // shown. Because our window will be animated to full opacity from this
-    // value, it should be safe to circumnavigate this DCHECK.
-    view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
-    view_holder->native_view()->layer()->SetOpacity(0.0001f);
-
-    // We cache the native view for use during animations and its desired
-    // opacity that we'll animate to while processing the next query response.
-    ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
-        view_holder->native_view(), kCardElementAnimationFadeOutOpacity));
+    // We effectively create a top margin by applying an empty border.
+    view_holder->SetBorder(views::CreateEmptyBorder(top_margin_dip, 0, 0, 0));
   }
 
-  // TODO(dmblack): Handle Mash case.
+  content_view()->AddChildView(view_holder);
+  view_holder->Attach();
+
+  // Cache a reference to the attached native view host so that it can be
+  // detached prior to being removed from the view hierarchy and destroyed.
+  native_view_hosts_.push_back(view_holder);
+
+  // The view will be animated on its own layer, so we need to do some initial
+  // layer setup. We're going to fade the view in, so hide it. Note that we
+  // approximate 0% opacity by actually using 0.01%. We do this to workaround
+  // a DCHECK that requires aura::Windows to have a target opacity > 0% when
+  // shown. Because our window will be animated to full opacity from this
+  // value, it should be safe to circumnavigate this DCHECK.
+  view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
+  view_holder->native_view()->layer()->SetOpacity(0.0001f);
+
+  // We cache the native view for use during animations and its desired
+  // opacity that we'll animate to while processing the next query response.
+  ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
+      view_holder->native_view(), kCardElementAnimationFadeOutOpacity));
 }
 
 void UiElementContainerView::OnTextElementAdded(

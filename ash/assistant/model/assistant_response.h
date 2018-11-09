@@ -11,12 +11,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
 
-class AssistantResponseObserver;
 class AssistantUiElement;
 
 // Models a renderable Assistant response.
@@ -34,10 +32,6 @@ class AssistantResponse {
 
   AssistantResponse();
   ~AssistantResponse();
-
-  // Adds/removes the specified |observer|.
-  void AddObserver(AssistantResponseObserver* observer);
-  void RemoveObserver(AssistantResponseObserver* observer);
 
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.
@@ -71,14 +65,10 @@ class AssistantResponse {
   base::WeakPtr<AssistantResponse> GetWeakPtr();
 
  private:
-  void NotifyDestroying();
-
   std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::vector<AssistantSuggestionPtr> suggestions_;
   ProcessingState processing_state_ = ProcessingState::kUnprocessed;
   bool has_tts_ = false;
-
-  base::ObserverList<AssistantResponseObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<AssistantResponse> weak_factory_;
 

@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "services/content/public/cpp/navigable_contents.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ash {
@@ -21,7 +22,41 @@ namespace ash {
 class AssistantController;
 class AssistantCardElement;
 class AssistantResponse;
+class AssistantResponseProcessor;
 enum class AssistantUiElementType;
+
+// AssistantCardProcessor ------------------------------------------------------
+
+// A UI element processor associated with a single card element that is
+// responsible for processing an Assistant card on behalf of an
+// AssistantResponseProcessor.
+class AssistantCardProcessor : public content::NavigableContentsObserver {
+ public:
+  AssistantCardProcessor(
+      AssistantController* assistant_controller,
+      AssistantResponseProcessor* assistant_response_processor,
+      AssistantCardElement* assistant_card_element);
+  ~AssistantCardProcessor() override;
+
+  // content::NavigableContentsObserver:
+  void DidStopLoading() override;
+
+  // Starts processing the associated card element. Upon completion, this
+  // processor will call DidFinishProcessing on |assistant_response_processor_|.
+  void Process();
+
+ private:
+  AssistantController* const assistant_controller_;
+  AssistantResponseProcessor* const assistant_response_processor_;
+  AssistantCardElement* const assistant_card_element_;
+
+  content::mojom::NavigableContentsFactoryPtr contents_factory_;
+  std::unique_ptr<content::NavigableContents> contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssistantCardProcessor);
+};
+
+// AssistantResponseProcessor --------------------------------------------------
 
 // The AssistantResponseProcessor is responsible for performing any processing
 // steps necessary on an Assistant response before it is ready for presentation.
@@ -39,6 +74,9 @@ class AssistantResponseProcessor {
   // while another response is being processed will abort the previous task.
   void Process(AssistantResponse& response, ProcessCallback callback);
 
+  // Invoked when the specified |card_processor| has finished processing.
+  void DidFinishProcessing(const AssistantCardProcessor* card_processor);
+
  private:
   // Encapsulates a processing task for a given Assistant response. Upon task
   // abort/completion, the associated callback should be run.
@@ -53,8 +91,10 @@ class AssistantResponseProcessor {
     // Callback to be run on task abort/completion.
     ProcessCallback callback;
 
-    // Count of UI elements that are being asynchronously processed.
-    int processing_count = 0;
+    // Vector of element processors that are processing the UI elements
+    // contained in |response|. When |element_processors| is empty, response
+    // processing is complete.
+    std::vector<std::unique_ptr<AssistantCardProcessor>> element_processors;
   };
 
   // Processes a card element as a part of the task identified by |task_id|.

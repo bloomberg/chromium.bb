@@ -4,24 +4,13 @@
 
 #include "ash/assistant/model/assistant_response.h"
 
-#include "ash/assistant/model/assistant_response_observer.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 
 namespace ash {
 
 AssistantResponse::AssistantResponse() : weak_factory_(this) {}
 
-AssistantResponse::~AssistantResponse() {
-  NotifyDestroying();
-}
-
-void AssistantResponse::AddObserver(AssistantResponseObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AssistantResponse::RemoveObserver(AssistantResponseObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
+AssistantResponse::~AssistantResponse() = default;
 
 void AssistantResponse::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
@@ -63,11 +52,6 @@ AssistantResponse::GetSuggestions() const {
 
 base::WeakPtr<AssistantResponse> AssistantResponse::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-void AssistantResponse::NotifyDestroying() {
-  for (auto& observer : observers_)
-    observer.OnResponseDestroying(*this);
 }
 
 }  // namespace ash
