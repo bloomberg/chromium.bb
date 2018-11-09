@@ -154,7 +154,7 @@ BrowserTestBase::BrowserTestBase()
 BrowserTestBase::~BrowserTestBase() {
 #if defined(OS_ANDROID)
   // RemoteTestServer can cause wait on the UI thread.
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   spawned_test_server_.reset();
 #endif
 
