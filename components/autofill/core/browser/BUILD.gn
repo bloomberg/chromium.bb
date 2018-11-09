@@ -8,6 +8,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_static_library("browser") {
   sources = [
+    "accessory_sheet_data.cc",
+    "accessory_sheet_data.h",
     "account_info_getter.h",
     "address.cc",
     "address.h",
