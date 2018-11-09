@@ -4793,7 +4793,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // It is possible for |webView.URL| to be nil, in which case
     // webView.backForwardList.currentItem.URL will return the right committed
     // URL (crbug.com/784480).
-    webViewURL = net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
+    webViewURL = currentWKItemURL;
   } else if (context && context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
     // is a known edge case where |webView.URL| is wrong.
