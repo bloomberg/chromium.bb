@@ -4,32 +4,22 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "cc/paint/decode_stashing_image_provider.h"
-#include "cc/paint/skia_paint_canvas.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace blink {
 
 void CanvasResourceProvider::RecordTypeToUMA(ResourceProviderType type) {
-  UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ResourceProviderType", type);
+  base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType", type);
 }
 
 // * Renders to a texture managed by Skia. Mailboxes are backed by vanilla GL
@@ -158,7 +148,9 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
                                       color_params,
                                       std::move(context_provider_wrapper),
                                       std::move(resource_dispatcher),
-                                      is_origin_top_left) {}
+                                      is_origin_top_left) {
+    RecordTypeToUMA(kTextureGpuMemoryBuffer);
+  }
 
   ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
   bool SupportsDirectCompositing() const override { return true; }
@@ -263,7 +255,9 @@ class CanvasResourceProviderBitmapGpuMemoryBuffer final
       : CanvasResourceProviderBitmap(size,
                                      color_params,
                                      std::move(context_provider_wrapper),
-                                     std::move(resource_dispatcher)) {}
+                                     std::move(resource_dispatcher)) {
+    RecordTypeToUMA(kBitmapGpuMemoryBuffer);
+  }
 
   ~CanvasResourceProviderBitmapGpuMemoryBuffer() override = default;
   bool SupportsDirectCompositing() const override { return true; }
@@ -483,8 +477,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         break;
     }
     if (provider && provider->IsValid()) {
-      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ResourceProviderIsAccelerated",
-                            provider->IsAccelerated());
+      base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
+                                provider->IsAccelerated());
       return provider;
     }
   }
