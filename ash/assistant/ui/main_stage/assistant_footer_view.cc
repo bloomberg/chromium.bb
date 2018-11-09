@@ -47,17 +47,14 @@ AssistantFooterView::AssistantFooterView(
               base::Unretained(this)),
           /*animation_ended_callback=*/base::BindRepeating(
               &AssistantFooterView::OnAnimationEnded,
-              base::Unretained(this)))),
-      voice_interaction_observer_binding_(this) {
+              base::Unretained(this)))) {
   InitLayout();
-
-  // Observe voice interaction for changes to consent state.
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
 }
 
-AssistantFooterView::~AssistantFooterView() = default;
+AssistantFooterView::~AssistantFooterView() {
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+}
 
 const char* AssistantFooterView::GetClassName() const {
   return "AssistantFooterView";

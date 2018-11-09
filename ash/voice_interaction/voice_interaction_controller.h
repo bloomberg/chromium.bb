@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -37,6 +38,11 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyLaunchWithMicOpen(bool launch_with_mic_open) override;
   void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
+  // Adding local observers in the same process.
+  void AddLocalObserver(DefaultVoiceInteractionObserver* observer);
+  void RemoveLocalObserver(DefaultVoiceInteractionObserver* observer);
+  void InitObserver(mojom::VoiceInteractionObserver* observer);
+
   bool notification_enabled() const { return notification_enabled_; }
 
   bool launch_with_mic_open() const { return launch_with_mic_open_; }
@@ -53,6 +59,8 @@ class ASH_EXPORT VoiceInteractionController
   mojo::BindingSet<mojom::VoiceInteractionController> bindings_;
 
   mojo::InterfacePtrSet<mojom::VoiceInteractionObserver> observers_;
+
+  base::ObserverList<DefaultVoiceInteractionObserver> local_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionController);
 };

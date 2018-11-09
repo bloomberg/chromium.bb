@@ -287,8 +287,6 @@ class ASH_EXPORT AppListControllerImpl
   // Whether we're currently in a window dragging process.
   bool in_window_dragging_ = false;
 
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
-
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };
 

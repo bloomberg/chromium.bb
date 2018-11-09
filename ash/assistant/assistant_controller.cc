@@ -40,11 +40,8 @@ AssistantController::AssistantController()
       assistant_setup_controller_(
           std::make_unique<AssistantSetupController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
-      voice_interaction_binding_(this),
       weak_factory_(this) {
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
 
@@ -56,6 +53,7 @@ AssistantController::~AssistantController() {
 
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
   RemoveObserver(this);
 }
 

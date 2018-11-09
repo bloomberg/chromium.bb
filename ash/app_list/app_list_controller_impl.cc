@@ -42,8 +42,7 @@ namespace ash {
 
 AppListControllerImpl::AppListControllerImpl()
     : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()),
-      voice_interaction_binding_(this) {
+      is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);
 
   // Create only for non-mash. Mash uses window tree embed API to get a
@@ -76,9 +75,7 @@ AppListControllerImpl::AppListControllerImpl()
         std::make_unique<HomeLauncherGestureHandler>(this);
   }
 
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -87,6 +84,7 @@ AppListControllerImpl::~AppListControllerImpl() {
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
   model_.RemoveObserver(this);
 }
 

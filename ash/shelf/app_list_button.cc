@@ -68,17 +68,14 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     : ShelfControlButton(),
       listener_(listener),
       shelf_view_(shelf_view),
-      shelf_(shelf),
-      voice_interaction_binding_(this) {
+      shelf_(shelf) {
   DCHECK(listener_);
   DCHECK(shelf_view_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   set_notify_action(Button::NOTIFY_ON_PRESS);
@@ -96,6 +93,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 AppListButton::~AppListButton() {
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
 
 void AppListButton::OnAppListShown() {

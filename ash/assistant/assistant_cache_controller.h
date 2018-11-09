@@ -11,7 +11,6 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -48,8 +47,6 @@ class AssistantCacheController : public AssistantControllerObserver,
   void UpdateConversationStarters();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   AssistantCacheModel model_;
 
