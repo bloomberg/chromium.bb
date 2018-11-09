@@ -73,11 +73,8 @@ class FeedLoggingBridge {
 
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
-                              const jlong visit_time_ms);
-
-  void OnOfflinePageVisited(JNIEnv* j_env,
-                            const base::android::JavaRef<jobject>& j_this,
-                            const jlong visit_time_ms);
+                              const jlong visit_time_ms,
+                              const jboolean is_offline);
 
  private:
   FeedLoggingMetrics* feed_logging_metrics_;

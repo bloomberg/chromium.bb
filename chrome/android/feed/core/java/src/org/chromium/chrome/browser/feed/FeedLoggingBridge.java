@@ -109,27 +109,14 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      * Reports how long a user spends on the page.
      *
      * @param visitTimeMs Time spent reading the page.
+     * @param isOffline If the page is viewed in offline mode or not.
      */
-    public void onContentTargetVisited(long visitTimeMs) {
-        // We cannot assume that the |mNativeFeedLoggingBridge| is always available like other
+    public void onContentTargetVisited(long visitTimeMs, boolean isOffline) {
+        // We cannot assume that the|mNativeFeedLoggingBridge| is always available like other
         // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
         // may have already been called if Feed is disabled by policy.
         if (mNativeFeedLoggingBridge != 0) {
-            nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs);
-        }
-    }
-
-    /**
-     * Reports how long a user spends on the offline page.
-     *
-     * @param visitTimeMs Time spent reading the page.
-     */
-    public void onOfflinePageVisited(long visitTimeMs) {
-        // We cannot assume that the |mNativeFeedLoggingBridge| is always available like other
-        // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
-        // may have already been called if Feed is disabled by policy.
-        if (mNativeFeedLoggingBridge != 0) {
-            nativeOnOfflinePageVisited(mNativeFeedLoggingBridge, visitTimeMs);
+            nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs, isOffline);
         }
     }
 
@@ -171,6 +158,5 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
     private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
     private native void nativeOnContentTargetVisited(
-            long nativeFeedLoggingBridge, long visitTimeMs);
-    private native void nativeOnOfflinePageVisited(long nativeFeedLoggingBridge, long visitTimeMs);
+            long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline);
 }
