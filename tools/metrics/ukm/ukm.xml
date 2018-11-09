@@ -3442,6 +3442,14 @@ be describing additional metrics about the same event.
       distinguish two forms on the same site.
     </summary>
   </metric>
+  <metric name="FillOnLoad">
+    <summary>
+      Records the comparison of the old and new decision about filling a form on
+      load. Should only be logged for fillig with non-PSL matched credentials,
+      in non-Incognito mode. Values are from
+      password_manager::PasswordFormMetricsRecorder::FillOnLoad.
+    </summary>
+  </metric>
   <metric name="Generation.GeneratedPassword">
     <summary>
       Records '1' if the user has generated a password on this form.
