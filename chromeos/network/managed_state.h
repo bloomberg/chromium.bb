@@ -89,9 +89,6 @@ class CHROMEOS_EXPORT ManagedState {
     update_requested_ = update_requested;
   }
 
-  void set_path_for_testing(const std::string& path) { path_ = path; }
-  void set_type_for_testing(const std::string& type) { type_ = type; }
-
   // Returns true if |type_| matches |pattern|.
   bool Matches(const NetworkTypePattern& pattern) const;
 
@@ -123,6 +120,7 @@ class CHROMEOS_EXPORT ManagedState {
   void set_type(const std::string& type) { type_ = type; }
 
  private:
+  friend class NetworkChangeNotifierChromeosUpdateTest;
   friend class NetworkStateHandler;
   friend class ash::network_icon::NetworkIconTest;
   friend class chromeos::tether::NetworkListSorterTest;
