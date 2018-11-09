@@ -166,7 +166,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
           WebString::FromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
           WebString::FromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
   ASSERT_TRUE(web_certificate);
-  RTCCertificate* certificate = new RTCCertificate(std::move(web_certificate));
+  RTCCertificate* certificate =
+      MakeGarbageCollected<RTCCertificate>(std::move(web_certificate));
 
   // Round trip test.
   v8::Local<v8::Value> wrapper =

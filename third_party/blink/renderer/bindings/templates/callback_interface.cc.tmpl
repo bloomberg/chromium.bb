@@ -79,7 +79,7 @@ const char* {{v8_class}}::NameInHeapSnapshot() const {
   if (creation_context.IsEmpty())
     return nullptr;
 
-  return new {{v8_class}}(callback_object, creation_context);
+  return MakeGarbageCollected<{{v8_class}}>(callback_object, creation_context);
 }
 
 {% for method in methods %}

@@ -18,8 +18,10 @@ class InternalRuntimeFlags : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
  public:
   static InternalRuntimeFlags* create() {
-    return new InternalRuntimeFlags;
+    return MakeGarbageCollected<InternalRuntimeFlags>();
   }
+
+  InternalRuntimeFlags() {}
 
   // These are reset between layout tests from Internals::resetToConsistentState
   // using RuntimeEnabledFeatures::Backup.
@@ -38,9 +40,6 @@ class InternalRuntimeFlags : public ScriptWrappable {
     {% endif %}
   }
   {% endfor %}
-
- private:
-  InternalRuntimeFlags() {}
 };
 
 }  // namespace blink

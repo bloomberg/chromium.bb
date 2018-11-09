@@ -22,9 +22,11 @@ class TestDictionary;
 class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionDictionaryArg* Create(v8::Local<v8::Function> callback_function) {
-    return new V8VoidCallbackFunctionDictionaryArg(callback_function);
+    return MakeGarbageCollected<V8VoidCallbackFunctionDictionaryArg>(callback_function);
   }
 
+  explicit V8VoidCallbackFunctionDictionaryArg(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8VoidCallbackFunctionDictionaryArg() override = default;
 
   // NameClient overrides:
@@ -37,10 +39,6 @@ class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFun
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary*& arg);
-
- private:
-  explicit V8VoidCallbackFunctionDictionaryArg(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>

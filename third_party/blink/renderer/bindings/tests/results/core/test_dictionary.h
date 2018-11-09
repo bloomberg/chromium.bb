@@ -43,8 +43,9 @@ class Element;
 
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
  public:
-  static TestDictionary* Create() { return new TestDictionary(); }
+  static TestDictionary* Create() { return MakeGarbageCollected<TestDictionary>(); }
 
+  TestDictionary();
   virtual ~TestDictionary();
 
   bool hasAnyInRecordMember() const { return has_any_in_record_member_; }
@@ -448,9 +449,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   void Trace(blink::Visitor*) override;
-
- protected:
-  TestDictionary();
 
  private:
   bool has_any_in_record_member_ = false;

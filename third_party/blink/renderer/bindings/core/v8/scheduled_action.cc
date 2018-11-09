@@ -62,10 +62,11 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
             To<Document>(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
       UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
-      return new ScheduledAction(script_state);
+      return MakeGarbageCollected<ScheduledAction>(script_state);
     }
   }
-  return new ScheduledAction(script_state, handler, arguments);
+  return MakeGarbageCollected<ScheduledAction>(script_state, handler,
+                                               arguments);
 }
 
 ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
@@ -77,10 +78,10 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
             To<Document>(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
       UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
-      return new ScheduledAction(script_state);
+      return MakeGarbageCollected<ScheduledAction>(script_state);
     }
   }
-  return new ScheduledAction(script_state, handler);
+  return MakeGarbageCollected<ScheduledAction>(script_state, handler);
 }
 
 ScheduledAction::~ScheduledAction() {

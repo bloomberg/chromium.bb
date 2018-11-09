@@ -92,7 +92,7 @@ V8TestLegacyCallbackInterface* V8TestLegacyCallbackInterface::CreateOrNull(v8::L
   if (creation_context.IsEmpty())
     return nullptr;
 
-  return new V8TestLegacyCallbackInterface(callback_object, creation_context);
+  return MakeGarbageCollected<V8TestLegacyCallbackInterface>(callback_object, creation_context);
 }
 
 v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* callback_this_value, Node* node) {

@@ -70,9 +70,12 @@ class CORE_EXPORT ScriptController final
   static ScriptController* Create(
       LocalFrame& frame,
       LocalWindowProxyManager& window_proxy_manager) {
-    return new ScriptController(frame, window_proxy_manager);
+    return MakeGarbageCollected<ScriptController>(frame, window_proxy_manager);
   }
 
+  ScriptController(LocalFrame& frame,
+                   LocalWindowProxyManager& window_proxy_manager)
+      : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
   void Trace(blink::Visitor*);
 
   // This returns an initialized window proxy. (If the window proxy is not
@@ -147,10 +150,6 @@ class CORE_EXPORT ScriptController final
   static v8::ExtensionConfiguration ExtensionsFor(const ExecutionContext*);
 
  private:
-  ScriptController(LocalFrame& frame,
-                   LocalWindowProxyManager& window_proxy_manager)
-      : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
-
   LocalFrame* GetFrame() const { return frame_; }
   v8::Isolate* GetIsolate() const {
     return window_proxy_manager_->GetIsolate();

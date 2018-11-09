@@ -26,6 +26,11 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
   // See also crbug.com/886588
   static V8TestCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
 
+  explicit V8TestCallbackInterface(
+      v8::Local<v8::Object> callback_object,
+      v8::Local<v8::Context> callback_object_creation_context)
+      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+                              kNotSingleOperation) {}
   ~V8TestCallbackInterface() override = default;
 
   // NameClient overrides:
@@ -66,13 +71,6 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
   v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8TestCallbackInterface(
-      v8::Local<v8::Object> callback_object,
-      v8::Local<v8::Context> callback_object_creation_context)
-      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
-                              kNotSingleOperation) {}
 };
 
 template <>

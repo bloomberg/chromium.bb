@@ -21,9 +21,11 @@ class ScriptWrappable;
 class CORE_EXPORT V8AnyCallbackFunctionVariadicAnyArgs final : public CallbackFunctionBase {
  public:
   static V8AnyCallbackFunctionVariadicAnyArgs* Create(v8::Local<v8::Function> callback_function) {
-    return new V8AnyCallbackFunctionVariadicAnyArgs(callback_function);
+    return MakeGarbageCollected<V8AnyCallbackFunctionVariadicAnyArgs>(callback_function);
   }
 
+  explicit V8AnyCallbackFunctionVariadicAnyArgs(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8AnyCallbackFunctionVariadicAnyArgs() override = default;
 
   // NameClient overrides:
@@ -36,10 +38,6 @@ class CORE_EXPORT V8AnyCallbackFunctionVariadicAnyArgs final : public CallbackFu
   // Performs "construct".
   // https://heycam.github.io/webidl/#construct-a-callback-function
   v8::Maybe<ScriptValue> Construct(const Vector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8AnyCallbackFunctionVariadicAnyArgs(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>

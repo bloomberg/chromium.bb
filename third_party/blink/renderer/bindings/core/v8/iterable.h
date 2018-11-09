@@ -25,7 +25,7 @@ class Iterable {
         this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
-    return new IterableIterator<KeySelector>(source);
+    return MakeGarbageCollected<IterableIterator<KeySelector>>(source);
   }
 
   Iterator* valuesForBinding(ScriptState* script_state,
@@ -34,7 +34,7 @@ class Iterable {
         this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
-    return new IterableIterator<ValueSelector>(source);
+    return MakeGarbageCollected<IterableIterator<ValueSelector>>(source);
   }
 
   Iterator* entriesForBinding(ScriptState* script_state,
@@ -43,7 +43,7 @@ class Iterable {
         this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
-    return new IterableIterator<EntrySelector>(source);
+    return MakeGarbageCollected<IterableIterator<EntrySelector>>(source);
   }
 
   void forEachForBinding(ScriptState* script_state,

@@ -59,14 +59,6 @@ class ScheduledAction final
                                  ExecutionContext* target,
                                  const String& handler);
 
-  ~ScheduledAction();
-  void Dispose();
-
-  void Trace(blink::Visitor*);
-
-  void Execute(ExecutionContext*);
-
- private:
   ScheduledAction(ScriptState*,
                   const ScriptValue& handler,
                   const Vector<ScriptValue>& arguments);
@@ -75,6 +67,14 @@ class ScheduledAction final
   // Creates an empty ScheduledAction.
   explicit ScheduledAction(ScriptState*);
 
+  ~ScheduledAction();
+  void Dispose();
+
+  void Trace(blink::Visitor*);
+
+  void Execute(ExecutionContext*);
+
+ private:
   void Execute(LocalFrame*);
   void Execute(WorkerGlobalScope*);
   void CreateLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);

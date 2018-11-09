@@ -79,10 +79,11 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
     V8Function* adopted_callback,
     V8Function* attribute_changed_callback,
     HashSet<AtomicString>&& observed_attributes) {
-  ScriptCustomElementDefinition* definition = new ScriptCustomElementDefinition(
-      script_state, descriptor, constructor, connected_callback,
-      disconnected_callback, adopted_callback, attribute_changed_callback,
-      std::move(observed_attributes));
+  ScriptCustomElementDefinition* definition =
+      MakeGarbageCollected<ScriptCustomElementDefinition>(
+          script_state, descriptor, constructor, connected_callback,
+          disconnected_callback, adopted_callback, attribute_changed_callback,
+          std::move(observed_attributes));
 
   // Tag the JavaScript constructor object with its ID.
   v8::Local<v8::Value> id_value =

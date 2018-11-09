@@ -23,9 +23,25 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
       v8::Isolate* isolate,
       DOMWrapperWorld& world,
       HandlerType type = HandlerType::kEventHandler) {
-    return new JSEventHandlerForContentAttribute(
+    return MakeGarbageCollected<JSEventHandlerForContentAttribute>(
         isolate, world, function_name, code, source_url, position, type);
   }
+
+  JSEventHandlerForContentAttribute(v8::Isolate* isolate,
+                                    DOMWrapperWorld& world,
+                                    const AtomicString& function_name,
+                                    const String& code,
+                                    const String& source_url,
+                                    const TextPosition& position,
+                                    HandlerType type)
+      : JSEventHandler(type),
+        did_compile_(false),
+        function_name_(function_name),
+        code_(code),
+        source_url_(source_url),
+        position_(position),
+        isolate_(isolate),
+        world_(&world) {}
 
   // blink::EventListener overrides:
   bool IsEventHandlerForContentAttribute() const override { return true; }
@@ -46,22 +62,6 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   DOMWrapperWorld& GetWorld() const override { return *world_; }
 
  private:
-  JSEventHandlerForContentAttribute(v8::Isolate* isolate,
-                                    DOMWrapperWorld& world,
-                                    const AtomicString& function_name,
-                                    const String& code,
-                                    const String& source_url,
-                                    const TextPosition& position,
-                                    HandlerType type)
-      : JSEventHandler(type),
-        did_compile_(false),
-        function_name_(function_name),
-        code_(code),
-        source_url_(source_url),
-        position_(position),
-        isolate_(isolate),
-        world_(&world) {}
-
   // Implements Step 3. of "get the current value of the event handler".
   // The compiled v8::Function is returned and |JSEventHandler::event_handler_|
   // gets initialized with it if lazy compilation succeeds.
