@@ -69,7 +69,8 @@ class CrostiniInstallerView
   // crostini::CrostiniManager::RestartObserver
   void OnComponentLoaded(crostini::CrostiniResult result) override;
   void OnConciergeStarted(crostini::CrostiniResult result) override;
-  void OnDiskImageCreated(crostini::CrostiniResult result) override;
+  void OnDiskImageCreated(crostini::CrostiniResult result,
+                          vm_tools::concierge::DiskImageStatus status) override;
   void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;
@@ -81,8 +82,10 @@ class CrostiniInstallerView
 
  private:
   enum class State {
-    PROMPT,  // Prompting the user to allow installation.
-    ERROR,   // Something unexpected happened.
+    PROMPT,            // Prompting the user to allow installation.
+    ERROR,             // Something unexpected happened.
+    CLEANUP,           // Deleting a partial installed
+    CLEANUP_FINISHED,  // Finished deleting partial install
     // We automatically progress through the following steps.
     INSTALL_START,         // The user has just clicked 'Install'.
     INSTALL_IMAGE_LOADER,  // Loading the Termina VM component.
@@ -101,6 +104,7 @@ class CrostiniInstallerView
   explicit CrostiniInstallerView(Profile* profile);
   ~CrostiniInstallerView() override;
 
+  void FinishCleanup(crostini::CrostiniResult result);
   void HandleError(const base::string16& error_message, SetupResult result);
   void MountContainerFinished(crostini::CrostiniResult result);
   void ShowLoginShell();
@@ -124,6 +128,7 @@ class CrostiniInstallerView
   int32_t container_download_percent_ = 0;
   base::Time state_start_time_;
   std::unique_ptr<base::RepeatingTimer> state_progress_timer_;
+  bool do_cleanup_ = true;
 
   // Whether the result has been logged or not is stored to prevent multiple
   // results being logged for a given setup flow. This can happen due to

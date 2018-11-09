@@ -192,11 +192,12 @@ class CrostiniManager::CrostiniRestarter
   }
 
   void CreateDiskImageFinished(CrostiniResult result,
+                               vm_tools::concierge::DiskImageStatus status,
                                const base::FilePath& result_path) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Tell observers.
     for (auto& observer : observer_list_) {
-      observer.OnDiskImageCreated(result);
+      observer.OnDiskImageCreated(result, status);
     }
     if (is_aborted_)
       return;
@@ -662,7 +663,10 @@ void CrostiniManager::CreateDiskImage(
   std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
     LOG(ERROR) << "Disk path cannot be empty";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR, base::FilePath());
+    std::move(callback).Run(
+        CrostiniResult::CLIENT_ERROR,
+        vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN,
+        base::FilePath());
     return;
   }
 
@@ -676,7 +680,10 @@ void CrostiniManager::CreateDiskImage(
       storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS) {
     LOG(ERROR) << "'" << storage_location
                << "' is not a valid storage location";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR, base::FilePath());
+    std::move(callback).Run(
+        CrostiniResult::CLIENT_ERROR,
+        vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN,
+        base::FilePath());
     return;
   }
   request.set_storage_location(storage_location);
@@ -700,7 +707,10 @@ void CrostiniManager::CreateDiskImageAfterSizeCheck(
   if (disk_size < kMinimumDiskSize && base::SysInfo::IsRunningOnChromeOS()) {
     LOG(ERROR) << "Insufficient disk available. Need to free "
                << kMinimumDiskSize - disk_size << " bytes";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR, base::FilePath());
+    std::move(callback).Run(
+        CrostiniResult::CLIENT_ERROR,
+        vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN,
+        base::FilePath());
     return;
   }
   // The logical size of the new disk image, in bytes.
@@ -1176,6 +1186,7 @@ void CrostiniManager::OnCreateDiskImage(
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to create disk image. Empty response.";
     std::move(callback).Run(CrostiniResult::CREATE_DISK_IMAGE_FAILED,
+                            vm_tools::concierge::DISK_STATUS_UNKNOWN,
                             base::FilePath());
     return;
   }
@@ -1185,11 +1196,11 @@ void CrostiniManager::OnCreateDiskImage(
       response.status() != vm_tools::concierge::DISK_STATUS_CREATED) {
     LOG(ERROR) << "Failed to create disk image: " << response.failure_reason();
     std::move(callback).Run(CrostiniResult::CREATE_DISK_IMAGE_FAILED,
-                            base::FilePath());
+                            response.status(), base::FilePath());
     return;
   }
 
-  std::move(callback).Run(CrostiniResult::SUCCESS,
+  std::move(callback).Run(CrostiniResult::SUCCESS, response.status(),
                           base::FilePath(response.disk_path()));
 }
 

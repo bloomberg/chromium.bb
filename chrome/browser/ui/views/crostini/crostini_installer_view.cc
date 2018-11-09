@@ -27,6 +27,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -174,14 +175,34 @@ bool CrostiniInstallerView::Accept() {
 }
 
 bool CrostiniInstallerView::Cancel() {
-  if (state_ != State::INSTALL_END &&
+  if (state_ != State::INSTALL_END && state_ != State::CLEANUP &&
+      state_ != State::CLEANUP_FINISHED &&
       restart_id_ != crostini::CrostiniManager::kUninitializedRestartId) {
     // Abort the long-running flow, and prevent our RestartObserver methods
     // being called after "this" has been destroyed.
     crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
         restart_id_);
     RecordSetupResultHistogram(SetupResult::kUserCancelled);
-  } else {
+
+    if (do_cleanup_) {
+      // Remove anything that got installed
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(
+              &crostini::CrostiniManager::RemoveCrostini,
+              base::Unretained(
+                  crostini::CrostiniManager::GetForProfile(profile_)),
+              crostini::kCrostiniDefaultVmName,
+              crostini::kCrostiniDefaultContainerName,
+              base::BindOnce(&CrostiniInstallerView::FinishCleanup,
+                             weak_ptr_factory_.GetWeakPtr())));
+      UpdateState(State::CLEANUP);
+    }
+    return !do_cleanup_;
+  } else if (state_ == State::CLEANUP) {
+    return false;
+  } else if (restart_id_ ==
+             crostini::CrostiniManager::kUninitializedRestartId) {
     RecordSetupResultHistogram(SetupResult::kNotStarted);
   }
   return true;  // Should close the dialog
@@ -230,8 +251,13 @@ void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnDiskImageCreated(CrostiniResult result) {
+void CrostiniInstallerView::OnDiskImageCreated(
+    CrostiniResult result,
+    vm_tools::concierge::DiskImageStatus status) {
   DCHECK_EQ(state_, State::CREATE_DISK_IMAGE);
+  if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
+    do_cleanup_ = false;
+  }
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to create disk imagewith error code: "
                << static_cast<int>(result);
@@ -420,6 +446,16 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 
 CrostiniInstallerView::~CrostiniInstallerView() {
   g_crostini_installer_view = nullptr;
+}
+
+void CrostiniInstallerView::FinishCleanup(CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to cleanup aborted crostini install";
+  }
+  // Need to do this because GetWidget()->Close() calls Cancel(), and we don't
+  // want to restart the cleanup process
+  UpdateState(State::CLEANUP_FINISHED);
+  GetWidget()->Close();
 }
 
 void CrostiniInstallerView::HandleError(const base::string16& error_message,

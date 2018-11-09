@@ -93,7 +93,12 @@ void CrostiniRemover::DestroyDiskImageFinished(CrostiniResult result) {
 void CrostiniRemover::StopConciergeFinished(bool is_successful) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The is_successful parameter is never set by debugd.
-  if (CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
+
+  // UninstallTerminaComponent returns false both if Termina wasn't installed
+  // and if the uninstall failed, so we explicitly reset the relevant
+  // preferences even if it's already uninstalled
+  if (!CrostiniManager::GetForProfile(profile_)->IsCrosTerminaInstalled() ||
+      CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
     profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
     profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
   }
