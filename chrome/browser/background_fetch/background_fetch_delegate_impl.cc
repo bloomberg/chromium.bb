@@ -201,8 +201,6 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
   // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
   switch (content_setting) {
     case CONTENT_SETTING_ALLOW:
-      std::move(callback).Run(content::BackgroundFetchPermission::ALLOWED);
-      return;
     case CONTENT_SETTING_ASK:
       std::move(callback).Run(content::BackgroundFetchPermission::ASK);
       return;
