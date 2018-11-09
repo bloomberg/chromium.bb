@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.browserservices;
+package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
@@ -29,8 +31,8 @@ import javax.inject.Named;
  * - Transforming the origin into a domain (requires native).
  *
  * Lifecycle: There should be a 1-1 relationship between this class and
- * {@link TrustedWebActivityUi}. Having more instances won't effect correctness, but will limit the
- * performance benefits of the cache.
+ * {@link TrustedWebActivityVerifier}. Having more instances won't effect correctness, but will
+ * limit the performance benefits of the cache.
  * Thread safety: All methods on this class should be called from the same thread.
  */
 @ActivityScope
@@ -49,7 +51,7 @@ public class ClientAppDataRecorder {
     private final Set<String> mCache = new HashSet<>();
 
     @Inject
-    public ClientAppDataRecorder(@Named(APP_CONTEXT) Context context,
+    ClientAppDataRecorder(@Named(APP_CONTEXT) Context context,
             ClientAppDataRegister clientAppDataRegister) {
         mPackageManager = context.getPackageManager();
         mClientAppDataRegister = clientAppDataRegister;
@@ -64,7 +66,7 @@ public class ClientAppDataRecorder {
     /* package */ void register(String packageName, Origin origin) {
         if (mCache.contains(combine(packageName, origin))) return;
         mCache.add(combine(packageName, origin));
-;
+
         try {
             ApplicationInfo ai = mPackageManager.getApplicationInfo(packageName, 0);
             String appLabel = mPackageManager.getApplicationLabel(ai).toString();

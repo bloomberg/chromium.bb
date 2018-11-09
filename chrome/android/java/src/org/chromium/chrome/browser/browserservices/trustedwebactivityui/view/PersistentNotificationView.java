@@ -1,11 +1,13 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.browserservices;
+package org.chromium.chrome.browser.browserservices.trustedwebactivityui.view;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PERSISTENT_NOTIFICATION;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PERSISTENT_NOTIFICATION_TAG;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_PERSISTENT;
 
@@ -23,11 +25,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PersistentNotificationData;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -37,76 +44,46 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * Publishes and dismisses the notification when running Trusted Web Activities. The notification
- * offers to manage site data and to share info about it.
- *
- * The notification is shown while the activity is in started state. It is not removed when the user
- * leaves the origin associated with the app by following links.
+ * Publishes and dismisses the TWA persistent notification.
  */
 @ActivityScope
-public class PersistentNotificationController implements StartStopWithNativeObserver, Destroyable {
+public class PersistentNotificationView implements Destroyable, PropertyObserver<PropertyKey> {
     private final Context mAppContext;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
-
-    @Nullable
-    private String mVerifiedPackage;
-    @Nullable
-    private Origin mVerifiedOrigin;
-    private boolean mStarted;
+    private final TrustedWebActivityModel mModel;
 
     @Nullable
     private Handler mHandler;
 
     @Inject
-    public PersistentNotificationController(@Named(APP_CONTEXT) Context context,
+    public PersistentNotificationView(@Named(APP_CONTEXT) Context context,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabIntentDataProvider intentDataProvider) {
+            TrustedWebActivityModel model) {
         mAppContext = context;
-        mIntentDataProvider = intentDataProvider;
+        mModel = model;
         lifecycleDispatcher.register(this);
+        model.addObserver(this);
     }
 
     @Override
-    public void onStartWithNative() {
-        mStarted = true;
-        if (mVerifiedPackage != null) {
-            publish();
+    public void onPropertyChanged(PropertyObservable<PropertyKey> source,
+            @Nullable PropertyKey propertyKey) {
+        if (propertyKey != PERSISTENT_NOTIFICATION) return;
+
+        PersistentNotificationData data = mModel.get(PERSISTENT_NOTIFICATION);
+        String tag = mModel.get(PERSISTENT_NOTIFICATION_TAG);
+        Runnable task;
+        if (data == null) {
+            task = new DismissTask(mAppContext, tag);
+        } else {
+            task = new PublishTask(tag, data.origin,
+                    mAppContext, data.customTabActivityIntent);
         }
-    }
-
-    @Override
-    public void onStopWithNative() {
-        mStarted = false;
-        dismiss();
+        postToBackgroundThread(task);
     }
 
     @Override
     public void destroy() {
         killBackgroundThread();
-    }
-
-    /**
-     * Called when the relationship between an origin and an app with given package name has been
-     * verified.
-     */
-    public void onOriginVerifiedForPackage(Origin origin, String packageName) {
-        if (packageName.equals(mVerifiedPackage)) {
-            return;
-        }
-        mVerifiedPackage = packageName;
-        mVerifiedOrigin = origin;
-        if (mStarted) {
-            publish();
-        }
-    }
-
-    private void publish() {
-        postToBackgroundThread(new PublishTask(
-                mVerifiedPackage, mVerifiedOrigin, mAppContext, mIntentDataProvider.getIntent()));
-    }
-
-    private void dismiss() {
-        postToBackgroundThread(new DismissTask(mAppContext, mVerifiedPackage));
     }
 
     private void postToBackgroundThread(Runnable task) {

@@ -270,7 +270,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         super.preInflationStartup();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
-            getComponent().resolveTrustedWebActivityUi();
+            getComponent().resolveTrustedWebActivityCoordinator();
         }
 
         mSession = mIntentDataProvider.getSession();

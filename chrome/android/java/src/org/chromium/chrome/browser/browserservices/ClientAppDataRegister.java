@@ -42,7 +42,7 @@ public class ClientAppDataRegister {
      * is removed or cleared, we should consider doing the same with Chrome data relevant to
      * |domain|.
      */
-    /* package */ void registerPackageForDomain(int uid, String appName, String domain) {
+    public void registerPackageForDomain(int uid, String appName, String domain) {
         // Store the UID in the main Chrome Preferences.
         Set<String> uids = getUids();
         uids.add(String.valueOf(uid));
@@ -66,7 +66,7 @@ public class ClientAppDataRegister {
         return new HashSet<>(mPreferences.getStringSet(UIDS_KEY, Collections.emptySet()));
     }
 
-    /* package */ void removePackage(int uid) {
+    public void removePackage(int uid) {
         Set<String> uids = getUids();
         uids.remove(String.valueOf(uid));
         setUids(uids);
