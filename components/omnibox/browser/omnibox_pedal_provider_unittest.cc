@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxPedalProviderTest : public testing::Test {
@@ -13,7 +14,8 @@ class OmniboxPedalProviderTest : public testing::Test {
 };
 
 TEST_F(OmniboxPedalProviderTest, QueriesTriggerPedals) {
-  OmniboxPedalProvider provider;
+  MockAutocompleteProviderClient client;
+  OmniboxPedalProvider provider(client);
   EXPECT_EQ(provider.FindPedalMatch(base::ASCIIToUTF16("")), nullptr);
   EXPECT_EQ(provider.FindPedalMatch(base::ASCIIToUTF16("clear histor")),
             nullptr);

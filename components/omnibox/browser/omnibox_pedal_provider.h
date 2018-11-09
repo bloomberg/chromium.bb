@@ -11,16 +11,18 @@
 #include "base/strings/utf_offset_string_conversions.h"
 
 class OmniboxPedal;
+class AutocompleteProviderClient;
 
 class OmniboxPedalProvider {
  public:
-  OmniboxPedalProvider();
+  explicit OmniboxPedalProvider(AutocompleteProviderClient& client);
   ~OmniboxPedalProvider();
 
   // Returns the Pedal triggered by given match_text or nullptr if none trigger.
   OmniboxPedal* FindPedalMatch(const base::string16& match_text) const;
 
  protected:
+  AutocompleteProviderClient& client_;
   std::vector<std::unique_ptr<OmniboxPedal>> pedals_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPedalProvider);

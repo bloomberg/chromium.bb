@@ -51,6 +51,11 @@ void OmniboxPedal::Execute(OmniboxPedal::ExecutionContext& context) const {
   OpenURL(context, url_);
 }
 
+bool OmniboxPedal::IsReadyToTrigger(
+    const AutocompleteProviderClient& client) const {
+  return true;
+}
+
 bool OmniboxPedal::IsTriggerMatch(const base::string16& match_text) const {
   return triggers_.find(match_text) != triggers_.end();
 }

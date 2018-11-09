@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
+class AutocompleteProviderClient;
 class OmniboxEditController;
 class OmniboxClient;
 
@@ -79,6 +80,11 @@ class OmniboxPedal {
   // Takes the action associated with this Pedal.  Non-navigation
   // Pedals must override the default, but Navigation Pedals don't need to.
   virtual void Execute(ExecutionContext& context) const;
+
+  // Returns true if this Pedal is ready to be used now, or false if
+  // it does not apply under current conditions. (Example: the UpdateChrome
+  // Pedal may not be ready to trigger if no update is available.)
+  virtual bool IsReadyToTrigger(const AutocompleteProviderClient& client) const;
 
   // Returns true if the preprocessed match suggestion text triggers
   // presentation of this Pedal.  This is not intended for general use,

@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/strings/grit/components_strings.h"
@@ -209,6 +210,11 @@ class OmniboxPedalUpdateChrome : public OmniboxPedalCommon {
 
   void Execute(ExecutionContext& context) const override {
     context.client_.OpenUpdateChromeDialog();
+  }
+
+  bool IsReadyToTrigger(
+      const AutocompleteProviderClient& client) const override {
+    return client.IsBrowserUpdateAvailable();
   }
 };
 
