@@ -571,6 +571,41 @@ TEST(SoftwareImageDecodeCacheTest,
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
+TEST(SoftwareImageDecodeCacheTest, ImageKeyDownscaleMipLevelWithRounding) {
+  // Tests that, when using a non-zero mip level, the final target size (which
+  // is the size of the chosen mip level) is as expected if rounding is
+  // required.
+  //
+  // The 97x61 dimensions and the (0.2f, 0.2f) scaling were chosen specifically
+  // so that:
+  //
+  // - The starting target size is 19x12 which means that 2 is the chosen mip
+  //   level.
+  //
+  // - Attempting to get the final target size by simply multiplying the
+  //   dimensions of the |src_rect| (97x61) times
+  //   MipMapUtil::GetScaleAdjustmentForLevel() yields 24x15 if we attempt to
+  //   store the result as integers. This is inconsistent with the rounding
+  //   behavior introduced in https://crrev.com/c/1107049 and was the cause of
+  //   https://crbug.com/891316.
+  PaintImage paint_image = CreatePaintImage(97, 61);
+  bool is_decomposable = true;
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      kMedium_SkFilterQuality,
+      CreateMatrix(SkSize::Make(0.2f, 0.2f), is_decomposable),
+      PaintImage::kDefaultFrameIndex);
+
+  auto key = SoftwareImageDecodeCache::CacheKey::FromDrawImage(
+      draw_image, kN32_SkColorType);
+  EXPECT_EQ(draw_image.frame_key(), key.frame_key());
+  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(25, key.target_size().width());
+  EXPECT_EQ(16, key.target_size().height());
+  EXPECT_EQ(key.type(), SoftwareImageDecodeCache::CacheKey::kSubrectAndScale);
+  EXPECT_EQ(25u * 16u * 4u, key.locked_bytes());
+}
+
 TEST(SoftwareImageDecodeCacheTest, OriginalDecodesAreEqual) {
   PaintImage paint_image = CreatePaintImage(100, 100);
   bool is_decomposable = true;
