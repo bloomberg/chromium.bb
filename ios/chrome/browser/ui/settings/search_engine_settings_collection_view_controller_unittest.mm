@@ -48,38 +48,44 @@ class SearchEngineSettingsCollectionViewControllerTest
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  std::unique_ptr<TemplateURL> NewTemplateUrl(const std::string& shortName) {
+  // Adds a prepopulated search engine to TemplateURLService.
+  TemplateURL* AddPriorSearchEngine(const std::string& short_name,
+                                    int prepopulate_id,
+                                    bool set_default) {
     TemplateURLData data;
-    data.SetShortName(base::ASCIIToUTF16(shortName));
-    return std::unique_ptr<TemplateURL>(new TemplateURL(data));
+    data.SetShortName(base::ASCIIToUTF16(short_name));
+    data.SetURL("https://chromium.test/index.php?q={searchTerms}");
+    data.prepopulate_id = prepopulate_id;
+    TemplateURL* url =
+        template_url_service_->Add(std::make_unique<TemplateURL>(data));
+    if (set_default)
+      template_url_service_->SetUserSelectedDefaultSearchProvider(url);
+    return url;
   }
 
-  void FillTemplateUrlService() {
-    TemplateURL* defaultProvider =
-        template_url_service_->Add(NewTemplateUrl("first_url"));
-    template_url_service_->SetUserSelectedDefaultSearchProvider(
-        defaultProvider);
-    template_url_service_->Add(NewTemplateUrl("second_url"));
-    template_url_service_->Add(NewTemplateUrl("third_url"));
+  // Adds a custom search engine to TemplateURLService.
+  TemplateURL* AddCustomSearchEngine(const std::string& short_name,
+                                     base::Time last_visited_time,
+                                     bool set_default) {
+    TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16(short_name));
+    data.SetURL("https://chromium.test/index.php?q={searchTerms}");
+    data.last_visited = last_visited_time;
+    TemplateURL* url =
+        template_url_service_->Add(std::make_unique<TemplateURL>(data));
+    if (set_default)
+      template_url_service_->SetUserSelectedDefaultSearchProvider(url);
+    return url;
   }
 
-  void CheckModelMatchesTemplateURLs() {
-    TemplateURLService::TemplateURLVector urls =
-        template_url_service_->GetTemplateURLs();
-    EXPECT_EQ(1, NumberOfSections());
-    ASSERT_EQ(urls.size(),
-              static_cast<unsigned int>(NumberOfItemsInSection(0)));
-    for (unsigned int i = 0; i < urls.size(); ++i) {
-      BOOL isDefault =
-          template_url_service_->GetDefaultSearchProvider() == urls[i];
-
-      CheckTextCellTitle(base::SysUTF16ToNSString(urls[i]->short_name()), 0, i);
-      SettingsTextItem* textItem = base::mac::ObjCCastStrict<SettingsTextItem>(
-          GetCollectionViewItem(0, i));
-      EXPECT_EQ(isDefault ? MDCCollectionViewCellAccessoryCheckmark
-                          : MDCCollectionViewCellAccessoryNone,
-                textItem.accessoryType);
-    }
+  // Checks if a text cell in the CollectionView has a check mark.
+  void CheckTextCellChecked(bool expect_checked, int section, int item) {
+    SettingsTextItem* text_item = base::mac::ObjCCastStrict<SettingsTextItem>(
+        GetCollectionViewItem(section, item));
+    ASSERT_TRUE(text_item);
+    EXPECT_EQ(expect_checked ? MDCCollectionViewCellAccessoryCheckmark
+                             : MDCCollectionViewCellAccessoryNone,
+              text_item.accessoryType);
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -87,60 +93,170 @@ class SearchEngineSettingsCollectionViewControllerTest
   TemplateURLService* template_url_service_;  // weak
 };
 
+// Tests that no items are shown if TemplateURLService is empty.
 TEST_F(SearchEngineSettingsCollectionViewControllerTest, TestNoUrl) {
   CreateController();
   CheckController();
   EXPECT_EQ(0, NumberOfSections());
 }
 
-TEST_F(SearchEngineSettingsCollectionViewControllerTest, TestWithUrlsLoaded) {
-  FillTemplateUrlService();
+// Tests that items are displayed correctly when TemplateURLService is filled
+// and a prepopulated search engine is selected as default.
+TEST_F(SearchEngineSettingsCollectionViewControllerTest,
+       TestUrlsLoadedWithPrepopulatedSearchEngineAsDefault) {
+  AddPriorSearchEngine("prepopulated-3", 3, false);
+  AddPriorSearchEngine("prepopulated-1", 1, false);
+  AddPriorSearchEngine("prepopulated-2", 2, true);
+
+  AddCustomSearchEngine(
+      "custom-4", base::Time::Now() - base::TimeDelta::FromDays(10), false);
+  AddCustomSearchEngine(
+      "custom-1", base::Time::Now() - base::TimeDelta::FromSeconds(10), false);
+  AddCustomSearchEngine(
+      "custom-3", base::Time::Now() - base::TimeDelta::FromHours(10), false);
+  AddCustomSearchEngine(
+      "custom-2", base::Time::Now() - base::TimeDelta::FromMinutes(10), false);
+
   CreateController();
-  CheckModelMatchesTemplateURLs();
+  CheckController();
+
+  ASSERT_EQ(2, NumberOfSections());
+  ASSERT_EQ(3, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(false, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(true, 0, 1);
+  CheckTextCellTitle(@"prepopulated-3", 0, 2);
+  CheckTextCellChecked(false, 0, 2);
+
+  ASSERT_EQ(3, NumberOfItemsInSection(1));
+  CheckTextCellTitle(@"custom-1", 1, 0);
+  CheckTextCellChecked(false, 1, 0);
+  CheckTextCellTitle(@"custom-2", 1, 1);
+  CheckTextCellChecked(false, 1, 1);
+  CheckTextCellTitle(@"custom-3", 1, 2);
+  CheckTextCellChecked(false, 1, 2);
 }
 
-TEST_F(SearchEngineSettingsCollectionViewControllerTest, TestWithAddedUrl) {
-  FillTemplateUrlService();
+// Tests that items are displayed correctly when TemplateURLService is filled
+// and a custom search engine is selected as default.
+TEST_F(SearchEngineSettingsCollectionViewControllerTest,
+       TestUrlsLoadedWithCustomSearchEngineAsDefault) {
+  AddPriorSearchEngine("prepopulated-3", 3, false);
+  AddPriorSearchEngine("prepopulated-1", 1, false);
+  AddPriorSearchEngine("prepopulated-2", 2, false);
+
+  AddCustomSearchEngine(
+      "custom-4", base::Time::Now() - base::TimeDelta::FromDays(10), false);
+  AddCustomSearchEngine(
+      "custom-1", base::Time::Now() - base::TimeDelta::FromSeconds(10), false);
+  AddCustomSearchEngine(
+      "custom-3", base::Time::Now() - base::TimeDelta::FromHours(10), false);
+  AddCustomSearchEngine(
+      "custom-2", base::Time::Now() - base::TimeDelta::FromMinutes(10), true);
+
   CreateController();
+  CheckController();
 
-  TemplateURL* newUrl = template_url_service_->Add(NewTemplateUrl("new_url"));
-  CheckModelMatchesTemplateURLs();
+  ASSERT_EQ(2, NumberOfSections());
+  ASSERT_EQ(4, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(false, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(false, 0, 1);
+  CheckTextCellTitle(@"prepopulated-3", 0, 2);
+  CheckTextCellChecked(false, 0, 2);
+  CheckTextCellTitle(@"custom-2", 0, 3);
+  CheckTextCellChecked(true, 0, 3);
 
-  template_url_service_->SetUserSelectedDefaultSearchProvider(newUrl);
-  CheckModelMatchesTemplateURLs();
-
-  DCHECK(newUrl != template_url_service_->GetTemplateURLs()[0]);
-  template_url_service_->SetUserSelectedDefaultSearchProvider(
-      template_url_service_->GetTemplateURLs()[0]);
-  template_url_service_->Remove(newUrl);
-  CheckModelMatchesTemplateURLs();
+  ASSERT_EQ(2, NumberOfItemsInSection(1));
+  CheckTextCellTitle(@"custom-1", 1, 0);
+  CheckTextCellChecked(false, 1, 0);
+  CheckTextCellTitle(@"custom-3", 1, 1);
+  CheckTextCellChecked(false, 1, 1);
 }
 
+// Tests that when TemplateURLService add or remove TemplateURLs, or update
+// default search engine, the controller will update the displayed items.
+TEST_F(SearchEngineSettingsCollectionViewControllerTest,
+       TestUrlModifiedByService) {
+  TemplateURL* url_1 = AddPriorSearchEngine("prepopulated-1", 1, true);
+
+  CreateController();
+  CheckController();
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(1, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(true, 0, 0);
+
+  TemplateURL* url_2 = AddPriorSearchEngine("prepopulated-2", 2, false);
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(true, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(false, 0, 1);
+
+  template_url_service_->SetUserSelectedDefaultSearchProvider(url_2);
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(false, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(true, 0, 1);
+
+  template_url_service_->SetUserSelectedDefaultSearchProvider(url_1);
+  template_url_service_->Remove(url_2);
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(1, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(true, 0, 0);
+}
+
+// Tests that when user change default search engine, all items can be displayed
+// correctly and the change can be synced to the prefs.
 TEST_F(SearchEngineSettingsCollectionViewControllerTest, TestChangeProvider) {
-  FillTemplateUrlService();
+  TemplateURL* url_1 = AddPriorSearchEngine("prepopulated-1", 1, false);
+  TemplateURL* url_2 = AddPriorSearchEngine("prepopulated-2", 2, true);
+
   CreateController();
+  CheckController();
 
   [controller() collectionView:[controller() collectionView]
       didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-  EXPECT_EQ(template_url_service_->GetTemplateURLs()[0],
-            template_url_service_->GetDefaultSearchProvider());
-  CheckModelMatchesTemplateURLs();
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(true, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(false, 0, 1);
+  EXPECT_EQ(url_1, template_url_service_->GetDefaultSearchProvider());
 
   [controller() collectionView:[controller() collectionView]
       didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];
-  TemplateURL* url = template_url_service_->GetTemplateURLs()[1];
-  EXPECT_EQ(url, template_url_service_->GetDefaultSearchProvider());
+
+  ASSERT_EQ(1, NumberOfSections());
+  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  CheckTextCellTitle(@"prepopulated-1", 0, 0);
+  CheckTextCellChecked(false, 0, 0);
+  CheckTextCellTitle(@"prepopulated-2", 0, 1);
+  CheckTextCellChecked(true, 0, 1);
+  EXPECT_EQ(url_2, template_url_service_->GetDefaultSearchProvider());
 
   // Check that the selection was written back to the prefs.
   const base::DictionaryValue* searchProviderDict =
       chrome_browser_state_->GetTestingPrefService()->GetDictionary(
           DefaultSearchManager::kDefaultSearchProviderDataPrefName);
-  EXPECT_TRUE(searchProviderDict);
-  base::string16 shortName;
+  ASSERT_TRUE(searchProviderDict);
+  base::string16 short_name;
   EXPECT_TRUE(searchProviderDict->GetString(DefaultSearchManager::kShortName,
-                                            &shortName));
-  EXPECT_EQ(url->short_name(), shortName);
-  CheckModelMatchesTemplateURLs();
+                                            &short_name));
+  EXPECT_EQ(url_2->short_name(), short_name);
 }
 
 }  // namespace

@@ -1313,6 +1313,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
         Search Engine
       </message>
+      <message name="IDS_IOS_SEARCH_ENGINE_SETTING_CUSTOM_SECTION_HEADER" desc="The header for custom search engines section in Search Engine selection setting [iOS only]">
+        Recently Visited
+      </message>
       <message name="IDS_IOS_SETTINGS_SITE_COPY_BUTTON" desc="Button that the user can press to copy the site to clipboard. [Length: 12em]">
         Copy
       </message>
