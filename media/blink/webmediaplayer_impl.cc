@@ -2670,7 +2670,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
   bool is_suspended = pipeline_controller_.IsSuspended();
   bool is_backgrounded = IsBackgroundSuspendEnabled(delegate_) && IsHidden();
   PlayState state = UpdatePlayState_ComputePlayState(
-      is_remote, can_auto_suspend, is_suspended, is_backgrounded);
+      is_remote, is_flinging_, can_auto_suspend, is_suspended, is_backgrounded);
   SetDelegateState(state.delegate_state, state.is_idle);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
@@ -2765,8 +2765,18 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   }
 }
 
+// NOTE: |is_remote| and |is_flinging| both indicate that we are in a remote
+// playback session, with the following differences:
+//   - |is_remote| : we are using |cast_impl_|, and most of WMPI's functions
+//     are forwarded to it. This method of remote playback is scheduled
+//     for deprecation soon, in favor of the |is_flinging| path.
+//   - |is_flinging| : we are using the FlingingRenderer, and WMPI should
+//     behave exactly if we are using the DefaultRenderer, except for the
+//     disabling of certain optimizations.
+// See https://crbug.com/790766.
 WebMediaPlayerImpl::PlayState
 WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
+                                                     bool is_flinging,
                                                      bool can_auto_suspend,
                                                      bool is_suspended,
                                                      bool is_backgrounded) {
@@ -2845,7 +2855,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   //   - |have_future_data|, since we need to know whether we are paused to
   //     correctly configure the session and also because the tracks and
   //     duration are passed to DidPlay(),
-  //   - |is_remote| is false as remote playback is not handled by the delegate,
+  //   - |is_remote| and |is_flinging| are false as remote playback is not
+  //     handled by the delegate,
   //   - |has_error| is false as player should have no errors,
   //   - |background_suspended| is false, otherwise |has_remote_controls| must
   //     be true.
@@ -2859,14 +2870,16 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   bool backgrounded_video_has_no_remote_controls =
       IsBackgroundSuspendEnabled(delegate_) &&
       !IsResumeBackgroundVideosEnabled() && is_backgrounded && HasVideo();
-  bool can_play = !has_error && !is_remote && have_future_data;
+  bool can_play = !has_error && have_future_data;
   bool has_remote_controls =
       HasAudio() && !backgrounded_video_has_no_remote_controls;
-  bool alive = can_play && !must_suspend &&
+  bool in_remote_playback = is_remote || is_flinging;
+  bool alive = can_play && !in_remote_playback && !must_suspend &&
                (!background_suspended || has_remote_controls);
   if (!alive) {
+    // Do not mark players as idle when flinging.
     result.delegate_state = DelegateState::GONE;
-    result.is_idle = delegate_->IsIdle(delegate_id_);
+    result.is_idle = delegate_->IsIdle(delegate_id_) && !is_flinging;
   } else if (paused_) {
     // TODO(sandersd): Is it possible to have a suspended session, be ended,
     // and not be paused? If so we should be in a PLAYING state.
@@ -2881,7 +2894,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // It's not critical if some cases where memory usage can change are missed,
   // since media memory changes are usually gradual.
   result.is_memory_reporting_enabled =
-      !has_error && can_play && !result.is_suspended && (!paused_ || seeking_);
+      !has_error && can_play && !in_remote_playback && !result.is_suspended &&
+      (!paused_ || seeking_);
 
   return result;
 }

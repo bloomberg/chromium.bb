@@ -432,7 +432,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // This method should be called any time its dependent values change. These
   // are:
-  //   - isRemote(),
+  //   - isRemote(), is_flinging_,
   //   - hasVideo(),
   //   - delegate_->IsHidden(),
   //   - network_state_, ready_state_,
@@ -444,6 +444,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_remote,
+                                             bool is_flinging,
                                              bool can_auto_suspend,
                                              bool is_suspended,
                                              bool is_backgrounded);

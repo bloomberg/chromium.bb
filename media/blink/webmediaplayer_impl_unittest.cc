@@ -502,31 +502,43 @@ class WebMediaPlayerImplTest : public testing::Test {
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_FrameHidden() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
+                                                   true);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Suspended() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, true,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Remote() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(true, true, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(true, false, true, false,
+                                                   false);
+  }
+
+  WebMediaPlayerImpl::PlayState ComputePlayState_Flinging() {
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_BackgroundedStreaming() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false,
+                                                   true);
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
@@ -1132,11 +1144,24 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Remote) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
 
-  // Remote media is always suspended.
+  // Remote media via wmpi_cast is always suspended.
   // TODO(sandersd): Decide whether this should count as idle or not.
   WebMediaPlayerImpl::PlayState state = ComputePlayState_Remote();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Flinging) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+
+  // Remote media via the FlingingRenderer should not be idle.
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_Flinging();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
