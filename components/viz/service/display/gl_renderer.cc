@@ -2379,9 +2379,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   }
 
   // Generate the uv-transform
-  Float4 uv_transform = {{0.0f, 0.0f, 1.0f, 1.0f}};
-  if (!clip_region)
-    uv_transform = UVTransform(quad);
+  auto uv_transform = UVTransform(quad);
   if (sampler == SAMPLER_TYPE_2D_RECT) {
     // Un-normalize the texture coordiantes for rectangle targets.
     uv_transform.data[0] *= texture_size.width();
