@@ -166,6 +166,8 @@ jumbo_static_library("browser") {
     "sync/password_data_type_controller.h",
     "sync/password_model_worker.cc",
     "sync/password_model_worker.h",
+    "sync/password_sync_bridge.cc",
+    "sync/password_sync_bridge.h",
     "sync/password_syncable_service.cc",
     "sync/password_syncable_service.h",
     "sync/password_syncable_service_based_model_type_controller.cc",

@@ -47,6 +47,7 @@ class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
+class PasswordSyncBridge;
 struct InteractionsStats;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -694,7 +695,10 @@ class PasswordStore : protected PasswordStoreSync,
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
+  // Either of two below would actually be set based on a feature flag.
   std::unique_ptr<PasswordSyncableService> syncable_service_;
+  std::unique_ptr<PasswordSyncBridge> sync_bridge_;
+
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

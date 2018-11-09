@@ -10,6 +10,7 @@ include_rules = [
   "+components/sync/base",
   "+components/sync/driver",
   "+components/sync/engine",
+  "+components/sync/model_impl",
   "+components/sync_preferences",
   "+components/url_formatter",
   "+components/variations",

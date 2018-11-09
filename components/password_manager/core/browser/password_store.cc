@@ -27,7 +27,10 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/browser/sync/password_syncable_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
@@ -492,9 +495,15 @@ PasswordStore::CreateBackgroundTaskRunner() const {
 bool PasswordStore::InitOnBackgroundSequence(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!syncable_service_);
-  syncable_service_.reset(new PasswordSyncableService(this));
-  syncable_service_->InjectStartSyncFlare(flare);
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+    sync_bridge_.reset(new PasswordSyncBridge(
+        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+            syncer::PASSWORDS, base::DoNothing())));
+  } else {
+    DCHECK(!syncable_service_);
+    syncable_service_.reset(new PasswordSyncableService(this));
+    syncable_service_->InjectStartSyncFlare(flare);
+  }
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   reuse_detector_ = new PasswordReuseDetector;
@@ -971,6 +980,7 @@ void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
 void PasswordStore::DestroyOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   syncable_service_.reset();
+  sync_bridge_.reset();
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   delete reuse_detector_;
