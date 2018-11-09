@@ -263,23 +263,12 @@ WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
                                                            const GURL& url) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
-  // TODO(crbug.com/848956): Only pass DeviceSyncClient once Smart Lock has
-  // fully migrated to the DeviceSync API.
   return new proximity_auth::ProximityAuthUI(
       web_ui,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? nullptr
-          : chromeos::EasyUnlockServiceFactory::GetForBrowserContext(
-                browser_context)
-                ->proximity_auth_client(),
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
-                Profile::FromBrowserContext(browser_context))
-          : nullptr,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-                ->GetClient()
-          : nullptr);
+      chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context)),
+      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
+          ->GetClient());
 }
 #endif
 

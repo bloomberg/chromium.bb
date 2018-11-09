@@ -23,7 +23,6 @@ namespace proximity_auth {
 
 ProximityAuthUI::ProximityAuthUI(
     content::WebUI* web_ui,
-    ProximityAuthClient* proximity_auth_client,
     chromeos::device_sync::DeviceSyncClient* device_sync_client,
     chromeos::secure_channel::SecureChannelClient* secure_channel_client)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
@@ -47,7 +46,7 @@ ProximityAuthUI::ProximityAuthUI(
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source);
   web_ui->AddMessageHandler(std::make_unique<ProximityAuthWebUIHandler>(
-      proximity_auth_client, device_sync_client, secure_channel_client));
+      device_sync_client, secure_channel_client));
   AddHandlerToRegistry(base::BindRepeating(
       &ProximityAuthUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
