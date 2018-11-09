@@ -290,6 +290,7 @@ void PasswordGenerationAgent::OnFieldAutofilled(
     password_generation::LogPasswordGenerationEvent(
         password_generation::PASSWORD_DELETED_BY_AUTOFILLING);
     PasswordNoLongerGenerated();
+    generation_element_.SetShouldRevealPassword(false);
   }
 }
 
@@ -558,11 +559,7 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
 
 bool PasswordGenerationAgent::FocusedNodeHasChanged(
     const blink::WebNode& node) {
-  if (!generation_element_.IsNull())
-    generation_element_.SetShouldRevealPassword(false);
-
   if (node.IsNull() || !node.IsElementNode()) {
-    AutomaticGenerationStatusChanged(false);
     return false;
   }
 
@@ -576,7 +573,6 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   if (element && element->IsPasswordFieldForAutofill())
     last_focused_password_element_ = *element;
   if (!element || *element != generation_element_) {
-    AutomaticGenerationStatusChanged(false);
     return false;
   }
 
@@ -584,6 +580,8 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     if (generation_element_.Value().length() <
         kMinimumLengthForEditedPassword) {
       PasswordNoLongerGenerated();
+      if (generation_element_.Value().IsEmpty())
+        generation_element_.SetShouldRevealPassword(false);
     } else {
       generation_element_.SetShouldRevealPassword(true);
       ShowEditingPopup();
@@ -604,6 +602,14 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   return false;
 }
 
+void PasswordGenerationAgent::DidEndTextFieldEditing(
+    const blink::WebInputElement& element) {
+  if (!element.IsNull() && element == generation_element_) {
+    AutomaticGenerationStatusChanged(false);
+    generation_element_.SetShouldRevealPassword(false);
+  }
+}
+
 bool PasswordGenerationAgent::TextDidChangeInTextField(
     const WebInputElement& element) {
   if (element != generation_element_) {
@@ -622,6 +628,9 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     }
     return false;
   }
+
+  if (element.Value().IsEmpty())
+    generation_element_.SetShouldRevealPassword(false);
 
   if (!password_is_generated_ &&
       element.Value().length() > kMaximumCharsForGenerationOffer) {
@@ -705,7 +714,6 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   // Do not treat the password as generated, either here or in the browser.
   password_is_generated_ = false;
   password_edited_ = false;
-  generation_element_.SetShouldRevealPassword(false);
   for (WebInputElement& password : generation_form_data_->password_elements)
     password.SetAutofillState(WebAutofillState::kNotFilled);
   password_generation::LogPasswordGenerationEvent(
