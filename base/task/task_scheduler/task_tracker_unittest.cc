@@ -898,7 +898,7 @@ TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
   Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());
   tracker_.WillPostTask(&task, sequence->traits().shutdown_behavior());
 
-  sequence->PushTask(std::move(task));
+  sequence->BeginTransaction()->PushTask(std::move(task));
 
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
   sequence = tracker_.WillScheduleSequence(std::move(sequence),
@@ -1079,7 +1079,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
 
   scoped_refptr<Sequence> sequence =
       test::CreateSequenceWithTask(std::move(task_1), default_traits);
-  sequence->PushTask(std::move(task_2));
+  sequence->BeginTransaction()->PushTask(std::move(task_2));
   EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
 
   EXPECT_EQ(sequence, tracker_.RunAndPopNextTask(sequence, nullptr));
@@ -1227,7 +1227,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   TaskTraits best_effort_traits = TaskTraits(TaskPriority::BEST_EFFORT);
   EXPECT_TRUE(
       tracker_.WillPostTask(&task_b_2, best_effort_traits.shutdown_behavior()));
-  sequence_b->PushTask(std::move(task_b_2));
+  sequence_b->BeginTransaction()->PushTask(std::move(task_b_2));
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_2;
   EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(sequence_b, &observer_b_2));
   // The TaskPriority of the Sequence is unchanged by posting new tasks to it.
@@ -1335,7 +1335,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
                 TimeDelta());
   EXPECT_TRUE(
       tracker.WillPostTask(&task_a_2, best_effort_traits.shutdown_behavior()));
-  sequence_a->PushTask(std::move(task_a_2));
+  sequence_a->BeginTransaction()->PushTask(std::move(task_a_2));
 
   // Run the first task in |sequence_a|. RunAndPopNextTask() should return
   // nullptr since |sequence_a| can't be rescheduled immediately.

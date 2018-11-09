@@ -188,7 +188,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
                   TimeDelta());
         EXPECT_TRUE(outer_->task_tracker_.WillPostTask(
             &task, sequence->traits().shutdown_behavior()));
-        sequence->PushTask(std::move(task));
+        sequence->BeginTransaction()->PushTask(std::move(task));
       }
 
       ExpectCallToDidRunTask();
@@ -221,8 +221,10 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
 
       // Verify that |sequence| contains TasksPerSequence() - 1 Tasks.
       for (size_t i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
-        EXPECT_TRUE(sequence->TakeTask());
-        EXPECT_EQ(i == outer_->TasksPerSequence() - 2, sequence->Pop());
+        std::unique_ptr<Sequence::Transaction> transaction =
+            sequence->BeginTransaction();
+        EXPECT_TRUE(transaction->TakeTask());
+        EXPECT_EQ(i == outer_->TasksPerSequence() - 2, transaction->Pop());
       }
 
       // Add |sequence| to |re_enqueued_sequences_|.
@@ -455,7 +457,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
         TimeDelta());
     EXPECT_TRUE(task_tracker_->WillPostTask(
         &task, sequence->traits().shutdown_behavior()));
-    sequence->PushTask(std::move(task));
+    sequence->BeginTransaction()->PushTask(std::move(task));
     sequence =
         task_tracker_->WillScheduleSequence(std::move(sequence), nullptr);
     EXPECT_TRUE(sequence);

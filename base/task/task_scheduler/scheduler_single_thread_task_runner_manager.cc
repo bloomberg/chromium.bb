@@ -112,7 +112,8 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
     DCHECK(sequence);
-    const SequenceSortKey sequence_sort_key = sequence->GetSortKey();
+    const SequenceSortKey sequence_sort_key =
+        sequence->BeginTransaction()->GetSortKey();
     std::unique_ptr<PriorityQueue::Transaction> transaction(
         priority_queue_.BeginTransaction());
     transaction->Push(std::move(sequence), sequence_sort_key);
@@ -223,8 +224,8 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                              TimeDelta());
       if (task_tracker_->WillPostTask(&pump_message_task,
                                       TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
-        bool was_empty =
-            message_pump_sequence_->PushTask(std::move(pump_message_task));
+        bool was_empty = message_pump_sequence_->BeginTransaction()->PushTask(
+            std::move(pump_message_task));
         DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
                              "queueing of pump tasks.";
         return message_pump_sequence_;
@@ -330,7 +331,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
   void PostTaskNow(Task task) {
-    const bool sequence_was_empty = sequence_->PushTask(std::move(task));
+    const bool sequence_was_empty =
+        sequence_->BeginTransaction()->PushTask(std::move(task));
     if (sequence_was_empty) {
       if (outer_->task_tracker_->WillScheduleSequence(sequence_,
                                                       GetDelegate())) {

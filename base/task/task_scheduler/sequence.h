@@ -43,6 +43,48 @@ namespace internal {
 // This class is thread-safe.
 class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
  public:
+  // A Transaction can perform multiple operations atomically on a
+  // Sequence. While a Transaction is alive, it is guaranteed that nothing
+  // else will access the Sequence; the Sequence's lock is held for the
+  // lifetime of the Transaction.
+  class BASE_EXPORT Transaction {
+   public:
+    ~Transaction();
+
+    // Adds |task| in a new slot at the end of the Sequence. Returns true if the
+    // Sequence was empty before this operation.
+    bool PushTask(Task task);
+
+    // Transfers ownership of the Task in the front slot of the Sequence to the
+    // caller. The front slot of the Sequence will be nullptr and remain until
+    // Pop(). Cannot be called on an empty Sequence or a Sequence whose front
+    // slot is already nullptr.
+    //
+    // Because this method cannot be called on an empty Sequence, the returned
+    // Optional<Task> is never nullptr. An Optional is used in preparation for
+    // the merge between TaskScheduler and TaskQueueManager (in Blink).
+    // https://crbug.com/783309
+    Optional<Task> TakeTask();
+
+    // Removes the front slot of the Sequence. The front slot must have been
+    // emptied by TakeTask() before this is called. Cannot be called on an empty
+    // Sequence. Returns true if the Sequence is empty after this operation.
+    bool Pop();
+
+    // Returns a SequenceSortKey representing the priority of the Sequence.
+    // Cannot be called on an empty Sequence.
+    SequenceSortKey GetSortKey() const;
+
+   private:
+    friend class Sequence;
+
+    explicit Transaction(scoped_refptr<Sequence> sequence);
+
+    const scoped_refptr<Sequence> sequence_;
+
+    DISALLOW_COPY_AND_ASSIGN(Transaction);
+  };
+
   // |traits| is metadata that applies to all Tasks in the Sequence.
   // |scheduler_parallel_task_runner| is a reference to the
   // SchedulerParallelTaskRunner that created this Sequence, if any.
@@ -50,29 +92,9 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
            scoped_refptr<SchedulerParallelTaskRunner>
                scheduler_parallel_task_runner = nullptr);
 
-  // Adds |task| in a new slot at the end of the Sequence. Returns true if the
-  // Sequence was empty before this operation.
-  bool PushTask(Task task);
-
-  // Transfers ownership of the Task in the front slot of the Sequence to the
-  // caller. The front slot of the Sequence will be nullptr and remain until
-  // Pop(). Cannot be called on an empty Sequence or a Sequence whose front slot
-  // is already nullptr.
-  //
-  // Because this method cannot be called on an empty Sequence, the returned
-  // Optional<Task> is never nullptr. An Optional is used in preparation for the
-  // merge between TaskScheduler and TaskQueueManager (in Blink).
-  // https://crbug.com/783309
-  Optional<Task> TakeTask();
-
-  // Removes the front slot of the Sequence. The front slot must have been
-  // emptied by TakeTask() before this is called. Cannot be called on an empty
-  // Sequence. Returns true if the Sequence is empty after this operation.
-  bool Pop();
-
-  // Returns a SequenceSortKey representing the priority of the Sequence. Cannot
-  // be called on an empty Sequence.
-  SequenceSortKey GetSortKey() const;
+  // Begins a Transaction. This method cannot be called on a thread which has an
+  // active Sequence::Transaction.
+  std::unique_ptr<Transaction> BeginTransaction();
 
   // Returns a token that uniquely identifies this Sequence.
   const SequenceToken& token() const { return token_; }

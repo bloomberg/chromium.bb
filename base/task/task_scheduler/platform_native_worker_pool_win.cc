@@ -100,7 +100,8 @@ scoped_refptr<Sequence> PlatformNativeWorkerPoolWin::GetWork() {
 
 void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
-  const SequenceSortKey sequence_sort_key = sequence->GetSortKey();
+  const SequenceSortKey sequence_sort_key =
+      sequence->BeginTransaction()->GetSortKey();
   auto transaction(priority_queue_.BeginTransaction());
 
   transaction->Push(std::move(sequence), sequence_sort_key);
