@@ -204,10 +204,20 @@ void OfflineMetricsCollectorImpl::SetTrackingFlag(bool* flag) {
 
 bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   base::Time current_midnight = Now().LocalMidnight();
-  // It is still the same day, or a day from the future (rarely may happen when
-  // clock is reset), skip updating past days counters.
-  if (tracking_day_midnight_ >= current_midnight)
+  // 1. If days_since_last_update <= 0, continue to accumulate the current day.
+  // 2. If days_since_last_update == 1, stats are recorded and initialized for
+  //    the current day.
+  // 3. If days_since_last_update > 1, we record days_since_last_update-1
+  //    'unused' days, stats are recorded and initialized for the current day.
+  const int days_since_last_update =
+      (current_midnight - tracking_day_midnight_).InDays();
+  if (days_since_last_update <= 0)
     return false;
+
+  // The days between the day when tracking was done and the current one are
+  // 'unused'.
+  const int unused_days = days_since_last_update - 1;
+  DCHECK_GE(unused_days, 0);
 
   // Increment the counter that corresponds to tracked usage.
   if (online_navigation_observed_ && offline_navigation_observed_) {
@@ -237,19 +247,8 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   else if (prefetch_fetch_observed_)
     prefetch_fetched_count_++;
 
-  // The days between the day when tracking was done and the current one are
-  // 'unused'.
-  // Calculation of the 'days in between' is as following:
-  // 1. If current_midnight == tracking_day_midnight_, we returned earlier.
-  // 2. If current_midnight is for the next day, days_in_between is 0,
-  //    tracking is reset to start for the current day.
-  // 3. If current_midnight is > 48hrs later, the days_in_between are added,
-  //    tracking is reset to start for the current day.
-  int days_in_between =
-      (current_midnight - tracking_day_midnight_).InDays() - 1;
-  DCHECK_GE(days_in_between, 0);
-  unused_days_count_ += days_in_between;
-  for (int i = 0; i < days_in_between; ++i)
+  unused_days_count_ += unused_days;
+  for (int i = 0; i < unused_days; ++i)
     ReportNotResilientOfflineUsageForOneDayToUma(DailyUsageType::kUnused);
 
   // Reset tracking
