@@ -713,7 +713,8 @@ bool Capabilities::IsRemoteBrowser() const {
   return debugger_address.IsValid();
 }
 
-Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
+Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
+                           bool w3c_compliant) {
   std::map<std::string, Parser> parser_map;
 
   // W3C defined capabilities.
@@ -727,18 +728,21 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   parser_map["pageLoadStrategy"] = base::BindRepeating(&ParsePageLoadStrategy);
   parser_map["proxy"] = base::BindRepeating(&ParseProxy);
   parser_map["timeouts"] = base::BindRepeating(&ParseTimeouts);
-  // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
-  // legacy name of "unhandledPromptBehavior", remove when we stop supporting
-  // legacy mode.
-  parser_map["unexpectedAlertBehaviour"] =
-      base::BindRepeating(&ParseUnhandledPromptBehavior);
+  if (!w3c_compliant) {
+    // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
+    // legacy name of "unhandledPromptBehavior", remove when we stop supporting
+    // legacy mode.
+    parser_map["unexpectedAlertBehaviour"] =
+        base::BindRepeating(&ParseUnhandledPromptBehavior);
+  }
   parser_map["unhandledPromptBehavior"] =
       base::BindRepeating(&ParseUnhandledPromptBehavior);
 
   // ChromeDriver specific capabilities.
   // goog:chromeOptions is the current spec conformance, but chromeOptions is
-  // still supported
-  if (desired_caps.GetDictionary("goog:chromeOptions", nullptr)) {
+  // still supported in legacy mode.
+  if (w3c_compliant ||
+      desired_caps.GetDictionary("goog:chromeOptions", nullptr)) {
     parser_map["goog:chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   } else {
     parser_map["chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
@@ -752,15 +756,24 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
     parser_map["networkConnectionEnabled"] =
         base::BindRepeating(&ParseBoolean, &network_emulation_enabled);
   }
+  // goog:testName is set by some tests to help debugging, and is ignored.
+  parser_map["goog:testName"] = base::BindRepeating(&IgnoreCapability);
 
-  for (auto it = parser_map.begin(); it != parser_map.end(); ++it) {
-    const base::Value* capability = NULL;
-    if (desired_caps.Get(it->first, &capability)) {
-      Status status = it->second.Run(*capability, this);
-      if (status.IsError()) {
-        return Status(kInvalidArgument, "cannot parse capability: " + it->first,
-                      status);
-      }
+  for (base::DictionaryValue::Iterator it(desired_caps); !it.IsAtEnd();
+       it.Advance()) {
+    if (parser_map.find(it.key()) == parser_map.end()) {
+      // The specified capability is unrecognized. W3C spec requires us to
+      // return an error. In legacy mode, for backward compatibility reasons,
+      // we ignore unrecognized capabilities.
+      if (w3c_compliant)
+        return Status(kInvalidArgument, "unrecognized capability: " + it.key());
+      else
+        continue;
+    }
+    Status status = parser_map[it.key()].Run(it.value(), this);
+    if (status.IsError()) {
+      return Status(kInvalidArgument, "cannot parse capability: " + it.key(),
+                    status);
     }
   }
   // Perf log must be enabled if perf log prefs are specified; otherwise, error.

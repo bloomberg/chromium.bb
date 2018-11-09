@@ -99,7 +99,8 @@ struct Capabilities {
 
   // Accepts all W3C defined capabilities (including those not yet supported by
   // ChromeDriver) and all ChromeDriver-specific extensions.
-  Status Parse(const base::DictionaryValue& desired_caps);
+  Status Parse(const base::DictionaryValue& desired_caps,
+               bool w3c_compliant = true);
 
   // Check if all specified capabilities are supported by ChromeDriver.
   // The long term goal is to support all standard capabilities, thus making

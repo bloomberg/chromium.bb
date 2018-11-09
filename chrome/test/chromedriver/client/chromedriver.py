@@ -228,7 +228,7 @@ class ChromeDriver(object):
       options['w3c'] = send_w3c_capability
 
     params = {
-        'chromeOptions': options,
+        'goog:chromeOptions': options,
         'loggingPrefs': logging_prefs
     }
 
@@ -238,7 +238,10 @@ class ChromeDriver(object):
 
     if unexpected_alert_behaviour:
       assert type(unexpected_alert_behaviour) is str
-      params['unexpectedAlertBehaviour'] = unexpected_alert_behaviour
+      if send_w3c_request:
+        params['unhandledPromptBehavior'] = unexpected_alert_behaviour
+      else:
+        params['unexpectedAlertBehaviour'] = unexpected_alert_behaviour
 
     if network_connection:
       params['networkConnectionEnabled'] = network_connection
