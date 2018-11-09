@@ -3,7 +3,7 @@
     "Hold back the ios_deployment_target to iOS10 for web_view and related",
     "tests, only testing on iOS 10.3 simulator."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "ios_deployment_target=\"10.0\"",
