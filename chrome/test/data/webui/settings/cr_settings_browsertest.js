@@ -11,6 +11,7 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/autofill/core/common/autofill_features.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
@@ -230,24 +231,55 @@ GEN('#endif');
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsAutofillSectionTest() {}
+function CrSettingsAutofillSectionCompanyEnabledTest() {}
 
-CrSettingsAutofillSectionTest.prototype = {
+CrSettingsAutofillSectionCompanyEnabledTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
   browsePreload:
       'chrome://settings/passwords_and_forms_page/autofill_section.html',
 
+  featureList: ['autofill::features::kAutofillEnableCompanyName', ''],
+
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'passwords_and_autofill_fake_data.js',
-    'test_util.js',
+    'passwords_and_autofill_fake_data.js', 'test_util.js',
     'autofill_section_test.js'
   ]),
 };
 
-TEST_F('CrSettingsAutofillSectionTest', 'All', function() {
+TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is enabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = true;
+  loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+function CrSettingsAutofillSectionCompanyDisabledTest() {}
+
+CrSettingsAutofillSectionCompanyDisabledTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/passwords_and_forms_page/autofill_section.html',
+
+  featureList: ['', 'autofill::features::kAutofillEnableCompanyName'],
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'passwords_and_autofill_fake_data.js', 'test_util.js',
+    'autofill_section_test.js'
+  ]),
+};
+
+TEST_F('CrSettingsAutofillSectionCompanyDisabledTest', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is disabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = false;
+  loadTimeData.overrideValues(loadTimeDataOverride);
   mocha.run();
 });
 

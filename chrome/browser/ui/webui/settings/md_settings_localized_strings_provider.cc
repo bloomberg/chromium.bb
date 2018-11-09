@@ -1546,10 +1546,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-
-  html_source->AddBoolean("EnableCompanyName",
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillEnableCompanyName));
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
