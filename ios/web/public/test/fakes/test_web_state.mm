@@ -74,12 +74,6 @@ void TestWebState::SetWebUsageEnabled(bool enabled) {
     SetIsEvicted(true);
 }
 
-bool TestWebState::ShouldSuppressDialogs() const {
-  return false;
-}
-
-void TestWebState::SetShouldSuppressDialogs(bool should_suppress) {}
-
 UIView* TestWebState::GetView() {
   return view_;
 }

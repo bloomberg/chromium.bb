@@ -56,9 +56,6 @@
 // Invoked by WebStateObserverBridge::DidChangeVisibleSecurityState.
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState;
 
-// Invoked by WebStateObserverBridge::DidSuppressDialog.
-- (void)webStateDidSuppressDialog:(web::WebState*)webState;
-
 // Invoked by WebStateObserverBridge::FaviconUrlUpdated.
 - (void)webState:(web::WebState*)webState
     didUpdateFaviconURLCandidates:
@@ -116,7 +113,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void DidChangeBackForwardState(web::WebState* web_state) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
-  void DidSuppressDialog(web::WebState* web_state) override;
   void FaviconUrlUpdated(web::WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void WebFrameDidBecomeAvailable(WebState* web_state,

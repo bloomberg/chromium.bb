@@ -321,10 +321,10 @@ TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
 
 INSTANTIATE_TEST_CASES(CRWWebControllerTest);
 
-// Test fixture to test |WebState::SetShouldSuppressDialogs|.
-class DialogsSuppressionTest : public ProgrammaticWebTestWithWebState {
+// Test fixture to test JavaScriptDialogPresenter.
+class JavaScriptDialogPresenterTest : public ProgrammaticWebTestWithWebState {
  protected:
-  DialogsSuppressionTest() : page_url_("https://chromium.test/") {}
+  JavaScriptDialogPresenterTest() : page_url_("https://chromium.test/") {}
   void SetUp() override {
     ProgrammaticWebTestWithWebState::SetUp();
     LoadHtml(@"<html><body></body></html>", page_url_);
@@ -347,23 +347,10 @@ class DialogsSuppressionTest : public ProgrammaticWebTestWithWebState {
   GURL page_url_;
 };
 
-// Tests that window.alert dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressAlert) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  web_state()->SetShouldSuppressDialogs(true);
-  ExecuteJavaScript(@"alert('test')");
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
-};
-
 // Tests that window.alert dialog is shown.
-TEST_P(DialogsSuppressionTest, AllowAlert) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, Alert) {
   ASSERT_TRUE(requested_dialogs().empty());
 
-  web_state()->SetShouldSuppressDialogs(false);
   ExecuteJavaScript(@"alert('test')");
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -373,32 +360,14 @@ TEST_P(DialogsSuppressionTest, AllowAlert) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-};
-
-// Tests that window.confirm dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressConfirm) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
-
-  ASSERT_TRUE(requested_dialogs().empty());
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 };
 
 // Tests that window.confirm dialog is shown and its result is true.
-TEST_P(DialogsSuppressionTest, AllowConfirmWithTrue) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, ConfirmWithTrue) {
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_success_argument(true);
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -408,16 +377,12 @@ TEST_P(DialogsSuppressionTest, AllowConfirmWithTrue) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
 // Tests that window.confirm dialog is shown and its result is false.
-TEST_P(DialogsSuppressionTest, AllowConfirmWithFalse) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, ConfirmWithFalse) {
   ASSERT_TRUE(requested_dialogs().empty());
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -427,32 +392,14 @@ TEST_P(DialogsSuppressionTest, AllowConfirmWithFalse) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-}
-
-// Tests that window.prompt dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressPrompt) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  EXPECT_EQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
-
-  ASSERT_TRUE(requested_dialogs().empty());
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 }
 
 // Tests that window.prompt dialog is shown.
-TEST_P(DialogsSuppressionTest, AllowPrompt) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, Prompt) {
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_user_input_argument(@"Maybe");
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -462,23 +409,9 @@ TEST_P(DialogsSuppressionTest, AllowPrompt) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"Yes?", dialog.message_text);
   EXPECT_NSEQ(@"No", dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that window.open is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressWindowOpen) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  ExecuteJavaScript(@"window.open('')");
-
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
-}
-
-INSTANTIATE_TEST_CASES(DialogsSuppressionTest);
+INSTANTIATE_TEST_CASES(JavaScriptDialogPresenterTest);
 
 // Test fixture for testing visible security state.
 typedef ProgrammaticWebTestWithWebState CRWWebStateSecurityStateTest;

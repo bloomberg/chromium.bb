@@ -262,7 +262,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState.get());
   [[tab webController] setNativeProvider:nil];
 
-  webState->SetShouldSuppressDialogs(false);
   webState->RemoveObserver(webStateObserver_.get());
   webState->SetDelegate(nullptr);
   policyDeciderBridge_.reset();
@@ -388,7 +387,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   webState_->SetDelegate(webStateDelegate_.get());
   webState_->AddObserver(webStateObserver_.get());
-  webState_->SetShouldSuppressDialogs(true);
   webState_->SetWebUsageEnabled(true);
 
   if (AccountConsistencyService* accountConsistencyService =
@@ -449,6 +447,22 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 #pragma mark - CRWWebStateDelegate
 
+- (web::WebState*)webState:(web::WebState*)webState
+    createNewWebStateForURL:(const GURL&)URL
+                  openerURL:(const GURL&)openerURL
+            initiatedByUser:(BOOL)initiatedByUser {
+  DCHECK([self isWebStatePrerendered:webState]);
+  [self schedulePrerenderCancel];
+  return nil;
+}
+
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  DCHECK([self isWebStatePrerendered:webState]);
+  [self schedulePrerenderCancel];
+  return nullptr;
+}
+
 - (void)webState:(web::WebState*)webState
     didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
                       proposedCredential:(NSURLCredential*)proposedCredential
@@ -478,11 +492,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   const std::string& mimeType = webState->GetContentsMimeType();
   if (mimeType == "application/octet-stream")
     [self schedulePrerenderCancel];
-}
-
-- (void)webStateDidSuppressDialog:(web::WebState*)webState {
-  DCHECK_EQ(webState, webState_.get());
-  [self schedulePrerenderCancel];
 }
 
 #pragma mark - ManageAccountsDelegate
