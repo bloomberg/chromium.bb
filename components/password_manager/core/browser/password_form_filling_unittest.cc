@@ -198,12 +198,15 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadReported) {
       observed_form.password_element.clear();
 
     EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form));
-    EXPECT_CALL(driver_, FillPasswordForm(_));
+    PasswordFormFillData fill_data;
+    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
     EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
 
     SendFillInformationToRenderer(client_, &driver_, false, observed_form,
                                   best_matches, federated_matches_,
                                   &saved_match_, metrics_recorder_.get());
+
+    EXPECT_EQ(test_case.current_password_present, !fill_data.wait_for_username);
 
     metrics_recorder_.reset();  // The recorder only reports on destruction.
     auto entries = test_ukm_recorder.GetEntriesByName(

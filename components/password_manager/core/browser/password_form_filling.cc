@@ -133,6 +133,22 @@ void SendFillInformationToRenderer(
   }
   DCHECK(preferred_match);
 
+  // Chrome tries to avoid filling into fields where the user is asked to enter
+  // a fresh password. The old condition for filling on load was: "does the form
+  // lack a new-password field?" There is currently a discussion whether this
+  // should rather be: "does the form have a current-password field?" because
+  // the current-password field is what should be filled. Currently, the old
+  // condition is still used with the old parser, and the new condition with the
+  // new one.
+  // Old condition.
+  const bool did_fill_on_load = !observed_form.IsPossibleChangePasswordForm();
+  // New condition.
+  const bool will_fill_on_load = FormGoodForFilling(observed_form);
+  const bool form_good_for_filling =
+      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)
+          ? will_fill_on_load
+          : did_fill_on_load;
+
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
@@ -140,7 +156,7 @@ void SendFillInformationToRenderer(
   // (3) the form is change password form.
   bool wait_for_username = client.IsIncognito() ||
                            preferred_match->is_public_suffix_match ||
-                           observed_form.IsPossibleChangePasswordForm();
+                           !form_good_for_filling;
 
   // The following metric is only relevant when fill on load is not suppressed
   // by Incognito or PSL-matched credentials. It is also only relevant for the
@@ -149,10 +165,6 @@ void SendFillInformationToRenderer(
   // whether to go with the new condition or the old one.
   if (!client.IsIncognito() && !preferred_match->is_public_suffix_match &&
       base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
-    // Old condition.
-    const bool did_fill_on_load = !observed_form.IsPossibleChangePasswordForm();
-    // New condition.
-    const bool will_fill_on_load = FormGoodForFilling(observed_form);
     PasswordFormMetricsRecorder::FillOnLoad fill_on_load_result =
         PasswordFormMetricsRecorder::FillOnLoad::kSame;
     if (did_fill_on_load != will_fill_on_load) {
