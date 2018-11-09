@@ -136,6 +136,7 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const mojom::PageLoadMetadata& main_frame_metadata,
       const mojom::PageLoadMetadata& subframe_metadata,
+      const mojom::PageRenderData& main_frame_render_data,
       ukm::SourceId source_id);
 
   // Simplified version of the constructor, intended for use in tests.
@@ -209,6 +210,8 @@ struct PageLoadExtraInfo {
 
   // PageLoadMetadata for subframes of the current page load.
   const mojom::PageLoadMetadata subframe_metadata;
+
+  const mojom::PageRenderData main_frame_render_data;
 
   // UKM SourceId for the current page load.
   const ukm::SourceId source_id;
@@ -502,10 +505,6 @@ class PageLoadMetricsObserver {
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
-
-  // Called when the final layout jank score for the session is ready to be
-  // reported (immediately before OnComplete).
-  virtual void OnFinalLayoutStabilityUpdate(float jank_score) {}
 };
 
 }  // namespace page_load_metrics

@@ -3233,6 +3233,12 @@ be describing additional metrics about the same event.
       meaningful input with longest queuing delay per navigation. In ms.
     </summary>
   </metric>
+  <metric name="LayoutStability.JankScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred during the session.
+    </summary>
+  </metric>
   <metric name="MainFrameResource.ConnectDelay">
     <summary>
       The duration between the start of the connection establishment to the end

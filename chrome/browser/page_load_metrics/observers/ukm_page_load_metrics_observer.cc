@@ -16,6 +16,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 // static
@@ -40,8 +41,10 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
-  if (!started_in_foreground)
-    return STOP_OBSERVING;
+  if (!started_in_foreground) {
+    was_hidden_ = true;
+    return CONTINUE_OBSERVING;
+  }
 
   // When OnStart is invoked, we don't yet know whether we're observing a web
   // page load, vs another kind of load (e.g. a download or a PDF). Thus,
@@ -76,23 +79,31 @@ UkmPageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
-  RecordTimingMetrics(timing, info);
+  if (!was_hidden_) {
+    RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
+    RecordTimingMetrics(timing, info);
+  }
+  ReportLayoutStability(info);
   return STOP_OBSERVING;
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageLoadExtraInfoMetrics(
-      info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing, info);
-  return STOP_OBSERVING;
+  if (!was_hidden_) {
+    RecordPageLoadExtraInfoMetrics(
+        info, base::TimeTicks() /* no app_background_time */);
+    RecordTimingMetrics(timing, info);
+    was_hidden_ = true;
+  }
+  return CONTINUE_OBSERVING;
 }
 
 void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (was_hidden_)
+    return;
   RecordPageLoadExtraInfoMetrics(
       extra_info, base::TimeTicks() /* no app_background_time */);
 
@@ -111,14 +122,19 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageLoadExtraInfoMetrics(
-      info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing, info);
+  if (!was_hidden_) {
+    RecordPageLoadExtraInfoMetrics(
+        info, base::TimeTicks() /* no app_background_time */);
+    RecordTimingMetrics(timing, info);
+  }
+  ReportLayoutStability(info);
 }
 
 void UkmPageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
+  if (was_hidden_)
+    return;
   if (extra_request_complete_info.was_cached) {
     cache_bytes_ += extra_request_complete_info.raw_body_bytes;
   } else {
@@ -330,4 +346,21 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
   }
   builder->SetMainFrameResource_RequestStartToReceiveHeadersEnd(
       request_start_to_receive_headers_end_ms);
+}
+
+void UkmPageLoadMetricsObserver::ReportLayoutStability(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // Avoid reporting when the feature is disabled. This ensures that a report
+  // with score == 0 only occurs for a page that was actually jank-free.
+  if (!base::FeatureList::IsEnabled(blink::features::kJankTracking))
+    return;
+
+  // Report (jank_score * 100) as an int in the range [0, 1000].
+  float jank_score = info.main_frame_render_data.layout_jank_score;
+  int64_t ukm_value =
+      static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+
+  ukm::builders::PageLoad builder(info.source_id);
+  builder.SetLayoutStability_JankScore(ukm_value);
+  builder.Record(ukm::UkmRecorder::Get());
 }

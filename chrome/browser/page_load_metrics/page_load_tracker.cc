@@ -255,9 +255,6 @@ PageLoadTracker::~PageLoadTracker() {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
     } else if (did_commit_) {
-      observer->OnFinalLayoutStabilityUpdate(
-          metrics_update_dispatcher_.main_frame_render_data()
-              .layout_jank_score);
       observer->OnComplete(metrics_update_dispatcher_.timing(), info);
     }
   }
@@ -511,7 +508,8 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
       started_in_foreground_, user_initiated_info_, url(), start_url_,
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
       page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
-      metrics_update_dispatcher_.subframe_metadata(), source_id_);
+      metrics_update_dispatcher_.subframe_metadata(),
+      metrics_update_dispatcher_.main_frame_render_data(), source_id_);
 }
 
 bool PageLoadTracker::HasMatchingNavigationRequestID(
