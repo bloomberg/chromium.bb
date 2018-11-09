@@ -19,7 +19,6 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -816,11 +815,9 @@ TEST_F(MultiUserWindowManagerChromeOSTest, PreserveInitialVisibility) {
   EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
 }
 
-// Test that in case of an activated tablet mode, windows from other users get
-// maximized after a user switch.
-// TODO(sammiequon): disabled as expectations aren't correct with
-// addition of call to OnTabletModeToggled(). https://crbug.com/903427
-TEST_F(MultiUserWindowManagerChromeOSTest, DISABLED_TabletModeInteraction) {
+// Test that in case of an activated tablet mode, windows from all users get
+// maximized on entering tablet mode.
+TEST_F(MultiUserWindowManagerChromeOSTest, TabletModeInteraction) {
   SetUpForThisManyWindows(2);
 
   const AccountId account_id_A(AccountId::FromUserEmail("A"));
@@ -836,13 +833,14 @@ TEST_F(MultiUserWindowManagerChromeOSTest, DISABLED_TabletModeInteraction) {
   multi_user_window_manager()->OnTabletModeToggled(true);
 
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
-
-  // After we start switching to B, the windows of user B should maximize.
-  StartUserTransitionAnimation(account_id_B);
-
-  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_TRUE(wm::GetWindowState(window(1))->IsMaximized());
+
+  // Tests that on exiting tablet mode, the window states return to not
+  // maximized.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  multi_user_window_manager()->OnTabletModeToggled(false);
+  EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 }
 
 // Test that a system modal dialog will switch to the desktop of the owning
