@@ -267,6 +267,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
   new_request->throttling_profile_id = request_info->devtools_frame_token;
   new_request->transition_type = request_info->common_params.transition;
+  new_request->previews_state = request_info->common_params.previews_state;
   return new_request;
 }
 
