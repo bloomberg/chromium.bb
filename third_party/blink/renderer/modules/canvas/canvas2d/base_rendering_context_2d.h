@@ -488,6 +488,7 @@ void BaseRenderingContext2D::CompositedDraw(
     PaintFlags shadow_flags =
         *GetState().GetFlags(paint_type, kDrawShadowOnly, image_type);
     int save_count = c->getSaveCount();
+    c->save();
     if (filter) {
       PaintFlags foreground_flags =
           *GetState().GetFlags(paint_type, kDrawForegroundOnly, image_type);
