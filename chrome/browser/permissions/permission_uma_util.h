@@ -28,6 +28,7 @@ enum class PermissionSourceUI {
   OIB = 1,
   SITE_SETTINGS = 2,
   PAGE_ACTION = 3,
+  ANDROID_SETTINGS = 4,
 
   // Always keep this at the end.
   NUM,

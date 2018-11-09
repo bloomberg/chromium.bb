@@ -102,6 +102,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // The number of chosen object permissions displayed.
     private int mObjectPermissionCount;
 
+    // Records previous notification permission on Android O+ to allow detection of permission
+    // revocation within the Android system permission activity.
+    private ContentSetting mPreviousNotificationPermission;
+
     private class SingleWebsitePermissionsPopulator
             implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         private final WebsiteAddress mSiteAddress;
@@ -409,6 +413,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void launchOsChannelSettings(Context context, String channelId) {
+        // Store current value of permission to allow comparison against new value at return.
+        mPreviousNotificationPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+
         Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
         intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
@@ -436,6 +443,21 @@ public class SingleWebsitePreferences extends PreferenceFragment
                             + ContentSettingException.Type.NUM_ENTRIES]);
             if (notificationsPreference != null) {
                 setUpNotificationsPreference(notificationsPreference);
+            }
+
+            // To ensure UMA receives notification revocations, we detect if the setting has changed
+            // after returning to Chrome.  This is lossy, as it will miss when users revoke a
+            // permission, but do not return immediately to Chrome (e.g. they close the permissions
+            // activity, instead of hitting the back button), but prevents us from having to check
+            // for changes each time Chrome becomes active.
+            ContentSetting newPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+            if (mPreviousNotificationPermission == ContentSetting.ALLOW &&
+                    newPermission != ContentSetting.ALLOW) {
+                WebsitePreferenceBridge.nativeReportNotificationRevokedForOrigin(
+                    mSite.getAddress().getOrigin(),
+                    newPermission.toInt(),
+                    mSite.getPermissionInfo(PermissionInfo.Type.NOTIFICATION).isIncognito());
+                mPreviousNotificationPermission = null;
             }
         }
     }

@@ -249,6 +249,8 @@ public abstract class WebsitePreferenceBridge {
             String origin, String embedder, int value, boolean isIncognito);
     static native void nativeSetNotificationSettingForOrigin(
             String origin, int value, boolean isIncognito);
+    static native void nativeReportNotificationRevokedForOrigin(
+            String origin, int newSettingValue, boolean isIncognito);
     static native void nativeSetProtectedMediaIdentifierSettingForOrigin(
             String origin, String embedder, int value, boolean isIncognito);
     static native void nativeSetSensorsSettingForOrigin(
