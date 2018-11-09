@@ -324,6 +324,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
   if (!compound_selector) {
     AtomicString namespace_uri = DetermineNamespace(namespace_prefix);
     if (namespace_uri.IsNull()) {
+      context_->Count(WebFeature::kCSSUnknownNamespacePrefixInSelector);
       failed_parsing_ = true;
       return nullptr;
     }
