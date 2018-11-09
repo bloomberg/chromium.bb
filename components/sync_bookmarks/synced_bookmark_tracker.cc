@@ -150,6 +150,9 @@ bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model->root_node());
   while (iterator.has_next()) {
     const bookmarks::BookmarkNode* node = iterator.Next();
+    if (!model->client()->CanSyncNode(node)) {
+      continue;
+    }
     model_node_ids.push_back(node->id());
   }
 
