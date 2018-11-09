@@ -874,6 +874,78 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, MixedContentInBookmarkApp) {
   CheckMixedContentLoaded(app_browser_);
 }
 
+// Ensure that hosted app windows with blank titles don't display the URL as a
+// default window title.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, EmptyTitlesDoNotDisplayUrl) {
+  ASSERT_TRUE(https_server()->Start());
+  GURL url = https_server()->GetURL("app.site.com", "/empty.html");
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  Browser* app_browser = LaunchAppBrowser(app);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
+  NavigateToURLAndWait(app_browser,
+                       https_server()->GetURL("app.site.com", "/simple.html"));
+  EXPECT_EQ(base::ASCIIToUTF16("OK"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+}
+
+// Ensure that hosted app windows display the app title instead of the page
+// title when off scope.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, OffScopeUrlsDisplayAppTitle) {
+  ASSERT_TRUE(https_server()->Start());
+  GURL url = GetSecureAppURL();
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  web_app_info.scope = url.GetWithoutFilename();
+  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  Browser* app_browser = LaunchAppBrowser(app);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+
+  // When we are within scope, show the page title.
+  EXPECT_EQ(base::ASCIIToUTF16("Google"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+
+  NavigateToURLAndWait(app_browser,
+                       https_server()->GetURL("app.site.com", "/simple.html"));
+
+  // When we are off scope, show the app title.
+  EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+}
+
+// Ensure that hosted app windows display the app title instead of the page
+// title when using http.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("app.site.com", "/simple.html");
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = url;
+  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
+
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  Browser* app_browser = LaunchAppBrowser(app);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+
+  // The page title is "OK" but the page is being served over HTTP, so the app
+  // title should be used instead.
+  EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
+            app_browser->GetWindowTitleForCurrentTab(false));
+}
+
 using HostedAppPWAOnlyTest = HostedAppTest;
 
 // Tests that the command for popping a tab out to a PWA window is disabled in
@@ -2624,26 +2696,6 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest,
   // Navigate to the app's launch page; the location bar should not be visible,
   // because extensions pages are secure.
   NavigateAndCheckForLocationBar(app_browser_, popup_url, false);
-}
-
-// Ensure that hosted app windows with blank titles don't display the URL as a
-// default window title.
-IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, Title) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("app.site.com", "/empty.html");
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  Browser* app_browser = LaunchAppBrowser(app);
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
-  NavigateToURLAndWait(app_browser, embedded_test_server()->GetURL(
-                                        "app.site.com", "/simple.html"));
-  EXPECT_EQ(base::ASCIIToUTF16("OK"),
-            app_browser->GetWindowTitleForCurrentTab(false));
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
