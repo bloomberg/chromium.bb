@@ -3539,11 +3539,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, BasicPostMessage) {
 }
 
 // Tests that webviews do get garbage collected.
-// This test is disabled because it relies on garbage collections triggered from
-// window.gc() to run precisely. This is not the case with unified heap where
-// they need to conservatively scan the stack, potentially keeping objects
-// alive. https://crbug.com/843903
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestGarbageCollect) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
   TestHelper("testGarbageCollect", "web_view/shim", NO_TEST_SERVER);
   GetGuestViewManager()->WaitForSingleViewGarbageCollected();
 }
