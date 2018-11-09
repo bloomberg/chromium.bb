@@ -14,21 +14,7 @@
 // TODO(stevenjb/shuchen/shend): Many of these are accessed from both Chrome
 // and Ash. We need to remove any Chrome dependencies. htpps://crbug.com/843332
 
-namespace aura {
-class WindowTreeHost;
-}
-
 namespace keyboard {
-
-// An enumeration of keyboard states.
-enum KeyboardState {
-  // Default state. System decides whether to show the keyboard or not.
-  KEYBOARD_STATE_AUTO = 0,
-  // Request virtual keyboard be deployed.
-  KEYBOARD_STATE_ENABLED,
-  // Request virtual keyboard be suppressed.
-  KEYBOARD_STATE_DISABLED,
-};
 
 // Sets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
@@ -53,19 +39,6 @@ KEYBOARD_EXPORT std::string GetKeyboardLayout();
 
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
-
-// Sends a fabricated key event, where |type| is the event type, |key_value|
-// is the unicode value of the character, |key_code| is the legacy key code
-// value, |key_name| is the name of the key as defined in the DOM3 key event
-// specification, and |modifier| indicates if any modifier keys are being
-// virtually pressed. The event is dispatched to the active TextInputClient
-// associated with |root_window|. The type may be "keydown" or "keyup".
-KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
-                                  int key_value,
-                                  int key_code,
-                                  std::string key_name,
-                                  int modifiers,
-                                  aura::WindowTreeHost* host);
 
 }  // namespace keyboard
 

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -32,11 +31,18 @@
 #include "media/audio/audio_system.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/event_injector.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -56,6 +62,77 @@ aura::Window* GetKeyboardWindow() {
 
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
+}
+
+const char kKeyDown[] = "keydown";
+const char kKeyUp[] = "keyup";
+
+void SendProcessKeyEvent(ui::EventType type, aura::WindowTreeHost* host) {
+  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::DomCode::NONE,
+                     ui::EF_IS_SYNTHESIZED, ui::DomKey::PROCESS,
+                     ui::EventTimeForNow());
+  ui::EventDispatchDetails details = aura::EventInjector().Inject(host, &event);
+  CHECK(!details.dispatcher_destroyed);
+}
+
+// Sends a fabricated key event, where |type| is the event type (which must be
+// "keydown" or "keyup"), |key_value| is the unicode value of the character,
+// |key_code| is the legacy key code value, |key_name| is the name of the key as
+// defined in the DOM3 key event specification, and |modifier| indicates if any
+// modifier keys are being virtually pressed. The event is dispatched to the
+// active TextInputClient associated with |host|.
+bool SendKeyEventImpl(const std::string& type,
+                      int key_value,
+                      int key_code,
+                      const std::string& key_name,
+                      int modifiers,
+                      aura::WindowTreeHost* host) {
+  ui::EventType event_type;
+  if (type == kKeyDown)
+    event_type = ui::ET_KEY_PRESSED;
+  else if (type == kKeyUp)
+    event_type = ui::ET_KEY_RELEASED;
+  else
+    return false;
+
+  ui::KeyboardCode code = static_cast<ui::KeyboardCode>(key_code);
+
+  ui::InputMethod* input_method = host->GetInputMethod();
+  if (code == ui::VKEY_UNKNOWN) {
+    // Handling of special printable characters (e.g. accented characters) for
+    // which there is no key code.
+    if (event_type == ui::ET_KEY_RELEASED) {
+      if (!input_method)
+        return false;
+
+      // This can be null if no text input field is focused.
+      ui::TextInputClient* tic = input_method->GetTextInputClient();
+
+      SendProcessKeyEvent(ui::ET_KEY_PRESSED, host);
+
+      ui::KeyEvent char_event(key_value, code, ui::DomCode::NONE, ui::EF_NONE);
+      if (tic)
+        tic->InsertChar(char_event);
+      SendProcessKeyEvent(ui::ET_KEY_RELEASED, host);
+    }
+    return true;
+  }
+
+  ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(key_name);
+  if (dom_code == ui::DomCode::NONE)
+    dom_code = ui::UsLayoutKeyboardCodeToDomCode(code);
+  CHECK(dom_code != ui::DomCode::NONE);
+
+  ui::KeyEvent event(event_type, code, dom_code, modifiers);
+
+  // Indicate that the simulated key event is from the Virtual Keyboard.
+  ui::Event::Properties properties;
+  properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+  event.SetProperties(properties);
+
+  ui::EventDispatchDetails details = aura::EventInjector().Inject(host, &event);
+  CHECK(!details.dispatcher_destroyed);
+  return true;
 }
 
 }  // namespace
@@ -151,8 +228,8 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                                  int modifiers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   aura::Window* window = GetKeyboardWindow();
-  return window && keyboard::SendKeyEvent(type, char_value, key_code, key_name,
-                                          modifiers, window->GetHost());
+  return window && SendKeyEventImpl(type, char_value, key_code, key_name,
+                                    modifiers, window->GetHost());
 }
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
