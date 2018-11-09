@@ -53,6 +53,7 @@ CHROME_CHANGES = BuildFileMatchRegex(
     r'AndroidManifest\.xml',
     r'resources\.arsc',
     r'classes\.dex',
+    r'classes2\.dex',
     r'res/.*\.xml', # Resource id isn't same
     r'assets/unwind_cfi_32', # Generated from apk's shared library
      # All pak files except chrome_100_percent.pak are different

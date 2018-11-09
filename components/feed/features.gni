@@ -3,7 +3,5 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # TODO(agrieve): Set this back to "is_android" once
-  # https://crbug.com/901488 is fixed
-  enable_feed_in_chrome = false
+  enable_feed_in_chrome = is_android
 }
