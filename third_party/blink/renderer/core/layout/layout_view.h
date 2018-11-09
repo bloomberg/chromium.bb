@@ -307,8 +307,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool UpdateLogicalWidthAndColumnWidth() override;
 
-  LayoutRect FixedBackgroundPositioningArea() const;
-
   UntracedMember<LocalFrameView> frame_view_;
 
   // The page logical height.

@@ -616,10 +616,6 @@ LayoutRect LayoutView::OverflowClipRect(
   return rect;
 }
 
-LayoutRect LayoutView::FixedBackgroundPositioningArea() const {
-  return OverflowClipRect(LayoutPoint());
-}
-
 void LayoutView::SetAutosizeScrollbarModes(ScrollbarMode h_mode,
                                            ScrollbarMode v_mode) {
   DCHECK_EQ(v_mode == kScrollbarAuto, h_mode == kScrollbarAuto);
