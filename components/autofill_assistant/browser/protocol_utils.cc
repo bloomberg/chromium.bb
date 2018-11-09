@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
@@ -44,6 +46,21 @@ void AddScriptParametersToProto(
   }
 }
 
+// Fills the destination ClientContextProto fields.
+void FillClientContext(ClientContextProto* destination) {
+  destination->mutable_chrome()->set_chrome_version(
+      version_info::GetProductNameAndVersionForUserAgent());
+
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  for (const auto& group : active_groups) {
+    FieldTrialProto* field_trial =
+        destination->mutable_chrome()->add_active_field_trials();
+    field_trial->set_trial_name(group.trial_name);
+    field_trial->set_group_name(group.group_name);
+  }
+}
+
 }  // namespace
 
 // static
@@ -54,8 +71,7 @@ std::string ProtocolUtils::CreateGetScriptsRequest(
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  script_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
-      version_info::GetProductNameAndVersionForUserAgent());
+  FillClientContext(script_proto.mutable_client_context());
   AddScriptParametersToProto(parameters,
                              script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
@@ -118,8 +134,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->set_policy(PolicyType::SCRIPT);
   AddScriptParametersToProto(
       parameters, initial_request_proto->mutable_script_parameters());
-  request_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
-      version_info::GetProductNameAndVersionForUserAgent());
+  FillClientContext(request_proto.mutable_client_context());
 
   if (!server_payload.empty()) {
     request_proto.set_server_payload(server_payload);
@@ -143,6 +158,7 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
+  FillClientContext(request_proto.mutable_client_context());
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
   DCHECK(success);
