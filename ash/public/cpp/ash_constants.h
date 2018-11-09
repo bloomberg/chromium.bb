@@ -43,6 +43,10 @@ constexpr int kDefaultAutoclickDelayMs = 1000;
 constexpr mojom::AutoclickEventType kDefaultAutoclickEventType =
     mojom::AutoclickEventType::kLeftClick;
 
+// The default threshold of mouse movement, measured in DIP, that will initiate
+// a new autoclick.
+constexpr int kDefaultAutoclickMovementThreshold = 20;
+
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 

@@ -188,26 +188,44 @@ TEST_F(AutoclickTest, MovementThreshold) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2u, root_windows.size());
 
-  // Run test for the secondary display too to test fix for crbug.com/449870.
-  for (auto* root_window : root_windows) {
-    gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
+  // Try at a couple different thresholds.
+  for (int movement_threshold = 10; movement_threshold < 50;
+       movement_threshold += 10) {
+    GetAutoclickController()->set_movement_threshold(movement_threshold);
 
-    GetAutoclickController()->SetEnabled(true);
-    GetEventGenerator()->MoveMouseTo(center);
-    EXPECT_EQ(2u, WaitForMouseEvents().size());
+    // Run test for the secondary display too to test fix for crbug.com/449870.
+    for (auto* root_window : root_windows) {
+      gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
-    // Small mouse movements should not trigger an autoclick.
-    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(1, 1));
-    EXPECT_EQ(0u, WaitForMouseEvents().size());
-    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(2, 2));
-    EXPECT_EQ(0u, WaitForMouseEvents().size());
-    GetEventGenerator()->MoveMouseTo(center);
-    EXPECT_EQ(0u, WaitForMouseEvents().size());
+      GetAutoclickController()->SetEnabled(true);
+      GetEventGenerator()->MoveMouseTo(center);
+      EXPECT_EQ(2u, WaitForMouseEvents().size());
 
-    // A large mouse movement should trigger an autoclick.
-    GetEventGenerator()->MoveMouseTo(center + gfx::Vector2d(100, 100));
-    EXPECT_EQ(2u, WaitForMouseEvents().size());
+      // Small mouse movements should not trigger an autoclick, i.e. movements
+      // within the radius of the movement_threshold.
+      GetEventGenerator()->MoveMouseTo(
+          center + gfx::Vector2d(std::sqrt(movement_threshold) - 1,
+                                 std::sqrt(movement_threshold) - 1));
+      EXPECT_EQ(0u, WaitForMouseEvents().size());
+      GetEventGenerator()->MoveMouseTo(
+          center + gfx::Vector2d(movement_threshold - 1, 0));
+      EXPECT_EQ(0u, WaitForMouseEvents().size());
+      GetEventGenerator()->MoveMouseTo(
+          center + gfx::Vector2d(0, -movement_threshold + 1));
+      EXPECT_EQ(0u, WaitForMouseEvents().size());
+      GetEventGenerator()->MoveMouseTo(center);
+      EXPECT_EQ(0u, WaitForMouseEvents().size());
+
+      // A larger mouse movement should trigger an autoclick.
+      GetEventGenerator()->MoveMouseTo(
+          center +
+          gfx::Vector2d(movement_threshold + 1, movement_threshold + 1));
+      EXPECT_EQ(2u, WaitForMouseEvents().size());
+    }
   }
+
+  // Reset to default threshold.
+  GetAutoclickController()->set_movement_threshold(20);
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {

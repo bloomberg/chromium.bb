@@ -216,8 +216,10 @@
     <template is="dom-if" if="[[showExperimentalFeatures_]]">
       <div class="settings-box continuation"
           hidden$="[[!prefs.settings.a11y.autoclick.value]]">
-        <div class="start sub-item">$i18n{autoclickEventTypeLabel}</div>
-        <settings-dropdown-menu label="$i18n{autoclickEventTypeLabel}"
+        <div class="start sub-item" id="autoclickEventTypeLabel">
+          $i18n{autoclickEventTypeLabel}
+        </div>
+        <settings-dropdown-menu aria-labeledby="autoclickEventTypeLabel"
             pref="{{prefs.settings.a11y.autoclick_event_type}}"
             menu-options="[[autoClickEventTypeOptions_]]"
             disabled="[[!prefs.settings.a11y.autoclick.value]]">
@@ -227,8 +229,20 @@
         <settings-toggle-button class="continuation sub-item"
           hidden$="[[!prefs.settings.a11y.autoclick.value]]"
           pref="{{prefs.settings.a11y.autoclick_revert_to_left_click}}"
-          label="$i18n{autoclickReverToLeftClick}">
+          label="$i18n{autoclickRevertToLeftClick}">
         </settings-toggle-button>
+      </div>
+      <div class="settings-box continuation"
+          hidden$="[[!prefs.settings.a11y.autoclick.value]]">
+        <div class="start sub-item" id="autoclickMovementThresholdLabel">
+          $i18n{autoclickMovementThresholdLabel}
+        </div>
+        <settings-dropdown-menu
+            aria-labelledby="autoclickMovementThresholdLabel"
+            pref="{{prefs.settings.a11y.autoclick_movement_threshold}}"
+            menu-options="[[autoClickMovementThresholdOptions_]]"
+            disabled="[[!prefs.settings.a11y.autoclick.value]]">
+        </settings-dropdown-menu>
       </div>
     </template>
     <settings-toggle-button

@@ -107,6 +107,35 @@ Polymer({
       },
     },
 
+    autoClickMovementThresholdOptions_: {
+      readOnly: true,
+      type: Array,
+      value: function() {
+        return [
+          {
+            value: 5,
+            name: loadTimeData.getString('autoclickMovementThresholdExtraSmall')
+          },
+          {
+            value: 10,
+            name: loadTimeData.getString('autoclickMovementThresholdSmall')
+          },
+          {
+            value: 20,
+            name: loadTimeData.getString('autoclickMovementThresholdDefault')
+          },
+          {
+            value: 30,
+            name: loadTimeData.getString('autoclickMovementThresholdLarge')
+          },
+          {
+            value: 40,
+            name: loadTimeData.getString('autoclickMovementThresholdExtraLarge')
+          },
+        ];
+      },
+    },
+
     /**
      * Whether to show experimental accessibility features.
      * @private {boolean}

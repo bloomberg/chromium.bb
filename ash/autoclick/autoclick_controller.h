@@ -57,6 +57,12 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
     revert_to_left_click_ = revert_to_left_click;
   }
 
+  // Sets the movement threshold beyond which mouse movements cancel or begin
+  // a new Autoclick event.
+  void set_movement_threshold(int movement_threshold) {
+    movement_threshold_ = movement_threshold;
+  }
+
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
@@ -83,6 +89,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   bool enabled_;
   mojom::AutoclickEventType event_type_;
   bool revert_to_left_click_;
+  int movement_threshold_;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.
   aura::Window* tap_down_target_;

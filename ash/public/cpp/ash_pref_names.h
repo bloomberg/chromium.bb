@@ -25,6 +25,7 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickEventType[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickRevertToLeftClick[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickMovementThreshold[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCaretHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFocusHighlightEnabled[];
