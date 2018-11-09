@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor.h"
@@ -91,6 +92,40 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
 void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
+}
+
+base::Value ScriptTracker::GetDebugContext() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  std::string last_server_payload_js = last_server_payload_;
+  base::Base64Encode(last_server_payload_js, &last_server_payload_js);
+  dict.SetKey("last-payload", base::Value(last_server_payload_js));
+
+  std::vector<base::Value> executed_scripts_js;
+  for (const auto& entry : executed_scripts_) {
+    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
+    script_js.SetKey(entry.first, base::Value(entry.second));
+    executed_scripts_js.push_back(std::move(script_js));
+  }
+  dict.SetKey("executed-scripts", base::Value(executed_scripts_js));
+
+  std::vector<base::Value> available_scripts_js;
+  for (const auto& entry : available_scripts_)
+    available_scripts_js.push_back(base::Value(entry.second->handle.path));
+  dict.SetKey("available-scripts", base::Value(available_scripts_js));
+
+  std::vector<base::Value> runnable_scripts_js;
+  for (const auto& entry : runnable_scripts_) {
+    base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
+    script_js.SetKey("name", base::Value(entry.name));
+    script_js.SetKey("path", base::Value(entry.path));
+    script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
+    script_js.SetKey("autostart", base::Value(entry.autostart));
+    script_js.SetKey("highlight", base::Value(entry.highlight));
+    runnable_scripts_js.push_back(std::move(script_js));
+  }
+  dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));
+
+  return dict;
 }
 
 void ScriptTracker::OnScriptRun(

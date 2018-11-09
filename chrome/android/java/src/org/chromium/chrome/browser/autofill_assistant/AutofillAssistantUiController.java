@@ -183,6 +183,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
+    public String getDebugContext() {
+        return nativeOnRequestDebugContext(mUiControllerAndroid);
+    }
+
+    @Override
     public boolean allowTouchEvent(float x, float y) {
         return nativeAllowTouchEvent(mUiControllerAndroid, x, y);
     }
@@ -591,5 +596,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnAccessToken(
             long nativeUiControllerAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeUiControllerAndroid);
+    private native String nativeOnRequestDebugContext(long nativeUiControllerAndroid);
     private native boolean nativeAllowTouchEvent(long nativeUiControllerAndroid, float x, float y);
 }
