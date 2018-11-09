@@ -8,7 +8,10 @@
 
 namespace base {
 
-const base::Feature kMergeBlockingNonBlockingPools = {
+const Feature kAllTasksUserBlocking{"AllTasksUserBlocking",
+                                    FEATURE_DISABLED_BY_DEFAULT};
+
+const Feature kMergeBlockingNonBlockingPools = {
     "MergeBlockingNonBlockingPools", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace base
