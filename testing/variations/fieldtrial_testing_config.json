@@ -4100,6 +4100,25 @@
             ]
         }
     ],
+    "SafeBrowsingBillingInterstitial": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BillingInterstitial"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingScoutTransitionStudy": [
         {
             "platforms": [
