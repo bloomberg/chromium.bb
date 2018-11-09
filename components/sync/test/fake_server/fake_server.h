@@ -152,6 +152,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
                               const std::string& url,
                               const sync_pb::SyncEnums::Action& action);
 
+  void ClearActionableError();
+
   // Instructs the server to send triggered errors on every other request
   // (starting with the first one after this call). This feature can be used to
   // test the resiliency of the client when communicating with a problematic
