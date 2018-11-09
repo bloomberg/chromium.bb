@@ -377,11 +377,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasFixedAttachmentBackgroundImage() const {
     return BackgroundInternal().AnyLayerHasFixedAttachmentImage();
   }
-  bool HasOnlyFixedAttachmentBackgroundImage() const {
-    return BackgroundInternal().AnyLayerHasFixedAttachmentImage() &&
-           !BackgroundInternal().AnyLayerHasLocalAttachmentImage() &&
-           !BackgroundInternal().AnyLayerHasDefaultAttachment();
-  }
 
   // background-clip
   EFillBox BackgroundClip() const {

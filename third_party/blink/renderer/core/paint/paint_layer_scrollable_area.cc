@@ -546,7 +546,8 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
 
   LocalFrameView* frame_view = GetLayoutBox()->GetFrameView();
   bool is_root_layer = Layer()->IsRootLayer();
-  frame_view->InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutBox());
+  frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
+      *GetLayoutBox());
 
   if (is_root_layer && frame_view->HasViewportConstrainedObjects() &&
       !frame_view->InvalidateViewportConstrainedObjects()) {

@@ -231,6 +231,32 @@ BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
   DCHECK(box_.IsLayoutView());
 
+  const auto& layout_view = ToLayoutView(box_);
+  auto new_background_rect = layout_view.BackgroundRect();
+  auto old_background_rect = layout_view.PreviousBackgroundRect();
+  layout_view.SetPreviousBackgroundRect(new_background_rect);
+
+  // BackgroundRect is the positioning area of all fixed attachment backgrounds,
+  // including the LayoutView's and descendants'.
+  bool background_location_changed =
+      new_background_rect.Location() != old_background_rect.Location();
+  bool background_size_changed =
+      new_background_rect.Size() != old_background_rect.Size();
+  if (background_location_changed || background_size_changed) {
+    for (auto* object :
+         layout_view.GetFrameView()->BackgroundAttachmentFixedObjects()) {
+      if (background_location_changed ||
+          ShouldFullyInvalidateFillLayersOnSizeChange(
+              object->StyleRef().BackgroundLayers(), old_background_rect.Size(),
+              new_background_rect.Size()))
+        object->SetBackgroundNeedsFullPaintInvalidation();
+    }
+  }
+
+  if (background_location_changed ||
+      layout_view.BackgroundNeedsFullPaintInvalidation())
+    return BackgroundInvalidationType::kFull;
+
   // LayoutView's non-fixed-attachment background is positioned in the
   // document element and needs to invalidate if the size changes.
   // See: https://drafts.csswg.org/css-backgrounds-3/#root-background.
@@ -249,25 +275,8 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
     }
   }
 
-  const auto& layout_view = ToLayoutView(box_);
-  auto new_background_rect = layout_view.BackgroundRect();
-  auto old_background_rect = layout_view.PreviousBackgroundRect();
-  if (new_background_rect == old_background_rect)
-    return BackgroundInvalidationType::kNone;
-
-  layout_view.SetPreviousBackgroundRect(new_background_rect);
-  if (old_background_rect.Location() != old_background_rect.Location())
-    return BackgroundInvalidationType::kFull;
-
-  // BackgroundRect is the positioning area of the fixed attachment
-  // background.
-  if (layout_view.StyleRef().HasFixedAttachmentBackgroundImage() &&
-      ShouldFullyInvalidateFillLayersOnSizeChange(
-          layout_view.StyleRef().BackgroundLayers(), old_background_rect.Size(),
-          new_background_rect.Size()))
-    return BackgroundInvalidationType::kFull;
-
-  return BackgroundInvalidationType::kIncremental;
+  return background_size_changed ? BackgroundInvalidationType::kIncremental
+                                 : BackgroundInvalidationType::kNone;
 }
 
 BoxPaintInvalidator::BackgroundInvalidationType

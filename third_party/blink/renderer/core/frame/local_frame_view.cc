@@ -1185,10 +1185,8 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
 }
 
 void LocalFrameView::AddViewportConstrainedObject(LayoutObject& object) {
-  if (!viewport_constrained_objects_) {
-    viewport_constrained_objects_ =
-        std::make_unique<ViewportConstrainedObjectSet>();
-  }
+  if (!viewport_constrained_objects_)
+    viewport_constrained_objects_ = std::make_unique<ObjectSet>();
 
   if (!viewport_constrained_objects_->Contains(&object)) {
     viewport_constrained_objects_->insert(&object);
@@ -1292,10 +1290,20 @@ void LocalFrameView::NotifyFrameRectsChangedIfNeededRecursive() {
   });
 }
 
-void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendants(
-    const LayoutObject& object) {
+void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
+    const LayoutObject& scrolled_object) {
   for (auto* const layout_object : background_attachment_fixed_objects_) {
-    if (object != GetLayoutView() && !layout_object->IsDescendantOf(&object))
+    if (scrolled_object != GetLayoutView() &&
+        !layout_object->IsDescendantOf(&scrolled_object))
+      continue;
+    // An object needs to be repainted on scroll when it has background-
+    // attachment:fixed, unless the background will be separately composited
+    // i.e. when a LayoutView paints backgrounds only into scrolling contents.
+    if (layout_object == GetLayoutView() &&
+        GetLayoutView()->GetBackgroundPaintLocation() ==
+            kBackgroundPaintInScrollingContents &&
+        (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+         GetLayoutView()->Compositor()->PreferCompositingToLCDTextEnabled()))
       continue;
     layout_object->SetBackgroundNeedsFullPaintInvalidation();
   }

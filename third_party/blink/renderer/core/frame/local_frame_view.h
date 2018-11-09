@@ -270,10 +270,10 @@ class CORE_EXPORT LocalFrameView final
   void SetDisplayShape(DisplayShape);
 
   // Fixed-position objects.
-  typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
+  typedef HashSet<LayoutObject*> ObjectSet;
   void AddViewportConstrainedObject(LayoutObject&);
   void RemoveViewportConstrainedObject(LayoutObject&);
-  const ViewportConstrainedObjectSet* ViewportConstrainedObjects() const {
+  const ObjectSet* ViewportConstrainedObjects() const {
     return viewport_constrained_objects_.get();
   }
   bool HasViewportConstrainedObjects() const {
@@ -287,8 +287,12 @@ class CORE_EXPORT LocalFrameView final
   bool HasBackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_.size();
   }
+  const ObjectSet& BackgroundAttachmentFixedObjects() const {
+    return background_attachment_fixed_objects_;
+  }
   bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
-  void InvalidateBackgroundAttachmentFixedDescendants(const LayoutObject&);
+  void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
+      const LayoutObject& scrolled_object);
 
   void HandleLoadCompleted();
 
@@ -875,9 +879,9 @@ class CORE_EXPORT LocalFrameView final
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   std::unique_ptr<ResizerAreaSet> resizer_areas_;
-  std::unique_ptr<ViewportConstrainedObjectSet> viewport_constrained_objects_;
+  std::unique_ptr<ObjectSet> viewport_constrained_objects_;
   unsigned sticky_position_object_count_;
-  ViewportConstrainedObjectSet background_attachment_fixed_objects_;
+  ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 
   float input_events_scale_factor_for_emulation_;
