@@ -193,6 +193,19 @@ void FrameSelection::SetSelectionAndEndTyping(
                               .Build());
 }
 
+static void AssertUserSelection(const SelectionInDOMTree& selection,
+                                const SetSelectionOptions& options) {
+// User's selection start/end should have same editability.
+#if DCHECK_IS_ON()
+  if (!options.ShouldShowHandle() &&
+      options.GetSetSelectionBy() != SetSelectionBy::kUser)
+    return;
+  Node* base_editable_root = RootEditableElementOf(selection.Base());
+  Node* extent_editable_root = RootEditableElementOf(selection.Extent());
+  DCHECK_EQ(base_editable_root, extent_editable_root) << selection;
+#endif
+}
+
 bool FrameSelection::SetSelectionDeprecated(
     const SelectionInDOMTree& new_selection,
     const SetSelectionOptions& passed_options) {
@@ -200,7 +213,7 @@ bool FrameSelection::SetSelectionDeprecated(
   if (ShouldAlwaysUseDirectionalSelection(frame_)) {
     options_builder.SetIsDirectional(true);
   }
-  SetSelectionOptions options = options_builder.Build();
+  const SetSelectionOptions options = options_builder.Build();
 
   if (granularity_strategy_ && !options.DoNotClearStrategy())
     granularity_strategy_->Clear();
@@ -221,8 +234,10 @@ bool FrameSelection::SetSelectionDeprecated(
   if (!is_changed && is_handle_visible_ == should_show_handle &&
       is_directional_ == options.IsDirectional())
     return false;
-  if (is_changed)
+  if (is_changed) {
+    AssertUserSelection(new_selection, options);
     selection_editor_->SetSelectionAndEndTyping(new_selection);
+  }
   is_directional_ = options.IsDirectional();
   should_shrink_next_tap_ = options.ShouldShrinkNextTap();
   is_handle_visible_ = should_show_handle;
