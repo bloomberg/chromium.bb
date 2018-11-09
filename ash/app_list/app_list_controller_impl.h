@@ -16,6 +16,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -53,7 +54,8 @@ class ASH_EXPORT AppListControllerImpl
       public TabletModeObserver,
       public keyboard::KeyboardControllerObserver,
       public WallpaperControllerObserver,
-      public DefaultVoiceInteractionObserver {
+      public DefaultVoiceInteractionObserver,
+      public WindowTreeHostManager::Observer {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -213,6 +215,9 @@ class ASH_EXPORT AppListControllerImpl
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
 
+  // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
+
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Returns true if the home launcher is enabled in tablet mode.
@@ -244,6 +249,9 @@ class ASH_EXPORT AppListControllerImpl
   void UpdateAssistantVisibility();
 
   int64_t GetDisplayIdToShowAppListOn();
+
+  // Shows the home launcher in tablet mode.
+  void ShowHomeLauncher();
 
   base::string16 last_raw_query_;
 

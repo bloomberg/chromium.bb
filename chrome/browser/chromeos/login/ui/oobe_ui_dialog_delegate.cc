@@ -119,6 +119,8 @@ class CaptivePortalDialogDelegate
 
   void Hide() { widget_->Hide(); }
 
+  void Close() { widget_->Close(); }
+
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override {
     return this;
@@ -229,6 +231,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
 }
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
+  captive_portal_delegate_->Close();
+
   if (controller_)
     controller_->OnDialogDestroyed(this);
 }

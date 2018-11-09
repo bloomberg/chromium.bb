@@ -60,8 +60,6 @@ void DisplayConfigurationObserver::StartMirrorMode() {
   // how to handle this scenario, and we shouldn't save this state.
   // https://crbug.com/733092.
   save_preference_ = false;
-  // TODO(oshima): Mirroring won't work with 3+ displays:
-  // https://crbug.com/737667.
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   was_in_mirror_mode_ = display_manager->IsInMirrorMode();
   display_manager->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
