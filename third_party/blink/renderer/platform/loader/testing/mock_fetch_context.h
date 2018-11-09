@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -51,6 +52,12 @@ class MockFetchContext : public FetchContext {
 
   void SetSecurityOrigin(scoped_refptr<const SecurityOrigin> security_origin) {
     security_origin_ = security_origin;
+  }
+
+  const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const override {
+    return new FetchClientSettingsObjectSnapshot(
+        KURL(), security_origin_, kReferrerPolicyDefault, String());
   }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.
