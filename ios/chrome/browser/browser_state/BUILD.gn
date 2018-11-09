@@ -111,7 +111,6 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/browser_list:browser_list_impl",
     "//ios/chrome/browser/ui/fullscreen",
-    "//ios/chrome/browser/ui/overlays",
     "//ios/chrome/browser/ui/voice",
     "//ios/chrome/browser/undo",
     "//ios/chrome/browser/unified_consent",
