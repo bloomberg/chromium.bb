@@ -272,7 +272,7 @@ void Resource::CheckResourceIntegrity() {
 }
 
 void Resource::NotifyFinished() {
-  CHECK(IsFinishedInternal());
+  DCHECK(IsLoaded());
 
   ResourceClientWalker<ResourceClient> w(clients_);
   while (ResourceClient* c = w.Next()) {
@@ -299,10 +299,6 @@ void Resource::AppendData(const char* data, size_t length) {
       data_ = SharedBuffer::Create(data, length);
     SetEncodedSize(data_->size());
   }
-  NotifyDataReceived(data, length);
-}
-
-void Resource::NotifyDataReceived(const char* data, size_t length) {
   ResourceClientWalker<ResourceClient> w(Clients());
   while (ResourceClient* c = w.Next())
     c->DataReceived(this, data, length);
@@ -622,7 +618,7 @@ void Resource::DidAddClient(ResourceClient* c) {
   }
   if (!HasClient(c))
     return;
-  if (IsFinishedInternal()) {
+  if (IsLoaded()) {
     c->NotifyFinished(this);
     if (clients_.Contains(c)) {
       finished_clients_.insert(c);
@@ -694,12 +690,6 @@ void Resource::AddFinishObserver(ResourceFinishObserver* client,
 
   WillAddClientOrObserver();
   finish_observers_.insert(client);
-  // Despite these being "Finish" observers, what they actually care about is
-  // whether the resource is "Loaded", not "Finished" (e.g. link onload). Hence
-  // we check IsLoaded directly here, rather than IsFinishedInternal.
-  //
-  // TODO(leszeks): Either rename FinishObservers to LoadedObservers, or the
-  // NotifyFinished method of ResourceClient to NotifyProcessed (or similar).
   if (IsLoaded())
     TriggerNotificationForFinishObservers(task_runner);
 }
