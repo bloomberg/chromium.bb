@@ -248,9 +248,9 @@ class CORE_EXPORT FillLayer {
     ComputeCachedPropertiesIfNeeded();
     return any_layer_has_fixed_attachment_image_;
   }
-  bool AnyLayerHasDefaultAttachment() const {
+  bool AnyLayerHasDefaultAttachmentImage() const {
     ComputeCachedPropertiesIfNeeded();
-    return any_layer_has_default_attachment_;
+    return any_layer_has_default_attachment_image_;
   }
 
   static EFillAttachment InitialFillAttachment(EFillLayerType) {
@@ -355,10 +355,8 @@ class CORE_EXPORT FillLayer {
   mutable unsigned any_layer_has_local_attachment_image_ : 1;
   // True if any of this or subsequent layers has fixed attachment image.
   mutable unsigned any_layer_has_fixed_attachment_image_ : 1;
-  // True if any of this or subsequent layers has default attachment (including
-  // non-default attachment without an image thus the default attachment will be
-  // used).
-  mutable unsigned any_layer_has_default_attachment_ : 1;
+  // True if any of this or subsequent layers has default attachment image.
+  mutable unsigned any_layer_has_default_attachment_image_ : 1;
   // Set once any of the above is accessed. The layers will be frozen
   // thereafter.
   mutable unsigned cached_properties_computed_ : 1;
