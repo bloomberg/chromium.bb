@@ -25,6 +25,11 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
       const service_manager::Identity& identity) {
     return identity.instance_id();
   }
+  static const base::Optional<base::Token>& globally_unique_id(
+      const service_manager::Identity& identity) {
+    return identity.globally_unique_id();
+  }
+
   static bool Read(service_manager::mojom::IdentityDataView data,
                    service_manager::Identity* out) {
     std::string name, instance_group, instance_id;
@@ -37,7 +42,12 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
     if (!data.ReadInstanceId(&instance_id))
       return false;
 
-    *out = service_manager::Identity(name, instance_group, instance_id);
+    base::Optional<base::Token> globally_unique_id;
+    if (!data.ReadGloballyUniqueId(&globally_unique_id))
+      return false;
+
+    *out = service_manager::Identity(name, instance_group, instance_id,
+                                     globally_unique_id);
     return true;
   }
 };

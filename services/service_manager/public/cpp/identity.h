@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "base/token.h"
 #include "services/service_manager/public/cpp/types_export.h"
 
 namespace service_manager {
@@ -30,9 +32,20 @@ namespace service_manager {
 // knows there are multiple instances of the target service and wants to connect
 // to a specific one.
 //
+// Finally, every service instance also has a globally unique ID Token
+// associated with it. This Token is generated and assigned by the Service
+// Manager on instance startup.
+//
+// If an interface request targets an Identity with a specific globally unique
+// ID, that request will be processed only if the instance identified by that ID
+// is still running.
+//
 // TODO(https://crbug.com/895591): Switch |instance_group| and |instance_id|
-// fields to base::Optional<base::UnguessableToken> instead of free-form
-// strings.
+// fields to base::Optional<base::Token> instead of free-form strings.
+//
+// TODO(https://crbug.com/902590): Also consider whether partial Identity
+// values used for service instance resolution (i.e. passed to
+// |Connector.BindInterface()|) should be their own kind of type.
 class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
  public:
   Identity();
@@ -41,14 +54,28 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
   Identity(const std::string& name,
            const std::string& instance_group,
            const std::string& instance_id);
+  Identity(const std::string& name,
+           const std::string& instance_group,
+           const std::string& instance_id,
+           const base::Optional<base::Token>& globally_unique_id);
   Identity(const Identity& other);
   ~Identity();
 
   Identity& operator=(const Identity& other);
   bool operator<(const Identity& other) const;
   bool operator==(const Identity& other) const;
+  bool operator!=(const Identity& other) const { return !(*this == other); }
 
   bool IsValid() const;
+
+  // Indicates whether this Identity matches |other|, meaning that the name,
+  // instance group, and instance ID are identical in both. Note in particular
+  // that GUID is completely ignored, so this is not a strict equality test.
+  // For strict equality including GUID, use |operator==|.
+  bool Matches(const Identity& other) const;
+
+  // Returns a copy of this Identity with no globally unique ID specified.
+  Identity WithoutGloballyUniqueId() const;
 
   const std::string& name() const { return name_; }
   const std::string& instance_group() const { return instance_group_; }
@@ -56,11 +83,15 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
     instance_group_ = instance_group;
   }
   const std::string& instance_id() const { return instance_id_; }
+  const base::Optional<base::Token>& globally_unique_id() const {
+    return globally_unique_id_;
+  }
 
  private:
   std::string name_;
   std::string instance_group_;
   std::string instance_id_;
+  base::Optional<base::Token> globally_unique_id_;
 };
 
 }  // namespace service_manager

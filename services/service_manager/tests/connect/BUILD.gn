@@ -17,6 +17,7 @@ source_set("connect") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
+    "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/mojom",

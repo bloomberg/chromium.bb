@@ -11,16 +11,22 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 #include "services/service_manager/tests/util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // Tests that multiple services can be packaged in a single service by
 // implementing ServiceFactory; that these services can be specified by
@@ -30,6 +36,7 @@ namespace service_manager {
 
 namespace {
 
+const char kTestServiceName[] = "connect_unittests";
 const char kTestPackageName[] = "connect_test_package";
 const char kTestAppName[] = "connect_test_app";
 const char kTestAppAName[] = "connect_test_a";
@@ -93,13 +100,61 @@ void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
 
-}  // namespace
+class TestTargetService : public Service {
+ public:
+  explicit TestTargetService(mojom::ServiceRequest request)
+      : binding_(this, std::move(request)) {}
+  ~TestTargetService() override = default;
 
-class ConnectTest : public test::ServiceTest,
+  const Identity& identity() const { return binding_.identity(); }
+  Connector* connector() { return binding_.GetConnector(); }
+
+  void CallOnNextBindInterface(base::OnceClosure callback) {
+    next_bind_interface_callback_ = std::move(callback);
+  }
+
+  void WaitForStart() { wait_for_start_loop_.Run(); }
+
+  void WaitForBindInterface() {
+    wait_for_bind_interface_loop_.emplace();
+    wait_for_bind_interface_loop_->Run();
+  }
+
+  void QuitGracefullyAndWait() {
+    binding_.RequestClose();
+    wait_for_disconnect_loop_.Run();
+  }
+
+ private:
+  // Service:
+  void OnStart() override { wait_for_start_loop_.Quit(); }
+  void OnBindInterface(const BindSourceInfo& source,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    if (next_bind_interface_callback_)
+      std::move(next_bind_interface_callback_).Run();
+    if (wait_for_bind_interface_loop_)
+      wait_for_bind_interface_loop_->Quit();
+  }
+  void OnDisconnected() override { wait_for_disconnect_loop_.Quit(); }
+
+  ServiceBinding binding_;
+  base::RunLoop wait_for_start_loop_;
+  base::RunLoop wait_for_disconnect_loop_;
+  base::Optional<base::RunLoop> wait_for_bind_interface_loop_;
+  base::OnceClosure next_bind_interface_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTargetService);
+};
+
+class ConnectTest : public testing::Test,
+                    public Service,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : ServiceTest("connect_unittests") {}
-  ~ConnectTest() override {}
+  ConnectTest() : service_manager_(nullptr, nullptr) {}
+  ~ConnectTest() override = default;
+
+  Connector* connector() { return service_binding_.GetConnector(); }
 
  protected:
   void CompareConnectionState(
@@ -117,60 +172,52 @@ class ConnectTest : public test::ServiceTest,
               connection_state_->initialize_local_instance_group);
   }
 
+  mojom::ServiceRequest RegisterServiceInstance(
+      const std::string& service_name) {
+    mojom::ServicePtr proxy;
+    mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
+    mojom::PIDReceiverPtr pid_receiver;
+    service_manager_.RegisterService(Identity(service_name, mojom::kRootUserID),
+                                     std::move(proxy),
+                                     mojo::MakeRequest(&pid_receiver));
+    pid_receiver->SetPID(1);
+    return request;
+  }
+
  private:
-  class TestService : public test::ServiceTestClient {
-   public:
-    explicit TestService(ConnectTest* connect_test)
-        : test::ServiceTestClient(connect_test), connect_test_(connect_test) {
-      registry_.AddInterface<test::mojom::ExposedInterface>(
-          base::Bind(&ConnectTest::Create, base::Unretained(connect_test_)));
-    }
-    ~TestService() override {}
-
-   private:
-    void OnBindInterface(
-        const BindSourceInfo& source_info,
-        const std::string& interface_name,
-        mojo::ScopedMessagePipeHandle interface_pipe) override {
-      registry_.BindInterface(interface_name, std::move(interface_pipe));
-    }
-
-    ConnectTest* connect_test_;
-    BinderRegistry registry_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestService);
-  };
-
-  // test::ServiceTest:
+  // testing::Test:
   void SetUp() override {
-    test::ServiceTest::SetUp();
-    // We need to connect to the package first to force the service manager to
-    // read the
-    // package app's manifest and register aliases for the applications it
-    // provides.
+    service_binding_.Bind(RegisterServiceInstance(kTestServiceName));
+
     test::mojom::ConnectTestServicePtr root_service;
     connector()->BindInterface(kTestPackageName, &root_service);
+
     base::RunLoop run_loop;
     std::string root_name;
     root_service->GetTitle(
         base::Bind(&ReceiveOneString, &root_name, &run_loop));
     run_loop.Run();
   }
-  std::unique_ptr<Service> CreateService() override {
-    return std::make_unique<TestService>(this);
+
+  // Service:
+  void OnBindInterface(const BindSourceInfo& source,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    CHECK_EQ(test::mojom::ExposedInterface::Name_, interface_name);
+    bindings_.AddBinding(
+        this, test::mojom::ExposedInterfaceRequest(std::move(interface_pipe)));
   }
 
-  void Create(test::mojom::ExposedInterfaceRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
+  // test::mojom::ExposedInterface:
   void ConnectionAccepted(test::mojom::ConnectionStatePtr state) override {
     connection_state_ = std::move(state);
   }
 
-  test::mojom::ConnectionStatePtr connection_state_;
-
+  base::test::ScopedTaskEnvironment task_environment_;
+  BackgroundServiceManager service_manager_;
+  ServiceBinding service_binding_{this};
   mojo::BindingSet<test::mojom::ExposedInterface> bindings_;
+  test::mojom::ConnectionStatePtr connection_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTest);
 };
@@ -217,6 +264,53 @@ TEST_F(ConnectTest, Instances) {
   }
 
   EXPECT_NE(instance_a1, instance_b);
+}
+
+TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
+  base::Optional<TestTargetService> target(
+      base::in_place, RegisterServiceInstance(kTestAppAName));
+  target->WaitForStart();
+
+  Identity specific_identity = target->identity();
+  EXPECT_TRUE(specific_identity.globally_unique_id().has_value());
+  EXPECT_FALSE(specific_identity.globally_unique_id()->is_zero());
+
+  // First connect with a basic identity.
+  test::mojom::ConnectTestServicePtr proxy;
+  connector()->BindInterface(kTestAppAName, &proxy);
+  target->WaitForBindInterface();
+
+  // Now connect with a very specific identity, including globally unique ID.
+  connector()->BindInterface(specific_identity, &proxy);
+  target->WaitForBindInterface();
+
+  // Now quit the test service and start a new instance.
+  target->QuitGracefullyAndWait();
+
+  target.emplace(RegisterServiceInstance(kTestAppAName));
+  target->WaitForStart();
+
+  Identity new_specific_identity = target->identity();
+
+  // This must differ from the old identity because all instances should have
+  // a globally unique ID.
+  EXPECT_NE(specific_identity, new_specific_identity);
+
+  // Connect to the new instance with a basic identity, and with its specific
+  // identity. Both should succeed.
+  connector()->BindInterface(kTestAppAName, &proxy);
+  target->WaitForBindInterface();
+  connector()->BindInterface(new_specific_identity, &proxy);
+  target->WaitForBindInterface();
+
+  // Now attempt to connect using the specific identity of the previous
+  // instance. This request should not be seen by the new instance, and |proxy|
+  // should be disconnected when the Service Manager drops the request.
+  base::RunLoop wait_for_error_loop;
+  target->CallOnNextBindInterface(base::BindOnce([] { NOTREACHED(); }));
+  connector()->BindInterface(specific_identity, &proxy);
+  proxy.set_connection_error_handler(wait_for_error_loop.QuitClosure());
+  wait_for_error_loop.Run();
 }
 
 TEST_F(ConnectTest, QueryService) {
@@ -387,7 +481,7 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
     loop.Run();
   }
   EXPECT_EQ(result, mojom::ConnectResult::SUCCEEDED);
-  EXPECT_EQ(target, result_identity);
+  EXPECT_TRUE(target.Matches(result_identity));
 }
 
 TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
@@ -478,4 +572,5 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   }
 }
 
+}  // namespace
 }  // namespace service_manager

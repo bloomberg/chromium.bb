@@ -14,17 +14,17 @@ instance: <string, generated from the RenderProcesHost's ID>
 
 These services express the set of capabilities they expose to one another using
 service manifests (see [Service Manager README](https://chromium.googlesource.com/chromium/src/+/master/services/service_manager/README.md)). For //content, the service manifests live in
-`//content/public/app/mojo`. 
+`//content/public/app/mojo`.
 
-Every `content::BrowserContext` has a user id generated for it upon
-construction, and the services run with that BrowserContext use that user id as
-part of their instance identity. Where there are multiple instances of the same
-service for the same user, the instance field in the Identity disambiguates
-them.
+Every `content::BrowserContext` has an instance group ID generated for it upon
+construction, and the services run with that BrowserContext use that instance
+group as part of their instance identity. Where there are multiple instances of
+the same service within the same instance group, the Identity's instance ID
+field is used for disambiguation.
 
 Launching code for each process type is currently ad-hoc & specific per type,
 and lives in `//content/browser`. In the medium-long term, we'll work to
-generalize this and move it all into the service manager. 
+generalize this and move it all into the service manager.
 Each content process type is launched by host code in `//content/browser`,
 though eventually all process launching will be moved to the service manager.
 

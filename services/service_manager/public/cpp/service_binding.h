@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
 
   bool is_bound() const { return binding_.is_bound(); }
 
-  Identity identity() const { return identity_; }
+  const Identity& identity() const { return identity_; }
 
   // Returns a usable Connector which can make outgoing interface requests
   // identifying as the service to which this ServiceBinding is bound.

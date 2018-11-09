@@ -21,8 +21,8 @@
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/token.h"
 #include "base/trace_event/trace_event.h"
-#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -211,6 +211,10 @@ class ServiceManager::Instance
       pid_ = GetCurrentPid();
     }
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
+
+    // All service instances must have a valid GUID assigned at construction
+    // time.
+    DCHECK(identity_.globally_unique_id().has_value());
   }
 
   void Stop() {
@@ -771,65 +775,131 @@ class ServiceManager::ServiceImpl : public Service {
 };
 
 // A container of Instances that stores them with an Identity and an
-// InstanceType so they can be resolved based on part of that Identity:
-// - all_users services are resolved based on the service name and instance ID.
-// - singleton services are resolved uniquely on the service name.
-// - other services ("regular" ones) are resolved using the full Identity.
+// InstanceType so they can be resolved based on part of that Identity. See
+// comments on the InstanceType definition for more on how different types of
+// service identities are resolved.
 class ServiceManager::IdentityToInstanceMap {
  public:
+  // An entry in any of the mappings owned by this object.
+  struct Entry {
+    Entry(const base::Token& token, Instance* instance)
+        : token(token), instance(instance) {
+      DCHECK(!token.is_zero());
+      DCHECK(instance);
+    }
+    Entry(const Entry&) = default;
+    ~Entry() = default;
+
+    base::Token token;
+    Instance* instance = nullptr;
+  };
+
+  struct SharedInstanceKey {
+    SharedInstanceKey(const std::string& service_name,
+                      const std::string& instance_id)
+        : service_name(service_name), instance_id(instance_id) {}
+    SharedInstanceKey(const SharedInstanceKey& other) = default;
+    ~SharedInstanceKey() = default;
+
+    bool operator==(const SharedInstanceKey& other) const {
+      return service_name == other.service_name &&
+             instance_id == other.instance_id;
+    }
+
+    bool operator<(const SharedInstanceKey& other) const {
+      if (service_name != other.service_name)
+        return service_name < other.service_name;
+      return instance_id < other.instance_id;
+    }
+
+    const std::string service_name;
+    const std::string instance_id;
+  };
+
   IdentityToInstanceMap() = default;
   ~IdentityToInstanceMap() = default;
 
   void Insert(const Identity& identity, InstanceType type, Instance* instance) {
+    // All inserted identities must specify a valid GUID.
+    DCHECK(identity.globally_unique_id().has_value());
+    DCHECK(!identity.globally_unique_id()->is_zero());
+
     DCHECK_NE(instance, nullptr);
     DCHECK_EQ(Get(identity), nullptr);
     switch (type) {
       case InstanceType::kRegular:
-        regular_instances_.insert(std::make_pair(identity, instance));
+        regular_instances_[identity.WithoutGloballyUniqueId()].emplace_back(
+            *identity.globally_unique_id(), instance);
         break;
+
       case InstanceType::kSharedAcrossInstanceGroups:
-        all_user_instances_.insert(std::make_pair(
-            NameAndInstanceId(identity.name(), identity.instance_id()),
-            instance));
+        shared_instances_[SharedInstanceKey(identity.name(),
+                                            identity.instance_id())]
+            .emplace_back(*identity.globally_unique_id(), instance);
         break;
+
       case InstanceType::kSingleton:
-        singleton_instances_.insert(std::make_pair(identity.name(), instance));
+        singleton_instances_[identity.name()].emplace_back(
+            *identity.globally_unique_id(), instance);
         break;
+
       default:
         NOTREACHED();
     }
   }
 
   Instance* Get(const Identity& identity) {
-    auto default_iter = regular_instances_.find(identity);
-    if (default_iter != regular_instances_.end())
-      return default_iter->second;
-    auto all_user_iter = all_user_instances_.find(
-        NameAndInstanceId(identity.name(), identity.instance_id()));
-    if (all_user_iter != all_user_instances_.end())
-      return all_user_iter->second;
+    auto regular_iter =
+        regular_instances_.find(identity.WithoutGloballyUniqueId());
+    if (regular_iter != regular_instances_.end())
+      return FindMatchingInstance(regular_iter->second, identity);
+
+    auto shared_iter = shared_instances_.find(
+        SharedInstanceKey(identity.name(), identity.instance_id()));
+    if (shared_iter != shared_instances_.end())
+      return FindMatchingInstance(shared_iter->second, identity);
+
     auto singleton_iter = singleton_instances_.find(identity.name());
     if (singleton_iter != singleton_instances_.end())
-      return singleton_iter->second;
+      return FindMatchingInstance(singleton_iter->second, identity);
+
     return nullptr;
   }
 
   bool Erase(const Identity& identity) {
-    auto default_iter = regular_instances_.find(identity);
-    if (default_iter != regular_instances_.end()) {
-      regular_instances_.erase(default_iter);
-      return true;
+    DCHECK(identity.globally_unique_id().has_value());
+    DCHECK(!identity.globally_unique_id()->is_zero());
+
+    auto regular_iter =
+        regular_instances_.find(identity.WithoutGloballyUniqueId());
+    if (regular_iter != regular_instances_.end()) {
+      auto& entries = regular_iter->second;
+      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+        if (entries.empty())
+          regular_instances_.erase(regular_iter);
+        return true;
+      }
     }
-    auto all_user_iter = all_user_instances_.find(
-        NameAndInstanceId(identity.name(), identity.instance_id()));
-    if (all_user_iter != all_user_instances_.end()) {
-      all_user_instances_.erase(all_user_iter);
-      return true;
+
+    auto shared_iter = shared_instances_.find(
+        SharedInstanceKey(identity.name(), identity.instance_id()));
+    if (shared_iter != shared_instances_.end()) {
+      auto& entries = shared_iter->second;
+      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+        if (entries.empty())
+          shared_instances_.erase(shared_iter);
+        return true;
+      }
     }
+
     auto singleton_iter = singleton_instances_.find(identity.name());
     if (singleton_iter != singleton_instances_.end()) {
-      singleton_instances_.erase(singleton_iter);
-      return true;
+      auto& entries = singleton_iter->second;
+      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+        if (entries.empty())
+          singleton_instances_.erase(singleton_iter);
+        return true;
+      }
     }
 
     return false;
@@ -838,21 +908,62 @@ class ServiceManager::IdentityToInstanceMap {
   void PopulateRunningServiceInfo(
       std::vector<mojom::RunningServiceInfoPtr>* running_service_info) {
     running_service_info->reserve(regular_instances_.size() +
-                                  all_user_instances_.size() +
+                                  shared_instances_.size() +
                                   singleton_instances_.size());
-    for (auto iter : regular_instances_)
-      running_service_info->push_back(iter.second->CreateRunningServiceInfo());
-    for (auto iter : all_user_instances_)
-      running_service_info->push_back(iter.second->CreateRunningServiceInfo());
-    for (auto iter : singleton_instances_)
-      running_service_info->push_back(iter.second->CreateRunningServiceInfo());
+    for (auto& iter : regular_instances_)
+      CreateServiceInfos(iter.second, running_service_info);
+    for (auto& iter : shared_instances_)
+      CreateServiceInfos(iter.second, running_service_info);
+    for (auto& iter : singleton_instances_)
+      CreateServiceInfos(iter.second, running_service_info);
   }
 
  private:
-  std::map<Identity, Instance*> regular_instances_;
-  using NameAndInstanceId = std::pair<std::string, std::string>;
-  std::map<NameAndInstanceId, Instance*> all_user_instances_;
-  std::map<std::string, Instance*> singleton_instances_;
+  // Maps an Identity (sans globally unique ID) to a list of (Token, Instance*)
+  // entries.
+  using RegularInstanceMap = std::map<Identity, std::vector<Entry>>;
+
+  // Maps an Identity (sans instance group and globally unique ID) to a list of
+  // (Token, Instance*) entries.
+  using SharedInstanceMap = std::map<SharedInstanceKey, std::vector<Entry>>;
+
+  // Maps a service name to a list of (Token, Instance*) entries.
+  using SingletonInstanceMap = std::map<std::string, std::vector<Entry>>;
+
+  Instance* FindMatchingInstance(const std::vector<Entry>& entries,
+                                 const Identity& identity) {
+    DCHECK(!entries.empty());
+    if (!identity.globally_unique_id().has_value())
+      return entries.front().instance;
+
+    for (const auto& entry : entries) {
+      if (entry.token == identity.globally_unique_id().value())
+        return entry.instance;
+    }
+
+    return nullptr;
+  }
+
+  bool EraseEntry(const base::Token& token, std::vector<Entry>* entries) {
+    auto it = std::find_if(
+        entries->begin(), entries->end(),
+        [&token](const Entry& entry) { return entry.token == token; });
+    if (it == entries->end())
+      return false;
+
+    entries->erase(it);
+    return true;
+  }
+
+  void CreateServiceInfos(const std::vector<Entry>& entries,
+                          std::vector<mojom::RunningServiceInfoPtr>* infos) {
+    for (const auto& entry : entries)
+      infos->push_back(entry.instance->CreateRunningServiceInfo());
+  }
+
+  RegularInstanceMap regular_instances_;
+  SharedInstanceMap shared_instances_;
+  SingletonInstanceMap singleton_instances_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityToInstanceMap);
 };
@@ -928,6 +1039,12 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   // Connect to an existing matching instance, if possible.
   if (!params->HasClientProcessInfo() && ConnectToExistingInstance(&params))
+    return;
+
+  // If there was no existing instance but the source specified a specific
+  // globally unique ID for the target, ignore the request. That instance is
+  // obviously no longer running.
+  if (params->target().globally_unique_id())
     return;
 
   const catalog::Entry* entry =
@@ -1202,7 +1319,14 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     const catalog::ServiceOptions& options) {
   CHECK(target.instance_group() != mojom::kInheritUserID);
 
-  auto instance = std::make_unique<Instance>(this, target, specs, options);
+  // We add a newly minted globally unique ID to the target Identity here. This
+  // ensures that every new Instance has a globally unique ID as part of its
+  // Identity.
+  Identity target_with_unique_id(target.name(), target.instance_group(),
+                                 target.instance_id(),
+                                 base::Token::CreateRandom());
+  auto instance =
+      std::make_unique<Instance>(this, target_with_unique_id, specs, options);
   Instance* raw_instance = instance.get();
 
   instances_.insert(std::make_pair(raw_instance, std::move(instance)));
@@ -1210,7 +1334,8 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
   // NOTE: |instance| has been passed elsewhere. Use |raw_instance| from this
   // point forward. It's safe for the extent of this method.
 
-  identity_to_instance_->Insert(target, instance_type, raw_instance);
+  identity_to_instance_->Insert(target_with_unique_id, instance_type,
+                                raw_instance);
 
   mojom::RunningServiceInfoPtr info = raw_instance->CreateRunningServiceInfo();
   listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
