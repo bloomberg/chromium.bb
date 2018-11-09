@@ -183,8 +183,10 @@ TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   EXPECT_EQ(4, area_rank_map.find(GURL(href_xsmall))->second);
 
   // The highest score is 100 (scale factor) * 0.1 (largest area) = 10.
+  // After scaling the navigation score across all anchor elements, the score
+  // becomes 38.
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 10, 1);
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 38, 1);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
                                     5);
 }
