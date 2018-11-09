@@ -303,7 +303,7 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation(
     return BackgroundInvalidationType::kNone;
 
   const auto& background_layers = box_.StyleRef().BackgroundLayers();
-  if (background_layers.AnyLayerHasDefaultAttachment() &&
+  if (background_layers.AnyLayerHasDefaultAttachmentImage() &&
       ShouldFullyInvalidateFillLayersOnSizeChange(
           background_layers, box_.PreviousSize(), box_.Size()))
     return BackgroundInvalidationType::kFull;

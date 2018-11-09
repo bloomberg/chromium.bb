@@ -413,6 +413,10 @@ Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failur
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 Bug(none) paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
 
+# Under-invalidation of view fixed-attachment background.
+# We may need to create composited fixed background layer, or invalidate.
+Bug(none) paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Crash ]
+
 # Different invalidation rect or corrupted rendering for filter and reflection.
 
 # Extra layer for fixed-position.
@@ -448,7 +452,6 @@ Bug(none) paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.h
 Bug(none) paint/invalidation/compositing/fixed-pos-with-abs-pos-child-scroll.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-scrolling-contents-outline-change.html [ Failure ]
 Bug(none) paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure ]
-Bug(none) paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Failure Crash ]
 Bug(none) paint/invalidation/scroll/inline-style-change-in-scrolled-view.html [ Failure ]
 Bug(none) paint/invalidation/scroll/invalidate-caret-in-composited-scrolling-container.html [ Failure ]
 Bug(none) paint/invalidation/scroll/invalidate-caret-in-non-composited-scrolling-container.html [ Failure ]
@@ -780,8 +783,6 @@ Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
 Bug(none) css3/blending/mix-blend-mode-simple.html [ Pass Timeout ]
 Bug(none) css3/blending/mix-blend-mode-simple-text.html [ Pass Timeout ]
-
-crbug.com/529963 paint/invalidation/background/background-attachment-fixed-scrolled.html [ Failure Crash ]
 
 # Invalidation is incorrect.
 

@@ -565,7 +565,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateScrollbarProportions();
 
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
-  void InvalidatePaintForScrollOffsetChange(bool offset_was_zero);
+  void InvalidatePaintForScrollOffsetChange();
 
   int VerticalScrollbarStart(int min_x, int max_x) const;
   int HorizontalScrollbarStart(int min_x) const;

@@ -31,7 +31,7 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [0, 0, 200, 200],
-          "reason": "full"
+          "reason": "background"
         },
         {
           "object": "HorizontalScrollbar",

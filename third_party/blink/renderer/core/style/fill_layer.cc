@@ -84,7 +84,7 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       any_layer_has_image_(false),
       any_layer_has_local_attachment_image_(false),
       any_layer_has_fixed_attachment_image_(false),
-      any_layer_has_default_attachment_(false),
+      any_layer_has_default_attachment_image_(false),
       cached_properties_computed_(false) {}
 
 FillLayer::FillLayer(const FillLayer& o)
@@ -123,7 +123,7 @@ FillLayer::FillLayer(const FillLayer& o)
       any_layer_has_image_(false),
       any_layer_has_local_attachment_image_(false),
       any_layer_has_fixed_attachment_image_(false),
-      any_layer_has_default_attachment_(false),
+      any_layer_has_default_attachment_image_(false),
       cached_properties_computed_(false) {}
 
 FillLayer::~FillLayer() {
@@ -358,8 +358,8 @@ void FillLayer::ComputeCachedProperties() const {
       any_layer_has_image_ && Attachment() == EFillAttachment::kLocal;
   any_layer_has_fixed_attachment_image_ =
       any_layer_has_image_ && Attachment() == EFillAttachment::kFixed;
-  any_layer_has_default_attachment_ = !any_layer_has_local_attachment_image_ &&
-                                      !any_layer_has_fixed_attachment_image_;
+  any_layer_has_default_attachment_image_ =
+      any_layer_has_image_ && Attachment() == EFillAttachment::kScroll;
   cached_properties_computed_ = true;
 
   if (next_) {
@@ -372,8 +372,8 @@ void FillLayer::ComputeCachedProperties() const {
         next_->any_layer_has_local_attachment_image_;
     any_layer_has_fixed_attachment_image_ |=
         next_->any_layer_has_fixed_attachment_image_;
-    any_layer_has_default_attachment_ |=
-        next_->any_layer_has_default_attachment_;
+    any_layer_has_default_attachment_image_ |=
+        next_->any_layer_has_default_attachment_image_;
   }
 }
 

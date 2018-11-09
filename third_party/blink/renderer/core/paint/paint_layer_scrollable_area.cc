@@ -418,7 +418,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   if (HasBeenDisposed() || GetScrollOffset() == new_offset)
     return;
 
-  bool offset_was_zero = scroll_offset_.IsZero();
   scroll_offset_ = new_offset;
 
   LocalFrame* frame = GetLayoutBox()->GetFrame();
@@ -462,7 +461,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
       page->GetChromeClient().ClearToolTip(*frame);
   }
 
-  InvalidatePaintForScrollOffsetChange(offset_was_zero);
+  InvalidatePaintForScrollOffsetChange();
 
   // The scrollOffsetTranslation paint property depends on the scroll offset.
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
@@ -499,72 +498,50 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     cache->HandleScrollPositionChanged(GetLayoutBox());
 }
 
-void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
-    bool offset_was_zero) {
+void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   InvalidatePaintForStickyDescendants();
 
-  bool requires_paint_invalidation = false;
+  auto* box = GetLayoutBox();
+  auto* frame_view = box->GetFrameView();
+  frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(*box);
 
-  // "background-attachment: local" causes the background of this element to
-  // change position due to scroll so a paint invalidation is needed.
-  // TODO(pdr): This invalidation can be removed if the local background
-  // attachment is painted into the scrolling contents.
-  if (ScrollsOverflow() &&
-      GetLayoutBox()->StyleRef().BackgroundLayers().Attachment() ==
-          EFillAttachment::kLocal) {
-    if (!UsesCompositedScrolling())
-      requires_paint_invalidation = true;
-
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      GetLayoutBox()->SetShouldDoFullPaintInvalidation();
-      return;
-    }
-  }
-
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // TODO(pdr): If this is the root frame, descendants with fixed background
-    // attachments need to be invalidated.
-
-    // A scroll offset translation is still needed for overflow:hidden and there
-    // is an optimization to only create this translation node when scroll
-    // offset is non-zero (see: NeedsScrollOrScrollTranslation in
-    // PaintPropertyTreeBuilder.cpp). Because of this optimization, gaining or
-    // losing scroll offset can change whether a property exists and we have to
-    // invalidate paint to ensure this property gets picked up in BlockPainter.
-    bool needs_repaint_for_overflow_hidden =
-        !ScrollsOverflow() && (offset_was_zero || GetScrollOffset().IsZero());
-    // An invalidation is needed to ensure the interest rect is recalculated
-    // so newly-scrolled-to items are repainted. We may want to set a flag on
-    // PaintLayer to just check for interest rect changes instead of doing a
-    // full repaint.
-    bool needs_repaint_for_interest_rect = true;
-    if (needs_repaint_for_overflow_hidden || needs_repaint_for_interest_rect)
-      Layer()->SetNeedsRepaint();
-
-    return;
-  }
-
-  LocalFrameView* frame_view = GetLayoutBox()->GetFrameView();
-  bool is_root_layer = Layer()->IsRootLayer();
-  frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
-      *GetLayoutBox());
-
-  if (is_root_layer && frame_view->HasViewportConstrainedObjects() &&
+  if (box->IsLayoutView() && frame_view->HasViewportConstrainedObjects() &&
       !frame_view->InvalidateViewportConstrainedObjects()) {
-    requires_paint_invalidation = true;
+    box->SetShouldDoFullPaintInvalidation();
+    box->SetSubtreeShouldCheckForPaintInvalidation();
   }
 
-  if (requires_paint_invalidation) {
-    GetLayoutBox()->SetShouldDoFullPaintInvalidation();
-    GetLayoutBox()->SetSubtreeShouldCheckForPaintInvalidation();
-  } else if (!UsesCompositedScrolling()) {
-    // If any scrolling content might have ben clipped by a cull rect, then
-    // that cull rect could be affected by scroll offset. For composited
-    // scrollers, this will be taken care of by the interest rect computation
-    // in CompositedLayerMapping.
-    // TODO(chrishtr): replace this shortcut with interest rects.
-    Layer()->SetNeedsRepaint();
+  // If not composited, background always paints into the main graphics layer.
+  bool background_paint_in_graphics_layer = true;
+  bool background_paint_in_scrolling_contents = false;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      UsesCompositedScrolling()) {
+    auto background_paint_location = box->GetBackgroundPaintLocation();
+    background_paint_in_graphics_layer =
+        background_paint_location & kBackgroundPaintInGraphicsLayer;
+    background_paint_in_scrolling_contents =
+        background_paint_location & kBackgroundPaintInScrollingContents;
   }
+
+  // Both local attachment background painted in graphics layer and normal
+  // attachment background painted in scrolling contents require paint
+  // invalidation. Fixed attachment background has been dealt with in
+  // frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll().
+  auto background_layers = box->StyleRef().BackgroundLayers();
+  if ((background_layers.AnyLayerHasLocalAttachmentImage() &&
+       background_paint_in_graphics_layer) ||
+      (background_layers.AnyLayerHasDefaultAttachmentImage() &&
+       background_paint_in_scrolling_contents))
+    box->SetBackgroundNeedsFullPaintInvalidation();
+
+  // If any scrolling content might have been clipped by a cull rect, then
+  // that cull rect could be affected by scroll offset. For composited
+  // scrollers, this will be taken care of by the interest rect computation
+  // in CompositedLayerMapping.
+  // TODO(wangxianzhu): replace this shortcut with interest rects.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      !UsesCompositedScrolling())
+    Layer()->SetNeedsRepaint();
 }
 
 IntSize PaintLayerScrollableArea::ScrollOffsetInt() const {

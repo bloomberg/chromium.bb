@@ -18,11 +18,6 @@
       "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [3, 65, 250, 250],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [3, 65, 235, 235],
           "reason": "paint property change"
