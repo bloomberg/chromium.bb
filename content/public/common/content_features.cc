@@ -64,7 +64,7 @@ const base::Feature kBlinkHeapIncrementalMarking{
 
 // Enable unified garbage collection in Blink.
 const base::Feature kBlinkHeapUnifiedGarbageCollection{
-    "BlinkHeapUnifiedGarbageCollection", base::FEATURE_ENABLED_BY_DEFAULT};
+    "BlinkHeapUnifiedGarbageCollection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable bloated renderer detection.
 const base::Feature kBloatedRendererDetection{
