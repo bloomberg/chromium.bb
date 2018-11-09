@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.Arrays;
 
@@ -197,9 +198,11 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
-            return (mMediator != null && !mMediator.getTouchEnabled())
-                    || (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused())
-                    || super.onInterceptTouchEvent(ev);
+            if (super.onInterceptTouchEvent(ev)) return true;
+            if (mMediator != null && !mMediator.getTouchEnabled()) return true;
+
+            return !(mTab != null && DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid()))
+                    && (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused());
         }
     }
 
