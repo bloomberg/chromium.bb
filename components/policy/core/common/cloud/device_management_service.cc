@@ -686,7 +686,9 @@ void DeviceManagementService::OnURLLoaderComplete(
   bool was_fetched_via_proxy = false;
   std::string mime_type;
   if (url_loader->ResponseInfo()) {
-    was_fetched_via_proxy = url_loader->ResponseInfo()->was_fetched_via_proxy;
+    was_fetched_via_proxy =
+        url_loader->ResponseInfo()->proxy_server.is_valid() &&
+        !url_loader->ResponseInfo()->proxy_server.is_direct();
     mime_type = url_loader->ResponseInfo()->mime_type;
     if (url_loader->ResponseInfo()->headers)
       response_code = url_loader->ResponseInfo()->headers->response_code();
