@@ -29,6 +29,43 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
 }
 
+static void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
+  const int mib_size = cm->seq_params.mib_size;
+  const int frame_lf_count =
+      av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+  for (int row = 0; row < cm->tile_rows; row++) {
+    for (int col = 0; col < cm->tile_cols; col++) {
+      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
+      const TileInfo *const tile_info = &tile_data->tile_info;
+      for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
+           mi_row += mib_size) {
+        if (mi_row == tile_info->mi_row_start)
+          av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
+        for (int mi_col = tile_info->mi_col_start;
+             mi_col < tile_info->mi_col_end; mi_col += mib_size) {
+          const int idx_str = cm->mi_stride * mi_row + mi_col;
+          MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
+          MB_MODE_INFO *mbmi = mi[0];
+          if (mbmi->skip == 1 && (mbmi->sb_type == cm->seq_params.sb_size)) {
+            for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
+              mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id];
+            mbmi->delta_lf_from_base = xd->delta_lf_from_base;
+          } else {
+            if (cm->delta_lf_multi) {
+              for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
+                xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
+            } else {
+              xd->delta_lf_from_base = mbmi->delta_lf_from_base;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void av1_row_mt_sync_read_dummy(struct AV1RowMTSyncData *const row_mt_sync,
                                 int r, int c) {
   (void)row_mt_sync;
@@ -643,5 +680,6 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   prepare_enc_workers(cpi, enc_row_mt_worker_hook, num_workers);
   launch_enc_workers(cpi, num_workers);
   sync_enc_workers(cpi, num_workers);
+  if (cm->delta_lf_present_flag) update_delta_lf_for_row_mt(cpi);
   accumulate_counters_enc_workers(cpi, num_workers);
 }
