@@ -293,19 +293,12 @@ struct BluetoothCreateSdpRecordResult {
 };
 
 // Next Method ID: 45
-// Deprecated method ID: 20, 21
+// Deprecated Method ID: 4, 5, 6, 7, 20, 21
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
   DisableAdapter@1() => (BluetoothAdapterState state);
   GetAdapterProperty@2(BluetoothPropertyType type);
   SetAdapterProperty@3(BluetoothProperty property);
-  GetRemoteDeviceProperty@4(BluetoothAddress remote_addr,
-                            BluetoothPropertyType type);
-  SetRemoteDeviceProperty@5(BluetoothAddress remote_addr,
-                            BluetoothProperty property);
-  GetRemoteServiceRecord@6(BluetoothAddress remote_addr,
-                           BluetoothUUID uuid);
-  GetRemoteServices@7(BluetoothAddress remote_addr);
   StartDiscovery@8();
   CancelDiscovery@9();
   CreateBond@10(BluetoothAddress addr, int32 transport);
@@ -409,6 +402,7 @@ interface BluetoothHost {
 };
 
 // Next Method ID: 21
+// Deprecated Method ID: 2
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -418,9 +412,6 @@ interface BluetoothInstance {
 
   OnAdapterProperties@1(BluetoothStatus status,
                         array<BluetoothProperty> properties);
-  OnRemoteDeviceProperties@2(BluetoothStatus status,
-                             BluetoothAddress address,
-                             array<BluetoothProperty> properties);
   OnDeviceFound@3(array<BluetoothProperty> properties);
   OnDiscoveryStateChanged@4(BluetoothDiscoveryState state);
   OnBondStateChanged@5(BluetoothStatus status,
