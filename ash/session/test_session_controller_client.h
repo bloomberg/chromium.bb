@@ -41,6 +41,10 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   // Sets up the default state of SessionController.
   void Reset();
 
+  void set_use_lower_case_user_id(bool value) {
+    use_lower_case_user_id_ = value;
+  }
+
   // Helpers to set SessionController state.
   void SetCanLockScreen(bool can_lock);
   void SetShouldLockScreenAutomatically(bool should_lock);
@@ -91,6 +95,8 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
 
   int fake_session_id_ = 0;
   mojom::SessionInfoPtr session_info_;
+
+  bool use_lower_case_user_id_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionControllerClient);
 };
