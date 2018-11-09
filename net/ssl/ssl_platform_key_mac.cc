@@ -97,6 +97,12 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
 
   ~SSLPlatformKeyCSSM() override {}
 
+  std::string GetProviderName() override {
+    // TODO(https://crbug.com/900721): Is there a more descriptive name to
+    // return?
+    return "CSSM";
+  }
+
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(type_,
                                                       false /* no PSS */);
@@ -243,6 +249,12 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   }
 
   ~SSLPlatformKeySecKey() override {}
+
+  std::string GetProviderName() override {
+    // TODO(https://crbug.com/900721): Is there a more descriptive name to
+    // return?
+    return "SecKey";
+  }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return preferences_;

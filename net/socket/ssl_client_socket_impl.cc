@@ -79,10 +79,12 @@ const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     uint16_t algorithm,
+    SSLPrivateKey* key,
     NetLogCaptureMode mode) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString("algorithm", SSL_get_signature_algorithm_name(
                                     algorithm, 0 /* exclude curve */));
+  value->SetString("provider", key->GetProviderName());
   return std::move(value);
 }
 
@@ -1625,7 +1627,11 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
 
   net_log_.BeginEvent(
       NetLogEventType::SSL_PRIVATE_KEY_OP,
-      base::Bind(&NetLogPrivateKeyOperationCallback, algorithm));
+      base::BindRepeating(
+          &NetLogPrivateKeyOperationCallback, algorithm,
+          // Pass the SSLPrivateKey pointer to avoid making copies of the
+          // provider name in the common case with logging disabled.
+          base::Unretained(ssl_config_.client_private_key.get())));
 
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->Sign(

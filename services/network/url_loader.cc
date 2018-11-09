@@ -228,9 +228,11 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 
 class SSLPrivateKeyInternal : public net::SSLPrivateKey {
  public:
-  SSLPrivateKeyInternal(const std::vector<uint16_t>& algorithm_perferences,
+  SSLPrivateKeyInternal(const std::string& provider_name,
+                        const std::vector<uint16_t>& algorithm_preferences,
                         mojom::SSLPrivateKeyPtr ssl_private_key)
-      : algorithm_perferences_(algorithm_perferences),
+      : provider_name_(provider_name),
+        algorithm_preferences_(algorithm_preferences),
         ssl_private_key_(std::move(ssl_private_key)) {
     ssl_private_key_.set_connection_error_handler(
         base::BindOnce(&SSLPrivateKeyInternal::HandleSSLPrivateKeyError,
@@ -238,8 +240,10 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   }
 
   // net::SSLPrivateKey:
+  std::string GetProviderName() override { return provider_name_; }
+
   std::vector<uint16_t> GetAlgorithmPreferences() override {
-    return algorithm_perferences_;
+    return algorithm_preferences_;
   }
 
   void Sign(uint16_t algorithm,
@@ -273,7 +277,8 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
     std::move(callback).Run(static_cast<net::Error>(net_error), input);
   }
 
-  std::vector<uint16_t> algorithm_perferences_;
+  std::string provider_name_;
+  std::vector<uint16_t> algorithm_preferences_;
   mojom::SSLPrivateKeyPtr ssl_private_key_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
@@ -636,7 +641,8 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
                                        net::SSLCertRequestInfo* cert_info) {
   if (!network_service_client_) {
-    OnCertificateRequestedResponse(nullptr, std::vector<uint16_t>(), nullptr,
+    OnCertificateRequestedResponse(nullptr, std::string(),
+                                   std::vector<uint16_t>(), nullptr,
                                    true /* cancel_certificate_selection */);
     return;
   }
@@ -1087,6 +1093,7 @@ void URLLoader::OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
 
 void URLLoader::OnCertificateRequestedResponse(
     const scoped_refptr<net::X509Certificate>& x509_certificate,
+    const std::string& provider_name,
     const std::vector<uint16_t>& algorithm_preferences,
     mojom::SSLPrivateKeyPtr ssl_private_key,
     bool cancel_certificate_selection) {
@@ -1095,7 +1102,7 @@ void URLLoader::OnCertificateRequestedResponse(
   } else {
     if (x509_certificate) {
       auto key = base::MakeRefCounted<SSLPrivateKeyInternal>(
-          algorithm_preferences, std::move(ssl_private_key));
+          provider_name, algorithm_preferences, std::move(ssl_private_key));
       url_request_->ContinueWithCertificate(std::move(x509_certificate),
                                             std::move(key));
     } else {
