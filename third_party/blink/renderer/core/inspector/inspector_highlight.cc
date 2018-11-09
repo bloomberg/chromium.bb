@@ -240,6 +240,20 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   return element_info;
 }
 
+std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
+  std::unique_ptr<protocol::DictionaryValue> text_info =
+      protocol::DictionaryValue::create();
+  LayoutObject* layout_object = text_node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsText())
+    return text_info;
+  LayoutRect bounding_box = ToLayoutText(layout_object)->VisualOverflowRect();
+  text_info->setString("nodeWidth", bounding_box.Width().ToString());
+  text_info->setString("nodeHeight", bounding_box.Height().ToString());
+  text_info->setString("tagName", "#text");
+
+  return text_info;
+}
+
 std::unique_ptr<protocol::Value> BuildGapAndPositions(
     double origin,
     LayoutUnit gap,
@@ -346,6 +360,8 @@ InspectorHighlight::InspectorHighlight(
   AppendNodeHighlight(node, highlight_config);
   if (append_element_info && node->IsElementNode())
     element_info_ = BuildElementInfo(ToElement(node));
+  else if (append_element_info && node->IsTextNode())
+    element_info_ = BuildTextNodeInfo(ToText(node));
 }
 
 InspectorHighlight::~InspectorHighlight() = default;
@@ -606,7 +622,8 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
   LocalFrameView* containing_view = layout_object->GetFrameView();
   if (!containing_view)
     return false;
-  if (!layout_object->IsBox() && !layout_object->IsLayoutInline())
+  if (!layout_object->IsBox() && !layout_object->IsLayoutInline() &&
+      !layout_object->IsText())
     return false;
 
   LayoutRect content_box;
@@ -614,7 +631,14 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
   LayoutRect border_box;
   LayoutRect margin_box;
 
-  if (layout_object->IsBox()) {
+  if (layout_object->IsText()) {
+    LayoutText* layout_text = ToLayoutText(layout_object);
+    LayoutRect text_rect = layout_text->VisualOverflowRect();
+    content_box = text_rect;
+    padding_box = text_rect;
+    border_box = text_rect;
+    margin_box = text_rect;
+  } else if (layout_object->IsBox()) {
     LayoutBox* layout_box = ToLayoutBox(layout_object);
 
     // LayoutBox returns the "pure" content area box, exclusive of the

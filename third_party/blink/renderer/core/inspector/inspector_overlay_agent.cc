@@ -697,8 +697,9 @@ void InspectorOverlayAgent::DrawNodeHighlight() {
   }
 
   bool append_element_info =
-      highlight_node_->IsElementNode() && !omit_tooltip_ &&
-      node_highlight_config_.show_info && highlight_node_->GetLayoutObject() &&
+      (highlight_node_->IsElementNode() || highlight_node_->IsTextNode()) &&
+      !omit_tooltip_ && node_highlight_config_.show_info &&
+      highlight_node_->GetLayoutObject() &&
       highlight_node_->GetDocument().GetFrame();
   InspectorHighlight highlight(highlight_node_.Get(), node_highlight_config_,
                                append_element_info);
