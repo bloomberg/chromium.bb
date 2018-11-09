@@ -6,12 +6,18 @@ import("//ios/web/js_compile.gni")
 
 source_set("manual_fill") {
   sources = [
+    "address_coordinator.h",
+    "address_coordinator.mm",
     "address_mediator.h",
     "address_mediator.mm",
+    "card_coordinator.h",
+    "card_coordinator.mm",
     "card_mediator.h",
     "card_mediator.mm",
     "credential_password_form.h",
     "credential_password_form.mm",
+    "fallback_coordinator.h",
+    "fallback_coordinator.mm",
     "form_observer_helper.h",
     "form_observer_helper.mm",
     "manual_fill_injection_handler.h",
@@ -31,6 +37,7 @@ source_set("manual_fill") {
     "//components/keyed_service/core:core",
     "//components/password_manager/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill:autofill_shared",
     "//ios/chrome/browser/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/passwords",

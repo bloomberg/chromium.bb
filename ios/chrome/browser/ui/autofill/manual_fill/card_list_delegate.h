@@ -12,10 +12,6 @@ class CreditCard;
 // Delegate for actions in manual fallback's cards list.
 @protocol CardListDelegate
 
-// Dismisses the presented view controller and continues as pop over on iPads
-// or above the keyboard elsewhere.
-- (void)dismissPresentedViewController;
-
 // Opens cards settings.
 - (void)openCardSettings;
 

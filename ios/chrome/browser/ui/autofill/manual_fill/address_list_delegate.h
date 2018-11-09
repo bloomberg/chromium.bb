@@ -8,10 +8,6 @@
 // Delegate for actions in manual fallback's addresses list.
 @protocol AddressListDelegate
 
-// Dismisses the presented view controller and continues as pop over on iPads
-// or above the keyboard elsewhere.
-- (void)dismissPresentedViewController;
-
 // Opens addresses settings.
 - (void)openAddressSettings;
 
