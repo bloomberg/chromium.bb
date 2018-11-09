@@ -542,7 +542,7 @@ class PersonalDataManager : public KeyedService,
   void MoveJapanCityToStreetAddress();
 
   // Called when the |profile| is validated by the AutofillProfileValidator.
-  virtual void OnValidated(AutofillProfile* profile);
+  virtual void OnValidated(const AutofillProfile* profile);
 
   // Get the profiles fields validity map by |guid|.
   const ProfileValidityMap& GetProfileValidityByGUID(const std::string& guid);

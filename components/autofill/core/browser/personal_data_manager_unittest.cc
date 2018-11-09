@@ -86,8 +86,8 @@ class PersonalDataManagerMock : public PersonalDataManager {
       : PersonalDataManager(app_locale) {}
   ~PersonalDataManagerMock() override {}
 
-  MOCK_METHOD1(OnValidated, void(AutofillProfile* profile));
-  void OnValidatedPDM(AutofillProfile* profile) {
+  MOCK_METHOD1(OnValidated, void(const AutofillProfile* profile));
+  void OnValidatedPDM(const AutofillProfile* profile) {
     PersonalDataManager::OnValidated(profile);
   }
 };

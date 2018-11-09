@@ -12,24 +12,24 @@ namespace autofill {
 namespace profile_validation_util {
 
 // Sets the validity state of the autofill |profile|.
-void ValidateProfile(AutofillProfile* profile,
+void ValidateProfile(const AutofillProfile* profile,
                      AddressValidator* address_validator);
 
 // Sets the validity state of the address fields of the |profile|.
-AddressValidator::Status ValidateAddress(AutofillProfile* profile,
+AddressValidator::Status ValidateAddress(const AutofillProfile* profile,
                                          AddressValidator* address_validator);
 
 // Sets the validity state of the address fields of the |profile| in two passes.
 // First runs the ValidateAddress, then adds a second layer of validation based
 // on the results.
-void ValidateAddressStrictly(AutofillProfile* profile,
+void ValidateAddressStrictly(const AutofillProfile* profile,
                              AddressValidator* address_validator);
 
 // Sets the validity state of the phone number field of the |profile|.
-void ValidatePhoneNumber(AutofillProfile* profile);
+void ValidatePhoneNumber(const AutofillProfile* profile);
 
 // Sets the validity state of the email address field of the |profile|.
-void ValidateEmailAddress(AutofillProfile* profile);
+void ValidateEmailAddress(const AutofillProfile* profile);
 
 }  // namespace profile_validation_util
 }  // namespace autofill
