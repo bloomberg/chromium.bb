@@ -262,20 +262,18 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread() {
         base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
         std::move(blob_registry_ptr));
   }
-}
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-WebWorkerFetchContextImpl::CreateURLLoaderFactory() {
   DCHECK(loader_factory_);
   DCHECK(!web_loader_factory_);
-  auto factory = std::make_unique<Factory>(resource_dispatcher_->GetWeakPtr(),
-                                           loader_factory_);
-  web_loader_factory_ = factory->GetWeakPtr();
+  web_loader_factory_ = std::make_unique<Factory>(
+      resource_dispatcher_->GetWeakPtr(), loader_factory_);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
+}
 
-  return factory;
+blink::WebURLLoaderFactory* WebWorkerFetchContextImpl::GetURLLoaderFactory() {
+  return web_loader_factory_.get();
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>

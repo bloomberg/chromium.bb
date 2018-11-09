@@ -37,32 +37,29 @@ WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext* WorkerFetchContext::Create(
     WorkerOrWorkletGlobalScope& global_scope,
-    scoped_refptr<WebWorkerFetchContext> web_context) {
+    scoped_refptr<WebWorkerFetchContext> web_context,
+    SubresourceFilter* subresource_filter) {
   if (!web_context)
     return nullptr;
-  return new WorkerFetchContext(global_scope, std::move(web_context));
+  return new WorkerFetchContext(global_scope, std::move(web_context),
+                                subresource_filter);
 }
 
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
-    scoped_refptr<WebWorkerFetchContext> web_context)
+    scoped_refptr<WebWorkerFetchContext> web_context,
+    SubresourceFilter* subresource_filter)
     : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
       global_scope_(global_scope),
       web_context_(std::move(web_context)),
+      subresource_filter_(subresource_filter),
       fetch_client_settings_object_(
           new FetchClientSettingsObjectImpl(*global_scope_)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
-
-  web_context_->InitializeOnWorkerThread();
-  std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
-      web_context_->TakeSubresourceFilter();
-  if (web_filter) {
-    subresource_filter_ =
-        SubresourceFilter::Create(global_scope, std::move(web_filter));
-  }
 }
+
 const FetchClientSettingsObjectImpl*
 WorkerFetchContext::GetFetchClientSettingsObject() const {
   return fetch_client_settings_object_.Get();
@@ -229,17 +226,13 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
   if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT ||
       request.GetRequestContext() ==
           mojom::RequestContextType::SERVICE_WORKER) {
-    if (!script_loader_factory_)
-      script_loader_factory_ = web_context_->CreateScriptLoaderFactory();
-    if (script_loader_factory_) {
-      return script_loader_factory_->CreateURLLoader(
+    if (web_context_->GetScriptLoaderFactory()) {
+      return web_context_->GetScriptLoaderFactory()->CreateURLLoader(
           wrapped, CreateResourceLoadingTaskRunnerHandle());
     }
   }
 
-  if (!url_loader_factory_)
-    url_loader_factory_ = web_context_->CreateURLLoaderFactory();
-  return url_loader_factory_->CreateURLLoader(
+  return web_context_->GetURLLoaderFactory()->CreateURLLoader(
       wrapped, CreateResourceLoadingTaskRunnerHandle());
 }
 
