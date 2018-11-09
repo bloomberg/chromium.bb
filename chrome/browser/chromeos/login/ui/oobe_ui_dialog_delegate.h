@@ -123,7 +123,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   base::WeakPtr<LoginDisplayHostMojo> controller_;
 
-  CaptivePortalDialogDelegate* captive_portal_delegate_ = nullptr;
+  base::WeakPtr<CaptivePortalDialogDelegate> captive_portal_delegate_;
 
   // This is owned by the underlying native widget.
   // Before its deletion, onDialogClosed will get called and delete this object.
