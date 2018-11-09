@@ -1861,6 +1861,8 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'data_transfer_methods': ['shm'],
+    'size_args': {
+      'data': 'size', },
     'client_test': False,
     'trace_level': 2,
   },
@@ -1869,6 +1871,8 @@ _FUNCTION_INFO = {
     'client_test': False,
     'decoder_func': 'DoBufferSubData',
     'data_transfer_methods': ['shm'],
+    'size_args': {
+      'data': 'size', },
     'trace_level': 2,
   },
   'CheckFramebufferStatus': {
