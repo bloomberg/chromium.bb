@@ -387,8 +387,8 @@ void TouchActionTest::SendTouchEvent(WebView* web_view,
   if (type == WebInputEvent::kPointerCancel)
     event.dispatch_type = WebInputEvent::kEventNonBlocking;
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
-  web_view->DispatchBufferedTouchEvents();
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   RunPendingTasks();
 }
 

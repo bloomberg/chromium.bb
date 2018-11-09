@@ -90,7 +90,7 @@ void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
   // There is no WebWidget like RenderWidget would have..? So go right to the
   // WebViewImpl.
   web_view_->BeginFrame(last_frame_time_);
-  web_view_->UpdateAllLifecyclePhases();
+  web_view_->MainFrameWidget()->UpdateAllLifecyclePhases();
   *paint_commands_ = PaintFrame();
 }
 

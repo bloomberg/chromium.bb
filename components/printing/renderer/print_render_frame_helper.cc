@@ -722,7 +722,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   frame->PrintPage(0, canvas);
   frame->PrintEnd();
 
-  web_view->Close();
+  web_view->MainFrameWidget()->Close();
 }
 
 // static - Not anonymous so that platform implementations can use it.
@@ -878,8 +878,8 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
     if (web_frame->IsWebLocalFrame())
       prev_scroll_offset_ = web_frame->ToWebLocalFrame()->GetScrollOffset();
   }
-  prev_view_size_ = web_view->Size();
-  web_view->Resize(print_layout_size);
+  prev_view_size_ = web_view->MainFrameWidget()->Size();
+  web_view->MainFrameWidget()->Resize(print_layout_size);
 }
 
 void PrepareFrameAndViewForPrint::StartPrinting() {
@@ -991,7 +991,7 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
     return;
 
   blink::WebView* web_view = frame_.GetFrame()->View();
-  web_view->Resize(prev_view_size_);
+  web_view->MainFrameWidget()->Resize(prev_view_size_);
   if (blink::WebFrame* web_frame = web_view->MainFrame()) {
     // TODO(lukasza, weili): Support restoring scroll offset of a remote main
     // frame - https://crbug.com/734815.
@@ -1015,7 +1015,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
     if (owns_web_view_) {
       DCHECK(!frame->IsLoading());
       owns_web_view_ = false;
-      web_view->Close();
+      web_view->MainFrameWidget()->Close();
     }
   }
   frame_.Reset(nullptr);

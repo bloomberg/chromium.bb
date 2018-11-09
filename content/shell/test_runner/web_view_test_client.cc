@@ -72,7 +72,7 @@ blink::WebView* WebViewTestClient::CreateView(
 
 // Simulate a print by going into print mode and then exit straight away.
 void WebViewTestClient::PrintPage(blink::WebLocalFrame* frame) {
-  blink::WebSize page_size_in_pixels = frame->View()->Size();
+  blink::WebSize page_size_in_pixels = frame->View()->MainFrameWidget()->Size();
   if (page_size_in_pixels.IsEmpty())
     return;
   blink::WebPrintParams printParams(page_size_in_pixels);

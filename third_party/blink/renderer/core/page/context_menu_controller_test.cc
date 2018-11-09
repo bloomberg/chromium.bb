@@ -66,8 +66,8 @@ class ContextMenuControllerTest : public testing::Test {
     web_view_helper_.Initialize(&web_frame_client_);
 
     WebLocalFrameImpl* local_main_frame = web_view_helper_.LocalMainFrame();
-    local_main_frame->ViewImpl()->Resize(WebSize(640, 480));
-    local_main_frame->ViewImpl()->UpdateAllLifecyclePhases();
+    local_main_frame->ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
+    local_main_frame->ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases();
   }
 
   bool ShowContextMenu(const LayoutPoint& location, WebMenuSourceType source) {

@@ -67,7 +67,7 @@ class PageOverlayTest : public testing::Test {
                        nullptr /* web_view_client */,
                        nullptr /* web_widget_client */);
     GetWebView()->Resize(WebSize(kViewportWidth, kViewportHeight));
-    GetWebView()->UpdateAllLifecyclePhases();
+    GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   }
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
@@ -116,7 +116,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
 
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebView()->UpdateAllLifecyclePhases();
+  GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   GraphicsLayer* graphics_layer = page_overlay->GetGraphicsLayer();
   WebRect rect(0, 0, kViewportWidth, kViewportHeight);
@@ -139,7 +139,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
 TEST_F(PageOverlayTest, PageOverlay_VisualRect) {
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebView()->UpdateAllLifecyclePhases();
+  GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(0, 0, kViewportWidth, kViewportHeight),
             page_overlay->VisualRect());
 }

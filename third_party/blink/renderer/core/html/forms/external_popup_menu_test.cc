@@ -115,7 +115,7 @@ class ExternalPopupMenuTest : public testing::Test {
   void LoadFrame(const std::string& file_name) {
     frame_test_helpers::LoadFrame(MainFrame(), base_url_ + file_name);
     WebView()->Resize(WebSize(800, 600));
-    WebView()->UpdateAllLifecyclePhases();
+    WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   }
 
   WebViewImpl* WebView() const { return helper_.GetWebView(); }
@@ -135,7 +135,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportTransform) {
   LoadFrame("select_mid_screen.html");
 
   WebView()->Resize(WebSize(100, 100));
-  WebView()->UpdateAllLifecyclePhases();
+  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   HTMLSelectElement* select = ToHTMLSelectElement(
       MainFrame()->GetFrame()->GetDocument()->getElementById("select"));

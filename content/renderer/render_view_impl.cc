@@ -471,7 +471,7 @@ void RenderViewImpl::Initialize(
                       is_hidden() ? blink::mojom::PageVisibilityState::kHidden
                                   : blink::mojom::PageVisibilityState::kVisible,
                       opener_frame ? opener_frame->View() : nullptr);
-  RenderWidget::Init(std::move(show_callback), webview_->GetWidget());
+  RenderWidget::Init(std::move(show_callback), webview_->MainFrameWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -1883,7 +1883,8 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 
   // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
   // force an update here which will call |DidUpdateMainFrameLayout|.
-  webview()->UpdateLifecycle(WebWidget::LifecycleUpdate::kLayout);
+  webview()->MainFrameWidget()->UpdateLifecycle(
+      WebWidget::LifecycleUpdate::kLayout);
 
   // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
   // We explicitly update the preferred size here to ensure the preferred size
@@ -1915,7 +1916,7 @@ void RenderViewImpl::OnSetRendererPrefs(
                                     renderer_prefs.active_selection_fg_color,
                                     renderer_prefs.inactive_selection_bg_color,
                                     renderer_prefs.inactive_selection_fg_color);
-      webview()->ThemeChanged();
+      webview()->MainFrameWidget()->ThemeChanged();
     }
   }
 #endif  // BUILDFLAG(USE_DEFAULT_RENDER_THEME)

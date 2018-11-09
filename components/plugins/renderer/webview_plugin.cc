@@ -141,7 +141,7 @@ v8::Local<v8::Object> WebViewPlugin::V8ScriptableObject(v8::Isolate* isolate) {
 }
 
 void WebViewPlugin::UpdateAllLifecyclePhases() {
-  web_view()->UpdateAllLifecyclePhases();
+  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases();
 }
 
 bool WebViewPlugin::IsErrorPlaceholder() {
@@ -169,7 +169,7 @@ void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
       SkFloatToScalar(1.0 / container_->DeviceScaleFactor());
   canvas->scale(inverse_scale, inverse_scale);
 
-  web_view()->PaintContent(canvas, paint_rect);
+  web_view()->MainFrameWidget()->PaintContent(canvas, paint_rect);
 
   canvas->restore();
 }
@@ -185,7 +185,7 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
 
   if (static_cast<gfx::Rect>(window_rect) != rect_) {
     rect_ = window_rect;
-    web_view()->Resize(rect_.size());
+    web_view()->MainFrameWidget()->Resize(rect_.size());
   }
 
   // Plugin updates are forbidden during Blink layout. Therefore,
@@ -224,7 +224,8 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
   }
   current_cursor_ = cursor;
   blink::WebInputEventResult handled =
-      web_view()->HandleInputEvent(blink::WebCoalescedInputEvent(event));
+      web_view()->MainFrameWidget()->HandleInputEvent(
+          blink::WebCoalescedInputEvent(event));
   cursor = current_cursor_;
 
   return handled;
@@ -265,7 +266,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {
-  web_view_->Close();
+  web_view_->MainFrameWidget()->Close();
 }
 
 blink::WebLocalFrame* WebViewPlugin::WebViewHelper::main_frame() {
@@ -388,5 +389,5 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // The delegate may have dirtied style and layout of the WebView.
   // See for example the resizePoster function in plugin_poster.html.
   // Run the lifecycle now so that it is clean.
-  web_view()->UpdateAllLifecyclePhases();
+  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases();
 }

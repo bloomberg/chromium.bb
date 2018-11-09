@@ -232,7 +232,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
   if (!frame)
     return WebString();
 
-  web_view->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   StringBuilder text;
   FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),

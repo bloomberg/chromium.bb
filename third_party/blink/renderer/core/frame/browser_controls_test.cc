@@ -141,7 +141,9 @@ class BrowserControlsTest : public testing::Test {
     return helper_.GetWebView()->GetPage()->GetVisualViewport();
   }
 
-  void UpdateAllLifecyclePhases() { GetWebView()->UpdateAllLifecyclePhases(); }
+  void UpdateAllLifecyclePhases() {
+    GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  }
 
  private:
   std::string base_url_;

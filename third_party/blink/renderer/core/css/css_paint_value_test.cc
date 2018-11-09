@@ -33,7 +33,7 @@ class CSSPaintValueTest : public RenderingTest {
   }
 
   void ForceFullCompositingUpdate() {
-    helper_.GetWebView()->UpdateAllLifecyclePhases();
+    helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
   }
 
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }

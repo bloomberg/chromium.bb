@@ -47,7 +47,7 @@ WorkerShadowPage::~WorkerShadowPage() {
   DCHECK(IsMainThread());
   // Detach the client before closing the view to avoid getting called back.
   main_frame_->SetClient(nullptr);
-  web_view_->Close();
+  web_view_->MainFrameWidget()->Close();
   main_frame_->Close();
 }
 

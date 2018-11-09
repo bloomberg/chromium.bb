@@ -98,6 +98,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
     return is_accelerated_compositing_active_;
   }
   WebURL GetURLForDebugTrace() override;
+  WebHitTestResult HitTestResultAt(const WebPoint&) override { return {}; }
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

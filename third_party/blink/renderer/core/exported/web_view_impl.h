@@ -48,6 +48,7 @@
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_page_importance_signals.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/exported/web_page_popup_impl.h"
 #include "third_party/blink/renderer/core/frame/resize_viewport_anchor.h"
@@ -95,6 +96,7 @@ class WebViewClient;
 class WebWidgetClient;
 
 class CORE_EXPORT WebViewImpl final : public WebView,
+                                      private WebWidget,
                                       public RefCounted<WebViewImpl>,
                                       public PageWidgetEventHandler {
  public:
@@ -203,7 +205,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float ZoomFactorForDeviceScaleFactor() override {
     return zoom_factor_for_device_scale_factor_;
   };
-
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
@@ -231,6 +232,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetShowScrollBottleneckRects(bool) override;
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
+  WebWidget* MainFrameWidget() override;
 
   void DidUpdateFullscreenSize();
 
