@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="36dp"
-        android:text="@string/payments_edit_button"
+        android:text="@string/cancel"
         style="@style/TextButton" />
 
     <org.chromium.ui.widget.ButtonCompat
@@ -31,6 +31,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="36dp"
-        android:text="@string/payments_pay_button"
+        android:text="@string/next"
         style="@style/FilledButton.Flat" />
 </org.chromium.chrome.browser.autofill_assistant.ui.PaymentRequestBottomBar>

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -141,9 +142,13 @@ public class AutofillAssistantPaymentRequest {
     /**
      * Show payment request UI to ask for payment information.
      *
+     * Replace |container| with the payment request UI and restore it when the payment request UI is
+     * closed.
+     *
+     * @param container View to replace with the payment request.
      * @param callback The callback to return payment information.
      */
-    /* package */ void show(Callback<SelectedPaymentInformation> callback) {
+    /* package */ void show(ViewGroup container, Callback<SelectedPaymentInformation> callback) {
         // Do not expect calling show multiple times.
         assert mCallback == null;
         assert mUI == null;
@@ -151,7 +156,7 @@ public class AutofillAssistantPaymentRequest {
         mCallback = callback;
         buildUI(ChromeActivity.fromWebContents(mWebContents));
 
-        mUI.show();
+        mUI.show(container);
     }
 
     private void buildUI(ChromeActivity activity) {

@@ -131,6 +131,20 @@ public class BottomBarAnimations {
         setCarouselPaddings();
     }
 
+    /** Update the bottom bar height to wrap when the details are shown.. */
+    public void setBottomBarHeightToWrapContent() {
+        if (mDetailsView.getVisibility() == View.VISIBLE) {
+            setBottomBarHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+    }
+
+    /** Update the bottom bar height to fixed when the details are shown. */
+    public void setBottomBarHeightToFixed() {
+        if (mDetailsView.getVisibility() == View.VISIBLE) {
+            setBottomBarHeight(mBottomBarWithDetailsHeight);
+        }
+    }
+
     /**
      * Show the details. This method does nothing if the details are already hidden.
      */
