@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "services/media_session/media_session_service.h"
-#include "services/media_session/mock_media_session.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

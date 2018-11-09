@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_MEDIA_SESSION_MOCK_MEDIA_SESSION_H_
-#define SERVICES_MEDIA_SESSION_MOCK_MEDIA_SESSION_H_
+#ifndef SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_MOCK_MEDIA_SESSION_H_
+#define SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_MOCK_MEDIA_SESSION_H_
 
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -22,7 +23,8 @@ namespace media_session {
 namespace test {
 
 // A mock MediaSessionObsever that can be used for waiting for state changes.
-class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
+class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
+    MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
  public:
   // A MediaSessionObserver can observe a MediaSession directly or through a
   // MediaController.
@@ -37,6 +39,10 @@ class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
 
+  const mojom::MediaSessionInfoPtr& session_info() const {
+    return session_info_;
+  }
+
  private:
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
@@ -48,7 +54,8 @@ class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
 
 // A mock MediaSession that can be used for interacting with the Media Session
 // service during tests.
-class MockMediaSession : public mojom::MediaSession {
+class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
+    : public mojom::MediaSession {
  public:
   MockMediaSession();
   explicit MockMediaSession(bool force_duck);
@@ -113,4 +120,4 @@ class MockMediaSession : public mojom::MediaSession {
 }  // namespace test
 }  // namespace media_session
 
-#endif  // SERVICES_MEDIA_SESSION_MOCK_MEDIA_SESSION_H_
+#endif  // SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_MOCK_MEDIA_SESSION_H_

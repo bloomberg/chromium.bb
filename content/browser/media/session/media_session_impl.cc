@@ -30,6 +30,7 @@ namespace content {
 
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
 using media_session::mojom::MediaSessionInfo;
+using media_session::mojom::MediaPlaybackState;
 
 namespace {
 
@@ -263,7 +264,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
 
   if (old_audio_focus_state != audio_focus_state_ ||
       old_controllable != IsControllable()) {
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
   }
 
   return true;
@@ -294,7 +295,7 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
   if (!was_controllable && IsControllable())
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
@@ -328,7 +329,7 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
   if (!was_controllable && IsControllable())
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -472,7 +473,7 @@ void MediaSessionImpl::StartDucking() {
     return;
   is_ducking_ = true;
   UpdateVolumeMultiplier();
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::StopDucking() {
@@ -480,7 +481,7 @@ void MediaSessionImpl::StopDucking() {
     return;
   is_ducking_ = false;
   UpdateVolumeMultiplier();
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::UpdateVolumeMultiplier() {
@@ -590,7 +591,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
     it.observer->OnSetVolumeMultiplier(it.player_id,
                                        ducking_volume_multiplier_);
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
@@ -605,7 +606,7 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
@@ -614,7 +615,8 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
       desired_audio_focus_type_(AudioFocusType::kGainTransientMayDuck),
       is_ducking_(false),
       ducking_volume_multiplier_(kDefaultDuckingVolumeMultiplier),
-      routed_service_(nullptr) {
+      routed_service_(nullptr),
+      info_changed_timer_(new base::OneShotTimer()) {
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
@@ -690,6 +692,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   // If we have Pepper players then we should force ducking.
   info->force_duck = HasPepper();
+
+  info->playback_state = IsActuallyPaused() ? MediaPlaybackState::kPaused
+                                            : MediaPlaybackState::kPlaying;
   return info;
 }
 
@@ -756,15 +761,17 @@ void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
   is_ducking_ = false;
 
   SetAudioFocusState(State::INACTIVE);
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
-void MediaSessionImpl::NotifyAboutStateChange() {
+void MediaSessionImpl::NotifyLegacyObserversStateChange() {
   media_session_state_listeners_.Notify(audio_focus_state_);
 
   bool is_actually_paused = IsActuallyPaused();
   for (auto& observer : observers_)
     observer.MediaSessionStateChanged(IsControllable(), is_actually_paused);
+
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
@@ -784,14 +791,22 @@ void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
       break;
   }
 
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::FlushForTesting() {
   mojo_observers_.FlushForTesting();
 }
 
-void MediaSessionImpl::NotifyObserversInfoChanged() {
+void MediaSessionImpl::OnMediaSessionInfoChanged() {
+  info_changed_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(0),
+      base::BindOnce(
+          &MediaSessionImpl::NotifyMojoObserversMediaSessionInfoChanged,
+          base::Unretained(this)));
+}
+
+void MediaSessionImpl::NotifyMojoObserversMediaSessionInfoChanged() {
   media_session::mojom::MediaSessionInfoPtr current_info =
       GetMediaSessionInfoSync();
 
@@ -813,7 +828,7 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
   return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
 
@@ -826,7 +841,7 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
     return false;
 
   one_shot_players_.insert(PlayerIdentifier(observer, player_id));
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 
   return true;
 }
@@ -854,7 +869,7 @@ void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
     MediaSessionServiceImpl* service) {
   if (service != routed_service_)
     return;
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::OnMediaSessionMetadataChanged(
