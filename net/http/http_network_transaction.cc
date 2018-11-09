@@ -72,6 +72,8 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_header_parser.h"
+#include "net/reporting/reporting_service.h"
 #endif
 
 namespace {
@@ -1195,6 +1197,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return rv;
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  ProcessReportToHeader();
   ProcessNetworkErrorLoggingHeader();
 #endif
 
@@ -1305,6 +1308,31 @@ int HttpNetworkTransaction::DoDrainBodyForAuthRestartComplete(int result) {
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
+void HttpNetworkTransaction::ProcessReportToHeader() {
+  std::string value;
+  if (!response_.headers->GetNormalizedHeader("Report-To", &value))
+    return;
+
+  ReportingService* service = session_->reporting_service();
+  if (!service) {
+    ReportingHeaderParser::RecordHeaderDiscardedForNoReportingService();
+    return;
+  }
+
+  // Only accept Report-To headers on HTTPS connections that have no
+  // certificate errors.
+  if (!response_.ssl_info.is_valid()) {
+    ReportingHeaderParser::RecordHeaderDiscardedForInvalidSSLInfo();
+    return;
+  }
+  if (IsCertStatusError(response_.ssl_info.cert_status)) {
+    ReportingHeaderParser::RecordHeaderDiscardedForCertStatusError();
+    return;
+  }
+
+  service->ProcessHeader(url_.GetOrigin(), value);
+}
+
 void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
   std::string value;
   if (!response_.headers->GetNormalizedHeader(

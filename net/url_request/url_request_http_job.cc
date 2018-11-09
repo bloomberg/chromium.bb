@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "build/buildflag.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -54,7 +53,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
-#include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -76,12 +74,6 @@
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
 #endif
-
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_header_parser.h"
-#include "net/reporting/reporting_service.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
 
@@ -499,9 +491,6 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // The ordering of these calls is not important.
   ProcessStrictTransportSecurityHeader();
   ProcessExpectCTHeader();
-#if BUILDFLAG(ENABLE_REPORTING)
-  ProcessReportToHeader();
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -854,38 +843,6 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
         value, HostPortPair::FromURL(request_info_.url), ssl_info);
   }
 }
-
-#if BUILDFLAG(ENABLE_REPORTING)
-void URLRequestHttpJob::ProcessReportToHeader() {
-  DCHECK(response_info_);
-
-  HttpResponseHeaders* headers = GetResponseHeaders();
-  std::string value;
-  if (!headers->GetNormalizedHeader("Report-To", &value))
-    return;
-
-  ReportingService* service = request_->context()->reporting_service();
-  if (!service) {
-    ReportingHeaderParser::RecordHeaderDiscardedForNoReportingService();
-    return;
-  }
-
-  // Only accept Report-To headers on HTTPS connections that have no
-  // certificate errors.
-  // TODO(juliatuttle): Do we need to check cert status?
-  const SSLInfo& ssl_info = response_info_->ssl_info;
-  if (!ssl_info.is_valid()) {
-    ReportingHeaderParser::RecordHeaderDiscardedForInvalidSSLInfo();
-    return;
-  }
-  if (IsCertStatusError(ssl_info.cert_status)) {
-    ReportingHeaderParser::RecordHeaderDiscardedForCertStatusError();
-    return;
-  }
-
-  service->ProcessHeader(request_info_.url.GetOrigin(), value);
-}
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
   TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnStartCompleted");

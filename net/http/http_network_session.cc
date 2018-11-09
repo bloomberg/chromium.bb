@@ -167,6 +167,7 @@ HttpNetworkSession::Context::Context()
       socket_performance_watcher_factory(nullptr),
       network_quality_estimator(nullptr),
 #if BUILDFLAG(ENABLE_REPORTING)
+      reporting_service(nullptr),
       network_error_logging_service(nullptr),
 #endif
       quic_clock(nullptr),
@@ -187,6 +188,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       cert_verifier_(context.cert_verifier),
       http_auth_handler_factory_(context.http_auth_handler_factory),
 #if BUILDFLAG(ENABLE_REPORTING)
+      reporting_service_(context.reporting_service),
       network_error_logging_service_(context.network_error_logging_service),
 #endif
       proxy_resolution_service_(context.proxy_resolution_service),

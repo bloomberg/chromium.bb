@@ -63,6 +63,9 @@ class NetworkErrorLoggingService;
 #endif
 class NetworkQualityEstimator;
 class ProxyResolutionService;
+#if BUILDFLAG(ENABLE_REPORTING)
+class ReportingService;
+#endif
 }  // namespace net
 namespace quic {
 class QuicClock;
@@ -264,6 +267,7 @@ class NET_EXPORT HttpNetworkSession {
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     NetworkQualityEstimator* network_quality_estimator;
 #if BUILDFLAG(ENABLE_REPORTING)
+    ReportingService* reporting_service;
     NetworkErrorLoggingService* network_error_logging_service;
 #endif
 
@@ -329,6 +333,7 @@ class NET_EXPORT HttpNetworkSession {
     return net_log_;
   }
 #if BUILDFLAG(ENABLE_REPORTING)
+  ReportingService* reporting_service() const { return reporting_service_; }
   NetworkErrorLoggingService* network_error_logging_service() const {
     return network_error_logging_service_;
   }
@@ -391,6 +396,7 @@ class NET_EXPORT HttpNetworkSession {
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  ReportingService* const reporting_service_;
   NetworkErrorLoggingService* const network_error_logging_service_;
 #endif
   ProxyResolutionService* const proxy_resolution_service_;

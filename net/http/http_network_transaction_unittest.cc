@@ -27,6 +27,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -111,6 +113,11 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/network_error_logging_test_util.h"
+#include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_client.h"
+#include "net/reporting/reporting_header_parser.h"
+#include "net/reporting/reporting_service.h"
+#include "net/reporting/reporting_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using net::test::IsError;
@@ -477,6 +484,12 @@ class HttpNetworkTransactionTest : public PlatformTest,
   void ConnectStatusHelper(const MockRead& status);
 
   void CheckErrorIsPassedBack(int error, IoMode mode);
+
+  // These clocks are defined here, even though they're only used in the
+  // Reporting tests below, since they need to be destroyed after
+  // |session_deps_|.
+  base::SimpleTestClock clock_;
+  base::SimpleTestTickClock tick_clock_;
 
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
@@ -17316,6 +17329,122 @@ TEST_F(HttpNetworkTransactionTest, NoSupportedProxies) {
 
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NO_SUPPORTED_PROXIES));
 }
+
+//-----------------------------------------------------------------------------
+// Reporting tests
+
+#if BUILDFLAG(ENABLE_REPORTING)
+class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
+ protected:
+  void SetUp() override {
+    auto test_reporting_context = std::make_unique<TestReportingContext>(
+        &clock_, &tick_clock_, ReportingPolicy());
+    test_reporting_context_ = test_reporting_context.get();
+    session_deps_.reporting_service =
+        ReportingService::CreateForTesting(std::move(test_reporting_context));
+  }
+
+  TestReportingContext* reporting_context() const {
+    return test_reporting_context_;
+  }
+
+  void clear_reporting_service() {
+    session_deps_.reporting_service.reset();
+    test_reporting_context_ = nullptr;
+  }
+
+  // Makes an HTTPS request that should install a valid Reporting policy.
+  void RequestPolicy() {
+    MockRead data_reads[] = {
+        MockRead("HTTP/1.0 200 OK\r\n"),
+        MockRead("Report-To: {\"group\": \"nel\", \"max_age\": 86400, "
+                 "\"endpoints\": [{\"url\": "
+                 "\"https://www.example.org/upload/\"}]}\r\n"),
+        MockRead("\r\n"),
+        MockRead("hello world"),
+        MockRead(SYNCHRONOUS, OK),
+    };
+    MockWrite data_writes[] = {
+        MockWrite("GET / HTTP/1.1\r\n"
+                  "Host: www.example.org\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL(url_);
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    SSLSocketDataProvider ssl(ASYNC, OK);
+    if (request.url.SchemeIsCryptographic()) {
+      ssl.ssl_info.cert =
+          ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+      ASSERT_TRUE(ssl.ssl_info.cert);
+      ssl.ssl_info.cert_status = cert_status_;
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+    }
+
+    StaticSocketDataProvider reads(data_reads, data_writes);
+    session_deps_.socket_factory->AddSocketDataProvider(&reads);
+
+    TestCompletionCallback callback;
+    auto session = CreateSession(&session_deps_);
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+    int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+    EXPECT_THAT(callback.WaitForResult(), IsOk());
+  }
+
+ protected:
+  std::string url_ = "https://www.example.org/";
+  CertStatus cert_status_ = 0;
+
+ private:
+  TestReportingContext* test_reporting_context_;
+};
+
+TEST_F(HttpNetworkTransactionReportingTest,
+       DontProcessReportToHeaderNoService) {
+  base::HistogramTester histograms;
+  clear_reporting_service();
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      ReportingHeaderParser::kHeaderOutcomeHistogram,
+      ReportingHeaderParser::HeaderOutcome::DISCARDED_NO_REPORTING_SERVICE, 1);
+}
+
+TEST_F(HttpNetworkTransactionReportingTest, DontProcessReportToHeaderHttp) {
+  base::HistogramTester histograms;
+  url_ = "http://www.example.org/";
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      ReportingHeaderParser::kHeaderOutcomeHistogram,
+      ReportingHeaderParser::HeaderOutcome::DISCARDED_INVALID_SSL_INFO, 1);
+}
+
+TEST_F(HttpNetworkTransactionReportingTest, ProcessReportToHeaderHttps) {
+  RequestPolicy();
+  std::vector<const ReportingClient*> clients;
+  reporting_context()->cache()->GetClients(&clients);
+  ASSERT_EQ(1u, clients.size());
+  const auto* client = clients[0];
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.org/")),
+            client->origin);
+  EXPECT_EQ(GURL("https://www.example.org/upload/"), client->endpoint);
+  EXPECT_EQ("nel", client->group);
+}
+
+TEST_F(HttpNetworkTransactionReportingTest,
+       DontProcessReportToHeaderInvalidHttps) {
+  base::HistogramTester histograms;
+  cert_status_ = CERT_STATUS_COMMON_NAME_INVALID;
+  RequestPolicy();
+  histograms.ExpectBucketCount(
+      ReportingHeaderParser::kHeaderOutcomeHistogram,
+      ReportingHeaderParser::HeaderOutcome::DISCARDED_CERT_STATUS_ERROR, 1);
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 //-----------------------------------------------------------------------------
 // Network Error Logging tests

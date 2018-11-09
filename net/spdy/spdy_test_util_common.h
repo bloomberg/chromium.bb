@@ -41,6 +41,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_service.h"
 #endif
 
 class GURL;
@@ -208,6 +209,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   std::unique_ptr<HttpServerPropertiesImpl> http_server_properties;
 #if BUILDFLAG(ENABLE_REPORTING)
+  std::unique_ptr<ReportingService> reporting_service;
   std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service;
 #endif
   bool enable_ip_pooling;
