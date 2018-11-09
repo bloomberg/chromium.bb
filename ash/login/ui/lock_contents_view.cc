@@ -1047,25 +1047,12 @@ void LockContentsView::OnLockStateChanged(bool locked) {
   }
 }
 
-void LockContentsView::OnStateChanged(
-    const keyboard::KeyboardControllerState state) {
-  if (!primary_big_view_)
+void LockContentsView::OnKeyboardVisibilityStateChanged(bool is_visible) {
+  if (!primary_big_view_ || keyboard_shown_ == is_visible)
     return;
 
-  if (state == keyboard::KeyboardControllerState::SHOWN ||
-      state == keyboard::KeyboardControllerState::HIDDEN) {
-    bool keyboard_will_be_shown =
-        state == keyboard::KeyboardControllerState::SHOWN;
-    // Keyboard state can go from SHOWN -> SomeStateOtherThanShownOrHidden ->
-    // SHOWN when we click on the inactive BigUser while the virtual keyboard is
-    // active. In this case, we should do nothing, since
-    // SwapActiveAuthBetweenPrimaryAndSecondary handles the re-layout.
-    if (keyboard_shown_ == keyboard_will_be_shown)
-      return;
-    keyboard_shown_ = keyboard_will_be_shown;
-    LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/,
-               false /*animate*/);
-  }
+  keyboard_shown_ = is_visible;
+  LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/, false /*animate*/);
 }
 
 void LockContentsView::SuspendImminent(
@@ -1351,12 +1338,13 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         to_update_auth = LoginAuthUserView::AUTH_DISABLED;
       } else {
         to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
-        keyboard::KeyboardController* keyboard_controller =
-            GetKeyboardController();
-        const bool is_keyboard_visible =
-            keyboard_controller ? keyboard_controller->IsKeyboardVisible()
-                                : false;
-        if (state->show_pin && !is_keyboard_visible)
+        // Need to check |GetKeyboardControllerForView| as the keyboard may be
+        // visible, but the keyboard is in a different root window or the view
+        // has not been added to the widget. In these cases, the keyboard does
+        // not interfere with PIN entry.
+        const bool is_keyboard_visible_for_view =
+            GetKeyboardControllerForView() ? keyboard_shown_ : false;
+        if (state->show_pin && !is_keyboard_visible_for_view)
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
@@ -1617,7 +1605,8 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   }
 }
 
-keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
+keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()
+    const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
 }
 

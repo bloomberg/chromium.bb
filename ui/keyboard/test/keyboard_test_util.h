@@ -23,8 +23,8 @@ bool WaitUntilShown();
 // Waits until the keyboard starts to hide, with possible pending animations.
 bool WaitUntilHidden();
 
-// Waits until the keyboard state is changed to the given state.
-void WaitControllerStateChangesTo(const KeyboardControllerState state);
+// Waits until the keyboard web contents has loaded.
+bool WaitUntilLoaded();
 
 // Returns true if the keyboard is about to show or already shown.
 bool IsKeyboardShowing();

@@ -73,13 +73,10 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardEnabledChanged(bool is_enabled) {}
 
   // Called when the keyboard has been hidden and the hiding animation finished
-  // successfully. This is same as |state| == HIDDEN on OnStateChanged.
+  // successfully.
   // When |is_temporary_hide| is true, this hide is immediately followed by a
   // show (e.g. when changing to floating keyboard)
   virtual void OnKeyboardHidden(bool is_temporary_hide) {}
-
-  // Called when the state changed.
-  virtual void OnStateChanged(KeyboardControllerState state) {}
 
   // Called when the virtual keyboard IME config changed.
   virtual void OnKeyboardConfigChanged() {}

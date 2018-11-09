@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/screen.h"
@@ -42,30 +43,6 @@ class KeyboardVisibilityChangeWaiter : public KeyboardControllerObserver {
   DISALLOW_COPY_AND_ASSIGN(KeyboardVisibilityChangeWaiter);
 };
 
-class ControllerStateChangeWaiter : public KeyboardControllerObserver {
- public:
-  explicit ControllerStateChangeWaiter(KeyboardControllerState state)
-      : controller_(KeyboardController::Get()), state_(state) {
-    controller_->AddObserver(this);
-  }
-  ~ControllerStateChangeWaiter() override { controller_->RemoveObserver(this); }
-
-  void Wait() { run_loop_.Run(); }
-
- private:
-  void OnStateChanged(const KeyboardControllerState state) override {
-    if (state == state_) {
-      run_loop_.QuitWhenIdle();
-    }
-  }
-
-  base::RunLoop run_loop_;
-  KeyboardController* controller_;
-  KeyboardControllerState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControllerStateChangeWaiter);
-};
-
 bool WaitVisibilityChangesTo(bool wait_until) {
   if (KeyboardController::Get()->IsKeyboardVisible() == wait_until)
     return true;
@@ -75,6 +52,20 @@ bool WaitVisibilityChangesTo(bool wait_until) {
 }
 
 }  // namespace
+
+bool WaitUntilLoaded() {
+  auto* controller = KeyboardController::Get();
+  while (controller->GetStateForTest() == KeyboardControllerState::INITIAL ||
+         controller->GetStateForTest() ==
+             KeyboardControllerState::LOADING_EXTENSION) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(100));
+    run_loop.Run();
+  }
+  return true;
+}
 
 bool WaitUntilShown() {
   // KeyboardController send a visibility update once the show animation
@@ -88,11 +79,6 @@ bool WaitUntilHidden() {
   // actually detect when the hide animation finishes.
   // TODO(https://crbug.com/849995): Find a proper solution to this.
   return WaitVisibilityChangesTo(false /* wait_until */);
-}
-
-void WaitControllerStateChangesTo(KeyboardControllerState state) {
-  ControllerStateChangeWaiter waiter(state);
-  waiter.Wait();
 }
 
 bool IsKeyboardShowing() {
