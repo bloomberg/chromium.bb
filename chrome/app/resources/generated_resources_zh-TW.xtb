@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">同步處理和個人化</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
-<translation id="140250605646987970">找到您的手機，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
 <translation id="1406500794671479665">驗證中...</translation>
 <translation id="1407489512183974736">置中並剪裁</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">在新視窗中開啟連結(&amp;W)</translation>
 <translation id="1773212559869067373">本機已拒絕驗證憑證</translation>
 <translation id="177336675152937177">代管應用程式資料</translation>
-<translation id="1774349594977710164">你的手機也會為你的其他 <ph name="DEVICE_TYPE" /> 解鎖，因為這些裝置會自動保持同步。</translation>
 <translation id="1774833706453699074">將開啟的網頁加入書籤...</translation>
 <translation id="1775381402323441512">影片資訊</translation>
 <translation id="1776883657531386793"><ph name="OID" />：<ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">設定或管理 CUPS 印表機。</translation>
 <translation id="181577467034453336">還有 <ph name="NUMBER_OF_VIEWS" /> 個畫面...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />這些是暫存檔案，系統可能會自動將其刪除，以釋放磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">為你的 <ph name="DEVICE_TYPE" /> 設定 Smart Lock</translation>
 <translation id="1817871734039893258">Microsoft 檔案復原</translation>
 <translation id="1818007989243628752">刪除 <ph name="USERNAME" /> 的密碼</translation>
 <translation id="1818913467757368489">正在上傳記錄。</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">系統已封鎖多個網站的 Cookie。</translation>
 <translation id="1977965994116744507">讓你的手機靠近 <ph name="DEVICE_TYPE" />，即可將其解鎖。</translation>
 <translation id="1979280758666859181">你即將變更為較舊版本的 <ph name="PRODUCT_NAME" />。該版本的版本號與你電腦上所安裝的版本號必須相符，系統才會套用版本變更。</translation>
-<translation id="1981115145845865539">自動為你的 <ph name="DEVICE_TYPE" /> 解鎖</translation>
 <translation id="1983959805486816857">建立新的受監管使用者之後，你隨時都可以透過位於 <ph name="MANAGEMENT_URL" /> 的裝置來管理設定。</translation>
 <translation id="1987317783729300807">帳戶</translation>
 <translation id="1989112275319619282">瀏覽</translation>
@@ -983,7 +979,6 @@
 <translation id="2462752602710430187">已新增「<ph name="PRINTER_NAME" />」</translation>
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
-<translation id="2468902267404883140">無法連上你的手機。請確定你使用的是相容的 Android 手機並已開機，且手機在適當距離範圍內。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
@@ -996,7 +991,6 @@
 <translation id="2484959914739448251">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請<ph name="BEGIN_LINK" />輸入通關密語<ph name="END_LINK" />。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2487067538648443797">新增書籤</translation>
-<translation id="248861575772995840">找不到你的手機。請確定已開啟 <ph name="DEVICE_TYPE" /> 的藍牙功能。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="2489918096470125693">新增資料夾(&amp;F)...</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
@@ -1055,7 +1049,6 @@
 <translation id="257088987046510401">主題</translation>
 <translation id="2572032849266859634">已授予 <ph name="VOLUME_NAME" /> 的唯讀權限。</translation>
 <translation id="2575247648642144396">畫面上顯示這個圖示時，表示擴充功能可在目前網頁上運作。如要啟用這項擴充功能，請按一下圖示或按下 <ph name="EXTENSION_SHORTCUT" />。</translation>
-<translation id="2575268751393592580">找不到你的手機。請確定你的 <ph name="DEVICE_TYPE" /> 已連上 Wi-Fi 網路或行動網路。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="257779572837908839">設為 Chromebox 視訊會議解決方案</translation>
 <translation id="2579575372772932244">正在重新建立設定檔，請稍候...</translation>
 <translation id="2580889980133367162">永遠允許 <ph name="HOST" /> 下載多個檔案</translation>
@@ -1167,7 +1160,6 @@
 <translation id="2735438478659026460">滑鼠游標停止時自動點擊</translation>
 <translation id="2735712963799620190">設定時間</translation>
 <translation id="2737363922397526254">收合...</translation>
-<translation id="2737492745329609575">開始設定</translation>
 <translation id="2738771556149464852">此日期之前：</translation>
 <translation id="2739191690716947896">偵錯</translation>
 <translation id="2739240477418971307">變更你的協助工具設定</translation>
@@ -1330,7 +1322,6 @@
 <translation id="2994669386200004489">無法備份 <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">由您的家長安裝。</translation>
 <translation id="2996286169319737844">系統已採用你的同步通關密語針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
-<translation id="3002017044809397427">找到您的 <ph name="PHONE_TYPE" />，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3003144360685731741">慣用網路</translation>
 <translation id="3003623123441819449">CSS 快取</translation>
 <translation id="3003633581067744647">切換為縮圖檢視</translation>
@@ -1479,7 +1470,6 @@
 <translation id="3241680850019875542">請選取要封裝的擴充功能根目錄。如要更新擴充功能，請一併選取要重複使用的秘密金鑰。</translation>
 <translation id="3244294424315804309">繼續維持靜音</translation>
 <translation id="3245321423178950146">演出者不明</translation>
-<translation id="3246097286174000800">試試 Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - 網路錯誤</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;不是憑證的一部分&gt;</translation>
@@ -1558,7 +1548,6 @@
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="3356580349448036450">完成</translation>
 <translation id="3356797067524893661">設定程序已完成，現在可以開始使用 Hangouts Meet 了</translation>
-<translation id="3358935496594837302">找不到你的手機。請確定你使用的是相容的 Android 手機並已開機，且手機在適當距離範圍內。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3359256513598016054">憑證原則限制</translation>
 <translation id="3360297538363969800">列印失敗。請檢查你的印表機，然後再試一次。</translation>
 <translation id="3365598184818502391">請擇一使用 Ctrl 或 Alt 鍵</translation>
@@ -1908,7 +1897,6 @@
 <translation id="3855441664322950881">封裝擴充功能</translation>
 <translation id="3855676282923585394">匯入書籤和設定...</translation>
 <translation id="3856800405688283469">選取時區</translation>
-<translation id="3857228364945137633">當手機在適當距離範圍內時，不需密碼即可使用 Smart Lock 為你的 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">移開手指，然後再次輕觸</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />：已暫停同步處理</translation>
@@ -2034,7 +2022,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{離開網頁}other{離開網頁}}</translation>
 <translation id="4044612648082411741">輸入您的憑證密碼</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>
-<translation id="4047112090469382184">這項功能如何確保裝置安全性</translation>
 <translation id="4052120076834320548">最小</translation>
 <translation id="4055023634561256217">你必須先重新啟動裝置，才能透過 Powerwash 重設裝置。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2043,7 +2030,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">立即檢查文件</translation>
 <translation id="406070391919917862">背景應用程式</translation>
-<translation id="4063283930106169759">請確定你的手機在適當距離範圍內。為了偵測你的手機，含有你帳戶的所有裝置的藍牙功能都會開啟。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="4065876735068446555">目前使用的網路 (<ph name="NETWORK_ID" />) 可能會要求您造訪登入網頁。</translation>
 <translation id="4068506536726151626">這個網頁包含來自下列網站的元素，且這些元素正在追蹤你的位置：</translation>
 <translation id="4068776064906523561">已儲存的指紋</translation>
@@ -2396,7 +2382,6 @@
 <translation id="4672657274720418656">提取頁面</translation>
 <translation id="4673442866648850031">移除觸控筆時取出觸控筆工具</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 要求回應協助工具事件</translation>
-<translation id="4677692029604506169">你必須為用於解鎖 <ph name="DEVICE_TYPE" /> 的手機啟用螢幕鎖定，以策安全。通常可選用 PIN 碼、圖形或密碼模式。已經啟用螢幕鎖定了嗎？請選取 [重新檢查] 進行驗證，再繼續完成設定。</translation>
 <translation id="4677772697204437347">GPU 記憶體</translation>
 <translation id="4680105648806843642">已將這個網頁設為靜音</translation>
 <translation id="4681930562518940301">在新分頁中開啟原始圖片(&amp;I)</translation>
@@ -2732,7 +2717,6 @@
 <translation id="5184063094292164363">JavaScript 控制台(&amp;J)</translation>
 <translation id="5184662919967270437">正在更新您的裝置</translation>
 <translation id="5185386675596372454">由於最新版本的 <ph name="EXTENSION_NAME" /> 需要更多權限，因此已經停用。</translation>
-<translation id="5186650237607254032">只要更新手機的螢幕鎖定，一旦進入有效距離範圍內，螢幕鎖定就會關閉。你不僅可以更快解鎖手機，還能在 <ph name="DEVICE_TYPE" /> 上享有更佳 Smart Lock 體驗。</translation>
 <translation id="5187295959347858724">你已登入 <ph name="SHORT_PRODUCT_NAME" />，系統正在將你的書籤、瀏覽記錄和其他設定與「Google 帳戶」進行同步處理。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">請在裝置上執行 Powerwash，然後再試一次。</translation>
@@ -3163,7 +3147,6 @@
 <translation id="5804241973901381774">權限</translation>
 <translation id="5805697420284793859">視窗管理員</translation>
 <translation id="580571955903695899">按標題重新排序</translation>
-<translation id="5807290661599647102">設定螢幕鎖定</translation>
 <translation id="5811750797187914944">設定完成</translation>
 <translation id="5814126672212206791">連線類型</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
@@ -3536,7 +3519,6 @@
 <translation id="6370021412472292592">無法載入資訊清單。</translation>
 <translation id="637062427944097960">這個檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">設定 Android Smart Lock</translation>
 <translation id="6374469231428023295">再試一次</translation>
 <translation id="6380143666419481200">接受並繼續</translation>
 <translation id="6384275966486438344">將你的搜尋設定變更為：<ph name="SEARCH_HOST" /></translation>
@@ -3956,7 +3938,6 @@
 <translation id="7027125358315426638">資料庫名稱：</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031962166228839643">正在準備 TPM，請稍候 (這可能需要幾分鐘的時間)...</translation>
-<translation id="7035437538340499453">Smart Lock 設定完成</translation>
 <translation id="7037509989619051237">要預覽的文字</translation>
 <translation id="7039326228527141150">存取由 <ph name="VENDOR_NAME" /> 製造的 USB 裝置</translation>
 <translation id="7039912931802252762">Microsoft 智慧卡登入</translation>
@@ -4757,7 +4738,6 @@
 <translation id="8227119283605456246">附加檔案</translation>
 <translation id="8230134520748321204">要儲存 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="8234795456569844941">請告訴我們在你收到設定檔錯誤訊息前執行的動作，以協助工程師修正此問題：</translation>
-<translation id="8234989666557591529">選擇要用於為 <ph name="DEVICE_TYPE" /> 解鎖的手機</translation>
 <translation id="8241040075392580210">晴時多雲</translation>
 <translation id="8241806945692107836">正在確定裝置設定...</translation>
 <translation id="8241868517363889229">讀取及變更你的書籤</translation>
@@ -4849,10 +4829,8 @@
 <translation id="8395901698320285466">尺寸</translation>
 <translation id="8396532978067103567">密碼有誤。</translation>
 <translation id="839736845446313156">註冊</translation>
-<translation id="8398790343843005537">搜尋你的手機</translation>
 <translation id="8398877366907290961">仍要繼續</translation>
 <translation id="8400146488506985033">管理使用者</translation>
-<translation id="8410073653152358832">使用這個手機</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="8418445294933751433">顯示為分頁(&amp;S)</translation>
@@ -4930,7 +4908,6 @@
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="8528074251912154910">新增語言</translation>
 <translation id="8528962588711550376">登入中。</translation>
-<translation id="8529026713753283969">這支手機會收到通知，因此請讓手機保持在適當距離範圍內。</translation>
 <translation id="8529925957403338845">即時網路共用連線失敗</translation>
 <translation id="8534656636775144800">糟糕！嘗試加入網域時發生錯誤，請再試一次。</translation>
 <translation id="8535005006684281994">Netscape 憑證更新網址</translation>
@@ -5234,14 +5211,12 @@
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="8996526648899750015">新增帳戶...</translation>
 <translation id="9003647077635673607">允許在所有網站上執行</translation>
-<translation id="9003677638446136377">重新檢查</translation>
 <translation id="9003704114456258138">頻率</translation>
 <translation id="9004952710076978168">收到不明印表機的通知。</translation>
 <translation id="9008201768610948239">略過</translation>
 <translation id="9009369504041480176">上傳中 (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">一律顯示圖示</translation>
 <translation id="9013707997379828817">你的管理員已復原這個裝置。請儲存重要檔案後再重新啟動。重新啟動後，裝置上的資料將全數刪除。</translation>
-<translation id="9014987600015527693">顯示其他手機</translation>
 <translation id="9018218886431812662">安裝完成</translation>
 <translation id="901834265349196618">電子郵件</translation>
 <translation id="9019062154811256702">讀取及變更自動填入設定</translation>
@@ -5337,7 +5312,6 @@
 <translation id="9147304170847707004">驗證方式</translation>
 <translation id="9147392381910171771">選項 (&amp;O)</translation>
 <translation id="9148058034647219655">結束</translation>
-<translation id="9148116311817999634">基於安全考量，請設定螢幕鎖定</translation>
 <translation id="9148126808321036104">重新登入</translation>
 <translation id="9149866541089851383">編輯...</translation>
 <translation id="9150045010208374699">使用你的相機</translation>

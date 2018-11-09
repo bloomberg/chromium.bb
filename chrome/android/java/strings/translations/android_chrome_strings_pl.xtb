@@ -170,6 +170,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">Automatyzacja</translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
 <translation id="2234876718134438132">Synchronizacja i usługi Google</translation>
@@ -240,6 +241,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
+<translation id="2783359740176230170">Szybka płatność</translation>
 <translation id="2803478378562657435">Wyświetlam zapisane hasła i opcje haseł</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
@@ -362,6 +364,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3868004864571585162">Pliki cookie, licencje multimediów i dane witryn</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
+<translation id="3918221729963301892">Nie wyświetlaj ponownie</translation>
 <translation id="3927692899758076493">Bezszeryfowa</translation>
 <translation id="3928666092801078803">Połącz moje dane</translation>
 <translation id="393697183122708255">Brak włączonego wyszukiwania głosowego</translation>
@@ -507,6 +510,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /> w trakcie wyszukiwania urządzeń…</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> udostępnia Twój ekran</translation>
+<translation id="4961107849584082341">Możesz przetłumaczyć tę stronę na dowolny język</translation>
 <translation id="4961334780091921942">Twoje hasła, historia i inne dane na wszystkich Twoich urządzeniach</translation>
 <translation id="4961700429721424617">Wylogowujesz się z konta, którym zarządza <ph name="MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chrome z tego urządzenia, ale pozostaną one na Twoim koncie Google.</translation>
 <translation id="497421865427891073">Dalej</translation>
@@ -544,6 +548,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5240817131241497236">Zostały zmienione ustawienia synchronizacji, personalizacji i innych usług Google w Chrome. Może to wpłynąć na Twoje bieżące ustawienia.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Ustawienia<ph name="END_LINK1" /> możesz zmienić w dowolnym momencie. Google może korzystać z zawartości odwiedzanych przez Ciebie stron oraz informacji o Twojej aktywności i interakcjach w przeglądarce, by personalizować Chrome i inne usługi Google takie jak Tłumacz, wyszukiwarka czy reklamy.</translation>
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
+<translation id="5274381992091475657">Asystent autouzupełniania</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="5284584623296338184">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
 <translation id="5300589172476337783">Pokaż</translation>
@@ -611,6 +616,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
+<translation id="569536719314091526">Możesz przetłumaczyć tę stronę na dowolny język, używając przycisku Więcej opcji</translation>
 <translation id="5719837394786370183">Po zamknięciu wszystkich kart incognito wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądarki, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i utworzone zakładki zostaną zachowane.
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
@@ -652,6 +658,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
 <translation id="5990142338020175451">Bardziej spersonalizowane usługi Google, na przykład lepsze podpowiedzi stron</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
+<translation id="6001839398155993679">Do dzieła</translation>
 <translation id="6005538289190791541">Proponowane hasło</translation>
 <translation id="6039379616847168523">Przejdź do następnej karty</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -826,6 +833,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7250468141469952378">Wybrano <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
+<translation id="728491846437309531">Asystent Google może ułatwić Ci załatwianie różnych spraw przez internet</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>

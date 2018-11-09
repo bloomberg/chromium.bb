@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth wyłączony</translation>
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
 <translation id="2292698582925480719">Skala wyświetlania</translation>
+<translation id="2302092602801625023">To konto jest zarządzane przez Family Link</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
 <translation id="2339073806695260576">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu albo użyć wskaźnika laserowego bądź lupy.</translation>
 <translation id="2341729377289034582">Zablokowano w orientacji pionowej</translation>
@@ -140,6 +141,7 @@
 <translation id="315116470104423982">Komórkowa transmisja danych</translation>
 <translation id="3151786313568798007">Orientacja</translation>
 <translation id="3153444934357957346">W wielokrotnym logowaniu nie możesz mieć więcej kont niż <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
+<translation id="3154351730702813399">Administrator urządzenia może monitorować Twoją aktywność związaną z przeglądaniem.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Połączono z urządzeniem}few{Połączono z # urządzeniami}many{Połączono z # urządzeniami}other{Połączono z # urządzenia}}</translation>
 <translation id="3236488194889173876">Brak dostępnych sieci komórkowych</translation>
 <translation id="3255483164551725916">Co potrafisz?</translation>
@@ -171,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="3798670284305777884">Głośnik (wewnętrzny)</translation>
+<translation id="3799080171973636491">Naciśnięto skrót klawiszowy lupy pełnoekranowej. Czy chcesz ją włączyć?</translation>
 <translation id="380165613292957338">Cześć, w czym mogę pomóc?</translation>
 <translation id="383629559565718788">Pokaż ustawienia klawiatury</translation>
 <translation id="3846575436967432996">Brak informacji o sieciach</translation>
@@ -195,6 +198,7 @@
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4292681942966152062">Włączam: <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Naciśnięto skrót klawiszowy wysokiego kontrastu. Czy chcesz go włączyć?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Lupa</translation>
@@ -202,6 +206,7 @@
 <translation id="435527878592612277">Wybierz swoje zdjęcie</translation>
 <translation id="4378551569595875038">Łączę...</translation>
 <translation id="4379531060876907730">To są Twoje narzędzia rysika</translation>
+<translation id="4389184120735010762">Naciśnięto skrót klawiszowy lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4450893287417543264">Nie pokazuj ponownie</translation>
@@ -217,7 +222,6 @@
 <translation id="4628757576491864469">Urządzenia</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
 <translation id="4734965478015604180">Orientacja pozioma</translation>
-<translation id="476166673298332917">Administrator tego urządzenia ma dostęp do wszystkiego, co robisz, w tym do haseł i komunikacji.</translation>
 <translation id="4774338217796918551">Możesz wrócić jutro o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asystent Google jest niedostępny w sesji demonstracyjnej.</translation>
@@ -391,6 +395,7 @@
 <translation id="7886169021410746335">Dostosowywać ustawienia prywatności</translation>
 <translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Wyślij e-maila</translation>
+<translation id="7897375687985782769">Naciśnięto skrót klawiszowy obrotu ekranu. Czy chcesz obrócić ekran?</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7933084174919150729">Asystent Google jest dostępny tylko na profilu głównym.</translation>
 <translation id="79341161159229895">Kontem zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -456,6 +461,7 @@
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">Używana jest <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>

@@ -398,6 +398,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4058278702844053247">En side er ved at blive indlæst</translation>
 <translation id="4065205963140826639">Prøv nu at finde Next-knappen ved at trykke på Søg+højrepil. Tryk derefter på Søg+mellemrum for at klikke på den.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}one{# tilder}other{# tilder}}</translation>
+<translation id="4086311032171418648">Indlæringstilstanden stoppes.</translation>
 <translation id="409334809956508737">Forrige objekt</translation>
 <translation id="4099274309791143834">med undermenu</translation>
 <translation id="4101527861445851766">Et markeret afkrydsningsfelt</translation>
@@ -500,6 +501,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4877261390094455813">Angiv en søgeforespørgsel.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Internt link</translation>
+<translation id="4915087353619183190">Indlæringstilstanden startes. Tryk på en qwerty-tast, en opdaterbar brailletast eller en berøring for at få indblik i den tilknyttede funktion. Tryk på Ctrl og w eller escape for at afslutte.</translation>
 <translation id="492295894462528572">Forord</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953585991029886728">Rediger tekst</translation>

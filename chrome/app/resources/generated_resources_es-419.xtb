@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado del usuario</translation>
-<translation id="140250605646987970">Se detectó tu teléfono, pero Smart Lock solamente se admite en dispositivos con Android 5.0 y versiones posteriores. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
 <translation id="1406500794671479665">Verificando...</translation>
 <translation id="1407489512183974736">Centrar imagen recortada</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">Abrir vínculo en una ventana &amp;nueva</translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="177336675152937177">Datos de aplicaciones alojadas</translation>
-<translation id="1774349594977710164">Tu teléfono también desbloquea tus otros dispositivos <ph name="DEVICE_TYPE" />, debido a que se sincronizan automáticamente.</translation>
 <translation id="1774833706453699074">Agregar las páginas abiertas a Favoritos...</translation>
 <translation id="1775381402323441512">Información del video</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">Configurar o administrar impresoras CUPS</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> más…</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Precaución:<ph name="END_BOLD" /> Estos archivos son temporales y pueden eliminarse automáticamente para liberar espacio en el disco. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Configurar Smart Lock para tu dispositivo <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Recuperación de archivos de Microsoft</translation>
 <translation id="1818007989243628752">Borrar la contraseña para <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">La carga del registro está en curso.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">Las cookies de múltiples sitios se han bloqueado.</translation>
 <translation id="1977965994116744507">Acerca el teléfono para desbloquear tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Estás por cambiar a un canal que tiene una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
-<translation id="1981115145845865539">Desbloquear tu <ph name="DEVICE_TYPE" /> automáticamente</translation>
 <translation id="1983959805486816857">Una vez que crees un usuario supervisado, podrás administrar la configuración cuando lo desees desde cualquier dispositivo en <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Cuentas</translation>
 <translation id="1989112275319619282">Navegar</translation>
@@ -904,7 +900,7 @@
 <translation id="2340263603246777781"><ph name="ORIGIN" /> desea sincronizarse</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
 <translation id="2345723121311404059">1 página a <ph name="PRINTER_NAME" /></translation>
-<translation id="2347644257713614136">El uso de Hangouts y Cast for Education está regido por la Política de privacidad de Google.</translation>
+<translation id="2347644257713614136">El uso de Hangouts y Cast for Education está regido por la Política de Privacidad de Google.</translation>
 <translation id="2348176352564285430">App: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="2350182423316644347">Iniciando aplicación...</translation>
 <translation id="2350796302381711542">¿Deseas permitir que <ph name="HANDLER_HOSTNAME" /> abra todos los vínculos de <ph name="PROTOCOL" /> en lugar de <ph name="REPLACED_HANDLER_TITLE" />?</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187">Se agregó <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Usa cookies para recordar tus preferencias, incluso si no visitas esas páginas</translation>
-<translation id="2468902267404883140">Falló la conexión con tu teléfono. Asegúrate de que tienes un teléfono Android compatible, y que esté encendido y cerca. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL de archivos compartidos</translation>
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
 <translation id="2473195200299095979">Traducir esta página</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />ingresa la frase de contraseña<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2487067538648443797">Agregar un favorito nuevo</translation>
-<translation id="248861575772995840">No se puede encontrar el teléfono. Asegúrate de que tu dispositivo <ph name="DEVICE_TYPE" /> tenga Bluetooth encendido. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Agregar &amp;carpeta...</translation>
 <translation id="249113932447298600">Lo sentimos, el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="249303669840926644">Error al completar el registro</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">Temas</translation>
 <translation id="2572032849266859634">Se concedió acceso de solo lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este ícono estará visible cuando la extensión se pueda utilizar en la página actual. Para usar esta extensión, haz clic en el ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">No se puede encontrar el teléfono. Asegúrate de que tu <ph name="DEVICE_TYPE" /> esté conectado al Wi-Fi o a una red móvil. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniones</translation>
 <translation id="2579575372772932244">Recreando el perfil; espera un momento…</translation>
 <translation id="2580889980133367162">Siempre permitir que <ph name="HOST" /> descargue varios archivos</translation>
@@ -1165,7 +1158,6 @@
 <translation id="2735438478659026460">Hacer clic automáticamente cuando se detenga el cursor del mouse</translation>
 <translation id="2735712963799620190">Cronograma</translation>
 <translation id="2737363922397526254">Contraer...</translation>
-<translation id="2737492745329609575">Iniciar configuración</translation>
 <translation id="2738771556149464852">No después</translation>
 <translation id="2739191690716947896">Depurar</translation>
 <translation id="2739240477418971307">Cambiar la configuración de accesibilidad</translation>
@@ -1328,7 +1320,6 @@
 <translation id="2994669386200004489">No se pudo crear una copia de seguridad de <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Instalado por tus padres</translation>
 <translation id="2996286169319737844">Los datos están encriptados con tu frase de contraseña de sincronización. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
-<translation id="3002017044809397427">Se detectó tu <ph name="PHONE_TYPE" />, pero Smart Lock solamente se admite en los dispositivos con Android 5.0 y versiones posteriores. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Redes preferidas</translation>
 <translation id="3003623123441819449">Caché CSS</translation>
 <translation id="3003633581067744647">Cambiar a la vista en miniatura</translation>
@@ -1477,7 +1468,6 @@
 <translation id="3241680850019875542">Seleccionar el directorio de raíz de la extensión que debe empaquetarse. Para actualizar una extensión, también debes seleccionar el archivo de clave privada que será reutilizado.</translation>
 <translation id="3244294424315804309">Continuar silenciando el sonido</translation>
 <translation id="3245321423178950146">Artista desconocido</translation>
-<translation id="3246097286174000800">Probar Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" />: Error de red</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;No forma parte de un certificado&gt;</translation>
@@ -1556,7 +1546,6 @@
 <translation id="3355936511340229503">Error de conexión</translation>
 <translation id="3356580349448036450">Completo</translation>
 <translation id="3356797067524893661">Todo listo para utilizar Meet de Hangouts</translation>
-<translation id="3358935496594837302">No se puede encontrar el teléfono. Asegúrate de que tienes un teléfono Android compatible, y que esté encendido y cerca. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
 <translation id="3360297538363969800">Se produjo un error al imprimir. Revisa la impresora y vuelve a intentarlo.</translation>
 <translation id="3365598184818502391">Usar Ctrl o Alt</translation>
@@ -1906,7 +1895,6 @@
 <translation id="3855441664322950881">Extensión de empaque</translation>
 <translation id="3855676282923585394">Importar favoritos y configuración...</translation>
 <translation id="3856800405688283469">Seleccionar zona horaria</translation>
-<translation id="3857228364945137633">Prueba Smart Lock para desbloquear tu <ph name="DEVICE_TYPE" /> sin necesidad de una contraseña cuando el teléfono está cerca.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Levanta el dedo y vuelve a tocar</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Se pausó la sincronización</translation>
@@ -2033,7 +2021,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Salir de la página}other{Salir de las páginas}}</translation>
 <translation id="4044612648082411741">Ingresar la contraseña del certificado</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
-<translation id="4047112090469382184">Seguridad</translation>
 <translation id="4052120076834320548">Diminuto</translation>
 <translation id="4055023634561256217">Es necesario que reinicies tu dispositivo para poder restablecerlo con Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2042,7 +2029,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Controlar documento ahora</translation>
 <translation id="406070391919917862">Aplicaciones de fondo</translation>
-<translation id="4063283930106169759">Asegúrate de que tu teléfono esté cerca. Para encontrar tu teléfono, se activará Bluetooth en todos los dispositivos que tengan tu cuenta. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Es posible que la red que estás usando (<ph name="NETWORK_ID" />) requiera que visites la página de acceso.</translation>
 <translation id="4068506536726151626">Esta página contiene elementos de los siguientes sitios que están rastreando tu ubicación:</translation>
 <translation id="4068776064906523561">Huellas digitales guardadas</translation>
@@ -2395,7 +2381,6 @@
 <translation id="4672657274720418656">Filtrar página</translation>
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
 <translation id="4677585247300749148"><ph name="URL" /> desea responder a los eventos de accesibilidad</translation>
-<translation id="4677692029604506169">El teléfono que usaste para desbloquear tu <ph name="DEVICE_TYPE" /> necesita un bloqueo de pantalla para mejorar la seguridad. Generalmente, se trata de un PIN, un patrón o una contraseña. ¿Ya tienes un bloqueo de pantalla? Selecciona Volver a comprobar para verificarlo y continuar con la configuración.</translation>
 <translation id="4677772697204437347">Memoria de la GPU</translation>
 <translation id="4680105648806843642">El sonido está silenciado en esta página</translation>
 <translation id="4681930562518940301">Abrir imagen original en una pestaña nueva</translation>
@@ -2731,7 +2716,6 @@
 <translation id="5184063094292164363">&amp;Consola de JavaScript</translation>
 <translation id="5184662919967270437">Actualizando tu dispositivo</translation>
 <translation id="5185386675596372454">Se ha desactivado la versión más reciente de "<ph name="EXTENSION_NAME" />" porque requiere más permisos.</translation>
-<translation id="5186650237607254032">Actualiza el bloqueo de pantalla del teléfono para que se apague cuando estés cerca. Podrás desbloquear el teléfono más rápido y disfrutar de una mejor experiencia de Smart Lock en tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Accediste a <ph name="SHORT_PRODUCT_NAME" />. Tus favoritos, historial y demás parámetros de configuración se están sincronizando con tu cuenta de Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Aplica la función "Powerwash" en el dispositivo y vuelve a intentarlo.</translation>
@@ -3162,7 +3146,6 @@
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
-<translation id="5807290661599647102">Cómo configurar un bloqueo de pantalla</translation>
 <translation id="5811750797187914944">Listo</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X 400</translation>
@@ -3535,7 +3518,6 @@
 <translation id="6370021412472292592">No se pudo cargar el manifiesto.</translation>
 <translation id="637062427944097960">Este archivo está abierto en otro escritorio. Ve a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para visualizarlo.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Configurar Smart Lock para Android</translation>
 <translation id="6374469231428023295">Volver a intentar</translation>
 <translation id="6380143666419481200">Aceptar y continuar</translation>
 <translation id="6384275966486438344">Cambiar la configuración de búsqueda por <ph name="SEARCH_HOST" /></translation>
@@ -3828,7 +3810,7 @@
 <translation id="6828860976882136098">No se pudieron configurar actualizaciones automáticas para todos los usuarios (error de ejecución preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">Obtén ayuda con tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6829270497922309893">Registro en tu organización</translation>
-<translation id="682971198310367122">Política de privacidad de Google</translation>
+<translation id="682971198310367122">Política de Privacidad de Google</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="683373380308365518">Cambia a un navegador inteligente y seguro</translation>
 <translation id="6835762382653651563">Conéctate a Internet para actualizar tu <ph name="DEVICE_TYPE" />.</translation>
@@ -3955,7 +3937,6 @@
 <translation id="7027125358315426638">Nombre de la base de datos:</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031962166228839643">TPM se está preparando, espera (esto llevará algunos minutos)</translation>
-<translation id="7035437538340499453">Smart Lock ya está configurado</translation>
 <translation id="7037509989619051237">Texto de prueba</translation>
 <translation id="7039326228527141150">Acceder a dispositivos USB de <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Inicio de sesión de tarjeta inteligente de Microsoft</translation>
@@ -4758,7 +4739,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8227119283605456246">Adjuntar un archivo</translation>
 <translation id="8230134520748321204">¿Quieres guardar la contraseña para <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Ayuda a nuestros ingenieros a corregir este problema. Cuéntanos lo que pasó justo antes de recibir el mensaje de error de perfil:</translation>
-<translation id="8234989666557591529">Elige un teléfono para desbloquear tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Nublado</translation>
 <translation id="8241806945692107836">Determinando configuración del dispositivo…</translation>
 <translation id="8241868517363889229">Leer y cambiar los favoritos</translation>
@@ -4851,10 +4831,8 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8395901698320285466">Dimensiones</translation>
 <translation id="8396532978067103567">Contraseña incorrecta.</translation>
 <translation id="839736845446313156">Registrarse</translation>
-<translation id="8398790343843005537">Buscar teléfono</translation>
 <translation id="8398877366907290961">Continuar de todos modos</translation>
 <translation id="8400146488506985033">Administrar personas</translation>
-<translation id="8410073653152358832">Utilizar este teléfono</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar primero (recomendado)</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
@@ -4932,7 +4910,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8528074251912154910">Agregar idiomas</translation>
 <translation id="8528962588711550376">Accediendo.</translation>
-<translation id="8529026713753283969">Recibirás una notificación en este teléfono, por lo que te recomendamos tenerlo cerca.</translation>
 <translation id="8529925957403338845">Se produjo un error en la conexión instantánea mediante dispositivo portátil</translation>
 <translation id="8534656636775144800">Se produjo un error al intentar unirse al dominio. Vuelve a intentarlo.</translation>
 <translation id="8535005006684281994">URL de renovación del certificado Netscape</translation>
@@ -5236,14 +5213,12 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Agregar cuenta…</translation>
 <translation id="9003647077635673607">Permitir en todos los sitios web</translation>
-<translation id="9003677638446136377">Volver a comprobar</translation>
 <translation id="9003704114456258138">Frecuencia</translation>
 <translation id="9004952710076978168">Se ha recibido una notificación de una impresora desconocida.</translation>
 <translation id="9008201768610948239">Ignorar</translation>
 <translation id="9009369504041480176">Cargando (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Mostrar siempre el ícono</translation>
 <translation id="9013707997379828817">El administrador restableció este dispositivo. Antes de reiniciarlo, guarda los archivos importantes, ya que se borrarán todos los datos.</translation>
-<translation id="9014987600015527693">Mostrar otro teléfono</translation>
 <translation id="9018218886431812662">Se completó la instalación</translation>
 <translation id="901834265349196618">correo electrónico</translation>
 <translation id="9019062154811256702">Leer y cambiar la configuración de Autocompletar</translation>
@@ -5339,7 +5314,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9147304170847707004">Método de autenticación</translation>
 <translation id="9147392381910171771">&amp;Opciones</translation>
 <translation id="9148058034647219655">Salir</translation>
-<translation id="9148116311817999634">Establecer un bloqueo de pantalla para mejorar la seguridad</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>
 <translation id="9149866541089851383">Editar...</translation>
 <translation id="9150045010208374699">Usar tu cámara</translation>
@@ -5384,7 +5358,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932508678520956232">No se pudo iniciar la impresión.</translation>
-<translation id="93343527085570547">Para solicitar cambios en el contenido por motivos legales, visita la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" />. Es posible que se envíe a Google información sobre el sistema y la cuenta. Según lo establecido en nuestra <ph name="BEGIN_LINK2" />Política de privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />, la información que nos brindes se usará para solucionar problemas técnicos y mejorar nuestros servicios.</translation>
+<translation id="93343527085570547">Para solicitar cambios en el contenido por motivos legales, visita la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" />. Es posible que se envíe a Google información sobre el sistema y la cuenta. Según lo establecido en nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />, la información que nos brindes se usará para solucionar problemas técnicos y mejorar nuestros servicios.</translation>
 <translation id="93393615658292258">Solo contraseña</translation>
 <translation id="934503638756687833">Los elementos que no se muestran aquí también se quitarán si es necesario. Obtén más información sobre &lt;a href="<ph name="URL" />"&gt;la protección contra software no deseado&lt;/a&gt; en el informe de privacidad de Chrome.</translation>
 <translation id="935490618240037774">Tus favoritos, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos.</translation>

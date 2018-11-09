@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Pag-sync at pag-personalize</translation>
 <translation id="1398853756734560583">Maximize</translation>
 <translation id="1399511500114202393">Walang certificate ng user</translation>
-<translation id="140250605646987970">Nakita na ang iyong telepono. Ngunit gumagana lang ang Smart Lock sa mga device na may Android 5.0 o mas bago. &lt;a&gt;Matuto nang higit pa&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Pinangangasiwaan)</translation>
 <translation id="1406500794671479665">Bine-verify...</translation>
 <translation id="1407489512183974736">Gitnang Naka-crop</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">Buksan ang Link sa Bagong &amp;Window</translation>
 <translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="177336675152937177">Naka-host na data ng app</translation>
-<translation id="1774349594977710164">Ina-unlock din ng iyong telepono ang iba pang <ph name="DEVICE_TYPE" /> mo dahil awtomatikong naka-sync ang mga ito.</translation>
 <translation id="1774833706453699074">I-bookmark ang mga bukas na page...</translation>
 <translation id="1775381402323441512">Impormasyon ng video</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">Mag-set up o mamahala ng mga printer ng CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> pa...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Mag-ingat:<ph name="END_BOLD" /> Ang mga file na ito ay pansamantala at maaaring awtomatikong tanggalin upang magbakante ng espasyo sa disk.  <ph name="BEGIN_LINK" />Matuto nang Higit Pa<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Mag-set up ng Smart Lock para sa iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818007989243628752">I-delete ang password para sa <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">I-log ang isinasagawang pag-upload.</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">Na-block ang cookies mula sa maraming site.</translation>
 <translation id="1977965994116744507">Ilapit pa ang iyong telepono upang ma-unlock ang <ph name="DEVICE_TYPE" /> mo.</translation>
 <translation id="1979280758666859181">Lumilipat ka sa isang channel na may lumang bersyon ng <ph name="PRODUCT_NAME" />. Ilalapat ang paglilipat ng channel kapag tumugma ang bersyon ng channel sa bersyong kasalukuyang naka-install sa iyong device.</translation>
-<translation id="1981115145845865539">Awtomatikong i-unlock ang iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan ang mga setting anumang oras mula sa anumang device, sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Mga Account</translation>
 <translation id="1989112275319619282">Mag-browse</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187">Idinagdag ang <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2468205691404969808">Gumamit ng mga cookie para matandaan ang iyong mga kagustuhan kahit na hindi mo binibisita ang mga page na iyon</translation>
-<translation id="2468902267404883140">Hindi makakonekta sa iyong telepono. Siguraduhing gumagamit ka ng tugmang Android phone na naka-on at malapit. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL ng file share</translation>
 <translation id="2470702053775288986">Na-disable ang mga hindi sinusuportahang extension</translation>
 <translation id="2473195200299095979">I-translate ang pahinang ito</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">Para i-clear ang data mula sa pag-browse sa lahat ng iyong naka-sync na device at sa Google Account mo, <ph name="BEGIN_LINK" />ilagay ang iyong passphrase<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2487067538648443797">Magdagdag ng bagong bookmark</translation>
-<translation id="248861575772995840">Hindi mahanap ang iyong telepono. Siguraduhing naka-on ang Bluetooth ng <ph name="DEVICE_TYPE" /> mo. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Magdagdag ng &amp;Folder...</translation>
 <translation id="249113932447298600">Paumanhin, hindi sinusuportahan ang device na <ph name="DEVICE_LABEL" /> sa oras na ito.</translation>
 <translation id="249303669840926644">Hindi makumpleto ang pagpaparehistro</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">Mga tema</translation>
 <translation id="2572032849266859634">Ipinagkaloob na sa <ph name="VOLUME_NAME" /> ang read-only na access.</translation>
 <translation id="2575247648642144396">Makikita ang icon na ito kapag makakakilos ang extension sa kasalukuyang pahina. Gamitin ang extension na ito sa pamamagitan ng pag-click sa icon o sa pamamagitan ng pagpindot sa <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Hindi mahanap ang iyong telepono. Siguraduhing nakakonekta sa Wi-Fi o mobile network ang <ph name="DEVICE_TYPE" /> mo. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="257779572837908839">I-set up bilang Chromebox for meetings</translation>
 <translation id="2579575372772932244">Muling ginagawa ang profile, mangyaring maghintay...</translation>
 <translation id="2580889980133367162">Palaging payagan ang <ph name="HOST" /> na mag-download ng maraming file</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Awtomatikong i-click kapag huminto ang cursor ng mouse</translation>
 <translation id="2735712963799620190">Iskedyul</translation>
 <translation id="2737363922397526254">Tiklupin...</translation>
-<translation id="2737492745329609575">Simulan ang setup</translation>
 <translation id="2738771556149464852">Hindi Pagkatapos</translation>
 <translation id="2739191690716947896">I-debug</translation>
 <translation id="2739240477418971307">Baguhin ang iyong mga setting ng accessibility</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489">Hindi ma-back up ang <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Na-install ng iyong magulang.</translation>
 <translation id="2996286169319737844">Ine-encrypt ang data gamit ang iyong passphrase sa pag-sync. Hindi kasama rito ang mga paraan ng pagbabayad at address mula sa Google Pay.</translation>
-<translation id="3002017044809397427">Nahanap na ang iyong <ph name="PHONE_TYPE" />. Ngunit gumagana lang ang Smart Lock sa mga device na may Android 5.0 at mas bago. &lt;a&gt;Matuto nang higit pa&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Mga gustong network</translation>
 <translation id="3003623123441819449">Cache ng CSS</translation>
 <translation id="3003633581067744647">Lumipat sa thumbnail view</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">Piliin ang pinagmulang direktoryo ng extension sa pack. Upang mai-update ang extension, piliin rin ang file ng private na key na muling gagamitin.</translation>
 <translation id="3244294424315804309">Patuloy na i-mute ang tunog</translation>
 <translation id="3245321423178950146">Hindi Kilalang Artist</translation>
-<translation id="3246097286174000800">Subukan ang Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Error sa network</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Hindi Bahagi Ng Certificate&gt;</translation>
@@ -1559,7 +1549,6 @@
 <translation id="3355936511340229503">Error sa koneksyon</translation>
 <translation id="3356580349448036450">Kumpleto na</translation>
 <translation id="3356797067524893661">Handa ka nang magpatuloy sa Hangouts Meet</translation>
-<translation id="3358935496594837302">Hindi mahanap ang iyong telepono. Siguraduhing gumagamit ka ng tugmang Android phone na naka-on at malapit. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Mga Limitasyon sa Patakaran ng Certificate</translation>
 <translation id="3360297538363969800">Hindi nakapag-print. Pakisuri ang iyong printer at subukang muli.</translation>
 <translation id="3365598184818502391">Isa lang sa Ctrl o Alt ang gamitin</translation>
@@ -1909,7 +1898,6 @@
 <translation id="3855441664322950881">Extension ng pack</translation>
 <translation id="3855676282923585394">Mag-import ng Mga Bookmark at Setting...</translation>
 <translation id="3856800405688283469">Pumili ng timezone</translation>
-<translation id="3857228364945137633">Subukan ang Smart Lock upang i-unlock ang iyong <ph name="DEVICE_TYPE" /> nang walang password kapag nasa malapit ang telepono mo.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Iangat, pagkatapos ay pindutin muli</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Na-pause ang pag-sync</translation>
@@ -2036,7 +2024,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Umalis sa Page}one{Umalis sa Mga Page}other{Umalis sa Mga Page}}</translation>
 <translation id="4044612648082411741">Ilagay ang password ng iyong certificate</translation>
 <translation id="404493185430269859">Default na search engine</translation>
-<translation id="4047112090469382184">Paano ito naging secure</translation>
 <translation id="4052120076834320548">Maliit</translation>
 <translation id="4055023634561256217">Kinakailangang mag-restart bago maaaring ma-reset ang iyong device gamit ang Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Check Document Now</translation>
 <translation id="406070391919917862">Background na Apps</translation>
-<translation id="4063283930106169759">Siguraduhing nasa malapit ang iyong telepono. Upang hanapin ang telepono mo, io-on ang Bluetooth sa lahat ng device kung saan nakalagay ang account mo. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Maaaring hilingin sa iyo ng network na ginagamit mo (<ph name="NETWORK_ID" />) na bisitahin ang page sa pag-log in nito.</translation>
 <translation id="4068506536726151626">Naglalaman ang page na ito ng mga elemento mula sa sumusunod na mga site na sumusubaybay sa lokasyon mo:</translation>
 <translation id="4068776064906523561">Mga naka-save na fingerprint</translation>
@@ -2398,7 +2384,6 @@
 <translation id="4672657274720418656">Distill Page</translation>
 <translation id="4673442866648850031">Buksan ang mga stylus tool kapag inalis ang stylus</translation>
 <translation id="4677585247300749148">Gustong tumugon ng <ph name="URL" /> sa mga kaganapan ng pagiging accessible</translation>
-<translation id="4677692029604506169">Nangangailangan ng lock ng screen para sa seguridad ang teleponong ginagamit mo upang i-unlock ang iyong <ph name="DEVICE_TYPE" />.Karaniwan, isa itong PIN, pattern, o password. Mayroon nang lock ng screen? Piliin ang Suriing muli upang mag-verify at magpatuloy.</translation>
 <translation id="4677772697204437347">GPU memory</translation>
 <translation id="4680105648806843642">Na-mute ang tunog sa page na ito</translation>
 <translation id="4681930562518940301">Buksan ang or&amp;ihinal na larawan sa bagong tab</translation>
@@ -2734,7 +2719,6 @@
 <translation id="5184063094292164363">&amp;JavaScript Console</translation>
 <translation id="5184662919967270437">Ina-update ang iyong device</translation>
 <translation id="5185386675596372454">Hindi pinagana ang pinakabagong bersyon ng "<ph name="EXTENSION_NAME" />" dahil nangangailangan ito ng higit pang mga pahintulot.</translation>
-<translation id="5186650237607254032">I-update ang lock ng screen ng iyong telepono upang ma-off ito kapag nasa malapit ka. Maa-unlock mo ang telepono nang mas mabilis, at magkakaroon ka ng mas mahusay na karanasan sa Smart Lock sa iyong <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Naka-sign in ka na ngayon sa <ph name="SHORT_PRODUCT_NAME" />. Ang iyong mga bookmark, kasaysayan, at ibang mga setting ay sini-sync sa iyong Google Account.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Paki-powerwash ang device at subukang muli.</translation>
@@ -3165,7 +3149,6 @@
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5805697420284793859">Window manager</translation>
 <translation id="580571955903695899">Muling Ayusin ayon sa Pamagat</translation>
-<translation id="5807290661599647102">Magtakda ng Lock ng Screen</translation>
 <translation id="5811750797187914944">Handa na ang lahat</translation>
 <translation id="5814126672212206791">Uri ng koneksyon</translation>
 <translation id="5815645614496570556">Address na X.400</translation>
@@ -3538,7 +3521,6 @@
 <translation id="6370021412472292592">Hindi mai-load ang manifest.</translation>
 <translation id="637062427944097960">Ang file na ito na binuksan sa ibang desktop. Ilipat sa <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) upang tingnan ito.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">I-set up ang Smart Lock para sa Android</translation>
 <translation id="6374469231428023295">Subukang Muli</translation>
 <translation id="6380143666419481200">Tanggapin at magpatuloy</translation>
 <translation id="6384275966486438344">Gawing ito ang iyong mga setting ng paghahanap: <ph name="SEARCH_HOST" /></translation>
@@ -3958,7 +3940,6 @@
 <translation id="7027125358315426638">Pangalan ng database:</translation>
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7031962166228839643">Ang TPM ay ihinahanda, mangyaring maghintay (maaaring tumagal ito nang ilang minuto)...</translation>
-<translation id="7035437538340499453">Handa na ang Smart Lock</translation>
 <translation id="7037509989619051237">Text na ipi-preview</translation>
 <translation id="7039326228527141150">Mag-access ng mga USB device mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4761,7 +4742,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8227119283605456246">Mag-attach ng file</translation>
 <translation id="8230134520748321204">I-save ang password para sa <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Pakitulungan ang aming mga engineer na ayusin ang problemang ito. Sabihin sa amin kung ano ang nangyari bago mo nakuha ang mensahe ng error sa profile:</translation>
-<translation id="8234989666557591529">Pumili ng telepono upang i-unlock ang iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Makulimlim</translation>
 <translation id="8241806945692107836">Tinutukoy ang configuration ng device...</translation>
 <translation id="8241868517363889229">Basahin at baguhin ang iyong mga bookmark</translation>
@@ -4853,10 +4833,8 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8395901698320285466">Mga Sakop</translation>
 <translation id="8396532978067103567">Maling password.</translation>
 <translation id="839736845446313156">Magparehistro</translation>
-<translation id="8398790343843005537">Hanapin ang iyong telepono</translation>
 <translation id="8398877366907290961">Magpatuloy</translation>
 <translation id="8400146488506985033">Pamahalaan ang mga tao</translation>
-<translation id="8410073653152358832">Gamitin ang teleponong ito</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Magtanong muna (inirerekomenda)</translation>
 <translation id="8418445294933751433">&amp;Ipakita bilang tab</translation>
@@ -4935,7 +4913,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8525306231823319788">Buong screen</translation>
 <translation id="8528074251912154910">Magdagdag ng mga wika</translation>
 <translation id="8528962588711550376">Nagsa-sign in.</translation>
-<translation id="8529026713753283969">Makakatanggap ka ng notification sa teleponong ito kaya panatilihing nasa malapit ito.</translation>
 <translation id="8529925957403338845">Hindi nakakonekta ang Instant na Pag-tether</translation>
 <translation id="8534656636775144800">Oops!  Nagkaproblema noong sinusubukang sumali sa domain. Pakisubukang muli.</translation>
 <translation id="8535005006684281994">URL ng Pag-renew ng Netscape Certificate</translation>
@@ -5240,14 +5217,12 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8995603266996330174">Pinamamahalaan ni <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Magdagdag ng account...</translation>
 <translation id="9003647077635673607">Payagan sa lahat ng website</translation>
-<translation id="9003677638446136377">Suriing muli</translation>
 <translation id="9003704114456258138">Frequency</translation>
 <translation id="9004952710076978168">Nakatanggap ng isang notification para sa isang hindi kilalang printer.</translation>
 <translation id="9008201768610948239">Balewalain</translation>
 <translation id="9009369504041480176">Nag-a-upload (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Palaging ipakita ang icon</translation>
 <translation id="9013707997379828817">Na-roll back ng iyong administrator ang device na ito. Paki-save ang mahahalagang file, pagkatapos ay mag-restart. Made-delete ang lahat ng data sa device.</translation>
-<translation id="9014987600015527693">Magpakita ng isa pang telepono</translation>
 <translation id="9018218886431812662">Tapos na ang pag-install</translation>
 <translation id="901834265349196618">email</translation>
 <translation id="9019062154811256702">Basahin at baguhin ang mga setting ng autofill</translation>
@@ -5343,7 +5318,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9147304170847707004">Paraan ng Pag-authenticate</translation>
 <translation id="9147392381910171771">&amp;Mga pagpipilian</translation>
 <translation id="9148058034647219655">Lumabas</translation>
-<translation id="9148116311817999634">Magtakda ng lock ng screen para sa kaligtasan</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
 <translation id="9149866541089851383">I-edit...</translation>
 <translation id="9150045010208374699">Gamitin ang iyong camera</translation>

@@ -398,6 +398,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4058278702844053247">A page load in progress</translation>
 <translation id="4065205963140826639">Try using Search + Right Arrow now to find the Next button, then press Search + Space to click it.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tildes}}</translation>
+<translation id="4086311032171418648">Stopping Learn Mode.</translation>
 <translation id="409334809956508737">Previous Object</translation>
 <translation id="4099274309791143834">with submenu</translation>
 <translation id="4101527861445851766">A ticked tick box</translation>
@@ -500,6 +501,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4877261390094455813">Enter a search query.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Internal link</translation>
+<translation id="4915087353619183190">Starting Learn Mode. Press a qwerty key, refreshable braille key or touch gesture to learn its function. Press control with w or escape to exit.</translation>
 <translation id="492295894462528572">Foreword</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Edit text</translation>

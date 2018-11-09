@@ -170,6 +170,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">Automatizovať</translation>
 <translation id="2227444325776770048">Pokračovať ako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Odosielať niektoré informácie o systéme a obsah stránok Googlu</translation>
 <translation id="2234876718134438132">Synchronizácia a služby Googlu</translation>
@@ -240,6 +241,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">neúspešné</translation>
 <translation id="2781151931089541271">Zostáva: 1 s</translation>
+<translation id="2783359740176230170">Rýchla platba</translation>
 <translation id="2803478378562657435">Zobrazujú sa uložené heslá a možnosti hesiel</translation>
 <translation id="2810645512293415242">Zjednodušená stránka vám pomôže ušetriť dáta a zrýchliť načítavanie.</translation>
 <translation id="281504910091592009">Zobrazenie a správa uložených hesiel v <ph name="BEGIN_LINK" />účte Google<ph name="END_LINK" /></translation>
@@ -362,6 +364,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="3868004864571585162">Súbory cookie, licencie médií a údaje webov</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
+<translation id="3918221729963301892">Nabudúce nezobrazovať</translation>
 <translation id="3927692899758076493">Bezpätkové</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
 <translation id="393697183122708255">Žiadne povol. hlas. vyhľad. k dispozícii</translation>
@@ -507,6 +510,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Získajte pomoc<ph name="END_LINK" /> s vyhľadávaním zariadení…</translation>
 <translation id="4943872375798546930">Žiadne výsledky</translation>
 <translation id="4958708863221495346">Web <ph name="URL_OF_THE_CURRENT_TAB" /> zdieľa vašu obrazovku</translation>
+<translation id="4961107849584082341">Preložte si túto stránku do ľubovoľného jazyka</translation>
 <translation id="4961334780091921942">Vaše heslá, história a ďalší obsah vo všetkých zariadeniach</translation>
 <translation id="4961700429721424617">Odhlasujete sa z účtu spravovaného doménou <ph name="MANAGED_DOMAIN" />. Týmto odstránite údaje Chromu z tohto zariadenia, avšak zostanú naďalej vo vašom účte Google.</translation>
 <translation id="497421865427891073">Ďalej</translation>
@@ -544,6 +548,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5240817131241497236">Nastavenia, ktoré riadia synchronizáciu, prispôsobenie a ďalšie služby v Chrome, boli zmenené. Môže to ovplyvniť vaše aktuálne nastavenia.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Nastavenia<ph name="END_LINK1" /> si môžete kedykoľvek prispôsobiť. Google môže použiť obsah na weboch, ktoré navštívite, interakcie a aktivitu v prehliadači na prispôsobenie Chromu a služieb Googlu, ako sú Prekladač, Vyhľadávanie a reklamy.</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
+<translation id="5274381992091475657">Automatické dopĺňanie Asistentom</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5284584623296338184">Záložky, história, heslá a ďalšie nastavenia sa už nebudú ďalej synchronizovať do vášho účtu Google. Vaše súčasné údaje však zostanú v účte Google zachované.</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
@@ -611,6 +616,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
+<translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
 <translation id="5719837394786370183">Stránky, ktoré si zobrazíte na kartách inkognito, budú odstránené z histórie prehliadača, z histórie vyhľadávania aj zo súborov cookie okamžite po zatvorení všetkých kariet inkognito. Stiahnuté súbory a záložky, ktoré vytvoríte, ostanú uložené.
 
 Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše prehliadanie pred vaším zamestnávateľom, poskytovateľom internetových služieb či webovými stránkami, ktoré navštívite.</translation>
@@ -652,6 +658,7 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5962718611393537961">Klepnutím zbaliť</translation>
 <translation id="5990142338020175451">Viac osobných služieb Googlu, napríklad lepšie návrhy stránok</translation>
 <translation id="6000066717592683814">Ponechať Google</translation>
+<translation id="6001839398155993679">Poďme na to</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Prechod na ďalšiu kartu</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -826,6 +833,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7250468141469952378">Vybrané: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pridajte účet Google zo stránky Účty v aplikácii Nastavenia na vašom zariadení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
+<translation id="728491846437309531">Asistent Google vám pomôže vykonávať úlohy na internete rýchlejšie a jednoduchšie.</translation>
 <translation id="729975465115245577">Vaše zariadenie nemá aplikáciu na uloženie súboru s heslami.</translation>
 <translation id="7302081693174882195">Podrobnosti: zoradené podľa množstva ušetrených dát</translation>
 <translation id="7333031090786104871">Pridávanie predchádzajúceho webu stále prebieha</translation>

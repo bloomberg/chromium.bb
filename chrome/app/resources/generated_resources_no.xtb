@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Synkronisering og personlig tilpasning</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1399511500114202393">Ingen brukersertifikater</translation>
-<translation id="140250605646987970">Telefonen din er funnet, men Smart Lock fungerer bare på enheter med Android 5.0 og nyere. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administrert)</translation>
 <translation id="1406500794671479665">Bekrefter …</translation>
 <translation id="1407489512183974736">Midstill og beskjær</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">&amp;Åpne link i nytt vindu</translation>
 <translation id="1773212559869067373">Autentiseringssertifikatet ble avvist lokalt</translation>
 <translation id="177336675152937177">Appdata på vertstjener</translation>
-<translation id="1774349594977710164">Telefonen låser også opp de andre <ph name="DEVICE_TYPE" />-enhetene dine, siden de synkroniseres automatisk.</translation>
 <translation id="1774833706453699074">Bokmerk åpne sider …</translation>
 <translation id="1775381402323441512">Videoinformasjon</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">Konfigurer eller administrer CUPS-skrivere.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> til …</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Forsiktig:<ph name="END_BOLD" /> Disse filene er midlertidige og kan bli slettet automatisk for å frigjøre diskplass. <ph name="BEGIN_LINK" />Les mer<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Konfigurer Smart Lock for <ph name="DEVICE_TYPE" />-enheten</translation>
 <translation id="1817871734039893258">Microsoft-filgjenoppretting</translation>
 <translation id="1818007989243628752">Slett passordet for <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Opplasting av loggen pågår.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">Informasjonskapsler fra flere nettsteder er blokkert.</translation>
 <translation id="1977965994116744507">Hold telefonen nærmere for å låse opp <ph name="DEVICE_TYPE" />-enheten.</translation>
 <translation id="1979280758666859181">Du endrer til en kanal med en eldre versjon av <ph name="PRODUCT_NAME" />. Kanalendringen trer i kraft når kanalversjonen samsvarer med versjonen som allerede er installert på enheten din.</translation>
-<translation id="1981115145845865539">Lås opp <ph name="DEVICE_TYPE" />-enheten automatisk</translation>
 <translation id="1983959805486816857">Når du har opprettet en ny administrert bruker, kan du administrere innstillingene når som helst fra hvilken som helst enhet på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Kontoer</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> er lagt til</translation>
 <translation id="2464089476039395325">HTTP-proxy-tjener</translation>
 <translation id="2468205691404969808">Bruker informasjonskapsler til å huske preferansene dine, selv om du ikke går til de sidene</translation>
-<translation id="2468902267404883140">Kan ikke koble til telefonen. Sørg for at du bruker en kompatibel Android-telefon som er slått på og i nærheten. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="247051149076336810">Nettadresse for fildeling</translation>
 <translation id="2470702053775288986">Ustøttede utvidelser slått av</translation>
 <translation id="2473195200299095979">Oversett denne siden</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">For å slette nettleserdata på alle synkroniserte enheter og Google-kontoen din må du <ph name="BEGIN_LINK" />skrive inn passordfrasen din<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2487067538648443797">Legg til nytt bokmerke</translation>
-<translation id="248861575772995840">Finner ikke telefonen. Sørg for at Bluetooth er aktivert på <ph name="DEVICE_TYPE" />-enheten. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Legg til &amp;mappe</translation>
 <translation id="249113932447298600">Beklager, men enheten <ph name="DEVICE_LABEL" /> støttes foreløpig ikke.</translation>
 <translation id="249303669840926644">Kunne ikke fullføre registreringen</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">Temaer</translation>
 <translation id="2572032849266859634">Skrivebeskyttet tilgang til <ph name="VOLUME_NAME" /> er innvilget.</translation>
 <translation id="2575247648642144396">Dette ikonet vises når utvidelsen kan brukes på den gjeldende siden. Aktivér utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Finner ikke telefonen. Sørg for at <ph name="DEVICE_TYPE" />-enheten er koblet til et Wi-Fi- eller mobilnettverk. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="257779572837908839">Konfigurer som en Chromebox for møter</translation>
 <translation id="2579575372772932244">Profilen opprettes på nytt. Vent litt …</translation>
 <translation id="2580889980133367162">Tillat alltid at <ph name="HOST" /> laster ned flere filer</translation>
@@ -1164,7 +1157,6 @@
 <translation id="2735438478659026460">Klikk automatisk når musepekeren stopper</translation>
 <translation id="2735712963799620190">Tidsplan</translation>
 <translation id="2737363922397526254">Skjul</translation>
-<translation id="2737492745329609575">Start konfigureringen</translation>
 <translation id="2738771556149464852">Ikke etter</translation>
 <translation id="2739191690716947896">Feilsøk</translation>
 <translation id="2739240477418971307">endre innstillingene for tilgjengelighet</translation>
@@ -1327,7 +1319,6 @@
 <translation id="2994669386200004489">Kunne ikke sikkerhetskopiere <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Installert av forelderen din.</translation>
 <translation id="2996286169319737844">Data er kryptert med passordfrasen din for synkronisering. Dette inkluderer ikke betalingsmåter og adresser fra Google Pay.</translation>
-<translation id="3002017044809397427"><ph name="PHONE_TYPE" />-enheten din er funnet, men Smart Lock fungerer bare på enheter med Android 5.0 og nyere. &lt;a&gt;Finn ut mer&lt;/a&gt;.</translation>
 <translation id="3003144360685731741">Foretrukne nettverk</translation>
 <translation id="3003623123441819449">CSS-buffer</translation>
 <translation id="3003633581067744647">Bytt til miniatyrbildevisning</translation>
@@ -1476,7 +1467,6 @@
 <translation id="3241680850019875542">Velg rotkatalogen til utvidelsen som skal pakkes. Hvis du vil oppdatere en utvidelse, velger du også den private nøkkelfilen.</translation>
 <translation id="3244294424315804309">Fortsett med å kutte lyden</translation>
 <translation id="3245321423178950146">Ukjent artist</translation>
-<translation id="3246097286174000800">Prøv Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – nettverksfeil</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Ikke del av sertifikat&gt;</translation>
@@ -1554,7 +1544,6 @@
 <translation id="3355936511340229503">Tilkoblingsfeil</translation>
 <translation id="3356580349448036450">Fullført</translation>
 <translation id="3356797067524893661">Du er klar for å fortsette til Hangouts Meet</translation>
-<translation id="3358935496594837302">Finner ikke telefonen. Sørg for at du bruker en kompatibel Android-telefon som er slått på og i nærheten. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Retningslinjebegrensninger for sertifikat</translation>
 <translation id="3360297538363969800">Utskriften mislyktes. Kontrollér skriveren og prøv på nytt.</translation>
 <translation id="3365598184818502391">Bruk enten Ctrl eller Alt</translation>
@@ -1904,7 +1893,6 @@
 <translation id="3855441664322950881">Pakk utvidelsen</translation>
 <translation id="3855676282923585394">Importér bokmerker og innstillinger</translation>
 <translation id="3856800405688283469">Velg tidssone</translation>
-<translation id="3857228364945137633">Prøv Smart Lock for å låse opp <ph name="DEVICE_TYPE" />-enheten uten passord når du har telefonen i nærheten.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Løft fingeren og berør igjen</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Synkronisering er satt på pause</translation>
@@ -2029,7 +2017,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Lukk siden}other{Lukk sidene}}</translation>
 <translation id="4044612648082411741">Angi sertifikatpassordet ditt</translation>
 <translation id="404493185430269859">Standard søkemotor</translation>
-<translation id="4047112090469382184">Derfor er dette sikkert</translation>
 <translation id="4052120076834320548">Bitteliten</translation>
 <translation id="4055023634561256217">En omstart er nødvendig før enheten din kan tilbakestilles med Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2038,7 +2025,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Kontroller dokument nå</translation>
 <translation id="406070391919917862">Bakgrunnsprogrammer</translation>
-<translation id="4063283930106169759">Sørg for at telefonen er i nærheten. For å finne telefonen blir Bluetooth slått på for alle enheter du er logget på kontoen din med. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Det kan hende at nettverket du bruker (<ph name="NETWORK_ID" />), krever at du besøker en påloggingsside.</translation>
 <translation id="4068506536726151626">Denne siden inneholder elementer fra følgende nettsteder som sporer posisjonen din:</translation>
 <translation id="4068776064906523561">Lagrede fingeravtrykk</translation>
@@ -2391,7 +2377,6 @@
 <translation id="4672657274720418656">Destiller siden</translation>
 <translation id="4673442866648850031">Åpne pekepennverktøyene når pekepennen fjernes</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ber om å svare på tilgjengelighetshendelser</translation>
-<translation id="4677692029604506169">Telefonen du brukte til å låse opp <ph name="DEVICE_TYPE" />-enheten din, må ha en skjermlås av sikkerhetshensyn. Skjermlåsen er vanligvis en PIN-kode, et mønster eller et passord. Har du allerede en skjermlås? Velg «Sjekk på nytt» for å bekrefte og fortsette konfigureringen.</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
 <translation id="4680105648806843642">Lyden er kuttet på denne siden</translation>
 <translation id="4681930562518940301">Åpne det opprinnelige &amp;bildet i en ny fane</translation>
@@ -2727,7 +2712,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-konsoll</translation>
 <translation id="5184662919967270437">Oppdaterer enheten</translation>
 <translation id="5185386675596372454">Den nyeste versjonen av <ph name="EXTENSION_NAME" /> er deaktivert fordi den krever ytterligere tillatelser.</translation>
-<translation id="5186650237607254032">Oppdater skjermlåsen på telefonen din, slik at den slås av når du er i nærheten. Da kan du låse opp telefonen raskere og få en bedre Smart Lock-erfaring på <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Du er nå pålogget <ph name="SHORT_PRODUCT_NAME" />. Bokmerkene, loggen og de andre innstillingene dine blir synkronisert med Google-kontoen din.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Utfør Powerwash på enheten, og prøv på nytt.</translation>
@@ -3158,7 +3142,6 @@
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5805697420284793859">Window Manager</translation>
 <translation id="580571955903695899">Sortér etter tittel</translation>
-<translation id="5807290661599647102">Angi en skjermlås</translation>
 <translation id="5811750797187914944">Ferdig</translation>
 <translation id="5814126672212206791">Tilkoblingstype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -3531,7 +3514,6 @@
 <translation id="6370021412472292592">Kunne ikke laste inn manifestet.</translation>
 <translation id="637062427944097960">Denne filen ble åpnet på et annet skrivebord. Flytt til <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) for å se den.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Konfigurer Smart Lock for Android</translation>
 <translation id="6374469231428023295">Prøv på nytt</translation>
 <translation id="6380143666419481200">Godta og fortsett</translation>
 <translation id="6384275966486438344">endre søkeinnstillingene dine til: <ph name="SEARCH_HOST" /></translation>
@@ -3951,7 +3933,6 @@
 <translation id="7027125358315426638">Databasenavn:</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7031962166228839643">TMP blir klargjort. Vent litt (dette kan ta noen minutter).</translation>
-<translation id="7035437538340499453">Smart Lock er konfigurert</translation>
 <translation id="7037509989619051237">Tekst til forhåndsvisning</translation>
 <translation id="7039326228527141150">Les USB-enheter fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Pålogging med Microsoft-smartkort</translation>
@@ -4752,7 +4733,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8227119283605456246">Legg ved fil</translation>
 <translation id="8230134520748321204">Vil du lagre passord for <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Hjelp programutviklerne våre med å løse dette problemet. Fortell oss hva som skjedde rett før du fikk profilfeilmeldingen:</translation>
-<translation id="8234989666557591529">Velg hvilken telefon du vil låse opp <ph name="DEVICE_TYPE" />-enheten med</translation>
 <translation id="8241040075392580210">Skybert</translation>
 <translation id="8241806945692107836">Fastslår enhetskonfigurasjonen …</translation>
 <translation id="8241868517363889229">lese og endre bokmerker</translation>
@@ -4844,10 +4824,8 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8395901698320285466">Dimensjoner</translation>
 <translation id="8396532978067103567">Feil passord.</translation>
 <translation id="839736845446313156">Registrer</translation>
-<translation id="8398790343843005537">Finn telefonen din</translation>
 <translation id="8398877366907290961">Fortsett likevel</translation>
 <translation id="8400146488506985033">Administrer personer</translation>
-<translation id="8410073653152358832">Bruk denne telefonen</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="8418445294933751433">Vi&amp;s som fane</translation>
@@ -4925,7 +4903,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8525306231823319788">Full skjerm</translation>
 <translation id="8528074251912154910">Legg til språk</translation>
 <translation id="8528962588711550376">Logger på.</translation>
-<translation id="8529026713753283969">Du mottar et varsel på denne telefonen, så ikke legg den fra deg.</translation>
 <translation id="8529925957403338845">Tilkoblingen med umiddelbar internettdeling kunne ikke opprettes</translation>
 <translation id="8534656636775144800">Beklager. Det oppstod en feil da du prøvde å knytte deg til domenet. Prøv igjen.</translation>
 <translation id="8535005006684281994">Fornying av Netscape-sertifikat for nettadresse</translation>
@@ -5229,14 +5206,12 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Legg til konto</translation>
 <translation id="9003647077635673607">Tillat på alle nettsteder</translation>
-<translation id="9003677638446136377">Sjekk på nytt</translation>
 <translation id="9003704114456258138">Frekvens</translation>
 <translation id="9004952710076978168">Mottok et varsel for en ukjent skriver.</translation>
 <translation id="9008201768610948239">Ignorer</translation>
 <translation id="9009369504041480176">Laster opp (<ph name="PROGRESS_PERCENT" /> %) ...</translation>
 <translation id="9011163749350026987">Vis alltid ikonet</translation>
 <translation id="9013707997379828817">Administratoren tilbakestiller denne enheten til forrige versjon. Lagre viktige filer, og start enheten på nytt. Alle data på enheten blir slettet.</translation>
-<translation id="9014987600015527693">Vis en annen telefon</translation>
 <translation id="9018218886431812662">Installasjonen er fullført</translation>
 <translation id="901834265349196618">e-post</translation>
 <translation id="9019062154811256702">Les og endre autofyll-innstillingene</translation>
@@ -5332,7 +5307,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9147304170847707004">Autentiseringsmetode</translation>
 <translation id="9147392381910171771">&amp;Alternativer</translation>
 <translation id="9148058034647219655">Avslutt</translation>
-<translation id="9148116311817999634">Angi en skjermlås for å beskytte deg</translation>
 <translation id="9148126808321036104">Logg på igjen</translation>
 <translation id="9149866541089851383">Endre</translation>
 <translation id="9150045010208374699">bruke kameraet ditt</translation>

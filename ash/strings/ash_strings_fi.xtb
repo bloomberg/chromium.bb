@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth pois käytöstä</translation>
 <translation id="2268813581635650749">Kirjaa kaikki ulos</translation>
 <translation id="2292698582925480719">Näytön skaalaus</translation>
+<translation id="2302092602801625023">Tiliä ylläpidetään Family Linkissä</translation>
 <translation id="2303600792989757991">Vaihda ikkunan yleiskatsausta</translation>
 <translation id="2339073806695260576">Napauttamalla hyllyn näyttökynäpainiketta voit tehdä muistiinpanoja, tallentaa kuvakaappauksen ja käyttää laserosoitinta tai suurennuslasia.</translation>
 <translation id="2341729377289034582">Lukittu pystysuuntaiseksi</translation>
@@ -140,6 +141,7 @@
 <translation id="315116470104423982">Mobiilitiedonsiirto</translation>
 <translation id="3151786313568798007">Suunta</translation>
 <translation id="3153444934357957346">Voit lisätä enintään <ph name="MULTI_PROFILE_USER_LIMIT" /> tiliä useille tileille kirjautumista varten.</translation>
+<translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3255483164551725916">Mitä osaat tehdä?</translation>
@@ -171,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lukitse</translation>
 <translation id="3798670284305777884">Kaiutin (sisäinen)</translation>
+<translation id="3799080171973636491">Painoit koko näytön suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="380165613292957338">Hei. Kuinka voin auttaa?</translation>
 <translation id="383629559565718788">Näytä näppäimistöasetukset</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
@@ -195,6 +198,7 @@
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4292681942966152062">Aktivoidaan <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Suurennuslasi</translation>
@@ -202,6 +206,7 @@
 <translation id="435527878592612277">Valitse valokuva</translation>
 <translation id="4378551569595875038">Yhdistetään…</translation>
 <translation id="4379531060876907730">Tässä ovat näyttökynätyökalusi</translation>
+<translation id="4389184120735010762">Painoit kiinnitetyn suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME" /> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="4450893287417543264">Älä näytä uudelleen</translation>
@@ -217,7 +222,6 @@
 <translation id="4628757576491864469">Laitteet</translation>
 <translation id="4659419629803378708">ChromeVox käytössä</translation>
 <translation id="4734965478015604180">Vaakasuora</translation>
-<translation id="476166673298332917">Tämän laitteen järjestelmänvalvojalla on pääsy kaikkeen toimintaan, mukaan lukien salasanoihin ja viestintään.</translation>
 <translation id="4774338217796918551">Palaa huomenna kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="4778095205580009397">Google Assistantia ei voi käyttää demo-käyttökerralla.</translation>
@@ -393,6 +397,7 @@
 <translation id="7886169021410746335">muuttaa tietosuoja-asetuksia</translation>
 <translation id="7886277072580235377">Internetin käyttökertasi tyhjennetään kirjautuessasi ulos. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Lähetä sähköposti</translation>
+<translation id="7897375687985782769">Painoit näytön kääntämisen pikanäppäintä. Haluatko kääntää näytön?</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /> hallinnoivat tiliä</translation>
@@ -458,6 +463,7 @@
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> käytössä</translation>
 <translation id="899350903320462459">Avaa laitteen lukitus tunnuksella <ph name="LOGIN_ID" />, niin voit käyttää ilmoitustoimintoa</translation>
 <translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>

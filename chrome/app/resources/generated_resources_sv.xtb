@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Synkronisering och anpassning</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1399511500114202393">Inget användarcertifikat</translation>
-<translation id="140250605646987970">Din mobil hittades, men Smart Lock fungerar bara för enheter med Android 5.0 och senare. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (kontrollerad)</translation>
 <translation id="1406500794671479665">Verifierar …</translation>
 <translation id="1407489512183974736">Centrera och beskär</translation>
@@ -537,7 +536,6 @@
 <translation id="1769104665586091481">Öppna länk i nytt f&amp;önster</translation>
 <translation id="1773212559869067373">Autentiseringscertifikatet godkändes inte lokalt</translation>
 <translation id="177336675152937177">Appdata som har en värd</translation>
-<translation id="1774349594977710164">Mobilen låser även upp dina andra <ph name="DEVICE_TYPE" />-enheter eftersom de synkroniseras automatiskt.</translation>
 <translation id="1774833706453699074">Spara bokmärke till öppna sidor…</translation>
 <translation id="1775381402323441512">Videoinformation</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -566,7 +564,6 @@
 <translation id="1815579292149538864">Konfigurera eller hantera CUPS-skrivare.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> till …</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Varning!<ph name="END_BOLD" />  De här filerna är tillfälliga och kan tas bort automatiskt för att frigöra utrymme på hårddisken.  <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Konfigurera Smart Lock för din <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsofts filåterställning</translation>
 <translation id="1818007989243628752">Radera lösenordet för <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Uppladdning av loggfil pågår.</translation>
@@ -678,7 +675,6 @@
 <translation id="1976323404609382849">Cookies från flera webbplatser blockeras.</translation>
 <translation id="1977965994116744507">Håll mobilen närmare om du vill låsa upp din <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Du byter till en kanal med en äldre version av <ph name="PRODUCT_NAME" />. Kanalen byts när kanalversionen matchar den version som är installerad på din enhet.</translation>
-<translation id="1981115145845865539">Lås upp din <ph name="DEVICE_TYPE" /> automatiskt</translation>
 <translation id="1983959805486816857">När du har skapat en ny kontrollerad användare kan du hantera inställningarna när som helst från vilken enhet som helst på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Konton</translation>
 <translation id="1989112275319619282">Bläddra</translation>
@@ -983,7 +979,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> har lagts till</translation>
 <translation id="2464089476039395325">HTTP-proxy</translation>
 <translation id="2468205691404969808">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
-<translation id="2468902267404883140">Det gick inte att ansluta till mobilen. Använd en kompatibel Android-mobil som är på och finns till hands. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="247051149076336810">Webbadress för filresurs</translation>
 <translation id="2470702053775288986">Tillägg som inte stöds har inaktiverats</translation>
 <translation id="2473195200299095979">Översätt den här sidan</translation>
@@ -996,7 +991,6 @@
 <translation id="2484959914739448251"><ph name="BEGIN_LINK" />Ange din lösenfras<ph name="END_LINK" /> om du vill rensa webbinformation från alla synkroniserade enheter och ditt Google-konto.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2487067538648443797">Lägg till ett nytt bokmärke</translation>
-<translation id="248861575772995840">Mobilen hittades inte. Kontrollera att Bluetooth är aktiverat på <ph name="DEVICE_TYPE" />. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Lägg till &amp;mapp ...</translation>
 <translation id="249113932447298600">Enheten <ph name="DEVICE_LABEL" /> stöds inte just nu.</translation>
 <translation id="249303669840926644">Det gick inte att slutföra registreringen</translation>
@@ -1055,7 +1049,6 @@
 <translation id="257088987046510401">Teman</translation>
 <translation id="2572032849266859634">Skrivskyddad åtkomst till <ph name="VOLUME_NAME" /> har beviljats.</translation>
 <translation id="2575247648642144396">Den här ikonen visas när tillägget kan aktiveras för den aktuella sidan. Använd tillägget genom att klicka på ikonen eller genom att trycka på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Mobilen hittades inte. Kontrollera att din <ph name="DEVICE_TYPE" /> är ansluten till Wi-Fi eller ett mobilnätverk. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="257779572837908839">Konfigurera som Chromebox för möten</translation>
 <translation id="2579575372772932244">Profilen återskapas, vänta …</translation>
 <translation id="2580889980133367162">Tillåt alltid att <ph name="HOST" /> laddar flera filer</translation>
@@ -1167,7 +1160,6 @@
 <translation id="2735438478659026460">Klicka automatiskt när muspekaren stannar</translation>
 <translation id="2735712963799620190">Schema</translation>
 <translation id="2737363922397526254">Dölj...</translation>
-<translation id="2737492745329609575">Börja med konfigureringen</translation>
 <translation id="2738771556149464852">Inte efter</translation>
 <translation id="2739191690716947896">Felsökning</translation>
 <translation id="2739240477418971307">Ändra tillgänglighetsinställningarna</translation>
@@ -1330,7 +1322,6 @@
 <translation id="2994669386200004489">Det gick inte att säkerhetskopiera <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Har installerats av en förälder.</translation>
 <translation id="2996286169319737844">Data krypteras med din lösenfras för synkronisering. Betalningsuppgifter och adresser från Google Pay omfattas inte.</translation>
-<translation id="3002017044809397427">Din <ph name="PHONE_TYPE" /> hittades, men Smart Lock fungerar bara för enheter med Android 5.0 och senare. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Prioriterade nätverk</translation>
 <translation id="3003623123441819449">CSS-cacheminne</translation>
 <translation id="3003633581067744647">Byt till miniatyrvy</translation>
@@ -1479,7 +1470,6 @@
 <translation id="3241680850019875542">Välj rotkatalogen för tillägget som ska paketeras. Om du vill uppdatera ett tillägg väljer du också den privata nyckel som ska återanvändas.</translation>
 <translation id="3244294424315804309">Ljud fortsatt av</translation>
 <translation id="3245321423178950146">Okänd artist</translation>
-<translation id="3246097286174000800">Testa Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – nätverksfel</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;ingår inte i certifikat&gt;</translation>
@@ -1558,7 +1548,6 @@
 <translation id="3355936511340229503">Anslutningsfel</translation>
 <translation id="3356580349448036450">Klart</translation>
 <translation id="3356797067524893661">Klart att fortsätta med Hangouts Meet</translation>
-<translation id="3358935496594837302">Mobilen hittades inte. Använd en kompatibel Android-mobil som är på och finns till hands. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Begränsningar för Certifikatpolicy</translation>
 <translation id="3360297538363969800">Utskriften misslyckades. Kontrollera skrivaren och försök igen.</translation>
 <translation id="3365598184818502391">Använd Ctrl eller Alt</translation>
@@ -1908,7 +1897,6 @@
 <translation id="3855441664322950881">Paketera tillägg</translation>
 <translation id="3855676282923585394">Importera bokmärken och inställningar...</translation>
 <translation id="3856800405688283469">Välj tidszon</translation>
-<translation id="3857228364945137633">Testa att låsa upp din <ph name="DEVICE_TYPE" /> utan lösenord när mobilen finns i närheten med Smart Lock.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Lyft och tryck sedan igen</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Synkroniseringen har pausats</translation>
@@ -2035,7 +2023,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Lämna sidan}other{Lämna sidorna}}</translation>
 <translation id="4044612648082411741">Ange certifikatlösenordet</translation>
 <translation id="404493185430269859">Standardsökmotor</translation>
-<translation id="4047112090469382184">Därför är detta säkert</translation>
 <translation id="4052120076834320548">Mycket liten</translation>
 <translation id="4055023634561256217">En omstart krävs innan enheten kan återställas med Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2044,7 +2031,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Kontrollera dokumentet nu</translation>
 <translation id="406070391919917862">Bakgrundsappar</translation>
-<translation id="4063283930106169759">Mobilen måste finnas i närheten. Bluetooth aktiveras på alla enheter som ditt konto finns på så att mobilen går att hitta. &lt;a&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Nätverket du använder (<ph name="NETWORK_ID" />) kanske kräver att du besöker dess inloggningssida.</translation>
 <translation id="4068506536726151626">På den här sidan finns komponenter från följande webbplatser som spårar din plats:</translation>
 <translation id="4068776064906523561">Sparade fingeravtryck</translation>
@@ -2397,7 +2383,6 @@
 <translation id="4672657274720418656">Skapa Distiller-sida</translation>
 <translation id="4673442866648850031">Öppna verktyg för e-penna när e-pennan tas bort</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vill svara på tillgänglighetshändelser</translation>
-<translation id="4677692029604506169">Mobilen som du låste upp din <ph name="DEVICE_TYPE" /> med behöver ha ett skärmlås som skydd. Det brukar vara en pinkod, ett grafiskt lösenord eller ett lösenord. Använder du redan ett skärmlås? Välj Kontrollera igen så att vi kan verifiera detta och fortsätt sedan med konfigureringen,</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
 <translation id="4680105648806843642">Ljudet är avstängt på den här sidan</translation>
 <translation id="4681930562518940301">Öppna originalbilden i en ny flik</translation>
@@ -2733,7 +2718,6 @@
 <translation id="5184063094292164363">&amp;JavaScript-konsol</translation>
 <translation id="5184662919967270437">Enheten uppdateras</translation>
 <translation id="5185386675596372454">Den senaste versionen av <ph name="EXTENSION_NAME" /> har inaktiverats eftersom ytterligare rättigheter krävs.</translation>
-<translation id="5186650237607254032">Uppdatera mobilens skärmlås så att det inaktiveras när du är i närheten. Du låser upp mobilen snabbare och får en bättre upplevelse av Smart Lock på <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Du är nu inloggad i <ph name="SHORT_PRODUCT_NAME" />. Bokmärken, historik och andra inställningar synkroniseras med ditt Google-konto.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Gör en powerwash på enheten och försök igen.</translation>
@@ -3164,7 +3148,6 @@
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5805697420284793859">Fönsterhanterare</translation>
 <translation id="580571955903695899">Ordna efter titel</translation>
-<translation id="5807290661599647102">Konfigurera ett skärmlås</translation>
 <translation id="5811750797187914944">Klart</translation>
 <translation id="5814126672212206791">Anslutningstyp</translation>
 <translation id="5815645614496570556">X.400-adress</translation>
@@ -3537,7 +3520,6 @@
 <translation id="6370021412472292592">Det gick inte att läsa in manifestet.</translation>
 <translation id="637062427944097960">Filen öppnades på ett annat skrivbord. Byt till <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om du vill visa den.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Konfigurera Smart Lock för Android</translation>
 <translation id="6374469231428023295">Försök igen</translation>
 <translation id="6380143666419481200">Godkänn och fortsätt</translation>
 <translation id="6384275966486438344">Ändra sökinställningarna till: <ph name="SEARCH_HOST" /></translation>
@@ -3957,7 +3939,6 @@
 <translation id="7027125358315426638">Databasnamn:</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031962166228839643">TPM förbereds, vänta (det kan ta några minuter)...</translation>
-<translation id="7035437538340499453">Smart Lock är klart att använda</translation>
 <translation id="7037509989619051237">Text för förhandsgranskning</translation>
 <translation id="7039326228527141150">Komma åt USB-enheter från <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsofts Logga in med smartkort</translation>
@@ -4760,7 +4741,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8227119283605456246">Bifoga fil</translation>
 <translation id="8230134520748321204">Vill du spara lösenordet för <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Hjälp våra programutvecklare att lösa problemet genom att berätta vad som hände precis innan profilmeddelandet visades:</translation>
-<translation id="8234989666557591529">Välj vilken mobil som ska låsa upp din <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Molnig</translation>
 <translation id="8241806945692107836">Kontrollerar enhetskonfigurationen …</translation>
 <translation id="8241868517363889229">Läsa och ändra dina bokmärken</translation>
@@ -4852,10 +4832,8 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8395901698320285466">Dimensioner</translation>
 <translation id="8396532978067103567">Felaktigt lösenord.</translation>
 <translation id="839736845446313156">Registrera</translation>
-<translation id="8398790343843005537">Sök efter mobilen</translation>
 <translation id="8398877366907290961">Fortsätt ändå</translation>
 <translation id="8400146488506985033">Hantera personer</translation>
-<translation id="8410073653152358832">Använd den här mobilen</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8418445294933751433">&amp;Visa som flik</translation>
@@ -4933,7 +4911,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="8528074251912154910">Lägg till språk</translation>
 <translation id="8528962588711550376">Inloggning sker</translation>
-<translation id="8529026713753283969">En avisering skickas till mobilen, så ha den i närheten.</translation>
 <translation id="8529925957403338845">Direktinternetdelning misslyckades</translation>
 <translation id="8534656636775144800">Hoppsan. Något gick fel när du försökte ansluta till domänen. Försök igen.</translation>
 <translation id="8535005006684281994">Förnyelseadress för Netscape-certifikat</translation>
@@ -5237,14 +5214,12 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Lägg till konto …</translation>
 <translation id="9003647077635673607">Tillåt på alla webbplatser</translation>
-<translation id="9003677638446136377">Kontrollera igen</translation>
 <translation id="9003704114456258138">Frekvens</translation>
 <translation id="9004952710076978168">Ett meddelande om en okänd skrivare mottogs.</translation>
 <translation id="9008201768610948239">Ignorera</translation>
 <translation id="9009369504041480176">Överför (<ph name="PROGRESS_PERCENT" /> %)...</translation>
 <translation id="9011163749350026987">Visa alltid ikonen</translation>
 <translation id="9013707997379828817">Administratören har återställt enheten. Spara viktiga filer och starta sedan om. All data på enheten raderas.</translation>
-<translation id="9014987600015527693">Visa en annan mobil</translation>
 <translation id="9018218886431812662">Installationen har slutförts</translation>
 <translation id="901834265349196618">e-post</translation>
 <translation id="9019062154811256702">Läsa och ändra inställningarna för Autofyll</translation>
@@ -5340,7 +5315,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9147304170847707004">Autentiseringsmetod</translation>
 <translation id="9147392381910171771">&amp;Alternativ</translation>
 <translation id="9148058034647219655">Avsluta</translation>
-<translation id="9148116311817999634">Skydda mobilen med ett skärmlås</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
 <translation id="9149866541089851383">Redigera...</translation>
 <translation id="9150045010208374699">Använd kameran</translation>

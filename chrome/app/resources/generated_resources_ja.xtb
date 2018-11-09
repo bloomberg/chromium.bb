@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">同期とカスタマイズ</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1399511500114202393">ユーザー証明書なし</translation>
-<translation id="140250605646987970">スマートフォンが見つかりましたが、Smart Lock は Android 5.0 以上を搭載した端末でのみ機能します。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />（管理対象）</translation>
 <translation id="1406500794671479665">確認中...</translation>
 <translation id="1407489512183974736">中央トリミング</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">新しいウインドウで開く(&amp;W)</translation>
 <translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
 <translation id="177336675152937177">ホストされているアプリ データ</translation>
-<translation id="1774349594977710164">スマートフォンを使って、自動的に同期されている他の <ph name="DEVICE_TYPE" /> のロックも解除することができます。</translation>
 <translation id="1774833706453699074">開いているページをブックマーク...</translation>
 <translation id="1775381402323441512">動画情報</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">CUPS プリンタを設定または管理する。</translation>
 <translation id="181577467034453336">他 <ph name="NUMBER_OF_VIEWS" /> 件...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> に Smart Lock を設定する</translation>
 <translation id="1817871734039893258">Microsoft ファイル回復</translation>
 <translation id="1818007989243628752"><ph name="USERNAME" /> のパスワードを削除します</translation>
 <translation id="1818913467757368489">ログをアップロードしています。</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">複数サイトからの Cookie がブロックされました。</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" /> のロックを解除するにはスマートフォンを近づけます。</translation>
 <translation id="1979280758666859181">古いバージョンの <ph name="PRODUCT_NAME" /> のチャンネルに変更しようとしています。このチャンネル変更は、チャンネルのバージョンとお使いのデバイスにインストールされているバージョンとが一致したときに適用されます。</translation>
-<translation id="1981115145845865539"><ph name="DEVICE_TYPE" /> のロックを自動的に解除</translation>
 <translation id="1983959805486816857">新しい監視対象ユーザーを作成した後は、設定をいつでも、どのデバイスからでも <ph name="MANAGEMENT_URL" /> で管理できます。</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="1989112275319619282">閲覧</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> を追加しました</translation>
 <translation id="2464089476039395325">HTTP プロキシ</translation>
 <translation id="2468205691404969808">Cookie を使って設定を保存する（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
-<translation id="2468902267404883140">スマートフォンに接続できません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="247051149076336810">ファイル共有 URL</translation>
 <translation id="2470702053775288986">サポートされていない拡張機能が無効</translation>
 <translation id="2473195200299095979">このページを翻訳</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">同期しているすべての端末と Google アカウントから閲覧データを削除するには、<ph name="BEGIN_LINK" />パスフレーズを入力<ph name="END_LINK" />してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2487067538648443797">新しいブックマークを追加</translation>
-<translation id="248861575772995840">スマートフォンが見つかりません。<ph name="DEVICE_TYPE" /> で Bluetooth がオンになっていることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="2489918096470125693">フォルダを追加(&amp;F)...</translation>
 <translation id="249113932447298600">デバイス <ph name="DEVICE_LABEL" /> は現在サポートされていません。</translation>
 <translation id="249303669840926644">登録を完了できませんでした</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">テーマ</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> への読み取り専用アクセスが許可されました。</translation>
 <translation id="2575247648642144396">このアイコンは、表示中のページで拡張機能が使用できる場合に表示されます。この拡張機能を使用するには、アイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
-<translation id="2575268751393592580">スマートフォンが見つかりません。<ph name="DEVICE_TYPE" /> が Wi-Fi またはモバイル ネットワークに接続されていることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="257779572837908839">Chromebox for meetings として設定</translation>
 <translation id="2579575372772932244">プロフィールを再作成しています。しばらくお待ちください...</translation>
 <translation id="2580889980133367162">複数のファイルをダウンロードすることを <ph name="HOST" /> に常に許可する</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">マウスカーソルの停止時に自動的にクリックする</translation>
 <translation id="2735712963799620190">スケジュール</translation>
 <translation id="2737363922397526254">折りたたむ...</translation>
-<translation id="2737492745329609575">設定を開始</translation>
 <translation id="2738771556149464852">終了時刻</translation>
 <translation id="2739191690716947896">デバッグ</translation>
 <translation id="2739240477418971307">ユーザー補助設定の変更</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> をバックアップできませんでした</translation>
 <translation id="299483336428448530">保護者によりインストールされています。</translation>
 <translation id="2996286169319737844">データを同期パスフレーズで暗号化します。なお、Google Pay のお支払い方法と住所はこれには含まれません。</translation>
-<translation id="3002017044809397427"><ph name="PHONE_TYPE" /> が見つかりましたが、Smart Lock は Android 5.0 以上を搭載した端末でのみ機能します。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="3003144360685731741">優先ネットワーク</translation>
 <translation id="3003623123441819449">CSS キャッシュ</translation>
 <translation id="3003633581067744647">サムネイル表示に切り替え</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">パッケージ化する拡張機能のルート ディレクトリを選択します。拡張機能を更新するには、再使用する秘密鍵ファイルも選択してください。</translation>
 <translation id="3244294424315804309">音声のミュートを続行する</translation>
 <translation id="3245321423178950146">不明なアーティスト</translation>
-<translation id="3246097286174000800">Smart Lock を使ってみる</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ネットワーク エラー</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" />（<ph name="APP_URL" />）</translation>
 <translation id="3251759466064201842">&lt;証明書に含まれていません&gt;</translation>
@@ -1559,7 +1549,6 @@
 <translation id="3355936511340229503">接続エラー</translation>
 <translation id="3356580349448036450">完了</translation>
 <translation id="3356797067524893661">設定が完了しました。ハングアウト Meet を使用できます</translation>
-<translation id="3358935496594837302">スマートフォンが見つかりません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
 <translation id="3360297538363969800">印刷できませんでした。プリンタを確認してもう一度お試しください。</translation>
 <translation id="3365598184818502391">Ctrl キーまたは Alt キーのいずれかを使用してください</translation>
@@ -1909,7 +1898,6 @@
 <translation id="3855441664322950881">拡張機能をパッケージ化</translation>
 <translation id="3855676282923585394">ブックマークと設定をインポート...</translation>
 <translation id="3856800405688283469">タイムゾーンを選択</translation>
-<translation id="3857228364945137633">Smart Lock を使用すると、スマートフォンが近くにあるときに、パスワードを入力しなくても <ph name="DEVICE_TYPE" /> のロックを解除できます。</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">指を放して、もう一度タッチ</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: 同期が一時停止されています</translation>
@@ -2036,7 +2024,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{ページを離れる}other{ページを離れる}}</translation>
 <translation id="4044612648082411741">証明書のパスワードを入力してください</translation>
 <translation id="404493185430269859">デフォルトの検索エンジン</translation>
-<translation id="4047112090469382184">デバイスが保護される仕組み</translation>
 <translation id="4052120076834320548">極小</translation>
 <translation id="4055023634561256217">デバイスを Powerwash でリセットするには再起動が必要です。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@
 <translation id="4058720513957747556">AppSocket（TCP/IP）</translation>
 <translation id="4058793769387728514">書類を今すぐチェック</translation>
 <translation id="406070391919917862">バックグラウンド アプリ</translation>
-<translation id="4063283930106169759">スマートフォンが近くにあることを確認してください。スマートフォンを探すために、Bluetooth がオンになり、同じアカウントを使用しているすべてのデバイスが検索されます。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="4065876735068446555">ご利用のネットワーク（<ph name="NETWORK_ID" />）では、ログインページへのアクセスが必要な可能性があります。</translation>
 <translation id="4068506536726151626">このページには、あなたの現在地を追跡している以下のサイトからの要素が含まれています。</translation>
 <translation id="4068776064906523561">保存した指紋</translation>
@@ -2398,7 +2384,6 @@
 <translation id="4672657274720418656">ページを抽出</translation>
 <translation id="4673442866648850031">タッチペンを取り外したらタッチペン ツールを開く</translation>
 <translation id="4677585247300749148"><ph name="URL" /> から、ユーザー補助機能のイベントに応答する許可を求められています</translation>
-<translation id="4677692029604506169"><ph name="DEVICE_TYPE" /> のロック解除に使用するスマートフォンでは、安全のため、画面ロックが設定されている必要があります。画面ロックは通常、PIN、パターン、パスワードのいずれかを使用して設定します。すでに画面ロックが設定されている場合、確認して設定を続けるには [もう一度確認] をクリックします。</translation>
 <translation id="4677772697204437347">GPU メモリ</translation>
 <translation id="4680105648806843642">このページでは音声がミュートされています</translation>
 <translation id="4681930562518940301">元の画像を新しいタブで開く(&amp;I)</translation>
@@ -2734,7 +2719,6 @@
 <translation id="5184063094292164363">JavaScript コンソール(&amp;J)</translation>
 <translation id="5184662919967270437">端末を更新しています</translation>
 <translation id="5185386675596372454">「<ph name="EXTENSION_NAME" />」の最新バージョンは、さらに許可が必要なため無効になっています。</translation>
-<translation id="5186650237607254032">スマートフォンが近くにあるときに画面ロックがオフになるように、スマートフォンの画面ロックを更新してください。スマートフォンのロック解除をすばやく行えるようになり、<ph name="DEVICE_TYPE" /> で Smart Lock をさらに活用できます。</translation>
 <translation id="5187295959347858724"><ph name="SHORT_PRODUCT_NAME" /> にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />（<ph name="DEVICE" />）</translation>
 <translation id="5204673965307125349">端末で Powerwash を実行してもう一度お試しください。</translation>
@@ -3165,7 +3149,6 @@
 <translation id="5804241973901381774">権限</translation>
 <translation id="5805697420284793859">ウィンドウ マネージャ</translation>
 <translation id="580571955903695899">タイトルで並べ替え</translation>
-<translation id="5807290661599647102">画面ロックを設定</translation>
 <translation id="5811750797187914944">設定を完了</translation>
 <translation id="5814126672212206791">接続タイプ</translation>
 <translation id="5815645614496570556">X.400 アドレス</translation>
@@ -3538,7 +3521,6 @@
 <translation id="6370021412472292592">マニフェストを読み込めませんでした。</translation>
 <translation id="637062427944097960">このファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Smart Lock for Android を設定してください</translation>
 <translation id="6374469231428023295">再試行</translation>
 <translation id="6380143666419481200">同意して続行</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST" /></translation>
@@ -3958,7 +3940,6 @@
 <translation id="7027125358315426638">データベース名:</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031962166228839643">TPM を準備しています。しばらくお待ちください（数分かかることがあります）...</translation>
-<translation id="7035437538340499453">Smart Lock の設定が完了しました</translation>
 <translation id="7037509989619051237">テキスト読み上げの音声をプレビュー</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> の USB デバイスへのアクセス</translation>
 <translation id="7039912931802252762">Microsoft スマート カード ログオン</translation>
@@ -4762,7 +4743,6 @@
 <translation id="8227119283605456246">添付ファイル</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> のパスワードを保存しますか？</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
-<translation id="8234989666557591529"><ph name="DEVICE_TYPE" /> のロック解除に使用するスマートフォンを選択してください</translation>
 <translation id="8241040075392580210">シェイディ</translation>
 <translation id="8241806945692107836">デバイスの設定を確認しています...</translation>
 <translation id="8241868517363889229">ブックマークの読み取りと変更</translation>
@@ -4854,10 +4834,8 @@
 <translation id="8395901698320285466">サイズ</translation>
 <translation id="8396532978067103567">パスワードが正しくありません。</translation>
 <translation id="839736845446313156">登録</translation>
-<translation id="8398790343843005537">スマートフォンを検出</translation>
 <translation id="8398877366907290961">このまま続行</translation>
 <translation id="8400146488506985033">ユーザーを管理</translation>
-<translation id="8410073653152358832">このスマートフォンを使用</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="8418445294933751433">タブで表示(&amp;S)</translation>
@@ -4935,7 +4913,6 @@
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="8528074251912154910">言語を追加</translation>
 <translation id="8528962588711550376">ログインしています。</translation>
-<translation id="8529026713753283969">このスマートフォンに通知が送信されます。スマートフォンを近くに置いておいてください。</translation>
 <translation id="8529925957403338845">インスタント テザリングの接続に失敗しました</translation>
 <translation id="8534656636775144800">ドメインへの追加中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="8535005006684281994">Netscape 証明書更新 URL</translation>
@@ -5239,14 +5216,12 @@
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">アカウントを追加...</translation>
 <translation id="9003647077635673607">すべてのウェブサイトで許可する</translation>
-<translation id="9003677638446136377">もう一度確認</translation>
 <translation id="9003704114456258138">周波数</translation>
 <translation id="9004952710076978168">不明なプリンタのメッセージを受け取りました。</translation>
 <translation id="9008201768610948239">無視する</translation>
 <translation id="9009369504041480176">アップロード中（<ph name="PROGRESS_PERCENT" /> %）...</translation>
 <translation id="9011163749350026987">アイコンを常に表示</translation>
 <translation id="9013707997379828817">管理者がこの端末をロールバックしました。重要なファイルを保存してから、再起動してください。端末上のデータはすべて削除されます。</translation>
-<translation id="9014987600015527693">別のスマートフォンを表示</translation>
 <translation id="9018218886431812662">インストールが完了しました</translation>
 <translation id="901834265349196618">メール</translation>
 <translation id="9019062154811256702">自動入力設定の読み取りと変更</translation>
@@ -5342,7 +5317,6 @@
 <translation id="9147304170847707004">認証方法</translation>
 <translation id="9147392381910171771">オプション(&amp;O)</translation>
 <translation id="9148058034647219655">終了</translation>
-<translation id="9148116311817999634">安全のため画面ロックを設定してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="9149866541089851383">編集...</translation>
 <translation id="9150045010208374699">カメラを使用する</translation>

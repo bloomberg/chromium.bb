@@ -1067,7 +1067,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si desactives aquesta política, es permetrà l'ús d'SPDY.
 
-      Si no hi dus a terme cap acció, SPDY estarà disponible.</translation>
+      Si no hi duus a terme cap acció, SPDY estarà disponible.</translation>
 <translation id="3890999316834333174">Polítiques del desbloqueig ràpid</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
 <translation id="3895557476567727016">Estableix el directori predeterminat que <ph name="PRODUCT_NAME" /> utilitzarà per baixar fitxers.

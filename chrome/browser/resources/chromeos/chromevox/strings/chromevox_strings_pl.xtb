@@ -398,6 +398,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4058278702844053247">Trwa ładowanie strony</translation>
 <translation id="4065205963140826639">Naciśnij Wyszukaj + strzałkę w prawo, by znaleźć przycisk Dalej, a następnie naciśnij Wyszukaj + spację, by go kliknąć.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tylda}few{# tylda}many{# tyld}other{# tildes}}</translation>
+<translation id="4086311032171418648">Wyłączam tryb informacyjny.</translation>
 <translation id="409334809956508737">Poprzedni obiekt</translation>
 <translation id="4099274309791143834">z menu podrzędnym</translation>
 <translation id="4101527861445851766">Zaznaczone pole</translation>
@@ -500,6 +501,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4877261390094455813">Wpisz zapytanie.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Link wewnętrzny</translation>
+<translation id="4915087353619183190">Włączam tryb informacyjny. Naciśnij klawisz na klawiaturze QWERTY lub na monitorze brajlowskim albo wykonaj gest dotykowy, by poznać jego funkcję. Przytrzymaj Control i naciśnij W lub Escape, by wyłączyć tryb informacyjny.</translation>
 <translation id="492295894462528572">Przedmowa</translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4953585991029886728">Edytowanie tekstu</translation>

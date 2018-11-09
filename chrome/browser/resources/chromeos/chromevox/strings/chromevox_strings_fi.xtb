@@ -398,6 +398,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4058278702844053247">Sivun lataus käynnissä</translation>
 <translation id="4065205963140826639">Kokeile Seuraava-painikkeeseen siirtymistä painamalla haku + oikea nuoli ja klikkaa sitä sitten painamalla haku + välilyönti.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tilde}other{# tildeä}}</translation>
+<translation id="4086311032171418648">Opetustila suljetaan.</translation>
 <translation id="409334809956508737">Edellinen objekti</translation>
 <translation id="4099274309791143834">alavalikolla</translation>
 <translation id="4101527861445851766">Valittu valintaruutu</translation>
@@ -500,6 +501,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4877261390094455813">Anna hakutermi.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Sisäinen linkki</translation>
+<translation id="4915087353619183190">Opetustila käynnistyy. Kokeile qwerty-näppäintä, pistekirjoitusnäppäintä tai kosketuselettä, niin näet sen toiminnan. Paina Control ja W tai Esc sulkeaksesi tilan.</translation>
 <translation id="492295894462528572">Esipuhe</translation>
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4953585991029886728">Muokkaa tekstiä</translation>

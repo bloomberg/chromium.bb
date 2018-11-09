@@ -139,6 +139,7 @@
 <translation id="1787142507584202372">Tutaj pojawiają się otwarte karty</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Imię i nazwisko posiadacza karty</translation>
+<translation id="1809549658008855907">Czy chcesz, by karty zapisywały się na Twoim koncie Google?</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1826516787628120939">Sprawdzam</translation>
 <translation id="1834321415901700177">Ta strona zawiera szkodliwe programy</translation>
@@ -727,6 +728,7 @@
 <translation id="5922853866070715753">Prawie gotowe</translation>
 <translation id="5932224571077948991">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
 <translation id="5939518447894949180">Resetuj</translation>
+<translation id="5946937721014915347">Otwieram <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Nie można zarejestrować się przy użyciu konta klienta (w pakiecie dostępna jest licencja).</translation>
 <translation id="5966151627327109289">Wylogowuje z większości stron internetowych. Możesz stracić dostęp do treści chronionych na <ph name="SITE" /> i na niektórych innych stronach.</translation>
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
@@ -1101,6 +1103,7 @@ Dodatkowe informacje:
 <translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>
 <translation id="8557066899867184262">Kod CVC znajduje się na odwrocie karty.</translation>
 <translation id="8559762987265718583">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.</translation>
+<translation id="8562974682002272877">Wygląda na to, że chcesz to zrobić sam. Możesz kontynuować bez mojej pomocy.</translation>
 <translation id="8564985650692024650">Chromium zaleca zresetowanie hasła, którego używasz w: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, jeśli zostało użyte na innej stronie.</translation>
 <translation id="8571890674111243710">Trwa tłumaczenie strony na język: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Dodaj numer telefonu</translation>
@@ -1199,6 +1202,7 @@ Dodatkowe informacje:
 <translation id="935608979562296692">WYCZYŚĆ FORMULARZ</translation>
 <translation id="936602727769022409">Możesz stracić dostęp do swojego konta Google. Chromium zaleca natychmiastową zmianę hasła. Zobaczysz prośbę, by się zalogować.</translation>
 <translation id="939736085109172342">Nowy folder</translation>
+<translation id="945855313015696284">Sprawdź poniższe informacje i usuń karty z błędami</translation>
 <translation id="951104842009476243">Akceptowane karty debetowe i przedpłacone</translation>
 <translation id="962484866189421427">Te treści mogą próbować zainstalować wprowadzające w błąd aplikacje, które udają, że są przeznaczone do czegoś innego niż w rzeczywistości, lub zbierają dane, na podstawie których można Cię śledzić. <ph name="BEGIN_LINK" />Pokaż mimo to<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficjalna wersja</translation>

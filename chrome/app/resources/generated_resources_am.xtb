@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">ስምረት እና ግላዊነት ማላበስ</translation>
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="1399511500114202393">ምንም የተጠቃሚ እውቅና ማረጋገጫ የለም</translation>
-<translation id="140250605646987970">የእርስዎ ስልክ ተገኝቷል። ነገር ግን Smart Lock Android 5.0 እና ከዚያ በላይ ካላቸው መሣሪያዎች ጋር ብቻ ይሰራል። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (ክትትል የሚደረግበት)</translation>
 <translation id="1406500794671479665">በማረጋገጥ ላይ...</translation>
 <translation id="1407489512183974736">እስከ መሃከል የተከረከመ</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">አገናኙን በአዲስ &amp;መስኮት ክፈት</translation>
 <translation id="1773212559869067373">የማረጋገጫ ምስክር ወረቀት በአካባቢው ተቀባይነት አላገኘም</translation>
 <translation id="177336675152937177">የተስተናገደ የመተግበሪያ ውሂብ</translation>
-<translation id="1774349594977710164">በራስ-ሰር ስለሚሰምሩ የእርስዎ ስልክ እንዲሁም የእርስዎን ሌሎች <ph name="DEVICE_TYPE" />ዎች ይከፍታል።</translation>
 <translation id="1774833706453699074">ክፍት ገጾችን በዕልባት ያስቀምጡ...</translation>
 <translation id="1775381402323441512">የቪዲዮ መረጃ</translation>
 <translation id="1776883657531386793"><ph name="OID" />፦ <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">የCUPS አታሚዎችን ያዋቅሩ ወይም ያቀናብሩ።</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> ተጨማሪ...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ማስጠንቀቂያ፦<ph name="END_BOLD" />  እነዚህ ፋይሎች ጊዜያዊ የሆኑና የአንጻፊ ቦታ ነጻ ለማስለቀቅ በራስ-ሰር ሊሰረዙ የሚችሉ ናቸው።  <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Smart Lockን ለእርስዎ <ph name="DEVICE_TYPE" /> ያዋቅሩ</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818007989243628752">የ<ph name="USERNAME" /> ይለፍ ቃልን ሰርዝ</translation>
 <translation id="1818913467757368489">የምዝግብ ማስታወሻ ሰቀላ በሂደት ላይ።</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">ከበርካታ ጣቢያዎች የሚመጡ ኩኪዎች ታግደዋል።</translation>
 <translation id="1977965994116744507">የእርስዎን <ph name="DEVICE_TYPE" /> ለመክፈት የእርስዎን ስልክ ያስጠጉት።</translation>
 <translation id="1979280758666859181">የቆየ የ<ph name="PRODUCT_NAME" /> ስሪት ወዳለው ሰርጥ እየቀየሩ ነው። የስርጡ ስሪት አሁን በመሣሪያዎ ላይ ከተጫነው ስሪት ጋር ሲዛመድ ነው የሰርጡ ለውጥ የሚተገበረው።</translation>
-<translation id="1981115145845865539">የእርስዎን <ph name="DEVICE_TYPE" /> በራስ-ሰር ይክፈቱ</translation>
 <translation id="1983959805486816857">አዲስ ክትትል የሚደረግበት ተጠቃሚ ከፈጠሩ በኋላ ቅንብሮቹን በማንኛውም ጊዜ ከማንኛውም መሣሪያ ላይ ሆነው <ph name="MANAGEMENT_URL" /> ላይ ማቀናበር ይችላሉ።</translation>
 <translation id="1987317783729300807">መለያዎች</translation>
 <translation id="1989112275319619282">አስስ</translation>
@@ -983,7 +979,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> ታክሏል</translation>
 <translation id="2464089476039395325">የኤችቲቲፒ ተኪ</translation>
 <translation id="2468205691404969808">የእርስዎን ምርጫዎች ለማስታወስ ኩኪዎችን ይጠቀማል፣ እነዚያን ገጾች ባይጎበኙም እንኳ</translation>
-<translation id="2468902267404883140">ከእርስዎ ስልክ ጋር መገናኘት አልተቻለም። የበራ እና በቅርብ ርቀት ላይ ተኳሃኝ የAndroid ስልክ እየተጠቀሙ እንደሆነ ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="247051149076336810">የፋይል ማጋራት ዩአርኤል</translation>
 <translation id="2470702053775288986">የማይደገፉ ቅጥያዎች ተሰናክለዋል</translation>
 <translation id="2473195200299095979">ይህን ገጽ መተርጎም</translation>
@@ -996,7 +991,6 @@
 <translation id="2484959914739448251">ከሁሉም የእርስዎ የተመሳሰሉ መሣሪያዎች እና የእርስዎ የGoogle መለያ ላይ የአሰሳ ውሂብን ለማጽዳት፣ <ph name="BEGIN_LINK" />የእርስዎን የይለፍ ሐረግ ያስገቡ<ph name="END_LINK" />።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="2487067538648443797">አዲስ ዕልባት ያክሉ</translation>
-<translation id="248861575772995840">የእርስዎን ስልክ ማግኘት አልተቻለም። የእርስዎ <ph name="DEVICE_TYPE" /> ብሉቱዝ መብራቱን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="2489918096470125693">&amp;አቃፊ አክል...</translation>
 <translation id="249113932447298600">ይቅርታ፣ መሣሪያ <ph name="DEVICE_LABEL" /> በአሁኑ ጊዜ አይደገፍም።</translation>
 <translation id="249303669840926644">ምዝገባን ማጠናቀቅ አልተቻለም</translation>
@@ -1055,7 +1049,6 @@
 <translation id="257088987046510401">ገፅታዎች </translation>
 <translation id="2572032849266859634">ወደ <ph name="VOLUME_NAME" /> ተነባቢ-ብቻ መዳረሻ ተሰጥቷል።</translation>
 <translation id="2575247648642144396">ቅጥያው በአሁኑ ገጽ ላይ መስራት ሲችል ይህ አዶ የሚታይ ይሆናል። አዶውን ጠቅ በማድረግ ወይም <ph name="EXTENSION_SHORTCUT" />ን በመጫን ይህንን ቅጥያ ይጠቀሙበት።</translation>
-<translation id="2575268751393592580">የእርስዎን ስልክ ማግኘት አልተቻለም። የእርስዎ <ph name="DEVICE_TYPE" /> ከWi-Fi ወይም የተንቀሳቃሽ ስልክ አውታረ መረብ ጋር መገናኘቱን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="257779572837908839">እንደ Chromebox ለስብሰባዎች ያዋቅሩ</translation>
 <translation id="2579575372772932244">መገለጫውን ዳግም በመፍጠር ላይ፣ እባክዎ ይጠብቁ...</translation>
 <translation id="2580889980133367162">ሁልጊዜም <ph name="HOST" /> ከአንድ በላይ ፋይሎችን እንዲያወርድ ይፍቀዱ</translation>
@@ -1167,7 +1160,6 @@
 <translation id="2735438478659026460">የመዳፊት ጠቋሚው ሲቆም በራስ-ሰር ጠቅ አድርግ</translation>
 <translation id="2735712963799620190">የጊዜ ሰሌዳ</translation>
 <translation id="2737363922397526254">ሰብስብ...</translation>
-<translation id="2737492745329609575">ማዋቀር ጀምር</translation>
 <translation id="2738771556149464852">ከኋላ ያለሆነ</translation>
 <translation id="2739191690716947896">አርም</translation>
 <translation id="2739240477418971307">የተደራሽነት ቅንብሮችዎን ይቀይራል</translation>
@@ -1330,7 +1322,6 @@
 <translation id="2994669386200004489">የ<ph name="FILE_NAME" />ን ምትኬ ማስቀመጥ አልተቻለም</translation>
 <translation id="299483336428448530">በእርስዎ ወላጅ ተጭኗል።</translation>
 <translation id="2996286169319737844">ውሂብ በስምረት ይለፍ ሐረግዎ ተመስጥሯል። ይህ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።</translation>
-<translation id="3002017044809397427">የእርስዎ <ph name="PHONE_TYPE" /> ተገኝቷል። ነገር ግን Smart Lock Android 5.0 እና ከዚያ በላይ ካላቸው መሣሪያዎች ጋር ብቻ ይሰራል። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="3003144360685731741">ተመራጭ አውታረ መረቦች</translation>
 <translation id="3003623123441819449">የሲ ኤስ ኤስ መሸጎጫ</translation>
 <translation id="3003633581067744647">ወደ የድንክዬ እይታ ቀይር</translation>
@@ -1479,7 +1470,6 @@
 <translation id="3241680850019875542">ለመሸከፍ የቅጥያውን ስርወ ማውጫ ይምረጡ። ቅጥያውን ለማዘመን እንዲሁ የግል ቁልፍ ፋይልን እንደገና ለመጠቀም ይምረጡ።</translation>
 <translation id="3244294424315804309">ድምጽን መዝጋቱ ቀጥል</translation>
 <translation id="3245321423178950146">ያልታወቀ አርቲስት</translation>
-<translation id="3246097286174000800">Smart Lockን ይሞክሩት</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - የአውታረ መረብ ስህተት</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">‹የሰርቲፊኬቱ አካል አይደለም›</translation>
@@ -1558,7 +1548,6 @@
 <translation id="3355936511340229503">የግንኙነት ስህተት</translation>
 <translation id="3356580349448036450">ተጠናቅቋል</translation>
 <translation id="3356797067524893661">ወደ Hangouts Meet ለመቀጠል ሙሉ በሙሉ ተዘጋጅተዋል</translation>
-<translation id="3358935496594837302">የእርስዎን ስልክ ማግኘት አልተቻለም። የበራ እና በቅርብ ርቀት የሚገኝ ተኳሃኝ የሆነ የAndroid ስልክ እየተጠቀሙ መሆንዎን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="3359256513598016054">የሰርቲፊኬት መመሪያ እገዳዎች</translation>
 <translation id="3360297538363969800">ማተም አልተሳካም። እባክዎ አታሚዎን ይፈትሹትና እንደገና ይሞክሩ።</translation>
 <translation id="3365598184818502391">Ctrl ወይም Alt ይጠቀሙ</translation>
@@ -1908,7 +1897,6 @@
 <translation id="3855441664322950881">ቅጥያን ጠቅልል</translation>
 <translation id="3855676282923585394">ዕልባቶችን እና ቅንብሮችን ያስመጡ...</translation>
 <translation id="3856800405688283469">የሰዓት ሰቅ ይምረጡ</translation>
-<translation id="3857228364945137633">የእርስዎ ስልክ በአቅራቢያ በሚሆንበት ጊዜ የእርስዎን <ph name="DEVICE_TYPE" /> ያለ ይለፍ ቃል ለመክፈት Smart Lockን ይሞክሩት።</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">ያንሱ፣ ከዚያ እንደገና ይንኩ</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />፦ ማሳመር ባለበት ቆሟል</translation>
@@ -2035,7 +2023,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{ከገጽ ውጣ}one{ከገጾች ውጣ}other{ከገጾች ውጣ}}</translation>
 <translation id="4044612648082411741">የእርስዎን የዕውቅና ማረጋገጫ ይለፍ ቃል ያስገቡ</translation>
 <translation id="404493185430269859">ነባሪ የፍለጋ ፕሮግራም</translation>
-<translation id="4047112090469382184">ይሄ እንዴት ደህንነቱ የተጠበቀ እንደሆነ</translation>
 <translation id="4052120076834320548">በጣም ትንሽ</translation>
 <translation id="4055023634561256217">መሣሪያዎ በPowerwash ዳግም ሊጀምር ከመቻሉ በፊት ዳግም ማስጀመር ያስፈልጋል።</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2044,7 +2031,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">ሰነዱን አሁን አረጋግጥ</translation>
 <translation id="406070391919917862">የጀርባ መተግበሪያዎች</translation>
-<translation id="4063283930106169759">የእርስዎ ስልክ በአቅራቢያ መኖሩን ያረጋግጡ። የእርስዎን ስልክ ለማግኘት ብሉቱዝ የእርስዎ መለያ ላላቸው ሁሉም መሣሪያዎች ይበራል። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
 <translation id="4065876735068446555">እየተጠቀሙ ያሉት (<ph name="NETWORK_ID" />) አውታረ መረብ በመለያ መግቢያ ገጹን እንዲጎበኙ ይጠይቅዎ ይሆናል።</translation>
 <translation id="4068506536726151626">ይህ ገጽ አካባቢዎን እየተከታተሉ ካሉት የሚከተሉት ጣቢያዎች አባላትን ይዟል፦</translation>
 <translation id="4068776064906523561">የተቀመጡ የጣት አሻራዎች</translation>
@@ -2395,7 +2381,6 @@
 <translation id="4672657274720418656">ገጹን አጣራ</translation>
 <translation id="4673442866648850031">ስቲለስ ሲወገድ የስቲለስ መሣሪያዎችን ክፈት</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ለተደራሽነት ክስተቶች ምላሽ መስጠት ይፈልጋል</translation>
-<translation id="4677692029604506169">የእርስዎን<ph name="DEVICE_TYPE" /> ለመክፈት የተጠቀሙበት ስልክ ለደህንነት ሲባል የማያ ገጽ መቆለፊያ ያስፈልገዋል። አብዛኛውን ጊዜ ይሄ ፒን፣ ሥርዓተ ጥለት ወይም የይለፍ ቃል ነው። አስቀድመው የማያ ገጽ መቆለፊያ አለዎት? ለማረጋገጥ እና ቅንብርን ለመቀጠል እንደገና ፈተሽ የሚለውን ይምረጡ።</translation>
 <translation id="4677772697204437347">የጂፒዩ ማህደረ ትውስታ</translation>
 <translation id="4680105648806843642">በዚህ ገጽ ላይ ድምጽ ተዘግቷል</translation>
 <translation id="4681930562518940301">የመጀመሪያውን ምስል በአዲስ ትር ክፈት</translation>
@@ -2731,7 +2716,6 @@
 <translation id="5184063094292164363">&amp;ጃቫስክሪፕት ኮንሶል</translation>
 <translation id="5184662919967270437">መሣሪያዎን በማዘመን ላይ</translation>
 <translation id="5185386675596372454">አዲሱ የ«<ph name="EXTENSION_NAME" />» መተግበሪያ ስሪት ተጨማሪ ፍቃዶችን ስለሚፈልግ ተሰናክሏል።</translation>
-<translation id="5186650237607254032">በአቅራቢያው ሲሆኑ እንዲጠፋ የእርስዎን ስልክ ማያ ገጽ መቆለፊያ ያዘምኑ። ስልኩን በበለጠ ፍጥነት ይከፍቱታል፣ እንዲሁም በእርስዎ <ph name="DEVICE_TYPE" /> ላይ የተሻለ የSmart Lock ተሞክሮን በማግኘት ይዝናኑ።</translation>
 <translation id="5187295959347858724">አሁን ወደ <ph name="SHORT_PRODUCT_NAME" /> ገብተዋል። ዕልባቶችዎ፣ ታሪክዎ እና ሌሎች ቅንብሮችዎ ከGoogle መለያዎ ጋር እየተመሳሰሉ ናቸው።</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">እባክዎ መሣሪያን ፓወርዋሽ ያድርጉትና እንደገና ይሞክሩ።</translation>
@@ -3162,7 +3146,6 @@
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5805697420284793859">የWindow አስተዳዳሪ</translation>
 <translation id="580571955903695899">በርዕስ ቅደም ተከተል አስይዝ</translation>
-<translation id="5807290661599647102">Screen Lockን አዋቅር</translation>
 <translation id="5811750797187914944">ሁሉም ዝግጁ</translation>
 <translation id="5814126672212206791">የግንኙነት ዓይነት</translation>
 <translation id="5815645614496570556">X.400 አድራሻ</translation>
@@ -3534,7 +3517,6 @@
 <translation id="6370021412472292592">ማሳያን መጫን አልተቻለም።</translation>
 <translation id="637062427944097960">ይህ ፋይል በሌላ ዴስክቶፕ ላይ ተከፍቷል። እሱን ለማየት ወደ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) ይውሰዱት።</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Smart Lockን ለAndroid ያቀናብሩ</translation>
 <translation id="6374469231428023295">እንደገና ይሞክሩ</translation>
 <translation id="6380143666419481200">ይቀበሉ እና ይቀጥሉ</translation>
 <translation id="6384275966486438344">የፍለጋ ቅንብሮችዎን ወደሚከተለው ይለውጡ፦ <ph name="SEARCH_HOST" /></translation>
@@ -3954,7 +3936,6 @@
 <translation id="7027125358315426638">የውሂብ ጎታ ስም፦</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7031962166228839643">TPM እየተዘጋጀ ነው፣ እባክዎ ይጠብቁ (ይሄ ጥቂት ደቂቃዎች ሊወስድ ይችላል)...</translation>
-<translation id="7035437538340499453">Smart Lock ሙሉ በሙሉ ዝግጁ ነው</translation>
 <translation id="7037509989619051237">ቅድሚያ የሚታይ ጽሑፍ</translation>
 <translation id="7039326228527141150">ከ<ph name="VENDOR_NAME" /> የመጡ የዩኤስቢ መሣሪያዎችን ይደርሳል</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4761,7 +4742,6 @@ nil</translation>
 <translation id="8227119283605456246">ፋይል አያይዝ</translation>
 <translation id="8230134520748321204">ለ<ph name="ORIGIN" /> የይለፍ ቃል ይቀመጥ?</translation>
 <translation id="8234795456569844941">እባክዎ መሐንዲሶቻችን ይህን ችግር እንዲፈቱት ያግዟቸው። ልክ የመገለጫ ስህተት መልዕክቱን ከማግኘትዎ በፊት ምን እንደተከሰተ ይንገሩን፦</translation>
-<translation id="8234989666557591529">የእርስዎን <ph name="DEVICE_TYPE" /> ለመክፈት ስልክ ይምረጡ</translation>
 <translation id="8241040075392580210">Shady</translation>
 <translation id="8241806945692107836">የመሳሪያ መዋቀርን በመወሰን ላይ።</translation>
 <translation id="8241868517363889229">ዕልባቶችዎን ያነብባል እና ይቀይራል</translation>
@@ -4853,10 +4833,8 @@ nil</translation>
 <translation id="8395901698320285466">ልኬቶች</translation>
 <translation id="8396532978067103567">የተሳሳተ የይለፍ ቃል።</translation>
 <translation id="839736845446313156">ይመዝገቡ</translation>
-<translation id="8398790343843005537">ስልክዎን ያግኙ</translation>
 <translation id="8398877366907290961">ለማንኛውም ቀጥል</translation>
 <translation id="8400146488506985033">ሰዎችን አቀናብር</translation>
-<translation id="8410073653152358832">ይህን ስልክ ተጠቀም</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">በመጀመሪያ ጠይቅ (የሚመከር)</translation>
 <translation id="8418445294933751433">&amp;በትር አሳይ</translation>
@@ -4934,7 +4912,6 @@ nil</translation>
 <translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
 <translation id="8528074251912154910">ቋንቋዎችን አክል</translation>
 <translation id="8528962588711550376">በመግባት ላይ.</translation>
-<translation id="8529026713753283969">በዚህ ስልክ ላይ ማሳወቂያ ስለሚያገኙ ስልኩን በአቅራቢያ ያቆዩት።</translation>
 <translation id="8529925957403338845">ቅጽበታዊ እንደ ሞደም መሰካት ግንኙነት አልተሳካም</translation>
 <translation id="8534656636775144800">ውይ! ጎራውን ለመቀላቀል በመሞከር ላይ ሳለ የሆነ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="8535005006684281994">የNetscape ሰርቲፊኬት የእድሳት ጊዜ URL</translation>
@@ -5238,14 +5215,12 @@ nil</translation>
 <translation id="8995603266996330174">የተቀናበረው በ<ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">መለያ ያክሉ...</translation>
 <translation id="9003647077635673607">በሁሉም ድር ጣቢያዎች ላይ ፍቀድ</translation>
-<translation id="9003677638446136377">እንደገና ፈትሽ</translation>
 <translation id="9003704114456258138">ተደጋጋሚነት</translation>
 <translation id="9004952710076978168">ያልታወቀ አታሚ ማሳወቂያ ደርሷል።</translation>
 <translation id="9008201768610948239">ችላ በል</translation>
 <translation id="9009369504041480176">በማስገባት ላይ (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">ሁልጊዜ አዶን አሳይ</translation>
 <translation id="9013707997379828817">የእርስዎ አስተዳዳሪ ይህን መሣሪያ ቀንሶታል። እባክዎ አስፈላጊ ፋይሎችን ያስቀምጡ እና በመቀጠል ዳግም ይስጀምሩ። ሁሉም በመሣሪያው ላይ ያለ ውሂብ ይሰረዛል።</translation>
-<translation id="9014987600015527693">ሌላ ስልክ አሳይ</translation>
 <translation id="9018218886431812662">ጭነት ተጠናቅቋል</translation>
 <translation id="901834265349196618">ኢሜይል</translation>
 <translation id="9019062154811256702">የራስ-ሰር ሙላ ቅንብሮችን ያንብቡ እና ይለውጡ</translation>
@@ -5341,7 +5316,6 @@ nil</translation>
 <translation id="9147304170847707004">የማረጋገጫ ዘዴ</translation>
 <translation id="9147392381910171771">&amp;አማራጮች</translation>
 <translation id="9148058034647219655">ውጣ</translation>
-<translation id="9148116311817999634">ለደህንነት የማያ ገጽ ቁልፍን ያቀናብሩ</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>
 <translation id="9149866541089851383">አርትዕ…</translation>
 <translation id="9150045010208374699">ካሜራዎን ይጠቀማል</translation>

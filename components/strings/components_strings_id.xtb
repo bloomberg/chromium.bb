@@ -139,6 +139,7 @@
 <translation id="1787142507584202372">Tab yang terbuka muncul di sini</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Nama Pemegang Kartu</translation>
+<translation id="1809549658008855907">Simpan kartu ke Akun Google Anda?</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1826516787628120939">Memeriksa</translation>
 <translation id="1834321415901700177">Situs ini berisi program yang berbahaya</translation>
@@ -727,6 +728,7 @@
 <translation id="5922853866070715753">Hampir selesai</translation>
 <translation id="5932224571077948991">Situs menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
+<translation id="5946937721014915347">Membuka <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Tidak dapat mendaftar dengan akun konsumen (tersedia paket lisensi).</translation>
 <translation id="5966151627327109289">Membuat Anda logout dari sebagian besar situs. Anda dapat kehilangan akses ke konten yang dilindungi dari <ph name="SITE" /> dan beberapa situs lain.</translation>
 <translation id="5967592137238574583">Edit Info Kontak</translation>
@@ -1097,6 +1099,7 @@
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa halaman tidak dapat ditentukan.</translation>
 <translation id="8557066899867184262">CVC terletak di bagian belakang kartu Anda.</translation>
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
+<translation id="8562974682002272877">Sepertinya Anda ingin melakukan ini sendiri. Anda bisa melanjutkan tanpa bantuan saya.</translation>
 <translation id="8564985650692024650">Chromium menyarankan untuk menyetel ulang sandi <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="8571890674111243710">Menerjemahkan halaman ke <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">+ nomor telepon</translation>
@@ -1195,6 +1198,7 @@
 <translation id="935608979562296692">HAPUS FORMULIR</translation>
 <translation id="936602727769022409">Anda dapat kehilangan akses ke Akun Google Anda. Chromium merekomendasikan untuk mengubah sandi Anda sekarang. Anda akan diminta untuk login.</translation>
 <translation id="939736085109172342">Folder baru</translation>
+<translation id="945855313015696284">Periksa info di bawah dan hapus kartu apa pun yang tidak valid</translation>
 <translation id="951104842009476243">Kartu Debit dan Prabayar yang Diterima</translation>
 <translation id="962484866189421427">Konten ini mungkin mencoba menginstal aplikasi penipuan dengan berpura-pura menjadi sesuatu yang lain atau mengumpulkan data yang dapat digunakan untuk melacak Anda. <ph name="BEGIN_LINK" />Tampilkan saja<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Pembuatan Resmi</translation>

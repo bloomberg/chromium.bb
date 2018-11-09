@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Đồng bộ hóa và cá nhân hóa</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1399511500114202393">Không có chứng chỉ người dùng</translation>
-<translation id="140250605646987970">Đã phát hiện thấy điện thoại của bạn. Nhưng Smart Lock chỉ hoạt động trên các thiết bị chạy Android 5.0 trở lên. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Được giám sát)</translation>
 <translation id="1406500794671479665">Đang xác minh...</translation>
 <translation id="1407489512183974736">Cắt giữa</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">Mở Liên kết bằng Cửa sổ &amp;Mới</translation>
 <translation id="1773212559869067373">Chứng chỉ xác thực bị từ chối cục bộ</translation>
 <translation id="177336675152937177">Dữ liệu ứng dụng lưu trữ trên máy chủ</translation>
-<translation id="1774349594977710164">Điện thoại của bạn cũng mở khóa các <ph name="DEVICE_TYPE" /> khác của bạn do chúng được đồng bộ hóa tự động.</translation>
 <translation id="1774833706453699074">Đánh dấu các trang đang mở...</translation>
 <translation id="1775381402323441512">Thông tin về tệp video</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">Thiết lập hoặc quản lý máy in CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> lượt xem khác...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Chú ý:<ph name="END_BOLD" /> Các tệp này là tạm thời và có thể tự động bị xóa để giải phóng dung lượng ổ đĩa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Thiết lập Smart Lock cho <ph name="DEVICE_TYPE" /> của bạn</translation>
 <translation id="1817871734039893258">Khôi phục Tệp của Microsoft</translation>
 <translation id="1818007989243628752">Xóa mật khẩu của <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Đang tải nhật ký lên.</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">Đã chặn cookie từ nhiều trang web.</translation>
 <translation id="1977965994116744507">Mang điện thoại tới gần hơn để mở khóa <ph name="DEVICE_TYPE" /> của bạn.</translation>
 <translation id="1979280758666859181">Bạn đang thay đổi sang kênh có phiên bản <ph name="PRODUCT_NAME" /> cũ hơn. Sẽ áp dụng thay đổi kênh khi phiên bản kênh khớp với phiên bản hiện được cài đặt trên thiết bị của bạn.</translation>
-<translation id="1981115145845865539">Tự động mở khóa <ph name="DEVICE_TYPE" /> của bạn</translation>
 <translation id="1983959805486816857">Sau khi tạo người dùng được giám sát mới, bạn có thể quản lý các cài đặt bất cứ lúc nào từ mọi thiết bị tại <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Tài khoản</translation>
 <translation id="1989112275319619282">Duyệt qua</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187">Đã thêm <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2468205691404969808">Sử dụng cookie để ghi nhớ tùy chọn của bạn, ngay cả khi bạn không truy cập vào các trang đó</translation>
-<translation id="2468902267404883140">Không thể kết nối với điện thoại của bạn. Hãy đảm bảo rằng bạn đang sử dụng một điện thoại Android tương thích đã được bật và ở trong tầm tay. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL chia sẻ tệp</translation>
 <translation id="2470702053775288986">Tiện ích không được hỗ trợ đã bị tắt</translation>
 <translation id="2473195200299095979">Dịch trang này</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />nhập cụm mật khẩu<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2487067538648443797">Thêm dấu trang mới</translation>
-<translation id="248861575772995840">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo Bluetooth của <ph name="DEVICE_TYPE" /> đang bật. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Thêm &amp;thư mục...</translation>
 <translation id="249113932447298600">Rất tiếc, thiết bị <ph name="DEVICE_LABEL" /> không được hỗ trợ vào thời điểm này.</translation>
 <translation id="249303669840926644">Không thể hoàn tất đăng ký</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">Chủ đề</translation>
 <translation id="2572032849266859634">Quyền truy cập chỉ đọc vào <ph name="VOLUME_NAME" /> đã được cấp.</translation>
 <translation id="2575247648642144396">Biểu tượng này sẽ hiển thị khi tiện ích có thể hoạt động trên trang hiện tại. Sử dụng tiện ích này bằng cách nhấp vào biểu tượng hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo rằng <ph name="DEVICE_TYPE" /> đã được kết nối với Wi-Fi hoặc mạng di động. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="257779572837908839">Thiết lập làm Chromebox cho hội họp</translation>
 <translation id="2579575372772932244">Đang tạo lại hồ sơ, vui lòng đợi...</translation>
 <translation id="2580889980133367162">Luôn cho phép <ph name="HOST" /> tải xuống nhiều tệp</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Tự động nhấp chuột khi con trỏ dừng lại</translation>
 <translation id="2735712963799620190">Lịch biểu</translation>
 <translation id="2737363922397526254">Thu gọn...</translation>
-<translation id="2737492745329609575">Bắt đầu thiết lập</translation>
 <translation id="2738771556149464852">Không được Sau</translation>
 <translation id="2739191690716947896">Gỡ lỗi</translation>
 <translation id="2739240477418971307">Thay đổi cài đặt trợ năng của bạn</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489">Không thể sao lưu <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Do phụ huynh của bạn cài đặt.</translation>
 <translation id="2996286169319737844">Dữ liệu được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn. Dữ liệu này không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.</translation>
-<translation id="3002017044809397427">Đã phát hiện thấy <ph name="PHONE_TYPE" /> của bạn. Nhưng Smart Lock chỉ hoạt động trên các thiết bị chạy Android 5.0 trở lên. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Mạng ưa thích</translation>
 <translation id="3003623123441819449">Bộ nhớ đệm CSS</translation>
 <translation id="3003633581067744647">Chuyển sang chế độ xem hình thu nhỏ</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">Chọn thư mục gốc của tiện ích để đóng gói. Để cập nhật tiện ích, bạn cũng chọn tệp khóa cá nhân để sử dụng lại.</translation>
 <translation id="3244294424315804309">Tiếp tục tắt tiếng</translation>
 <translation id="3245321423178950146">Nghệ sĩ không xác định</translation>
-<translation id="3246097286174000800">Dùng thử Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Lỗi mạng</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Không Thuộc Chứng chỉ&gt;</translation>
@@ -1559,7 +1549,6 @@
 <translation id="3355936511340229503">Lỗi kết nối</translation>
 <translation id="3356580349448036450">Hoàn tất</translation>
 <translation id="3356797067524893661">Bạn đã thiết lập xong và sẵn sàng tiếp tục với Hangouts Meet</translation>
-<translation id="3358935496594837302">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo rằng bạn đang sử dụng điện thoại Android tương thích được bật và ở trong tầm tay. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Giới hạn Chính sách của Chứng chỉ</translation>
 <translation id="3360297538363969800">Không in được. Vui lòng kiểm tra máy in và thử lại.</translation>
 <translation id="3365598184818502391">Sử dụng phím Ctrl hoặc Alt</translation>
@@ -1909,7 +1898,6 @@
 <translation id="3855441664322950881">Đóng gói tiện ích</translation>
 <translation id="3855676282923585394">Nhập Dấu trang và các mục Cài đặt...</translation>
 <translation id="3856800405688283469">Chọn múi giờ</translation>
-<translation id="3857228364945137633">Dùng thử Smart Lock để mở khóa <ph name="DEVICE_TYPE" /> của bạn mà không cần mật khẩu khi điện thoại của bạn ở gần.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Nhấc ngón tay, rồi chạm lại</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Đã tạm dừng đồng bộ hóa</translation>
@@ -2036,7 +2024,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Thoát khỏi trang}other{Thoát khỏi trang}}</translation>
 <translation id="4044612648082411741">Nhập mật khẩu chứng chỉ của bạn</translation>
 <translation id="404493185430269859">Công cụ tìm kiếm mặc định</translation>
-<translation id="4047112090469382184">Tính năng này an toàn như thế nào</translation>
 <translation id="4052120076834320548">Rất nhỏ</translation>
 <translation id="4055023634561256217">Cần khởi động lại trước khi có thể đặt lại thiết bị của bạn bằng Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Kiểm tra Tài liệu Ngay bây giờ</translation>
 <translation id="406070391919917862">Ứng dụng nền</translation>
-<translation id="4063283930106169759">Đảm bảo rằng điện thoại của bạn ở gần. Để tìm điện thoại, Bluetooth sẽ được bật cho tất cả các thiết bị có tài khoản của bạn. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Mạng bạn đang sử dụng (<ph name="NETWORK_ID" />) có thể yêu cầu bạn truy cập vào trang đăng nhập của mạng đó.</translation>
 <translation id="4068506536726151626">Trang này chứa các yếu tố từ các trang web đang theo dõi vị trí của bạn:</translation>
 <translation id="4068776064906523561">Vân tay đã lưu</translation>
@@ -2398,7 +2384,6 @@
 <translation id="4672657274720418656">Lọc trang</translation>
 <translation id="4673442866648850031">Mở công cụ bút cảm ứng khi bút cảm ứng được lấy ra</translation>
 <translation id="4677585247300749148"><ph name="URL" /> muốn phản hồi các sự kiện trợ năng</translation>
-<translation id="4677692029604506169">Điện thoại bạn đã sử dụng để mở khóa <ph name="DEVICE_TYPE" /> của mình cần có khóa màn hình để bảo mật. Thông thường, đó là mã PIN, hình mở khóa hoặc mật khẩu. Bạn đã có khóa màn hình? Hãy chọn Kiểm tra lại để xác minh và tiếp tục thiết lập.</translation>
 <translation id="4677772697204437347">Bộ nhớ GPU</translation>
 <translation id="4680105648806843642">Trang này đã bị tắt tiếng</translation>
 <translation id="4681930562518940301">Mở &amp;hình ảnh gốc trong tab mới</translation>
@@ -2734,7 +2719,6 @@
 <translation id="5184063094292164363">Bảng điều khiển &amp;JavaScript</translation>
 <translation id="5184662919967270437">Đang cập nhật thiết bị của bạn</translation>
 <translation id="5185386675596372454">Phiên bản mới nhất của "<ph name="EXTENSION_NAME" />" đã bị tắt vì phiên bản đó yêu cầu nhiều giấy phép hơn.</translation>
-<translation id="5186650237607254032">Cập nhật khóa màn hình của điện thoại để khóa này tắt khi bạn đang ở gần. Bạn sẽ mở khóa điện thoại nhanh hơn và có trải nghiệm tuyệt vời hơn với Smart Lock trên <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Bạn hiện đã đăng nhập vào <ph name="SHORT_PRODUCT_NAME" />. Dấu trang, lịch sử và các cài đặt khác của bạn đang được đồng bộ hóa với Tài khoản Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Vui lòng powerwash thiết bị và thử lại.</translation>
@@ -3165,7 +3149,6 @@
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="5805697420284793859">Trình quản lý cửa sổ</translation>
 <translation id="580571955903695899">Sắp xếp lại theo Tiêu đề</translation>
-<translation id="5807290661599647102">Đặt khóa màn hình</translation>
 <translation id="5811750797187914944">Đã hoàn tất</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
 <translation id="5815645614496570556">Địa chỉ X.400</translation>
@@ -3538,7 +3521,6 @@
 <translation id="6370021412472292592">Không thể tải tệp kê khai.</translation>
 <translation id="637062427944097960">Tệp này được mở trên máy tính khác. Chuyển sang <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) để xem tệp này.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Thiết lập Smart Lock dành cho Android</translation>
 <translation id="6374469231428023295">Thử lại</translation>
 <translation id="6380143666419481200">Đồng ý và tiếp tục</translation>
 <translation id="6384275966486438344">Thay đổi cài đặt tìm kiếm của bạn thành: <ph name="SEARCH_HOST" /></translation>
@@ -3958,7 +3940,6 @@
 <translation id="7027125358315426638">Tên cơ sở dữ liệu:</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031962166228839643">TPM đang được chuẩn bị, vui lòng đợi (việc này có thể mất vài phút)...</translation>
-<translation id="7035437538340499453">Đã thiết lập xong Smart Lock</translation>
 <translation id="7037509989619051237">Văn bản để xem trước</translation>
 <translation id="7039326228527141150">Truy cập thiết bị USB từ <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Đăng nhập Thẻ Thông minh của Microsoft</translation>
@@ -4761,7 +4742,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8227119283605456246">Đính kèm tệp</translation>
 <translation id="8230134520748321204">Bạn có muốn lưu mật khẩu cho <ph name="ORIGIN" /> không?</translation>
 <translation id="8234795456569844941">Hãy giúp các kỹ sư của chúng tôi khắc phục sự cố này. Hãy cho chúng tôi biết điều gì đã xảy ra ngay trước khi bạn nhận được thông báo lỗi hồ sơ:</translation>
-<translation id="8234989666557591529">Chọn điện thoại để mở khóa <ph name="DEVICE_TYPE" /> của bạn</translation>
 <translation id="8241040075392580210">Bóng mát</translation>
 <translation id="8241806945692107836">Đang xác định cấu hình thiết bị...</translation>
 <translation id="8241868517363889229">Đọc và thay đổi dấu trang của bạn</translation>
@@ -4853,10 +4833,8 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8395901698320285466">Kích thước</translation>
 <translation id="8396532978067103567">Sai mật khẩu.</translation>
 <translation id="839736845446313156">Đăng ký</translation>
-<translation id="8398790343843005537">Tìm điện thoại của bạn</translation>
 <translation id="8398877366907290961">Tiếp tục truy cập</translation>
 <translation id="8400146488506985033">Quản lý mọi người</translation>
-<translation id="8410073653152358832">Sử dụng điện thoại này</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Hỏi trước (được đề xuất)</translation>
 <translation id="8418445294933751433">&amp;Hiển thị dưới dạng tab</translation>
@@ -4934,7 +4912,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="8528074251912154910">Thêm ngôn ngữ</translation>
 <translation id="8528962588711550376">Đang đăng nhập.</translation>
-<translation id="8529026713753283969">Bạn sẽ nhận được thông báo trên điện thoại này để giữ cho điện thoại ở gần.</translation>
 <translation id="8529925957403338845">Kết nối trong Chia sẻ kết nối tức thì bị lỗi</translation>
 <translation id="8534656636775144800">Rất tiếc! Đã xảy ra lỗi khi tìm cách tham gia miền. Vui lòng thử lại.</translation>
 <translation id="8535005006684281994">URL Gia hạn Chứng chỉ của Netscape</translation>
@@ -5238,14 +5215,12 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Thêm tài khoản...</translation>
 <translation id="9003647077635673607">Cho phép trên tất cả các trang web</translation>
-<translation id="9003677638446136377">Kiểm tra lại</translation>
 <translation id="9003704114456258138">Tần số</translation>
 <translation id="9004952710076978168">Đã nhận được thông báo cho máy in không xác định.</translation>
 <translation id="9008201768610948239">Bỏ qua</translation>
 <translation id="9009369504041480176">Đang tải lên (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Luôn hiển thị biểu tượng</translation>
 <translation id="9013707997379828817">Quản trị viên đã hạ cấp hệ điều hành của thiết bị này. Vui lòng lưu các tệp quan trọng rồi khởi động lại. Tất cả dữ liệu trên thiết bị sẽ bị xóa.</translation>
-<translation id="9014987600015527693">Hiển thị điện thoại khác</translation>
 <translation id="9018218886431812662">Đã cài đặt xong</translation>
 <translation id="901834265349196618">email</translation>
 <translation id="9019062154811256702">Đọc và thay đổi cài đặt tự động điền</translation>
@@ -5341,7 +5316,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9147304170847707004">Phương thức xác thực</translation>
 <translation id="9147392381910171771">&amp;Tuỳ chọn</translation>
 <translation id="9148058034647219655">Thoát</translation>
-<translation id="9148116311817999634">Đặt khóa màn hình vì lý do an toàn</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>
 <translation id="9149866541089851383">Chỉnh sửa...</translation>
 <translation id="9150045010208374699">Sử dụng máy ảnh của bạn</translation>

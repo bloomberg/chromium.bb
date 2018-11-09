@@ -140,6 +140,7 @@
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
+<translation id="3154351730702813399">L'administrateur de cet appareil peut contrôler votre activité de navigation.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3255483164551725916">Que sais-tu faire ?</translation>
@@ -217,7 +218,6 @@
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute l'activité, y compris aux mots de passe et aux communications.</translation>
 <translation id="4774338217796918551">Revenez demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>

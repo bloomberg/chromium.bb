@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">സമന്വയവും വ്യക്തിപരമാക്കലും</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1399511500114202393">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ് പാടില്ല</translation>
-<translation id="140250605646987970">നിങ്ങളുടെ ഫോൺ കണ്ടെത്തി. പക്ഷേ Smart Lock, Android 5.0 അല്ലെങ്കിൽ അതിലും ഉയർന്ന പതിപ്പുകളിൽ മാത്രമേ പ്രവർത്തിക്കൂ. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (സൂപ്പർവൈസുചെയ്‌തു)</translation>
 <translation id="1406500794671479665">സ്ഥിരീകരിക്കുന്നു...</translation>
 <translation id="1407489512183974736">മധ്യഭാഗത്ത് മുറിക്കുക</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">ലിങ്ക് ഒരു പു‌തിയ &amp;വിന്‍‌ഡോയില്‍ തുറക്കുക</translation>
 <translation id="1773212559869067373">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് പ്രാദേശികമായി നിരസിച്ചു</translation>
 <translation id="177336675152937177">ഹോസ്റ്റുചെയ്‌ത അപ്ലിക്കേഷൻ ഡാറ്റ</translation>
-<translation id="1774349594977710164">നിങ്ങളുടെ മറ്റ് <ph name="DEVICE_TYPE" /> ഉപകരണങ്ങളും സ്വയമേവ സമന്വയിപ്പിച്ചിരിക്കുന്നതിനാൽ ‌ഫോൺ അവയും  അൺലോക്കുചെയ്യുന്നു.</translation>
 <translation id="1774833706453699074">തുറന്ന പേജുകൾ ബുക്ക്‌മാർക്ക് ചെയ്യുക...</translation>
 <translation id="1775381402323441512">വീഡിയോ വിവരം</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">CUPS പ്രിന്ററുകൾ സജ്ജമാക്കുക അല്ലെങ്കിൽ മാനേജുചെയ്യുക.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> കൂടി...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />മുന്നറിയിപ്പ്:<ph name="END_BOLD" />  ഡിസ്ക് സ്പേസ് സ്വന്തന്ത്രമാക്കുന്നതിന് ഈ ഫയലുകളെ താൽക്കാലികമായി, ഒരു പക്ഷെ ഓട്ടോമാറ്റിക് ആയി ഇല്ലാതാക്കും.  <ph name="BEGIN_LINK" />കൂടുതൽ അറിയുക<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> ഉപകരണത്തിനായി ഒരു Smart Lock സജ്ജമാക്കുക</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818007989243628752"><ph name="USERNAME" /> എന്നതിന്‍റെ പാസ്‌വേഡ് ഇല്ലാതാക്കുക</translation>
 <translation id="1818913467757368489">ലോഗ് അപ്‌ലോഡ് പുരോഗമിക്കുന്നു.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">ഒന്നിലധികം സൈറ്റുകളില്‍‌ നിന്നുള്ള കുക്കികളെ തടഞ്ഞു.</translation>
 <translation id="1977965994116744507">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> അൺലോക്കുചെയ്യാൻ ഫോൺ അടുത്ത് കൊണ്ടുവെയ്‌ക്കുക.</translation>
 <translation id="1979280758666859181">നിങ്ങൾ <ph name="PRODUCT_NAME" />-ന്റെ ഒരു പഴയ പതിപ്പ് ഉപയോഗിച്ച് ഒരു ചാനലിലേക്ക് മാറുന്നു. ചാനൽ മാറ്റം നിലവിൽ നിങ്ങളുടെ ഉപകരണത്തിൽ ഇൻസ്റ്റാളുചെയ്‌ത പതിപ്പ്, ചാനൽ പതിപ്പുമായി പൊരുത്തപ്പെടുമ്പോൾ പ്രയോഗിക്കും.</translation>
-<translation id="1981115145845865539">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> സ്വയമേവ അൺലോക്കുചെയ്യുക</translation>
 <translation id="1983959805486816857">സൂപ്പർവൈസുചെയ്‌ത ഒരു പുതിയ ഉപയോക്താവിനെ സൃഷ്‌ടിച്ചുകഴിഞ്ഞാൽ, നിങ്ങൾക്ക് ഏത് സമയത്തും ഏത് ഉപകരണത്തിൽ നിന്നും <ph name="MANAGEMENT_URL" />-ൽ ക്രമീകരണങ്ങൾ നിയന്ത്രിക്കാനാവും.</translation>
 <translation id="1987317783729300807">അക്കൗണ്ടുകൾ‌</translation>
 <translation id="1989112275319619282">ബ്രൗസുചെയ്യുക</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> ചേർത്തു</translation>
 <translation id="2464089476039395325">HTTP പ്രോക്‌സി</translation>
 <translation id="2468205691404969808">നിങ്ങൾ ആ പേജുകൾ സന്ദർശിക്കുന്നില്ലെങ്കിൽ പോലും, നിങ്ങളുടെ മുൻഗണനകൾ ഓർമ്മിക്കുന്നതിന് കുക്കികളെ ഉപയോഗിക്കുന്നു</translation>
-<translation id="2468902267404883140">നിങ്ങളുടെ ഫോൺ കണക്‌റ്റുചെയ്യാനാകുന്നില്ല. അനുയോജ്യമായ Android ഫോൺ ആണ് ഉപയോഗിക്കുന്നതെന്നും അത് ഓണാണെന്നും കൈയ്യിലുണ്ടെന്നും ഉറപ്പുവരുത്തുക. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="247051149076336810">ഫയൽ പങ്കിടൽ URL</translation>
 <translation id="2470702053775288986">പിന്തുണയ്ക്കാത്ത വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമായി</translation>
 <translation id="2473195200299095979">ഈ പേജ് വിവർത്തനം ചെയ്യുക</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">നിങ്ങളുടെ സമന്വയിപ്പിച്ച എല്ലാ ഉപകരണങ്ങളിൽ നിന്നും Google അക്കൗണ്ടിൽ നിന്നും ബ്രൗസിംഗ് ഡാറ്റ മായ്ക്കാൻ<ph name="BEGIN_LINK" />നിങ്ങളുടെ പാസ്‌ഫ്രെയ്‌സ് നൽകുക<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുക</translation>
 <translation id="2487067538648443797">പുതിയ ബുക്ക്‌മാർക്ക് ചേർക്കുക</translation>
-<translation id="248861575772995840">നിങ്ങളുടെ ഫോൺ കണ്ടെത്താനായില്ല. <ph name="DEVICE_TYPE" /> ഉപകരണത്തിന്റെ Bluetooth ഓണാണെന്ന് ഉറപ്പുവരുത്തുക. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="2489918096470125693">&amp;ഫോൾഡർ ചേർക്കുക...</translation>
 <translation id="249113932447298600">ക്ഷമിക്കണം, <ph name="DEVICE_LABEL" /> എന്ന ഉപകരണത്തെ ഇപ്പോൾ പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="249303669840926644">രജിസ്‌ട്രേഷൻ പൂർത്തിയാക്കാനായില്ല</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">തീമുകള്‍‌</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> എന്നതിലേക്ക് റീഡ് ഒൺലി ആക്‌സസ്സ് അനുവദിച്ചു.</translation>
 <translation id="2575247648642144396">വിപുലീകരണത്തിന് നിലവിലെ പേജിൽ പ്രവർത്തിക്കാൻ കഴിയുമ്പോൾ ഈ ഐക്കൺ ദൃശ്യമാകും. ഐക്കണിൽ ക്ലിക്ക് ചെയ്‌തോ <ph name="EXTENSION_SHORTCUT" /> അമർത്തിയോ ഈ വിപുലീകരണം ഉപയോഗിക്കുക</translation>
-<translation id="2575268751393592580">നിങ്ങളുടെ ഫോൺ കണ്ടെത്താനാകുന്നില്ല. നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> വൈഫൈയിലേക്കോ മൊബൈൽ നെറ്റ്‌വര്‍ക്കിലേക്കോ കണക്‌റ്റുചെയ്‌തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="257779572837908839">മീറ്റിംഗിനുള്ള Chromebox സജ്ജമാക്കുക</translation>
 <translation id="2579575372772932244">പ്രൊഫൈൽ വീണ്ടും സൃഷ്‌ടിക്കുന്നു, കാത്തിരിക്കുക...</translation>
 <translation id="2580889980133367162">എല്ലായ്‌പ്പോഴും ഒന്നിലധികം ഫയലുകൾ ഡൗൺലോഡുചെയ്യാൻ <ph name="HOST" />-നെ അനുവദിക്കുക</translation>
@@ -1165,7 +1158,6 @@
 <translation id="2735438478659026460">മൗസ് കഴ്‌സർ നിലയ്‌ക്കുമ്പോള്‍ സ്വമേധയാ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2735712963799620190">ഷെഡ്യൂള്‍‌</translation>
 <translation id="2737363922397526254">ചുരുക്കുക...</translation>
-<translation id="2737492745329609575">സജ്ജീകരണം ആരംഭിക്കുക</translation>
 <translation id="2738771556149464852">അതിനുശേഷമല്ല</translation>
 <translation id="2739191690716947896">ഡീബഗ് ചെയ്യുക</translation>
 <translation id="2739240477418971307">നിങ്ങളുടെ ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ മാറ്റുക</translation>
@@ -1328,7 +1320,6 @@
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> ബാക്കപ്പ് ചെയ്യാനായില്ല</translation>
 <translation id="299483336428448530">നിങ്ങളുടെ രക്ഷകർത്താവ് ഇൻസ്റ്റാൾ ചെയ്‌തു.</translation>
 <translation id="2996286169319737844">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു. ഇതിൽ Google Pay-ൽ നിന്നുള്ള പേയ്‌മെന്റ് രീതികളും വിലാസങ്ങളും അടങ്ങുന്നില്ല.</translation>
-<translation id="3002017044809397427">നിങ്ങളുടെ <ph name="PHONE_TYPE" /> കണ്ടെത്തി. പക്ഷേ Smart Lock, Android 5.0 അല്ലെങ്കിൽ അതിലും ഉയർന്ന പതിപ്പുകളിൽ മാത്രമേ പ്രവർത്തിക്കൂ. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;.</translation>
 <translation id="3003144360685731741">തിരഞ്ഞെടുത്ത നെറ്റ്‌വർക്കുകൾ</translation>
 <translation id="3003623123441819449">CSS കാഷെ</translation>
 <translation id="3003633581067744647">ലഘുചിത്ര കാഴ്ച്ചയിലേക്ക് മാറുക</translation>
@@ -1477,7 +1468,6 @@
 <translation id="3241680850019875542">പാക്ക് ചെയ്യുന്നതിന് വിപുലീകരണത്തിന്‍റെ റൂട്ട് ഡയറക്‌ടറി തിരഞ്ഞെടുക്കുക. ഒരു വിപുലീകരണം അപ്‌ഡേറ്റ് ചെയ്യുന്നതിന്, വീണ്ടും ഉപയോഗിക്കുന്നതിന് സ്വകാര്യ കീ ഫയലും തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="3244294424315804309">ശബ്ദം മ്യൂട്ട് ചെയ്യുന്നത് തുടരുക</translation>
 <translation id="3245321423178950146">അറിയപ്പെടാത്ത കലാകാരൻ</translation>
-<translation id="3246097286174000800">Smart Lock പരീക്ഷിക്കുക</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - നെറ്റ്‌വർക്ക് പിശക്</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;സര്‍‌ട്ടിഫിക്കറ്റിന്‍റെ ഭാഗമല്ല&gt;</translation>
@@ -1556,7 +1546,6 @@
 <translation id="3355936511340229503">കണക്ഷന്‍ പിശക്.</translation>
 <translation id="3356580349448036450">പൂര്‍ത്തിയാക്കൂ</translation>
 <translation id="3356797067524893661">Hangouts Meet-ൽ തുടരുന്നതിന് നിങ്ങൾ സജ്ജമാണ്</translation>
-<translation id="3358935496594837302">നിങ്ങളുടെ ഫോൺ കണ്ടെത്താനാകുന്നില്ല. അനുയോജ്യമായ Android ഫോൺ ആണ് ഉപയോഗിക്കുന്നതെന്നും അത് ഓണാണെന്നും കൈയ്യിലുണ്ടെന്നും ഉറപ്പാക്കുക. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="3359256513598016054">സര്‍‌ട്ടിഫിക്കറ്റ് നയ നിയന്ത്രണങ്ങള്‍‌</translation>
 <translation id="3360297538363969800">പ്രിന്റ് ചെയ്യൽ പരാജയപ്പെട്ടു. നിങ്ങളുടെ പ്രിന്റർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3365598184818502391">Ctrl അല്ലെങ്കിൽ Alt ഉപയോഗിക്കുക</translation>
@@ -1906,7 +1895,6 @@
 <translation id="3855441664322950881">പായ്‌ക്ക് വിപുലീകരണം</translation>
 <translation id="3855676282923585394">ബുക്ക്മാർക്കുകളും ക്രമീകരണവും ഇംപോർട്ട് ചെയ്യുക...</translation>
 <translation id="3856800405688283469">സമയ മേഖല തിരഞ്ഞെടുക്കുക</translation>
-<translation id="3857228364945137633">നിങ്ങളുടെ ഫോൺ സമീപത്തുള്ളപ്പോൾ, പാസ്‌വേഡ് ഇല്ലാതെ <ph name="DEVICE_TYPE" /> അൺലോക്കുചെയ്യുന്നതിന് Smart Lock പരീക്ഷിക്കുക.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">വിരൽ ഉയർത്തി, വീണ്ടും സ്‌പർശിക്കുക</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: സമന്വയം താൽക്കാലികമായി നിർത്തി</translation>
@@ -2032,7 +2020,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{പേജിൽ നിന്ന് പുറത്തുകടക്കുക}other{പേജുകളിൽ നിന്ന് പുറത്തുകടക്കുക}}</translation>
 <translation id="4044612648082411741">നിങ്ങളുടെ സർട്ടിഫിക്കറ്റ് പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="404493185430269859">ഡിഫോൾട്ട് തിരയൽ എഞ്ചിൻ</translation>
-<translation id="4047112090469382184">ഇതെങ്ങനെ സുരക്ഷിതമാകും</translation>
 <translation id="4052120076834320548">ചെറുത്</translation>
 <translation id="4055023634561256217">പവർവാഷ് ഉപയോഗിച്ച് നിങ്ങളുടെ ഉപകരണം പുനസജ്ജമാക്കുന്നതിനുമുമ്പ് പുനരാരംഭിക്കേണ്ടതുണ്ട്.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2041,7 +2028,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">ഡോക്യുമെന്റ് ഇപ്പോള്‍‌ പരിശോധിക്കുക</translation>
 <translation id="406070391919917862">പശ്ചാത്തല അപ്ലിക്കേഷനുകള്‍</translation>
-<translation id="4063283930106169759">നിങ്ങളുടെ ഫോൺ സമീപത്തുണ്ടെന്ന് ഉറപ്പാക്കുക. ഫോൺ കണ്ടെത്തുന്നതിന്, നിങ്ങളുടെ അക്കൗണ്ടുള്ള എല്ലാ ഉപകരണങ്ങളിലും Bluetooth ഓണാക്കും. &lt;a&gt;കൂടുതലറിയുക&lt;/a&gt;</translation>
 <translation id="4065876735068446555">നിങ്ങൾ ഉപയോഗിക്കുന്ന നെറ്റ്‌വർക്ക് (<ph name="NETWORK_ID" />) അതിന്റെ ലോഗിൻ പേജ് സന്ദർശിക്കാൻ നിങ്ങളോട് ആവശ്യപ്പെടാം.</translation>
 <translation id="4068506536726151626">നിങ്ങളുടെ ലൊക്കേഷൻ ട്രാക്കുചെയ്യുന്ന ഇനിപ്പറയുന്ന സൈറ്റുകളിൽ നിന്നുമുള്ള ഘടകങ്ങൾ ഈ പേജിൽ അടങ്ങിയിരിക്കുന്നു:</translation>
 <translation id="4068776064906523561">സംരക്ഷിച്ച വിരലടയാളങ്ങൾ</translation>
@@ -2394,7 +2380,6 @@
 <translation id="4672657274720418656">പേജ് ഡിസ്റ്റിൽ ചെയ്യുക</translation>
 <translation id="4673442866648850031">സ്റ്റൈലസ് നീക്കംചെയ്യുമ്പോൾ സ്റ്റൈലസ് ടൂളുകൾ തുറക്കുക</translation>
 <translation id="4677585247300749148">പ്രവേശനക്ഷമതാ ഇവന്‍റുകളോട് പ്രതികരിക്കാൻ <ph name="URL" /> ആഗ്രഹിക്കുന്നു</translation>
-<translation id="4677692029604506169">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> അൺലോക്ക് ചെയ്യാൻ ഉപയോഗിച്ച ഫോണിന്റെ സുരക്ഷയ്ക്കായി സ്‌ക്രീൻ ലോക്ക് ആവശ്യമാണ്. സാധാരണഗതിയിൽ, അത് ഒരു പിൻ, ‌പാറ്റേൺ അല്ലെങ്കിൽ പാസ്‌വേഡ് ആകാം. നേരത്തേതന്നെ സ്‌ക്രീൻ ലോക്ക് സജ്ജീകരിച്ചിട്ടുണ്ടോ? പരിശോധിച്ചുറപ്പിക്കാനും സജ്ജമാക്കൽ തുടരാനും "വീണ്ടും ‌പരിശോധിക്കുക" തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="4677772697204437347">GPU മെമ്മറി</translation>
 <translation id="4680105648806843642">ഈ പേജിൽ ശബ്‌ദം ‌മ്യൂട്ട് ചെയ്‌തു</translation>
 <translation id="4681930562518940301">യഥാർത്ഥ ചിത്രം പുതിയ ടാബിൽ തുറക്കുക</translation>
@@ -2730,7 +2715,6 @@
 <translation id="5184063094292164363">&amp;JavaScript കണ്‍‌സോള്‍‌</translation>
 <translation id="5184662919967270437">നിങ്ങളുടെ ഉപകരണം അപ്‌ഡേറ്റുചെയ്യുന്നു</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" എന്നതിന്‍റെ പുതിയ പതിപ്പ് അപ്രാപ്തമാക്കി കാരണം അതിന് കൂടുതൽ‍ അനുമതികള്‍ ആവശ്യമുണ്ട്.</translation>
-<translation id="5186650237607254032">നിങ്ങൾ വിളിപ്പാടരികെയുള്ളപ്പോൾ ഫോണിന്റെ സ്‌ക്രീൻ ലോക്ക് ഓഫാക്കുന്നതിന് അത് അപ്‌ഡേറ്റുചെയ്യുക. വേഗത്തിൽ ഫോൺ അൺലോക്കുചെയ്‌ത് <ph name="DEVICE_TYPE" /> എന്നതിൽ മികച്ച Smart Lock അനുഭവം ആസ്വദിക്കാനാകും.</translation>
 <translation id="5187295959347858724">നിങ്ങൾ ഇപ്പോൾ <ph name="SHORT_PRODUCT_NAME" />-ൽ പ്രവേശിച്ചു. നിങ്ങളുടെ ബുക്ക്മാർക്കുകൾ, ചരിത്രം, മറ്റ് ക്രമീകരണം എന്നിവയെല്ലാം നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കുന്നു.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">ഉപകരണം Powerwash ചെയ്‌ത ശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -3161,7 +3145,6 @@
 <translation id="5804241973901381774">അനുമതികൾ</translation>
 <translation id="5805697420284793859">വിൻഡോ മാനേജർ</translation>
 <translation id="580571955903695899">ശീര്‍‌ഷക പ്രകാരം പുനഃക്രമീകരിക്കുക</translation>
-<translation id="5807290661599647102">ഒരു സ്‌ക്രീൻ ലോക്ക് സജ്ജമാക്കുക</translation>
 <translation id="5811750797187914944">എല്ലാം സജ്ജീകരിച്ചു</translation>
 <translation id="5814126672212206791">കണക്ഷൻ തരം</translation>
 <translation id="5815645614496570556">X.400 വിലാസം</translation>
@@ -3535,7 +3518,6 @@
 <translation id="6370021412472292592">മാനിഫെസ്‌റ്റ് ലോഡുചെയ്യാനായില്ല.</translation>
 <translation id="637062427944097960">ഈ ഫയൽ മറ്റൊരു ഡെസ്‌ക്‌ടോപ്പിലാണ് തുറന്നിരിക്കുന്നത്. അത് കാണാൻ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) എന്നതിലേക്ക് നീക്കുക.</translation>
 <translation id="6374077068638737855">ഐസ്‌വീസൽ</translation>
-<translation id="6374108032506706911">Android-നുള്ള Smart Lock സജ്ജമാക്കുക</translation>
 <translation id="6374469231428023295">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="6380143666419481200">അംഗീകരിച്ച് തുടരുക</translation>
 <translation id="6384275966486438344">നിങ്ങളുടെ തിരയൽ ക്രമീകരണങ്ങൾ മാറ്റുക: <ph name="SEARCH_HOST" /></translation>
@@ -3956,7 +3938,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7027125358315426638">ഡാറ്റാബേസിന്റെ പേര്:</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
 <translation id="7031962166228839643">TPM തയ്യാറാക്കുന്നു, ദയവായി കാത്തിരിക്കുക (ഇതിന് കുറച്ച് മിനിറ്റെടുത്തേക്കാം)...</translation>
-<translation id="7035437538340499453">Smart Lock സജ്ജമാണ്</translation>
 <translation id="7037509989619051237">പ്രിവ്യൂ ചെയ്യുന്നതിനുള്ള ടെക്‌സ്റ്റ്</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നും USB ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4759,7 +4740,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8227119283605456246">ഫയൽ അറ്റാച്ചുചെയ്യുക</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> എന്നതിനായി പാസ്‌വേഡുകൾ സംരക്ഷിക്കണോ?</translation>
 <translation id="8234795456569844941">ഈ പ്രശ്‌നം പരിഹരിക്കുന്നതിന് ഞങ്ങളുടെ എഞ്ചിനീയർമാരെ സഹായിക്കുക. നിങ്ങൾക്ക് പ്രൊഫൈൽ ‌പിശക് സന്ദേശം ‌ലഭിക്കുന്നതിന് മുമ്പ് എന്താണ് ‌സംഭവിച്ചതെന്ന് ‌കൃത്യമായി ഞങ്ങളോട് പറയുക:</translation>
-<translation id="8234989666557591529">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> അൺലോക്കുചെയ്യാൻ ഫോൺ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8241040075392580210">ഷേഡി</translation>
 <translation id="8241806945692107836">ഉപകരണ കോൺഫിഗറേഷൻ നിർണ്ണയിക്കുന്നു...</translation>
 <translation id="8241868517363889229">നിങ്ങളുടെ ബുക്ക്മാർക്കുകൾ റീഡുചെയ്യുക, മാറ്റുക</translation>
@@ -4851,10 +4831,8 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8395901698320285466">തലങ്ങൾ</translation>
 <translation id="8396532978067103567">പാസ്‌വേഡ് തെറ്റാണ്.</translation>
 <translation id="839736845446313156">രജിസ്റ്റര്‍</translation>
-<translation id="8398790343843005537">നിങ്ങളുടെ ഫോൺ കണ്ടെത്തുക</translation>
 <translation id="8398877366907290961">എങ്ങനെയാണെങ്കിലും മുന്നോട്ട് പോകുക</translation>
 <translation id="8400146488506985033">ആളുകളെ മാനേജുചെയ്യുക</translation>
-<translation id="8410073653152358832">ഈ ഫോൺ ഉപയോഗിക്കുക</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ആദ്യം ചോദിക്കുക (ശുപാർശ ചെയ്‌തത്)</translation>
 <translation id="8418445294933751433">&amp;ടാബ് പോലെ കാണിക്കുക</translation>
@@ -4932,7 +4910,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8525306231823319788">പൂര്‍ണ്ണ സ്ക്രീന്‍</translation>
 <translation id="8528074251912154910">ഭാഷകൾ ചേർക്കുക</translation>
 <translation id="8528962588711550376">പ്രവേശിക്കുന്നു.</translation>
-<translation id="8529026713753283969">നിങ്ങൾക്ക് ഒരു അറിയിപ്പ് ലഭിക്കുന്നതിനാൽ ഫോൺ സമീപത്ത് തന്നെ വെയ്‌ക്കുക.</translation>
 <translation id="8529925957403338845">തൽക്ഷണ ടെതറിംഗ് കണക്ഷൻ പരാജയപ്പെട്ടു</translation>
 <translation id="8534656636775144800">ക്ഷമിക്കണം! ഡൊമെയ്‌നിൽ ചേരാൻ ശ്രമിക്കുമ്പോൾ എന്തോ കുഴപ്പമുണ്ടായി. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="8535005006684281994">നെറ്റ്‌സ്‌കേപ്പ് സര്‍‌ട്ടിഫിക്കറ്റ് പുതുക്കല്‍‌URL</translation>
@@ -5235,14 +5212,12 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8995603266996330174"><ph name="DOMAIN" /> എന്നത് കൈകാര്യം ചെയ്യുന്നു</translation>
 <translation id="8996526648899750015">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="9003647077635673607">എല്ലാ വെബ്‌സൈറ്റുകളിലും അനുവദിക്കുക</translation>
-<translation id="9003677638446136377">വീണ്ടും പരിശോധിക്കുക</translation>
 <translation id="9003704114456258138">ആവൃത്തി</translation>
 <translation id="9004952710076978168">ഒരു അജ്ഞാത പ്രിന്ററിനായുള്ള അറിയിപ്പ് ലഭിച്ചു.</translation>
 <translation id="9008201768610948239">അവഗണിക്കുക</translation>
 <translation id="9009369504041480176">അപ്‌ലോഡുചെയ്യുന്നു (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">എല്ലായ്‌പ്പോഴും ഐക്കൺ കാണിക്കുക</translation>
 <translation id="9013707997379828817">നിങ്ങളുടെ അഡ്‌മിൻ ഉപകരണം മുമ്പത്തെ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കുകയാണ്. പ്രധാനപ്പെട്ട ഫയലുകൾ സംരക്ഷിക്കുക, തുടർന്ന് പുനഃരാരംഭിക്കുക. ഉപകരണത്തിലെ എല്ലാ ഡാറ്റയും ഇല്ലാതാവും.</translation>
-<translation id="9014987600015527693">മറ്റൊരു ഫോൺ കാണിക്കുക</translation>
 <translation id="9018218886431812662">ഇൻസ്‌റ്റലേഷൻ പൂർത്തിയായി</translation>
 <translation id="901834265349196618">ഇമെയില്‍</translation>
 <translation id="9019062154811256702">ഓട്ടോഫിൽ ക്രമീകരണം റീഡുചെയ്യുക, മാറ്റുക</translation>
@@ -5338,7 +5313,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="9147304170847707004">പരിശോധിച്ചുറപ്പിക്കൽ രീതി</translation>
 <translation id="9147392381910171771">&amp;ഓപ്ഷനുകള്‍</translation>
 <translation id="9148058034647219655">പുറത്തുകടക്കുക</translation>
-<translation id="9148116311817999634">സുരക്ഷയ്ക്കായി ഒരു സ്‌ക്രീൻ ലോക്ക് സജ്ജമാക്കുക</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
 <translation id="9149866541089851383">എഡിറ്റ്...</translation>
 <translation id="9150045010208374699">നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുക</translation>

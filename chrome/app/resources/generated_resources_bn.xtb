@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">সিঙ্ক এবং ব্যক্তিগতকরণ</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1399511500114202393">কোনও ব্যবহারকারীর সার্টিফিকেট নেই</translation>
-<translation id="140250605646987970">আপনার ফোন পাওয়া গেছে৷ কিন্তু ডিভাইসে শুধুমাত্র Android 5.0 এবং তার উপরের সংস্করণের সঙ্গেই Smart Lock কাজ করে৷ &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (তত্বাবধানে থাকা)</translation>
 <translation id="1406500794671479665">যাচাই করা হচ্ছে...</translation>
 <translation id="1407489512183974736">মাঝ খান থেকে ক্রপ করা</translation>
@@ -537,7 +536,6 @@
 <translation id="1769104665586091481">নতুন &amp;উইন্ডোতে লিঙ্ক খুলুন</translation>
 <translation id="1773212559869067373">স্থানীয়ভাবে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="177336675152937177">হোস্ট করা অ্যাপ্লিকেশান ডেটা</translation>
-<translation id="1774349594977710164">আপনার ফোন অন্য <ph name="DEVICE_TYPE" /> গুলি আনলক করতে পারবে এগুলি নিজে থেকেই একে অপরের সাথে সিঙ্ক করা হয়েছে।</translation>
 <translation id="1774833706453699074">খোলা পৃষ্ঠাগুলি বুকমার্ক করুন...</translation>
 <translation id="1775381402323441512">ভিডিওর তথ্য</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -566,7 +564,6 @@
 <translation id="1815579292149538864">CUPS প্রিন্টার সেট-আপ বা পরিচালনা করুন।</translation>
 <translation id="181577467034453336">আরও <ph name="NUMBER_OF_VIEWS" />টি...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />সতর্কতা:<ph name="END_BOLD" /> এই ফাইলগুলি অস্থায়ী এবং ডিস্ক স্থান মুক্ত করতে স্বয়ংক্রিয়ভাবে মুছে ফেলা হতে পারে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">আপনার <ph name="DEVICE_TYPE" /> এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="1817871734039893258">Microsoft  ফাইল পুনরুদ্ধার</translation>
 <translation id="1818007989243628752"><ph name="USERNAME" /> এর পাসওয়ার্ড মুছে দিন</translation>
 <translation id="1818913467757368489">লগ আপলোড করা চলছে।</translation>
@@ -678,7 +675,6 @@
 <translation id="1976323404609382849">একাধিক সাইট থেকে কুকিজ অবরুদ্ধ৷</translation>
 <translation id="1977965994116744507">আপনার <ph name="DEVICE_TYPE" /> আনলক করতে আপনার ফোন কাছাকাছি আনুন।</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> এর পুরানো সংস্করণ দিয়ে একটি চ্যানেলে পরিবর্তন করছেন৷ যখন আপনার ডিভাইসে বর্তমানে ইনস্টল করা সংস্করণের সঙ্গে চ্যানেলের সংস্করণটি মিলে যাবে তখনই চ্যানেল পরিবর্তন প্রযুক্ত হবে৷</translation>
-<translation id="1981115145845865539">আপনার <ph name="DEVICE_TYPE" /> নিজে থেকে আনলক করুন</translation>
 <translation id="1983959805486816857">আপনার দ্বারা একটি নতুন তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি হয়ে গেলে, আপনি যেকোনো ডিভাইস থেকে যেকোনো সময়ে <ph name="MANAGEMENT_URL" /> এ সেটিংস পরিচালনা করতে পারেন৷</translation>
 <translation id="1987317783729300807">অ্যাকাউন্টসমূহ</translation>
 <translation id="1989112275319619282">ব্রাউজ করুন</translation>
@@ -982,7 +978,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="2464089476039395325">HTTP প্রক্সী</translation>
 <translation id="2468205691404969808">আপনার পছন্দ মনে রাখার জন্য কুকি ব্যবহার করুন, সেই সমস্ত পৃষ্ঠায় যদি না যান, তাহলেও</translation>
-<translation id="2468902267404883140">আপনার ফোন সংযুক্ত করা যাচ্ছে না। নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="247051149076336810">ফাইল শেয়ার করার ইউআরএল</translation>
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="2473195200299095979">এই পৃষ্ঠাটি অনুবাদ করুন</translation>
@@ -995,7 +990,6 @@
 <translation id="2484959914739448251">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />আপনার পাসফ্রেজ লিখুন<ph name="END_LINK" />।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2487067538648443797">নতুন বুকমার্ক যোগ করুন</translation>
-<translation id="248861575772995840">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। নিশ্চিত করুন আপনার <ph name="DEVICE_TYPE" /> এর ব্লুটুথ চালু আছে। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="2489918096470125693">ফোল্ডার যুক্ত &amp;করুন...</translation>
 <translation id="249113932447298600">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইসটি এই মুহুর্তে সমর্থিত নয়৷</translation>
 <translation id="249303669840926644">নিবন্ধন সম্পূর্ণ করতে পারেনি</translation>
@@ -1054,7 +1048,6 @@
 <translation id="257088987046510401">থিমসমূহ</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />-এ শুধুমাত্র পাঠযোগ্য অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
 <translation id="2575247648642144396">এই আইকনটি দৃশ্যমান হবে যখন এক্সটেনশন বর্তমান পৃষ্ঠার উপর কাজ করতে পারবে৷ আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশন ব্যবহার করুন৷</translation>
-<translation id="2575268751393592580">আপনার ফোন খুঁজে পাওয়া যাচ্ছে না। আপনার <ph name="DEVICE_TYPE" /> ওয়াই-ফাই বা মোবাইল নেটওয়ার্কের সাথে সংযুক্ত আছে সেটি নিশ্চিত করুন। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="257779572837908839">মিটিংয়ের জন্য Chromebox সেট আপ করুন</translation>
 <translation id="2579575372772932244">প্রোফাইল পুনরায় তৈরি করা হচ্ছে, দয়া করে অপেক্ষা করুন...</translation>
 <translation id="2580889980133367162">একাধিক ফাইল ডাউনলোড করতে <ph name="HOST" /> কে সর্বদা অনুমতি দিন</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">মাউস কার্সার বন্ধ হয়ে গেলে নিজে থেকে ক্লিক করুন</translation>
 <translation id="2735712963799620190">সময়সূচি</translation>
 <translation id="2737363922397526254">সঙ্কুচিত করুন...</translation>
-<translation id="2737492745329609575">সেটআপ শুরু করুন</translation>
 <translation id="2738771556149464852">এরপরে নয়</translation>
 <translation id="2739191690716947896">ডিবাগ</translation>
 <translation id="2739240477418971307">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পরিবর্তন করুন</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> ব্যাক-আপ নেওয়া যায়নি</translation>
 <translation id="299483336428448530">আপনার পিতামাতার দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
 <translation id="2996286169319737844">আপনার সিঙ্ক পাসফ্রেজ দিয়ে ডেটা এনক্রিপ্ট করা হয়েছে। এতে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।</translation>
-<translation id="3002017044809397427">আপনার <ph name="PHONE_TYPE" /> পাওয়া গেছে৷ কিন্তু ডিভাইসে শুধুমাত্র Android 5.0 এবং তার উপরের সংস্করণের সঙ্গেই Smart Lock কাজ করে৷ &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="3003144360685731741">পছন্দের নেটওয়ার্কগুলি</translation>
 <translation id="3003623123441819449">CSS ক্যাশে</translation>
 <translation id="3003633581067744647">থাম্বনেল দৃশ্যে পাল্টান</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">প্যাক করার জন্য এক্সটেনশনের রুট ডিরেক্টরিটি নির্বাচন করুন৷ কোনও এক্সটেনশন আপডেট করতে, আবার ব্যবহার করার জন্য 'ব্যক্তিগত কী ফাইলটি'ও নির্বাচন করুন৷</translation>
 <translation id="3244294424315804309">সাউন্ড মিউট করে রাখুন</translation>
 <translation id="3245321423178950146">অজানা শিল্পী</translation>
-<translation id="3246097286174000800">Smart Lock ব্যবহার করে দেখুন</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - নেটওয়ার্ক ত্রুটি</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;শংসাপত্রের অংশ নয়&gt;</translation>
@@ -1556,7 +1546,6 @@
 <translation id="3355936511340229503">সংযোগ ত্রুটি</translation>
 <translation id="3356580349448036450">সম্পূর্ণ</translation>
 <translation id="3356797067524893661">Hangouts Meet ব্যবহার চালিয়ে যেতে আপনি প্রস্তুত</translation>
-<translation id="3358935496594837302">আপনার ফোন খুঁজে পাওয়া যায়নি৷ নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়।&lt;a&gt;আরও জানুন/a&gt;</translation>
 <translation id="3359256513598016054">শংসাপত্র নীতি বাধ্যবাধকতা</translation>
 <translation id="3360297538363969800">প্রিন্ট করা গেল না৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="3365598184818502391">Ctrl অথবা Alt ব্যবহার করুন</translation>
@@ -1906,7 +1895,6 @@
 <translation id="3855441664322950881">প্যাক এক্সটেনশন</translation>
 <translation id="3855676282923585394">বুকমার্কস এবং সেটিংস আমদানি করুন...</translation>
 <translation id="3856800405688283469">সময় অঞ্চল বেছে নিন</translation>
-<translation id="3857228364945137633">আপনার ফোন আশেপাশে থাকলে Smart Lock ব্যবহার করে <ph name="DEVICE_TYPE" /> আনলক করতে পারবেন।</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">আঙ্গুল লিফ্ট করে আবার টাচ করুন</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: সিঙ্ক থামানো হয়েছে</translation>
@@ -2032,7 +2020,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{পৃষ্ঠাটি ছেড়ে যান}one{পৃষ্ঠাগুলি ছেড়ে যান}other{পৃষ্ঠাগুলি ছেড়ে যান}}</translation>
 <translation id="4044612648082411741">আপনার শংসাপত্রের পাসওয়ার্ড লিখুন</translation>
 <translation id="404493185430269859">ডিফল্ট সার্চ ইঞ্জিন</translation>
-<translation id="4047112090469382184">কীভাবে এটি নিরাপদ</translation>
 <translation id="4052120076834320548">অতি ক্ষুদ্র</translation>
 <translation id="4055023634561256217">আপনার যন্ত্র পাওয়ারওয়াশের মাধ্যমে আবার সেট করার আগে একটি পুনারম্ভ করা দরকার৷</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2041,7 +2028,6 @@
 <translation id="4058720513957747556">অ্যাপ্লিকেশান সকেট (TCP/IP)</translation>
 <translation id="4058793769387728514">এখন দস্তাবেজ চেক করুন</translation>
 <translation id="406070391919917862">পৃষ্ঠভূমি অ্যাপ্লিকেশান</translation>
-<translation id="4063283930106169759">আপনার ফোন কাছাকাছি সেটি নিশ্চিত করুন। আপনার ফোন খুঁজতে সব ডিভাইসে যেখানে আপনার অ্যাকাউন্ট আছে সেখানে ব্লুটুথ চালু করুন। &lt;a&gt;আরও জানুন/a&gt;</translation>
 <translation id="4065876735068446555">আপনি যে নেটওয়ার্কটি <ph name="NETWORK_ID" /> ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="4068506536726151626">এই পৃষ্ঠাতে নিম্নলিখিত সাইটগুলি থেকে এমন উপাদান রয়েছে যা আপনার লোকেশন নির্ধারণ করে:</translation>
 <translation id="4068776064906523561">সংরক্ষিত আঙ্গুলের ছাপগুলি</translation>
@@ -2394,7 +2380,6 @@
 <translation id="4672657274720418656">পৃষ্ঠা পাতন করুন</translation>
 <translation id="4673442866648850031">স্টাইলাস বের করলে স্টাইলাস টুল চালু হবে</translation>
 <translation id="4677585247300749148"><ph name="URL" /> অ্যাক্সেসযোগ্যতা ইভেন্টে প্রতিক্রিয়া দিয়ে চায়</translation>
-<translation id="4677692029604506169">আপনার <ph name="DEVICE_TYPE" /> আনলক করার জন্য যে ফোন আপনি ব্যবহার করছেন সেটির নিরাপত্তার জন্য স্ক্রিন লক প্রয়োজন। সাধারণত, এটি একটি পিন, প্যাটার্ন, বা পাসওয়ার্ড। আগে থেকেই স্ক্রিন লক আছে? যাচাই করতে এবং চালিয়ে যেতে আবার দেখুন বেছে নিন।</translation>
 <translation id="4677772697204437347">GPU মেমোরি</translation>
 <translation id="4680105648806843642">এই পৃষ্ঠায় সাউন্ড মিউট করা আছে</translation>
 <translation id="4681930562518940301">নতুন ট্যাবে আসল ছবিটি খুলুন</translation>
@@ -2730,7 +2715,6 @@
 <translation id="5184063094292164363">&amp;JavaScript কনসোল</translation>
 <translation id="5184662919967270437">আপনার ডিভাইস আপডেট করা হচ্ছে</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />"-এর নতুনতম সংস্করনটি অক্ষম হয়েছে কারণ এটির আরও বেশি অনুমতির প্রয়োজন৷</translation>
-<translation id="5186650237607254032">আপনার ফোনের স্ক্রিন লক আপডেট করুন, যাতে করে আপনি যখন কাছাকাছি থাকবেন তখন এটি বন্ধ হয়৷ আপনি দ্রুত ফোনটি আনলক করবেন, এবং আপনার <ph name="DEVICE_TYPE" /> এ আরও ভালো Smart Lock-এর অভিজ্ঞতা উপভোগ করতে পারবেন৷</translation>
 <translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ প্রবেশ করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সমন্বিত করা হচ্ছে৷</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">ডিভাইস পাওয়ারওয়াশ করে আবার চেষ্টা করুন।</translation>
@@ -3161,7 +3145,6 @@
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5805697420284793859">উইন্ডো ম্যানেজার</translation>
 <translation id="580571955903695899">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
-<translation id="5807290661599647102">একটি স্ক্রিন লক সেট করুন</translation>
 <translation id="5811750797187914944">সব সেট করা হয়ে গেছে</translation>
 <translation id="5814126672212206791">সংযোগের প্রকার</translation>
 <translation id="5815645614496570556">X.400 ঠিকানা</translation>
@@ -3535,7 +3518,6 @@
 <translation id="6370021412472292592">ম্যানিফেস্ট লোড করা যাবে না।</translation>
 <translation id="637062427944097960">এই ফাইলটি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) এ সরান৷</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Android এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6380143666419481200">স্বীকার ও চালিয়ে যান</translation>
 <translation id="6384275966486438344">আপনার সার্চের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST" /></translation>
@@ -3955,7 +3937,6 @@
 <translation id="7027125358315426638">ডেটাবেসের নাম:</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7031962166228839643">TPM প্রস্তুত করা হচ্ছে, দয়া করে অপেক্ষা করুন (এটি কয়েক মিনিট সময় নিতে পারে)...</translation>
-<translation id="7035437538340499453">Smart Lock প্রস্তুত</translation>
 <translation id="7037509989619051237">প্রিভিউ করার জন্য টেক্সট</translation>
 <translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME" /> থেকে অ্যাক্সেস করুন</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4756,7 +4737,6 @@
 <translation id="8227119283605456246">ফাইল সংযুক্ত করুন</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" />-এর জন্য পাসওয়ার্ড সেভ করবেন?</translation>
 <translation id="8234795456569844941">এই সমস্যাটির সমাধান করতে আমাদের ইঞ্জিনিয়ারদের সাহায্য করুন। আমাদের জানান, ঠিক কি ঘটার পরে এই প্রোফাইল ত্রুটির মেসেজটি দেখেছিলেন:</translation>
-<translation id="8234989666557591529">আপনার <ph name="DEVICE_TYPE" /> আনলক করার জন্য একটি ফোন নম্বর বেছে নিন।</translation>
 <translation id="8241040075392580210">ছায়াদায়ক</translation>
 <translation id="8241806945692107836">ডিভাইস কনফিগারেশন নির্ধারণ করা হচ্ছে...</translation>
 <translation id="8241868517363889229">আপনার বুকমার্ক পড়ুন এবং পরিবর্তন করুন</translation>
@@ -4849,10 +4829,8 @@
 <translation id="8395901698320285466">আয়তন</translation>
 <translation id="8396532978067103567">ভুল পাসওয়ার্ড৷</translation>
 <translation id="839736845446313156">নিবন্ধ করুন</translation>
-<translation id="8398790343843005537">আপনার ফোন খুঁজুন</translation>
 <translation id="8398877366907290961">যাইহোক এগিয়ে যান</translation>
 <translation id="8400146488506985033">ব্যক্তিগণকে পরিচালনা করুন</translation>
-<translation id="8410073653152358832">এই ফোনটি ব্যবহার করুন</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
@@ -4930,7 +4908,6 @@
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
 <translation id="8528074251912154910">ভাষা যোগ করুন</translation>
 <translation id="8528962588711550376">প্রবেশ করুন হচ্ছে৷</translation>
-<translation id="8529026713753283969">এই ফোনে একটি বিজ্ঞপ্তি আসবে তাই ফোনটি কাছাকাছি রাখুন।</translation>
 <translation id="8529925957403338845">ঝটপট টিথারিং সংযোগ কাজ করছে না</translation>
 <translation id="8534656636775144800">ওহো! ডোমেনটি যোগ করার সময় কোনও সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</translation>
 <translation id="8535005006684281994">Netscape শংসাপত্র পুনর্নবীকরণ URL</translation>
@@ -5234,14 +5211,12 @@
 <translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
 <translation id="8996526648899750015">অ্যাকাউন্ট যোগ করুন...</translation>
 <translation id="9003647077635673607">সমস্ত ওয়েবসাইটে অনুমতি দিন</translation>
-<translation id="9003677638446136377">আবার পরীক্ষা করে দেখুন</translation>
 <translation id="9003704114456258138">ফ্রিকোয়েন্সি</translation>
 <translation id="9004952710076978168">একটি অজানা প্রিন্টারের জন্য একটি বিজ্ঞপ্তি প্রাপ্ত হয়েছে৷</translation>
 <translation id="9008201768610948239">উপেক্ষা করুন</translation>
 <translation id="9009369504041480176">আপলোড হচ্ছে (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">সর্বদা আইকন দেখান</translation>
 <translation id="9013707997379828817">আপনার অ্যাডমিনিস্ট্রেটর আপনার এই ডিভাইস রোল ব্যাক করেছেন। গুরুত্বপূর্ণ ফাইলগুলি সেভ করে রিস্টার্ট করুন। ডিভাইসের সমস্ত ডেটা মুছে ফেলা হবে।</translation>
-<translation id="9014987600015527693">অন্য কোনো ফোন দেখান</translation>
 <translation id="9018218886431812662">ইনস্টল হয়ে গেছে</translation>
 <translation id="901834265349196618">ইমেল আইডি</translation>
 <translation id="9019062154811256702">স্বতঃপূর্ণ সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
@@ -5337,7 +5312,6 @@
 <translation id="9147304170847707004">যাচাইকরণের পদ্ধতি</translation>
 <translation id="9147392381910171771">&amp;বিকল্প</translation>
 <translation id="9148058034647219655">প্রস্থান করুন</translation>
-<translation id="9148116311817999634">নিরাপত্তার জন্য একটি স্ক্রিন লক সেট করুন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
 <translation id="9149866541089851383">সম্পাদনা...</translation>
 <translation id="9150045010208374699">আপনার ক্যামেরা ব্যবহার করুন</translation>

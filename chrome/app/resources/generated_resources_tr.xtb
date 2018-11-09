@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Senkronizasyon ve kişiselleştirme</translation>
 <translation id="1398853756734560583">Büyüt</translation>
 <translation id="1399511500114202393">Kullanıcı sertifikası yok</translation>
-<translation id="140250605646987970">Telefonunuz bulundu. Ancak Smart Lock yalnızca Android 5.0 ve üzeri sürümlere sahip cihazlarda çalışır. &lt;a&gt;Daha fazla bilgi edinin&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Denetlenen)</translation>
 <translation id="1406500794671479665">Doğrulanıyor...</translation>
 <translation id="1407489512183974736">Ortala ve Kırp</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">Bağlantıyı Yeni &amp;Pencerede Aç</translation>
 <translation id="1773212559869067373">Kimlik doğrulama sertifikası yerel olarak reddedildi</translation>
 <translation id="177336675152937177">Barındırılan uygulama verileri</translation>
-<translation id="1774349594977710164">Diğer <ph name="DEVICE_TYPE" /> cihazlarınız otomatik olarak senkronize edildiği için telefonunuz onların da kilidini açar.</translation>
 <translation id="1774833706453699074">Açık sayfalara yer işareti koy...</translation>
 <translation id="1775381402323441512">Video bilgileri</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">CUPS yazıcıları kurun veya yönetin.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> görüntüleme daha...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Dikkat:<ph name="END_BOLD" />  Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir. <ph name="BEGIN_LINK" />Daha Fazla Bilgi Edinin<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> cihazınız için Smart Lock'u kurun</translation>
 <translation id="1817871734039893258">Microsoft Dosya Kurtarma</translation>
 <translation id="1818007989243628752"><ph name="USERNAME" /> kullanıcısının şifresini sil</translation>
 <translation id="1818913467757368489">Günlük yükleniyor.</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">Birden çok siteden çerez alma engellendi.</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak için telefonunuzu cihaza yaklaştırın.</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> ürününün eski sürümünü destekleyen bir kanala geçiyorsunuz. Kanal değişikliği, kanalın sürümü cihazınızda şu an yüklenmiş olan sürümle eşleştiğinde uygulanacak.</translation>
-<translation id="1981115145845865539"><ph name="DEVICE_TYPE" /> cihazınızın kilidini otomatik olarak açın</translation>
 <translation id="1983959805486816857">Denetlenen yeni bir kullanıcı oluşturduktan sonra, <ph name="MANAGEMENT_URL" /> adresini kullanarak ayarları istediğiniz zaman tüm cihazlardan yönetebilirsiniz.</translation>
 <translation id="1987317783729300807">Hesaplar</translation>
 <translation id="1989112275319619282">Göz at</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> eklendi</translation>
 <translation id="2464089476039395325">HTTP Proxy'si</translation>
 <translation id="2468205691404969808">Belirtilen sayfaları ziyaret etmiyor olsanız bile tercihlerinizi hatırlamak için çerezler kullanır</translation>
-<translation id="2468902267404883140">Telefonunuza bağlanılamıyor. Uyumlu bir Android telefon kullandığınızdan, ayrıca telefonunuzun açık ve yakında olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="247051149076336810">Dosya paylaşım URL'si</translation>
 <translation id="2470702053775288986">Desteklenmeyen uzantılar devre dışı bırakıldı</translation>
 <translation id="2473195200299095979">Bu sayfayı çevir</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">Tarama verilerini senkronize edilmiş tüm cihazlarınızdan ve Google Hesabınızdan temizlemek için <ph name="BEGIN_LINK" />parolanızı girin<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2487067538648443797">Yeni yer işareti ekle</translation>
-<translation id="248861575772995840">Telefonunuz bulunamıyor. <ph name="DEVICE_TYPE" /> cihazınızın Bluetooth'unun açık olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="2489918096470125693">&amp;Klasör Ekle...</translation>
 <translation id="249113932447298600">Maalesef, <ph name="DEVICE_LABEL" /> cihazı şu anda desteklenmiyor.</translation>
 <translation id="249303669840926644">Kayıt işlemi tamamlanamadı</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">Temalar</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> birimine salt okunur erişim izni verildi.</translation>
 <translation id="2575247648642144396">Uzantı, mevcut sayfada işlem yapabildiğinde bu simge görünür. Simgeyi tıklayarak veya <ph name="EXTENSION_SHORTCUT" /> tuşuna basarak bu uzantıyı kullanın.</translation>
-<translation id="2575268751393592580">Telefonunuz bulunamıyor. <ph name="DEVICE_TYPE" /> cihazınızın kablosuz ağa veya mobil ağa bağlı olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="257779572837908839">Chromebox video konferansı olarak kurun</translation>
 <translation id="2579575372772932244">Profil yeniden oluşturuluyor, lütfen bekleyin...</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> ana makinesinin birden fazla dosya indirmesine her zaman izin ver</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Fare imleci durduğunda otomatik tıkla</translation>
 <translation id="2735712963799620190">Program</translation>
 <translation id="2737363922397526254">Daralt...</translation>
-<translation id="2737492745329609575">Kurulumu başlat</translation>
 <translation id="2738771556149464852">Şundan Sonra Değil:</translation>
 <translation id="2739191690716947896">Hata ayıkla</translation>
 <translation id="2739240477418971307">Erişilebilirlik ayarlarını değiştirme</translation>
@@ -1331,7 +1323,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> dosyası yedeklenemedi</translation>
 <translation id="299483336428448530">Ebeveyniniz tarafından yüklendi.</translation>
 <translation id="2996286169319737844">Veriler senkronizasyon parolanızla şifrelendi. Google Pay'deki adresler ve ödeme yöntemleri bu kapsamda değildir.</translation>
-<translation id="3002017044809397427"><ph name="PHONE_TYPE" /> telefonunuz bulundu. Ancak Smart Lock yalnızca Android 5.0 ve üzeri sürümlere sahip cihazlarda çalışır. &lt;a&gt;Daha fazla bilgi edinin&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Tercih edilen ağlar</translation>
 <translation id="3003623123441819449">CSS Önbelleği</translation>
 <translation id="3003633581067744647">Küçük resim görünümüne geç</translation>
@@ -1480,7 +1471,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3241680850019875542">Paketlenecek uzantının kök dizinini seçin. Bir uzantıyı güncellemek için tekrar kullanılacak özel anahtar dosyasını da seçin.</translation>
 <translation id="3244294424315804309">Sesi kapatmaya devam et</translation>
 <translation id="3245321423178950146">Bilinmeyen Sanatçı</translation>
-<translation id="3246097286174000800">Smart Lock'u deneyin</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Ağ hatası</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Sertifikanın Parçası Değil&gt;</translation>
@@ -1559,7 +1549,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3355936511340229503">Bağlantı hatası</translation>
 <translation id="3356580349448036450">Tamamlandı</translation>
 <translation id="3356797067524893661">Artık Hangouts Meet'e devam edebilirsiniz</translation>
-<translation id="3358935496594837302">Telefonunuz bulunamıyor. Uyumlu bir Android telefon kullandığınızdan, ayrıca telefonunuzun açık ve yakında olduğundan emin olun. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Sertifika Politikası Kısıtlamaları</translation>
 <translation id="3360297538363969800">Yazdırma işlemi başarısız oldu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="3365598184818502391">Ctrl veya Alt tuşlarından birini kullanın</translation>
@@ -1909,7 +1898,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3855441664322950881">Paket uzantısı</translation>
 <translation id="3855676282923585394">Yer İşaretlerini ve Ayarları İçe Aktar...</translation>
 <translation id="3856800405688283469">Saat dilimi seçin</translation>
-<translation id="3857228364945137633">Telefonunuz yakındayken şifre girmeden <ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak için Smart Lock'u deneyin.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Kaldırın, tekrar dokunun</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Senkronizasyon duraklatıldı</translation>
@@ -2036,7 +2024,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Sayfadan Çık}other{Sayfalardan Çık}}</translation>
 <translation id="4044612648082411741">Sertifika şifrenizi girin</translation>
 <translation id="404493185430269859">Varsayılan arama motoru</translation>
-<translation id="4047112090469382184">Güvenliği nasıl sağlanır?</translation>
 <translation id="4052120076834320548">Çok küçük</translation>
 <translation id="4055023634561256217">Cihazınızın Powerwash ile sıfırlanabilmesi için yeniden başlatılması gerekir.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Dokümanı Şimdi Denetle</translation>
 <translation id="406070391919917862">Arka Plan Uygulamaları</translation>
-<translation id="4063283930106169759">Telefonunuzun yakında olduğundan emin olun. Bluetooth, telefonunuzu bulmak için hesabınızın bulunduğu tüm cihazlarda açılacaktır. &lt;a&gt;Daha fazla bilgi&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Kullandığınız ağ (<ph name="NETWORK_ID" />) bir giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="4068506536726151626">Bu sayfa, konumunuzu izleyen şu sitelerden öğeler içeriyor:</translation>
 <translation id="4068776064906523561">Kayıtlı parmak izleri</translation>
@@ -2398,7 +2384,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4672657274720418656">Sayfayı Ayrıştır</translation>
 <translation id="4673442866648850031">Ekran kalemi yerinden çıkarıldığında ekran kalemi araçlarını aç</translation>
 <translation id="4677585247300749148"><ph name="URL" />, erişilebilirlikle ilgili etkinliklere yanıt vermek istiyor</translation>
-<translation id="4677692029604506169"><ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak amacıyla kullandığınız telefonda güvelik için ekran kilidinin ayarlanması gerekir. Ekran kilidi genellikle PIN, desen veya şifre şeklinde olur. Zaten ekran kilidiniz var mı? Doğrulamak ve kuruluma devam etmek için Tekrar kontrol et'i seçin.</translation>
 <translation id="4677772697204437347">GPU belleği</translation>
 <translation id="4680105648806843642">Bu sayfada ses kapalı</translation>
 <translation id="4681930562518940301">Orijinal &amp;resmi yeni sekmede aç</translation>
@@ -2734,7 +2719,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5184063094292164363">&amp;JavaScript Konsolu</translation>
 <translation id="5184662919967270437">Cihazınız güncelleniyor</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" adlı uzantının en yeni sürümü daha fazla izin gerektirdiğinden devre dışı bırakıldı.</translation>
-<translation id="5186650237607254032">Telefonunuzun ekran kilidini siz yakınlarda olduğunuzda devre dışı kalacak şekilde güncelleyin. Telefonunuzun kilidini daha hızlı bir şekilde açar ve <ph name="DEVICE_TYPE" /> cihazınızda daha iyi bir Smart Lock deneyimi yaşarsınız.</translation>
 <translation id="5187295959347858724">Şu anda <ph name="SHORT_PRODUCT_NAME" /> uygulamasında oturum açmış bulunuyorsunuz. Yer işaretleriniz, geçmişiniz ve diğer ayarlarınız Google Hesabınızla senkronize ediliyor.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Lütfen cihazda powerwash işlemi gerçekleştirin ve tekrar deneyin.</translation>
@@ -3166,7 +3150,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5805697420284793859">Pencere yöneticisi</translation>
 <translation id="580571955903695899">Başlığa Göre Yeniden Sırala</translation>
-<translation id="5807290661599647102">Ekran Kilidi Ayarla</translation>
 <translation id="5811750797187914944">Hazır</translation>
 <translation id="5814126672212206791">Bağlantı türü</translation>
 <translation id="5815645614496570556">X.400 Adresi</translation>
@@ -3539,7 +3522,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6370021412472292592">Manifest yüklenemedi.</translation>
 <translation id="637062427944097960">Bu dosya farklı bir masaüstünde açıldı. Görüntülemek için <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) adlı kullanıcıya gidin.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Android için Smart Lock özelliğini kurun</translation>
 <translation id="6374469231428023295">Tekrar Dene</translation>
 <translation id="6380143666419481200">Kabul et ve devam et</translation>
 <translation id="6384275966486438344">Arama ayarlarınızı <ph name="SEARCH_HOST" /> olarak değiştirme</translation>
@@ -3959,7 +3941,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7027125358315426638">Veritabanı adı:</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7031962166228839643">TPM hazırlanıyor, lütfen bekleyin (bu işlem birkaç dakika sürebilir)...</translation>
-<translation id="7035437538340499453">Smart Lock hazır</translation>
 <translation id="7037509989619051237">Önizlenecek metin</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> tedarikçisinin USB cihazlarına erişme</translation>
 <translation id="7039912931802252762">Microsoft Akıllı Kart Oturumu Açma</translation>
@@ -4761,7 +4742,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8227119283605456246">Dosya ekle</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> için şifreniz kaydedilsin mi?</translation>
 <translation id="8234795456569844941">Lütfen mühendislerimizin bu sorunu çözmesine yardımcı olun. Profil hata mesajını almadan hemen önce ne yaptığınızı belirtin:</translation>
-<translation id="8234989666557591529"><ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak için bir telefon seçin</translation>
 <translation id="8241040075392580210">Parçalı Bulutlu</translation>
 <translation id="8241806945692107836">Cihaz yapılandırması belirleniyor...</translation>
 <translation id="8241868517363889229">Yer işaretlerinizi okuma ve değiştirme</translation>
@@ -4853,10 +4833,8 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8395901698320285466">Boyutlar</translation>
 <translation id="8396532978067103567">Yanlış şifre.</translation>
 <translation id="839736845446313156">Kayıt ol</translation>
-<translation id="8398790343843005537">Telefonunuzu bulun</translation>
 <translation id="8398877366907290961">Yine de devam et</translation>
 <translation id="8400146488506985033">Kişileri yönet</translation>
-<translation id="8410073653152358832">Bu telefonu kullan</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Önce sor (önerilir)</translation>
 <translation id="8418445294933751433">&amp;Sekme olarak göster</translation>
@@ -4934,7 +4912,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8528074251912154910">Dil ekle</translation>
 <translation id="8528962588711550376">Oturum açılıyor.</translation>
-<translation id="8529026713753283969">Bu telefona bildirim geleceği için telefonu yakınınızda bulundurun.</translation>
 <translation id="8529925957403338845">Anında Tethering bağlantısı kurulamadı</translation>
 <translation id="8534656636775144800">Tüh! Alan adına eklenirken bir şeyler ters gitti. Lütfen tekrar deneyin.</translation>
 <translation id="8535005006684281994">Netscape Sertifikası Yenileme URL'si</translation>
@@ -5238,14 +5215,12 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8995603266996330174">Yöneten: <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Hesap ekle...</translation>
 <translation id="9003647077635673607">Tüm web sitelerinde izin ver</translation>
-<translation id="9003677638446136377">Tekrar kontrol et</translation>
 <translation id="9003704114456258138">Frekans</translation>
 <translation id="9004952710076978168">Bilinmeyen bir yazıcı ile ilgili bildirim alındı.</translation>
 <translation id="9008201768610948239">Yoksay</translation>
 <translation id="9009369504041480176">Yükleniyor (%<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="9011163749350026987">Her zaman simgeyi göster</translation>
 <translation id="9013707997379828817">Yöneticiniz bu cihazı ilk haline döndürdü. Lütfen önemli dosyaları kaydedin ve sonra yeniden başlatın. Cihazdaki tüm veriler silinecektir.</translation>
-<translation id="9014987600015527693">Başka bir telefon göster</translation>
 <translation id="9018218886431812662">Yükleme tamamlandı</translation>
 <translation id="901834265349196618">e-posta</translation>
 <translation id="9019062154811256702">Otomatik doldur ayarlarını okuma ve değiştirme</translation>
@@ -5341,7 +5316,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9147304170847707004">Kimlik Doğrulama Yöntemi</translation>
 <translation id="9147392381910171771">&amp;Seçenekler</translation>
 <translation id="9148058034647219655">Çıkış</translation>
-<translation id="9148116311817999634">Güvenlik için ekran kilidi ayarlama</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
 <translation id="9149866541089851383">Düzenle...</translation>
 <translation id="9150045010208374699">Kameranızı kullanma</translation>
