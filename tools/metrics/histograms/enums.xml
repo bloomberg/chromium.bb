@@ -29784,6 +29784,7 @@ from previous Chrome versions.
   <int value="-742469530" label="DriveFS:disabled"/>
   <int value="-741806604" label="DownloadsUi:disabled"/>
   <int value="-738957187" label="OmniboxUIExperimentSwapTitleAndUrl:disabled"/>
+  <int value="-727860269" label="WebAuthenticationBle:disabled"/>
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
@@ -30531,6 +30532,7 @@ from previous Chrome versions.
   <int value="716080990" label="restrict-iframe-permissions"/>
   <int value="719267310"
       label="KeepAliveRendererForKeepaliveRequests:disabled"/>
+  <int value="720931007" label="WebAuthenticationBle:enabled"/>
   <int value="721225492" label="PolicyTool:enabled"/>
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
