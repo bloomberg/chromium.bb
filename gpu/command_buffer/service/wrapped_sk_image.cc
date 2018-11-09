@@ -72,7 +72,7 @@ class WrappedSkImage : public SharedImageBacking {
                                 const SkSurfaceProps& surface_props) {
     if (context_state_->context_lost)
       return nullptr;
-    DCHECK(context_state_->context->IsCurrent(context_state_->surface.get()));
+    DCHECK(context_state_->context->IsCurrent(nullptr));
     GrBackendTexture gr_texture =
         image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
     DCHECK(gr_texture.isValid());

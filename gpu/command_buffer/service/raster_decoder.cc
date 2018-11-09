@@ -361,7 +361,7 @@ bool PermitsInconsistentContextState(CommandId command) {
 //     command doesn't inspect/modify GL state (InsertSyncPoint,
 //     CreateAndConsumeTexture) or it requires and maintains that GrContext
 //     state tracking matches GL context state (e.g. *RasterCHROMIUM --- see
-//     PessimisticallyResetGrContext).
+//     raster_decoder_context_state_->PessimisticallyResetGrContext).
 //
 //   Case 2b: Executing a command that is not whitelisted: We force GL state to
 //     match |state_| as necessary (see |need_context_state_reset|) in
@@ -600,15 +600,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   // and allow context preemption and GPU watchdog checks in
   // CommandExecutor().
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
-
-  void PessimisticallyResetGrContext() const {
-    // Calling GrContext::resetContext() is very cheap, so we do it
-    // pessimistically. We could dirty less state if skia state setting
-    // performance becomes an issue.
-    if (gr_context()) {
-      gr_context()->resetContext();
-    }
-  }
 
   template <bool DebugImpl>
   error::Error DoCommandsImpl(unsigned int num_commands,
@@ -1226,7 +1217,7 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
 }
 
 void RasterDecoderImpl::RestoreGlobalState() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreGlobalState(nullptr);
 }
 
@@ -1245,36 +1236,36 @@ void RasterDecoderImpl::ClearAllAttributes() const {
 }
 
 void RasterDecoderImpl::RestoreAllAttributes() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreVertexAttribs(nullptr);
 }
 
 void RasterDecoderImpl::RestoreState(const gles2::ContextState* prev_state) {
   TRACE_EVENT1("gpu", "RasterDecoderImpl::RestoreState", "context",
                logger_.GetLogPrefix());
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreState(prev_state);
 }
 
 void RasterDecoderImpl::RestoreActiveTexture() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreActiveTexture();
 }
 
 void RasterDecoderImpl::RestoreAllTextureUnitAndSamplerBindings(
     const gles2::ContextState* prev_state) const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreAllTextureUnitAndSamplerBindings(prev_state);
 }
 
 void RasterDecoderImpl::RestoreActiveTextureUnitBinding(
     unsigned int target) const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreActiveTextureUnitBinding(target);
 }
 
 void RasterDecoderImpl::RestoreBufferBinding(unsigned int target) {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   if (target == GL_PIXEL_PACK_BUFFER) {
     state_.UpdatePackParameters();
   } else if (target == GL_PIXEL_UNPACK_BUFFER) {
@@ -1286,12 +1277,12 @@ void RasterDecoderImpl::RestoreBufferBinding(unsigned int target) {
 }
 
 void RasterDecoderImpl::RestoreBufferBindings() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreBufferBindings();
 }
 
 void RasterDecoderImpl::RestoreFramebufferBindings() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.fbo_binding_for_scissor_workaround_dirty = true;
   state_.stencil_state_changed_since_validation = true;
 
@@ -1300,17 +1291,17 @@ void RasterDecoderImpl::RestoreFramebufferBindings() const {
 }
 
 void RasterDecoderImpl::RestoreRenderbufferBindings() {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreRenderbufferBindings();
 }
 
 void RasterDecoderImpl::RestoreProgramBindings() const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreProgramSettings(nullptr, false);
 }
 
 void RasterDecoderImpl::RestoreTextureState(unsigned service_id) const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   gles2::Texture* texture =
       texture_manager()->GetTextureForServiceId(service_id);
   if (texture) {
@@ -1331,7 +1322,7 @@ void RasterDecoderImpl::RestoreTextureState(unsigned service_id) const {
 }
 
 void RasterDecoderImpl::RestoreTextureUnitBindings(unsigned unit) const {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreTextureUnitBindings(unit, nullptr);
 }
 
@@ -1340,7 +1331,7 @@ void RasterDecoderImpl::RestoreVertexAttribArray(unsigned index) {
 }
 
 void RasterDecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   if (texture_manager()->GetServiceIdGeneration() ==
       texture_manager_service_id_generation_)
     return;
@@ -3393,7 +3384,7 @@ void RasterDecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
 }
 
 void RasterDecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   gles2::VertexAttribManager* vao = nullptr;
   if (client_id != 0) {
     vao = GetVertexAttribManager(client_id);
@@ -3443,7 +3434,7 @@ void RasterDecoderImpl::EmulateVertexArrayState() {
 
 void RasterDecoderImpl::RestoreStateForAttrib(GLuint attrib_index,
                                               bool restore_array_binding) {
-  PessimisticallyResetGrContext();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
   const gles2::VertexAttrib* attrib =
       state_.vertex_attrib_manager->GetVertexAttrib(attrib_index);
   if (restore_array_binding) {

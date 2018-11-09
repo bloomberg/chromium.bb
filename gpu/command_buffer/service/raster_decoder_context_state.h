@@ -50,6 +50,8 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  void PessimisticallyResetGrContext() const;
+
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
   scoped_refptr<gl::GLContext> context;
