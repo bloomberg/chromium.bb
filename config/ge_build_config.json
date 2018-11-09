@@ -1569,10 +1569,7 @@
           "board_name": "coral",
           "name": "babytiger",
           "test_suites": [
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
+            "bvt-cq"
           ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
