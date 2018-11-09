@@ -1297,12 +1297,13 @@
                   '|chrome/android/java/src/org/chromium/chrome/browser/offlinepages/'
     },
     'omnibox': {
-      'filepath': 'chrome/browser/autocomplete/|'\
-                  'chrome/browser/ui/location_bar/|'\
-                  'chrome/browser/ui/omnibox/|'\
-                  'chrome/browser/ui/.*/location_bar/|'\
-                  'chrome/browser/ui/.*/omnibox/|'\
-                  'components/omnibox/'
+      'filepath': '^chrome/browser/autocomplete/|'\
+                  '^chrome/browser/resources/omnibox|'\
+                  '^chrome/browser/ui/location_bar/|'\
+                  '^chrome/browser/ui/omnibox/|'\
+                  '^chrome/browser/ui/.*/location_bar/|'\
+                  '^chrome/browser/ui/.*/omnibox/|'\
+                  '^components/omnibox/'
     },
     'optimization_guide': {
       'filepath': 'optimization_guide|'\
