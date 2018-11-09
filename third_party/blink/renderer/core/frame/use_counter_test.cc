@@ -415,4 +415,27 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
 }
 
+TEST_F(UseCounterTest, CSSUnknownNamespacePrefixInSelector) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSUnknownNamespacePrefixInSelector;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @namespace svg url(http://www.w3.org/2000/svg);
+      svg|a {}
+      a {}
+    </style>
+  )HTML");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  document.documentElement()->SetInnerHTMLFromString("<style>foo|a {}</style>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
 }  // namespace blink
