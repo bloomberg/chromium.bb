@@ -52,3 +52,24 @@ OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
 TEST_F('OnboardingWelcomeEmailChooserTest', 'All', function() {
   mocha.run();
 });
+
+OnboardingWelcomeWelcomeAppTest = class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/welcome_app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'welcome_app_test.js',
+      'test_welcome_browser_proxy.js',
+      'test_nux_set_as_default_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeWelcomeAppTest', 'All', function() {
+  mocha.run();
+});
