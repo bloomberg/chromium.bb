@@ -52,6 +52,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowTransformed(aura::Window* window,
                            ui::PropertyChangeReason reason) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
   aura::Window* window_;
