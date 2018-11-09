@@ -4,11 +4,14 @@
 
 #include "ash/assistant/assistant_response_processor.h"
 
+#include <algorithm>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/base64.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
@@ -18,6 +21,56 @@ namespace {
 constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
 }  // namespace
+
+// AssistantCardProcessor ------------------------------------------------------
+
+AssistantCardProcessor::AssistantCardProcessor(
+    AssistantController* assistant_controller,
+    AssistantResponseProcessor* assistant_response_processor,
+    AssistantCardElement* assistant_card_element)
+    : assistant_controller_(assistant_controller),
+      assistant_response_processor_(assistant_response_processor),
+      assistant_card_element_(assistant_card_element) {}
+
+AssistantCardProcessor::~AssistantCardProcessor() {
+  if (contents_)
+    contents_->RemoveObserver(this);
+}
+
+void AssistantCardProcessor::DidStopLoading() {
+  contents_->RemoveObserver(this);
+
+  // Transfer ownership of |contents_| to the card element and notify the
+  // response processor that we've finished processing.
+  assistant_card_element_->set_contents(std::move(contents_));
+  assistant_response_processor_->DidFinishProcessing(this);
+}
+
+void AssistantCardProcessor::Process() {
+  assistant_controller_->GetNavigableContentsFactory(
+      mojo::MakeRequest(&contents_factory_));
+
+  // TODO(dmblack): Find a better way of determining desired card size.
+  const int width_dip = kPreferredWidthDip - 2 * kUiElementHorizontalMarginDip;
+
+  // Configure parameters for the card.
+  auto contents_params = content::mojom::NavigableContentsParams::New();
+  contents_params->enable_view_auto_resize = true;
+  contents_params->auto_resize_min_size = gfx::Size(width_dip, 1);
+  contents_params->auto_resize_max_size = gfx::Size(width_dip, INT_MAX);
+  contents_params->suppress_navigations = true;
+
+  contents_ = std::make_unique<content::NavigableContents>(
+      contents_factory_.get(), std::move(contents_params));
+
+  // Observe |contents_| so that we are notified when loading is complete.
+  contents_->AddObserver(this);
+
+  // Navigate to the data URL which represents the card.
+  std::string encoded_html;
+  base::Base64Encode(assistant_card_element_->html(), &encoded_html);
+  contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
+}
 
 // AssistantResponseProcessor::Task --------------------------------------------
 
@@ -57,8 +110,12 @@ void AssistantResponseProcessor::Process(AssistantResponse& response,
   for (const auto& ui_element : response.GetUiElements()) {
     switch (ui_element->GetType()) {
       case AssistantUiElementType::kCard:
-        ProcessCardElement(
-            static_cast<AssistantCardElement*>(ui_element.get()));
+        // Create and start an element processor to process the card element.
+        task_->element_processors.push_back(
+            std::make_unique<AssistantCardProcessor>(
+                assistant_controller_, this,
+                static_cast<AssistantCardElement*>(ui_element.get())));
+        task_->element_processors.back()->Process();
         break;
       case AssistantUiElementType::kText:
         // No processing necessary.
@@ -71,49 +128,20 @@ void AssistantResponseProcessor::Process(AssistantResponse& response,
   TryFinishingTask();
 }
 
-void AssistantResponseProcessor::ProcessCardElement(
-    AssistantCardElement* card_element) {
-  // Encode the card HTML using base64.
-  std::string encoded_html;
-  base::Base64Encode(card_element->html(), &encoded_html);
-
-  // TODO(dmblack): Find a better way of determining desired card size.
-  const int width_dip = kPreferredWidthDip - 2 * kUiElementHorizontalMarginDip;
-
-  // Configure parameters for the card.
-  ash::mojom::ManagedWebContentsParamsPtr params(
-      ash::mojom::ManagedWebContentsParams::New());
-  params->url = GURL(kDataUriPrefix + encoded_html);
-  params->min_size_dip = gfx::Size(width_dip, 0);
-  params->max_size_dip = gfx::Size(width_dip, INT_MAX);
-
-  // Request an embed token for the card whose WebContents will be owned by
-  // WebContentsManager.
-  assistant_controller_->ManageWebContents(
-      card_element->id_token(), std::move(params),
-      base::BindOnce(&AssistantResponseProcessor::OnCardElementProcessed,
-                     weak_factory_.GetWeakPtr(), card_element));
-
-  // Increment |processing_count| to reflect the fact that a card element is
-  // being processed asynchronously.
-  ++task_->processing_count;
-}
-
-void AssistantResponseProcessor::OnCardElementProcessed(
-    AssistantCardElement* card_element,
-    const base::Optional<base::UnguessableToken>& embed_token) {
+void AssistantResponseProcessor::DidFinishProcessing(
+    const AssistantCardProcessor* card_processor) {
   // If the response has been invalidated we should abort early.
   if (!task_->response) {
     TryAbortingTask();
     return;
   }
 
-  // Save the |embed_token|.
-  card_element->set_embed_token(embed_token);
-
-  // Decrement |processing_count| to reflect the fact that a card element has
-  // finished being processed asynchronously.
-  --task_->processing_count;
+  // Remove the finished element processor to indicate its completion.
+  base::EraseIf(task_->element_processors,
+                [card_processor](
+                    const std::unique_ptr<AssistantCardProcessor>& candidate) {
+                  return candidate.get() == card_processor;
+                });
 
   // Try finishing. This will no-op if there are still UI elements being
   // processed asynchronously.
@@ -135,7 +163,7 @@ void AssistantResponseProcessor::TryAbortingTask() {
 
 void AssistantResponseProcessor::TryFinishingTask() {
   // This method is a no-op if we are still processing.
-  if (task_->processing_count > 0)
+  if (!task_->element_processors.empty())
     return;
 
   // Update processing state.

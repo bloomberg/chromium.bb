@@ -243,25 +243,6 @@ void AssistantInteractionController::OnResponseChanged(
       assistant_controller_->ui_controller()->model()->entry_point());
 }
 
-void AssistantInteractionController::OnResponseDestroying(
-    AssistantResponse& response) {
-  response.RemoveObserver(this);
-
-  // We need to explicitly clean up resources owned by WebContentsManager for
-  // any card elements belonging to the response being destroyed.
-  std::vector<base::UnguessableToken> id_tokens;
-  for (const auto& ui_element : response.GetUiElements()) {
-    if (ui_element->GetType() == AssistantUiElementType::kCard) {
-      id_tokens.push_back(
-          static_cast<const AssistantCardElement*>(ui_element.get())
-              ->id_token());
-    }
-  }
-
-  if (!id_tokens.empty())
-    assistant_controller_->ReleaseWebContents(id_tokens);
-}
-
 void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
   if (is_voice_interaction) {
@@ -299,10 +280,8 @@ void AssistantInteractionController::OnInteractionStarted(
     model_.SetMicState(MicState::kClosed);
   }
 
-  // Start caching a new Assistant response for the interaction. We observe the
-  // response so that we can receive notification of lifecycle change events.
+  // Start caching a new Assistant response for the interaction.
   model_.SetPendingResponse(std::make_unique<AssistantResponse>());
-  model_.pending_response()->AddObserver(this);
 }
 
 void AssistantInteractionController::OnInteractionFinished(

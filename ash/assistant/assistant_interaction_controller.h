@@ -14,7 +14,6 @@
 #include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
-#include "ash/assistant/model/assistant_response_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -33,7 +32,6 @@ class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
-      public AssistantResponseObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer,
       public DialogPlateObserver {
@@ -71,9 +69,6 @@ class AssistantInteractionController
   void OnMicStateChanged(MicState mic_state) override;
   void OnResponseChanged(
       const std::shared_ptr<AssistantResponse>& response) override;
-
-  // AssistantResponseObserver:
-  void OnResponseDestroying(AssistantResponse& response) override;
 
   // AssistantUiModelObserver:
   void OnUiModeChanged(AssistantUiMode ui_mode) override;

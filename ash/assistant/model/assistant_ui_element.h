@@ -5,11 +5,11 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/unguessable_token.h"
+#include "services/content/public/cpp/navigable_contents.h"
 
 namespace ash {
 
@@ -52,22 +52,18 @@ class AssistantCardElement : public AssistantUiElement {
 
   const std::string& fallback() const { return fallback_; }
 
-  const base::UnguessableToken& id_token() const { return id_token_; }
+  const content::NavigableContents* contents() const { return contents_.get(); }
+  content::NavigableContents* contents() { return contents_.get(); }
 
-  const base::Optional<base::UnguessableToken>& embed_token() const {
-    return embed_token_;
-  }
-
-  void set_embed_token(
-      const base::Optional<base::UnguessableToken>& embed_token) {
-    embed_token_ = embed_token;
+  void set_contents(std::unique_ptr<content::NavigableContents> contents) {
+    contents_ = std::move(contents);
   }
 
  private:
   const std::string html_;
   const std::string fallback_;
-  base::UnguessableToken id_token_;
-  base::Optional<base::UnguessableToken> embed_token_ = base::nullopt;
+
+  std::unique_ptr<content::NavigableContents> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElement);
 };

@@ -181,7 +181,6 @@ component("ash") {
     "assistant/model/assistant_query.h",
     "assistant/model/assistant_response.cc",
     "assistant/model/assistant_response.h",
-    "assistant/model/assistant_response_observer.h",
     "assistant/model/assistant_screen_context_model.cc",
     "assistant/model/assistant_screen_context_model.h",
     "assistant/model/assistant_screen_context_model_observer.h",
