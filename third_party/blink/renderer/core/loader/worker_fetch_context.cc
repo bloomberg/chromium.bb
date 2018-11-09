@@ -33,59 +33,13 @@
 
 namespace blink {
 
-namespace {
-
-// WorkerFetchContextHolder is used to pass the WebWorkerFetchContext from the
-// main thread to the worker thread by attaching to the WorkerClients as a
-// Supplement.
-class WorkerFetchContextHolder final
-    : public GarbageCollectedFinalized<WorkerFetchContextHolder>,
-      public Supplement<WorkerClients> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerFetchContextHolder);
-
- public:
-  static WorkerFetchContextHolder* From(WorkerClients& clients) {
-    return Supplement<WorkerClients>::From<WorkerFetchContextHolder>(clients);
-  }
-  static const char kSupplementName[];
-
-  explicit WorkerFetchContextHolder(
-      std::unique_ptr<WebWorkerFetchContext> web_context)
-      : web_context_(std::move(web_context)) {}
-  virtual ~WorkerFetchContextHolder() = default;
-
-  std::unique_ptr<WebWorkerFetchContext> TakeContext() {
-    return std::move(web_context_);
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    Supplement<WorkerClients>::Trace(visitor);
-  }
-
- private:
-  std::unique_ptr<WebWorkerFetchContext> web_context_;
-};
-
-}  // namespace
-
-// static
-const char WorkerFetchContextHolder::kSupplementName[] =
-    "WorkerFetchContextHolder";
-
 WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext* WorkerFetchContext::Create(
-    WorkerOrWorkletGlobalScope& global_scope) {
-  DCHECK(global_scope.IsContextThread());
-  WorkerClients* worker_clients = global_scope.Clients();
-  DCHECK(worker_clients);
-  WorkerFetchContextHolder* holder =
-      Supplement<WorkerClients>::From<WorkerFetchContextHolder>(
-          *worker_clients);
-  if (!holder)
+    WorkerOrWorkletGlobalScope& global_scope,
+    std::unique_ptr<WebWorkerFetchContext> web_context) {
+  if (!web_context)
     return nullptr;
-  std::unique_ptr<WebWorkerFetchContext> web_context = holder->TakeContext();
-  DCHECK(web_context);
   return new WorkerFetchContext(global_scope, std::move(web_context));
 }
 
@@ -98,6 +52,9 @@ WorkerFetchContext::WorkerFetchContext(
       fetch_client_settings_object_(
           new FetchClientSettingsObjectImpl(*global_scope_)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
+  DCHECK(global_scope.IsContextThread());
+  DCHECK(web_context_);
+
   web_context_->InitializeOnWorkerThread();
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
       web_context_->TakeSubresourceFilter();
@@ -442,17 +399,6 @@ void WorkerFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(subresource_filter_);
   visitor->Trace(fetch_client_settings_object_);
   BaseFetchContext::Trace(visitor);
-}
-
-void ProvideWorkerFetchContextToWorker(
-    WorkerClients* clients,
-    std::unique_ptr<WebWorkerFetchContext> web_context) {
-  DCHECK(clients);
-  // web_context should only be nullptr in unit tests.
-  if (!web_context)
-    return;
-  WorkerFetchContextHolder::ProvideTo(
-      *clients, new WorkerFetchContextHolder(std::move(web_context)));
 }
 
 }  // namespace blink

@@ -61,9 +61,11 @@ WorkletGlobalScope::WorkletGlobalScope(
     ThreadType thread_type,
     LocalFrame* frame,
     WorkerThread* worker_thread)
-    : WorkerOrWorkletGlobalScope(isolate,
-                                 creation_params->worker_clients,
-                                 reporting_proxy),
+    : WorkerOrWorkletGlobalScope(
+          isolate,
+          creation_params->worker_clients,
+          std::move(creation_params->web_worker_fetch_context),
+          reporting_proxy),
       url_(creation_params->script_url),
       user_agent_(creation_params->user_agent),
       document_security_origin_(creation_params->starter_origin),

@@ -37,13 +37,12 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
   WorkerClients* worker_clients = WorkerClients::Create();
-  ProvideWorkerFetchContextToWorker(
-      worker_clients, frame->Client()->CreateWorkerFetchContext());
   ProvideContentSettingsClientToWorker(
       worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
+      frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), document->GetHttpsState(), worker_clients,

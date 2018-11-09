@@ -204,6 +204,7 @@ class ThreadedWorkletMessagingProxyForTest
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
+            nullptr /* web_worker_fetch_context */,
             document->GetContentSecurityPolicy()->Headers(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             document->IsSecureContext(), document->GetHttpsState(),

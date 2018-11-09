@@ -379,14 +379,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       worker_clients,
       new ServiceWorkerGlobalScopeClient(*worker_context_client_));
 
+  // |web_worker_fetch_context| is null in some unit tests.
   std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
       worker_context_client_->CreateServiceWorkerFetchContext(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
-  // |web_worker_fetch_context| is null in some unit tests.
-  if (web_worker_fetch_context) {
-    ProvideWorkerFetchContextToWorker(worker_clients,
-                                      std::move(web_worker_fetch_context));
-  }
 
   std::unique_ptr<WorkerSettings> worker_settings =
       std::make_unique<WorkerSettings>(document->GetSettings());
@@ -408,7 +404,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     }
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        worker_start_data_.user_agent,
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin, starter_secure_context,
@@ -427,11 +423,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // served by the installed scripts manager on the worker thread.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        worker_start_data_.user_agent, Vector<CSPHeaderAndType>(),
-        kReferrerPolicyDefault, starter_origin, starter_secure_context,
-        starter_https_state, worker_clients, worker_start_data_.address_space,
-        nullptr /* OriginTrialTokens */, devtools_worker_token_,
-        std::move(worker_settings),
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
+        Vector<CSPHeaderAndType>(), kReferrerPolicyDefault, starter_origin,
+        starter_secure_context, starter_https_state, worker_clients,
+        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
+        devtools_worker_token_, std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
         std::move(interface_provider_info_));

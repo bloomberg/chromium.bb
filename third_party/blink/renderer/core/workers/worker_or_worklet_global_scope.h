@@ -26,6 +26,7 @@ class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
+class WebWorkerFetchContext;
 class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
 class WorkerThread;
@@ -39,6 +40,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(v8::Isolate*,
                              WorkerClients*,
+                             std::unique_ptr<WebWorkerFetchContext>,
                              WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
 
@@ -121,6 +123,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<ResourceFetcher> resource_fetcher_;
+
+  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context_;
+
   Member<WorkerOrWorkletScriptController> script_controller_;
 
   WorkerReportingProxy& reporting_proxy_;

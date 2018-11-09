@@ -183,10 +183,11 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       GetDocument().Url(), mojom::ScriptType::kModule,
-      GetDocument().UserAgent(), Vector<CSPHeaderAndType>(),
-      GetDocument().GetReferrerPolicy(), GetDocument().GetSecurityOrigin(),
-      GetDocument().IsSecureContext(), GetDocument().GetHttpsState(),
-      nullptr /* worker_clients */, GetDocument().AddressSpace(),
+      GetDocument().UserAgent(), nullptr /* web_worker_fetch_context */,
+      Vector<CSPHeaderAndType>(), GetDocument().GetReferrerPolicy(),
+      GetDocument().GetSecurityOrigin(), GetDocument().IsSecureContext(),
+      GetDocument().GetHttpsState(), nullptr /* worker_clients */,
+      GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);

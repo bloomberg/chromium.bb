@@ -108,8 +108,11 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
   std::unique_ptr<WorkerSettings> settings =
       std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
 
+  // WebWorkerFetchContext is provided later in
+  // ThreadedMessagingProxyBase::InitializeWorkerThread().
   proxy->StartWorker(std::make_unique<GlobalScopeCreationParams>(
       context->Url(), mojom::ScriptType::kClassic, context->UserAgent(),
+      nullptr /* web_worker_fetch_context */,
       context->GetContentSecurityPolicy()->Headers(), kReferrerPolicyDefault,
       context->GetSecurityOrigin(), context->IsSecureContext(),
       context->GetHttpsState(), WorkerClients::Create(),

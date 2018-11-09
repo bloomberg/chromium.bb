@@ -304,8 +304,6 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           ->Fetcher()
           ->Context()
           .ApplicationCacheHostID());
-  ProvideWorkerFetchContextToWorker(worker_clients,
-                                    std::move(web_worker_fetch_context));
 
   ContentSecurityPolicy* content_security_policy =
       main_script_loader_->GetContentSecurityPolicy();
@@ -330,6 +328,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
           script_response_url, script_type, document->UserAgent(),
+          std::move(web_worker_fetch_context),
           content_security_policy ? content_security_policy->Headers()
                                   : Vector<CSPHeaderAndType>(),
           referrer_policy, starter_origin, starter_secure_context,
