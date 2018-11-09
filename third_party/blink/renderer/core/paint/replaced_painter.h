@@ -26,6 +26,8 @@ class ReplacedPainter {
   bool ShouldPaint(const ScopedPaintState&) const;
 
  private:
+  bool ShouldPaintBoxDecorationBackground(const PaintInfo&);
+
   const LayoutReplaced& layout_replaced_;
 };
 

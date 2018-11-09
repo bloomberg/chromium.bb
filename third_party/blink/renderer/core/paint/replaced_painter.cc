@@ -74,6 +74,15 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
 
 }  // anonymous namespace
 
+bool ReplacedPainter::ShouldPaintBoxDecorationBackground(
+    const PaintInfo& paint_info) {
+  // LayoutFrameSet paints everything in the foreground phase.
+  if (layout_replaced_.IsLayoutEmbeddedContent() &&
+      layout_replaced_.Parent()->IsFrameSet())
+    return paint_info.phase == PaintPhase::kForeground;
+  return ShouldPaintSelfBlockBackground(paint_info.phase);
+}
+
 void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // TODO(crbug.com/797779): For now embedded contents don't know whether
   // they are painted in a fragmented context and may do something bad in a
@@ -94,7 +103,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   auto paint_offset = paint_state.PaintOffset();
   LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
-  if (ShouldPaintSelfBlockBackground(local_paint_info.phase)) {
+  if (ShouldPaintBoxDecorationBackground(local_paint_info)) {
     if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible &&
         layout_replaced_.HasBoxDecorationBackground()) {
       if (layout_replaced_.HasLayer() &&
