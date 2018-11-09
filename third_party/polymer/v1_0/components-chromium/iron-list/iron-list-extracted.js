@@ -795,6 +795,39 @@
     },
 
     /**
+     * Finds and returns the focused element (both within self and children's
+     * Shadow DOM).
+     * @return {?HTMLElement}
+     */
+    _getFocusedElement: function() {
+      function doSearch(node, query) {
+        let result = null;
+        let type = node.nodeType;
+        if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE)
+          result = node.querySelector(query);
+        if (result)
+          return result;
+
+        let child = node.firstChild;
+        while (child !== null && result === null) {
+          result = doSearch(child, query);
+          child = child.nextSibling;
+        }
+        if (result)
+          return result;
+
+        const shadowRoot = node.shadowRoot;
+        return shadowRoot ? doSearch(shadowRoot, query) : null;
+      }
+
+      // Find out if any of the items are focused first, and only search
+      // recursively in the item that contains focus, to avoid a slow
+      // search of the entire list.
+      const focusWithin = doSearch(this, ':focus-within');
+      return focusWithin ? doSearch(focusWithin, ':focus') : null;
+    },
+
+    /**
      * Called when the items have changed. That is, reassignments
      * to `items`, splices or updates to a single item.
      */
@@ -803,7 +836,7 @@
       var lastFocusedIndex, focusedElement;
       if (rendering && this.preserveFocus) {
         lastFocusedIndex = this._focusedVirtualIndex;
-        focusedElement = this.querySelector('* /deep/ *:focus');
+        focusedElement = this._getFocusedElement();
       }
 
       var preservingFocus = rendering && this.preserveFocus && focusedElement;

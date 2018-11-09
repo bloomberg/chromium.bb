@@ -27,8 +27,44 @@ index 43c59653a39b..26652936735c 100644
 +        value: false
        }
      },
+@@ -786,6 +794,39 @@
+       newGrid && this._updateGridMetrics();
+     },
 
-@@ -791,6 +799,15 @@
++    /**
++     * Finds and returns the focused element (both within self and children's
++     * Shadow DOM).
++     * @return {?HTMLElement}
++     */
++    _getFocusedElement: function() {
++      function doSearch(node, query) {
++        let result = null;
++        let type = node.nodeType;
++        if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE)
++          result = node.querySelector(query);
++        if (result)
++          return result;
++
++        let child = node.firstChild;
++        while (child !== null && result === null) {
++          result = doSearch(child, query);
++          child = child.nextSibling;
++        }
++        if (result)
++          return result;
++
++        const shadowRoot = node.shadowRoot;
++        return shadowRoot ? doSearch(shadowRoot, query) : null;
++      }
++
++      // Find out if any of the items are focused first, and only search
++      // recursively in the item that contains focus, to avoid a slow
++      // search of the entire list.
++      const focusWithin = doSearch(this, ':focus-within');
++      return focusWithin ? doSearch(focusWithin, ':focus') : null;
++    },
++
+@@ -791,6 +836,15 @@
       * to `items`, splices or updates to a single item.
       */
      _itemsChanged: function(change) {
@@ -44,7 +80,7 @@ index 43c59653a39b..26652936735c 100644
        if (change.path === 'items') {
          this._virtualStart = 0;
          this._physicalTop = 0;
-@@ -804,7 +821,7 @@
+@@ -804,7 +858,7 @@
          this._physicalItems = this._physicalItems || [];
          this._physicalSizes = this._physicalSizes || [];
          this._physicalStart = 0;
@@ -53,7 +89,7 @@ index 43c59653a39b..26652936735c 100644
            this._resetScrollPosition(0);
          }
          this._removeFocusedItem();
-@@ -826,6 +843,17 @@
+@@ -826,6 +880,17 @@
        } else if (change.path !== 'items.length') {
          this._forwardItemPath(change.path, change.value);
        }
