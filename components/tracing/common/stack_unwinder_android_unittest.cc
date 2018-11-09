@@ -74,7 +74,8 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
     bool current_function_found = false;
     for (size_t i = 0; i < result; ++i) {
       uintptr_t addr = reinterpret_cast<uintptr_t>(frames[i]);
-      EXPECT_TRUE(unwinder->IsAddressMapped(addr));
+      if (addr != 0)
+        EXPECT_TRUE(unwinder->IsAddressMapped(addr));
       if (addr >= test_pc && addr < test_pc + 100)
         current_function_found = true;
     }
