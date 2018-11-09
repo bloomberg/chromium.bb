@@ -446,8 +446,11 @@ class NET_EXPORT NetworkQualityEstimator
   // Returns true only if the |request| can be used for RTT estimation.
   bool RequestProvidesRTTObservation(const URLRequest& request) const;
 
-  // Recomputes effective connection type, if it was computed more than the
-  // specified duration ago, or if there has been a connection change recently.
+  // Returns true if ECT should be recomputed.
+  bool ShouldComputeEffectiveConnectionType() const;
+
+  // Calls ShouldComputeEffectiveConnectionType() to determine if ECT needs to
+  // be computed. If so, it recomputes effective connection type.
   void MaybeComputeEffectiveConnectionType();
 
   // Notifies observers of a change in effective connection type.
