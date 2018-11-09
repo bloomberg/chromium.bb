@@ -242,6 +242,7 @@ NetInternalsTest.*
 NoBackgroundTasksTest.*
 NTP4WebUITest.*
 OnboardingWelcomeEmailChooserTest.*
+OnboardingWelcomeWelcomeAppTest.*
 OpenAudioFiles/*
 PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*

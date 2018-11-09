@@ -35,8 +35,8 @@ Polymer({
   /** @private {?welcome.Routes} */
   currentRoute_: null,
 
-  /** @private {!PromiseResolver} */
-  defaultCheckPromise_: new PromiseResolver(),
+  /** @private {?PromiseResolver} */
+  defaultCheckPromise_: null,
 
   /** @private {NuxOnboardingModules} */
   modules_: {
@@ -55,6 +55,8 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.defaultCheckPromise_ = new PromiseResolver();
+
     /** @param {!nux.DefaultBrowserInfo} status */
     const defaultCheckCallback = status => {
       if (status.isDefault || !status.canBeDefault) {
