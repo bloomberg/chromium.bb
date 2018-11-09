@@ -13,7 +13,7 @@ public_deps = [
   # TODO(blundell): In the long term, any files from //components/signin that
   # are exposed to consumers of the Identity Service should move to be part of
   # the client library of the Identity Service.
-  "//components/signin/core/browser:account_info",
+  "//components/signin/core/browser:shared",
 ]
 
 type_mappings = [ "identity.mojom.AccountInfo=::AccountInfo" ]
