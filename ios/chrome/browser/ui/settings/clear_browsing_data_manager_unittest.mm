@@ -7,7 +7,6 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
@@ -16,14 +15,12 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
-#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -50,19 +47,16 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
         factory.CreateSyncable(registry.get());
     RegisterBrowserStatePrefs(registry.get());
 
-    // Setup identity services.
-    TestChromeBrowserState::Builder builder;
-    builder.SetPrefService(std::move(prefs));
-    builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockProfileSyncService));
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeOAuth2TokenService));
-    builder.AddTestingFactory(
-        ios::SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&ios::BuildFakeSigninManager));
-    browser_state_ = builder.Build();
+    TestChromeBrowserState::TestingFactories factories = {
+        {ProfileSyncServiceFactory::GetInstance(),
+         base::BindRepeating(&BuildMockProfileSyncService)},
+    };
+    browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
+        CreateChromeBrowserStateForIdentityTestEnvironment(factories);
+
+    identity_test_env_adaptor_.reset(
+        new IdentityTestEnvironmentChromeBrowserStateAdaptor(
+            browser_state_.get()));
 
     model_ = [[CollectionViewModel alloc] init];
     manager_ = [[ClearBrowsingDataManager alloc]
@@ -70,17 +64,21 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
                     listType:ClearBrowsingDataListType::
                                  kListTypeCollectionView];
 
-    signin_manager_ =
-        ios::SigninManagerFactory::GetForBrowserState(browser_state_.get());
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    DCHECK(identity_test_env_adaptor_);
+    return identity_test_env_adaptor_->identity_test_env();
+  }
+
  protected:
   std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
+      identity_test_env_adaptor_;
   CollectionViewModel* model_;
   ClearBrowsingDataManager* manager_;
-  SigninManagerBase* signin_manager_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_;
   web::TestWebThreadBundle thread_bundle_;
 };
@@ -109,7 +107,7 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
   EXPECT_CALL(*mock_sync_service_, GetDisableReasons())
       .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
-  signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
+  identity_test_env()->SetPrimaryAccount("syncuser@example.com");
 
   [manager_ loadModel:model_];
 
