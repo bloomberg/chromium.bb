@@ -9,10 +9,9 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "ui/gfx/gpu_memory_buffer.h"
-#if defined(OS_CHROMEOS)
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
-#endif
+#include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_CHROMEOS)
 namespace gfx {
@@ -35,11 +34,18 @@ class TextureRef : public base::RefCounted<TextureRef> {
       uint32_t texture_id,
       base::OnceClosure no_longer_needed_cb,
       VideoPixelFormat pixel_format,
-      const gfx::Size& size);
+      const gfx::Size& size,
+      gfx::BufferUsage buffer_usage);
 
   gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
   scoped_refptr<VideoFrame> CreateVideoFrame(
       const gfx::Rect& visible_rect) const;
+
+  // Return true if contains data in a buffer and format directly mappable and
+  // readable (e.g. not tiled), without a need to first format convert it.
+  // TODO(crbug.com/900865): Remove this once it is doable to get tiled
+  // information in media::VideoFrame.
+  bool IsDirectlyMappable() const;
 
   int32_t texture_id() const { return texture_id_; }
 

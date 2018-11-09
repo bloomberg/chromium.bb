@@ -16,11 +16,11 @@ namespace media {
 namespace test {
 
 // static
-std::unique_ptr<VideoFrameValidator>
-VideoFrameValidator::CreateVideoFrameValidator(
+std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     uint32_t flags,
     const base::FilePath& prefix_output_yuv,
-    const base::FilePath& md5_file_path) {
+    const base::FilePath& md5_file_path,
+    bool linear) {
   if ((flags & VideoFrameValidator::OUTPUTYUV) && prefix_output_yuv.empty()) {
     LOG(ERROR) << "Prefix of yuv files isn't specified with dump flags.";
     return nullptr;
@@ -31,8 +31,8 @@ VideoFrameValidator::CreateVideoFrameValidator(
     LOG(ERROR) << "Generating and checking MD5 values at the same time is not "
                << "supported.";
   }
+  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(linear);
 
-  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
     return nullptr;
