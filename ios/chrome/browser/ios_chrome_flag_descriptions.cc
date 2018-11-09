@@ -286,6 +286,12 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
+const char kPresentSadTabInViewControllerName[] =
+    "Present SadTab in UIViewController";
+const char kPresentSadTabInViewControllerDescription[] =
+    "When enabled, SadTab UI will be presented with UIViewController instead "
+    "of using WebState::ShowTransientView";
+
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "

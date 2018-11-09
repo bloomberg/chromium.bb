@@ -11,6 +11,7 @@ source_set("sad_tab") {
     "sad_tab_view_controller.mm",
   ]
   deps = [
+    ":features",
     "//base",
     "//components/resources",
     "//components/strings",
@@ -28,6 +29,16 @@ source_set("sad_tab") {
     "//ui/gfx",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("coordinator") {

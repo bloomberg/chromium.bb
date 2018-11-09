@@ -241,6 +241,11 @@ extern const char kSSOWithWKWebViewDescription[];
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
 
+// Title and description for the flag to use UIViewController for Sad Tab UI
+// presentation.
+extern const char kPresentSadTabInViewControllerName[];
+extern const char kPresentSadTabInViewControllerDescription[];
+
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
