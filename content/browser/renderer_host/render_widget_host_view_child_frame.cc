@@ -875,12 +875,6 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  // TODO(crbug.com/812059): Need a "copy from surface" VIZ API.
-  if (enable_viz_) {
-    std::move(callback).Run(SkBitmap());
-    return;
-  }
-
   if (!IsSurfaceAvailableForCopy()) {
     // Defer submitting the copy request until after a frame is drawn, at which
     // point we should be guaranteed that the surface is available.
