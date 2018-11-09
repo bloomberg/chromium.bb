@@ -24,10 +24,10 @@ extern NSString* const AccessoryCreditCardAccessibilityIdentifier;
 @protocol ManualFillAccessoryViewControllerDelegate
 
 // Invoked after the user touches the `accounts` button.
-- (void)accountButtonPressed;
+- (void)accountButtonPressed:(UIButton*)sender;
 
 // Invoked after the user touches the `credit cards` button.
-- (void)cardButtonPressed;
+- (void)cardButtonPressed:(UIButton*)sender;
 
 // Invoked after the user touches the `keyboard` button.
 - (void)keyboardButtonPressed;

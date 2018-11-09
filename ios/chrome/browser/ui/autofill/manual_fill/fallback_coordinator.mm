@@ -45,7 +45,9 @@ initWithBaseViewController:(UIViewController*)viewController
                                             completion:completion];
     return YES;
   } else {
-    completion();
+    if (completion) {
+      completion();
+    }
     return NO;
   }
 }

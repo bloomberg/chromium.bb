@@ -8,6 +8,8 @@
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
@@ -19,6 +21,8 @@
 
 @interface FormInputAccessoryCoordinator ()<
     ManualFillAccessoryViewControllerDelegate,
+    AddressCoordinatorDelegate,
+    CardCoordinatorDelegate,
     PasswordCoordinatorDelegate>
 
 // The Mediator for the input accessory view controller.
@@ -117,6 +121,41 @@
   [self.formInputAccessoryMediator disableSuggestions];
 }
 
+- (void)startCardsFromButton:(UIButton*)button {
+  CardCoordinator* cardCoordinator = [[CardCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                    browserState:self.browserState
+                    webStateList:self.webStateList
+                injectionHandler:self.manualFillInjectionHandler];
+  cardCoordinator.delegate = self;
+  if (IsIPadIdiom()) {
+    [cardCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:cardCoordinator.viewController.view];
+  }
+
+  [self.childCoordinators addObject:cardCoordinator];
+  [self.formInputAccessoryMediator disableSuggestions];
+}
+
+- (void)startAddressFromButton:(UIButton*)button {
+  AddressCoordinator* addressCoordinator = [[AddressCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                    browserState:self.browserState
+                injectionHandler:self.manualFillInjectionHandler];
+  addressCoordinator.delegate = self;
+  if (IsIPadIdiom()) {
+    [addressCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:addressCoordinator.viewController.view];
+  }
+
+  [self.childCoordinators addObject:addressCoordinator];
+  [self.formInputAccessoryMediator disableSuggestions];
+}
+
 #pragma mark - ManualFillAccessoryViewControllerDelegate
 
 - (void)keyboardButtonPressed {
@@ -124,14 +163,14 @@
   [self.formInputAccessoryMediator enableSuggestions];
 }
 
-- (void)accountButtonPressed {
+- (void)accountButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  // TODO(crbug.com/845472): implement.
+  [self startAddressFromButton:sender];
 }
 
-- (void)cardButtonPressed {
+- (void)cardButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  // TODO(crbug.com/845472): implement.
+  [self startCardsFromButton:sender];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
@@ -147,6 +186,18 @@
 
 - (void)resetAccessoryView {
   [self.manualFillAccessoryViewController reset];
+}
+
+#pragma mark - CardCoordinatorDelegate
+
+- (void)openCardSettings {
+  // TODO(crbug.com/845472): implement.
+}
+
+#pragma mark - AddressCoordinatorDelegate
+
+- (void)openAddressSettings {
+  // TODO(crbug.com/845472): implement.
 }
 
 @end

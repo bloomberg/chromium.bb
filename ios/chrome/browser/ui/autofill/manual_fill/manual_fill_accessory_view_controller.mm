@@ -109,7 +109,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     self.cardsButton.tintColor = tintColor;
     self.cardsButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.cardsButton addTarget:self
-                         action:@selector(cardButtonPressed)
+                         action:@selector(cardButtonPressed:)
                forControlEvents:UIControlEventTouchUpInside];
     self.cardsButton.accessibilityIdentifier =
         manual_fill::AccessoryCreditCardAccessibilityIdentifier;
@@ -121,7 +121,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     self.accountButton.tintColor = tintColor;
     self.accountButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.accountButton addTarget:self
-                           action:@selector(accountButtonPressed)
+                           action:@selector(accountButtonPressed:)
                  forControlEvents:UIControlEventTouchUpInside];
     self.accountButton.accessibilityIdentifier =
         manual_fill::AccessoryAddressAccessibilityIdentifier;
@@ -198,20 +198,19 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   [self.delegate passwordButtonPressed:sender];
 }
 
-- (void)cardButtonPressed {
+- (void)cardButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.cardsButton setTintColor:UIColor.cr_manualFillTintColor];
-  [self.delegate cardButtonPressed];
+  [self.delegate cardButtonPressed:sender];
 }
 
-- (void)accountButtonPressed {
-  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
+- (void)accountButtonPressed:(UIButton*)sender {
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.accountButton setTintColor:UIColor.cr_manualFillTintColor];
-  [self.delegate accountButtonPressed];
+  [self.delegate accountButtonPressed:sender];
 }
 
 @end
