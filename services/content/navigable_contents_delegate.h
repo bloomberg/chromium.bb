@@ -33,6 +33,12 @@ class NavigableContentsDelegate {
 
   // Navigates the content object to a new URL.
   virtual void Navigate(const GURL& url, mojom::NavigateParamsPtr params) = 0;
+
+  // Attempts to navigate the web contents back in its history stack. The
+  // supplied |callback| is run to indicate success/failure of the attempt. The
+  // navigation attempt will fail if the history stack is empty.
+  virtual void GoBack(
+      content::mojom::NavigableContents::GoBackCallback callback) = 0;
 };
 
 }  // namespace content

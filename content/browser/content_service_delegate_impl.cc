@@ -30,7 +30,11 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
       const mojom::NavigableContentsParams& params,
       mojom::NavigableContentsClient* client)
       : client_(client),
-        enable_view_auto_resize_(params.enable_view_auto_resize) {
+        enable_view_auto_resize_(params.enable_view_auto_resize),
+        auto_resize_min_size_(
+            params.auto_resize_min_size.value_or(gfx::Size(1, 1))),
+        auto_resize_max_size_(
+            params.auto_resize_max_size.value_or(gfx::Size(INT_MAX, INT_MAX))) {
     WebContents::CreateParams create_params(browser_context);
     web_contents_ = WebContents::Create(create_params);
     WebContentsObserver::Observe(web_contents_.get());
@@ -63,7 +67,39 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     web_contents_->GetController().LoadURLWithParams(load_url_params);
   }
 
+  void GoBack(
+      content::mojom::NavigableContents::GoBackCallback callback) override {
+    content::NavigationController& controller = web_contents_->GetController();
+    if (controller.CanGoBack()) {
+      std::move(callback).Run(/*success=*/true);
+      controller.GoBack();
+    } else {
+      std::move(callback).Run(/*success=*/false);
+    }
+  }
+
   // WebContentsDelegate:
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
+      content::SiteInstance* source_site_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
+      content::mojom::WindowContainerType window_container_type,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override {
+    // This method is invoked when attempting to open links in a new tab, e.g.:
+    // <a href="https://www.google.com/" target="_blank">Link</a>
+    client_->DidSuppressNavigation(target_url,
+                                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                   /*from_user_gesture=*/true);
+    return false;
+  }
+
   WebContents* OpenURLFromTab(WebContents* source,
                               const OpenURLParams& params) override {
     client_->DidSuppressNavigation(params.url, params.disposition,
@@ -82,7 +118,7 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
                              RenderViewHost* new_host) override {
     if (enable_view_auto_resize_ && web_contents_->GetRenderWidgetHostView()) {
       web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
-          gfx::Size(1, 1), gfx::Size(INT_MAX, INT_MAX));
+          auto_resize_min_size_, auto_resize_max_size_);
     }
   }
 
@@ -102,6 +138,8 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
   mojom::NavigableContentsClient* const client_;
 
   const bool enable_view_auto_resize_;
+  const gfx::Size auto_resize_min_size_;
+  const gfx::Size auto_resize_max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsDelegateImpl);
 };

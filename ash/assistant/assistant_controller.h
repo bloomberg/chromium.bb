@@ -27,6 +27,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -134,6 +135,11 @@ class ASH_EXPORT AssistantController
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.
   void OpenUrl(const GURL& url, bool from_server = false);
+
+  // Acquires a NavigableContentsFactory from the Content Service to allow
+  // Assistant to display embedded web contents.
+  void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request);
 
   AssistantCacheController* cache_controller() {
     DCHECK(assistant_cache_controller_);

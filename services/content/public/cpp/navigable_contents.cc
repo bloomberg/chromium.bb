@@ -51,6 +51,11 @@ void NavigableContents::NavigateWithParams(const GURL& url,
   contents_->Navigate(url, std::move(params));
 }
 
+void NavigableContents::GoBack(
+    content::mojom::NavigableContents::GoBackCallback callback) {
+  contents_->GoBack(std::move(callback));
+}
+
 void NavigableContents::DidFinishNavigation(
     const GURL& url,
     bool is_main_frame,

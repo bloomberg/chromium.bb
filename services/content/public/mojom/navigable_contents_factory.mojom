@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "services/content/public/mojom/navigable_contents.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Parameters used to configure a newly created NavigableContents.
 struct NavigableContentsParams {
@@ -12,6 +13,14 @@ struct NavigableContentsParams {
   // |true|, the corresponding NavigableContentsClient will receive
   // |DidAutoResizeView()| notifications whenever such resizing happens.
   bool enable_view_auto_resize = false;
+
+  // Specifies the minimum size for auto resizing.
+  // Defaults to (1, 1).
+  gfx.mojom.Size? auto_resize_min_size;
+
+  // Specifies the maximum size for auto resizing.
+  // Defaults to (INT_MAX, INT_MAX).
+  gfx.mojom.Size? auto_resize_max_size;
 
   // Indicates that the client wants to control how navigation requests are
   // handled within the created NavigableContents. Any attempt to navigate the
