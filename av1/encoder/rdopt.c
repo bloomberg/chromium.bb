@@ -1836,6 +1836,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                                   &vfeatures[vfeatures_num - 1]);
   av1_nn_predict(hfeatures, nn_config_hor, hscores);
   av1_nn_predict(vfeatures, nn_config_ver, vscores);
+  aom_clear_system_state();
 
   float score_2D_average = 0.0f;
   for (int i = 0; i < 4; i++) {
@@ -2739,10 +2740,10 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   float rate_f, dist_by_sse_norm_f;
   av1_nn_predict(features, &av1_pustats_dist_nnconfig, &dist_by_sse_norm_f);
   av1_nn_predict(features, &av1_pustats_rate_nnconfig, &rate_f);
+  aom_clear_system_state();
   const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
-  aom_clear_system_state();
 
   // Check if skip is better
   if (rate_i == 0) {
@@ -4813,6 +4814,7 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
 
   float score = 0.0f;
   av1_nn_predict(features, nn_config, &score);
+  aom_clear_system_state();
   if (score > 8.0f) return 100;
   if (score < -8.0f) return 0;
   score = 1.0f / (1.0f + (float)exp(-score));

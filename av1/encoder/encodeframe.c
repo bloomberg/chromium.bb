@@ -2895,6 +2895,7 @@ static void ml_prune_rect_partition(const AV1_COMP *const cpi,
   // 2. Do the prediction and prune 0-2 partitions based on their probabilities
   float raw_scores[3] = { 0.0f };
   av1_nn_predict(features, nn_config, raw_scores);
+  aom_clear_system_state();
   float probs[3] = { 0.0f };
   av1_nn_softmax(raw_scores, probs, 3);
 
@@ -2962,6 +2963,7 @@ static void ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
   // Calculate scores using the NN model.
   float score[16] = { 0.0f };
   av1_nn_predict(features, nn_config, score);
+  aom_clear_system_state();
   int int_score[16];
   int max_score = -1000;
   for (int i = 0; i < 16; ++i) {
@@ -3128,6 +3130,7 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // Calculate scores using the NN model.
   float score[LABELS] = { 0.0f };
   av1_nn_predict(features, nn_config, score);
+  aom_clear_system_state();
   int int_score[LABELS];
   int max_score = -1000;
   for (int i = 0; i < LABELS; ++i) {
@@ -3212,6 +3215,7 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   // Calculate score using the NN model.
   float score = 0.0f;
   av1_nn_predict(features, nn_config, &score);
+  aom_clear_system_state();
 
   // Make decision.
   return (int)(score * 100) >= thresh;
