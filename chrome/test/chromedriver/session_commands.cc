@@ -231,7 +231,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   }
 
   Capabilities capabilities;
-  Status status = capabilities.Parse(*desired_caps);
+  Status status = capabilities.Parse(*desired_caps, session->w3c_compliant);
   if (status.IsError())
     return status;
   status = capabilities.CheckSupport();

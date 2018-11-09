@@ -215,7 +215,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
   def testReplaceBinary(self):
     payload_dict = {
         "desiredCapabilities": {
-            "chromeOptions": {
+            "goog:chromeOptions": {
                 "binary": "/path/to/logged binary/with spaces/"
             },
             "other_things": ["some", "uninteresting", "strings"]
@@ -223,7 +223,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     }
     payload_replaced = {
         "desiredCapabilities": {
-            "chromeOptions": {
+            "goog:chromeOptions": {
                 "binary": "replacement_binary"
             },
             "other_things": ["some", "uninteresting", "strings"]
@@ -235,7 +235,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
   def testReplaceBinary_none(self):
     payload_dict = {
         "desiredCapabilities": {
-            "chromeOptions": {
+            "goog:chromeOptions": {
                 "binary": "/path/to/logged binary/with spaces/"
             },
             "other_things": ["some", "uninteresting", "strings"]
@@ -243,7 +243,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     }
     payload_replaced = {
         "desiredCapabilities": {
-            "chromeOptions": {},
+            "goog:chromeOptions": {},
             "other_things": ["some", "uninteresting", "strings"]
         }
     }
@@ -254,7 +254,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     payload_dict = {"desiredCapabilities": {}}
     payload_replaced = {
         "desiredCapabilities": {
-            "chromeOptions": {
+            "goog:chromeOptions": {
                 "binary": "replacement_binary"
             }
         }

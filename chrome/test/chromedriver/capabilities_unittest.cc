@@ -102,6 +102,24 @@ TEST(Switches, Unparsed) {
   ASSERT_EQ("---e=--1=1 --a --b --c=1 --d=1", switches.ToString());
 }
 
+TEST(ParseCapabilities, UnknownCapabilityLegacy) {
+  // In legacy mode, unknown capabilities are ignored.
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetString("foo", "bar");
+  Status status = capabilities.Parse(caps, false);
+  ASSERT_TRUE(status.IsOk());
+}
+
+TEST(ParseCapabilities, UnknownCapabilityW3c) {
+  // In W3C mode, unknown capabilities results in error.
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetString("foo", "bar");
+  Status status = capabilities.Parse(caps);
+  ASSERT_EQ(status.code(), kInvalidArgument);
+}
+
 TEST(ParseCapabilities, WithAndroidPackage) {
   Capabilities capabilities;
   base::DictionaryValue caps;
