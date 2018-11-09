@@ -7,7 +7,7 @@
  */
 
 /** @enum {string} */
-var ErrorType = {
+const ErrorType = {
   NONE: 'none',
   INCORRECT_PIN: 'incorrect-pin',
   INCORRECT_PUK: 'incorrect-puk',
@@ -18,9 +18,9 @@ var ErrorType = {
 
 (function() {
 
-var PIN_MIN_LENGTH = 4;
-var PUK_MIN_LENGTH = 8;
-var TOGGLE_DEBOUNCE_MS = 500;
+const PIN_MIN_LENGTH = 4;
+const PUK_MIN_LENGTH = 8;
+const TOGGLE_DEBOUNCE_MS = 500;
 
 Polymer({
   is: 'network-siminfo',
@@ -161,10 +161,10 @@ Polymer({
   networkPropertiesChanged_: function() {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
-    var simLockStatus = this.networkProperties.Cellular.SIMLockStatus;
+    const simLockStatus = this.networkProperties.Cellular.SIMLockStatus;
     this.pukRequired_ =
         !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
-    var lockEnabled = !!simLockStatus && simLockStatus.LockEnabled;
+    const lockEnabled = !!simLockStatus && simLockStatus.LockEnabled;
     if (lockEnabled != this.lockEnabled_) {
       this.setLockEnabled_ = lockEnabled;
       this.updateLockEnabled_();
@@ -223,7 +223,7 @@ Polymer({
 
     // If the PUK was activated while attempting to enter or change a pin,
     // close the dialog and open the unlock PUK dialog.
-    var showUnlockPuk = false;
+    let showUnlockPuk = false;
     if (this.$.enterPinDialog.open) {
       this.$.enterPinDialog.close();
       showUnlockPuk = true;
@@ -271,7 +271,7 @@ Polymer({
    * @private
    */
   setCellularSimState_: function(simState) {
-    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
+    const guid = (this.networkProperties && this.networkProperties.GUID) || '';
     this.setInProgress_();
     this.networkingPrivate.setCellularSimState(guid, simState, () => {
       this.inProgress_ = false;
@@ -292,7 +292,7 @@ Polymer({
    * @private
    */
   unlockCellularSim_: function(pin, puk) {
-    var guid = (this.networkProperties && this.networkProperties.GUID) || '';
+    const guid = (this.networkProperties && this.networkProperties.GUID) || '';
     this.setInProgress_();
     this.networkingPrivate.unlockCellularSim(guid, pin, puk, () => {
       this.inProgress_ = false;
@@ -316,10 +316,10 @@ Polymer({
     event.stopPropagation();
     if (!this.enterPinEnabled_)
       return;
-    var pin = this.$.enterPin.value;
+    const pin = this.$.enterPin.value;
     if (!this.validatePin_(pin))
       return;
-    var simState = /** @type {!CrOnc.CellularSimState} */ ({
+    const simState = /** @type {!CrOnc.CellularSimState} */ ({
       currentPin: pin,
       requirePin: this.sendSimLockEnabled_,
     });
@@ -352,10 +352,10 @@ Polymer({
    */
   sendChangePin_: function(event) {
     event.stopPropagation();
-    var newPin = this.$.changePinNew1.value;
+    const newPin = this.$.changePinNew1.value;
     if (!this.validatePin_(newPin, this.$.changePinNew2.value))
       return;
-    var simState = /** @type {!CrOnc.CellularSimState} */ ({
+    const simState = /** @type {!CrOnc.CellularSimState} */ ({
       requirePin: true,
       currentPin: this.$.changePinOld.value,
       newPin: newPin
@@ -384,7 +384,7 @@ Polymer({
    */
   sendUnlockPin_: function(event) {
     event.stopPropagation();
-    var pin = this.$.unlockPin.value;
+    const pin = this.$.unlockPin.value;
     if (!this.validatePin_(pin))
       return;
     this.unlockCellularSim_(pin, '');
@@ -419,10 +419,10 @@ Polymer({
    */
   sendUnlockPuk_: function(event) {
     event.stopPropagation();
-    var puk = this.$.unlockPuk.value;
+    const puk = this.$.unlockPuk.value;
     if (!this.validatePuk_(puk))
       return;
-    var pin = this.$.unlockPin1.value;
+    const pin = this.$.unlockPin1.value;
     if (!this.validatePin_(pin, this.$.unlockPin2.value))
       return;
     this.unlockCellularSim_(pin, puk);
@@ -457,7 +457,7 @@ Polymer({
     if (this.error_ == ErrorType.NONE)
       return '';
     // TODO(stevenjb): Translate
-    var msg;
+    let msg;
     if (this.error_ == ErrorType.INCORRECT_PIN)
       msg = 'Incorrect PIN.';
     else if (this.error_ == ErrorType.INCORRECT_PUK)
@@ -470,7 +470,7 @@ Polymer({
       msg = 'Invalid PUK.';
     else
       return 'UNKNOWN ERROR';
-    var retriesLeft = this.simUnlockSent_ &&
+    const retriesLeft = this.simUnlockSent_ &&
         this.get('Cellular.SIMLockStatus.RetriesLeft', this.networkProperties);
     if (retriesLeft) {
       msg += ' Retries left: ' + retriesLeft.toString();

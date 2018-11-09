@@ -13,7 +13,7 @@
  * Note: closure does not always recognize this if inside function() {}.
  * @enum {string}
  */
-var VPNConfigType = {
+const VPNConfigType = {
   L2TP_IPSEC_PSK: 'L2TP_IPsec_PSK',
   L2TP_IPSEC_CERT: 'L2TP_IPsec_Cert',
   OPEN_VPN: 'OpenVPN',
@@ -22,14 +22,14 @@ var VPNConfigType = {
 (function() {
 'use strict';
 
-/** @const */ var DEFAULT_HASH = 'default';
-/** @const */ var DO_NOT_CHECK_HASH = 'do-not-check';
-/** @const */ var NO_CERTS_HASH = 'no-certs';
-/** @const */ var NO_USER_CERT_HASH = 'no-user-cert';
+/** @type {string}  */ const DEFAULT_HASH = 'default';
+/** @type {string}  */ const DO_NOT_CHECK_HASH = 'do-not-check';
+/** @type {string}  */ const NO_CERTS_HASH = 'no-certs';
+/** @type {string}  */ const NO_USER_CERT_HASH = 'no-user-cert';
 
 // Used to indicate a saved but unknown PSK value. Will appear as *'s in the
 // PSK field by default.
-/** @const */ var UNKNOWN_PSK = '        ';
+/** @type {string}  */ const UNKNOWN_PSK = '        ';
 
 Polymer({
   is: 'network-config',
@@ -404,7 +404,7 @@ Polymer({
     this.propertiesSent_ = true;
     this.error = '';
 
-    var propertiesToSet = this.getPropertiesToSet_();
+    const propertiesToSet = this.getPropertiesToSet_();
     if (this.getSource_() == CrOnc.Source.NONE) {
       // Set 'AutoConnect' to false for VPN or if prohibited by policy.
       // Note: Do not set AutoConnect to true, the connection manager will do
@@ -428,7 +428,7 @@ Polymer({
   /** @private */
   focusFirstInput_: function() {
     Polymer.dom.flush();
-    var e = this.$$(
+    const e = this.$$(
         'network-config-input:not([readonly]),' +
         'network-password-input:not([disabled]),' +
         'network-config-select:not([disabled])');
@@ -464,18 +464,18 @@ Polymer({
   getSource_: function() {
     if (!this.guid)
       return CrOnc.Source.NONE;
-    var source = this.managedProperties.Source;
+    const source = this.managedProperties.Source;
     return source ? /** @type {!CrOnc.Source} */ (source) : CrOnc.Source.NONE;
   },
 
   /** @private */
   onCertificateListsChanged_: function() {
     this.networkingPrivate.getCertificateLists(function(certificateLists) {
-      var isOpenVpn = this.type == CrOnc.Type.VPN &&
+      const isOpenVpn = this.type == CrOnc.Type.VPN &&
           this.get('VPN.Type', this.configProperties_) ==
               CrOnc.VPNType.OPEN_VPN;
 
-      var caCerts = certificateLists.serverCaCertificates.slice();
+      const caCerts = certificateLists.serverCaCertificates.slice();
       if (!isOpenVpn) {
         // 'Default' is the same as 'Do not check' except it sets
         // eap.UseSystemCAs (which does not apply to OpenVPN).
@@ -486,7 +486,7 @@ Polymer({
           this.i18n('networkCADoNotCheck'), DO_NOT_CHECK_HASH));
       this.set('serverCaCerts_', caCerts);
 
-      var userCerts = certificateLists.userCertificates.slice();
+      let userCerts = certificateLists.userCertificates.slice();
       // Only hardware backed user certs are supported.
       userCerts.forEach(function(cert) {
         if (!cert.hardwareBacked)
@@ -638,7 +638,7 @@ Polymer({
 
     // Look for an existing EAP configuration. This may be stored in a
     // separate 'Ethernet EAP Parameters' configuration.
-    var ethernetEap = networks.find(function(network) {
+    const ethernetEap = networks.find(function(network) {
       return !!network.Ethernet &&
           network.Ethernet.Authentication == CrOnc.Authentication.WEP_8021X;
     });
@@ -675,7 +675,7 @@ Polymer({
 
   /** @private */
   setShareNetwork_: function() {
-    var source = this.getSource_();
+    const source = this.getSource_();
     if (source != CrOnc.Source.NONE) {
       // Configured networks can not change whether they are shared.
       this.shareNetwork_ =
@@ -694,7 +694,7 @@ Polymer({
         return;
       }
       // Networks requiring a user certificate cannot be shared.
-      var eap = this.eapProperties_;
+      const eap = this.eapProperties_;
       if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS) {
         this.shareNetwork_ = false;
         return;
@@ -714,8 +714,8 @@ Polymer({
     this.showVpn_ = null;
     this.vpnType_ = undefined;
 
-    var managedProperties = this.managedProperties;
-    var configProperties =
+    const managedProperties = this.managedProperties;
+    const configProperties =
         /** @type {chrome.networkingPrivate.NetworkConfigProperties} */ ({
           Name: CrOnc.getActiveValue(managedProperties.Name) || '',
           Type: managedProperties.Type,
@@ -781,7 +781,7 @@ Polymer({
         break;
       case CrOnc.Type.VPN:
         if (managedProperties.VPN) {
-          var vpn = {
+          const vpn = {
             Host: /** @type {string|undefined} */ (
                 CrOnc.getActiveValue(managedProperties.VPN.Host)),
             Type: /** @type {string|undefined} */ (
@@ -835,13 +835,13 @@ Polymer({
       // Set the share value to its default when the security type changes.
       this.setShareNetwork_();
     } else if (this.type == CrOnc.Type.ETHERNET) {
-      var auth = this.security_ == CrOnc.Security.WPA_EAP ?
+      const auth = this.security_ == CrOnc.Security.WPA_EAP ?
           CrOnc.Authentication.WEP_8021X :
           CrOnc.Authentication.NONE;
       this.set('Ethernet.Authentication', auth, this.configProperties_);
     }
     if (this.security_ == CrOnc.Security.WPA_EAP) {
-      var eap = this.getEap_(this.configProperties_, true);
+      const eap = this.getEap_(this.configProperties_, true);
       eap.Outer = eap.Outer || CrOnc.EAPType.LEAP;
       this.setEap_(eap);
     } else {
@@ -855,10 +855,10 @@ Polymer({
    * @private
    */
   updateEapOuter_: function() {
-    var eap = this.eapProperties_;
+    const eap = this.eapProperties_;
     if (!eap || !eap.Outer)
       return;
-    var innerItems = this.getEapInnerItems_(eap.Outer);
+    const innerItems = this.getEapInnerItems_(eap.Outer);
     if (innerItems.length > 0) {
       if (!eap.Inner || innerItems.indexOf(eap.Inner) < 0)
         this.set('eapProperties_.Inner', innerItems[0]);
@@ -874,9 +874,9 @@ Polymer({
     // EAP is used for all configurable types except VPN.
     if (this.type == CrOnc.Type.VPN)
       return;
-    var eap = this.eapProperties_;
-    var pem = eap && eap.ServerCAPEMs ? eap.ServerCAPEMs[0] : '';
-    var certId =
+    const eap = this.eapProperties_;
+    const pem = eap && eap.ServerCAPEMs ? eap.ServerCAPEMs[0] : '';
+    const certId =
         eap && eap.ClientCertType == 'PKCS11Id' ? eap.ClientCertPKCS11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
@@ -888,7 +888,7 @@ Polymer({
       this.updateCertError_();
       return;
     }
-    var outer = this.eapProperties_.Outer;
+    const outer = this.eapProperties_.Outer;
     switch (this.type) {
       case CrOnc.Type.WI_MAX:
         this.showEap_ = {
@@ -921,7 +921,7 @@ Polymer({
    * @private
    */
   getEap_: function(properties, opt_create) {
-    var eap;
+    let eap;
     switch (properties.Type) {
       case CrOnc.Type.WI_FI:
         eap = properties.WiFi && properties.WiFi.EAP;
@@ -965,7 +965,7 @@ Polymer({
    * @private
    */
   getManagedEap_: function(managedProperties) {
-    var managedEap;
+    let managedEap;
     switch (managedProperties.Type) {
       case CrOnc.Type.WI_FI:
         managedEap = managedProperties.WiFi && managedProperties.WiFi.EAP;
@@ -986,7 +986,7 @@ Polymer({
    * @private
    */
   getVpnTypeFromProperties_: function(properties) {
-    var vpn = properties.VPN;
+    const vpn = properties.VPN;
     assert(vpn);
     if (vpn.Type == CrOnc.VPNType.L2TP_IPSEC) {
       return vpn.IPsec.AuthenticationType ==
@@ -1002,7 +1002,7 @@ Polymer({
     if (this.configProperties_ === undefined)
       return;
 
-    var vpn = this.configProperties_.VPN;
+    const vpn = this.configProperties_.VPN;
     if (!vpn) {
       this.showVpn_ = null;
       this.updateCertError_();
@@ -1039,8 +1039,8 @@ Polymer({
   updateVpnIPsecCerts_: function() {
     if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT)
       return;
-    var pem, certId;
-    var ipsec = /** @type {chrome.networkingPrivate.IPSecProperties} */ (
+    let pem, certId;
+    const ipsec = /** @type {chrome.networkingPrivate.IPSecProperties} */ (
         this.get('VPN.IPsec', this.configProperties_));
     if (ipsec) {
       pem = ipsec.ServerCAPEMs && ipsec.ServerCAPEMs[0];
@@ -1054,8 +1054,8 @@ Polymer({
   updateOpenVPNCerts_: function() {
     if (this.vpnType_ != VPNConfigType.OPEN_VPN)
       return;
-    var pem, certId;
-    var openvpn = /** @type {chrome.networkingPrivate.OpenVPNProperties} */ (
+    let pem, certId;
+    const openvpn = /** @type {chrome.networkingPrivate.OpenVPNProperties} */ (
         this.get('VPN.OpenVPN', this.configProperties_));
     if (openvpn) {
       pem = openvpn.ServerCAPEMs && openvpn.ServerCAPEMs[0];
@@ -1070,14 +1070,14 @@ Polymer({
   updateCertError_: function() {
     // If |this.error| was set to something other than a cert error, do not
     // change it.
-    /** @const */ var noCertsError = 'networkErrorNoUserCertificate';
-    /** @const */ var noValidCertsError = 'networkErrorNotHardwareBacked';
+    /** @const */ const noCertsError = 'networkErrorNoUserCertificate';
+    /** @const */ const noValidCertsError = 'networkErrorNotHardwareBacked';
     if (this.error && this.error != noCertsError &&
         this.error != noValidCertsError) {
       return;
     }
 
-    var requireCerts = (this.showEap_ && this.showEap_.UserCert) ||
+    const requireCerts = (this.showEap_ && this.showEap_.UserCert) ||
         (this.showVpn_ && this.showVpn_.UserCert);
     if (!requireCerts) {
       this.setError_('');
@@ -1087,7 +1087,7 @@ Polymer({
       this.setError_(noCertsError);
       return;
     }
-    var validUserCert = this.userCerts_.find(function(cert) {
+    const validUserCert = this.userCerts_.find(function(cert) {
       return !!cert.hash;
     });
     if (!validUserCert) {
@@ -1107,7 +1107,7 @@ Polymer({
    */
   setSelectedCerts_: function(pem, certId) {
     if (pem) {
-      var serverCa = this.serverCaCerts_.find(function(cert) {
+      const serverCa = this.serverCaCerts_.find(function(cert) {
         return cert.pem == pem;
       });
       if (serverCa)
@@ -1115,7 +1115,7 @@ Polymer({
     }
 
     if (certId) {
-      var userCert = this.userCerts_.find(function(cert) {
+      const userCert = this.userCerts_.find(function(cert) {
         return cert.PKCS11Id == certId;
       });
       if (userCert)
@@ -1150,7 +1150,7 @@ Polymer({
       this.selectedServerCaHash_ = undefined;
     if (!this.selectedServerCaHash_ ||
         this.selectedServerCaHash_ == DEFAULT_HASH) {
-      var eap = this.eapProperties_;
+      const eap = this.eapProperties_;
       if (eap && eap.UseSystemCAs === false)
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
     }
@@ -1178,7 +1178,7 @@ Polymer({
       if (!this.get('WiFi.SSID', this.configProperties_))
         return false;
       if (this.configRequiresPassphrase_()) {
-        var passphrase = this.get('WiFi.Passphrase', this.configProperties_);
+        const passphrase = this.get('WiFi.Passphrase', this.configProperties_);
         if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH)
           return false;
       }
@@ -1272,7 +1272,7 @@ Polymer({
       return false;
 
     if (this.security_ == CrOnc.Security.WPA_EAP) {
-      var eap = this.getEap_(this.configProperties_);
+      const eap = this.getEap_(this.configProperties_);
       if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS)
         return false;
     }
@@ -1299,7 +1299,7 @@ Polymer({
    * @private
    */
   eapIsConfigured_: function() {
-    var eap = this.getEap_(this.configProperties_);
+    const eap = this.getEap_(this.configProperties_);
     if (!eap)
       return false;
     if (eap.Outer != CrOnc.EAPType.EAP_TLS)
@@ -1312,7 +1312,7 @@ Polymer({
    * @private
    */
   vpnIsConfigured_: function() {
-    var vpn = this.configProperties_.VPN;
+    const vpn = this.configProperties_.VPN;
     if (!this.configProperties_.Name || !vpn || !vpn.Host)
       return false;
 
@@ -1334,13 +1334,13 @@ Polymer({
 
   /** @private */
   getPropertiesToSet_: function() {
-    var propertiesToSet = Object.assign({}, this.configProperties_);
+    const propertiesToSet = Object.assign({}, this.configProperties_);
     // Do not set AutoConnect by default, the connection manager will set
     // it to true on a successful connection.
     CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', undefined);
     if (this.guid)
       propertiesToSet.GUID = this.guid;
-    var eap = this.getEap_(propertiesToSet);
+    const eap = this.getEap_(propertiesToSet);
     if (eap)
       this.setEapProperties_(eap);
     if (this.configProperties_.Type == CrOnc.Type.VPN) {
@@ -1357,10 +1357,10 @@ Polymer({
    * @private
    */
   getServerCaPems_: function() {
-    var caHash = this.selectedServerCaHash_ || '';
+    const caHash = this.selectedServerCaHash_ || '';
     if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH)
       return [];
-    var serverCa = this.findCert_(this.serverCaCerts_, caHash);
+    const serverCa = this.findCert_(this.serverCaCerts_, caHash);
     return serverCa && serverCa.pem ? [serverCa.pem] : [];
   },
 
@@ -1369,12 +1369,12 @@ Polymer({
    * @private
    */
   getUserCertPkcs11Id_: function() {
-    var userCertHash = this.selectedUserCertHash_ || '';
+    const userCertHash = this.selectedUserCertHash_ || '';
     if (!this.selectedUserCertHashIsValid_() ||
         userCertHash == NO_USER_CERT_HASH) {
       return '';
     }
-    var userCert = this.findCert_(this.userCerts_, userCertHash);
+    const userCert = this.findCert_(this.userCerts_, userCertHash);
     return (userCert && userCert.PKCS11Id) || '';
   },
 
@@ -1387,7 +1387,7 @@ Polymer({
 
     eap.ServerCAPEMs = this.getServerCaPems_();
 
-    var pkcs11Id = this.getUserCertPkcs11Id_();
+    const pkcs11Id = this.getUserCertPkcs11Id_();
     eap.ClientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
     eap.ClientCertPKCS11Id = pkcs11Id || '';
   },
@@ -1397,11 +1397,11 @@ Polymer({
    * @private
    */
   setOpenVPNProperties_: function(propertiesToSet) {
-    var openvpn = propertiesToSet.VPN.OpenVPN || {};
+    const openvpn = propertiesToSet.VPN.OpenVPN || {};
 
     openvpn.ServerCAPEMs = this.getServerCaPems_();
 
-    var pkcs11Id = this.getUserCertPkcs11Id_();
+    const pkcs11Id = this.getUserCertPkcs11Id_();
     openvpn.ClientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
     openvpn.ClientCertPKCS11Id = pkcs11Id || '';
 
@@ -1425,7 +1425,7 @@ Polymer({
    * @private
    */
   setVpnIPsecProperties_: function(propertiesToSet) {
-    var vpn = propertiesToSet.VPN;
+    const vpn = propertiesToSet.VPN;
     assert(vpn.IPsec);
     if (vpn.IPsec.AuthenticationType == CrOnc.IPsecAuthenticationType.CERT) {
       vpn.IPsec.ClientCertType = 'PKCS11Id';
@@ -1458,7 +1458,7 @@ Polymer({
       this.propertiesSent_ = false;
       return;
     }
-    var connectState = this.managedProperties.ConnectionState;
+    const connectState = this.managedProperties.ConnectionState;
     if (connect &&
         (!connectState ||
          connectState == CrOnc.ConnectionState.NOT_CONNECTED)) {
@@ -1492,7 +1492,7 @@ Polymer({
    */
   startConnect_: function(guid) {
     this.networkingPrivate.startConnect(guid, () => {
-      var error = this.getRuntimeError_();
+      const error = this.getRuntimeError_();
       if (!error || error == 'connected' || error == 'connect-canceled' ||
           error == 'connecting') {
         // Connect is in progress, completed or canceled, close the dialog.
@@ -1544,7 +1544,7 @@ Polymer({
    * @private
    */
   getManagedSecurity_: function(managedProperties) {
-    var managedSecurity = undefined;
+    let managedSecurity = undefined;
     switch (managedProperties.Type) {
       case CrOnc.Type.WI_FI:
         managedSecurity =
