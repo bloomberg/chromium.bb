@@ -83,6 +83,8 @@ class FakeFrame : public chromium::web::Frame {
                          chromium::web::ExecuteMode mode,
                          ExecuteJavaScriptCallback callback) override {}
 
+  void SetJavaScriptLogLevel(chromium::web::LogLevel) override {}
+
  private:
   fidl::Binding<chromium::web::Frame> binding_;
   chromium::web::NavigationEventObserverPtr observer_;

@@ -62,6 +62,7 @@ class FrameImpl : public chromium::web::Frame,
   void GetNavigationController(
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override;
+  void SetJavaScriptLogLevel(chromium::web::LogLevel level) override;
 
   // chromium::web::NavigationController implementation.
   void LoadUrl(fidl::StringPtr url,
@@ -119,6 +120,11 @@ class FrameImpl : public chromium::web::Frame,
       content::SessionStorageNamespace* session_storage_namespace) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
 
   // content::WebContentsObserver implementation.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -133,6 +139,7 @@ class FrameImpl : public chromium::web::Frame,
   chromium::web::NavigationEvent pending_navigation_event_;
   bool waiting_for_navigation_event_ack_;
   bool pending_navigation_event_is_dirty_;
+  chromium::web::LogLevel log_level_ = chromium::web::LogLevel::NONE;
   std::list<OriginScopedScript> before_load_scripts_;
 
   ContextImpl* context_ = nullptr;
