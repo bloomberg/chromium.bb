@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 
 #include "base/ios/ios_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -42,8 +43,10 @@ constexpr float PopoverMaxHeight = 250;
 }  // namespace
 
 @interface PasswordViewController ()
+
 // Search controller if any.
 @property(nonatomic, strong) UISearchController* searchController;
+
 @end
 
 @implementation PasswordViewController
@@ -114,6 +117,13 @@ constexpr float PopoverMaxHeight = 250;
 #pragma mark - ManualFillPasswordConsumer
 
 - (void)presentCredentials:(NSArray<ManualFillCredentialItem*>*)credentials {
+  if (self.searchController) {
+    UMA_HISTOGRAM_COUNTS_1000("ManualFallback.PresentedOptions.AllPasswords",
+                              credentials.count);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("ManualFallback.PresentedOptions.Passwords",
+                             credentials.count);
+  }
   [self presentItems:credentials inSection:CredentialsSectionIdentifier];
 }
 
