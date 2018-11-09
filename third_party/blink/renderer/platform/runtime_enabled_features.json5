@@ -558,7 +558,6 @@
     },
     {
       name: "HeapUnifiedGarbageCollection",
-      status: "stable",
     },
     // Only exposed when a translation engine is available
     // and experimental features are enabled.
