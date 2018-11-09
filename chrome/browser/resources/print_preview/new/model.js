@@ -554,6 +554,11 @@ Polymer({
                 defaultOption.type));
       }
     } else if (
+        this.destination.id ===
+            print_preview.Destination.GooglePromotedId.DOCS ||
+        this.destination.type === print_preview.DestinationType.MOBILE) {
+      this.set('settings.color.unavailableValue', true);
+    } else if (
         caps && caps.color && caps.color.option &&
         caps.color.option.length > 0) {
       this.set(
