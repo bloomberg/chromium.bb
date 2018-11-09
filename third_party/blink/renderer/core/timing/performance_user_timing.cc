@@ -201,11 +201,11 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
       "blink.user_timing", measure_name.Utf8().data(),
       WTF::StringHash::GetHash(measure_name),
-      TraceEvent::ToTraceTimestamp(start_time_monotonic));
+      trace_event::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
       "blink.user_timing", measure_name.Utf8().data(),
       WTF::StringHash::GetHash(measure_name),
-      TraceEvent::ToTraceTimestamp(end_time_monotonic));
+      trace_event::ToTraceTimestamp(end_time_monotonic));
 
   PerformanceMeasure* measure = PerformanceMeasure::Create(
       script_state, measure_name, start_time, end_time, detail);
