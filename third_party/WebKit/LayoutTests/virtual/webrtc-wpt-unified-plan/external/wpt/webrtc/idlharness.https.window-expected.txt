@@ -309,14 +309,14 @@ FAIL RTCDtlsTransport interface object name assert_own_property: self does not h
 FAIL RTCDtlsTransport interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
-FAIL RTCDtlsTransport interface: attribute transport assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
+FAIL RTCDtlsTransport interface: attribute iceTransport assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: attribute state assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: operation getRemoteCertificates() assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: attribute onstatechange assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport interface: attribute onerror assert_own_property: self does not have own property "RTCDtlsTransport" expected property "RTCDtlsTransport" missing
 FAIL RTCDtlsTransport must be primary interface of idlTestObjects.dtlsTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of idlTestObjects.dtlsTransport assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "transport" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "iceTransport" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "state" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onstatechange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
