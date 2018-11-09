@@ -19,6 +19,7 @@
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class AppMenuIconController;
 class BookmarkSubMenuModel;
 class Browser;
 class RecentTabsSubMenuModel;
@@ -114,8 +115,12 @@ class AppMenuModel : public ui::SimpleMenuModel,
   static const int kMaxRecentTabsCommandId = 1200;
 
   // Creates an app menu model for the given browser. Init() must be called
-  // before passing this to an AppMenu.
-  AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
+  // before passing this to an AppMenu. |app_menu_icon_controller|, if provided,
+  // is used to decide whether or not to include an item for opening the upgrade
+  // dialog.
+  AppMenuModel(ui::AcceleratorProvider* provider,
+               Browser* browser,
+               AppMenuIconController* app_menu_icon_controller = nullptr);
   ~AppMenuModel() override;
 
   // Runs Build() and registers observers.
@@ -224,6 +229,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
   ui::AcceleratorProvider* provider_;  // weak
 
   Browser* const browser_;  // weak
+  AppMenuIconController* const app_menu_icon_controller_;
 
   std::unique_ptr<content::HostZoomMap::Subscription>
       browser_zoom_subscription_;

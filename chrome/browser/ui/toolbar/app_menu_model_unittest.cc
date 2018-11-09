@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
@@ -52,6 +53,15 @@ class MenuError : public GlobalError {
   DISALLOW_COPY_AND_ASSIGN(MenuError);
 };
 
+class FakeIconDelegate : public AppMenuIconController::Delegate {
+ public:
+  FakeIconDelegate() = default;
+
+  // AppMenuIconController::Delegate:
+  void UpdateTypeAndSeverity(
+      AppMenuIconController::TypeAndSeverity type_and_severity) override {}
+};
+
 } // namespace
 
 class AppMenuModelTest : public BrowserWithTestWindowTest,
@@ -75,8 +85,10 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
 // not derived from SimpleMenuModel.
 class TestAppMenuModel : public AppMenuModel {
  public:
-  TestAppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
-      : AppMenuModel(provider, browser),
+  TestAppMenuModel(ui::AcceleratorProvider* provider,
+                   Browser* browser,
+                   AppMenuIconController* app_menu_icon_controller)
+      : AppMenuModel(provider, browser, app_menu_icon_controller),
         execute_count_(0),
         checked_count_(0),
         enable_count_(0) {}
@@ -104,7 +116,18 @@ class TestAppMenuModel : public AppMenuModel {
 };
 
 TEST_F(AppMenuModelTest, Basics) {
-  TestAppMenuModel model(this, browser());
+  // Simulate that an update is available to ensure that the menu includes the
+  // upgrade item for platforms that support it.
+  UpgradeDetector* detector = UpgradeDetector::GetInstance();
+  detector->set_upgrade_notification_stage(
+      UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
+  detector->NotifyUpgrade();
+  EXPECT_TRUE(detector->notify_upgrade());
+
+  FakeIconDelegate fake_delegate;
+  AppMenuIconController app_menu_icon_controller(browser()->profile(),
+                                                 &fake_delegate);
+  TestAppMenuModel model(this, browser(), &app_menu_icon_controller);
   model.Init();
   int itemCount = model.GetItemCount();
 
@@ -112,20 +135,20 @@ TEST_F(AppMenuModelTest, Basics) {
   // the exact number.
   EXPECT_GT(itemCount, 10);
 
-  UpgradeDetector* detector = UpgradeDetector::GetInstance();
-  detector->set_upgrade_notification_stage(
-      UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
-  detector->NotifyUpgrade();
-  EXPECT_TRUE(detector->notify_upgrade());
+  // Verify that the upgrade item is visible if supported.
   EXPECT_EQ(browser_defaults::kShowUpgradeMenuItem,
             model.IsCommandIdVisible(IDC_UPGRADE_DIALOG));
 
   // Execute a couple of the items and make sure it gets back to our delegate.
   // We can't use CountEnabledExecutable() here because the encoding menu's
   // delegate is internal, it doesn't use the one we pass in.
-  // Note: The new menu has a spacing separator at the first slot.
-  model.ActivatedAt(1);
-  EXPECT_TRUE(model.IsEnabledAt(1));
+  // Note: the second item in the menu may be a separator if the browser
+  // supports showing upgrade status in the app menu.
+  int item_index = 1;
+  if (model.GetTypeAt(item_index) == ui::MenuModel::TYPE_SEPARATOR)
+    ++item_index;
+  model.ActivatedAt(item_index);
+  EXPECT_TRUE(model.IsEnabledAt(item_index));
   // Make sure to use the index that is not separator in all configurations.
   model.ActivatedAt(itemCount - 1);
   EXPECT_TRUE(model.IsEnabledAt(itemCount - 1));

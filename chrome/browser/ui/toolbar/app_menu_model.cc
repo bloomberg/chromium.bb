@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -228,11 +229,14 @@ void ToolsMenuModel::Build(Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppMenuModel
 
-AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
+AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
+                           Browser* browser,
+                           AppMenuIconController* app_menu_icon_controller)
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(provider),
-      browser_(browser) {}
+      browser_(browser),
+      app_menu_icon_controller_(app_menu_icon_controller) {}
 
 AppMenuModel::~AppMenuModel() {
   if (browser_)  // Null in Cocoa tests.
@@ -290,6 +294,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
     case IDC_INSTALL_PWA:
       return GetInstallPWAAppMenuItemName(browser_).value();
     case IDC_UPGRADE_DIALOG:
+      DCHECK(browser_defaults::kShowUpgradeMenuItem);
       return GetUpgradeDialogMenuItemName();
     default:
       NOTREACHED();
@@ -298,8 +303,8 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
 }
 
 bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
-  if (command_id == IDC_UPGRADE_DIALOG &&
-      UpgradeDetector::GetInstance()->notify_upgrade()) {
+  if (command_id == IDC_UPGRADE_DIALOG) {
+    DCHECK(browser_defaults::kShowUpgradeMenuItem);
     *icon = UpgradeDetector::GetInstance()->GetIcon();
     return true;
   }
@@ -653,9 +658,12 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
 #endif
     case IDC_PIN_TO_START_SCREEN:
       return false;
-    case IDC_UPGRADE_DIALOG:
-      return browser_defaults::kShowUpgradeMenuItem &&
-          UpgradeDetector::GetInstance()->notify_upgrade();
+    case IDC_UPGRADE_DIALOG: {
+      if (!browser_defaults::kShowUpgradeMenuItem || !app_menu_icon_controller_)
+        return false;
+      return app_menu_icon_controller_->GetTypeAndSeverity().type ==
+             AppMenuIconController::IconType::UPGRADE_NOTIFICATION;
+    }
 #if !defined(OS_LINUX) || defined(USE_AURA)
     case IDC_BOOKMARK_PAGE:
       return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());

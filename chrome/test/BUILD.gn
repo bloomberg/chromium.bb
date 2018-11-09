@@ -2801,6 +2801,7 @@ test("unit_tests") {
     sources += [
       "../browser/component_updater/crl_set_component_installer_unittest.cc",
       "../browser/ui/hats/hats_unittest.cc",
+      "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
     ]
   }
 
