@@ -291,9 +291,7 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   bool RemoveShorthandProperty(const AtomicString& custom_property_name) {
     return false;
   }
-  CSSPropertyValue* FindCSSPropertyWithID(
-      CSSPropertyID,
-      const AtomicString& custom_property_name = g_null_atom);
+  CSSPropertyValue* FindCSSPropertyWithName(const CSSPropertyName&);
   Member<PropertySetCSSStyleDeclaration> cssom_wrapper_;
 
   friend class CSSPropertyValueSet;
