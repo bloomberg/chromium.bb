@@ -122,7 +122,10 @@ class InProcessCommandBuffer::SharedImageInterface
     : public gpu::SharedImageInterface {
  public:
   explicit SharedImageInterface(InProcessCommandBuffer* parent)
-      : parent_(parent), command_buffer_id_(NextCommandBufferId()) {}
+      : parent_(parent),
+        gpu_thread_weak_ptr_(
+            parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr()),
+        command_buffer_id_(NextCommandBufferId()) {}
 
   ~SharedImageInterface() override = default;
 
@@ -139,8 +142,8 @@ class InProcessCommandBuffer::SharedImageInterface
       // time, cancelling tasks, before |this| is destroyed.
       parent_->ScheduleGpuTask(base::BindOnce(
           &InProcessCommandBuffer::CreateSharedImageOnGpuThread,
-          parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(), mailbox, format,
-          size, color_space, usage, MakeSyncToken(next_fence_sync_release_++)));
+          gpu_thread_weak_ptr_, mailbox, format, size, color_space, usage,
+          MakeSyncToken(next_fence_sync_release_++)));
     }
     return mailbox;
   }
@@ -168,9 +171,9 @@ class InProcessCommandBuffer::SharedImageInterface
       // time, cancelling tasks, before |this| is destroyed.
       parent_->ScheduleGpuTask(base::BindOnce(
           &InProcessCommandBuffer::CreateGMBSharedImageOnGpuThread,
-          parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(), mailbox,
-          std::move(handle), gpu_memory_buffer->GetFormat(),
-          gpu_memory_buffer->GetSize(), color_space, usage, sync_token));
+          gpu_thread_weak_ptr_, mailbox, std::move(handle),
+          gpu_memory_buffer->GetFormat(), gpu_memory_buffer->GetSize(),
+          color_space, usage, sync_token));
     }
     if (requires_sync_token) {
       sync_token.SetVerifyFlush();
@@ -189,8 +192,8 @@ class InProcessCommandBuffer::SharedImageInterface
     // time, cancelling tasks, before |this| is destroyed.
     parent_->ScheduleGpuTask(
         base::BindOnce(&InProcessCommandBuffer::UpdateSharedImageOnGpuThread,
-                       parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(),
-                       mailbox, MakeSyncToken(next_fence_sync_release_++)),
+                       gpu_thread_weak_ptr_, mailbox,
+                       MakeSyncToken(next_fence_sync_release_++)),
         {sync_token});
   }
 
@@ -200,8 +203,7 @@ class InProcessCommandBuffer::SharedImageInterface
     // before sync token is released.
     parent_->ScheduleGpuTask(
         base::BindOnce(&InProcessCommandBuffer::DestroySharedImageOnGpuThread,
-                       parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(),
-                       mailbox),
+                       gpu_thread_weak_ptr_, mailbox),
         {sync_token});
   }
 
@@ -219,6 +221,7 @@ class InProcessCommandBuffer::SharedImageInterface
   }
 
   InProcessCommandBuffer* const parent_;
+  base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;
 
   const CommandBufferId command_buffer_id_;
 
@@ -236,7 +239,6 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(std::move(task_executer)),
-      shared_image_interface_(new SharedImageInterface(this)),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
       client_thread_weak_ptr_factory_(this),
@@ -247,6 +249,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
   // and not the current (client) sequence except for webview (see Initialize).
   DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
   DCHECK(task_executor_);
+  shared_image_interface_ = std::make_unique<SharedImageInterface>(this);
 }
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
