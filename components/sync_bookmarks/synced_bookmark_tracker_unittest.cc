@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
@@ -491,6 +492,44 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
   tombstone->mutable_metadata()->set_is_deleted(true);
   tombstone->set_id(10);
   EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldMatchModelWithUnsyncableNodesAndMetadata) {
+  // Add a managed node with an arbitrary id 100.
+  const int64_t kManagedNodeId = 100;
+  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(
+      std::make_unique<bookmarks::BookmarkPermanentNode>(kManagedNodeId));
+  bookmarks::BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+  auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+  client->SetExtraNodesToLoad(std::move(extra_nodes));
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
+
+  // The model should contain the managed node now.
+  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId), Eq(extra_node));
+
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add entries for all the permanent nodes. TestBookmarkClient creates all the
+  // 3 permanent nodes.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->other_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->mobile_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
+
+  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model.get(), model_metadata));
 }
 
