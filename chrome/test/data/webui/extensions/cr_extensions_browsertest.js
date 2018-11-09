@@ -531,6 +531,7 @@ CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'pack_dialog_test.js',
     ]);
   }
@@ -547,11 +548,7 @@ TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
 
 // Disabling on Windows due to flaky timeout on some build bots.
 // http://crbug.com/832885
-// Temporarily disabling on Mac due to flaky dialog visibility failure.
-// http://crbug.com/877109
-// And flay on ChromeOS as well. Added comments about ChromeOS to
-// http://crbug.com/877109
-GEN('#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)');
+GEN('#if defined(OS_WIN)');
 GEN('#define MAYBE_PackSuccess DISABLED_PackSuccess');
 GEN('#else');
 GEN('#define MAYBE_PackSuccess PackSuccess');
