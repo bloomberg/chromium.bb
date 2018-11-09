@@ -1218,6 +1218,13 @@
     return stream[_storedError];
   }
 
+  // TODO(yhirano): Rename this to constructReadableStream.
+  function createReadableStream(underlyingSource, strategy) {
+    return new ReadableStream(underlyingSource, strategy);
+  }
+
+  // TODO(yhirano): Rename this to
+  // constructReadableStreamWithExternalController.
   // TODO(ricea): Remove this once the C++ code switches to calling
   // CreateReadableStream().
   function createReadableStreamWithExternalController(
@@ -1243,6 +1250,7 @@
     // ReadableStream exports to Blink C++
     //
     AcquireReadableStreamDefaultReader,
+    createReadableStream,
     createReadableStreamWithExternalController,
     IsReadableStream,
     IsReadableStreamDisturbed,
@@ -1252,7 +1260,9 @@
     IsReadableStreamErrored,
     IsReadableStreamDefaultReader,
     ReadableStreamDefaultReaderRead,
+    ReadableStreamCancel,
     ReadableStreamTee,
+    ReadableStreamPipeTo,
     ReadableStreamSerialize,
     ReadableStreamDeserialize,
 
