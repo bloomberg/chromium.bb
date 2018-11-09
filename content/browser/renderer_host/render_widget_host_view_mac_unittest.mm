@@ -2215,7 +2215,7 @@ TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
   child_allocator.UpdateFromParent(rwhv_mac_->GetLocalSurfaceIdAllocation());
   child_allocator.GenerateId();
   viz::LocalSurfaceId local_surface_id2 =
-      child_allocator.GetCurrentLocalSurfaceId();
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
@@ -2240,7 +2240,7 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
   child_allocator.UpdateFromParent(rwhv_mac_->GetLocalSurfaceIdAllocation());
   child_allocator.GenerateId();
   viz::LocalSurfaceId local_surface_id2 =
-      child_allocator.GetCurrentLocalSurfaceId();
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =

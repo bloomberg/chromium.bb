@@ -951,8 +951,8 @@ bool LayerTreeHostImpl::HasDamage() const {
 
   // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
   // because the parent is blocking on us.
-  if (last_draw_local_surface_id_ !=
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId()) {
+  if (last_draw_local_surface_id_allocation_ !=
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()) {
     return true;
   }
 
@@ -1959,7 +1959,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
       browser_controls_offset_manager_->TopControlsShownRatio();
 
   metadata.local_surface_id_allocation_time =
-      child_local_surface_id_allocator_.allocation_time();
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .allocation_time();
 
 #if defined(OS_ANDROID)
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
@@ -2060,7 +2061,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
            metadata.has_transparent_background);
 #endif
 
-  if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
+  if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .IsValid()) {
     if (allocate_new_local_surface_id)
       child_local_surface_id_allocator_.GenerateId();
     metadata.local_surface_id_allocation =
@@ -2228,10 +2230,11 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     CHECK(!settings_.single_thread_proxy_scheduler ||
           active_tree()->local_surface_id_allocation_from_parent().IsValid());
     layer_tree_frame_sink_->SetLocalSurfaceId(
-        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
   }
-  last_draw_local_surface_id_ =
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  last_draw_local_surface_id_allocation_ =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   if (const char* client_name = GetClientNameForMetrics()) {
     size_t total_quad_count = 0;
     for (const auto& pass : compositor_frame.render_pass_list)
@@ -3371,9 +3374,9 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   // LayerTreeFrameSink to ensure that we do not reuse the same surface after
   // it might have been garbage collected.
   if (settings_.enable_surface_synchronization) {
-    const viz::LocalSurfaceId& local_surface_id =
-        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-    if (local_surface_id.is_valid())
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+    if (local_surface_id_allocation.IsValid())
       child_local_surface_id_allocator_.GenerateId();
   } else {
     layer_tree_frame_sink_->ForceAllocateNewId();
