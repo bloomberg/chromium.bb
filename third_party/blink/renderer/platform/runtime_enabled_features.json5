@@ -305,10 +305,6 @@
       status: "experimental",
     },
     {
-      name: "CSSOMSmoothScroll",
-      status: "stable",
-    },
-    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
       depends_on: ["CSSVariables2"],

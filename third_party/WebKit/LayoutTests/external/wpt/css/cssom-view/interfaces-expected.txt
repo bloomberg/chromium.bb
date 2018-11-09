@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 326 tests; 247 PASS, 79 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 326 tests; 253 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Window: original interface defined
 PASS Partial interface Document: original interface defined
@@ -184,12 +184,12 @@ PASS Window interface: attribute scrollX
 PASS Window interface: attribute pageXOffset
 PASS Window interface: attribute scrollY
 PASS Window interface: attribute pageYOffset
-FAIL Window interface: operation scroll(ScrollToOptions) assert_equals: property has wrong .length expected 0 but got 2
-FAIL Window interface: operation scroll(unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 2
-FAIL Window interface: operation scrollTo(ScrollToOptions) assert_equals: property has wrong .length expected 0 but got 2
-FAIL Window interface: operation scrollTo(unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 2
-FAIL Window interface: operation scrollBy(ScrollToOptions) assert_equals: property has wrong .length expected 0 but got 2
-FAIL Window interface: operation scrollBy(unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 2
+PASS Window interface: operation scroll(ScrollToOptions)
+PASS Window interface: operation scroll(unrestricted double, unrestricted double)
+PASS Window interface: operation scrollTo(ScrollToOptions)
+PASS Window interface: operation scrollTo(unrestricted double, unrestricted double)
+PASS Window interface: operation scrollBy(ScrollToOptions)
+PASS Window interface: operation scrollBy(unrestricted double, unrestricted double)
 PASS Window interface: attribute screenX
 PASS Window interface: attribute screenLeft
 PASS Window interface: attribute screenY
