@@ -144,8 +144,9 @@ public class UpdateMenuItemHelper {
      * @param title The title view.
      * @param image The image view.
      * @param summary The summary view.
+     * @return true if the menu item should be enabled. False otherwise.
      */
-    public void decorateMenuItemViews(
+    public boolean decorateMenuItemViews(
             Context context, TextView title, AppMenuItemIcon image, TextView summary) {
         switch (getUpdateType()) {
             case UpdateType.UPDATE_AVAILABLE:
@@ -163,7 +164,7 @@ public class UpdateMenuItemHelper {
                 }
 
                 image.setImageResource(R.drawable.badge_update_dark);
-                break;
+                return true;
             case UpdateType.UNSUPPORTED_OS_VERSION:
                 title.setText(R.string.menu_update_unsupported);
                 // See crbug.com/899695 for why this line is necessary.
@@ -174,13 +175,13 @@ public class UpdateMenuItemHelper {
                 summary.setText(R.string.menu_update_unsupported_summary_default);
 
                 image.setImageResource(R.drawable.ic_error_grey800_24dp_filled);
-                break;
+                return false;
             case UpdateType.NONE:
             // Intentional fall through.
             case UpdateType.UNKNOWN:
             // Intentional fall through.
             default:
-                break;
+                return false;
         }
     }
 
