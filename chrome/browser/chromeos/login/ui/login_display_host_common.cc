@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 
-#include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
