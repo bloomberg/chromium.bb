@@ -11,6 +11,12 @@ namespace {
 
 const char* const kMetricEnrollment = "Enterprise.Enrollment";
 const char* const kMetricEnrollmentForced = "Enterprise.EnrollmentForced";
+const char* const kMetricEnrollmentAttestationBased =
+    "Enterprise.EnrollmentAttestationBased";
+const char* const kMetricEnrollmentForcedAttestationBased =
+    "Enterprise.EnrollmentForcedAttestationBased";
+const char* const kMetricEnrollmentForcedManualFallback =
+    "Enterprise.EnrollmentForcedManualFallback";
 const char* const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
 
 }  // namespace
@@ -24,16 +30,22 @@ void EnrollmentUMA(policy::MetricEnrollment sample,
     case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
     case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
     case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
-    case policy::EnrollmentConfig::MODE_ATTESTATION:
     case policy::EnrollmentConfig::MODE_OFFLINE_DEMO:
       base::UmaHistogramSparse(kMetricEnrollment, sample);
       break;
+    case policy::EnrollmentConfig::MODE_ATTESTATION:
+      base::UmaHistogramSparse(kMetricEnrollmentAttestationBased, sample);
+      break;
     case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
     case policy::EnrollmentConfig::MODE_SERVER_FORCED:
+      base::UmaHistogramSparse(kMetricEnrollmentForced, sample);
+      break;
     case policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED:
     case policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED:
+      base::UmaHistogramSparse(kMetricEnrollmentForcedAttestationBased, sample);
+      break;
     case policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
-      base::UmaHistogramSparse(kMetricEnrollmentForced, sample);
+      base::UmaHistogramSparse(kMetricEnrollmentForcedManualFallback, sample);
       break;
     case policy::EnrollmentConfig::MODE_RECOVERY:
       base::UmaHistogramSparse(kMetricEnrollmentRecovery, sample);

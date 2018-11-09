@@ -14317,6 +14317,9 @@ Called by update_net_error_codes.py.-->
   <int value="58" label="Consumer account with packaged license">
     Can't enroll a device with a packaged license to a consumer account.
   </int>
+  <int value="59" label="Device not pre-provisioned">
+    The device is not pre-provisioned for Zero-Touch.
+  </int>
 </enum>
 
 <enum name="EnterpriseExistingInstallAttributesLockType">
