@@ -237,14 +237,13 @@ void VideoDecodePerfHistory::OnGotStatsForSave(
 
   if (!success) {
     DVLOG(3) << __func__ << " FAILED! Aborting save.";
-    std::move(save_done_cb).Run();
+    if (save_done_cb)
+      std::move(save_done_cb).Run();
     return;
   }
 
   ReportUkmMetrics(source_id, is_top_frame, player_id, video_key, new_stats,
                    past_stats.get());
-
-  // TODO(dalecurtis): Abort stats recording if db_ is in read-only mode.
 
   db_->AppendDecodeStats(
       video_key, new_stats,

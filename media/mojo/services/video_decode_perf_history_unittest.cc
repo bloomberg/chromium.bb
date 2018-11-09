@@ -58,10 +58,23 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
     std::move(pendnding_init_cb_).Run(success);
   }
 
+  // Simple hooks to fail the next calls to AppendDecodeStats() and
+  // GetDecodeStats(). Will be reset to false after the call.
+  void set_fail_next_append(bool fail_append) {
+    fail_next_append_ = fail_append;
+  }
+  void set_fail_next_get(bool fail_get) { fail_next_get_ = fail_get; }
+
   void AppendDecodeStats(const VideoDescKey& key,
                          const DecodeStatsEntry& new_entry,
                          AppendDecodeStatsCB append_done_cb) override {
-    std::string key_str = MakeKeyString(key);
+    if (fail_next_append_) {
+      fail_next_append_ = false;
+      std::move(append_done_cb).Run(false);
+      return;
+    }
+
+    std::string key_str = key.Serialize();
     if (entries_.find(key_str) == entries_.end()) {
       entries_.emplace(std::make_pair(key_str, new_entry));
     } else {
@@ -78,7 +91,13 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
 
   void GetDecodeStats(const VideoDescKey& key,
                       GetDecodeStatsCB get_stats_cb) override {
-    auto entry_it = entries_.find(MakeKeyString(key));
+    if (fail_next_get_) {
+      fail_next_get_ = false;
+      std::move(get_stats_cb).Run(false, nullptr);
+      return;
+    }
+
+    auto entry_it = entries_.find(key.Serialize());
     if (entry_it == entries_.end()) {
       std::move(get_stats_cb).Run(true, nullptr);
     } else {
@@ -93,10 +112,8 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
   }
 
  private:
-  static std::string MakeKeyString(const VideoDescKey& key) {
-    return base::StringPrintf("%d|%s|%d", static_cast<int>(key.codec_profile),
-                              key.size.ToString().c_str(), key.frame_rate);
-  }
+  bool fail_next_append_ = false;
+  bool fail_next_get_ = false;
 
   std::map<std::string, DecodeStatsEntry> entries_;
 
@@ -524,6 +541,72 @@ TEST_P(VideoDecodePerfHistoryParamTest,
   // Complete failed deferred DB initialization (see comment at top of test)
   if (defer_initialize) {
     GetFakeDB()->CompleteInitialize(false);
+
+    // Allow initialize-deferred API calls to complete.
+    scoped_task_environment_.RunUntilIdle();
+  }
+}
+
+TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
+  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
+  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
+  // that EXPECT_CALLs arrive in top-to-bottom order.
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
+
+  // Complete initialization in advance of API calls when not asked to defer.
+  if (!defer_initialize)
+    PreInitializeDB(/* success */ true);
+
+  // Force the DB to fail on the next append.
+  GetFakeDB()->set_fail_next_append(true);
+
+  // Create a record that is neither smooth nor power efficient. After we fail
+  // to save this record we should find smooth = power_efficient = true (the
+  // default for no-data-found).
+  const VideoCodecProfile kProfile = VP9PROFILE_PROFILE0;
+  const gfx::Size kSize(100, 200);
+  const int kFrameRate = 30;
+  const int kFramesDecoded = 1000;
+  const int kFramesDropped =
+      kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
+  const int kFramesPowerEfficient = 0;
+
+  // Attempt (and fail) the save.
+  SavePerfRecord(
+      kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
+      MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
+      kPlayerId);
+
+  // Verify perf history still returns is_smooth = power_efficient = true since
+  // no data was successfully saved for the given configuration.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Try again, but this time fail the "get" step of the save (we always get
+  // existing stats prior to save for UKM reporting).
+  GetFakeDB()->set_fail_next_get(true);
+
+  // Attempt (and fail) the save.
+  SavePerfRecord(
+      kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
+      MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
+      kPlayerId);
+
+  // Verify perf history still returns is_smooth = power_efficient = true since
+  // no data was successfully saved for the given configuration.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      MakeFeaturesPtr(kProfile, kSize, kFrameRate),
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Complete successful deferred DB initialization (see comment at top of test)
+  if (defer_initialize) {
+    GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     scoped_task_environment_.RunUntilIdle();
