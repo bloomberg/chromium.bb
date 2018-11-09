@@ -14,11 +14,46 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "jni/PasswordAccessoryBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
+
+using base::android::ConvertUTF16ToJavaString;
+using base::android::ScopedJavaLocalRef;
+
+namespace {
+
+ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
+    JNIEnv* env,
+    const AccessorySheetData& data) {
+  ScopedJavaLocalRef<jobject> j_data =
+      Java_PasswordAccessoryBridge_createAccessorySheetData(
+          env, ConvertUTF16ToJavaString(env, data.title()));
+
+  for (const UserInfo& user_info : data.user_info_list()) {
+    ScopedJavaLocalRef<jobject> j_user_info =
+        Java_PasswordAccessoryBridge_addUserInfoToAccessorySheetData(env,
+                                                                     j_data);
+    for (const UserInfo::Field& field : user_info.fields()) {
+      Java_PasswordAccessoryBridge_addFieldToUserInfo(
+          env, j_user_info, ConvertUTF16ToJavaString(env, field.display_text()),
+          ConvertUTF16ToJavaString(env, field.a11y_description()),
+          field.is_password(), field.selectable());
+    }
+  }
+
+  for (const FooterCommand& footer_command : data.footer_commands()) {
+    Java_PasswordAccessoryBridge_addFooterCommandToAccessorySheetData(
+        env, j_data,
+        ConvertUTF16ToJavaString(env, footer_command.display_text()));
+  }
+  return j_data;
+}
+
+}  // namespace
 
 PasswordAccessoryViewAndroid::PasswordAccessoryViewAndroid(
     PasswordAccessoryController* controller)
@@ -39,29 +74,12 @@ PasswordAccessoryViewAndroid::~PasswordAccessoryViewAndroid() {
 }
 
 void PasswordAccessoryViewAndroid::OnItemsAvailable(
-    const std::vector<AccessoryItem>& items) {
+    const AccessorySheetData& data) {
   DCHECK(!java_object_.is_null());
 
-  std::vector<base::string16> texts;
-  std::vector<base::string16> descriptions;
-  std::vector<int> password_stats;
-  std::vector<int> item_types;
-  texts.reserve(items.size());
-  descriptions.reserve(items.size());
-  password_stats.reserve(items.size());
-  item_types.reserve(items.size());
-  for (const auto& item : items) {
-    texts.emplace_back(item.text);
-    descriptions.emplace_back(item.content_description);
-    password_stats.emplace_back(item.is_password);
-    item_types.emplace_back(static_cast<int>(item.itemType));
-  }
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PasswordAccessoryBridge_onItemsAvailable(
-      env, java_object_, base::android::ToJavaArrayOfStrings(env, texts),
-      base::android::ToJavaArrayOfStrings(env, descriptions),
-      base::android::ToJavaIntArray(env, password_stats),
-      base::android::ToJavaIntArray(env, item_types));
+      env, java_object_, ConvertAccessorySheetDataToJavaObject(env, data));
 }
 
 void PasswordAccessoryViewAndroid::CloseAccessorySheet() {

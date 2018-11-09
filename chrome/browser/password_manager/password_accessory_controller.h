@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
+#include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/favicon_base/favicon_types.h"
@@ -176,10 +177,10 @@ class PasswordAccessoryController
 
   // Creates the view items based on the given |suggestions|.
   // If |is_password_field| is false, password suggestions won't be interactive.
-  static std::vector<PasswordAccessoryViewInterface::AccessoryItem>
-  CreateViewItems(const url::Origin& origin,
-                  const std::vector<SuggestionElementData>& suggestions,
-                  bool is_password_field);
+  static AccessorySheetData CreateAccessorySheetData(
+      const url::Origin& origin,
+      const std::vector<SuggestionElementData>& suggestions,
+      bool is_password_field);
 
   // Handles a favicon response requested by |GetFavicon| and calls the waiting
   // last_icon_callback_ with a (possibly empty) icon bitmap.

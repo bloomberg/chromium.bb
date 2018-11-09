@@ -4,7 +4,9 @@
 
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 
+#include <algorithm>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -20,6 +22,7 @@
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -49,8 +52,6 @@ using testing::NotNull;
 using testing::PrintToString;
 using testing::Return;
 using testing::StrictMock;
-using AccessoryItem = PasswordAccessoryViewInterface::AccessoryItem;
-using ItemType = AccessoryItem::Type;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
@@ -63,7 +64,8 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
  public:
   MockPasswordAccessoryView() = default;
 
-  MOCK_METHOD1(OnItemsAvailable, void(const std::vector<AccessoryItem>& items));
+  MOCK_METHOD1(OnItemsAvailable,
+               void(const AccessorySheetData& AccessorySheetData));
   MOCK_METHOD1(OnFillingTriggered, void(const base::string16& textToFill));
   MOCK_METHOD0(OnViewDestroyed, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
@@ -118,54 +120,55 @@ class MockPasswordGenerationDialogView
   DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationDialogView);
 };
 
-// Pretty prints input for the |MatchesItem| matcher.
-std::string PrintItem(const base::string16& text,
-                      const base::string16& description,
-                      bool is_password,
-                      ItemType type) {
-  return "has text \"" + base::UTF16ToUTF8(text) + "\" and description \"" +
-         base::UTF16ToUTF8(description) + "\" and is " +
-         (is_password ? "" : "not ") +
-         "a password "
-         "and type is " +
-         PrintToString(static_cast<int>(type));
-}
+// Helper class for AccessorySheetData objects creation.
+//
+// Example that creates a AccessorySheetData object with two UserInfo objects;
+// the former has two fields, whereas the latter has three fields:
+//   AccessorySheetData data = AccessorySheetDataBuilder(title)
+//       .AddUserInfo()
+//           .AppendField(...)
+//           .AppendField(...)
+//       .AddUserInfo()
+//           .AppendField(...)
+//           .AppendField(...)
+//           .AppendField(...)
+//       .Build();
+class AccessorySheetDataBuilder {
+ public:
+  explicit AccessorySheetDataBuilder(const base::string16& title)
+      : accessory_sheet_data_(title) {}
 
-// Compares whether a given AccessoryItem is a label with the given text.
-MATCHER_P(MatchesLabel, text, PrintItem(text, text, false, ItemType::LABEL)) {
-  return arg.text == text && arg.is_password == false &&
-         arg.content_description == text && arg.itemType == ItemType::LABEL;
-}
+  ~AccessorySheetDataBuilder() = default;
 
-// Compares whether a given AccessoryItem is a label with the given text.
-MATCHER(IsDivider, "is a divider") {
-  return arg.text.empty() && arg.is_password == false &&
-         arg.content_description.empty() && arg.itemType == ItemType::DIVIDER;
-}
+  // Adds a new UserInfo object to |accessory_sheet_data_|.
+  AccessorySheetDataBuilder& AddUserInfo() {
+    accessory_sheet_data_.add_user_info(UserInfo());
+    return *this;
+  }
 
-// Compares whether a given AccessoryItem is a label with the given text.
-MATCHER_P(MatchesOption, text, PrintItem(text, text, false, ItemType::OPTION)) {
-  return arg.text == text && arg.is_password == false &&
-         arg.content_description == text && arg.itemType == ItemType::OPTION;
-}
+  // Appends a field to the last UserInfo object.
+  AccessorySheetDataBuilder& AppendField(const base::string16& display_text,
+                                         const base::string16& a11y_description,
+                                         bool is_password,
+                                         bool selectable) {
+    accessory_sheet_data_.mutable_user_info_list().back().add_field(
+        UserInfo::Field(display_text, a11y_description, is_password,
+                        selectable));
+    return *this;
+  }
 
-// Compares whether a given AccessoryItem is a label with the given text.
-MATCHER(IsTopDivider, "is a top divider") {
-  return arg.text.empty() && arg.is_password == false &&
-         arg.content_description.empty() &&
-         arg.itemType == ItemType::TOP_DIVIDER;
-}
+  // Appends a new footer command to |accessory_sheet_data_|.
+  AccessorySheetDataBuilder& AppendFooterCommand(
+      const base::string16& display_text) {
+    accessory_sheet_data_.add_footer_command(FooterCommand(display_text));
+    return *this;
+  }
 
-// Compares whether a given AccessoryItem had the given properties.
-MATCHER_P4(MatchesItem,
-           text,
-           description,
-           is_password,
-           itemType,
-           PrintItem(text, description, is_password, itemType)) {
-  return arg.text == text && arg.is_password == is_password &&
-         arg.content_description == description && arg.itemType == itemType;
-}
+  const AccessorySheetData& Build() { return accessory_sheet_data_; }
+
+ private:
+  AccessorySheetData accessory_sheet_data_;
+};
 
 // Creates a new map entry in the |first| element of the returned pair. The
 // |second| element holds the PasswordForm that the |first| element points to.
@@ -211,6 +214,15 @@ base::string16 manage_passwords_str() {
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
 }
 
+// Creates a AccessorySheetDataBuilder object with a "Manage passwords..."
+// footer.
+AccessorySheetDataBuilder PasswordAccessorySheetDataBuilder(
+    const base::string16& title) {
+  AccessorySheetDataBuilder builder(title);
+  builder.AppendFooterCommand(manage_passwords_str());
+  return builder;
+}
+
 PasswordGenerationUIData GetTestGenerationUIData1() {
   PasswordForm form;
   form.form_data = autofill::FormData();
@@ -237,22 +249,46 @@ PasswordGenerationUIData GetTestGenerationUIData2() {
 
 }  // namespace
 
-// Automagically used to pretty-print AccessoryItems. Must be in same namespace.
-void PrintTo(const AccessoryItem& item, std::ostream* os) {
-  *os << "has text \"" << UTF16ToWide(item.text) << "\" and description \""
-      << UTF16ToWide(item.content_description) << "\" and is "
-      << (item.is_password ? "" : "not ") << "a password and type is "
-      << PrintToString(static_cast<int>(item.itemType));
+// Automagically used to pretty-print UserInfo::Field. Must be in same
+// namespace.
+void PrintTo(const UserInfo::Field& field, std::ostream* os) {
+  *os << "(display text: \"" << base::UTF16ToUTF8(field.display_text())
+      << "\", a11y_description: \""
+      << base::UTF16ToUTF8(field.a11y_description()) << "\", is "
+      << (field.is_password() ? "" : "not ") << "a password, is "
+      << (field.selectable() ? "" : "not ") << "selectable)";
 }
 
-// Automagically used to pretty-print item vectors. Must be in same namespace.
-void PrintTo(const std::vector<AccessoryItem>& items, std::ostream* os) {
-  *os << "has " << items.size() << " elements where\n";
-  for (size_t index = 0; index < items.size(); ++index) {
-    *os << "element #" << index << " ";
-    PrintTo(items[index], os);
-    *os << "\n";
+// Automagically used to pretty-print UserInfo. Must be in same namespace.
+void PrintTo(const UserInfo& user_info, std::ostream* os) {
+  *os << "[";
+  for (const UserInfo::Field& field : user_info.fields()) {
+    PrintTo(field, os);
+    *os << ", ";
   }
+  *os << "]";
+}
+
+// Automagically used to pretty-print FooterCommand. Must be in same namespace.
+void PrintTo(const FooterCommand& footer_command, std::ostream* os) {
+  *os << "(display text: \"" << base::UTF16ToUTF8(footer_command.display_text())
+      << "\")";
+}
+
+// Automagically used to pretty-print AccessorySheetData. Must be in same
+// namespace.
+void PrintTo(const AccessorySheetData& data, std::ostream* os) {
+  *os << "has title: \"" << data.title() << "\", has user info list: [";
+  for (const UserInfo& user_info : data.user_info_list()) {
+    PrintTo(user_info, os);
+    *os << ", ";
+  }
+  *os << "], has footer commands: [";
+  for (const FooterCommand& footer_command : data.footer_commands()) {
+    PrintTo(footer_command, os);
+    *os << ", ";
+  }
+  *os << "]";
 }
 
 class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
@@ -352,13 +388,14 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -371,13 +408,13 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(no_user_str(), no_user_str(), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str(no_user_str()),
-                      true, ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(no_user_str(), no_user_str(), false, false)
+              .AppendField(ASCIIToUTF16("S3cur3"),
+                           password_for_str(no_user_str()), true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -392,29 +429,29 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-
-          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-
-          MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-
-          MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
+                           false)
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
+                           false)
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
+                           false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -428,13 +465,14 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
   // Pretend that any input in the same frame was focused.
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -445,11 +483,9 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   controller()->SavePasswordsForOrigin({},
                                        url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(*view(), OnItemsAvailable(PasswordAccessorySheetDataBuilder(
+                                            passwords_empty_str(kExampleDomain))
+                                            .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -538,13 +574,14 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   // suggestion.
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -554,13 +591,14 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   // |is_password_field| set to true, all suggestions should become interactive.
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, true)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -572,13 +610,14 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -588,13 +627,14 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -608,13 +648,14 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   // suggestions.
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -622,11 +663,9 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 
   // Pretend that the focus was lost or moved to an unfillable field. Now, only
   // the empty state message should be sent.
-  EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(*view(), OnItemsAvailable(PasswordAccessorySheetDataBuilder(
+                                            passwords_empty_str(kExampleDomain))
+                                            .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
@@ -640,13 +679,14 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(ElementsAre(
-          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
-          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                      ItemType::NON_INTERACTIVE_SUGGESTION),
-          IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(
+          PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
+              .AddUserInfo()
+              .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                           false)
+              .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
+                           true, false)
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -658,10 +698,9 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
 
   // Now, only the empty state message should be sent.
   EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  IsTopDivider(),
-                  MatchesLabel(passwords_empty_str("random.other-site.org")),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+              OnItemsAvailable(PasswordAccessorySheetDataBuilder(
+                                   passwords_empty_str("random.other-site.org"))
+                                   .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://random.other-site.org/")),
       /*is_fillable=*/true,

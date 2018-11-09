@@ -11,9 +11,15 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class PasswordAccessoryBridge {
     private final KeyboardAccessoryData.PropertyProvider<Item> mItemProvider =
@@ -39,9 +45,8 @@ class PasswordAccessoryBridge {
     }
 
     @CalledByNative
-    private void onItemsAvailable(
-            String[] text, String[] description, int[] isPassword, int[] itemType) {
-        mItemProvider.notifyObservers(convertToItems(text, description, isPassword, itemType));
+    private void onItemsAvailable(Object objAccessorySheetData) {
+        mItemProvider.notifyObservers(convertToItems((AccessorySheetData) objAccessorySheetData));
     }
 
     @CalledByNative
@@ -96,47 +101,74 @@ class PasswordAccessoryBridge {
         mNativeView = 0;
     }
 
-    private Item[] convertToItems(
-            String[] text, String[] description, int[] isPassword, int[] type) {
-        Item[] items = new Item[text.length];
-        for (int i = 0; i < text.length; i++) {
-            switch (type[i]) {
-                case ItemType.LABEL:
-                    items[i] = Item.createLabel(text[i], description[i]);
-                    continue;
-                case ItemType.SUGGESTION:
-                    items[i] = Item.createSuggestion(
-                            text[i], description[i], isPassword[i] == 1, (item) -> {
-                                assert mNativeView
-                                        != 0 : "Controller was destroyed but the bridge wasn't!";
-                                KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
-                                        AccessoryTabType.PASSWORDS,
-                                        item.isPassword() ? AccessorySuggestionType.PASSWORD
-                                                          : AccessorySuggestionType.USERNAME);
-                                nativeOnFillingTriggered(
-                                        mNativeView, item.isPassword(), item.getCaption());
-                            }, this::fetchFavicon);
-                    continue;
-                case ItemType.NON_INTERACTIVE_SUGGESTION:
-                    items[i] = Item.createSuggestion(
-                            text[i], description[i], isPassword[i] == 1, null, this::fetchFavicon);
-                    continue;
-                case ItemType.DIVIDER:
-                    items[i] = Item.createDivider();
-                    continue;
-                case ItemType.OPTION:
-                    items[i] = Item.createOption(text[i], description[i], (item) -> {
+    @CalledByNative
+    private static Object createAccessorySheetData(String title) {
+        return new AccessorySheetData(title);
+    }
+
+    @CalledByNative
+    private static Object addUserInfoToAccessorySheetData(Object objAccessorySheetData) {
+        UserInfo userInfo = new UserInfo();
+        ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
+        return userInfo;
+    }
+
+    @CalledByNative
+    private static void addFieldToUserInfo(Object objUserInfo, String displayText,
+            String a11yDescription, boolean isPassword, boolean selectable) {
+        ((UserInfo) objUserInfo)
+                .getFields()
+                .add(new UserInfo.Field(displayText, a11yDescription, isPassword, selectable));
+    }
+
+    @CalledByNative
+    private static void addFooterCommandToAccessorySheetData(
+            Object objAccessorySheetData, String displayText) {
+        ((AccessorySheetData) objAccessorySheetData)
+                .getFooterCommands()
+                .add(new FooterCommand(displayText));
+    }
+
+    private Item[] convertToItems(AccessorySheetData accessorySheetData) {
+        List<Item> items = new ArrayList<>();
+
+        items.add(Item.createTopDivider());
+
+        items.add(Item.createLabel(accessorySheetData.getTitle(), accessorySheetData.getTitle()));
+
+        for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
+            for (UserInfo.Field field : userInfo.getFields()) {
+                Callback<Item> itemSelectedCallback = null;
+                if (field.isSelectable()) {
+                    // TODO(crbug.com/902425): Create the callback in addFieldToUserInfo once the
+                    //                         Item type is replaced with AccessorySheetData.
+                    itemSelectedCallback = (item) -> {
                         assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                        nativeOnOptionSelected(mNativeView, item.getCaption());
-                    });
-                    continue;
-                case ItemType.TOP_DIVIDER:
-                    items[i] = Item.createTopDivider();
-                    continue;
+                        KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
+                                AccessoryTabType.PASSWORDS,
+                                item.isPassword() ? AccessorySuggestionType.PASSWORD
+                                                  : AccessorySuggestionType.USERNAME);
+                        nativeOnFillingTriggered(mNativeView, item.isPassword(), item.getCaption());
+                    };
+                }
+                items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
+                        field.isPassword(), itemSelectedCallback, this ::fetchFavicon));
             }
-            assert false : "Cannot create item for type '" + type[i] + "'.";
         }
-        return items;
+
+        if (!accessorySheetData.getFooterCommands().isEmpty()) {
+            items.add(Item.createDivider());
+            for (FooterCommand footerCommand : accessorySheetData.getFooterCommands()) {
+                items.add(Item.createOption(
+                        footerCommand.getDisplayText(), footerCommand.getDisplayText(), (item) -> {
+                            assert mNativeView
+                                    != 0 : "Controller was destroyed but the bridge wasn't!";
+                            nativeOnOptionSelected(mNativeView, item.getCaption());
+                        }));
+            }
+        }
+
+        return items.toArray(new Item[items.size()]);
     }
 
     public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {

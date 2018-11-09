@@ -59,7 +59,7 @@ public class KeyboardAccessoryData {
 
     /**
      * Describes a tab which should be displayed as a small icon at the start of the keyboard
-     * accessory. Typically, a tab is responsible to change the bottom sheet below the accessory.
+     * accessory. Typically, a tab is responsible to change the accessory sheet below the accessory.
      */
     public final static class Tab {
         private final Drawable mIcon;
@@ -181,6 +181,9 @@ public class KeyboardAccessoryData {
     /**
      * This describes an item in a accessory sheet. They are usually list items that were created
      * natively.
+     *
+     * TODO(crbug.com/902425): Remove this class once all code in the frontend uses
+     *                         AccessorySheetData.
      */
     public final static class Item {
         private final int mType;
@@ -192,6 +195,10 @@ public class KeyboardAccessoryData {
 
         /**
          * Items will call a class that implements this interface to request a favicon.
+         *
+         * TODO(crbug.com/902425): Move this to UserInfo.Field once Item is deprecated and
+         *                         generalize it so it can handle static assets for credit card
+         *                         items.
          */
         interface FaviconProvider {
             /**
@@ -324,6 +331,155 @@ public class KeyboardAccessoryData {
                 return;
             }
             mFaviconProvider.fetchFavicon(desiredSize, faviconCallback);
+        }
+    }
+
+    /**
+     * Represents a Profile, or a Credit Card, or the credentials for a website
+     * (username + password), to be shown on the manual fallback UI.
+     */
+    public final static class UserInfo {
+        private final List<Field> mFields = new ArrayList<>();
+
+        /**
+         * Represents an item (either selectable or not) presented on the UI, such as the username
+         * or a credit card number.
+         *
+         * TODO(crbug.com/902425): Add a callback to be invoked on user tap.
+         */
+        public final static class Field {
+            private final String mDisplayText;
+            private final String mA11yDescription;
+            private final boolean mIsPassword;
+            // TODO(crbug.com/902425): Once the selection callback is added to this class, replace
+            //                         this with a check if the callback is not null.
+            private final boolean mSelectable;
+
+            /**
+             * Creates a new Field.
+             * @param displayText The text to display. Plain text if |isPassword| is false.
+             * @param a11yDescription The description used for accessibility.
+             * @param isPassword If true, the displayed caption is transformed into stars.
+             * @param selectable If true, user can interact with the suggested field.
+             */
+            public Field(String displayText, String a11yDescription, boolean isPassword,
+                    boolean selectable) {
+                mDisplayText = displayText;
+                mA11yDescription = a11yDescription;
+                mIsPassword = isPassword;
+                mSelectable = selectable;
+            }
+
+            /**
+             * Returns the text to be displayed on the UI.
+             */
+            public String getDisplayText() {
+                return mDisplayText;
+            }
+
+            /**
+             * Returns a translated description that can be used for accessibility.
+             */
+            public String getA11yDescription() {
+                return mA11yDescription;
+            }
+
+            /**
+             * Returns whether the user can interact with the selected suggestion. For example,
+             * this is false if this is a password suggestion on a non-password input field.
+             */
+            public boolean isSelectable() {
+                return mSelectable;
+            }
+
+            /**
+             * Returns whether the item (i.e. its caption) contains a password. Can be used to
+             * determine when to apply text transformations to hide passwords.
+             */
+            public boolean isPassword() {
+                return mIsPassword;
+            }
+        }
+
+        public UserInfo() {}
+
+        /**
+         * Adds a new field to the group.
+         * @param field The field to be added.
+         */
+        public void addField(Field field) {
+            mFields.add(field);
+        }
+
+        /**
+         * Returns the list of fields in this group.
+         */
+        public List<Field> getFields() {
+            return mFields;
+        }
+    }
+
+    /**
+     * Represents a command below the suggestions, such as "Manage password...".
+     */
+    public final static class FooterCommand {
+        private final String mDisplayText;
+
+        /**
+         * Creates a new FooterCommand.
+         * @param displayText The text to be displayed on the footer.
+         */
+        public FooterCommand(String displayText) {
+            mDisplayText = displayText;
+        }
+
+        /**
+         * Returns the translated text to be shown on the UI for this footer command. This text is
+         * used for accessibility.
+         */
+        public String getDisplayText() {
+            return mDisplayText;
+        }
+    }
+
+    /**
+     * Represents the contents of a accessory sheet tab below the keyboard accessory, which can
+     * correspond to passwords, credit cards, or profiles data. Created natively.
+     *
+     * TODO(crbug.com/902425): Add a field to indicate if this corresponds to password, profile, or
+     *                         credit card data.
+     */
+    public final static class AccessorySheetData {
+        private final String mTitle;
+        private final List<UserInfo> mUserInfoList = new ArrayList<>();
+        private final List<FooterCommand> mFooterCommands = new ArrayList<>();
+
+        /**
+         * Creates the AccessorySheetData object.
+         * @param title The title of accessory sheet tab.
+         */
+        public AccessorySheetData(String title) {
+            mTitle = title;
+        }
+
+        /**
+         * Returns the title of the accessory sheet. This text is also used for accessibility.
+         */
+        public String getTitle() {
+            return mTitle;
+        }
+
+        /**
+         * Returns the list of {@link UserInfo} to be shown on the accessory sheet.
+         */
+        public List<UserInfo> getUserInfoList() {
+            return mUserInfoList;
+        }
+
+        /** Returns the list of {@link FooterCommand} to be shown on the accessory sheet.
+         */
+        public List<FooterCommand> getFooterCommands() {
+            return mFooterCommands;
         }
     }
 

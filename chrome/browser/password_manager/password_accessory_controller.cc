@@ -33,7 +33,6 @@
 #include "ui/base/ui_base_features.h"
 
 using autofill::PasswordForm;
-using Item = PasswordAccessoryViewInterface::AccessoryItem;
 
 namespace {
 
@@ -69,8 +68,10 @@ struct PasswordAccessoryController::GenerationElementData {
 struct PasswordAccessoryController::SuggestionElementData {
   SuggestionElementData(base::string16 password,
                         base::string16 username,
-                        Item::Type username_type)
-      : password(password), username(username), username_type(username_type) {}
+                        bool username_selectable)
+      : password(password),
+        username(username),
+        username_selectable(username_selectable) {}
 
   // Password string to be used for this credential.
   base::string16 password;
@@ -79,7 +80,7 @@ struct PasswordAccessoryController::SuggestionElementData {
   base::string16 username;
 
   // Decides whether the username is interactive (i.e. empty ones are not).
-  Item::Type username_type;
+  bool username_selectable;
 };
 
 struct PasswordAccessoryController::FaviconRequestData {
@@ -151,7 +152,7 @@ void PasswordAccessoryController::SavePasswordsForOrigin(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
-                              Item::Type::NON_INTERACTIVE_SUGGESTION);
+                              /*username_selectable*/ false);
   }
 }
 
@@ -190,13 +191,13 @@ void PasswordAccessoryController::RefreshSuggestionsForField(
     bool is_password_field) {
   if (is_fillable) {
     current_origin_ = origin;
-    view_->OnItemsAvailable(CreateViewItems(origin, origin_suggestions_[origin],
-                                            is_password_field));
+    view_->OnItemsAvailable(CreateAccessorySheetData(
+        origin, origin_suggestions_[origin], is_password_field));
     view_->SwapSheetWithKeyboard();
   } else {
     // For unfillable fields, reset the origin and send the empty state message.
     current_origin_ = url::Origin();
-    view_->OnItemsAvailable(CreateViewItems(
+    view_->OnItemsAvailable(CreateAccessorySheetData(
         origin, std::vector<SuggestionElementData>(), is_password_field));
     view_->CloseAccessorySheet();
   }
@@ -323,50 +324,42 @@ gfx::NativeWindow PasswordAccessoryController::native_window() const {
 }
 
 // static
-std::vector<Item> PasswordAccessoryController::CreateViewItems(
+AccessorySheetData PasswordAccessoryController::CreateAccessorySheetData(
     const url::Origin& origin,
     const std::vector<SuggestionElementData>& suggestions,
     bool is_password_field) {
-  std::vector<Item> items;
-  base::string16 passwords_title_str;
-
-  // Create a horizontal divider line before the title.
-  items.emplace_back(base::string16(), base::string16(), false,
-                     Item::Type::TOP_DIVIDER);
-
   // Create the title element
-  passwords_title_str = l10n_util::GetStringFUTF16(
+  base::string16 passwords_title_str = l10n_util::GetStringFUTF16(
       suggestions.empty()
           ? IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE
           : IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE,
       base::ASCIIToUTF16(origin.host()));
-  items.emplace_back(passwords_title_str, passwords_title_str,
-                     /*is_password=*/false, Item::Type::LABEL);
+  AccessorySheetData data(passwords_title_str);
 
-  // Create a username and a password element for every suggestions
+  // Create a username and a password element for every suggestion.
   for (const SuggestionElementData& suggestion : suggestions) {
-    items.emplace_back(suggestion.username, suggestion.username,
-                       /*is_password=*/false, suggestion.username_type);
-    items.emplace_back(suggestion.password,
-                       l10n_util::GetStringFUTF16(
-                           IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION,
-                           suggestion.username),
-                       /*is_password=*/true,
-                       is_password_field
-                           ? Item::Type::SUGGESTION
-                           : Item::Type::NON_INTERACTIVE_SUGGESTION);
-  }
+    UserInfo user_info;
 
-  // Create a horizontal divider line before the options.
-  items.emplace_back(base::string16(), base::string16(), false,
-                     Item::Type::DIVIDER);
+    user_info.add_field(UserInfo::Field(
+        suggestion.username, suggestion.username, /*is_password=*/false,
+        /*selectable=*/suggestion.username_selectable));
+
+    user_info.add_field(UserInfo::Field(
+        suggestion.password,
+        l10n_util::GetStringFUTF16(
+            IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION,
+            suggestion.username),
+        /*is_password=*/true, /*selectable=*/is_password_field));
+
+    data.add_user_info(std::move(user_info));
+  }
 
   // Create the link to all passwords.
   base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
-  items.emplace_back(manage_passwords_title, manage_passwords_title, false,
-                     Item::Type::OPTION);
-  return items;
+  data.add_footer_command(FooterCommand(manage_passwords_title));
+
+  return data;
 }
 
 void PasswordAccessoryController::OnImageFetched(
