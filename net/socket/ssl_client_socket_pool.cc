@@ -429,6 +429,11 @@ int SSLConnectJob::ConnectInternal() {
   return DoLoop(OK);
 }
 
+void SSLConnectJob::ChangePriorityInternal(RequestPriority priority) {
+  if (transport_socket_handle_)
+    transport_socket_handle_->SetPriority(priority);
+}
+
 SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
     TransportClientSocketPool* transport_pool,
     SOCKSClientSocketPool* socks_pool,
