@@ -17,6 +17,8 @@
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/cfi_backtrace_android.h"
 #include "libunwind.h"
 
@@ -370,16 +372,26 @@ void StackUnwinderAndroid::Initialize() {
 
   // Parses /proc/self/maps.
   std::string contents;
-  if (!base::debug::ReadProcMaps(&contents)) {
+  if (!base::debug::ReadProcMaps(&contents))
     NOTREACHED();
-  }
-  if (!base::debug::ParseProcMaps(contents, &regions_)) {
+  std::vector<base::debug::MappedMemoryRegion> regions;
+  if (!base::debug::ParseProcMaps(contents, &regions))
     NOTREACHED();
-  }
-  std::sort(regions_.begin(), regions_.end(),
+
+  // Remove any regions mapped to art java code, so that unwinder doesn't try to
+  // walk past java frames. Walking java frames causes crashes, crbug/888434.
+  base::EraseIf(regions, [](const base::debug::MappedMemoryRegion& region) {
+    return region.path.empty() ||
+           base::EndsWith(region.path, ".art", base::CompareCase::SENSITIVE) ||
+           base::EndsWith(region.path, ".oat", base::CompareCase::SENSITIVE) ||
+           base::EndsWith(region.path, ".jar", base::CompareCase::SENSITIVE) ||
+           base::EndsWith(region.path, ".vdex", base::CompareCase::SENSITIVE);
+  });
+  std::sort(regions.begin(), regions.end(),
             [](const MappedMemoryRegion& a, const MappedMemoryRegion& b) {
               return a.start < b.start;
             });
+  regions_.swap(regions);
 }
 
 size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
