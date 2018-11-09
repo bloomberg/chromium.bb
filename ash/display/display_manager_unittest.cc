@@ -5,7 +5,6 @@
 #include "ui/display/manager/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_util.h"
@@ -3010,46 +3009,6 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
                          ->display_configuration_controller()
                          ->GetPrimaryMirroringDisplayForUnifiedDesktop()
                          .id());
-}
-
-TEST_F(DisplayManagerTest, UnifiedDesktopTabletMode) {
-  // Don't check root window destruction in unified mode.
-  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
-
-  UpdateDisplay("400x300,800x800");
-  RunAllPendingInMessageLoop();
-
-  // Set the first display as internal display so that the tablet mode can be
-  // enabled.
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetFirstDisplayAsInternalDisplay();
-
-  display_manager()->SetUnifiedDesktopEnabled(true);
-  EXPECT_TRUE(display_manager()->IsInUnifiedMode());
-
-  // Turn on tablet mode, expect that we switch to mirror mode without any
-  // crashes.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
-
-  // The Home Launcher should be created and shown, not dismissed as a result of
-  // the destruction of the Unified host when we switched to mirror mode
-  // asynchronously.
-  auto* app_list_controller = Shell::Get()->app_list_controller();
-  EXPECT_TRUE(app_list_controller->IsHomeLauncherEnabledInTabletMode());
-  EXPECT_TRUE(app_list_controller->IsVisible());
-
-  // Exiting tablet mode should exit mirror mode and return back to Unified
-  // mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(display_manager()->IsInSoftwareMirrorMode());
-  EXPECT_TRUE(display_manager()->IsInUnifiedMode());
-
-  // Home Launcher should be dismissed.
-  EXPECT_FALSE(app_list_controller->IsHomeLauncherEnabledInTabletMode());
-  EXPECT_FALSE(app_list_controller->IsVisible());
 }
 
 TEST_F(DisplayManagerTest, DockMode) {
