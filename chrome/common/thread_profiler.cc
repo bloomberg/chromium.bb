@@ -15,12 +15,14 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/stack_sampling_configuration.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
 using LegacyCallStackProfileBuilder = metrics::LegacyCallStackProfileBuilder;
 using StackSamplingProfiler = base::StackSamplingProfiler;
@@ -151,8 +153,8 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
 void ThreadProfiler::SetBrowserProcessReceiverCallback(
     const base::RepeatingCallback<void(base::TimeTicks,
                                        metrics::SampledProfile)>& callback) {
-  metrics::LegacyCallStackProfileBuilder::SetBrowserProcessReceiverCallback(
-      callback);
+  LegacyCallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
+  CallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
 }
 
 // static
