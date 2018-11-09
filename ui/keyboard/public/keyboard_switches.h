@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_KEYBOARD_KEYBOARD_SWITCHES_H_
-#define UI_KEYBOARD_KEYBOARD_SWITCHES_H_
+#ifndef UI_KEYBOARD_PUBLIC_KEYBOARD_SWITCHES_H_
+#define UI_KEYBOARD_PUBLIC_KEYBOARD_SWITCHES_H_
 
 #include "ui/keyboard/keyboard_export.h"
 
@@ -41,4 +41,4 @@ KEYBOARD_EXPORT extern const char kDisableVirtualKeyboardOverscroll[];
 }  // namespace switches
 }  // namespace keyboard
 
-#endif  //  UI_KEYBOARD_KEYBOARD_SWITCHES_H_
+#endif  //  UI_KEYBOARD_PUBLIC_KEYBOARD_SWITCHES_H_

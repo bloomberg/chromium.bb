@@ -16,8 +16,8 @@
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/public/keyboard_switches.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace keyboard {

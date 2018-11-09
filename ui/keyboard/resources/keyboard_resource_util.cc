@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/keyboard/keyboard_resource_util.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 #include "base/files/file_path.h"
 #include "base/macros.h"

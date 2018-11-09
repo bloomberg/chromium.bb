@@ -22,9 +22,9 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/public/keyboard_switches.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace {

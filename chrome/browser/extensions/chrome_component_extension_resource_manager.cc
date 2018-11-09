@@ -16,7 +16,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#include "ui/keyboard/keyboard_resource_util.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 #endif
 
 namespace extensions {
