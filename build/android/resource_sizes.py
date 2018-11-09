@@ -528,7 +528,13 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
         apk_filename, arsc.GetNumEntries(), num_arsc_translations, out_dir))
 
   yield ('Specifics', 'normalized apk size', normalized_apk_size, 'bytes')
-  yield ('Specifics', 'file count', len(apk_contents), 'zip entries')
+  # The "file count" metric cannot be grouped with any other metrics when the
+  # end result is going to be uploaded to the perf dashboard in the HistogramSet
+  # format due to mixed units (bytes vs. zip entries) causing malformed
+  # summaries to be generated.
+  # TODO(https://crbug.com/903970): Remove this workaround if unit mixing is
+  # ever supported.
+  yield ('FileCount', 'file count', len(apk_contents), 'zip entries')
 
   if unknown_handler is not None:
     for info in unknown.AllEntries():
