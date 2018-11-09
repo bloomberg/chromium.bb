@@ -97,13 +97,13 @@ void VideoFrameSubmitter::StopUsingProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   if (is_rendering_)
     StopRendering();
-  provider_ = nullptr;
+  video_frame_provider_ = nullptr;
 }
 
 void VideoFrameSubmitter::StopRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK(is_rendering_);
-  DCHECK(provider_);
+  DCHECK(video_frame_provider_);
 
   is_rendering_ = false;
   UpdateSubmissionStateInternal();
@@ -112,19 +112,23 @@ void VideoFrameSubmitter::StopRendering() {
 void VideoFrameSubmitter::SubmitSingleFrame() {
   // If we haven't gotten a valid result yet from |context_provider_callback_|
   // |resource_provider_| will remain uninitalized.
-  if (!resource_provider_->IsInitialized())
+  // |video_frame_provider_| may be null if StopUsingProvider has been called,
+  // which could happen if the |video_frame_provider_| is destructing while we
+  // are waiting for the ContextProvider.
+  if (!resource_provider_->IsInitialized() || !video_frame_provider_)
     return;
 
   viz::BeginFrameAck current_begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
-  scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame =
+      video_frame_provider_->GetCurrentFrame();
   if (video_frame) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&VideoFrameSubmitter::SubmitFrame),
                        weak_ptr_factory_.GetWeakPtr(), current_begin_frame_ack,
                        video_frame));
-    provider_->PutCurrentFrame();
+    video_frame_provider_->PutCurrentFrame();
   }
 }
 
@@ -141,7 +145,7 @@ bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
 
 void VideoFrameSubmitter::DidReceiveFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(provider_);
+  DCHECK(video_frame_provider_);
 
   // DidReceiveFrame is called before renderering has started, as a part of
   // PaintSingleFrame.
@@ -162,8 +166,8 @@ void VideoFrameSubmitter::StartRendering() {
 void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   if (provider) {
-    DCHECK(!provider_);
-    provider_ = provider;
+    DCHECK(!video_frame_provider_);
+    video_frame_provider_ = provider;
     context_provider_callback_.Run(
         nullptr, base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -318,14 +322,15 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
   // frame yet.  That probably signals a dropped frame, and this will let the
   // provider know that it happened, since we won't PutCurrentFrame this one.
   // Note that we should DidNotProduceFrame with or without the ack.
-  if (!provider_ ||
-      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
-                                     args.frame_time + 2 * args.interval)) {
+  if (!video_frame_provider_ || !video_frame_provider_->UpdateCurrentFrame(
+                                    args.frame_time + args.interval,
+                                    args.frame_time + 2 * args.interval)) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
 
-  scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame =
+      video_frame_provider_->GetCurrentFrame();
 
   // We do have a new frame that we could display.  See if we're supposed to
   // actually submit a frame or not, and try to submit one.
@@ -341,7 +346,7 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
   // lines up with the correct frame.  Otherwise, any intervening calls to
   // OnBeginFrame => UpdateCurrentFrame will cause the put to signal that the
   // later frame was displayed.
-  provider_->PutCurrentFrame();
+  video_frame_provider_->PutCurrentFrame();
 }
 
 void VideoFrameSubmitter::OnContextLost() {

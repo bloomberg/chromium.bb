@@ -43,7 +43,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   ~VideoFrameSubmitter() override;
 
   bool Rendering() { return is_rendering_; }
-  cc::VideoFrameProvider* Provider() { return provider_; }
+  cc::VideoFrameProvider* Provider() { return video_frame_provider_; }
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient>* Binding() {
     return &binding_;
   }
@@ -101,6 +101,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
                            SetForceSubmitForcesSubmission);
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
                            FrameSizeChangeUpdatesLocalSurfaceId);
+  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
+                           StopUsingProviderDuringContextLost);
 
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
@@ -118,7 +120,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // state.
   bool ShouldSubmit() const;
 
-  cc::VideoFrameProvider* provider_ = nullptr;
+  cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   scoped_refptr<viz::ContextProvider> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
