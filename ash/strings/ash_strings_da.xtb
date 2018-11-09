@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
+<translation id="2302092602801625023">Denne konto administreres af Family Link</translation>
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
 <translation id="2339073806695260576">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge lasermarkøren og luppen.</translation>
 <translation id="2341729377289034582">Altid lodret</translation>
@@ -140,6 +141,7 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
+<translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3255483164551725916">Hvad kan du gøre?</translation>
@@ -171,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Højttaler (indbygget)</translation>
+<translation id="3799080171973636491">Du trykkede på tastaturgenvejen for forstørrelse af fuld skærm. Vil du aktivere indstillingen?</translation>
 <translation id="380165613292957338">Hej, hvad kan jeg hjælpe med?</translation>
 <translation id="383629559565718788">Vis tastaturindstillinger</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
@@ -195,12 +198,14 @@
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Du trykkede på tastaturgenvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Forstørrelsesglas</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
 <translation id="435527878592612277">Vælg dit billede</translation>
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4379531060876907730">Dette er dine penneværktøjer</translation>
+<translation id="4389184120735010762">Du trykkede på tastaturgenvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
@@ -216,7 +221,6 @@
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4734965478015604180">Vandret</translation>
-<translation id="476166673298332917">Administratoren af denne enhed har adgang til al aktivitet, herunder adgangskoder og kommunikation.</translation>
 <translation id="4774338217796918551">Kom tilbage i morgen kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
@@ -391,6 +395,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7886169021410746335">Juster privatlivsindstillinger</translation>
 <translation id="7886277072580235377">Din internetsession ryddes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send en mail</translation>
+<translation id="7897375687985782769">Du trykkede på tastaturgenvejen for skærmrotation. Vil du rotere skærmen?</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -456,6 +461,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8921624153894383499">Google-assistenten taler ikke dette sprog.</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> anvendes</translation>
 <translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre underretningshandlingen</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>

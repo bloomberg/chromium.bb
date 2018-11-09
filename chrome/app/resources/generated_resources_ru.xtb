@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Настройки синхронизации и персонализации</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1399511500114202393">Не использовать сертификат пользователя</translation>
-<translation id="140250605646987970">Телефон обнаружен. К сожалению, функция Smart Lock доступна только на устройствах с Android 5.0 и следующих версий. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (контролируемый профиль)</translation>
 <translation id="1406500794671479665">Проверка…</translation>
 <translation id="1407489512183974736">Кадрировать и выровнять по центру</translation>
@@ -537,7 +536,6 @@
 <translation id="1769104665586091481">Открыть ссылку в новом окне</translation>
 <translation id="1773212559869067373">Сертификат аутентификации отклонен локально</translation>
 <translation id="177336675152937177">Данные размещаемых приложений</translation>
-<translation id="1774349594977710164">С помощью этого телефона вы сможете снимать блокировку всех своих устройств <ph name="DEVICE_TYPE" />, поскольку они синхронизируются автоматически.</translation>
 <translation id="1774833706453699074">Добавить все вкладки в закладки...</translation>
 <translation id="1775381402323441512">Информация о видео</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -566,7 +564,6 @@
 <translation id="1815579292149538864">Настройка принтеров CUPS</translation>
 <translation id="181577467034453336">Ещё <ph name="NUMBER_OF_VIEWS" /></translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Эти файлы являются временными и могут быть автоматически удалены, чтобы освободить место на диске. <ph name="BEGIN_LINK" />Подробнее...<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Настройте Smart Lock для устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Восстановление файлов Microsoft</translation>
 <translation id="1818007989243628752">Удалить пароль пользователя <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Журнал загружается.</translation>
@@ -678,7 +675,6 @@
 <translation id="1976323404609382849">Файлы cookie с различных сайтов заблокированы.</translation>
 <translation id="1977965994116744507">Чтобы снять блокировку, поднесите телефон ближе к устройству <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Вы переходите на канал обновления с более ранней версией <ph name="PRODUCT_NAME" />. Чтобы изменения вступили в силу, версия канала и текущая версия на вашем устройстве должны совпадать.</translation>
-<translation id="1981115145845865539">Снимайте блокировку устройства <ph name="DEVICE_TYPE" /> автоматически</translation>
 <translation id="1983959805486816857">Создав контролируемый профиль, вы можете управлять его настройками с любого устройства на странице <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Аккаунты</translation>
 <translation id="1989112275319619282">Выбрать</translation>
@@ -982,7 +978,6 @@
 <translation id="2462752602710430187">Добавлен принтер <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP-прокси</translation>
 <translation id="2468205691404969808">Использовать файлы cookie, чтобы запомнить ваши предпочтения, даже если вы не открываете эти страницы</translation>
-<translation id="2468902267404883140">Не удалось подключиться к телефону. Убедитесь, что вы используете совместимое устройство Android, которое включено и находится поблизости. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL общей папки</translation>
 <translation id="2470702053775288986">Неподдерживаемые расширения отключены</translation>
 <translation id="2473195200299095979">Перевести эту страницу</translation>
@@ -995,7 +990,6 @@
 <translation id="2484959914739448251">Чтобы удалить данные о работе в браузере со всех синхронизированных устройств и из аккаунта Google, <ph name="BEGIN_LINK" />введите кодовую фразу<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2487067538648443797">Новая закладка</translation>
-<translation id="248861575772995840">Телефон не обнаружен. Убедитесь, что на устройстве <ph name="DEVICE_TYPE" /> включен Bluetooth. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Добавить &amp;папку</translation>
 <translation id="249113932447298600">Устройство <ph name="DEVICE_LABEL" /> не поддерживается.</translation>
 <translation id="249303669840926644">Не удалось завершить регистрацию</translation>
@@ -1054,7 +1048,6 @@
 <translation id="257088987046510401">Темы</translation>
 <translation id="2572032849266859634">Предоставлен доступ к тому <ph name="VOLUME_NAME" /> (только чтение).</translation>
 <translation id="2575247648642144396">Значок будет отображаться, если расширение может работать на загруженной странице. Активируйте его, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Телефон не обнаружен. Убедитесь, что устройство <ph name="DEVICE_TYPE" /> подключено к Wi-Fi или к мобильной сети. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="257779572837908839">Использовать в качестве Chromebox для видеоконференций</translation>
 <translation id="2579575372772932244">Профиль восстанавливается...</translation>
 <translation id="2580889980133367162">Всегда разрешать <ph name="HOST" /> скачивать нескольких файлов</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Автоматически регистрировать нажатие кнопки мыши, когда указатель останавливается</translation>
 <translation id="2735712963799620190">Расписание</translation>
 <translation id="2737363922397526254">Свернуть...</translation>
-<translation id="2737492745329609575">Настроить</translation>
 <translation id="2738771556149464852">Не позже</translation>
 <translation id="2739191690716947896">Отладка</translation>
 <translation id="2739240477418971307">Изменение настроек специальных возможностей</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489">Не удалось сохранить резервную копию файла "<ph name="FILE_NAME" />"</translation>
 <translation id="299483336428448530">Установлено родителями</translation>
 <translation id="2996286169319737844">Данные зашифрованы с помощью кодовой фразы. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
-<translation id="3002017044809397427">Устройство <ph name="PHONE_TYPE" /> найдено. К сожалению, функция Smart Lock доступна только на устройствах с Android 5.0 и следующих версий. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Предпочитаемые сети</translation>
 <translation id="3003623123441819449">Кеш CSS</translation>
 <translation id="3003633581067744647">Показать в виде уменьшенных изображений</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">Выберите корневой каталог упаковываемого расширения. Для обновления расширения также укажите закрытый ключ.</translation>
 <translation id="3244294424315804309">Не включать звук</translation>
 <translation id="3245321423178950146">Неизвестный исполнитель</translation>
-<translation id="3246097286174000800">Настроить Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" />: ошибка сети</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Не является частью сертификата&gt;</translation>
@@ -1559,7 +1549,6 @@
 <translation id="3355936511340229503">Ошибка подключения</translation>
 <translation id="3356580349448036450">Готово</translation>
 <translation id="3356797067524893661">Все готово! Можно возвращаться в Hangouts Meet.</translation>
-<translation id="3358935496594837302">Телефон не обнаружен. Убедитесь, что вы используете совместимое устройство Android, которое включено и находится поблизости. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Ограничения политики сертификатов</translation>
 <translation id="3360297538363969800">Не удалось распечатать документ. Проверьте, всё ли в порядке с принтером, и повторите попытку.</translation>
 <translation id="3365598184818502391">Необходимо использовать Ctrl или Alt</translation>
@@ -1909,7 +1898,6 @@
 <translation id="3855441664322950881">Упаковать расширение</translation>
 <translation id="3855676282923585394">Импорт закладок и настроек...</translation>
 <translation id="3856800405688283469">Выберите часовой пояс</translation>
-<translation id="3857228364945137633">Благодаря Smart Lock вам не придется вводить пароль. Снимайте блокировку устройства <ph name="DEVICE_TYPE" /> с помощью телефона.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Коснитесь несколько раз</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: синхронизация приостановлена</translation>
@@ -2036,7 +2024,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Закрыть страницу}one{Закрыть страницы}few{Закрыть страницы}many{Закрыть страницы}other{Закрыть страницы}}</translation>
 <translation id="4044612648082411741">Введите пароль сертификата</translation>
 <translation id="404493185430269859">Поисковая система по умолчанию</translation>
-<translation id="4047112090469382184">Почему это безопасно?</translation>
 <translation id="4052120076834320548">Мелкий</translation>
 <translation id="4055023634561256217">Необходимо перезагрузить устройство, прежде чем восстанавливать заводские настройки с помощью Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Проверить документ</translation>
 <translation id="406070391919917862">Фоновые приложения</translation>
-<translation id="4063283930106169759">Телефон должен находиться поблизости. Все устройства, связанные с вашим аккаунтом, будут подключены к нему через Bluetooth. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Возможно, вам нужно перейти на страницу входа сети <ph name="NETWORK_ID" />.</translation>
 <translation id="4068506536726151626">Эта страница содержит элементы со следующих сайтов, которые отслеживают ваше местоположение:</translation>
 <translation id="4068776064906523561">Сохраненные отпечатки пальцев</translation>
@@ -2398,7 +2384,6 @@
 <translation id="4672657274720418656">Сжать страницу</translation>
 <translation id="4673442866648850031">Оставлять открытыми инструменты стилуса при его извлечении</translation>
 <translation id="4677585247300749148">Сайт <ph name="URL" /> запрашивает доступ к специальным возможностям.</translation>
-<translation id="4677692029604506169">Для безопасной работы с устройством <ph name="DEVICE_TYPE" /> включите блокировку экрана на телефоне (PIN-код, графический ключ или пароль). Если она уже установлена, нажмите "Проверить снова", чтобы продолжить настройку.</translation>
 <translation id="4677772697204437347">Память GPU</translation>
 <translation id="4680105648806843642">Звук на этой странице был отключен</translation>
 <translation id="4681930562518940301">Открыть оригинальное изображение в новой вкладке</translation>
@@ -2734,7 +2719,6 @@
 <translation id="5184063094292164363">Консоль &amp;JavaScript</translation>
 <translation id="5184662919967270437">Обновление операционной системы…</translation>
 <translation id="5185386675596372454">Новая версия "<ph name="EXTENSION_NAME" />" была отключена, так как для нее требуются дополнительные разрешения.</translation>
-<translation id="5186650237607254032">Вы можете настроить блокировку экрана так, чтобы она отключалась в вашем присутствии. Это сбережет ваше время и улучшит работу функции Smart Lock на устройстве <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Вы вошли в <ph name="SHORT_PRODUCT_NAME" />. Ваши закладки, история и другие настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Сбросьте настройки устройства и повторите попытку.</translation>
@@ -3165,7 +3149,6 @@
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5805697420284793859">Менеджер окон</translation>
 <translation id="580571955903695899">Упорядочить по заголовкам</translation>
-<translation id="5807290661599647102">Включить блокировку экрана</translation>
 <translation id="5811750797187914944">Готово</translation>
 <translation id="5814126672212206791">Тип подключения</translation>
 <translation id="5815645614496570556">Адрес X.400</translation>
@@ -3538,7 +3521,6 @@
 <translation id="6370021412472292592">Не удалось загрузить манифест.</translation>
 <translation id="637062427944097960">Этот файл открыт на другом рабочем столе. Чтобы увидеть его, переключитесь на профиль пользователя <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Настроить Smart Lock для Android</translation>
 <translation id="6374469231428023295">Повторить</translation>
 <translation id="6380143666419481200">Принять условия и продолжить</translation>
 <translation id="6384275966486438344">Использование поисковой системы <ph name="SEARCH_HOST" /></translation>
@@ -3958,7 +3940,6 @@
 <translation id="7027125358315426638">Название базы данных:</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031962166228839643">Выполняется подготовка доверенного платформенного модуля (может занять несколько минут)...</translation>
-<translation id="7035437538340499453">Функция Smart Lock настроена</translation>
 <translation id="7037509989619051237">Образец голоса</translation>
 <translation id="7039326228527141150">Доступ к USB-устройствам от <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Вход по смарт-карте Microsoft</translation>
@@ -4760,7 +4741,6 @@
 <translation id="8227119283605456246">Прикрепить файл</translation>
 <translation id="8230134520748321204">Сохранить пароль для <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Чтобы нашим разработчикам было проще решить проблему, опишите, что произошло перед появлением сообщения об ошибке в профиле:</translation>
-<translation id="8234989666557591529">Выберите телефон для разблокировки устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Тучка</translation>
 <translation id="8241806945692107836">Определение конфигурации устройства…</translation>
 <translation id="8241868517363889229">Просмотр и изменение закладок</translation>
@@ -4852,10 +4832,8 @@
 <translation id="8395901698320285466">Размеры</translation>
 <translation id="8396532978067103567">Неверный пароль.</translation>
 <translation id="839736845446313156">Регистрация</translation>
-<translation id="8398790343843005537">Найти телефон</translation>
 <translation id="8398877366907290961">Продолжить все равно</translation>
 <translation id="8400146488506985033">Управлять пользователями</translation>
-<translation id="8410073653152358832">Использовать этот телефон</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Всегда спрашивать (рекомендуется)</translation>
 <translation id="8418445294933751433">&amp;Показать как вкладку</translation>
@@ -4933,7 +4911,6 @@
 <translation id="8525306231823319788">Полноэкранный режим</translation>
 <translation id="8528074251912154910">Добавить языки</translation>
 <translation id="8528962588711550376">Выполняется вход.</translation>
-<translation id="8529026713753283969">Не убирайте телефон. Вы получите на него уведомление.</translation>
 <translation id="8529925957403338845">Нет подключения к мгновенной точке доступа</translation>
 <translation id="8534656636775144800">Произошла ошибка при подключении к домену. Повторите попытку.</translation>
 <translation id="8535005006684281994">URL обновления сертификатов Netscape</translation>
@@ -5237,14 +5214,12 @@
 <translation id="8995603266996330174">В домене <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Добавить аккаунт</translation>
 <translation id="9003647077635673607">Разрешить на всех сайтах</translation>
-<translation id="9003677638446136377">Проверить снова</translation>
 <translation id="9003704114456258138">Частота</translation>
 <translation id="9004952710076978168">Получено уведомление о неопознанном принтере.</translation>
 <translation id="9008201768610948239">Пропустить</translation>
 <translation id="9009369504041480176">Загрузка (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Всегда показывать значок</translation>
 <translation id="9013707997379828817">Администратор вернул устройство к прежней версии системы. Сохраните все важные файлы и перезапустите устройство. При этом все данные будут удалены.</translation>
-<translation id="9014987600015527693">Другой телефон</translation>
 <translation id="9018218886431812662">Установка завершена</translation>
 <translation id="901834265349196618">электронная почта</translation>
 <translation id="9019062154811256702">Чтение и изменение настроек автозаполнения</translation>
@@ -5340,7 +5315,6 @@
 <translation id="9147304170847707004">Метод аутентификации</translation>
 <translation id="9147392381910171771">&amp;Параметры</translation>
 <translation id="9148058034647219655">Выйти</translation>
-<translation id="9148116311817999634">Включите блокировку экрана для обеспечения безопасности</translation>
 <translation id="9148126808321036104">Повторите вход</translation>
 <translation id="9149866541089851383">Изменить...</translation>
 <translation id="9150045010208374699">Использование камеры</translation>

@@ -139,6 +139,7 @@
 <translation id="1787142507584202372">Avoimet välilehdet näkyvät tässä.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kortinhaltijan nimi</translation>
+<translation id="1809549658008855907">Tallennetaanko kortit Google-tilillesi?</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
 <translation id="1826516787628120939">Tarkistetaan</translation>
 <translation id="1834321415901700177">Tämä sivusto sisältää haitallisia ohjelmia</translation>
@@ -728,6 +729,7 @@
 <translation id="5922853866070715753">Lähes valmis</translation>
 <translation id="5932224571077948991">Sivustolla on häiritseviä tai harhaanjohtavia mainoksia</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
+<translation id="5946937721014915347">Avataan <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Liittyminen kuluttajatilillä ei onnistu (pakettilisenssi saatavilla).</translation>
 <translation id="5966151627327109289">Tämä kirjaa sinut ulos useimmilta sivustoilta. Saatat menettää suojatun sisällön (esim. <ph name="SITE" />) käyttöoikeuden.</translation>
 <translation id="5967592137238574583">Muokkaa yhteystietoja</translation>
@@ -1102,6 +1104,7 @@ Lisätietoja:
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
 <translation id="8557066899867184262">CVC sijaitsee kortin takapuolella.</translation>
 <translation id="8559762987265718583">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
+<translation id="8562974682002272877">Selvä, haluat ilmeisesti tehdä tämän itse etkä tarvitse apua.</translation>
 <translation id="8564985650692024650">Chromium suosittelee organisaation <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> salasanasi vaihtamista, jos olet käyttänyt sitä myös muilla sivustoilla.</translation>
 <translation id="8571890674111243710">Käännetään sivua kielelle <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Lisää puh.nro
@@ -1201,6 +1204,7 @@ Lisätietoja:
 <translation id="935608979562296692">TYHJENNÄ LOMAKE</translation>
 <translation id="936602727769022409">Saatat menettää Google-tilisi käyttöoikeuden. Chromium suosittelee vaihtamaan salasanan nyt. Sinua pyydetään kirjautumaan sisään.</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
+<translation id="945855313015696284">Tarkista tiedot alta ja poista virheelliset kortit.</translation>
 <translation id="951104842009476243">Hyväksytyt maksu- ja prepaid-kortit</translation>
 <translation id="962484866189421427">Tämä sisältö voi yrittää asentaa petollisia sovelluksia, jotka esiintyvät jonakin muuna tai keräävät tietoja, joilla sinua voidaan seurata. <ph name="BEGIN_LINK" />Näytä silti<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Virallinen koontiversio</translation>

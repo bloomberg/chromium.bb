@@ -139,6 +139,7 @@
 <translation id="1787142507584202372">Dine åbne faner vises her</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kortindehaverens navn</translation>
+<translation id="1809549658008855907">Vil du gemme kort på din Google-konto?</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette website indeholder skadelige programmer</translation>
@@ -727,6 +728,7 @@
 <translation id="5922853866070715753">Næsten færdig</translation>
 <translation id="5932224571077948991">Websitet viser påtrængende eller vildledende annoncer</translation>
 <translation id="5939518447894949180">Nulstil</translation>
+<translation id="5946937721014915347">Åbner <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Det er ikke muligt at tilmelde sig med en forbrugerkonto (mulighed for tilknyttet licens ).</translation>
 <translation id="5966151627327109289">Logger dig ud af de fleste websites. Du mister muligvis adgang til beskyttet indhold fra <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="5967592137238574583">Rediger kontaktoplysninger</translation>
@@ -1101,6 +1103,7 @@ Yderligere oplysninger:
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
 <translation id="8557066899867184262">Kontrolkoden findes på bagsiden af kortet.</translation>
 <translation id="8559762987265718583">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da tid og dato (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
+<translation id="8562974682002272877">Det lader til, at du helst selv vil klare udfyldningen. Du er velkommen til at fortsætte uden min hjælp.</translation>
 <translation id="8564985650692024650">Chromium anbefaler, at du nulstiller din adgangskode til <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, hvis du har brugt den på andre websites.</translation>
 <translation id="8571890674111243710">Oversætter siden til <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Tilføj tlf.nr.
@@ -1200,6 +1203,7 @@ Yderligere oplysninger:
 <translation id="935608979562296692">RYD FORMULAREN</translation>
 <translation id="936602727769022409">Du kan miste adgangen til din Google-konto. Chromium anbefaler, at du skifter din adgangskode nu. Du bliver bedt om at logge ind.</translation>
 <translation id="939736085109172342">Ny mappe</translation>
+<translation id="945855313015696284">Se oplysningerne nedenfor, og slet eventuelle ugyldige kort</translation>
 <translation id="951104842009476243">Accepterede betalingskort og forudbetalte kort</translation>
 <translation id="962484866189421427">Dette indhold kan forsøge at installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Officiel version</translation>

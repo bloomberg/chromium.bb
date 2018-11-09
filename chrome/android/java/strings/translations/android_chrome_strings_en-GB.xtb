@@ -170,6 +170,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">Automate</translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sends some system information and page content to Google</translation>
 <translation id="2234876718134438132">Sync and Google services</translation>
@@ -240,6 +241,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
 <translation id="2781151931089541271">1 sec left</translation>
+<translation id="2783359740176230170">Fast checkout</translation>
 <translation id="2803478378562657435">Showing saved passwords and password options</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
@@ -362,6 +364,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3868004864571585162">Cookies, media licences and site data</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
+<translation id="3918221729963301892">Don't display again</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combine my data</translation>
 <translation id="393697183122708255">No enabled voice search available</translation>
@@ -507,6 +510,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
+<translation id="4961107849584082341">Translate this page to any language</translation>
 <translation id="4961334780091921942">Your passwords, history &amp; more on all devices</translation>
 <translation id="4961700429721424617">You are signing out of an account managed by <ph name="MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
 <translation id="497421865427891073">go forward</translation>
@@ -544,6 +548,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5240817131241497236">The settings that control sync, personalisation and other Google services in Chrome have changed. This may affect your current settings.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /> can be customised at any time. Google may use content on sites that you visit, plus browser activity and interactions, to personalise Chrome and other Google services such as Translate, Search and ads.</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
+<translation id="5274381992091475657">Auto-fill Assistant</translation>
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="5284584623296338184">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.</translation>
 <translation id="5300589172476337783">Show</translation>
@@ -611,6 +616,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5689516760719285838">Location</translation>
+<translation id="569536719314091526">Translate this page to any language from the More options button</translation>
 <translation id="5719837394786370183">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your incognito tabs. Any files that you download or bookmarks that you create will be kept.
 
 However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites you visit.</translation>
@@ -652,6 +658,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="6000066717592683814">Keep Google</translation>
+<translation id="6001839398155993679">Let's go</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -826,6 +833,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
+<translation id="728491846437309531">Google Assistant can help you get things done faster and easier on the web</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>

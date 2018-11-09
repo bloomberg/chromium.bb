@@ -114,6 +114,15 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
+<translation id="1297117713060236551">Politikken styrer listen over websites, der aldrig skal medføre et browserskift.
+
+      Bemærk, at elementerne også kan føjes til denne liste via politikken <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+
+      Hvis politikken ikke konfigureres, føjes der ikke nogen websites til listen.
+
+      Hvis politikken er konfigureret, behandles hvert element som en regel på samme måde som politikken <ph name="URL_LIST_POLICY_NAME" />. Logikken er dog omvendt: Regler, der matcher, åbner ikke en alternativ browser.
+
+      I modsætning til <ph name="URL_LIST_POLICY_NAME" /> gælder regler for begge retninger. Når Internet Explorer-tilføjelsen er til stede og aktiveret, styrer den dermed også, om <ph name="IE_PRODUCT_NAME" /> skal åbne disse webadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
 <translation id="1307454923744766368">Kilder eller mønstre for hostname, hvor begrænsninger på usikre kilder ikke bør anvendes</translation>
@@ -202,6 +211,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1509692106376861764">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1514888685242892912">Aktivér <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Tillad, at websites registrerer brugernes fysiske placering</translation>
+<translation id="1523774894176285446">Alternative browsere, der skal åbnes for konfigurerede websites.</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
 <translation id="1541170838458414064">Begræns størrelsen på udskriftsiden</translation>
@@ -212,6 +222,12 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan
       virksomhedsbrugere ikke bruge ARC.</translation>
+<translation id="1559980755219453326">Politikken styrer, om der skal rapporteres oplysninger om udvidelser og plugins.
+
+      Hvis politikken er angivet som Sand eller ikke er konfigureret, indsamles der data om udvidelser og plugins.
+      Hvis politikken er angivet som Falsk, indsamles der ikke data om udvidelser og plugins.
+
+      Politikken gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1561967320164410511">U2F samt udvidelser til individuel attestering</translation>
 <translation id="1574554504290354326">Denne indstilling er forældet. Brug SafeBrowsingExtendedReportingEnabled i stedet. Aktivering eller deaktivering af SafeBrowsingExtendedReportingEnabled svarer til at angive SafeBrowsingExtendedReportingOptInAllowed som Falsk.
@@ -379,6 +395,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2082205219176343977">Konfigurer den Chrome-version, der som minimum påkræves for enheden.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering af brugs- og nedbrudsrelaterede data</translation>
+<translation id="2104418465060359056">Rapportér oplysninger om udvidelser og plugins</translation>
 <translation id="2111016292707172233">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne indstilling, er "Tryk for at søge" tilgængelig for brugerne, og de kan vælge at slå funktionen til eller fra.
@@ -564,6 +581,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="253135976343875019">Advarsel om inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2536525645274582300">Brugeren beslutter, om Googles placeringstjenester skal aktiveres</translation>
 <translation id="254653220329944566">Aktiverer <ph name="PRODUCT_NAME" />-rapportering i skyen</translation>
+<translation id="2548572254685798999">Rapportér oplysninger om Beskyttet browsing</translation>
 <translation id="2550593661567988768">Kun simplex-udskrivning</translation>
 <translation id="2552966063069741410">Tidszone</translation>
 <translation id="2562339630163277285">Angiver webadressen for den søgemaskine, der bruges til at give direkte resultater. Webadressen skal indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som på forespørgselstidspunktet erstattes af den tekst, som brugeren har indtastet hidtil.
@@ -624,6 +642,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis politikken ikke konfigureres, tillades den som standard ikke for administrerede brugere, mens den som standard tillades for ikke-administrerede brugere.</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
+<translation id="2663739737868438950">
+      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
+      Hvis politikken er aktiveret, kører hvert website sin egen proces.
+      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere SitePerProcess manuelt via kommandolinjerapportering.
+      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
+      </translation>
 <translation id="2672012807430078509">Styrer aktivering af NTLM som en godkendelsesprotokol for anvendelse af SMB</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
@@ -748,6 +773,17 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3038323923255997294">Fortsætter med at køre baggrundsapps, når <ph name="PRODUCT_NAME" /> er lukket</translation>
 <translation id="3046192273793919231">Send netværkspakker til administratorserveren for at overvåge onlinestatus</translation>
 <translation id="3047732214002457234">Styr, hvordan Chrome-oprydning rapporterer data til Google</translation>
+<translation id="304775240152542058">Politikken styrer kommandolinjeparametre, der skal åbnes i den alternative browser.
+
+      Hvis politikken ikke konfigureres, er det kun webadressen der passeres som en kommandolinjeparameter.
+
+      Hvis politikken er konfigureret med en liste over strenge, passeres hver streng til den alternative browser som en separat kommandolinjeparameter. I Windows tilknyttes parametre med mellemrum. I Mac OS X og Linux kan en parameter indeholde mellemrum og stadig blive behandlet som en enkelt parameter.
+
+      Hvis et element indeholder ${url}, erstattes det med webadressen til den side, der skal åbnes.
+
+      Hvis intet element indeholder ${url}, tilføjes webadressen i slutningen af kommandolinjen.
+
+      Variabler for miljøet udvides. I Windows erstattes %ABC% med variabelværdien for ABC-miljøet. I Mac OS X og Linux erstattes ${ABC} med variabelværdien for ABC-miljøet.</translation>
 <translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgetermerkene og søgemaskinen i stedet for kun søgewebadressen.
 
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
@@ -828,6 +864,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med skærmslukforsinkelsen (hvis angivet) og inaktivitetsforsinkelsen.</translation>
+<translation id="3251500716404598358">Konfigurer politikker for at skifte mellem browsere.
+
+      Konfigurerede websites åbnes automatisk i en anden browser end <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Kodninger for standardsøgemaskinen</translation>
 <translation id="3273221114520206906">Standardindstilling for JavaScript</translation>
 <translation id="3284094172359247914">Styr brugen af WebUSB API</translation>
@@ -911,6 +950,14 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
         Værdien for denne politik er et tilmeldingstoken, der kan hentes fra Google Administrationskonsol.</translation>
 <translation id="3496296378755072552">Adgangskodemanager</translation>
+<translation id="3500732098526756068">Giver dig mulighed for at styre aktiveringen af advarsler via adgangskodebeskyttelse. Adgangskodebeskyttelse underretter brugerne, når de genbruger deres beskyttede adgangskode på potentielt mistænkelige websites.
+
+      Du kan bruge politikkerne "PasswordProtectionLoginURLs" og "PasswordProtectionChangePasswordURL" til at konfigurere, hvilken adgangskode der skal beskyttes.
+
+      Hvis der angives "PasswordProtectionWarningOff" for politikken, vises der ikke nogen advarsel via adgangskodebeskyttelse.
+      Hvis der angives "PasswordProtectionWarningOnPasswordReuse" for politikken, vises der en advarsel via adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et website, der ikke er hvidlistet.
+      Hvis der angives "PasswordProtectionWarningOnPhishingReuse" for politikken, vises advarslen via adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et phishingwebsite.
+      Hvis politikken ikke konfigureres, beskytter tjenesten til adgangskodebeskyttelse kun adgangskoder til Google, men brugeren kan ændre denne indstilling.</translation>
 <translation id="3502555714327823858">Tillad alle duplex-tilstande</translation>
 <translation id="350443680860256679">Konfigurer ARC</translation>
 <translation id="3504791027627803580">Angiver webadressen på den søgemaskine, der bruges til billedsøgning. Søgeanmodninger sendes ved hjælp af GET-metoden. Hvis politikken DefaultSearchProviderImageURLPostParams er angivet, vil anmodninger om billedsøgning anvende POST-metoden i stedet.
@@ -929,6 +976,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er indstillet til "DeveloperToolsAllowed" (værdi 1), kan Udviklerværktøjer og JavaScript-konsollen åbnes og bruges i alle sammenhænge – også i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
       Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
+<translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
 <translation id="3556806727696701427">Aktiverer funktionen Beskyttet browsing i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
       Hvis du aktiverer denne indstilling, er Beskyttet browsing altid aktiv.
@@ -944,6 +992,16 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="3577251398714997599">Annonceindstilling for websites med påtrængende annoncer</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
+<translation id="3624171042292187668">
+      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
+      Hvis politikken er aktiveret, kører hvert website sin egen proces.
+      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere SitePerProcess manuelt via kommandolinjerapportering.
+      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
+      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. 
+Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+
+      BEMÆRK! Politikken anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
+      </translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
 <translation id="3628480121685794414">Aktivér simplex-udskrivning</translation>
 <translation id="3646859102161347133">Indstil type af lup</translation>
@@ -1107,6 +1165,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er angivet til sand, sendes der netværkspakker til overvågning (også kaldet <ph name="HEARTBEATS_TERM" />).
       Hvis den angives til falsk eller ikke angives, sendes der ingen pakker.</translation>
 <translation id="3950239119790560549">Opdater tidsbegrænsninger</translation>
+<translation id="3956686688560604829">Brug politikken SiteList for Internet Explorer til Emulator til ældre websites.</translation>
 <translation id="3958586912393694012">Tillad brug af Smart Lock</translation>
 <translation id="3963602271515417124">Hvis denne er angivet som sand, tillades fjernbekræftelse for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
 
@@ -1494,6 +1553,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis politikken er indstillet til sand, eller hvis der ikke angives en værdi, aktiveres fanelivscyklusser.</translation>
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultNotificationsSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
+<translation id="5213038356678567351">Websites, der aldrig skal aktivere et browserskift.</translation>
 <translation id="5219844027738217407">I Android-apps påvirker denne politik kun mikrofonen. Når denne politik angives som Sand, slås lyden på mikrofonen fra i alle Android-apps uden undtagelser.</translation>
 <translation id="5228316810085661003">Forsinkelse af automatisk login på den lokale konto på enheden.
 
@@ -1553,6 +1613,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Den kan også angives som en af følgende værdier: "tls1.2" eller "tls1.3". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er nyere end den angivne version. Ukendte værdier ignoreres.</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper</translation>
+<translation id="5365476955714838841">Kommandolinjeparametre for den alternative browser.</translation>
 <translation id="5365946944967967336">Vis knap til startsiden på værktøjslinjen</translation>
 <translation id="5366745336748853475">Giver dig mulighed for at angive en liste over webadressemønstre, som angiver websites, hvor der automatisk vælges et klientcertifikat på loginskærmen i rammen for SAML-flowet, hvis websitet anmoder om et certifikat. Et eksempel på brug er at konfigurere et certifikat for hele enheden, der præsenteres for SAML IdP.
 
@@ -1657,6 +1718,19 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Disse politikker gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Styring af Googles placeringstjenester på Android-enheder</translation>
 <translation id="5586942249556966598">Gør ingenting</translation>
+<translation id="5592242031005200087">
+      Hvis politikken er aktiveret, kører hvert af de angivne websites
+      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
+      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
+      isoleres https://foo.eksempel.dk/ også som en del af
+      websitet https://eksempel.dk/.
+      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOriginsAndroid og SitePerProcessAndroid deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt via kommandolinjerapportering.
+      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
+
+      BEMÆRK! Isolering af websites er eksperimentel på Android-enheder. Understøttelsen bliver bedre med tiden, men den kan i øjeblikket forårsage problemer med ydeevnen.
+
+      BEMÆRK! Politikken gælder kun for Chrome på Android-enheder med mere end 1 GB RAM. Hvis du vil anvende politikken på andre platforme, skal du bruge IsolateOrigins.
+      </translation>
 <translation id="5630352020869108293">Gendan den seneste session</translation>
 <translation id="5645779841392247734">Tillad cookies på disse websites</translation>
 <translation id="5689430183304951538">Standardstørrelse for udskrivningsside</translation>
@@ -1679,6 +1753,17 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne politik ikke er angivet eller angivet som falsk, vil <ph name="PRODUCT_NAME" /> anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
 <translation id="5728154254076636808">Aktivér oprettelse af roamingkopier til profildata i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="5728661376331491504">Politikken styrer listen over websites, der skal åbnes i en alternativ browser.
+
+      Bemærk, at elementer også kan føjes til denne liste via politikken <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+
+      Hvis politikken ikke konfigureres, føjes der ikke nogen websites til listen.
+
+      Når politikken er konfigureret, behandles hvert element som en regel for noget, der skal åbnes i en alternativ browser. <ph name="PRODUCT_NAME" /> anvender disse regler til at bestemme, om en webadresse skal åbnes i en alternativ browser.
+
+      Når Internet Explorer-tilføjelsen er til stede og aktiveret, skifter Internet Explorer tilbage til <ph name="PRODUCT_NAME" />, hvis reglerne ikke matcher.
+
+      Hvis reglerne modsiger hinanden, anvender <ph name="PRODUCT_NAME" /> den mest specifikke regel.</translation>
 <translation id="5732972008943405952">Importér formulardata for AutoFyld fra standardbrowseren ved første visning</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
@@ -1741,6 +1826,12 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
 <translation id="5898486742390981550">Når flere brugere er logget ind, er det kun den primære bruger, der kan bruge Android-apps.</translation>
+<translation id="5900196529149231477">
+      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+      Hvis politikken er aktiveret, kører hvert af de angivne websites på en kommasepareret liste sin egen proces. Dette isolerer også websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives, isoleres https://foo.eksempel.dk/ også som en del af websitet https://eksempel.dk/.
+      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere IsolateOrigins manuelt via kommandolinjerapportering.
+      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af websites på loginskærmen.
+      </translation>
 <translation id="5901427587865226597">Kun duplex-udskrivning</translation>
 <translation id="5906199912611534122">Gør det muligt at aktivere eller deaktivere netværksbegrænsning.
       Dette gælder for alle brugere og for alle grænseflader på enheden. Når denne indstilling er valgt,
@@ -2098,6 +2189,12 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, overføres ikke til brugersessioner.</translation>
 <translation id="685769593149966548">Gennemtving Strengt begrænset tilstand på YouTube</translation>
+<translation id="6857824281777105940">Politikken styrer, om der skal rapporteres oplysninger om Beskyttet browsing, bl.a. antallet af advarsler via Beskyttet browsing og antallet af gennemklik på advarsler via Beskyttet browsing.
+
+      Hvis politikken er angivet som Sand eller ikke er konfigureret, indsamles der data om Beskyttet browsing.
+      Hvis politikken er angivet som Falsk, indsamles der ikke data om Beskyttet browsing.
+
+      Politikken gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 eller nyere</translation>
 <translation id="687046793986382807">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 35.
 
@@ -2241,6 +2338,17 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
       Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applisten.</translation>
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
+<translation id="7158064522994309072">Politikken styrer, hvilken kommando der skal bruges til at åbne webadresser i en alternativ browser.
+
+      Hvis politikken ikke konfigureres, anvendes der en platformspecifik standard: Internet Explorer til Windows eller Safari til Mac OS X. I Linux kan der ikke åbnes en alternativ browser, medmindre politikken er konfigureret.
+
+      Hvis en af browserne ${ie}, ${firefox}, ${safari} eller
+      ${opera} er angivet for politikken, åbnes den pågældende browser, hvis den er installeret. ${ie} er kun
+      tilgængelig i Windows, og ${safari} er kun tilgængelig i Windows og Mac
+      OS X.
+
+      Hvis der er angivet en filsti for politikken, anvendes den pågældende fil som en eksekverbar
+      fil.</translation>
 <translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
 <translation id="717630378807352957">Tillad alle printere fra konfigurationsfilen.</translation>
@@ -2763,6 +2871,13 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.
 
       Hvis politikken ikke angives, eller hvis den deaktiveres, anvendes PDF-pluginnet til at åbne PDF-filer, medmindre brugeren deaktiverer pluginnet.</translation>
+<translation id="8396145449084377015">Politikken styrer, om der skal indlæses regler fra politikken SiteList for Internet Explorer.
+
+      Hvis politikken er angivet som Falsk eller ikke er konfigureret, anvender <ph name="PRODUCT_NAME" /> ikke politikken <ph name="IEEM_SITELIST_POLICY" /> for Internet Explorer som en kilde til regler for browserskift.
+
+      Hvis politikken er angivet som Sand, læser <ph name="PRODUCT_NAME" /> Internet Explorers <ph name="IEEM_SITELIST_POLICY" /> for at indhente websitelistens webadresse. <ph name="PRODUCT_NAME" /> downloader derefter websitelisten fra den pågældende webadresse og anvender reglerne, som om de var blevet konfigureret med politikken <ph name="SITELIST_POLICY_NAME" />.
+
+      Få flere oplysninger om politikken <ph name="IEEM_SITELIST_POLICY" /> for Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Åbn altid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="8417305981081876834">Angiv den maksimale længde for pinkoden til låseskærmen</translation>
@@ -3034,6 +3149,18 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="906631898352326790">
+      Hvis politikken er aktiveret, kører hvert af de angivne websites
+      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
+      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
+      isoleres https://foo.eksempel.dk/ også som en del af
+      websitet https://eksempel.dk/.
+      Hvis politikken er deaktiveret, deaktiveres begge funktionerne IsolateOrigins og SitePerProcess. Brugere kan stadig aktivere IsolateOrigins manuelt via kommandolinjerapportering.
+      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
+      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+
+      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
+      </translation>
 <translation id="9077227880520270584">Timer for automatisk login lokalt på enhed</translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>

@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">همگام‌سازی و شخصی‌سازی</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1399511500114202393">بدون گواهینامه کاربر</translation>
-<translation id="140250605646987970">‏تلفنتان پیدا شد. اما Smart Lock فقط روی دستگاه‌های دارای Android نسخه ۵٫۰ و بالاتر کار می‌کند. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (تحت نظارت)</translation>
 <translation id="1406500794671479665">در حال تأیید...</translation>
 <translation id="1407489512183974736">برش خورده در مرکز</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">باز کردن پیوند در &amp;پنجره جدید</translation>
 <translation id="1773212559869067373">گواهینامه راستی‌آزمایی به صورت محلی رد شد</translation>
 <translation id="177336675152937177">داده های برنامه میزبانی شده</translation>
-<translation id="1774349594977710164">تلفنتان قفل سایر دستگاه‌های <ph name="DEVICE_TYPE" /> شما را نیز باز می‌کند، چون آن‌ها به‌طور خودکار همگام‌سازی شده‌اند.</translation>
 <translation id="1774833706453699074">نشانک‌گذاری صفحه‌های باز...</translation>
 <translation id="1775381402323441512">اطلاعات ویدیو</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">‏راه‌اندازی یا مدیریت چاپگرهای CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> مورد دیگر…</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />احتیاط:<ph name="END_BOLD" /> این فایل‌ها موقتی هستند و ممکن است به صورت خودکار حذف شوند تا فضای آزاد دیسک بیشتر شود. <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">‏راه‌اندازی Smart Lock برای <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">‏بازیابی فایل Microsoft</translation>
 <translation id="1818007989243628752">گذرواژه مربوط به <ph name="USERNAME" /> حذف شود</translation>
 <translation id="1818913467757368489">بارگذاری گزارش درحال انجام است.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">کوکی‌های چند سایت مسدود شدند.</translation>
 <translation id="1977965994116744507">برای باز کردن قفل <ph name="DEVICE_TYPE" />، تلفنتان را نزدیک‌تر کنید.</translation>
 <translation id="1979280758666859181">شما در حال تغییر کانال به نسخه قدیمی‌تر <ph name="PRODUCT_NAME" /> هستید. تغییر کانال زمانی اعمال می‌شود که نسخه کانال با نسخه فعلی نصب شده در دستگاه یکسان باشد.</translation>
-<translation id="1981115145845865539">باز کردن قفل <ph name="DEVICE_TYPE" /> به‌طور خودکار</translation>
 <translation id="1983959805486816857">پس از ایجاد کاربر نظارت‌‌شده جدید، می‌توانید هر زمان که بخواهید از هر دستگاهی، تنظیمات را در <ph name="MANAGEMENT_URL" /> مدیریت کنید.</translation>
 <translation id="1987317783729300807">حساب‌ها</translation>
 <translation id="1989112275319619282">مشاهده محتوای موجود در فروشگاه ما</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> اضافه شد</translation>
 <translation id="2464089476039395325">‏پروکسی HTTP</translation>
 <translation id="2468205691404969808">از کوکی‌ها برای به خاطر سپردن اولویت‌های شما استفاده می‌کند؛ حتی اگر از آن صفحه‌ها بازدید نکنید</translation>
-<translation id="2468902267404883140">‏به تلفنتان متصل نمی‌شود. مطمئن شوید از تلفن Android سازگاری استفاده می‌کنید که روشن و در دسترس است. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="247051149076336810">نشانی وب دستگاه ذخیره‌سازی متصل به شبکه</translation>
 <translation id="2470702053775288986">افزونه‌های پشتیبانی نشده غیرفعال شدند.</translation>
 <translation id="2473195200299095979">ترجمه این صفحه</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">‏برای اینکه داده‌های محصول مرور را از همه دستگاه‌های همگام‌سازی‌شده و حساب Google خود پاک کنید، <ph name="BEGIN_LINK" />عبارت عبورتان را وارد کنید<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="2487067538648443797">افزودن نشانک جدید</translation>
-<translation id="248861575772995840">‏تلفنتان پیدا نمی‌شود. مطمئن شوید بلوتوث <ph name="DEVICE_TYPE" /> روشن است. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="2489918096470125693">افزودن &amp;پوشه...</translation>
 <translation id="249113932447298600">متأسفیم، دستگاه <ph name="DEVICE_LABEL" /> در حال حاضر پشتیبانی نمی‌شود.</translation>
 <translation id="249303669840926644">ثبت‌نام کامل نشد</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">طرح‌‌های قسمت</translation>
 <translation id="2572032849266859634">مجوز دسترسی فقط خواندنی به <ph name="VOLUME_NAME" /> صادر شد.</translation>
 <translation id="2575247648642144396">وقتی برنامه افزودنی بتواند در صفحه کنونی کار کند این نماد قابل مشاهده خواهد بود. با کلیک کردن روی نماد یا با فشار دادن <ph name="EXTENSION_SHORTCUT" /> از این برنامه افزودنی استفاده کنید.</translation>
-<translation id="2575268751393592580">‏تلفنتان پیدا نمی‌شود. مطمئن شوید <ph name="DEVICE_TYPE" /> به Wi-Fi یا یک شبکه تلفن همراه متصل است. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="257779572837908839">‏راه‌اندازی به‌عنوان Chromebox برای جلسات</translation>
 <translation id="2579575372772932244">درحال ایجاد مجدد نمایه، لطفاً صبر کنید…</translation>
 <translation id="2580889980133367162">همیشه به <ph name="HOST" /> اجازه داده شود چند فایل را بارگیری کند</translation>
@@ -1164,7 +1157,6 @@
 <translation id="2735438478659026460">کلیک کردن به‌طور خودکار وقتی نشانگر موشواره متوقف می‌شود</translation>
 <translation id="2735712963799620190">زمان‌بندی</translation>
 <translation id="2737363922397526254">کوچک کردن...</translation>
-<translation id="2737492745329609575">شروع تنظیم</translation>
 <translation id="2738771556149464852">نه بعد از</translation>
 <translation id="2739191690716947896">رفع اشکال</translation>
 <translation id="2739240477418971307">تغییر تنظیمات دسترس‌پذیریتان</translation>
@@ -1327,7 +1319,6 @@
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> پشتیبان‌گیری نشد</translation>
 <translation id="299483336428448530">پدر یا مادر شما نصب کرده‌اند.</translation>
 <translation id="2996286169319737844">‏داده‌ها با گذرواژه Google شما رمزگذاری می‌شود. این کار شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.</translation>
-<translation id="3002017044809397427">‏<ph name="PHONE_TYPE" /> شما پیدا شد. اما Smart Lock فقط روی دستگاه‌های دارای Android نسخه ۵٫۰ و بالاتر کار می‌کند. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="3003144360685731741">شبکه‌های برگزیده</translation>
 <translation id="3003623123441819449">‏حافظهٔ پنهان CSS</translation>
 <translation id="3003633581067744647">تغییر وضعیت به نمای تصویر کوچک</translation>
@@ -1476,7 +1467,6 @@
 <translation id="3241680850019875542">دایرکتوری ریشه برنامهٔ افزودنی را برای فشرده کردن انتخاب کنید. همچنین برای به‌روزرسانی برنامهٔ افزودنی، فایل کلید خصوصی را برای استفاده مجدد انتخاب کنید.</translation>
 <translation id="3244294424315804309">همچنان بی‌صدا</translation>
 <translation id="3245321423178950146">هنرمند ناشناس</translation>
-<translation id="3246097286174000800">‏Smart Lock را امتحان کنید</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - خطای شبکه</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;جزئی از گواهی نیست&gt;</translation>
@@ -1555,7 +1545,6 @@
 <translation id="3355936511340229503">خطای اتصال</translation>
 <translation id="3356580349448036450">کامل</translation>
 <translation id="3356797067524893661">‏برای ادامه و رفتن به Hangouts Meet آماده‌اید</translation>
-<translation id="3358935496594837302">‏تلفنتان پیدا نمی‌شود. مطمئن شوید از تلفن Android سازگاری استفاده می‌کنید که روشن و در دسترس است. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="3359256513598016054">محدودیت‌های سیاست گواهی</translation>
 <translation id="3360297538363969800">چاپ ناموفق بود. لطفاً چاپگرتان را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="3365598184818502391">‏یا از Ctrl استفاده کنید یا از Alt</translation>
@@ -1905,7 +1894,6 @@
 <translation id="3855441664322950881">فشرده کردن افزونه....</translation>
 <translation id="3855676282923585394">وارد کردن نشانک‌ها و تنظیمات...</translation>
 <translation id="3856800405688283469">انتخاب منطقه زمانی</translation>
-<translation id="3857228364945137633">‏وقتی تلفنتان در اطرافتان است، برای باز کردن قفل <ph name="DEVICE_TYPE" /> بدون استفاده از گذرواژه، Smart Lock را امتحان کنید.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">بردارید و سپس دوباره لمس کنید</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: همگام‌سازی موقتاً متوقف شد</translation>
@@ -2032,7 +2020,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{خروج از صفحه}one{خروج از صفحه‌ها}other{خروج از صفحه‌ها}}</translation>
 <translation id="4044612648082411741">گذرواژه گواهی‌تان را وارد کنید</translation>
 <translation id="404493185430269859">موتور جستجوی پیش‌‌فرض</translation>
-<translation id="4047112090469382184">ایمنی آن به چه صورت است</translation>
 <translation id="4052120076834320548">بسیار کوچک</translation>
 <translation id="4055023634561256217">‏قبل از اینکه دستگاه شما با Powerwash بازنشانی شود، راه‌اندازی مجدد لازم است.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2041,7 +2028,6 @@
 <translation id="4058720513957747556">‏AppSocket ‏(TCP/IP)</translation>
 <translation id="4058793769387728514">اکنون سند بررسی شود</translation>
 <translation id="406070391919917862">برنامه‌های پس‌زمینه</translation>
-<translation id="4063283930106169759">‏مطمئن شوید تلفنتان همین اطراف است. برای پیدا کردن تلفنتان، بلوتوث همه دستگاه‌هایی که حساب شما را دارند روشن می‌شود. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
 <translation id="4065876735068446555">ممکن است شبکه‌ای که استفاده می‌کنید (<ph name="NETWORK_ID" />)، بازدید از صفحه ورود به سیستم خود را برای شما ضروری کرده باشد.</translation>
 <translation id="4068506536726151626">این صفحه کنشگرهایی از سایت‌های زیر دارد که مکان شما را ردیابی می‌کنند:</translation>
 <translation id="4068776064906523561">اثرانگشت‌های ذخیره‌شده</translation>
@@ -2394,7 +2380,6 @@
 <translation id="4672657274720418656">صفحه فشرده</translation>
 <translation id="4673442866648850031">وقتی قلم برداشته می‌شود، ابزار قلم باز می‌شود</translation>
 <translation id="4677585247300749148"><ph name="URL" /> می‌خواهد به رویدادهای مربوط به دسترس‌پذیری پاسخ دهد</translation>
-<translation id="4677692029604506169">تلفنی که برای باز کردن قفل <ph name="DEVICE_TYPE" /> استفاده می‌کنید، برای حفظ امنیت قفل صفحه لازم دارد. معمولاً، این قفل یک پین، الگو یا گذرواژه است. قبلاً قفل صفحه داشته‌اید؟ برای به تأیید رساندن و ادامه راه‌اندازی، «بررسی مجدد» را انتخاب کنید.</translation>
 <translation id="4677772697204437347">‏حافظه GPU</translation>
 <translation id="4680105648806843642">این صفحه بی‌صدا شده است</translation>
 <translation id="4681930562518940301">باز کردن &amp;تصویر اصلی در برگه جدید</translation>
@@ -2730,7 +2715,6 @@
 <translation id="5184063094292164363">کنسول &amp;جاوا اسکریپت</translation>
 <translation id="5184662919967270437">درحال به‌روزرسانی دستگاه</translation>
 <translation id="5185386675596372454">جدیدترین نسخه از "<ph name="EXTENSION_NAME" />" غیر فعال شده است زیرا به مجوزهای بیشتری نیاز دارد.</translation>
-<translation id="5186650237607254032">‏قفل صفحه تلفنتان را به‌روز می‌کند تا زمانی که نزدیک هستید خاموش شود. با این کار قفل صفحه تلفن سریع‌تر باز می‌شود و از تجربه بهتری برای Smart Lock در دستگاه <ph name="DEVICE_TYPE" /> خود بهره‌مند می‌شوید.</translation>
 <translation id="5187295959347858724">‏شما اکنون به سیستم <ph name="SHORT_PRODUCT_NAME" /> وارد شدید. نشانک‌ها، سابقه و سایر تنظیمات شما با حساب Google  شما همگام‌سازی می‌شوند.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">لطفاً دستگاه را پاورواش کنید و دوباره امتحان کنید.</translation>
@@ -3161,7 +3145,6 @@
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5805697420284793859">مدیر پنجره</translation>
 <translation id="580571955903695899">ترتیب مجدد براساس عنوان</translation>
-<translation id="5807290661599647102">تنظیم «قفل صفحه»</translation>
 <translation id="5811750797187914944">همه چیز آماده است</translation>
 <translation id="5814126672212206791">نوع اتصال</translation>
 <translation id="5815645614496570556">‏آدرس X.400</translation>
@@ -3534,7 +3517,6 @@
 <translation id="6370021412472292592">مانیفیست بارگیری نشد.</translation>
 <translation id="637062427944097960">این فایل در میزکار دیگری باز شده است. به <ph name="USER_NAME" /> ‏(<ph name="MAIL_ADDRESS" />) بروید تا آن را مشاهده کنید.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">‏راه‌اندازی Smart Lock برای Android</translation>
 <translation id="6374469231428023295">دوباره امتحان کنید</translation>
 <translation id="6380143666419481200">پذیرش و ادامه</translation>
 <translation id="6384275966486438344">تغییر تنظیمات جستجویتان به: <ph name="SEARCH_HOST" /></translation>
@@ -3954,7 +3936,6 @@
 <translation id="7027125358315426638">نام پایگاه داده:</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7031962166228839643">‏TPM در حال آماده شدن است، لطفاً منتظر بمانید (این مرحله ممکن است چند دقیقه طول بکشد)...</translation>
-<translation id="7035437538340499453">‏Smart Lock کاملاً آماده است</translation>
 <translation id="7037509989619051237">نوشتار برای پیش‌نمایش</translation>
 <translation id="7039326228527141150">‏دسترسی به دستگاه‌های USB از <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4757,7 +4738,6 @@
 <translation id="8227119283605456246">پیوست کردن فایل</translation>
 <translation id="8230134520748321204">گذرواژه <ph name="ORIGIN" /> ذخیره شود؟</translation>
 <translation id="8234795456569844941">لطفاً در رفع این مشکل به مهندسان ما کمک کنید. بگویید درست قبل از اینکه پیام خطای نمایه را دریافت کنید، چه اتفاقی افتاد.</translation>
-<translation id="8234989666557591529">برای باز کردن قفل <ph name="DEVICE_TYPE" />، یک تلفن انتخاب کنید</translation>
 <translation id="8241040075392580210">سایه</translation>
 <translation id="8241806945692107836">تعیین پیکربندی دستگاه...</translation>
 <translation id="8241868517363889229">خواندن و تغییر نشانک‌هایتان</translation>
@@ -4849,10 +4829,8 @@
 <translation id="8395901698320285466">ابعاد</translation>
 <translation id="8396532978067103567">گذرواژه اشتباه است.</translation>
 <translation id="839736845446313156">ثبت‌نام</translation>
-<translation id="8398790343843005537">یافتن تلفن خودتان</translation>
 <translation id="8398877366907290961">در هر حال ادامه داده شود</translation>
 <translation id="8400146488506985033">مدیریت افراد</translation>
-<translation id="8410073653152358832">استفاده از این تلفن</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8418445294933751433">&amp;نمایش به‌صورت برگه</translation>
@@ -4930,7 +4908,6 @@
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8528074251912154910">افزودن زبان</translation>
 <translation id="8528962588711550376">ورود به برنامه.</translation>
-<translation id="8529026713753283969">در این تلفن اعلانی دریافت می‌کنید، بنابراین آن را همین اطراف نگه‌دارید.</translation>
 <translation id="8529925957403338845">اتصال فوری به اینترنت با تلفن همراه برقرار نشد</translation>
 <translation id="8534656636775144800">وای!  هنگام اتصال به دامنه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="8535005006684281994">‏نشانی وب تجدید گواهی Netscape</translation>
@@ -5234,14 +5211,12 @@
 <translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">افزودن حساب...</translation>
 <translation id="9003647077635673607">در همه وب‌سایت‌ها مجاز باشد</translation>
-<translation id="9003677638446136377">بررسی مجدد</translation>
 <translation id="9003704114456258138">فرکانس</translation>
 <translation id="9004952710076978168">یک اعلان برای یک چاپگر ناشناس دریافت شد.</translation>
 <translation id="9008201768610948239">نادیده گرفتن</translation>
 <translation id="9009369504041480176">در حال بارگذاری کردن (%<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="9011163749350026987">نماد همیشه نشان داده شود</translation>
 <translation id="9013707997379828817">سرپرست این دستگاه را عقب‌گرد کرد. لطفاً فایل‌های مهم را ذخیره کنید، سپس دستگاه را بازراه‌اندازی کنید. همه داده‌های دستگاه حذف می‌شود.</translation>
-<translation id="9014987600015527693">نمایش یک تلفن دیگر</translation>
 <translation id="9018218886431812662">نصب کامل شد</translation>
 <translation id="901834265349196618">ایمیل</translation>
 <translation id="9019062154811256702">خواندن و تغییر تنظیمات تکمیل خودکار</translation>
@@ -5337,7 +5312,6 @@
 <translation id="9147304170847707004">روش احراز هویت</translation>
 <translation id="9147392381910171771">&amp;گزینه‌ها</translation>
 <translation id="9148058034647219655">خروج</translation>
-<translation id="9148116311817999634">تنظیم قفل صفحه برای ایمنی</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
 <translation id="9149866541089851383">ویرایش...</translation>
 <translation id="9150045010208374699">استفاده از دوربین خود</translation>

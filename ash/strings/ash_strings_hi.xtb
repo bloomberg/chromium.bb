@@ -140,6 +140,7 @@
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा में आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
+<translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3255483164551725916">तुम क्या-क्या कर सकती हो?</translation>
@@ -217,7 +218,6 @@
 <translation id="4628757576491864469">डिवाइस</translation>
 <translation id="4659419629803378708">ChromeVox सक्षम है</translation>
 <translation id="4734965478015604180">क्षैतिज</translation>
-<translation id="476166673298332917">इस डिवाइस के एडमिन के पास सभी गतिविधियों का एक्सेस है, जिनमें पासवर्ड और संचार शामिल हैं.</translation>
 <translation id="4774338217796918551">कल <ph name="COME_BACK_TIME" /> बजे फिर से देखें.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
 <translation id="4778095205580009397">डेमो सत्र में Google Assistant मौजूद नहीं है.</translation>

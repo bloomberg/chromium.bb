@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Συγχρονισμός και εξατομίκευση</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1399511500114202393">Δεν υπάρχει πιστοποιητικό χρήστη</translation>
-<translation id="140250605646987970">Εντοπίστηκε το τηλέφωνό σας. Ωστόσο, το Smart Lock λειτουργεί μόνο σε συσκευές με έκδοση λογισμικού Android 5.0 και νεότερη. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Εποπτευόμενος)</translation>
 <translation id="1406500794671479665">Επαλήθευση…</translation>
 <translation id="1407489512183974736">Περικοπή στο κέντρο</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">Άνοιγμα Συνδέσμου σε Νέο &amp;Παράθυρο</translation>
 <translation id="1773212559869067373">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε τοπικά</translation>
 <translation id="177336675152937177">Δεδομένα φιλοξενούμενης εφαρμογής</translation>
-<translation id="1774349594977710164">Επίσης, το τηλέφωνό σας ξεκλειδώνει το άλλο <ph name="DEVICE_TYPE" /> που έχετε, επειδή συγχρονίζονται αυτόματα.</translation>
 <translation id="1774833706453699074">Δημιουργία σελιδοδεικτών για όλες τις ανοικτές σελίδες…</translation>
 <translation id="1775381402323441512">Πληροφορίες βίντεο</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">Ρυθμίστε ή διαχειριστείτε εκτυπωτές CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> ακόμη…</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Προσοχή:<ph name="END_BOLD" /> Αυτά τα αρχεία είναι προσωρινά και ενδέχεται να διαγραφούν αυτόματα για να απελευθερωθεί χώρος στη μονάδα δίσκου. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Ρυθμίστε το Smart Lock για το <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Ανάκτηση αρχείων Microsoft</translation>
 <translation id="1818007989243628752">Διαγραφή κωδικού πρόσβασης για τον λογαριασμό <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Η μεταφόρτωση του αρχείου καταγραφής βρίσκεται σε εξέλιξη.</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">Έχουν αποκλειστεί τα cookie από πολλούς ιστότοπους</translation>
 <translation id="1977965994116744507">Πλησιάστε το τηλέφωνό σας, για να ξεκλειδώσει το <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Έχετε επιλέξει ένα κανάλι με μια παλαιότερη έκδοση του <ph name="PRODUCT_NAME" />. Η αλλαγή καναλιού θα πραγματοποιηθεί όταν η έκδοση του καναλιού συμφωνεί με την έκδοση που είναι εγκατεστημένη στη συσκευή σας.</translation>
-<translation id="1981115145845865539">Ξεκλειδώστε αυτόματα το <ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">Αφού δημιουργήσετε ένα νέο εποπτευόμενο χρήστη, μπορείτε να διαχειριστείτε τις ρυθμίσεις ανά πάσα στιγμή και από οποιαδήποτε συσκευή στη διεύθυνση <ph name="MANAGEMENT_URL" /> .</translation>
 <translation id="1987317783729300807">Λογαριασμοί</translation>
 <translation id="1989112275319619282">Περιήγηση</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187">Προστέθηκε <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Διακομιστής μεσολάβησης HTTP</translation>
 <translation id="2468205691404969808">Χρησιμοποιεί cookie για την απομνημόνευση των προτιμήσεών σας, ακόμα κι αν δεν επισκέπτεστε αυτές τις σελίδες</translation>
-<translation id="2468902267404883140">Δεν είναι δυνατή η σύνδεση στο τηλέφωνό σας. Βεβαιωθείτε ότι χρησιμοποιείτε συμβατό τηλέφωνο Android που είναι ενεργοποιημένο και διαθέσιμο. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL κοινής χρήσης αρχείου</translation>
 <translation id="2470702053775288986">Απενεργοποίηση μη υποστηριζόμενων επεκτάσεων</translation>
 <translation id="2473195200299095979">Μετάφραση αυτής της σελίδας</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">Για να διαγράψετε τα δεδομένα περιήγησης από όλες τις συγχρονισμένες συσκευές σας και τον Λογαριασμό σας Google, <ph name="BEGIN_LINK" />εισαγάγετε τη φράση πρόσβασής σας<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Απεγκατάσταση</translation>
 <translation id="2487067538648443797">Προσθήκη νέου σελιδοδείκτη</translation>
-<translation id="248861575772995840">Δεν είναι δυνατή η εύρεση του τηλεφώνου σας. Βεβαιωθείτε ότι το Bluetooth του <ph name="DEVICE_TYPE" /> είναι ενεργοποιημένο. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Προσθήκη &amp;φακέλου...</translation>
 <translation id="249113932447298600">Λυπούμαστε, η συσκευή <ph name="DEVICE_LABEL" /> δεν υποστηρίζεται προς το παρόν.</translation>
 <translation id="249303669840926644">Αδυναμία ολοκλήρωσης εγγραφής</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">Θέματα</translation>
 <translation id="2572032849266859634">Παραχωρήθηκε πρόσβαση ανάγνωσης σε <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Αυτό το εικονίδιο θα είναι ορατό όταν η επέκταση μπορεί να λειτουργήσει στην τρέχουσα σελίδα. Χρησιμοποιήστε αυτήν την επέκταση κάνοντας κλικ στο εικονίδιο ή πατώντας <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Δεν είναι δυνατή η εύρεση του τηλεφώνου σας. Βεβαιωθείτε ότι το <ph name="DEVICE_TYPE" /> είναι συνδεδεμένο σε Wi-Fi ή δίκτυο κινητής τηλεφωνίας. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="257779572837908839">Ρύθμιση ως Chromebox για συνεδριάσεις</translation>
 <translation id="2579575372772932244">Εκ νέου δημιουργία προφίλ, περιμένετε…</translation>
 <translation id="2580889980133367162">Να επιτρέπεται πάντα στον κεντρικό υπολογιστή <ph name="HOST" /> η λήψη πολλών αρχείων</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Να γίνεται αυτόματα κλικ όταν σταματά ο δείκτης του ποντικιού</translation>
 <translation id="2735712963799620190">Χρονοδιάγραμμα</translation>
 <translation id="2737363922397526254">Σύμπτυξη...</translation>
-<translation id="2737492745329609575">Έναρξη ρύθμισης</translation>
 <translation id="2738771556149464852">Όχι αργότερα από</translation>
 <translation id="2739191690716947896">Εντοπισμός σφαλμάτων</translation>
 <translation id="2739240477418971307">Αλλαγή των ρυθμίσεων προσβασιμότητας</translation>
@@ -1331,7 +1323,6 @@
 <translation id="2994669386200004489">Δεν ήταν δυνατή η δημιουργία αντιγράφου ασφαλείας για το <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Εγκαταστάθηκε από το γονέα σας.</translation>
 <translation id="2996286169319737844">Τα δεδομένα κρυπτογραφούνται με τη φράση πρόσβασης συγχρονισμού σας. Αυτά τα δεδομένα δεν περιλαμβάνουν τρόπους πληρωμής και διευθύνσεις από το Google Pay.</translation>
-<translation id="3002017044809397427">Εντοπίστηκε το τηλέφωνό σας <ph name="PHONE_TYPE" />. Ωστόσο, το Smart Lock λειτουργεί μόνο σε συσκευές με έκδοση λογισμικού Android 5.0 και νεότερη. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Προτιμώμενα δίκτυα</translation>
 <translation id="3003623123441819449">Προσωρινή μνήμη CSS</translation>
 <translation id="3003633581067744647">Εναλλαγή σε προβολή μικρογραφιών</translation>
@@ -1480,7 +1471,6 @@
 <translation id="3241680850019875542">Επιλέξτε τον κατάλογο ρίζας της επέκτασης που θέλετε να στοιβάξετε. Για να ενημερώσετε μια επέκταση, επιλέξτε επίσης το αρχείο ιδιωτικού κλειδιού που θα επαναχρησιμοποιηθεί.</translation>
 <translation id="3244294424315804309">Συνέχιση σίγασης ήχου</translation>
 <translation id="3245321423178950146">Άγνωστος καλλιτέχνης</translation>
-<translation id="3246097286174000800">Δοκιμάστε το Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Σφάλμα δικτύου</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Δεν είναι μέρος πιστοποιητικού&gt;</translation>
@@ -1559,7 +1549,6 @@
 <translation id="3355936511340229503">Σφάλμα σύνδεσης</translation>
 <translation id="3356580349448036450">Ολοκληρώθηκε</translation>
 <translation id="3356797067524893661">Είστε έτοιμοι να συνεχίσετε στο Hangouts Meet</translation>
-<translation id="3358935496594837302">Δεν είναι δυνατή η εύρεση του τηλεφώνου σας. Βεβαιωθείτε ότι χρησιμοποιείτε συμβατό τηλέφωνο Android που είναι ενεργοποιημένο και διαθέσιμο. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Περιορισμοί πολιτικής πιστοποιητικού</translation>
 <translation id="3360297538363969800">Η εκτύπωση απέτυχε. Ελέγξτε τον εκτυπωτή σας και δοκιμάστε ξανά.</translation>
 <translation id="3365598184818502391">Χρησιμοποιήστε το Ctrl ή το Alt</translation>
@@ -1909,7 +1898,6 @@
 <translation id="3855441664322950881">Στοίβαξη επέκτασης</translation>
 <translation id="3855676282923585394">Εισαγωγή σελιδοδεικτών και ρυθμίσεων...</translation>
 <translation id="3856800405688283469">Επιλογή ζώνης ώρας</translation>
-<translation id="3857228364945137633">Δοκιμάστε το Smart Lock, για να ξεκλειδώσετε το <ph name="DEVICE_TYPE" /> χωρίς κωδικό πρόσβασης, όταν το τηλέφωνό σας είναι κοντά.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Ανασηκώστε και αγγίξτε ξανά</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Ο συγχρονισμός τέθηκε σε παύση</translation>
@@ -2036,7 +2024,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Έξοδος από τη σελίδα}other{Έξοδος από τις σελίδες}}</translation>
 <translation id="4044612648082411741">Εισαγάγετε τον κωδικό πρόσβασης του πιστοποιητικού σας</translation>
 <translation id="404493185430269859">Προεπιλεγμένη μηχανή αναζήτησης</translation>
-<translation id="4047112090469382184">Γιατί είναι ασφαλής</translation>
 <translation id="4052120076834320548">Πάρα πολύ μικρό</translation>
 <translation id="4055023634561256217">Απαιτείται επανεκκίνηση προκειμένου να είναι δυνατή η επαναφορά της συσκευής σας με Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Άμεσος Έλεγχος του Εγγράφου</translation>
 <translation id="406070391919917862">Εφαρμογές στο παρασκήνιο</translation>
-<translation id="4063283930106169759">Βεβαιωθείτε ότι το τηλέφωνό σας είναι κοντά. Για να βρείτε το τηλέφωνο, το Bluetooth θα είναι ενεργοποιημένο για όλες τις συσκευές που έχουν τον λογαριασμό σας. &lt;a&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Το δίκτυο που χρησιμοποιείτε (<ph name="NETWORK_ID" />) ενδέχεται να σας ζητήσει να επισκεφτείτε τη σελίδα σύνδεσής του.</translation>
 <translation id="4068506536726151626">Η σελίδα περιέχει στοιχεία από τους ακόλουθους ιστότοπους που παρακολουθούν τη θέση σας:</translation>
 <translation id="4068776064906523561">Αποθηκευμένα δακτυλικά αποτυπώματα</translation>
@@ -2398,7 +2384,6 @@
 <translation id="4672657274720418656">Φιλτράρισμα σελίδας</translation>
 <translation id="4673442866648850031">Άνοιγμα εργαλείων γραφίδας κατά την αφαίρεση της γραφίδας</translation>
 <translation id="4677585247300749148">Ο ιστότοπος <ph name="URL" /> επιθυμεί να απαντήσει σε συμβάντα προσβασιμότητας</translation>
-<translation id="4677692029604506169">Το τηλέφωνο που χρησιμοποιούσατε για το ξεκλείδωμα του <ph name="DEVICE_TYPE" /> χρειάζεται κλείδωμα οθόνης για λόγους ασφαλείας. Συνήθως, πρόκειται για PIN, μοτίβο ή κωδικό πρόσβασης. Έχετε ήδη κλείδωμα οθόνης; Επιλέξτε "Έλεγχος ξανά" για επαλήθευση και συνέχιση της ρύθμισης.</translation>
 <translation id="4677772697204437347">Μνήμη GPU</translation>
 <translation id="4680105648806843642">Έγινε σίγαση του ήχου σε αυτήν τη σελίδα</translation>
 <translation id="4681930562518940301">Άνοιγμα αρχικής εικόνας σε νέα καρτέλα</translation>
@@ -2734,7 +2719,6 @@
 <translation id="5184063094292164363">Κονσόλα &amp;JavaScript</translation>
 <translation id="5184662919967270437">Ενημέρωση της συσκευής σας</translation>
 <translation id="5185386675596372454">Η τελευταία έκδοση του " <ph name="EXTENSION_NAME" /> "έχει απενεργοποιηθεί, επειδή απαιτούνται περισσότερα δικαιώματα.</translation>
-<translation id="5186650237607254032">Ενημερώστε το κλείδωμα οθόνης του τηλεφώνου σας έτσι ώστε να απενεργοποιείται όταν βρίσκεστε κοντά. Θα ξεκλειδώνετε το τηλέφωνό σας πιο γρήγορα και θα απολαμβάνετε καλύτερη εμπειρία στη λειτουργία Smart Lock στη συσκευή σας <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">Είστε πλέον συνδεδεμένοι στο <ph name="SHORT_PRODUCT_NAME" />. Οι σελιδοδείκτες, το ιστορικό και διάφορες άλλες ρυθμίσεις συγχρονίζονται με τον Λογαριασμό σας Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Κάντε powerwash στη συσκευή και δοκιμάστε ξανά.</translation>
@@ -3166,7 +3150,6 @@
 <translation id="5804241973901381774">Άδειες</translation>
 <translation id="5805697420284793859">Διαχείριση παραθύρου</translation>
 <translation id="580571955903695899">Αναδιοργάνωση κατά τίτλο</translation>
-<translation id="5807290661599647102">Ορισμός κλειδώματος οθόνης</translation>
 <translation id="5811750797187914944">Όλα είναι έτοιμα</translation>
 <translation id="5814126672212206791">Τύπος σύνδεσης</translation>
 <translation id="5815645614496570556">Διεύθυνση X.400</translation>
@@ -3539,7 +3522,6 @@
 <translation id="6370021412472292592">Δεν ήταν δυνατή η φόρτωση της δήλωσης.</translation>
 <translation id="637062427944097960">Αυτό το αρχείο άνοιξε σε διαφορετικό προφίλ. Μεταβείτε στο προφίλ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) για να το δείτε.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Ρυθμίστε το Smart Lock για το Android</translation>
 <translation id="6374469231428023295">Δοκιμάστε ξανά</translation>
 <translation id="6380143666419481200">Αποδοχή και συνέχεια</translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST" /></translation>
@@ -3959,7 +3941,6 @@
 <translation id="7027125358315426638">Όνομα βάσης δεδομένων:</translation>
 <translation id="7029809446516969842">Κωδικοί πρόσβασης</translation>
 <translation id="7031962166228839643">Γίνεται προετοιμασία TPM, περιμένετε (ενδέχεται να χρειαστούν μερικά λεπτά)...</translation>
-<translation id="7035437538340499453">Το Smart Lock είναι έτοιμο</translation>
 <translation id="7037509989619051237">Κείμενο για προεπισκόπηση</translation>
 <translation id="7039326228527141150">Πρόσβαση σε συσκευές USB από τον προμηθευτή <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4762,7 +4743,6 @@
 <translation id="8227119283605456246">Επισύναψη αρχείου</translation>
 <translation id="8230134520748321204">Αποθήκευση κωδικού πρόσβασης για <ph name="ORIGIN" />;</translation>
 <translation id="8234795456569844941">Βοηθήστε τους μηχανικούς μας να επιδιορθώσουν αυτό το πρόβλημα. Πείτε μας τι συνέβη ακριβώς πριν από τη λήψη του μηνύματος σφάλματος προφίλ:</translation>
-<translation id="8234989666557591529">Επιλέξτε ένα τηλέφωνο για το ξεκλείδωμα του <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Συννεφιασμένος</translation>
 <translation id="8241806945692107836">Καθορισμός διαμόρφωσης συσκευής…</translation>
 <translation id="8241868517363889229">Ανάγνωση και αλλαγή των σελιδοδεικτών σας</translation>
@@ -4854,10 +4834,8 @@
 <translation id="8395901698320285466">Διαστάσεις</translation>
 <translation id="8396532978067103567">Εσφαλμένος κωδικός πρόσβασης.</translation>
 <translation id="839736845446313156">Εγγραφή</translation>
-<translation id="8398790343843005537">Εύρεση του τηλεφώνου σας</translation>
 <translation id="8398877366907290961">Συνέχεια</translation>
 <translation id="8400146488506985033">Διαχείριση ατόμων</translation>
-<translation id="8410073653152358832">Χρήση αυτού του τηλεφώνου</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Να γίνεται ερώτηση πρώτα (συνιστάται)</translation>
 <translation id="8418445294933751433">&amp;Εμφάνιση ως καρτέλα</translation>
@@ -4935,7 +4913,6 @@
 <translation id="8525306231823319788">Πλήρης οθόνη</translation>
 <translation id="8528074251912154910">Προσθήκη γλωσσών</translation>
 <translation id="8528962588711550376">Γίνεται σύνδεση.</translation>
-<translation id="8529026713753283969">Θα λάβετε μια ειδοποίηση σε αυτό το τηλέφωνο, επομένως κρατήστε το κοντά σας.</translation>
 <translation id="8529925957403338845">Αποτυχία άμεσης σύνδεσης</translation>
 <translation id="8534656636775144800">Δυστυχώς, παρουσιάστηκε σφάλμα κατά την προσπάθεια σύνδεσης στον τομέα. Δοκιμάστε ξανά.</translation>
 <translation id="8535005006684281994">URL ανανέωσης πιστοποιητικού Netscape</translation>
@@ -5237,14 +5214,12 @@
 <translation id="8995603266996330174">Έγινε διαχείριση από <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Προσθήκη λογαριασμού…</translation>
 <translation id="9003647077635673607">Να επιτρέπεται σε όλους τους ιστότοπους</translation>
-<translation id="9003677638446136377">Έλεγχος ξανά</translation>
 <translation id="9003704114456258138">Συχνότητα</translation>
 <translation id="9004952710076978168">Λήψη ειδοποίησης για έναν άγνωστο εκτυπωτή.</translation>
 <translation id="9008201768610948239">Παράβλεψη</translation>
 <translation id="9009369504041480176">Μεταφόρτωση του (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Να εμφανίζεται πάντα το εικονίδιο</translation>
 <translation id="9013707997379828817">Ο διαχειριστής σας έκανε επαναφορά σε αυτήν τη συσκευή. Αποθηκεύστε σημαντικά αρχεία και κάντε επανεκκίνηση. Όλα τα δεδομένα στη συσκευή θα διαγραφούν.</translation>
-<translation id="9014987600015527693">Εμφάνιση άλλου τηλεφώνου</translation>
 <translation id="9018218886431812662">Η εγκατάσταση ολοκληρώθηκε</translation>
 <translation id="901834265349196618">ηλεκτρονικό ταχυδρομείο</translation>
 <translation id="9019062154811256702">Ανάγνωση και αλλαγή ρυθμίσεων αυτόματης συμπλήρωσης</translation>
@@ -5340,7 +5315,6 @@
 <translation id="9147304170847707004">Μέθοδος ελέγχου ταυτότητας</translation>
 <translation id="9147392381910171771">&amp;Επιλογές</translation>
 <translation id="9148058034647219655">Έξοδος</translation>
-<translation id="9148116311817999634">Ορισμός κλειδώματος οθόνης για λόγους ασφαλείας</translation>
 <translation id="9148126808321036104">Συνδεθείτε ξανά</translation>
 <translation id="9149866541089851383">Επεξεργασία...</translation>
 <translation id="9150045010208374699">Χρήση της κάμεράς σας</translation>

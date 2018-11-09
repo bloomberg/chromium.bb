@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">סנכרון והתאמה אישית</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1399511500114202393">אין אישור משתמש</translation>
-<translation id="140250605646987970">‏הטלפון שלך נמצא, אך Smart Lock פועל רק במכשירי Android מגרסה 5.0 ואילך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (בפיקוח)</translation>
 <translation id="1406500794671479665">מאמת...</translation>
 <translation id="1407489512183974736">חתוך במרכז</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">פתח קישור &amp;בחלון חדש</translation>
 <translation id="1773212559869067373">אישור האימות נדחה מקומית</translation>
 <translation id="177336675152937177">נתוני יישומים מתארחים</translation>
-<translation id="1774349594977710164">הטלפון מבטל גם את הנעילה של מכשירי <ph name="DEVICE_TYPE" /> אחרים מפני שהם מסוכרנים אוטומטית.</translation>
 <translation id="1774833706453699074">הוספת דפים פתוחים לסימניות...</translation>
 <translation id="1775381402323441512">פרטי הסרטון</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">‏הגדר או נהל מדפסות CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> נוספות...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />זהירות:<ph name="END_BOLD" /> קבצים אלה הם זמניים והם עלולים להימחק באופן אוטומטי כדי לפנות שטח דיסק. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">‏מומלץ להגדיר את Smart Lock ל-<ph name="DEVICE_TYPE" /> שלך</translation>
 <translation id="1817871734039893258">‏שחזור קבצים של Microsoft</translation>
 <translation id="1818007989243628752">מחיקת הסיסמה של <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">העלאת היומן מתבצעת.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">‏קובצי Cookie מאתרים מרובים חסומים.</translation>
 <translation id="1977965994116744507">יש לקרב את הטלפון כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">אתה עובר לערוץ עם גרסה ישנה יותר של <ph name="PRODUCT_NAME" />. שינוי הערוץ יוחל כאשר גרסת הערוץ תתאים לגרסה המותקנת כעת במכשיר שלך.</translation>
-<translation id="1981115145845865539">ביטול אוטומטי של נעילת ה-<ph name="DEVICE_TYPE" /></translation>
 <translation id="1983959805486816857">לאחר יצירת משתמש בפיקוח חדש, תוכל לנהל את ההגדרות בכל עת מכל מכשיר בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">חשבונות</translation>
 <translation id="1989112275319619282">דפדף</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187">המדפסת <ph name="PRINTER_NAME" /> נוספה</translation>
 <translation id="2464089476039395325">‏שרת proxy של HTTP</translation>
 <translation id="2468205691404969808">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
-<translation id="2468902267404883140">‏לא ניתן לבצע התחברות לטלפון שלך. יש לוודא שימוש בטלפון Android תואם ושהוא מופעל ונמצא בקרבתך. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="247051149076336810">כתובת אתר של התקן רשת לשיתוף קבצים</translation>
 <translation id="2470702053775288986">תוספים שלא נתמכים הושבתו</translation>
 <translation id="2473195200299095979">תרגם את הדף הזה</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">‏כדי לנקות את נתוני הגלישה מכל המכשירים המסונכרנים ומחשבון Google שלך, <ph name="BEGIN_LINK" />יש להזין את ביטוי הסיסמה<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="2487067538648443797">הוספת סימניה חדשה</translation>
-<translation id="248861575772995840">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שה-Bluetooth מופעל ב-<ph name="DEVICE_TYPE" />. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="2489918096470125693">הוסף &amp;תיקיה...</translation>
 <translation id="249113932447298600">מצטערים, המכשיר <ph name="DEVICE_LABEL" /> אינו נתמך בשלב זה.</translation>
 <translation id="249303669840926644">לא ניתן היה להשלים את הרישום</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">ערכות נושא</translation>
 <translation id="2572032849266859634">ניתנה הרשאה לקריאה בלבד ב-<ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">סמל זה יוצג כאשר התוסף יכול לפעול בדף הנוכחי. השתמש בתוסף זה על ידי לחיצה על הסמל או על ידי הקשה על <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שה-<ph name="DEVICE_TYPE" /> מחובר לרשת Wi-Fi או לרשת סלולרית. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="257779572837908839">‏הגדרה כ-Chromebox לניהול פגישות</translation>
 <translation id="2579575372772932244">יוצר מחדש את הפרופיל. המתן...</translation>
 <translation id="2580889980133367162">תמיד אפשר ל-<ph name="HOST" /> להוריד קבצים מרובים</translation>
@@ -1165,7 +1158,6 @@
 <translation id="2735438478659026460">קליק אוטומטי כשסמן העכבר עוצר</translation>
 <translation id="2735712963799620190">לוח זמנים</translation>
 <translation id="2737363922397526254">כווץ...</translation>
-<translation id="2737492745329609575">התחלת ההגדרה</translation>
 <translation id="2738771556149464852">לא אחרי</translation>
 <translation id="2739191690716947896">ניפוי באגים</translation>
 <translation id="2739240477418971307">שינוי הגדרות הנגישות שלך</translation>
@@ -1328,7 +1320,6 @@
 <translation id="2994669386200004489">לא ניתן היה לגבות את <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">הותקן על ידי ההורה שלך.</translation>
 <translation id="2996286169319737844">‏הנתונים מוצפנים באמצעות ביטוי הסיסמה שלך לסינכרון. ההצפנה לא כוללת אמצעי תשלום וכתובות מ-Google Pay.</translation>
-<translation id="3002017044809397427">‏ה-<ph name="PHONE_TYPE" /> שלך נמצא, אך Smart Lock פועל רק במכשירי Android מגרסה 5.0 ואילך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="3003144360685731741">רשתות מועדפות</translation>
 <translation id="3003623123441819449">‏מטמון של CSS</translation>
 <translation id="3003633581067744647">מעבר לתצוגה של תמונות ממוזערות</translation>
@@ -1477,7 +1468,6 @@
 <translation id="3241680850019875542">בחר את ספריית הבסיס של התוסף שיש לארוז. כדי לעדכן תוסף, בחר גם את קובץ המפתח הפרטי שבו ניתן להשתמש שוב.</translation>
 <translation id="3244294424315804309">המשך השתקת הצלילים</translation>
 <translation id="3245321423178950146">אמן לא ידוע</translation>
-<translation id="3246097286174000800">‏רוצה לנסות את Smart Lock?</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - שגיאת רשת</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;לא חלק מהאישור&gt;</translation>
@@ -1556,7 +1546,6 @@
 <translation id="3355936511340229503">שגיאת חיבור</translation>
 <translation id="3356580349448036450">בוצע</translation>
 <translation id="3356797067524893661">‏הכול מוכן ואפשר להמשיך אל Hangouts Meet</translation>
-<translation id="3358935496594837302">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שימוש בטלפון Android תואם ושהוא מופעל ונמצא בקרבתך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
 <translation id="3359256513598016054">מגבלות מדיניות אישורים </translation>
 <translation id="3360297538363969800">ההדפסה נכשלה. בדוק את המדפסת ונסה שוב.</translation>
 <translation id="3365598184818502391">‏צריך להשתמש ב-Ctrl או ב-Alt</translation>
@@ -1906,7 +1895,6 @@
 <translation id="3855441664322950881">ארוז תוסף</translation>
 <translation id="3855676282923585394">יבא סימניות והגדרות...</translation>
 <translation id="3856800405688283469">בחירת אזור זמן</translation>
-<translation id="3857228364945137633">‏כדאי לנסות את Smart Lock כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> כשהטלפון בקרבת מקום, בלי להזין סיסמה.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">להרים ולגעת בחיישן שוב</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: הסינכרון הושהה</translation>
@@ -2033,7 +2021,6 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{יציאה מהדף}two{יציאה מהדפים}many{יציאה מהדפים}other{יציאה מהדפים}}</translation>
 <translation id="4044612648082411741">הזן את סיסמת האישור</translation>
 <translation id="404493185430269859">מנוע החיפוש המוגדר כברירת מחדל</translation>
-<translation id="4047112090469382184">כיצד נשמרת האבטחה</translation>
 <translation id="4052120076834320548">זעיר</translation>
 <translation id="4055023634561256217">כדי לבצע איפוס באמצעות שחזור הגדרות יצרן, עליך להפעיל תחילה את המכשיר מחדש.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2042,7 +2029,6 @@
 <translation id="4058720513957747556">‎AppSocket (TCP/IP)‎</translation>
 <translation id="4058793769387728514">בדוק מסמך כעת</translation>
 <translation id="406070391919917862">יישומים ברקע</translation>
-<translation id="4063283930106169759">‏יש לוודא שהטלפון נמצא בקרבת מקום. כדי למצוא את הטלפון, ה-Bluetooth יופעל בכל המכשירים שבהם חשבונך מוגדר. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="4065876735068446555">ייתכן שתוצג דרישה להיכנס לדף ההתחברות של הרשת שבה אתה משתמש (<ph name="NETWORK_ID" />).</translation>
 <translation id="4068506536726151626">דף זה מכיל אלמנטים מהאתרים הבאים העוקבים אחר המיקום שלך:</translation>
 <translation id="4068776064906523561">טביעות אצבע שמורות</translation>
@@ -2395,7 +2381,6 @@
 <translation id="4672657274720418656">זקק דף</translation>
 <translation id="4673442866648850031">פתח את כלי הסטיילוס לאחר שליפת הסטיילוס</translation>
 <translation id="4677585247300749148"><ph name="URL" /> רוצה להגיב לאירועי נגישות</translation>
-<translation id="4677692029604506169">‏הטלפון שבחרת לביטול הנעילה של <ph name="DEVICE_TYPE" /> מחייב נעילת מסך מטעמי אבטחה. בדרך כלל, נעילת המסך מתבצעת באמצעות קוד PIN, קו ביטול נעילה או סיסמה. כבר הגדרת נעילת מסך? עליך לבחור באפשרות 'בדוק שוב' ולהמשיך בהגדרה.</translation>
 <translation id="4677772697204437347">‏זיכרון GPU</translation>
 <translation id="4680105648806843642">הצלילים הושתקו בדף הזה</translation>
 <translation id="4681930562518940301">פתח את ה&amp;תמונה המקורית בכרטיסייה חדשה</translation>
@@ -2731,7 +2716,6 @@
 <translation id="5184063094292164363">‏קונסולת JavaScript&amp; </translation>
 <translation id="5184662919967270437">מעדכן את המכשיר שלך</translation>
 <translation id="5185386675596372454">הגרסה החדשה ביותר של "<ph name="EXTENSION_NAME" />" הושבתה מכיוון שהיא דורשת הרשאות נרחבות יותר.</translation>
-<translation id="5186650237607254032">‏עדכן את מסך הנעילה של הטלפון כך שיושבת כשאתה נמצא לידו. כך תבטל את נעילת הטלפון מהר יותר ותיהנה מחווית Smart Lock טובה יותר במכשיר <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5187295959347858724">‏נכנסת ל-<ph name="SHORT_PRODUCT_NAME" />. הסימניות, ההיסטוריה והגדרות אחרות שלך מסתנכרנות עם חשבון Google שלך.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> ‏(<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">‏אפשר לבצע Powerwash במכשיר ולנסות שוב.</translation>
@@ -3163,7 +3147,6 @@
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5805697420284793859">מנהל החלונות</translation>
 <translation id="580571955903695899">סדר מחדש לפי כותרת</translation>
-<translation id="5807290661599647102">הגדרה של נעילת מסך</translation>
 <translation id="5811750797187914944">סיימת</translation>
 <translation id="5814126672212206791">סוג חיבור</translation>
 <translation id="5815645614496570556">‏כתובת X.400</translation>
@@ -3536,7 +3519,6 @@
 <translation id="6370021412472292592">לא ניתן היה לטעון את המניפסט.</translation>
 <translation id="637062427944097960">הקובץ הזה נפתח בשולחן עבודה שונה. עבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי לראות אותו.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">‏הגדרת Smart Lock ל-Android</translation>
 <translation id="6374469231428023295">נסה שוב</translation>
 <translation id="6380143666419481200">קבל והמשך</translation>
 <translation id="6384275966486438344">שנה את הגדרות החיפוש שלך ל: <ph name="SEARCH_HOST" /></translation>
@@ -3956,7 +3938,6 @@
 <translation id="7027125358315426638">שם מסד נתונים:</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7031962166228839643">‏המערכת מכינה את TPM, אנא המתן (פעולה זו עשויה להימשך מספר דקות)...</translation>
-<translation id="7035437538340499453">‏סיימת להגדיר את Smart Lock</translation>
 <translation id="7037509989619051237">טקסט לתצוגה מקדימה</translation>
 <translation id="7039326228527141150">‏גש למכשירי USB של <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">‏כניסה של כרטיס חכם של Microsoft </translation>
@@ -4756,7 +4737,6 @@
 <translation id="8227119283605456246">צרף קובץ</translation>
 <translation id="8230134520748321204">האם לשמור את הסיסמה של <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">עזור למהנדסים שלנו לפתור את הבעיה הזו. ספר לנו מה קרה לפני שהוצגה לך הודעת השגיאה לגבי הפרופיל:</translation>
-<translation id="8234989666557591529">יש לבחור טלפון לביטול הנעילה של <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">מוצל</translation>
 <translation id="8241806945692107836">קובע את תצורת המכשיר...</translation>
 <translation id="8241868517363889229">לקרוא ולשנות את הסימניות שלך</translation>
@@ -4848,10 +4828,8 @@
 <translation id="8395901698320285466">מימדים</translation>
 <translation id="8396532978067103567">סיסמה שגויה.</translation>
 <translation id="839736845446313156">הירשם</translation>
-<translation id="8398790343843005537">אתר את הטלפון שלך</translation>
 <translation id="8398877366907290961">המשך בכל זאת</translation>
 <translation id="8400146488506985033">נהל אנשים</translation>
-<translation id="8410073653152358832">השתמש בטלפון הזה</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
 <translation id="8418445294933751433">&amp;הצג ככרטיסייה</translation>
@@ -4929,7 +4907,6 @@
 <translation id="8525306231823319788">מסך מלא</translation>
 <translation id="8528074251912154910">הוסף שפות</translation>
 <translation id="8528962588711550376">מבצע כניסה.</translation>
-<translation id="8529026713753283969">הודעה תישלח לטלפון הזה, לכן עליך לשמור אותו בקרבת מקום.</translation>
 <translation id="8529925957403338845">יצירת החיבור לשיתוף אינטרנט מיידי בין ניידים נכשלה</translation>
 <translation id="8534656636775144800">אופס! משהו השתבש כשניסינו לצרף את הדומיין. נסה שוב.</translation>
 <translation id="8535005006684281994">‏כתובת אתר לחידוש אישור Netscape</translation>
@@ -5233,14 +5210,12 @@
 <translation id="8995603266996330174">מנוהל על ידי <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">הוסף חשבון...</translation>
 <translation id="9003647077635673607">אפשר בכל האתרים</translation>
-<translation id="9003677638446136377">בדוק שוב</translation>
 <translation id="9003704114456258138">תדר</translation>
 <translation id="9004952710076978168">התקבלה התראה עבור מדפסת בלתי ידועה.</translation>
 <translation id="9008201768610948239">התעלם</translation>
 <translation id="9009369504041480176">טוען (%<ph name="PROGRESS_PERCENT" />)...</translation>
 <translation id="9011163749350026987">הצג תמיד את הסמל</translation>
 <translation id="9013707997379828817">מנהל המערכת שלך החזיר את המכשיר הזה למצב קודם. צריך לשמור קבצים חשובים ולהפעיל מחדש. כל הנתונים במכשיר זה יימחקו.</translation>
-<translation id="9014987600015527693">הצג טלפון אחר</translation>
 <translation id="9018218886431812662">ההתקנה הושלמה</translation>
 <translation id="901834265349196618">אימייל</translation>
 <translation id="9019062154811256702">קריאה ושינוי של הגדרות מילוי אוטומטי</translation>
@@ -5336,7 +5311,6 @@
 <translation id="9147304170847707004">שיטת אימות</translation>
 <translation id="9147392381910171771">&amp;אפשרויות</translation>
 <translation id="9148058034647219655">יציאה</translation>
-<translation id="9148116311817999634">כדאי להגדיר נעילת מסך כדי לשפר את האבטחה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
 <translation id="9149866541089851383">ערוך...</translation>
 <translation id="9150045010208374699">להשתמש במצלמה</translation>

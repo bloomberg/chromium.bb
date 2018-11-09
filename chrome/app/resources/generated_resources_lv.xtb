@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Sinhronizēšana un personalizācija</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1399511500114202393">Bez lietotāja sertifikāta</translation>
-<translation id="140250605646987970">Jūsu tālrunis tika atrasts. Taču sistēma Smart Lock darbojas tikai ierīcēs, kurās tiek izmantota operētājsistēma Android 5.0 vai jaunāka versija. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (uzraudzītais)</translation>
 <translation id="1406500794671479665">Notiek verificēšana...</translation>
 <translation id="1407489512183974736">Apgriezt un centrēt</translation>
@@ -538,7 +537,6 @@
 <translation id="1769104665586091481">Atvērt saiti &amp;jaunā logā</translation>
 <translation id="1773212559869067373">Autentifikācijas sertifikāts tika lokāli noraidīts.</translation>
 <translation id="177336675152937177">Mitinātas lietotnes dati</translation>
-<translation id="1774349594977710164">Jūsu tālrunis var atbloķēt arī citas jūsu ierīces (<ph name="DEVICE_TYPE" />), jo tās ir automātiski sinhronizētas.</translation>
 <translation id="1774833706453699074">Saglabāt atvērtās lapas kā grāmatzīmes...</translation>
 <translation id="1775381402323441512">Video informācija</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -567,7 +565,6 @@
 <translation id="1815579292149538864">Iestatīt vai pārvaldīt CUPS printerus</translation>
 <translation id="181577467034453336">Vēl <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Uzmanību!<ph name="END_BOLD" /> Šie ir pagaidu faili un var tikt automātiski izdzēsti, lai atbrīvotu vietu diskā. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Iestatiet Smart Lock savā ierīcē (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="1817871734039893258">Microsoft failu atkopšana</translation>
 <translation id="1818007989243628752">Dzēst lietotāja <ph name="USERNAME" /> paroli</translation>
 <translation id="1818913467757368489">Notiek žurnāla augšupielāde.</translation>
@@ -679,7 +676,6 @@
 <translation id="1976323404609382849">Ir bloķēti vairāku vietņu sīkfaili.</translation>
 <translation id="1977965994116744507">Pietuviniet tālruni, lai atbloķētu ierīci (<ph name="DEVICE_TYPE" />).</translation>
 <translation id="1979280758666859181">Jūs gatavojaties pāriet uz kanālu ar vecāku <ph name="PRODUCT_NAME" /> versiju. Kanāla maiņa tiks piemērota, kad kanāla versija atbildīs versijai, kas pašreiz instalēta jūsu ierīcē.</translation>
-<translation id="1981115145845865539">Automātiski atbloķējiet savu ierīci (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="1983959805486816857">Kad esat izveidojis jaunu uzraudzīto lietotāju, varat jebkurā brīdī no jebkuras ierīces pārvaldīt iestatījumus, apmeklējot vietni <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1987317783729300807">Konti</translation>
 <translation id="1989112275319619282">Pārlūkot</translation>
@@ -984,7 +980,6 @@
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> pievienots</translation>
 <translation id="2464089476039395325">HTTP starpniekserveris</translation>
 <translation id="2468205691404969808">Izmanto sīkfailus, lai iegaumētu jūsu preferences, pat ja neapmeklējāt šīs lapas</translation>
-<translation id="2468902267404883140">Nevar izveidot savienojumu ar tālruni. Jums ir jāizmanto saderīgs Android tālrunis, kurš ir ieslēgts un atrodas rokas stiepiena attālumā. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="247051149076336810">Failu kopīgošanas URL</translation>
 <translation id="2470702053775288986">Tika atspējoti neatbalstīti paplašinājumi</translation>
 <translation id="2473195200299095979">Tulkot šo lapu</translation>
@@ -997,7 +992,6 @@
 <translation id="2484959914739448251">Lai notīrītu pārlūkošanas datus no visām savām sinhronizētajām ierīcēm un Google konta, <ph name="BEGIN_LINK" />ievadiet ieejas frāzi<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="2487067538648443797">Pievienot jaunu grāmatzīmi</translation>
-<translation id="248861575772995840">Nevar atrast tālruni. Jūsu ierīcē (<ph name="DEVICE_TYPE" />) jābūt iespējotam Bluetooth savienojumam. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="2489918096470125693">Pievienot &amp;mapi...</translation>
 <translation id="249113932447298600">Diemžēl ierīce <ph name="DEVICE_LABEL" /> šobrīd netiek atbalstīta.</translation>
 <translation id="249303669840926644">Nevarēja pabeigt reģistrāciju</translation>
@@ -1056,7 +1050,6 @@
 <translation id="257088987046510401">Motīvi</translation>
 <translation id="2572032849266859634">Tika piešķirta tikai lasīšanas piekļuve krātuvei <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Šī ikona ir redzama, ja pašlaik atvērtajā lapā var lietot paplašinājumu. Lai lietotu šo paplašinājumu, noklikšķiniet uz ikonas vai nospiediet taustiņu kombināciju <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Nevar atrast tālruni. Jūsu ierīcē (<ph name="DEVICE_TYPE" />) jābūt izveidotam savienojumam ar Wi-Fi vai mobilo tīklu. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="257779572837908839">Iestatīt kā sistēmu “Chromebox sapulcēm”</translation>
 <translation id="2579575372772932244">Notiek atkārtota profila izveide. Lūdzu, uzgaidiet...</translation>
 <translation id="2580889980133367162">Vienmēr ļaut saimniekdatoram <ph name="HOST" /> lejupielādēt vairākus failus</translation>
@@ -1168,7 +1161,6 @@
 <translation id="2735438478659026460">Automātiski noklikšķināt, kad peles kursors apstājas</translation>
 <translation id="2735712963799620190">Grafiks</translation>
 <translation id="2737363922397526254">Sakļaut...</translation>
-<translation id="2737492745329609575">Sākt iestatīšanu</translation>
 <translation id="2738771556149464852">Nevis pēc</translation>
 <translation id="2739191690716947896">Atkļūdot</translation>
 <translation id="2739240477418971307">Mainītu jūsu pieejamības iestatījumus</translation>
@@ -1331,7 +1323,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="2994669386200004489">Nevarēja dublēt failu <ph name="FILE_NAME" />.</translation>
 <translation id="299483336428448530">Instalēja kāds no vecākiem.</translation>
 <translation id="2996286169319737844">Dati tika šifrēti, izmantojot sinhronizācijas ieejas frāzi. Tajā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.</translation>
-<translation id="3002017044809397427">Jūsu tālrunis (<ph name="PHONE_TYPE" />) tika atrasts. Taču sistēma Smart Lock darbojas tikai ierīcēs, kurās tiek izmantota operētājsistēma Android 5.0 vai jaunāka versija. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="3003144360685731741">Vēlamie tīkli</translation>
 <translation id="3003623123441819449">CSS kešatmiņa</translation>
 <translation id="3003633581067744647">Pārslēgties uz sīktēlu skatījumu</translation>
@@ -1480,7 +1471,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3241680850019875542">Atlasiet pakojamā paplašinājuma saknes direktoriju. Lai atjauninātu paplašinājumu, atlasiet arī privātās atslēgas failu atkārtotai izmantošanai.</translation>
 <translation id="3244294424315804309">Turpināt ar izslēgtu skaņu</translation>
 <translation id="3245321423178950146">Nezināms izpildītājs</translation>
-<translation id="3246097286174000800">Izmēģināt Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> — tīkla kļūda</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Nav daļa no sertifikāta&gt;</translation>
@@ -1559,7 +1549,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3355936511340229503">Savienojuma kļūda</translation>
 <translation id="3356580349448036450">Pabeigts</translation>
 <translation id="3356797067524893661">Jūs esat gatavs izmantot pakalpojumu Hangouts Meet</translation>
-<translation id="3358935496594837302">Nevar atrast tālruni. Jums ir jāizmanto saderīgs Android tālrunis, kurš ir ieslēgts un atrodas rokas stiepiena attālumā. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="3359256513598016054">Sertifikātu politikas ierobežojumi</translation>
 <translation id="3360297538363969800">Drukāšana neizdevās. Lūdzu, pārbaudiet printeri un mēģiniet vēlreiz.</translation>
 <translation id="3365598184818502391">Izmantojiet taustiņu Ctrl vai Alt</translation>
@@ -1909,7 +1898,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3855441664322950881">Pakot paplašinājumu</translation>
 <translation id="3855676282923585394">Importēt grāmatzīmes un iestatījumus...</translation>
 <translation id="3856800405688283469">Laika joslas atlasīšana</translation>
-<translation id="3857228364945137633">Izmēģiniet Smart Lock, lai atbloķētu savu ierīci (<ph name="DEVICE_TYPE" />) bez paroles, kad tuvumā atrodas tālrunis.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Paceliet un pieskarieties vēlreiz</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sinhronizācija ir apturēta</translation>
@@ -2036,7 +2024,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Izejas lapa}zero{Izejas lapas}one{Izejas lapas}other{Izejas lapas}}</translation>
 <translation id="4044612648082411741">Ievadiet sertifikāta paroli</translation>
 <translation id="404493185430269859">Noklusējuma meklētājprogramma</translation>
-<translation id="4047112090469382184">Drošības aspekti</translation>
 <translation id="4052120076834320548">Niecīgs</translation>
 <translation id="4055023634561256217">Lai ierīces atiestatīšanai izmantotu funkciju Powerwash, ierīci ir nepieciešams restartēt.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2045,7 +2032,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Pārbaudīt dokumentu tagad</translation>
 <translation id="406070391919917862">Fona lietotnes</translation>
-<translation id="4063283930106169759">Tālrunim ir jāatrodas tuvumā. Lai atrastu tālruni, visās ierīcēs, kurās ir jūsu konts, tiks ieslēgts Bluetooth savienojums. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
 <translation id="4065876735068446555">Iespējams, izmantotajā tīklā (<ph name="NETWORK_ID" />) tiks prasīts apmeklēt pieteikšanās lapu.</translation>
 <translation id="4068506536726151626">Šajā lapā ir elementi no šādām vietnēm, kas izseko jūsu atrašanās vietu:</translation>
 <translation id="4068776064906523561">Saglabātie pirkstu nospiedumi</translation>
@@ -2398,7 +2384,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4672657274720418656">Attīrīt lapu</translation>
 <translation id="4673442866648850031">Skārienekrāna pildspalvas rīki tiek atvērti, kad skārienekrāna pildspalva ir noņemta.</translation>
 <translation id="4677585247300749148">Vietnē <ph name="URL" /> tiek pieprasīta atļauja reaģēt uz piekļūstamības notikumiem.</translation>
-<translation id="4677692029604506169">Tālrunī, kuru izmantojāt savas ierīces (<ph name="DEVICE_TYPE" />) atbloķēšanai, drošības nolūkos ir jāiestata ekrāna bloķēšana. Parasti tas ir PIN, kombinācija vai parole. Vai ekrāna bloķēšana jau ir iestatīta? Atlasiet Pārbaudīt vēlreiz, lai verificētu un turpinātu iestatīšanu.</translation>
 <translation id="4677772697204437347">Grafiskā procesora atmiņa</translation>
 <translation id="4680105648806843642">Šajā lapā tika izslēgta skaņa.</translation>
 <translation id="4681930562518940301">Atvērt sākotnējo &amp;attēlu jaunā cilnē</translation>
@@ -2734,7 +2719,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5184063094292164363">&amp;JavaScript konsole</translation>
 <translation id="5184662919967270437">Notiek ierīces atjaunināšana</translation>
 <translation id="5185386675596372454"><ph name="EXTENSION_NAME" /> jaunākā versija ir atspējota, jo tai ir nepieciešams vairāk atļauju.</translation>
-<translation id="5186650237607254032">Atjauniniet tālruņa ekrāna bloķēšanu, lai tā tiktu izslēgta, kad atradīsieties tuvumā. Tādējādi tālrunis tiks ātrāk atbloķēts un jūsu <ph name="DEVICE_TYPE" /> ierīcē tiks nodrošināta labāka Smart Lock lietošanas pieredze.</translation>
 <translation id="5187295959347858724">Šobrīd esat pierakstījies pakalpojumā <ph name="SHORT_PRODUCT_NAME" />. Jūsu grāmatzīmes, vēsture un citi iestatījumi tiek sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Lūdzu, izpildiet ierīcei funkciju Powerwash un mēģiniet vēlreiz.</translation>
@@ -3165,7 +3149,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5804241973901381774">Atļaujas</translation>
 <translation id="5805697420284793859">Logu pārvaldnieks</translation>
 <translation id="580571955903695899">Pārkārtot pēc nosaukuma</translation>
-<translation id="5807290661599647102">Iestatīt ekrāna bloķēšanu</translation>
 <translation id="5811750797187914944">Gatavs</translation>
 <translation id="5814126672212206791">Savienojuma veids</translation>
 <translation id="5815645614496570556">X.400 adrese</translation>
@@ -3538,7 +3521,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6370021412472292592">Nevarēja ielādēt manifestu.</translation>
 <translation id="637062427944097960">Šis fails tika atvērts citā darbvirsmā. Lai skatītu šo darbvirsmu, izmantojiet profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Iestatiet Smart Lock Android ierīcēm</translation>
 <translation id="6374469231428023295">Mēģināt vēlreiz</translation>
 <translation id="6380143666419481200">Apstiprināt un turpināt</translation>
 <translation id="6384275966486438344">Mainiet savus meklēšanas iestatījumus uz šiem: <ph name="SEARCH_HOST" /></translation>
@@ -3958,7 +3940,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7027125358315426638">Datu bāzes nosaukums:</translation>
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="7031962166228839643">Notiek TPM sagatavošana. Lūdzu, uzgaidiet (tas var aizņemt dažas minūtes)...</translation>
-<translation id="7035437538340499453">Smart Lock ir iestatīta</translation>
 <translation id="7037509989619051237">Teksta priekšskatījums</translation>
 <translation id="7039326228527141150">Piekļūt USB ierīcēm, ko piedāvā <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft viedkartes pieteikšanās</translation>
@@ -4760,7 +4741,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8227119283605456246">Pievienot failu</translation>
 <translation id="8230134520748321204">Vai saglabāt paroli vietnei <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Palīdziet mūsu inženieriem novērst šo problēmu. Norādiet, kas notika tieši pirms tam, kad tika parādīts profila kļūdas ziņojums.</translation>
-<translation id="8234989666557591529">Izvēlieties tālruni, lai atbloķētu savu <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Mākonis</translation>
 <translation id="8241806945692107836">Tiek noteikta ierīces konfigurācija...</translation>
 <translation id="8241868517363889229">Lasīt un mainīt jūsu grāmatzīmes</translation>
@@ -4853,10 +4833,8 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8395901698320285466">Izmēri</translation>
 <translation id="8396532978067103567">Nepareiza parole.</translation>
 <translation id="839736845446313156">Reģistrējiet</translation>
-<translation id="8398790343843005537">Atrast tālruni</translation>
 <translation id="8398877366907290961">Turpināt jebkurā gadījumā</translation>
 <translation id="8400146488506985033">Pārvaldīt personas</translation>
-<translation id="8410073653152358832">Izmantot šo tālruni</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Vispirms jautāt (ieteicams)</translation>
 <translation id="8418445294933751433">Rādīt kā cilni</translation>
@@ -4934,7 +4912,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="8528074251912154910">Pievienot valodas</translation>
 <translation id="8528962588711550376">Pierakstīšanās.</translation>
-<translation id="8529026713753283969">Jūs saņemsiet paziņojumu šajā tālrunī, tādēļ turiet to rokas stiepiena attālumā.</translation>
 <translation id="8529925957403338845">Tūlītējas piesaistes savienojuma izveide neizdevās</translation>
 <translation id="8534656636775144800">Diemžēl, mēģinot saistīt domēnu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="8535005006684281994">Netscape sertifikāta atjaunošanas URL</translation>
@@ -5238,14 +5215,12 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8995603266996330174">Pārvalda domēnu <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Pievienot kontu...</translation>
 <translation id="9003647077635673607">Atļaut visās vietnēs</translation>
-<translation id="9003677638446136377">Pārbaudīt vēlreiz</translation>
 <translation id="9003704114456258138">Frekvence</translation>
 <translation id="9004952710076978168">Tika saņemts paziņojums par nezināmu printeri.</translation>
 <translation id="9008201768610948239">Ignorēt</translation>
 <translation id="9009369504041480176">Notiek augšupielāde (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Vienmēr rādīt ikonu</translation>
 <translation id="9013707997379828817">Administrators šajā ierīcē veica atriti. Saglabājiet svarīgos failus un pēc tam restartējiet ierīci. Visi ierīcē esošie dati tiks dzēsti.</translation>
-<translation id="9014987600015527693">Rādīt citu tālruni</translation>
 <translation id="9018218886431812662">Instalēšana pabeigta</translation>
 <translation id="901834265349196618">e-pasts</translation>
 <translation id="9019062154811256702">Lasīt un mainīt automātiskās aizpildes iestatījumus</translation>
@@ -5341,7 +5316,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="9147304170847707004">Autentifikācijas metode</translation>
 <translation id="9147392381910171771">&amp;Iespējas</translation>
 <translation id="9148058034647219655">Iziet</translation>
-<translation id="9148116311817999634">Drošības nolūkos iestatiet ekrāna bloķēšanu</translation>
 <translation id="9148126808321036104">Pierakstieties vēlreiz</translation>
 <translation id="9149866541089851383">Rediģēt ...</translation>
 <translation id="9150045010208374699">Izmantot jūsu videokameru</translation>

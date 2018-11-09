@@ -280,7 +280,6 @@
 <translation id="1397854323885047133">Kusawazisha na kuweka mapendeleo</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="1399511500114202393">Hakuna cheti cha mtumiaji</translation>
-<translation id="140250605646987970">Simu yako imepatikana. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na matoleo mapya zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Mtumiaji anayesimamiwa)</translation>
 <translation id="1406500794671479665">Inathibitisha...</translation>
 <translation id="1407489512183974736">Imepogolewa Katikati</translation>
@@ -535,7 +534,6 @@
 <translation id="1769104665586091481">Fungua Kiungo katika &amp;Dirisha Jipya</translation>
 <translation id="1773212559869067373">Cheti cha uthibitishaji kimekataliwa kindani</translation>
 <translation id="177336675152937177">Data ya programu iliyopangishwa</translation>
-<translation id="1774349594977710164">Simu yako pia inavifungua vifaa vingine vya <ph name="DEVICE_TYPE" /> kwa sababu vinasawazishwa kiotomatiki.</translation>
 <translation id="1774833706453699074">Alamisha kurasa zilizofunguliwa...</translation>
 <translation id="1775381402323441512">Maelezo ya video</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
@@ -564,7 +562,6 @@
 <translation id="1815579292149538864">Weka mipangilio au uzidhibiti printa za CUPS.</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> zaidi...</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Tahadhari:<ph name="END_BOLD" />  Faili hizi ni za muda na huenda zikafutwa kiotomatiki ili kuacha nafasi kwenye diski. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
-<translation id="1817310072033858383">Weka mipangilio ya Smart Lock kwenye kifaa chako cha <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Uopoaji wa Faili kutoka Microsoft</translation>
 <translation id="1818007989243628752">Futa nenosiri la <ph name="USERNAME" /></translation>
 <translation id="1818913467757368489">Inaendelea kupakia kumbukumbu.</translation>
@@ -676,7 +673,6 @@
 <translation id="1976323404609382849">Vidakuzi kutoka tovuti anuwai vimezuiwa.</translation>
 <translation id="1977965994116744507">Sogeza simu yako karibu ili ukifungue kifaa chako cha <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Unabadilisha hadi kituo chenye toleo zee la <ph name="PRODUCT_NAME" />. Mabadiliko ya kituo yatatumika wakati toleo la kituo linalingana na toleo lililosanidiwa kwenye kifaa chako.</translation>
-<translation id="1981115145845865539">Fungua kifaa chako cha <ph name="DEVICE_TYPE" /> kiotomatiki</translation>
 <translation id="1983959805486816857">Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kudhibiti mipangilio wakati wowote kutoka kwenye kifaa chochote katika <ph name="MANAGEMENT_URL" /> .</translation>
 <translation id="1987317783729300807">Akaunti</translation>
 <translation id="1989112275319619282">Vinjari</translation>
@@ -981,7 +977,6 @@
 <translation id="2462752602710430187">Imeongeza <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Seva Mbadala ya HTTP</translation>
 <translation id="2468205691404969808">Hutumia vidakuzi kukumbuka mapendeleo yako, hata kama hutembelei kurasa hizo</translation>
-<translation id="2468902267404883140">Haiwezi kuunganisha kwenye simu yako. Hakikisha kuwa unatumia simu ya Android inayooana, ambayo imewashwa na unayoweza kufikia. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="247051149076336810">URL ya faili ya kushiriki</translation>
 <translation id="2470702053775288986">Viendelezi visivyotumika vimezimwa</translation>
 <translation id="2473195200299095979">Tafsiri ukurasa huu</translation>
@@ -994,7 +989,6 @@
 <translation id="2484959914739448251">Ili ufute data ya kuvinjari kwenye vifaa vyako vyote vilivyosawazishwa na Akaunti yako ya Google, <ph name="BEGIN_LINK" />weka kauli yako ya siri<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2487067538648443797">Ongeza alamisho mpya</translation>
-<translation id="248861575772995840">Imeshindwa kupata simu. Hakikisha kuwa Bluetooth ya kifaa chako cha <ph name="DEVICE_TYPE" /> imewashwa. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Ongeza &amp;Folda...</translation>
 <translation id="249113932447298600">Samahani, kifaa <ph name="DEVICE_LABEL" /> hakihimiliwi kwa wakati huu.</translation>
 <translation id="249303669840926644">Haikuweza kukamilisha usajili</translation>
@@ -1053,7 +1047,6 @@
 <translation id="257088987046510401">Mandhari</translation>
 <translation id="2572032849266859634">Idhini ya kufikia kusoma tu kwenye <ph name="VOLUME_NAME" /> imeruhusiwa.</translation>
 <translation id="2575247648642144396">Aikoni hii itaonekana wakati kiendelezi kitakapoweza kufanya kazi kwenye ukurasa wa sasa. Tumia kiendelezi hiki kwa kubofya aikoni au kwa kubonyeza <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="2575268751393592580">Imeshindwa kupata simu yako. Hakikisha kuwa kifaa chako cha <ph name="DEVICE_TYPE" /> kimeunganishwa kwenye Wi-Fi au mtandao wa simu. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="257779572837908839">Weka mipangilio kuwa Chromebox ya mikutano</translation>
 <translation id="2579575372772932244">Inaunda wasifu upya, tafadhali subiri...</translation>
 <translation id="2580889980133367162">Ruhusu <ph name="HOST" /> kupakua faili nyingi wakati wote</translation>
@@ -1164,7 +1157,6 @@
 <translation id="2735438478659026460">Bofya kiotomatiki kiteuzi cha kipanya kinaposimama</translation>
 <translation id="2735712963799620190">Ratiba</translation>
 <translation id="2737363922397526254">Kunja...</translation>
-<translation id="2737492745329609575">Anza kuweka mipangilio</translation>
 <translation id="2738771556149464852">Sio Baadaye</translation>
 <translation id="2739191690716947896">Tatua</translation>
 <translation id="2739240477418971307">Badilisha mipangilio yako ya ufikiaji</translation>
@@ -1327,7 +1319,6 @@
 <translation id="2994669386200004489">Imeshindwa kuhifadhi nakala ya <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Kiendelezi kilisakinishwa na mzazi wako.</translation>
 <translation id="2996286169319737844">Data yako imesimbwa kwa njia fiche ukitumia kauli yako ya siri ya usawazishaji. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
-<translation id="3002017044809397427">Simu yako ya <ph name="PHONE_TYPE" /> imepatikana. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na matoleo mapya zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Mitandao inayopendelewa</translation>
 <translation id="3003623123441819449">Akiba ya CSS</translation>
 <translation id="3003633581067744647">Tumia mwonekano wa kijipicha</translation>
@@ -1476,7 +1467,6 @@
 <translation id="3241680850019875542">Chagua saraka msingi ya kiendelezi ya kuweka kwenye furushi. Kusasisha kiendelezi, chagua pia ufunguo wa kibinafsi wa kutumia tena.</translation>
 <translation id="3244294424315804309">Endelea kuzima sauti</translation>
 <translation id="3245321423178950146">Msanii Asiyejulikana</translation>
-<translation id="3246097286174000800">Jaribu Smart Lock</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Hitilafu ya mtandao</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Sio Sehemu Ya Cheti&gt;</translation>
@@ -1552,7 +1542,6 @@
 <translation id="3355936511340229503">Hitilafu ya muunganisho</translation>
 <translation id="3356580349448036450">Imekamilika</translation>
 <translation id="3356797067524893661">Uko tayari kwenda kwenye Hangouts Meet</translation>
-<translation id="3358935496594837302">Imeshindwa kupata simu yako. Hakikisha kuwa unatumia simu ya Android inayooana, ambayo imewashwa na unayoweza kufikia. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Vizuizi vya Sera ya Vyeti</translation>
 <translation id="3360297538363969800">Uchapishaji umeshindwa. Tafadhali angalia printa yako na ujaribu tena.</translation>
 <translation id="3365598184818502391">Tumia Ctrl au Alt</translation>
@@ -1902,7 +1891,6 @@
 <translation id="3855441664322950881">Fungasha kiendelezi</translation>
 <translation id="3855676282923585394">Leta Alamisho na Mipangilio...</translation>
 <translation id="3856800405688283469">Chagua saa za eneo</translation>
-<translation id="3857228364945137633">Jaribu kutumia Smart Lock kukifungua kifa chako cha <ph name="DEVICE_TYPE" /> bila kutumia nenosiri, simu yako ikiwa karibu.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3857807444929313943">Inua, kisha uguse tena</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Umesitisha usawazishaji</translation>
@@ -2029,7 +2017,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Funga Ukurasa}other{Funga Kurasa}}</translation>
 <translation id="4044612648082411741">Weka nenosiri la cheti chako</translation>
 <translation id="404493185430269859">Injini tafuti chaguomsingi</translation>
-<translation id="4047112090469382184">Namna hiki kilivyo salama</translation>
 <translation id="4052120076834320548">Ndogo sana</translation>
 <translation id="4055023634561256217">Uwashaji upya unahitajika kabla ya kifaa chako kuwekwa upya na Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2038,7 +2025,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Kagua Andiko Sasa</translation>
 <translation id="406070391919917862">Programu za Mandharinyuma</translation>
-<translation id="4063283930106169759">Hakikisha kuwa simu yako iko karibu. Ili uipate simu yako, Bluetooth itawashwa kwenye vifaa vyote uliyovitumia kuingia katika akaunti. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="4065876735068446555">Mtandao unaotumia (<ph name="NETWORK_ID" />) unaweza kukuhitaji utembelee ukurasa wake wa kuingia katika akaunti.</translation>
 <translation id="4068506536726151626">Ukurasa huu una vipengee kutoka tovuti zifuatazo ambazo zinafuatilia mahali ulipo:</translation>
 <translation id="4068776064906523561">Alama za vidole zilizohifadhiwa</translation>
@@ -2389,7 +2375,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4672657274720418656">Tenganisha Ukurasa</translation>
 <translation id="4673442866648850031">Fungua zana za stylus wakati stylus imeondolewa</translation>
 <translation id="4677585247300749148"><ph name="URL" /> inataka kushughulikia matukio ya zana za walio na matatizo ya kuona au kusikia</translation>
-<translation id="4677692029604506169">Simu uliyoitumia kuifungua kifaa chako cha <ph name="DEVICE_TYPE" /> inahitaji mbinu ya kufunga skrini ili iwe salama. Kwa kawaida, mbinu ya kufunga skrini huwa PIN, mchoro, au nenosiri. Je, unatumia mbinu ya kufunga skrini? Chagua Kagua tena ili uthibitishe kisha uendelee kuweka mipangilio.</translation>
 <translation id="4677772697204437347">Hifadhi ya GPU</translation>
 <translation id="4680105648806843642">Sauti imezimwa kwenye ukurasa huu</translation>
 <translation id="4681930562518940301">Fungua picha asili katika kichupo kipya</translation>
@@ -2725,7 +2710,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5184063094292164363">Kidhibiti Kazi cha &amp;JavaScript</translation>
 <translation id="5184662919967270437">Inasasisha kifaa chako</translation>
 <translation id="5185386675596372454">Toleo jipya zaidi la "<ph name="EXTENSION_NAME" />" limezimwa kwa sababu linahitaji idhini zaidi.</translation>
-<translation id="5186650237607254032">Sasisha kipengele cha kufunga skrini ya simu yako ili ijizime ukiwa karibu. Utaifungua simu haraka zaidi na ufurahie hali bora ya matumizi ya Smart Lock kwenye <ph name="DEVICE_TYPE" /> yako.</translation>
 <translation id="5187295959347858724">Sasa umeingia kwenye <ph name="SHORT_PRODUCT_NAME" />. Alamisho zako, historia, na mipangilio mingine vinalinganishwa kwa Akaunti yako ya Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5204673965307125349">Tafadhali powerwash kifaa na ujaribu tena.</translation>
@@ -3156,7 +3140,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5804241973901381774">Idhini</translation>
 <translation id="5805697420284793859">Kidhibiti cha dirisha</translation>
 <translation id="580571955903695899">Panga upya kwa Kichwa</translation>
-<translation id="5807290661599647102">Weka mbinu ya Kufunga Skrini</translation>
 <translation id="5811750797187914944">Kila kitu kiko tayari</translation>
 <translation id="5814126672212206791">Aina ya muunganisho</translation>
 <translation id="5815645614496570556">Anwani X.400</translation>
@@ -3529,7 +3512,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6370021412472292592">Haikupakia maelezo.</translation>
 <translation id="637062427944097960">Faili hii ilifunguka kwenye eneo-kazi tofauti. Sogea kwenye <ph name="USER_NAME" /> ( <ph name="MAIL_ADDRESS" /> ) ili uione.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
-<translation id="6374108032506706911">Weka mipangilio ya Smart Lock ya Android</translation>
 <translation id="6374469231428023295">Jaribu Tena</translation>
 <translation id="6380143666419481200">Kubali na uendelee</translation>
 <translation id="6384275966486438344">Badilisha mipangilio yako ya kutafuta iwe: <ph name="SEARCH_HOST" /></translation>
@@ -3949,7 +3931,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7027125358315426638">Jina la hifadhidata:</translation>
 <translation id="7029809446516969842">Manenosiri</translation>
 <translation id="7031962166228839643">TPM inaandaliwa, tafadhali subiri (huenda hii ikachukua dakika chache)...</translation>
-<translation id="7035437538340499453">Smart Lock iko tayari kutumika</translation>
 <translation id="7037509989619051237">Maandishi kwa ajili ya kukagua</translation>
 <translation id="7039326228527141150">Fikia vifaa vya USB kutoka kwa <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Kuingia Kupitia Kadi Mahiri ya Microsoft</translation>
@@ -4753,7 +4734,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8227119283605456246">Ambatisha faili</translation>
 <translation id="8230134520748321204">Ungependa kuhifadhi nenosiri la <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Tafadhali wasaidie wahandisi wetu kutatua tatizo hili. Tueleze hasa kilichotendeka kabla ya kupokea ujumbe wa hitilafu:</translation>
-<translation id="8234989666557591529">Chagua simu ili ufungue kifaa chako cha <ph name="DEVICE_TYPE" /></translation>
 <translation id="8241040075392580210">Kivuli</translation>
 <translation id="8241806945692107836">Inatambua usanidi wa kifaa...</translation>
 <translation id="8241868517363889229">Kusoma na kubadilisha alamisho zako</translation>
@@ -4846,10 +4826,8 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8395901698320285466">Vipimo</translation>
 <translation id="8396532978067103567">Nenosiri lisilo sahihi.</translation>
 <translation id="839736845446313156">Sajili</translation>
-<translation id="8398790343843005537">Tafuta simu yako</translation>
 <translation id="8398877366907290961">Endelea licha ya hayo</translation>
 <translation id="8400146488506985033">Simamia watu</translation>
-<translation id="8410073653152358832">Tumia simu hii</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Uliza kwanza (imependekezwa)</translation>
 <translation id="8418445294933751433">Onye&amp;sha kama kichupo</translation>
@@ -4927,7 +4905,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8525306231823319788">Skrini nzima</translation>
 <translation id="8528074251912154910">Ongeza lugha</translation>
 <translation id="8528962588711550376">Inaingia.</translation>
-<translation id="8529026713753283969">Utapokea arifa kwenye simu hii, hivyo hakikisha kuwa unaweza kuifikia.</translation>
 <translation id="8529925957403338845">Muunganisho wa Mtandao wa Kusambaza Papo Hapo haujafaulu</translation>
 <translation id="8534656636775144800">Lo!  Hitilafu imetokea wakati wa kujaribu kujiunga na kikoa. Tafadhali jaribu tena.</translation>
 <translation id="8535005006684281994">URL ya </translation>
@@ -5231,14 +5208,12 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8995603266996330174">Inadhibitiwa na <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Ongeza akaunti...</translation>
 <translation id="9003647077635673607">Ruhusu kwenye tovuti zote</translation>
-<translation id="9003677638446136377">Angalia tena</translation>
 <translation id="9003704114456258138">Masafa</translation>
 <translation id="9004952710076978168">Imepokea arifa ya printa isiyojulikana.</translation>
 <translation id="9008201768610948239">Puuza</translation>
 <translation id="9009369504041480176">Inapakia (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Onyesha aikoni kila wakati</translation>
 <translation id="9013707997379828817">Msimamizi wako alirejesha mipangilio ya awali ya kifaa hiki. Tafadhali hifadhi faili muhimu, alafu ukizime kisha ukiwashe. Data yote iliyo kwenye kifaa itafutwa.</translation>
-<translation id="9014987600015527693">Onyesha simu nyingine</translation>
 <translation id="9018218886431812662">Imemaliza kusakinisha</translation>
 <translation id="901834265349196618">Barua pepe</translation>
 <translation id="9019062154811256702">Soma na ubadilishe mipangilio ya kujaza otomatiki</translation>
@@ -5334,7 +5309,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="9147304170847707004">Njia ya Kuthibitisha</translation>
 <translation id="9147392381910171771">&amp;Chaguo</translation>
 <translation id="9148058034647219655">Ondoka</translation>
-<translation id="9148116311817999634">Kwa usalama wako, weka mbinu ya kufungua skrini</translation>
 <translation id="9148126808321036104">Ingia tena</translation>
 <translation id="9149866541089851383">Badilisha...</translation>
 <translation id="9150045010208374699">Tumia kamera yako</translation>

@@ -125,6 +125,15 @@
 <translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
+<translation id="1297117713060236551">This policy controls the list of websites that will never cause a browser switch.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME" /> policy.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME" /> policy. However, the logic is reversed: rules that match will not open an alternative browser.
+
+      Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
 <translation id="1307454923744766368">Origins or hostname patterns for which restrictions on
@@ -216,6 +225,7 @@
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1514888685242892912">Enable <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
+<translation id="1523774894176285446">Alternative browser to launch for configured websites.</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
 <translation id="1541170838458414064">Restrict printing page size</translation>
@@ -226,6 +236,12 @@
 
       If this setting is disabled or not configured then enterprise users are
       unable to use ARC.</translation>
+<translation id="1559980755219453326">This policy controls whether to report extensions and plug-in information.
+
+      When this policy is left unset or set to True, extension and plug-in data are gathered.
+      When this policy is set to False, extensions and plug-in data are not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -399,6 +415,7 @@
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
+<translation id="2104418465060359056">Report Extensions and Plug-in information</translation>
 <translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
@@ -594,6 +611,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2536525645274582300">User decides whether to enable Google Location services</translation>
 <translation id="254653220329944566">Enables <ph name="PRODUCT_NAME" /> cloud reporting</translation>
+<translation id="2548572254685798999">Report Safe Browsing information</translation>
 <translation id="2550593661567988768">Simplex printing only</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
@@ -656,6 +674,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
+<translation id="2663739737868438950">
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="2672012807430078509">Controls enabling NTLM as an authentication protocol for SMB mounts</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
@@ -786,6 +811,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3038323923255997294">Continue running background apps when <ph name="PRODUCT_NAME" /> is closed</translation>
 <translation id="3046192273793919231">Send network packets to the management server to monitor online status</translation>
 <translation id="3047732214002457234">Control how Chrome Cleanup reports data to Google</translation>
+<translation id="304775240152542058">This policy controls command-line parameters to launch to the alternative browser.
+
+      When this policy is left unset, only the URL is passed as a command-line parameter.
+
+      When this policy is set to a list of strings, each string is passed to the alternative browser as a separate command-line parameters. On Windows, the parameters are joined with spaces. On Mac OS X and Linux, a parameter may contain spaces and still be treated as a single parameter.
+
+      If an element contains ${url}, it gets replaced with the URL of the page to open.
+
+      If no element contains ${url}, the URL is appended at the end of the command line.
+
+      Environment variables are expanded. On Windows, %ABC% is replaced with the value of the ABC environment variable. On Mac OS X and Linux, ${ABC} is replaced with the value of the ABC environment variable.</translation>
 <translation id="3048744057455266684">If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
 
           This policy is optional. If not set, no search term replacement will be performed.
@@ -870,6 +906,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the screen off delay (if set) and the idle delay.</translation>
+<translation id="3251500716404598358">Configure policies to switch between browsers.
+
+      Configured websites will automatically open in a different browser from <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Default search provider encodings</translation>
 <translation id="3273221114520206906">Default JavaScript setting</translation>
 <translation id="3284094172359247914">Control use of the WebUSB API</translation>
@@ -953,6 +992,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
         The value of this policy is an Enrolment token that can be retrieved from the Google Admin console.</translation>
 <translation id="3496296378755072552">Password manager</translation>
+<translation id="3500732098526756068">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+
+      You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
+
+      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their protected password on a phishing site.
+      If this policy is left unset, password protection service will only protect Google passwords but the user will be able to change this setting.</translation>
 <translation id="3502555714327823858">Allow all duplex modes</translation>
 <translation id="350443680860256679">Configure ARC</translation>
 <translation id="3504791027627803580">Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
@@ -971,6 +1018,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
       If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="355118380775352753">Websites to open in alternative browser</translation>
 <translation id="3556806727696701427">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
 
       If you enable this setting, Safe Browsing is always active.
@@ -986,6 +1034,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
+<translation id="3624171042292187668">
+      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites that you want to isolate. This setting, SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable SitePerProcess manually, via command line flags.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
+      </translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3628480121685794414">Enable simplex printing</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
@@ -1151,6 +1208,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM" />) will be sent.
       If set to false or unset, no packets will be sent.</translation>
 <translation id="3950239119790560549">Update Time Restrictions</translation>
+<translation id="3956686688560604829">Use Internet Explorer's SiteList policy for Legacy Browser Support.</translation>
 <translation id="3958586912393694012">Allow Smart Lock to be used</translation>
 <translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
@@ -1567,6 +1625,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="5213038356678567351">Websites that should never trigger a browser switch.</translation>
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
 <translation id="5228316810085661003">The device-local account auto-login delay.
 
@@ -1626,6 +1685,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
+<translation id="5365476955714838841">Command-line parameters for the alternative browser.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366745336748853475">Allows you to specify a list of URL patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
 
@@ -1737,6 +1797,19 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Control Android Google Location services</translation>
 <translation id="5586942249556966598">Do nothing</translation>
+<translation id="5592242031005200087">
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flag.
+      If the policy is not configured, the user will be able to change this setting.
+
+      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
+
+      NOTE: This policy applies only to Chrome on Android running on devices with strictly more than 1 GB of RAM. To apply the policy on non-Android platforms, use IsolateOrigins.
+      </translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="5689430183304951538">Default printing page size</translation>
@@ -1759,6 +1832,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
 <translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
+<translation id="5728661376331491504">This policy controls the list of websites to open in an alternative browser.
+
+      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME" /> policy.
+
+      When this policy is left unset, no websites are added to the list.
+
+      When this policy is set, each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME" /> uses those rules when choosing if a URL should open in an alternative browser.
+
+      When the Internet Explorer add-in is present and enabled, Internet Explorer switches back to <ph name="PRODUCT_NAME" /> when the rules do not match.
+
+      If rules contradict each other, <ph name="PRODUCT_NAME" /> uses the most specific rule.</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
@@ -1827,6 +1911,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
+<translation id="5900196529149231477">
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
+      If the policy is disabled, both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="5901427587865226597">Duplex printing only</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
@@ -2186,6 +2276,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags set via this policy do not propagate into user sessions.</translation>
 <translation id="685769593149966548">Enforce Strict Restricted Mode for YouTube</translation>
+<translation id="6857824281777105940">This policy controls whether to report Safe Browsing information including the number of Safe Browsing warnings and the number of Safe Browsing warning click-throughs.
+
+      When this policy is left unset or set to True, Safe Browsing data are gathered.
+      When this policy is set to False, Safe Browsing data are not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 or later</translation>
 <translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 35.
 
@@ -2343,6 +2439,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
+<translation id="7158064522994309072">This policy controls which command to use to open URLs in an alternative browser.
+
+      When this policy is left unset, a platform-specific default is used: Internet Explorer for Windows or Safari for Mac OS X. On Linux, launching an alternative browser will fail when this is unset.
+
+      When this policy is set to one of ${ie}, ${firefox}, ${safari} or
+      ${opera}, that browser will launch if it is installed. ${ie} is only
+      available on Windows, and ${safari} is only available on Windows and Mac
+      OS X.
+
+      When this policy is set to a file path, that file is used as an executable
+      file.</translation>
 <translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
 <translation id="717630378807352957">Allow all printers from the configuration file.</translation>
@@ -2879,6 +2986,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8390049129576938611">Disables the internal PDF viewer in <ph name="PRODUCT_NAME" />. Instead, it treats it as download and allows the user to open PDF files with the default application.
 
       If this policy is left not set or disabled the PDF plug-in will be used to open PDF files, unless the user disables it.</translation>
+<translation id="8396145449084377015">This policy controls whether to load rules from Internet Explorer's SiteList policy.
+
+      When this policy is left unset, or set to false, <ph name="PRODUCT_NAME" /> does not use Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> policy as a source of rules for switching browsers.
+
+      When this policy is set to true, <ph name="PRODUCT_NAME" /> reads Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> to obtain the site list's URL. <ph name="PRODUCT_NAME" /> then downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME" /> policy.
+
+      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY" /> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Always Open PDF files externally</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="8417305981081876834">Set the maximum length of the lock screen PIN</translation>
@@ -3175,6 +3289,18 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
+<translation id="906631898352326790">
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, then both IsolateOrigins and SitePerProcess features will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flags.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
+      </translation>
 <translation id="9077227880520270584">Device-local account auto-login timer</translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>

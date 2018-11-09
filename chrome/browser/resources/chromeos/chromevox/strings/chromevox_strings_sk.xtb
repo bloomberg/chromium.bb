@@ -397,6 +397,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4058278702844053247">Prebieha načítavanie stránky</translation>
 <translation id="4065205963140826639">Pomocou kombinácie klávesov Hľadať + šípka doprava skúste nájsť tlačidlo Ďalej a pomocou kombinácie klávesov Hľadať + medzerník naň kliknite.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{VLNOVKA}few{# vlnovky}many{# tildes}other{# vlnoviek}}</translation>
+<translation id="4086311032171418648">Zastavuje sa režim učenia.</translation>
 <translation id="409334809956508737">Predchádzajúci objekt</translation>
 <translation id="4099274309791143834">s podponukou</translation>
 <translation id="4101527861445851766">Začiarknuté políčko</translation>
@@ -499,6 +500,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4877261390094455813">Zadajte vyhľadávací dopyt</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Interný odkaz</translation>
+<translation id="4915087353619183190">Spúšťa sa režim učenia. Ak sa chcete dozvedieť viac o jeho funkciách, stlačte kláves Qwerty, kláves obnoviteľného braillovho displeja alebo dotykové gesto. Ak ho chcete ukončiť, stlačte klávesy Control a W alebo Escape.</translation>
 <translation id="492295894462528572">Predhovor</translation>
 <translation id="495170559598752135">Akcie</translation>
 <translation id="4953585991029886728">Upraviť text</translation>

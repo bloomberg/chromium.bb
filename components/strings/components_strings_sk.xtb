@@ -139,6 +139,7 @@
 <translation id="1787142507584202372">Tu sa zobrazia otvorené karty</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Meno majiteľa karty</translation>
+<translation id="1809549658008855907">Ukladať karty do účtu Google?</translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1826516787628120939">Kontroluje sa</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
@@ -723,6 +724,7 @@
 <translation id="5922853866070715753">Takmer dokončené</translation>
 <translation id="5932224571077948991">Web zobrazuje obťažujúce alebo zavádzajúce reklamy</translation>
 <translation id="5939518447894949180">Resetovať</translation>
+<translation id="5946937721014915347">Otvára sa web <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Nemôžete sa zaregistrovať spotrebiteľským účtom (k dispozícii je licencia v balíčku).</translation>
 <translation id="5966151627327109289">Odhlási vás z väčšiny webov. Môžete stratiť prístup k chránenému obsahu z webu <ph name="SITE" /> a niektorých ďalších webov.</translation>
 <translation id="5967592137238574583">Úprava kontaktných informácií</translation>
@@ -1096,6 +1098,7 @@
 <translation id="8553075262323480129">Prekladanie zlyhalo, pretože sa nepodarilo určiť jazyk stránky.</translation>
 <translation id="8557066899867184262">Kód CVC nájdete na zadnej strane karty.</translation>
 <translation id="8559762987265718583">Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho zariadenia sú nesprávne.</translation>
+<translation id="8562974682002272877">Zdá sa, že to chcete spraviť samostatne. Môžete pokračovať bez mojej pomoci.</translation>
 <translation id="8564985650692024650">Ak ste heslo organizácie <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> použili aj na iných weboch, Chromium ho odporúča obnoviť.</translation>
 <translation id="8571890674111243710">Prebieha preklad stránky do jazyka: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Pridať telefón
@@ -1195,6 +1198,7 @@
 <translation id="935608979562296692">VYMAZAŤ FORMULÁR</translation>
 <translation id="936602727769022409">Môžete stratiť prístup do účtu Google. Chromium odporúča, aby ste si ihneď zmenili heslo. Zobrazí sa výzva na prihlásenie.</translation>
 <translation id="939736085109172342">Nový priečinok</translation>
+<translation id="945855313015696284">Skontrolujte informácie nižšie a odstráňte neplatné karty</translation>
 <translation id="951104842009476243">Akceptované debetné a predplatené karty</translation>
 <translation id="962484866189421427">Tento obsah sa môže pokúsiť nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďovať údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">oficiálna zostava</translation>
