@@ -1,5 +1,0 @@
-# Integration with the Windows WebAuthn API requires an unreleased header
-# file.
-declare_args() {
-  use_win_webauthn_api = false
-}
