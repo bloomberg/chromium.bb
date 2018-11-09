@@ -70,6 +70,9 @@ config("nasm_config") {
       # NASM sometimes compares enums to unsigned integers.
       "/wd4018",  # sign compare
 
+      # char VS const char mismatch.
+      "/wd4028",  # formal parameter 1 different from declaration.
+
       # NASM comment: Uninitialized -> all zero by C spec
       # Or sometimes one const struct is forward declared for no reason.
       "/wd4132",  # const object should be initialized
