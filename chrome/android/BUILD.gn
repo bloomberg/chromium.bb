@@ -1464,6 +1464,9 @@ template("chrome_public_apk_or_module_tmpl") {
     load_library_from_apk = _is_modern && chromium_linker_supported
 
     version_name = chrome_version_name
+    if (experimental_r8_path == "") {
+      enable_multidex = true
+    }
   }
 }
 
