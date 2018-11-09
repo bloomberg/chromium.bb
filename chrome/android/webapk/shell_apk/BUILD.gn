@@ -316,5 +316,8 @@ junit_binary("webapk_shell_apk_h2o_junit_tests") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
   ]
+  data_deps = [
+    ":${h2o_junit_manifest_target_name}",
+  ]
   android_manifest_path = h2o_junit_manifest_output
 }
