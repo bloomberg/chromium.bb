@@ -2817,10 +2817,6 @@ void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
 
 WebURL WebViewImpl::GetURLForDebugTrace() {
   WebFrame* main_frame = MainFrame();
-  // TODO(crbug.com/896836): Avoid a crash in minimal way for merge. But we'll
-  // avoid it properly in a followup.
-  if (!main_frame)
-    return {};
   if (main_frame->IsWebLocalFrame())
     return main_frame->ToWebLocalFrame()->GetDocument().Url();
   return {};
