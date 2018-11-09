@@ -1066,7 +1066,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     """Writes a format test for an immediate version of a command."""
     pass
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Writes the code to set data_size used in validation"""
     pass
 
@@ -1103,18 +1103,21 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteServiceHandlerArgGetCode(self, func, f):
     """Writes the argument unpack code for service handlers."""
     if len(func.GetOriginalArgs()) > 0:
-      last_arg = func.GetLastOriginalArg()
-      all_but_last_arg = func.GetOriginalArgs()[:-1]
-      for arg in all_but_last_arg:
-        arg.WriteGetCode(f)
-      self.WriteGetDataSizeCode(func, f)
-      last_arg.WriteGetCode(f)
+      for arg in func.GetOriginalArgs():
+        if not arg.IsPointer():
+          arg.WriteGetCode(f)
+
+      # Write pointer arguments second. Sizes may be dependent on other args
+      for arg in func.GetOriginalArgs():
+        if arg.IsPointer():
+          self.WriteGetDataSizeCode(func, arg, f)
+          arg.WriteGetCode(f)
 
   def WriteImmediateServiceHandlerArgGetCode(self, func, f):
     """Writes the argument unpack code for immediate service handlers."""
     for arg in func.GetOriginalArgs():
       if arg.IsPointer():
-        self.WriteGetDataSizeCode(func, f)
+        self.WriteGetDataSizeCode(func, arg, f)
       arg.WriteGetCode(f)
 
   def WriteBucketServiceHandlerArgGetCode(self, func, f):
@@ -1124,7 +1127,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     for arg in func.GetOriginalArgs():
       if arg.IsConstant():
         arg.WriteGetCode(f)
-    self.WriteGetDataSizeCode(func, f)
+    self.WriteGetDataSizeCode(func, arg, f)
 
   def WriteServiceImplementation(self, func, f):
     """Writes the service implementation for a command."""
@@ -1963,19 +1966,22 @@ class NoCommandHandler(CustomHandler):
 
 
 class DataHandler(TypeHandler):
-  """Handler for glBufferData, glBufferSubData, glTex{Sub}Image*D."""
+  """
+  Handler for glBufferData, glBufferSubData, glTex{Sub}Image*D.
+  """
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
     # TODO: Move this data to _FUNCTION_INFO?
     name = func.name
     if name.endswith("Immediate"):
       name = name[0:-9]
-    if name in ['BufferData', 'BufferSubData', 'RasterCHROMIUM']:
-      f.write("  uint32_t data_size = size;\n")
+    if arg.name in func.size_args:
+      size = func.size_args[arg.name]
+      f.write("  uint32_t %s = %s;\n" % (arg.GetReservedSizeId(), size))
     else:
-      f.write(
-          "// uint32_t data_size = 0;  // WARNING: compute correct size.\n")
+      f.write("// uint32_t %s = 0;  // WARNING: compute correct size.\n" % (
+              arg.GetReservedSizeId()))
 
   def WriteImmediateCmdGetTotalSize(self, func, f):
     """Overrriden from TypeHandler."""
@@ -2200,13 +2206,14 @@ class GENnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
-    code = """  uint32_t data_size;
-  if (!%sSafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    code = """  uint32_t %(data_size)s;
+  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % _Namespace()
+""" % {'data_size': arg.GetReservedSizeId(),
+       'namespace': _Namespace()}
     f.write(code)
 
   def WriteHandlerImplementation (self, func, f):
@@ -2652,13 +2659,14 @@ class DeleteHandler(TypeHandler):
 class DELnHandler(TypeHandler):
   """Handler for glDelete___ type functions."""
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
-    code = """  uint32_t data_size;
-  if (!%sSafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    code = """  uint32_t %(data_size)s;
+  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % _Namespace()
+""" % {'data_size': arg.GetReservedSizeId(),
+       'namespace': _Namespace()}
     f.write(code)
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
@@ -3332,18 +3340,20 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, f, invalid_test, extra, *extras)
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
-    code = """  uint32_t data_size;
-  if (!%sGLES2Util::ComputeDataSize<%s, %d>(1, &data_size)) {
+    code = ("""  uint32_t %(data_size)s;
+  if (!%(namespace)sGLES2Util::""" +
+"""ComputeDataSize<%(arrayType)s, %(arrayCount)d>(1, &%(data_size)s)) {
     return error::kOutOfBounds;
   }
-"""
-    f.write(code % (_Namespace(),
-                    self.GetArrayType(func),
-                    self.GetArrayCount(func)))
+""")
+    f.write(code % {'data_size': arg.GetReservedSizeId(),
+                    'namespace': _Namespace(),
+                    'arrayType': self.GetArrayType(func),
+                    'arrayCount': self.GetArrayCount(func)})
     if func.IsImmediate():
-      f.write("  if (data_size > immediate_data_size) {\n")
+      f.write("  if (%s > immediate_data_size) {\n" % arg.GetReservedSizeId())
       f.write("    return error::kOutOfBounds;\n")
       f.write("  }\n")
 
@@ -3633,19 +3643,20 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, f, invalid_test, extra, *extras)
 
-  def WriteGetDataSizeCode(self, func, f):
+  def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
-    code = """  uint32_t data_size = 0;
-  if (count >= 0 &&
-      !%sGLES2Util::ComputeDataSize<%s, %d>(count, &data_size)) {
+    code = ("""  uint32_t %(data_size)s = 0;
+  if (count >= 0 && !%(namespace)sGLES2Util::""" +
+"""ComputeDataSize<%(arrayType)s, %(arrayCount)d>(count, &%(data_size)s)) {
     return error::kOutOfBounds;
   }
-"""
-    f.write(code % (_Namespace(),
-                    self.GetArrayType(func),
-                    self.GetArrayCount(func)))
+""")
+    f.write(code % {'data_size': arg.GetReservedSizeId(),
+                    'namespace': _Namespace(),
+                    'arrayType': self.GetArrayType(func),
+                    'arrayCount': self.GetArrayCount(func)})
     if func.IsImmediate():
-      f.write("  if (data_size > immediate_data_size) {\n")
+      f.write("  if (%s > immediate_data_size) {\n" % arg.GetReservedSizeId())
       f.write("    return error::kOutOfBounds;\n")
       f.write("  }\n")
 
@@ -4857,6 +4868,10 @@ class Argument(object):
               for i, cmd_type
               in enumerate(self.cmd_type)]
 
+  def GetReservedSizeId(self):
+    """Gets a special identifier name for the data size of this argument"""
+    return "%s_size" % self.name
+
   def GetValidClientSideArg(self, func):
     """Gets a valid value for this argument."""
     valid_arg = func.GetValidArg(self)
@@ -5280,7 +5295,8 @@ class ImmediatePointerArgument(Argument):
     """Overridden from Argument."""
     f.write("  volatile %s %s = %sGetImmediateDataAs<volatile %s>(\n" %
             (self.type, self.name, _Namespace(), self.type))
-    f.write("      c, data_size, immediate_data_size);\n")
+    f.write("      c, %s, immediate_data_size);\n" %
+            self.GetReservedSizeId())
 
   def WriteValidationCode(self, f, func):
     """Overridden from Argument."""
@@ -5362,8 +5378,8 @@ class PointerArgument(Argument):
         "  %s %s = GetSharedMemoryAs<%s>(\n" %
         (self.type, self.name, self.type))
     f.write(
-        "      c.%s_shm_id, c.%s_shm_offset, data_size);\n" %
-        (self.name, self.name))
+        "      c.%s_shm_id, c.%s_shm_offset, %s);\n" %
+        (self.name, self.name, self.GetReservedSizeId()))
 
   def WriteValidationCode(self, f, func):
     """Overridden from Argument."""
@@ -5400,8 +5416,8 @@ class BucketPointerArgument(PointerArgument):
   def WriteGetCode(self, f):
     """Overridden from Argument."""
     f.write(
-      "  %s %s = bucket->GetData(0, data_size);\n" %
-      (self.type, self.name))
+      "  %s %s = bucket->GetData(0, %s);\n" %
+      (self.type, self.name, self.GetReservedSizeId()))
 
   def WriteValidationCode(self, f, func):
     """Overridden from Argument."""
@@ -5611,6 +5627,11 @@ class Function(object):
       self.args_for_cmds = self.original_args[:]
 
     self.passthrough_service_doer_args = self.original_args[:]
+
+    if 'size_args' in info:
+      self.size_args = info['size_args']
+    else:
+      self.size_args = {}
 
     self.return_type = info['return_type']
     if self.return_type != 'void':
