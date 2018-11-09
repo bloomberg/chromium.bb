@@ -13,6 +13,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -31,6 +32,8 @@ constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
 constexpr char kTimedOutNotInstalledStats[] =
     "Extensions.ForceInstalledTimedOutAndNotInstalledCount";
 constexpr char kFailureReasons[] = "Extensions.ForceInstalledFailureReason";
+constexpr char kFailureCrxInstallErrorStats[] =
+    "Extensions.ForceInstalledFailureCrxInstallError";
 }  // namespace
 
 namespace extensions {
@@ -80,6 +83,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsInstalled) {
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
   histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
@@ -95,6 +99,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectTotalCount(kFailureReasons, 1);
   histogram_tester_.ExpectUniqueSample(
       kFailureReasons, InstallationFailures::Reason::UNKNOWN, 1);
+  histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
@@ -102,9 +107,10 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   SetupForceList();
   InstallationFailures::ReportFailure(&profile_, kExtensionId1,
                                       InstallationFailures::Reason::INVALID_ID);
-  InstallationFailures::ReportFailure(
+  InstallationFailures::ReportCrxInstallError(
       &profile_, kExtensionId2,
-      InstallationFailures::Reason::MALFORMED_EXTENSION_SETTINGS);
+      InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
+      CrxInstallErrorDetail::UNEXPECTED_ID);
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
@@ -114,8 +120,10 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectBucketCount(
       kFailureReasons, InstallationFailures::Reason::INVALID_ID, 1);
   histogram_tester_.ExpectBucketCount(
-      kFailureReasons,
-      InstallationFailures::Reason::MALFORMED_EXTENSION_SETTINGS, 1);
+      kFailureReasons, InstallationFailures::Reason::CRX_INSTALL_ERROR_OTHER,
+      1);
+  histogram_tester_.ExpectUniqueSample(kFailureCrxInstallErrorStats,
+                                       CrxInstallErrorDetail::UNEXPECTED_ID, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
@@ -125,6 +133,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
   histogram_tester_.ExpectTotalCount(kFailureReasons, 0);
+  histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
 }
 
 }  // namespace extensions

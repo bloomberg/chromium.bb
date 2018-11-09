@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_FAILURES_H_
 #define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_FAILURES_H_
 
+#include <utility>
+
+#include "base/optional.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension_id.h"
 
 class Profile;
@@ -73,19 +77,36 @@ class InstallationFailures {
     // extension.
     NO_UPDATE = 17,
 
+    // The crx was downloaded, but failed to install.
+    // Corresponds to CrxInstallErrorType.
+    CRX_INSTALL_ERROR_DECLINED = 18,
+    CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE = 19,
+    CRX_INSTALL_ERROR_OTHER = 20,
+
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = NO_UPDATE
+    kMaxValue = CRX_INSTALL_ERROR_OTHER,
   };
+
+  // Contains reason for the failure. If it's CRX install error, then also
+  // details about it.
+  using InstallationFailureData =
+      std::pair<extensions::InstallationFailures::Reason,
+                base::Optional<extensions::CrxInstallErrorDetail>>;
 
   // Remembers failure reason in memory.
   static void ReportFailure(const Profile* profile,
                             const ExtensionId& id,
                             Reason reason);
+  static void ReportCrxInstallError(const Profile* profile,
+                                    const ExtensionId& id,
+                                    Reason reason,
+                                    CrxInstallErrorDetail crx_install_error);
 
   // Retrieves reason for installation failure.
   // Returns UNKNOWN if not found.
-  static Reason Get(const Profile* profile, const ExtensionId& id);
+  static InstallationFailureData Get(const Profile* profile,
+                                     const ExtensionId& id);
 
   // Clears all failures for the given profile.
   static void Clear(const Profile* profile);
