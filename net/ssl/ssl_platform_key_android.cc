@@ -106,11 +106,16 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
                         const JavaRef<jobject>& key,
                         size_t max_length,
                         android::AndroidRSA* legacy_rsa)
-      : type_(type), max_length_(max_length), legacy_rsa_(legacy_rsa) {
+      : type_(type),
+        provider_name_(android::GetPrivateKeyClassName(key)),
+        max_length_(max_length),
+        legacy_rsa_(legacy_rsa) {
     key_.Reset(key);
   }
 
   ~SSLPlatformKeyAndroid() override {}
+
+  std::string GetProviderName() override { return provider_name_; }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     bool supports_pss = base::android::BuildInfo::GetInstance()->sdk_int() >=
@@ -176,6 +181,7 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
 
   int type_;
   ScopedJavaGlobalRef<jobject> key_;
+  std::string provider_name_;
   size_t max_length_;
   android::AndroidRSA* legacy_rsa_;
 

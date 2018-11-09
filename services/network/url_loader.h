@@ -162,6 +162,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
                                      int net_error);
   void OnCertificateRequestedResponse(
       const scoped_refptr<net::X509Certificate>& x509_certificate,
+      const std::string& provider_name,
       const std::vector<uint16_t>& algorithm_preferences,
       mojom::SSLPrivateKeyPtr ssl_private_key,
       bool cancel_certificate_selection);

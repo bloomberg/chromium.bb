@@ -90,6 +90,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
       const base::WeakPtr<CertificateProviderService>& service);
 
   // net::SSLPrivateKey:
+  std::string GetProviderName() override;
   std::vector<uint16_t> GetAlgorithmPreferences() override;
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
@@ -235,6 +236,11 @@ CertificateProviderService::SSLPrivateKey::SSLPrivateKey(
   // This constructor is called on |service_task_runner|. Only subsequent calls
   // to member functions have to be on a common thread.
   thread_checker_.DetachFromThread();
+}
+
+std::string CertificateProviderService::SSLPrivateKey::GetProviderName() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return "extension \"" + extension_id_ + "\"";
 }
 
 std::vector<uint16_t>

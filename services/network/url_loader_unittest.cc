@@ -2167,16 +2167,19 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
         url_loader_ptr_->reset();
         break;
       case CertificateResponse::CANCEL_CERTIFICATE_SELECTION:
-        std::move(callback).Run(nullptr, std::vector<uint16_t>(), nullptr,
+        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
+                                nullptr,
                                 true /* cancel_certificate_selection */);
         break;
       case CertificateResponse::NULL_CERTIFICATE:
-        std::move(callback).Run(nullptr, std::vector<uint16_t>(), nullptr,
+        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
+                                nullptr,
                                 false /* cancel_certificate_selection */);
         break;
       case CertificateResponse::VALID_CERTIFICATE_SIGNATURE:
       case CertificateResponse::INVALID_CERTIFICATE_SIGNATURE:
-        std::move(callback).Run(std::move(certificate_), algorithm_preferences_,
+        std::move(callback).Run(std::move(certificate_), provider_name_,
+                                algorithm_preferences_,
                                 std::move(ssl_private_key_ptr_),
                                 false /* cancel_certificate_selection */);
         break;
@@ -2262,6 +2265,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
 
   void set_private_key(scoped_refptr<net::SSLPrivateKey> ssl_private_key) {
     ssl_private_key_ = std::move(ssl_private_key);
+    provider_name_ = ssl_private_key_->GetProviderName();
     algorithm_preferences_ = ssl_private_key_->GetAlgorithmPreferences();
     auto ssl_private_key_request = mojo::MakeRequest(&ssl_private_key_ptr_);
     mojo::MakeStrongBinding(
@@ -2287,6 +2291,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
   scoped_refptr<net::SSLPrivateKey> ssl_private_key_;
   scoped_refptr<net::X509Certificate> certificate_;
   network::mojom::SSLPrivateKeyPtr ssl_private_key_ptr_;
+  std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
   int on_certificate_requested_counter_ = 0;
 
@@ -2650,6 +2655,7 @@ class TestSSLPrivateKey : public net::SSLPrivateKey {
   void set_fail_signing(bool fail_signing) { fail_signing_ = fail_signing; }
   int sign_count() const { return sign_count_; }
 
+  std::string GetProviderName() override { return key_->GetProviderName(); }
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return key_->GetAlgorithmPreferences();
   }
