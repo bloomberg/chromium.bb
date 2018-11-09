@@ -197,6 +197,23 @@ class BindingsSetupHelper {
   DISALLOW_COPY_AND_ASSIGN(BindingsSetupHelper);
 };
 
+class AnotherInterfaceImpl : public fidljstest::AnotherInterface {
+ public:
+  AnotherInterfaceImpl(
+      fidl::InterfaceRequest<fidljstest::AnotherInterface> request)
+      : binding_(this, std::move(request)) {}
+  ~AnotherInterfaceImpl() override = default;
+
+  void TimesTwo(int32_t a, TimesTwoCallback callback) override {
+    callback(a * 2);
+  }
+
+ private:
+  fidl::Binding<fidljstest::AnotherInterface> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnotherInterfaceImpl);
+};
+
 class TestolaImpl : public fidljstest::Testola {
  public:
   TestolaImpl() {
@@ -493,6 +510,12 @@ class TestolaImpl : public fidljstest::Testola {
     response_callbacks_.clear();
   }
 
+  void GetAnother(
+      fidl::InterfaceRequest<fidljstest::AnotherInterface> request) override {
+    another_interface_impl_ =
+        std::make_unique<AnotherInterfaceImpl>(std::move(request));
+  }
+
  private:
   bool was_do_something_called_ = false;
   int32_t received_int_ = -1;
@@ -505,6 +528,7 @@ class TestolaImpl : public fidljstest::Testola {
   zx_handle_t unowned_log_handle_;
   bool did_receive_union_ = false;
   bool did_get_vectors_of_string_ = false;
+  std::unique_ptr<AnotherInterfaceImpl> another_interface_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -1267,6 +1291,40 @@ TEST_F(FidlGenJsTest, VectorOfHandle) {
 
   EXPECT_EQ(zx_handle_close(result_vmo0), ZX_OK);
   EXPECT_EQ(zx_handle_close(result_vmo1), ZX_OK);
+}
+
+TEST_F(FidlGenJsTest, RequestInterface) {
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()));
+
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+
+    var another_proxy = new AnotherInterfaceProxy();
+
+    proxy.GetAnother(another_proxy.$request());
+    this.is_bound = another_proxy.$is_bound();
+    another_proxy.TimesTwo(456).then(resp => {
+      this.result = resp;
+
+      // TODO(crbug.com/883496): Handle created by $request() must be manually
+      // closed for now to avoid leaking it.
+      another_proxy.$close();
+    }).catch((e) => log('FAILED: ' + e));
+
+    // Use the original interface to make sure we didn't break its connection.
+    proxy.PrintInt(789);
+  )";
+  helper.runner().Run(source, "test.js");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(helper.Get<int>("result"), 456 * 2);
+  EXPECT_EQ(testola_impl.received_int(), 789);
 }
 
 int main(int argc, char** argv) {

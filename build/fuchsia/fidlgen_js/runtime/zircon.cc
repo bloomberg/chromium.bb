@@ -189,6 +189,22 @@ v8::Local<v8::Promise> ZxObjectWaitOne(gin::Arguments* args) {
   return v8::Local<v8::Promise>();
 }
 
+v8::Local<v8::Value> ZxChannelCreate(gin::Arguments* args) {
+  zx_handle_t channel0, channel1;
+  zx_status_t status = zx_channel_create(0, &channel0, &channel1);
+  if (status != ZX_OK) {
+    return gin::DataObjectBuilder(args->isolate())
+        .Set("status", status)
+        .Build();
+  }
+
+  return gin::DataObjectBuilder(args->isolate())
+      .Set("status", status)
+      .Set("first", channel0)
+      .Set("second", channel1)
+      .Build();
+}
+
 zx_status_t ZxChannelWrite(gin::Arguments* args) {
   zx_handle_t handle;
   if (!args->GetNext(&handle)) {
@@ -350,10 +366,18 @@ ZxBindings::ZxBindings(v8::Isolate* isolate, v8::Local<v8::Object> global)
       gin::StringToSymbol(isolate, "$ZxObjectWaitOne"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(ZxObjectWaitOne))
           ->GetFunction());
+  global->Set(
+      gin::StringToSymbol(isolate, "$zx_handle_close"),
+      gin::CreateFunctionTemplate(isolate, base::BindRepeating(zx_handle_close))
+          ->GetFunction());
   SET_CONSTANT(ZX_HANDLE_INVALID);
   SET_CONSTANT(ZX_TIME_INFINITE);
 
   // Channel APIs.
+  global->Set(gin::StringToSymbol(isolate, "$ZxChannelCreate"),
+              gin::CreateFunctionTemplate(isolate,
+                                          base::BindRepeating(&ZxChannelCreate))
+                  ->GetFunction());
   global->Set(
       gin::StringToSymbol(isolate, "$ZxChannelWrite"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&ZxChannelWrite))
