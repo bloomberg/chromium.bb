@@ -1223,6 +1223,7 @@ if (closure_compile) {
       "chrome/browser/resources:closure_compile",
       "content/browser/resources:closure_compile",
       "ui/webui/resources:closure_compile",
+      "components/ukm/debug:closure_compile",
     ]
     if (is_chromeos) {
       data_deps += [ "ui/file_manager:closure_compile" ]
