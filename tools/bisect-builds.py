@@ -235,7 +235,7 @@ class PathContext(object):
       if self.platform == 'chromeos':
         extract_dir = 'chrome-chromeos'
       elif self.platform in ('win', 'win64'):
-        extract_dir = 'chrome-winp'
+        extract_dir = 'chrome-win'
 
     return os.path.join(extract_dir, self._binary_name)
 
