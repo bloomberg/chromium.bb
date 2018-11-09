@@ -39,6 +39,28 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
         base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
                        base::Unretained(this)),
         base::TimeDelta::FromSeconds(10));
+    // We only want to record statistics in the following case: a foreground tab
+    // goes to background, and stays in background until the stats are recorded,
+    // to make analysis simpler.
+    //
+    // To that end:
+    // 1. Don't post a recording task if one has been posted and hasn't run yet.
+    // 2. Any background -> foreground transition between now and the
+    //    recording task running cancels stats recording.
+    if (!waiting_to_record_stats_) {
+      task_runner->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
+                         base::Unretained(this)),
+          base::TimeDelta::FromSeconds(10 + 30));
+      waiting_to_record_stats_ = true;
+      should_record_stats_ = true;
+    }
+  } else {
+    // See (2) above.
+    if (waiting_to_record_stats_) {
+      should_record_stats_ = false;
+    }
   }
 }
 
@@ -129,7 +151,56 @@ size_t ParkableStringManager::Size() const {
   return parked_strings_.size() + unparked_strings_.size();
 }
 
+void ParkableStringManager::RecordStatistics() {
+  DCHECK(IsMainThread());
+  DCHECK(waiting_to_record_stats_);
+  waiting_to_record_stats_ = false;
+  if (!should_record_stats_)
+    return;
+  // See |SetRendererBackgrounded()|, is |should_record_stats_| is true then the
+  // renderer is still backgrounded_.
+  DCHECK(IsRendererBackgrounded());
+
+  size_t total_size = 0, total_before_compression_size = 0;
+  size_t total_compressed_size = 0;
+  for (ParkableStringImpl* str : parked_strings_) {
+    size_t size = str->CharactersSizeInBytes();
+    total_size += size;
+    total_before_compression_size += size;
+    total_compressed_size += str->compressed_size();
+  }
+
+  for (ParkableStringImpl* str : unparked_strings_.Values())
+    total_size += str->CharactersSizeInBytes();
+
+  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.TotalSizeKb",
+                              total_size / 1000);
+  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.CompressedSizeKb",
+                              total_compressed_size / 1000);
+  size_t savings = total_before_compression_size - total_compressed_size;
+  UMA_HISTOGRAM_COUNTS_100000("Memory.ParkableString.SavingsKb",
+                              savings / 1000);
+  if (total_before_compression_size != 0) {
+    size_t ratio_percentage =
+        (100 * total_compressed_size) / total_before_compression_size;
+    UMA_HISTOGRAM_PERCENTAGE("Memory.ParkableString.CompressionRatio",
+                             ratio_percentage);
+  }
+}
+
+void ParkableStringManager::ResetForTesting() {
+  backgrounded_ = false;
+  waiting_to_record_stats_ = false;
+  should_record_stats_ = false;
+  unparked_strings_.clear();
+  parked_strings_.clear();
+}
+
 ParkableStringManager::ParkableStringManager()
-    : backgrounded_(false), unparked_strings_(), parked_strings_() {}
+    : backgrounded_(false),
+      waiting_to_record_stats_(false),
+      should_record_stats_(false),
+      unparked_strings_(),
+      parked_strings_() {}
 
 }  // namespace blink

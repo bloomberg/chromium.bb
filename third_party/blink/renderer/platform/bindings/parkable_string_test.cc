@@ -38,7 +38,7 @@ class ParkableStringTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    ParkableStringManager::Instance().SetRendererBackgrounded(false);
+    ParkableStringManager::Instance().ResetForTesting();
     scoped_feature_list_.InitAndEnableFeature(
         kCompressParkableStringsInBackground);
   }
@@ -304,6 +304,37 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   EXPECT_TRUE(parkable3.Impl()->is_parked());
   manager.ParkAllIfRendererBackgrounded();  // Records count and size histograms
   RunPostedTasks();
+
+  manager.RecordStatistics();
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
+                                      2 * kSizeKb, 1);
+  // a 20kB string with only one character compresses down to <1kB, hence with
+  // rounding:
+  // - CompressedSizeKb == 0
+  // - SavingsKb == 19
+  // - CompressionRatio == 0 (<1%)
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.CompressedSizeKb",
+                                      0, 1);
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.SavingsKb", 19, 1);
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.CompressionRatio",
+                                      0, 1);
+
+  // Don't record statistics if the renderer moves to foreground before
+  // recording statistics.
+  manager.SetRendererBackgrounded(true);
+  manager.SetRendererBackgrounded(false);
+  manager.SetRendererBackgrounded(true);
+  manager.RecordStatistics();
+  // Same count as above, no stats recording in the meantime.
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
+                                      2 * kSizeKb, 1);
+
+  // Calling |RecordStatistics()| resets the state, can now record stats next
+  // time.
+  manager.SetRendererBackgrounded(true);
+  manager.RecordStatistics();
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
+                                      2 * kSizeKb, 2);
 
   // Only drop it from the managed strings when the last one is gone.
   parkable3 = ParkableString();

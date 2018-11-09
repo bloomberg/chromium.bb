@@ -27,9 +27,6 @@
 //
 // As with WTF::AtomicString, this class is *not* thread-safe, and strings
 // created on a thread must always be used on the same thread.
-//
-// Implementation note: the string content is not parked yet, it is merely
-// used to gather statistics.
 
 namespace blink {
 
@@ -80,6 +77,13 @@ class PLATFORM_EXPORT ParkableStringImpl final
   bool may_be_parked() const { return may_be_parked_; }
   // Returns true if the string is parked.
   bool is_parked() const;
+  // Returns the compressed size, must not be called unless the string is
+  // compressed.
+  size_t compressed_size() const {
+    DCHECK(is_parked());
+    DCHECK(compressed_);
+    return compressed_->size();
+  }
 
  private:
   enum class State;
