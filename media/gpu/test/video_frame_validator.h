@@ -56,11 +56,14 @@ class VideoFrameValidator {
   // If |prefix_output_yuv_| is not specified, no yuv file will be saved.
   // |md5_file_path| is the path to the file that contains golden md5 values.
   // The file contains one md5 value per line, listed in display order.
+  // |linear| represents whether VideoFrame passed on EvaludateVideoFrame() is
+  // linear (i.e non-tiled) or not.
   // Returns nullptr on failure.
-  static std::unique_ptr<VideoFrameValidator> CreateVideoFrameValidator(
+  static std::unique_ptr<VideoFrameValidator> Create(
       uint32_t flags,
       const base::FilePath& prefix_output_yuv,
-      const base::FilePath& md5_file_path);
+      const base::FilePath& md5_file_path,
+      bool linear);
 
   ~VideoFrameValidator();
 

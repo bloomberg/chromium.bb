@@ -1160,9 +1160,14 @@ CreateAndInitializeVideoFrameValidator(
       prefix_output_yuv = GetTestDataFile(filepath);
     }
   }
-  return media::test::VideoFrameValidator::CreateVideoFrameValidator(
+#if defined(USE_VAAPI)
+  bool linear = false;
+#else
+  bool linear = true;
+#endif
+  return media::test::VideoFrameValidator::Create(
       g_frame_validator_flags, prefix_output_yuv,
-      filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5")));
+      filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5")), linear);
 }
 
 // Fails on Win only. crbug.com/849368
