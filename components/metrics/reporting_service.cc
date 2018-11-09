@@ -127,7 +127,7 @@ void ReportingService::SendNextLog() {
   bool is_cellular_logic = client_->IsUMACellularUploadLogicEnabled();
   if (is_cellular_logic && data_use_tracker_ &&
       !data_use_tracker_->ShouldUploadLogOnCellular(
-          log_store()->staged_log_hash().size())) {
+          log_store()->staged_log().size())) {
     upload_scheduler_->UploadOverDataUsageCap();
     upload_canceled = true;
   } else {
