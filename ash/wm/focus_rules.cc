@@ -16,7 +16,7 @@ namespace ash {
 bool IsToplevelWindow(aura::Window* window) {
   DCHECK(window);
   // The window must in a valid hierarchy.
-  if (!window->GetRootWindow())
+  if (!window->GetRootWindow() || !window->parent())
     return false;
 
   // The window must exist within a container that supports activation.
