@@ -34,6 +34,7 @@
       return;
     if (node.getAttribute('id') == tests[0][0]) {
       TestRunner.addResult(Elements.DOMPath.xPath(node, false));
+      TestRunner.addResult(Elements.DOMPath.jsPath(node, false));
       tests.shift();
       nextTest();
     }
