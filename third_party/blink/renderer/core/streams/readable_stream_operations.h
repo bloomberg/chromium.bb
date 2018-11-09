@@ -40,12 +40,20 @@ class CORE_EXPORT ReadableStreamOperations {
 
  public:
   // createReadableStreamWithExternalController
+  // Instantiates ReadableStream defined in the script and returns it.
   // If the caller supplies an invalid strategy (e.g. one that returns
   // negative sizes, or doesn't have appropriate properties), or an exception
   // occurs for another reason, this will return an empty value.
   static ScriptValue CreateReadableStream(ScriptState*,
                                           UnderlyingSourceBase*,
                                           ScriptValue strategy);
+
+  // createReadableStream
+  // Instantiates ReadableStream defined in the script and returns it.
+  static ScriptValue CreateReadableStream(ScriptState*,
+                                          ScriptValue underlying_source,
+                                          ScriptValue strategy,
+                                          ExceptionState& exception_state);
 
   // createBuiltInCountQueuingStrategy
   // If the constructor throws, this will return an empty value.
@@ -122,6 +130,10 @@ class CORE_EXPORT ReadableStreamOperations {
 
   // ReadableStreamTee
   // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
+  static ScriptValue Tee(ScriptState*, ScriptValue stream, ExceptionState&);
+
+  // ReadableStreamTee
+  // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
   // Returns without setting new_stream1 or new_stream2 if an error occurs.
   // Exceptions are caught and rethrown on |exception_state|.
   static void Tee(ScriptState*,
@@ -143,6 +155,34 @@ class CORE_EXPORT ReadableStreamOperations {
   static ScriptValue ReadableStreamDeserialize(ScriptState*,
                                                MessagePort*,
                                                ExceptionState&);
+
+  // ReadableStreamCancel
+  // This function assumes |IsReadableStream(stream)|
+  static ScriptPromise Cancel(ScriptState*,
+                              ScriptValue stream,
+                              ScriptValue reason,
+                              ExceptionState& exception_state);
+
+  // ReadableStreamPipeTo
+  // This function assumes |IsReadableStream(stream)|, |!IsLocked(stream)|,
+  // |IsWritableStream(destination)| and |!IsLocked(destination)|.
+  static ScriptPromise PipeTo(ScriptState*,
+                              ScriptValue stream,
+                              ScriptValue destination,
+                              ScriptValue options,
+                              ExceptionState& exception_state);
+
+  // IsWritableStream
+  // TODO(yhirano): Move this function to somewhere else.
+  static base::Optional<bool> IsWritableStream(ScriptState*,
+                                               ScriptValue,
+                                               ExceptionState& exception_state);
+  // IsWritableStreamLocked.
+  // This function assumes |IsWritableStream(stream)|.
+  // TODO(yhirano): Move this function to somewhere else.
+  static base::Optional<bool> IsWritableStreamLocked(ScriptState*,
+                                                     ScriptValue stream,
+                                                     ExceptionState&);
 };
 
 }  // namespace blink
