@@ -1995,7 +1995,7 @@ __gCrWeb.fill.autofillSubmissionData = function(form) {
 
 /**
  * Returns the coalesced child text of the elements who's ids are found in
- * the |atrtribute| of |element|.
+ * the |attribute| of |element|.
  *
  * For example, given this document...
  *
