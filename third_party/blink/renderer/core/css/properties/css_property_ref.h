@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class CSSPropertyName;
 class Document;
 
 // Use this class to acquire a reference to a CSSProperty instance. The
@@ -33,8 +34,12 @@ class CORE_EXPORT CSSPropertyRef {
  public:
   // Look up (or create) a CSSProperty.
   //
-  // If the incoming 'name' is not a CSS property, the CSSProperty is invalid.
+  // If the incoming 'name' is not a CSS property, the CSSPropertyRef is
+  // invalid.
   CSSPropertyRef(const String& name, const Document&);
+
+  // Like above, but will never produce an invalid CSSPropertyRef.
+  CSSPropertyRef(const CSSPropertyName&, const Document&);
 
   // If you already have a CSSProperty& object, you may use it to get
   // a CSSPropertyRef again.

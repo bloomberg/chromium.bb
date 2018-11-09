@@ -111,12 +111,19 @@ TEST_F(PropertyHandleTest, Accessors) {
   EXPECT_FALSE(PropertyHandle(kAmplitudeAttr).IsCSSCustomProperty());
 
   EXPECT_EQ(
-      PropertyHandle(GetCSSPropertyOpacity()).GetCSSProperty().PropertyID(),
-      CSSPropertyOpacity);
-  EXPECT_EQ(PropertyHandle(name).GetCSSProperty().PropertyID(),
-            CSSPropertyVariable);
-  EXPECT_EQ(PropertyHandle(name).CustomPropertyName(), name);
-  EXPECT_EQ(PropertyHandle(kAmplitudeAttr).SvgAttribute(), kAmplitudeAttr);
+      CSSPropertyOpacity,
+      PropertyHandle(GetCSSPropertyOpacity()).GetCSSProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyVariable,
+            PropertyHandle(name).GetCSSProperty().PropertyID());
+  EXPECT_EQ(name, PropertyHandle(name).CustomPropertyName());
+  EXPECT_EQ(kAmplitudeAttr, PropertyHandle(kAmplitudeAttr).SvgAttribute());
+
+  EXPECT_EQ(name, PropertyHandle(name).GetCSSPropertyName().ToAtomicString());
+  EXPECT_EQ(CSSPropertyOpacity,
+            PropertyHandle(GetCSSPropertyOpacity()).GetCSSPropertyName().Id());
+  EXPECT_EQ(
+      CSSPropertyColor,
+      PropertyHandle(GetCSSPropertyColor(), true).GetCSSPropertyName().Id());
 }
 
 }  // namespace blink

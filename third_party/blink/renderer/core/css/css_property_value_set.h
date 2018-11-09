@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
@@ -66,6 +67,8 @@ class CORE_EXPORT CSSPropertyValueSet
     CSSPropertyID ShorthandID() const {
       return PropertyMetadata().ShorthandID();
     }
+
+    CSSPropertyName Name() const;
 
     bool IsImportant() const { return PropertyMetadata().important_; }
     bool IsInherited() const { return PropertyMetadata().inherited_; }

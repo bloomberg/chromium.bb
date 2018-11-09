@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -267,9 +268,9 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   GetDocument().GetPropertyRegistry()->RegisterProperty("--prop3",
                                                         *registration);
 
-  ToLonghand(GetCSSPropertyVariable()).ApplyValue(state, *prop1);
-  ToLonghand(GetCSSPropertyVariable()).ApplyValue(state, *prop2);
-  ToLonghand(GetCSSPropertyVariable()).ApplyValue(state, *prop3);
+  CustomProperty("--prop1", GetDocument()).ApplyValue(state, *prop1);
+  CustomProperty("--prop2", GetDocument()).ApplyValue(state, *prop2);
+  CustomProperty("--prop3", GetDocument()).ApplyValue(state, *prop3);
 
   EXPECT_TRUE(state.Style()->InheritedVariables()->NeedsResolution());
   EXPECT_TRUE(state.Style()->NonInheritedVariables()->NeedsResolution());

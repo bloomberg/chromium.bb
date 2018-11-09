@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/property_descriptor.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
@@ -36,20 +37,20 @@ class CSSPropertyRefTest : public PageTestBase {
 TEST_F(CSSPropertyRefTest, LookupUnregistred) {
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(ref.GetProperty().PropertyID(), CSSPropertyVariable);
+  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, LookupRegistered) {
   RegisterProperty("--x", "<length>", "42px", false);
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(ref.GetProperty().PropertyID(), CSSPropertyVariable);
+  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, LookupStandard) {
   CSSPropertyRef ref("font-size", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(ref.GetProperty().PropertyID(), CSSPropertyFontSize);
+  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, IsValid) {
@@ -61,13 +62,13 @@ TEST_F(CSSPropertyRefTest, FromCustomProperty) {
   CustomProperty custom(AtomicString("--x"), GetDocument());
   CSSPropertyRef ref(custom);
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(ref.GetProperty().PropertyID(), CSSPropertyVariable);
+  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, FromStandardProperty) {
   CSSPropertyRef ref(GetCSSPropertyFontSize());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(ref.GetProperty().PropertyID(), CSSPropertyFontSize);
+  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, FromStaticVariableInstance) {
@@ -98,6 +99,17 @@ TEST_F(CSSPropertyRefTest, GetResolvedPropertyAlias) {
   CSSPropertyRef ref("-webkit-transform", GetDocument());
   EXPECT_TRUE(ref.GetProperty().IsResolvedProperty());
   EXPECT_EQ("transform", ref.GetProperty().GetPropertyNameString());
+}
+
+TEST_F(CSSPropertyRefTest, FromCSSPropertyNameCustom) {
+  RegisterProperty("--x", "<length>", "42px", false);
+  CSSPropertyRef ref(CSSPropertyName("--x"), GetDocument());
+  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
+}
+
+TEST_F(CSSPropertyRefTest, FromCSSPropertyNameStandard) {
+  CSSPropertyRef ref(CSSPropertyName(CSSPropertyFontSize), GetDocument());
+  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
 }
 
 }  // namespace blink
