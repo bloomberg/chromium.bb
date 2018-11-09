@@ -82,6 +82,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   std::string GetRoleString() const;
 
+  base::string16 GetContentInvalidErrorMessage() const;
+
   base::string16 GetRoleDescription() const;
 
   int GetItemIndex() const;
