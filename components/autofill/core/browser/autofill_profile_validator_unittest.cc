@@ -82,7 +82,7 @@ class AutofillProfileValidatorTest : public testing::Test {
 
   ~AutofillProfileValidatorTest() override {}
 
-  void OnValidated(AutofillProfile* profile) {
+  void OnValidated(const AutofillProfile* profile) {
     // Make sure the profile has the expected validity state.
     for (auto expectation : expected_validity_) {
       EXPECT_EQ(expectation.second,
@@ -196,7 +196,6 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
 
 // When country code is empty, the profile is unvalidated.
 TEST_F(AutofillProfileValidatorTest, ValidateAddress_EmptyCountryCode) {
-  ;
   AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::string16());
 

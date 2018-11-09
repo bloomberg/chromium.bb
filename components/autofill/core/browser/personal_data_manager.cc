@@ -1188,7 +1188,7 @@ void PersonalDataManager::UpdateClientValidityStates(
   bool update_validation =
       pref_service_->GetInteger(prefs::kAutofillLastVersionValidated) <
       atoi(version_info::GetVersionNumber().c_str());
-  for (auto* profile : profiles) {
+  for (const auto* profile : profiles) {
     if (!profile->is_client_validity_states_updated() || update_validation) {
       client_profile_validator_->StartProfileValidation(
           profile, base::BindOnce(&PersonalDataManager::OnValidated,
@@ -1644,7 +1644,7 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
   pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
 }
 
-void PersonalDataManager::OnValidated(AutofillProfile* profile) {
+void PersonalDataManager::OnValidated(const AutofillProfile* profile) {
   // We always set a value for country validity state.
   DCHECK(profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
                                    AutofillProfile::CLIENT) !=

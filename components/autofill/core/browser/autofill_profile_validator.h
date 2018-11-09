@@ -23,7 +23,7 @@ namespace autofill {
 class AutofillProfile;
 
 using AutofillProfileValidatorCallback =
-    base::OnceCallback<void(AutofillProfile*)>;
+    base::OnceCallback<void(const AutofillProfile*)>;
 
 // AutofillProfileValidator Loads Rules from the server and validates an
 // autofill profile. For a given autofill profile, it will set the ValidityState
@@ -42,7 +42,7 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
   // profile, synchronously. If it is not loaded yet, it sets up a
   // task to validate the profile when the rule is loaded (asynchronous). If the
   // loading has not yet started, it will also start loading the rules.
-  void StartProfileValidation(AutofillProfile* profile,
+  void StartProfileValidation(const AutofillProfile* profile,
                               AutofillProfileValidatorCallback cb);
 
  private:
@@ -50,7 +50,7 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
   // in an autofill profile.
   class ValidationRequest {
    public:
-    ValidationRequest(base::WeakPtr<AutofillProfile> profile,
+    ValidationRequest(base::WeakPtr<const AutofillProfile> profile,
                       AddressValidator* validator,
                       AutofillProfileValidatorCallback on_validated);
 
@@ -60,7 +60,7 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
     void OnRulesLoaded();
 
    private:
-    base::WeakPtr<AutofillProfile> profile_;
+    base::WeakPtr<const AutofillProfile> profile_;
 
     // Not owned. Outlives this object.
     AddressValidator* validator_;
