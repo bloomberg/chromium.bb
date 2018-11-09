@@ -63,6 +63,9 @@ class LayerTreeViewDelegate {
   // or committing a frame (at the same time Tracing measurements are taken).
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
 
+  // Indicates whether the LayerTreeView is about to close.
+  virtual bool IsClosing() const = 0;
+
   // Requests that the client schedule a composite now, and calculate
   // appropriate delay for potential future frame.
   virtual void RequestScheduleAnimation() = 0;

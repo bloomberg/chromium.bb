@@ -225,22 +225,9 @@ class CONTENT_EXPORT RenderWidget
   // Sets whether this RenderWidget has been swapped out to be displayed by
   // a RenderWidget in a different process.  If so, no new IPC messages will be
   // sent (only ACKs) and the process is free to exit when there are no other
-  // active RenderWidgets. The RenderWidget is not used for compositing as there
-  // is no WebWidget that should display content when swapped out.
-  void SetSwappedOut(bool is_swapped_out) { is_swapped_out_ = is_swapped_out; }
+  // active RenderWidgets.
+  void SetSwappedOut(bool is_swapped_out);
   bool is_swapped_out() const { return is_swapped_out_; }
-
-  // This is true once a Close IPC has been received. The actual action of
-  // closing must be done on another stack frame, in case the IPC receipt
-  // is in a nested message loop and will unwind back up to javascript (from
-  // plugins). So this will be true between those two things, to avoid work
-  // when the RenderWidget will be closed.
-  // Additionally, as an optimization, this is true after we know the renderer
-  // has asked the browser to close this RenderWidget.
-  //
-  // TODO(crbug.com/545684): Once RenderViewImpl and RenderWidget are split,
-  // attempt to combine two states so the shutdown logic is cleaner.
-  bool is_closing() const { return host_will_close_this_ || closing_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -279,6 +266,7 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  bool IsClosing() const override;
   void RequestScheduleAnimation() override;
   void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;

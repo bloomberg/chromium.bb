@@ -31,7 +31,7 @@ void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
   // Input messages must not be processed if the RenderWidget is in swapped out
   // or closing state.
   if (!render_widget || render_widget->is_swapped_out() ||
-      render_widget->is_closing()) {
+      render_widget->IsClosing()) {
     return;
   }
   std::move(closure).Run();
