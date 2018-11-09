@@ -4,14 +4,21 @@
 
 #include "device/fido/win/webauthn_api.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/native_library.h"
 #include "base/no_destructor.h"
+#include "device/fido/features.h"
 
 namespace device {
+
+// We do not integrate with older API versions of webauthn.dll because they
+// don't support BLE and direct device access to USB and BLE FIDO devices is
+// not yet blocked on those platforms.
+constexpr uint32_t kMinWinWebAuthnApiVersion = WEBAUTHN_API_VERSION_1;
 
 // WinWebAuthnApiImpl is the default implementation of WinWebAuthnApi, which
 // attempts to load webauthn.dll on intialization.
@@ -26,32 +33,48 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 #define BIND_FN(fn_pointer, lib_handle, fn_name)       \
   DCHECK(!fn_pointer);                                 \
   fn_pointer = reinterpret_cast<decltype(fn_pointer)>( \
-      GetProcAddress(lib_handle, fn_name));            \
-  if (!fn_pointer) {                                   \
-    DLOG(ERROR) << "failed to bind " << fn_name;       \
-    return;                                            \
+      GetProcAddress(lib_handle, fn_name));
+
+#define BIND_FN_OR_RETURN(fn_pointer, lib_handle, fn_name) \
+  BIND_FN(fn_pointer, lib_handle, fn_name);                \
+  if (!fn_pointer) {                                       \
+    DLOG(ERROR) << "failed to bind " << fn_name;           \
+    return;                                                \
   }
 
-    BIND_FN(is_user_verifying_platform_authenticator_available_, webauthn_dll,
-            "WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable");
-    BIND_FN(authenticator_make_credential_, webauthn_dll,
-            "WebAuthNAuthenticatorMakeCredential");
-    BIND_FN(authenticator_get_assertion_, webauthn_dll,
-            "WebAuthNAuthenticatorGetAssertion");
-    BIND_FN(cancel_current_operation_, webauthn_dll,
-            "WebAuthNCancelCurrentOperation");
-    BIND_FN(get_error_name_, webauthn_dll, "WebAuthNGetErrorName");
-    BIND_FN(free_credential_attestation_, webauthn_dll,
-            "WebAuthNFreeCredentialAttestation");
-    BIND_FN(free_assertion_, webauthn_dll, "WebAuthNFreeAssertion");
+    BIND_FN_OR_RETURN(is_user_verifying_platform_authenticator_available_,
+                      webauthn_dll,
+                      "WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable");
+    BIND_FN_OR_RETURN(authenticator_make_credential_, webauthn_dll,
+                      "WebAuthNAuthenticatorMakeCredential");
+    BIND_FN_OR_RETURN(authenticator_get_assertion_, webauthn_dll,
+                      "WebAuthNAuthenticatorGetAssertion");
+    BIND_FN_OR_RETURN(cancel_current_operation_, webauthn_dll,
+                      "WebAuthNCancelCurrentOperation");
+    BIND_FN_OR_RETURN(get_error_name_, webauthn_dll, "WebAuthNGetErrorName");
+    BIND_FN_OR_RETURN(free_credential_attestation_, webauthn_dll,
+                      "WebAuthNFreeCredentialAttestation");
+    BIND_FN_OR_RETURN(free_assertion_, webauthn_dll, "WebAuthNFreeAssertion");
 
     is_bound_ = true;
+
+    // Determine the API version of webauthn.dll. There is a version currently
+    // shipping with Windows RS5 from before WebAuthNGetApiVersionNumber was
+    // added (i.e., before WEBAUTHN_API_VERSION_1). Therefore we allow this
+    // function to be missing.
+    BIND_FN(get_api_version_number_, webauthn_dll,
+            "WebAuthNGetApiVersionNumber");
+    api_version_ = get_api_version_number_ ? get_api_version_number_() : 0;
   }
 
   ~WinWebAuthnApiImpl() override {}
 
   // WinWebAuthnApi:
-  bool IsAvailable() const override { return is_bound_; }
+  bool IsAvailable() const override {
+    return is_bound_ && (api_version_ >= kMinWinWebAuthnApiVersion ||
+                         base::FeatureList::IsEnabled(
+                             kWebAuthDisableWinApiVersionCheckForTesting));
+  }
 
   HRESULT IsUserVerifyingPlatformAuthenticatorAvailable(BOOL* result) override {
     DCHECK(is_bound_);
@@ -113,7 +136,11 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
       nullptr;
   decltype(&WebAuthNFreeAssertion) free_assertion_ = nullptr;
 
+  // This method is not available in all versions of webauthn.dll.
+  decltype(&WebAuthNGetApiVersionNumber) get_api_version_number_ = nullptr;
+
   bool is_bound_ = false;
+  uint32_t api_version_ = 0;
 };
 
 static WinWebAuthnApi* kDefaultForTesting = nullptr;
