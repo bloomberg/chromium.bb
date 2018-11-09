@@ -288,6 +288,31 @@ TestEntryCapabilities.prototype.canAddChildren = true;
 TestEntryCapabilities.prototype.canShare = true;
 
 /**
+ * The folder features for the test entry. Structure should match
+ * TestEntryFolderFeature in file_manager_browsertest_base.cc. All features
+ * default to false is not specified.
+ *
+ * @record
+ * @struct
+ */
+function TestEntryFolderFeature() {}
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isMachineRoot = false;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isArbitrarySyncFolder = false;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isExternalMedia = false;
+
+/**
  * Parameters to creat a Test Entry in the file manager. Structure should match
  * TestEntryInfo in file_manager_browsertest_base.cc.
  *
@@ -352,6 +377,12 @@ TestEntryInfoOptions.prototype.typeText;
 TestEntryInfoOptions.prototype.capabilities;
 
 /**
+ * @type {TestEntryFolderFeature|undefined} Foder features of this file.
+ *     Defaults to all features disabled.
+ */
+TestEntryInfoOptions.prototype.folderFeature;
+
+/**
  * File system entry information for tests. Structure should match TestEntryInfo
  * in file_manager_browsertest_base.cc
  * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
@@ -372,6 +403,7 @@ function TestEntryInfo(options) {
   this.sizeText = options.sizeText;
   this.typeText = options.typeText;
   this.capabilities = options.capabilities;
+  this.folderFeature = options.folderFeature;
   this.pinned = !!options.pinned;
   Object.freeze(this);
 }
@@ -761,6 +793,9 @@ var ENTRIES = {
   computerA: new TestEntryInfo({
     type: EntryType.COMPUTER,
     computerName: 'Computer A',
+    folderFeature: {
+      isMachineRoot: true,
+    },
   }),
 
   computerAFile: new TestEntryInfo({

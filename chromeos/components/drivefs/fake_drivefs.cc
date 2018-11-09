@@ -93,6 +93,7 @@ struct FakeDriveFs::FileMetadata {
   bool shared = false;
   std::string original_name;
   mojom::Capabilities capabilities;
+  mojom::FolderFeature folder_feature;
 };
 
 class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
@@ -271,12 +272,14 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
                               const std::string& original_name,
                               bool pinned,
                               bool shared,
-                              const mojom::Capabilities& capabilities) {
+                              const mojom::Capabilities& capabilities,
+                              const mojom::FolderFeature& folder_feature) {
   auto& stored_metadata = metadata_[path];
   stored_metadata.mime_type = mime_type;
   stored_metadata.original_name = original_name;
   stored_metadata.hosted = (original_name != path.BaseName().value());
   stored_metadata.capabilities = capabilities;
+  stored_metadata.folder_feature = folder_feature;
   if (pinned) {
     stored_metadata.pinned = true;
   }

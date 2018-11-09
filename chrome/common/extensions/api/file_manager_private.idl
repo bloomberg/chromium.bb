@@ -335,6 +335,16 @@ dictionary EntryProperties {
 
   // True if the entry can be shared by the user.
   boolean? canShare;
+
+  // True if the entry is a machine root for backup and sync.
+  boolean? isMachineRoot;
+
+  // True if the entry is a external media folder, that contains one time only
+  // uploads for USB devices, SD cards etc.
+  boolean? isExternalMedia;
+
+  // True if the entry is an arbitrary sync folder.
+  boolean? isArbitrarySyncFolder;
 };
 
 // Information about total and remaining size on the mount point.
