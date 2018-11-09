@@ -515,7 +515,14 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     ]
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
+      "test/texture_ref.cc",
+      "test/texture_ref.h",
       "test/video_accelerator_unittest_helpers.h",
+      "test/video_encode_accelerator_unittest_helpers.cc",
+      "test/video_encode_accelerator_unittest_helpers.h",
+      "test/video_frame_mapper.h",
+      "test/video_frame_mapper_factory.cc",
+      "test/video_frame_mapper_factory.h",
       "video_encode_accelerator_unittest.cc",
     ]
     if (use_x11) {
@@ -523,6 +530,18 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     }
     if (use_ozone) {
       deps += [ "//ui/ozone" ]
+    }
+    if (is_chromeos) {
+      sources += [
+        "test/generic_dmabuf_video_frame_mapper.cc",
+        "test/generic_dmabuf_video_frame_mapper.h",
+      ]
+      if (use_vaapi) {
+        sources += [
+          "test/vaapi_dmabuf_video_frame_mapper.cc",
+          "test/vaapi_dmabuf_video_frame_mapper.h",
+        ]
+      }
     }
   }
 }
