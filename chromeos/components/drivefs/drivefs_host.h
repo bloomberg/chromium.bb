@@ -135,6 +135,12 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   mojom::DriveFs* GetDriveFsInterface() const;
 
+  // Starts DriveFs search query and returns whether it will be
+  // performed localy or remotely. Assumes DriveFS to be mounted.
+  mojom::QueryParameters::QuerySource PerformSearch(
+      mojom::QueryParametersPtr query,
+      mojom::SearchQuery::GetNextPageCallback callback);
+
  private:
   class AccountTokenDelegate;
   class MountState;

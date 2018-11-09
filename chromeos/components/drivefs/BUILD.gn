@@ -64,6 +64,7 @@ source_set("unit_tests") {
     "//components/invalidation/impl:test_support",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//net:test_support",
     "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
