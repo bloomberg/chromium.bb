@@ -3156,7 +3156,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def GetReviewers(self):
     details = self._GetChangeDetail(['DETAILED_ACCOUNTS'])
-    return [reviewer['email'] for reviewer in details['reviewers']['REVIEWER']]
+    return [r['email'] for r in details['reviewers'].get('REVIEWER', [])]
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
