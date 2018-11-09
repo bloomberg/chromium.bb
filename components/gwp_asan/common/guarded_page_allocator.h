@@ -46,13 +46,14 @@ class GuardedPageAllocator {
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
   // zero-filled. Failure can occur if memory could not be mapped or protected,
-  // or if all guarded pages are already allocated.
+  // if the allocation is greather than a page in size, or if all guarded pages
+  // are already allocated.
   //
   // The align parameter specifies a power of two to align the allocation up to.
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
-  // Precondition: Init() must have been called, align <= size <= page_size_
+  // Precondition: Init() must have been called, align <= size
   void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
@@ -123,7 +124,7 @@ class GuardedPageAllocator {
 
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
-  explicit GuardedPageAllocator();
+  GuardedPageAllocator();
 
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();

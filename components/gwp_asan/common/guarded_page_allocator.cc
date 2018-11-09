@@ -50,8 +50,7 @@ GuardedPageAllocator::~GuardedPageAllocator() {
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
-  CHECK_LE(size, page_size_);
-  if (!size)
+  if (!size || size > page_size_)
     return nullptr;
 
   // Default alignment is size's next smallest power-of-two, up to
