@@ -43,11 +43,7 @@ class FetchUrlTest : public testing::Test,
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
-    scoped_refptr<URLRequestContextGetter> context_getter =
-        new URLRequestContextGetter(io_thread_.task_runner());
-    url_loader_factory_owner_ =
-        std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
-            context_getter);
+
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
@@ -69,6 +65,14 @@ class FetchUrlTest : public testing::Test,
   }
 
   void InitOnIO(base::WaitableEvent* event) {
+    scoped_refptr<URLRequestContextGetter> context_getter =
+        new URLRequestContextGetter(io_thread_.task_runner());
+    url_loader_factory_owner_ =
+        std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+            context_getter);
+    url_loader_factory_ =
+        url_loader_factory_owner_->GetURLLoaderFactory().get();
+
     std::unique_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLogSource()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
@@ -80,6 +84,7 @@ class FetchUrlTest : public testing::Test,
   }
 
   void DestroyServerOnIO(base::WaitableEvent* event) {
+    url_loader_factory_owner_.reset();
     server_.reset(NULL);
     event->Signal();
   }
@@ -106,9 +111,8 @@ class FetchUrlTest : public testing::Test,
   }
 
   bool DoFetchURL(const std::string& server_url, std::string* response) {
-    return FetchUrl(server_url,
-                    url_loader_factory_owner_->GetURLLoaderFactory().get(),
-                    response);
+    SetIOCapableTaskRunnerForTest(io_thread_.task_runner());
+    return FetchUrl(server_url, url_loader_factory_, response);
   }
 
   void OnWebSocketRequest(int connection_id,
@@ -129,6 +133,7 @@ class FetchUrlTest : public testing::Test,
   std::unique_ptr<net::HttpServer> server_;
   std::unique_ptr<network::TransitionalURLLoaderFactoryOwner>
       url_loader_factory_owner_;
+  network::mojom::URLLoaderFactory* url_loader_factory_;
   std::string server_url_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
