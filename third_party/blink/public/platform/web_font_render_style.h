@@ -58,7 +58,7 @@ struct WebFontRenderStyle {
   }
 
   BLINK_PLATFORM_EXPORT static void SetSkiaFontManager(sk_sp<SkFontMgr>);
-  BLINK_PLATFORM_EXPORT static void SetHinting(SkPaint::Hinting);
+  BLINK_PLATFORM_EXPORT static void SetHinting(SkFontHinting);
   BLINK_PLATFORM_EXPORT static void SetAutoHint(bool);
   BLINK_PLATFORM_EXPORT static void SetUseBitmaps(bool);
   BLINK_PLATFORM_EXPORT static void SetAntiAlias(bool);

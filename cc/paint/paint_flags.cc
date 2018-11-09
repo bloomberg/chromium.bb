@@ -25,7 +25,7 @@ PaintFlags::PaintFlags() {
   bitfields_.join_type_ = SkPaint::kDefault_Join;
   bitfields_.style_ = SkPaint::kFill_Style;
   bitfields_.text_encoding_ = SkPaint::kUTF8_TextEncoding;
-  bitfields_.hinting_ = SkPaint::kNormal_Hinting;
+  bitfields_.hinting_ = static_cast<unsigned>(SkFontHinting::kNormal);
   bitfields_.filter_quality_ = SkFilterQuality::kNone_SkFilterQuality;
 
   static_assert(sizeof(bitfields_) <= sizeof(bitfields_uint_),
@@ -146,7 +146,7 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));
   paint.setTextEncoding(static_cast<SkPaint::TextEncoding>(getTextEncoding()));
-  paint.setHinting(static_cast<SkPaint::Hinting>(getHinting()));
+  paint.setHinting(static_cast<SkFontHinting>(getHinting()));
   paint.setFilterQuality(getFilterQuality());
   return paint;
 }

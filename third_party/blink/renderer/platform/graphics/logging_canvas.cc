@@ -430,15 +430,15 @@ String TextEncodingName(SkPaint::TextEncoding encoding) {
   };
 }
 
-String HintingName(SkPaint::Hinting hinting) {
+String HintingName(SkFontHinting hinting) {
   switch (hinting) {
-    case SkPaint::kNo_Hinting:
+    case SkFontHinting::kNone:
       return "None";
-    case SkPaint::kSlight_Hinting:
+    case SkFontHinting::kSlight:
       return "Slight";
-    case SkPaint::kNormal_Hinting:
+    case SkFontHinting::kNormal:
       return "Normal";
-    case SkPaint::kFull_Hinting:
+    case SkFontHinting::kFull:
       return "Full";
     default:
       NOTREACHED();

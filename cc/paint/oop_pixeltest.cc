@@ -1402,7 +1402,7 @@ sk_sp<SkTextBlob> BuildTextBlob(
 
   SkFont font;
   font.setTypeface(typeface);
-  font.setHinting(SkFont::kNormal_Hinting);
+  font.setHinting(SkFontHinting::kNormal);
   font.setSize(1u);
   if (use_lcd_text) {
     font.DEPRECATED_setAntiAlias(true);
