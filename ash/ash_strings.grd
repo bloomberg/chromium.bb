@@ -1487,7 +1487,7 @@ This file contains the strings for ash.
         Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
-        The administrator of this device has access to all activity, including passwords and communications.
+        The device admin may monitor your browsing activity.
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
         Your internet session will be cleared when you sign out. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
