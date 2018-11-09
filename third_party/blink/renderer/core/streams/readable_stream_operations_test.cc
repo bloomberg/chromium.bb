@@ -444,18 +444,33 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
 TEST(ReadableStreamOperationsTest, Tee) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
+  v8::Local<v8::Context> context = scope.GetScriptState()->GetContext();
   NonThrowableExceptionState exception_state;
   ScriptValue original =
       EvalWithPrintingError(&scope,
                             "var controller;"
                             "new ReadableStream({start: c => controller = c})");
   ASSERT_FALSE(original.IsEmpty());
-  ScriptValue new1, new2;
-  ReadableStreamOperations::Tee(scope.GetScriptState(), original, &new1, &new2,
-                                exception_state);
+  ScriptValue result = ReadableStreamOperations::Tee(scope.GetScriptState(),
+                                                     original, exception_state);
+  ASSERT_FALSE(result.IsEmpty());
+  ASSERT_TRUE(result.IsObject());
 
-  ASSERT_FALSE(new1.IsEmpty());
-  ASSERT_FALSE(new2.IsEmpty());
+  v8::Local<v8::Value> v8_branch1, v8_branch2;
+  ASSERT_TRUE(
+      result.V8Value().As<v8::Object>()->Get(context, 0).ToLocal(&v8_branch1));
+  ASSERT_TRUE(
+      result.V8Value().As<v8::Object>()->Get(context, 1).ToLocal(&v8_branch2));
+
+  ScriptValue new1(scope.GetScriptState(), v8_branch1);
+  ScriptValue new2(scope.GetScriptState(), v8_branch2);
+
+  ASSERT_TRUE(ReadableStreamOperations::IsReadableStream(
+                  scope.GetScriptState(), new1, ASSERT_NO_EXCEPTION)
+                  .value_or(true));
+  ASSERT_TRUE(ReadableStreamOperations::IsReadableStream(
+                  scope.GetScriptState(), new2, ASSERT_NO_EXCEPTION)
+                  .value_or(true));
 
   ScriptValue reader1 = ReadableStreamOperations::GetReader(
       scope.GetScriptState(), new1, exception_state);

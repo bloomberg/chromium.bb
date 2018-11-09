@@ -31,7 +31,7 @@ class ReadableStreamTest : public testing::Test {
     // Just expose the controller methods for easy testing
     void Enqueue(ScriptValue value) { Controller()->Enqueue(value); }
     void Close() { Controller()->Close(); }
-    void GetError(ScriptValue value) { Controller()->GetError(value); }
+    void SetError(ScriptValue value) { Controller()->GetError(value); }
     double DesiredSize() { return Controller()->DesiredSize(); }
 
     ScriptPromise Start(ScriptState* script_state) override {
@@ -202,7 +202,8 @@ TEST_F(ReadableStreamTest, GetReader) {
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(stream->locked(script_state, ASSERT_NO_EXCEPTION));
+  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
   EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
             base::make_optional(false));
   EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
@@ -345,6 +346,91 @@ TEST_F(ReadableStreamTest, Tee) {
   auto result2 = ReadAll(scope, branch2);
   ASSERT_TRUE(result2);
   EXPECT_EQ(*result2, "hello, bye");
+}
+
+TEST_F(ReadableStreamTest, Close) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+
+  ASSERT_TRUE(stream);
+
+  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
+            base::make_optional(true));
+  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
+            base::make_optional(false));
+
+  underlying_source->Close();
+
+  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
+            base::make_optional(true));
+  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
+            base::make_optional(false));
+}
+
+TEST_F(ReadableStreamTest, Error) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+
+  ASSERT_TRUE(stream);
+
+  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
+            base::make_optional(true));
+  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
+            base::make_optional(false));
+
+  underlying_source->SetError(
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+
+  EXPECT_EQ(stream->IsReadable(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsClosed(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsErrored(script_state, exception_state),
+            base::make_optional(true));
+}
+
+TEST_F(ReadableStreamTest, LockAndDisturb) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+
+  ASSERT_TRUE(stream);
+
+  EXPECT_EQ(stream->IsLocked(script_state, exception_state),
+            base::make_optional(false));
+  EXPECT_EQ(stream->IsDisturbed(script_state, exception_state),
+            base::make_optional(false));
+
+  stream->LockAndDisturb(script_state, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  EXPECT_EQ(stream->IsLocked(script_state, exception_state),
+            base::make_optional(true));
+  EXPECT_EQ(stream->IsDisturbed(script_state, exception_state),
+            base::make_optional(true));
 }
 
 }  // namespace

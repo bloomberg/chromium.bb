@@ -57,6 +57,28 @@ void ReadableStream::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
+ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSourceBase* underlying_source,
+    size_t high_water_mark) {
+  v8::TryCatch block(script_state->GetIsolate());
+  ScriptValue strategy =
+      ReadableStreamOperations::CreateCountQueuingStrategy(script_state, 0);
+  if (strategy.IsEmpty())
+    return nullptr;
+
+  ScriptValue value = ReadableStreamOperations::CreateReadableStream(
+      script_state, underlying_source, strategy);
+
+  if (value.IsEmpty())
+    return nullptr;
+
+  DCHECK(value.V8Value()->IsObject());
+
+  return MakeGarbageCollected<ReadableStream>(script_state,
+                                              value.V8Value().As<v8::Object>());
+}
+
 ScriptPromise ReadableStream::cancel(ScriptState* script_state,
                                      ExceptionState& exception_state) {
   return cancel(
@@ -299,6 +321,43 @@ base::Optional<bool> ReadableStream::IsDisturbed(
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsDisturbed(
       script_state, AsScriptValue(script_state), exception_state);
+}
+
+base::Optional<bool> ReadableStream::IsReadable(
+    ScriptState* script_state,
+    ExceptionState& exception_state) const {
+  return ReadableStreamOperations::IsReadable(
+      script_state, AsScriptValue(script_state), exception_state);
+}
+
+base::Optional<bool> ReadableStream::IsClosed(
+    ScriptState* script_state,
+    ExceptionState& exception_state) const {
+  return ReadableStreamOperations::IsClosed(
+      script_state, AsScriptValue(script_state), exception_state);
+}
+
+base::Optional<bool> ReadableStream::IsErrored(
+    ScriptState* script_state,
+    ExceptionState& exception_state) const {
+  return ReadableStreamOperations::IsErrored(
+      script_state, AsScriptValue(script_state), exception_state);
+}
+
+void ReadableStream::LockAndDisturb(ScriptState* script_state,
+                                    ExceptionState& exception_state) {
+  ScriptState::Scope scope(script_state);
+
+  const base::Optional<bool> is_locked =
+      IsLocked(script_state, exception_state);
+  if (!is_locked || is_locked.value())
+    return;
+
+  ScriptValue reader = getReader(script_state, exception_state);
+  if (reader.IsEmpty())
+    return;
+
+  ReadableStreamOperations::DefaultReaderRead(script_state, reader);
 }
 
 ScriptValue ReadableStream::AsScriptValue(ScriptState* script_state) const {

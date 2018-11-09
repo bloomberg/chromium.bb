@@ -348,8 +348,9 @@ bool Body::HasPendingActivity() const {
   return body_buffer->HasPendingActivity();
 }
 
-bool Body::IsBodyUsedForDCheck() {
-  return BodyBuffer() && BodyBuffer()->IsStreamDisturbedForDCheck();
+bool Body::IsBodyUsedForDCheck(ExceptionState& exception_state) {
+  return BodyBuffer() &&
+         BodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
 Body::Body(ExecutionContext* context) : ContextClient(context) {}

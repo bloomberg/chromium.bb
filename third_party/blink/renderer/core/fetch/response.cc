@@ -516,9 +516,9 @@ void Response::Trace(blink::Visitor* visitor) {
   visitor->Trace(headers_);
 }
 
-bool Response::IsBodyUsedForDCheck() {
+bool Response::IsBodyUsedForDCheck(ExceptionState& exception_state) {
   return InternalBodyBuffer() &&
-         InternalBodyBuffer()->IsStreamDisturbedForDCheck();
+         InternalBodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
 }  // namespace blink

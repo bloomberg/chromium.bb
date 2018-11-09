@@ -269,35 +269,6 @@ ScriptValue ReadableStreamOperations::Tee(ScriptState* script_state,
   return ScriptValue(script_state, result);
 }
 
-void ReadableStreamOperations::Tee(ScriptState* script_state,
-                                   ScriptValue stream,
-                                   ScriptValue* new_stream1,
-                                   ScriptValue* new_stream2,
-                                   ExceptionState& exception_state) {
-  v8::Local<v8::Value> result =
-      Tee(script_state, stream, exception_state).V8Value();
-  if (exception_state.HadException())
-    return;
-
-  DCHECK(!result.IsEmpty());
-  DCHECK(result->IsArray());
-  v8::Local<v8::Array> branches = result.As<v8::Array>();
-  DCHECK_EQ(2u, branches->Length());
-
-  ScriptValue result1(script_state,
-                      branches->Get(script_state->GetContext(), 0));
-  DCHECK(!result1.IsEmpty());
-  DCHECK(IsReadableStreamForDCheck(script_state, result1));
-
-  ScriptValue result2(script_state,
-                      branches->Get(script_state->GetContext(), 1));
-  DCHECK(!result2.IsEmpty());
-  DCHECK(IsReadableStreamForDCheck(script_state, result2));
-
-  *new_stream1 = std::move(result1);
-  *new_stream2 = std::move(result2);
-}
-
 MessagePort* ReadableStreamOperations::ReadableStreamSerialize(
     ScriptState* script_state,
     ScriptValue stream,
