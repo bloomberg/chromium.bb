@@ -673,19 +673,20 @@ void ToolbarView::OnTouchUiChanged() {
 // ToolbarView, private:
 
 // AppMenuIconController::Delegate:
-void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
-                                 AppMenuIconController::Severity severity) {
+void ToolbarView::UpdateTypeAndSeverity(
+    AppMenuIconController::TypeAndSeverity type_and_severity) {
   // There's no app menu in tabless windows.
   if (!app_menu_button_)
     return;
 
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
-  if (type == AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
+  if (type_and_severity.type ==
+      AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
   app_menu_button_->SetAccessibleName(accname_app);
-  app_menu_button_->SetSeverity(type, severity);
+  app_menu_button_->SetTypeAndSeverity(type_and_severity);
 }
 
 // ToolbarButtonProvider:

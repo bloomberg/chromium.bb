@@ -45,7 +45,10 @@
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
 BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
-    : AppMenuButton(toolbar_view), toolbar_view_(toolbar_view) {
+    : AppMenuButton(toolbar_view),
+      type_and_severity_{AppMenuIconController::IconType::NONE,
+                         AppMenuIconController::Severity::NONE},
+      toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -58,14 +61,12 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
 
 BrowserAppMenuButton::~BrowserAppMenuButton() {}
 
-void BrowserAppMenuButton::SetSeverity(
-    AppMenuIconController::IconType type,
-    AppMenuIconController::Severity severity) {
-  type_ = type;
-  severity_ = severity;
+void BrowserAppMenuButton::SetTypeAndSeverity(
+    AppMenuIconController::TypeAndSeverity type_and_severity) {
+  type_and_severity_ = type_and_severity;
 
   SetTooltipText(
-      severity_ == AppMenuIconController::Severity::NONE
+      type_and_severity_.severity == AppMenuIconController::Severity::NONE
           ? l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP)
           : l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE));
   UpdateIcon();
@@ -93,8 +94,10 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
 
   Browser* browser = toolbar_view_->browser();
 
-  InitMenu(std::make_unique<AppMenuModel>(toolbar_view_, browser), browser,
-           for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS);
+  InitMenu(
+      std::make_unique<AppMenuModel>(toolbar_view_, browser,
+                                     toolbar_view_->app_menu_icon_controller()),
+      browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS);
 
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
   menu()->RunMenu(this);
@@ -116,7 +119,7 @@ void BrowserAppMenuButton::UpdateIcon() {
   SkColor severity_color = gfx::kPlaceholderColor;
 
   const ui::NativeTheme* native_theme = GetNativeTheme();
-  switch (severity_) {
+  switch (type_and_severity_.severity) {
     case AppMenuIconController::Severity::NONE:
       severity_color = GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -137,10 +140,11 @@ void BrowserAppMenuButton::UpdateIcon() {
 
   const bool touch_ui = ui::MaterialDesignController::touch_ui();
   const gfx::VectorIcon* icon_id = nullptr;
-  switch (type_) {
+  switch (type_and_severity_.type) {
     case AppMenuIconController::IconType::NONE:
       icon_id = touch_ui ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
-      DCHECK_EQ(AppMenuIconController::Severity::NONE, severity_);
+      DCHECK_EQ(AppMenuIconController::Severity::NONE,
+                type_and_severity_.severity);
       break;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
       icon_id =

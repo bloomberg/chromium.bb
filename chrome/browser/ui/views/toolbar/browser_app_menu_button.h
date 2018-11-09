@@ -25,10 +25,12 @@ class BrowserAppMenuButton : public AppMenuButton,
   explicit BrowserAppMenuButton(ToolbarView* toolbar_view);
   ~BrowserAppMenuButton() override;
 
-  void SetSeverity(AppMenuIconController::IconType type,
-                   AppMenuIconController::Severity severity);
+  void SetTypeAndSeverity(
+      AppMenuIconController::TypeAndSeverity type_and_severity);
 
-  AppMenuIconController::Severity severity() { return severity_; }
+  AppMenuIconController::Severity severity() {
+    return type_and_severity_.severity;
+  }
 
   // Shows the app menu. |for_drop| indicates whether the menu is opened for a
   // drag-and-drop operation.
@@ -76,9 +78,7 @@ class BrowserAppMenuButton : public AppMenuButton,
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
-  AppMenuIconController::Severity severity_ =
-      AppMenuIconController::Severity::NONE;
-  AppMenuIconController::IconType type_ = AppMenuIconController::IconType::NONE;
+  AppMenuIconController::TypeAndSeverity type_and_severity_;
 
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
