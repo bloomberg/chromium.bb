@@ -213,8 +213,6 @@ class ASH_EXPORT AssistantController
 
   std::unique_ptr<AssistantUiController> assistant_ui_controller_;
 
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
-
   base::WeakPtrFactory<AssistantController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);

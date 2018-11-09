@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf_control_button.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -97,8 +96,6 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
   std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
   std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
-
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

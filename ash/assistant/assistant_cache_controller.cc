@@ -63,20 +63,15 @@ constexpr int kMaxNumOfConversationStarters = 3;
 
 AssistantCacheController::AssistantCacheController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      voice_interaction_binding_(this) {
+    : assistant_controller_(assistant_controller) {
   UpdateConversationStarters();
-
   assistant_controller_->AddObserver(this);
-
-  // Bind to observe changes to screen context preference.
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
 }
 
 AssistantCacheController::~AssistantCacheController() {
   assistant_controller_->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
 
 void AssistantCacheController::AddModelObserver(

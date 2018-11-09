@@ -11,7 +11,6 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -50,9 +49,6 @@ class AssistantFooterView : public views::View,
   AssistantOptInView* opt_in_view_;                // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
-
-  mojo::Binding<mojom::VoiceInteractionObserver>
-      voice_interaction_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantFooterView);
 };
