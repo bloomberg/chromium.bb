@@ -17,8 +17,7 @@
 // that only the front most one is visible at any time.
 class InfoBarContainerIOS : public infobars::InfoBarContainer {
  public:
-  InfoBarContainerIOS(infobars::InfoBarContainer::Delegate* delegate,
-                      id<InfobarContainerConsumer> consumer);
+  InfoBarContainerIOS(id<InfobarContainerConsumer> consumer);
   ~InfoBarContainerIOS() override;
 
  protected:
@@ -28,7 +27,6 @@ class InfoBarContainerIOS : public infobars::InfoBarContainer {
   void PlatformSpecificInfoBarStateChanged(bool is_animating) override;
 
  private:
-  InfoBarContainer::Delegate* delegate_;
   id<InfobarContainerConsumer> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerIOS);
