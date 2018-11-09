@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
 #include "cc/test/scheduler_test_common.h"
@@ -3331,6 +3332,88 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
 
     display_->DrawAndSwap();
     RunAllPendingInMessageLoop();
+  }
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, InvalidPresentationTimestamps) {
+  RendererSettings settings;
+  id_allocator_.GenerateId();
+  const LocalSurfaceId local_surface_id(
+      id_allocator_.GetCurrentLocalSurfaceId());
+
+  // Set up first display.
+  SetUpSoftwareDisplay(settings);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+  display_->Resize(gfx::Size(25, 25));
+
+  {
+    // A regular presentation timestamp.
+    base::HistogramTester histograms;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
+            .SetFrameToken(1)
+            .Build();
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    display_->DrawAndSwap();
+    display_->DidReceivePresentationFeedback({base::TimeTicks::Now(), {}, 0});
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
+                testing::IsEmpty());
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidFromFuture"),
+                testing::IsEmpty());
+  }
+
+  {
+    // A presentation-timestamp that is earlier than the swap time.
+    base::HistogramTester histograms;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
+            .SetFrameToken(2)
+            .Build();
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    display_->DrawAndSwap();
+    display_->DidReceivePresentationFeedback(
+        {base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), {}, 0});
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidFromFuture"),
+                testing::IsEmpty());
+    auto buckets = histograms.GetAllSamples(
+        "Graphics.PresentationTimestamp.InvalidBeforeSwap");
+    ASSERT_EQ(buckets.size(), 1u);
+    EXPECT_GT(buckets[0].min, 0);
+    EXPECT_LE(buckets[0].min, 1000);
+    EXPECT_EQ(buckets[0].count, 1);
+  }
+
+  {
+    // A presentation-timestamp that is in the future.
+    base::HistogramTester histograms;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
+            .SetFrameToken(2)
+            .Build();
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    display_->DrawAndSwap();
+    display_->DidReceivePresentationFeedback(
+        {base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1), {}, 0});
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
+                testing::IsEmpty());
+
+    auto buckets = histograms.GetAllSamples(
+        "Graphics.PresentationTimestamp.InvalidFromFuture");
+    ASSERT_EQ(buckets.size(), 1u);
+    EXPECT_GT(buckets[0].min, 0);
+    EXPECT_LE(buckets[0].min, 1000);
+    EXPECT_EQ(buckets[0].count, 1);
   }
 
   TearDownDisplay();
