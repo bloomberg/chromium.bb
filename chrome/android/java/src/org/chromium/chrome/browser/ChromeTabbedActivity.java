@@ -2015,11 +2015,6 @@ public class ChromeTabbedActivity
             mUndoBarPopupController = null;
         }
 
-        if (mTabModalHandler != null) {
-            mTabModalHandler.destroy();
-            mTabModalHandler = null;
-        }
-
         if (mNavigationBarColorController != null) mNavigationBarColorController.destroy();
 
         IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);

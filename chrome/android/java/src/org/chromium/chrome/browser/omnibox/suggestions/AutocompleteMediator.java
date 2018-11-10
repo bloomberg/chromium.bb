@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -18,7 +17,6 @@ import android.text.style.StyleSpan;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,6 +25,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
@@ -43,6 +45,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,6 +104,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private boolean mIgnoreOmniboxItemSelection = true;
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
+
+    private WindowAndroid mWindowAndroid;
+    private ModalDialogView mSuggestionDeleteDialog;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -422,6 +428,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         mDataProvider = provider;
     }
 
+    /** Set the WindowAndroid instance associated with the containing Activity. */
+    void setWindowAndroid(WindowAndroid window) {
+        mWindowAndroid = window;
+    }
+
     /**
      * Sets the layout direction to be used for any new suggestion views.
      * @see View#setLayoutDirection(int)
@@ -644,30 +655,46 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         RecordUserAction.record("MobileOmniboxDeleteGesture");
         if (!suggestion.isDeletable()) return;
 
-        // TODO(tedchoc): Migrate to modal dialog manager.
-        AlertDialog.Builder b = new AlertDialog.Builder(mContext, R.style.AlertDialogTheme);
-        b.setTitle(suggestion.getDisplayText());
-        b.setMessage(R.string.omnibox_confirm_delete);
+        if (mWindowAndroid == null) return;
+        Activity activity = mWindowAndroid.getActivity().get();
+        if (activity == null || !(activity instanceof AsyncInitializationActivity)) return;
+        ModalDialogManager manager =
+                ((AsyncInitializationActivity) activity).getModalDialogManager();
+        if (manager == null) {
+            assert false : "No modal dialog manager registered for this activity.";
+            return;
+        }
 
-        DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
+        ModalDialogView.Params dialogParams = new ModalDialogView.Params();
+        dialogParams.title = suggestion.getDisplayText();
+        dialogParams.message = mContext.getString(R.string.omnibox_confirm_delete);
+        dialogParams.positiveButtonTextId = R.string.ok;
+        dialogParams.negativeButtonTextId = R.string.cancel;
+
+        ModalDialogView.Controller dialogController = new ModalDialogView.Controller() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == DialogInterface.BUTTON_POSITIVE) {
+            public void onDismiss(int dismissalCause) {
+                mSuggestionDeleteDialog = null;
+            }
+
+            @Override
+            public void onClick(int buttonType) {
+                if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
                     RecordUserAction.record("MobileOmniboxDeleteRequested");
                     mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
-                } else if (which == DialogInterface.BUTTON_NEGATIVE) {
-                    dialog.cancel();
+                    manager.dismissDialog(
+                            mSuggestionDeleteDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+                    manager.dismissDialog(
+                            mSuggestionDeleteDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 }
             }
         };
-        b.setPositiveButton(android.R.string.ok, clickListener);
-        b.setNegativeButton(android.R.string.cancel, clickListener);
 
-        AlertDialog dialog = b.create();
-        try {
-            dialog.show();
-        } catch (WindowManager.BadTokenException ex) {
-        }
+        mSuggestionDeleteDialog = new ModalDialogView(dialogController, dialogParams);
+        // Prevent updates to the shown omnibox suggestions list while the dialog is open.
+        stopAutocomplete(false);
+        manager.showDialog(mSuggestionDeleteDialog, ModalDialogManager.ModalDialogType.APP);
     }
 
     /**

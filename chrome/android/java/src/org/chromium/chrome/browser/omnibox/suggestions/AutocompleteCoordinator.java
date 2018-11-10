@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
 
@@ -152,6 +153,13 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     public void setAutocompleteProfile(Profile profile) {
         mMediator.setAutocompleteProfile(profile);
+    }
+
+    /**
+     * Set the WindowAndroid instance associated with the containing Activity.
+     */
+    public void setWindowAndroid(WindowAndroid windowAndroid) {
+        mMediator.setWindowAndroid(windowAndroid);
     }
 
     /**

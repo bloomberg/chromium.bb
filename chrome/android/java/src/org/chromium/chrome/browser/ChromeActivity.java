@@ -265,7 +265,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
-    private ModalDialogManager mModalDialogManager;
     private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
@@ -468,8 +467,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ((BottomContainer) findViewById(R.id.bottom_container))
                     .initialize(mFullscreenManager,
                             mManualFillingController.getKeyboardExtensionSizeManager());
-
-            mModalDialogManager = createModalDialogManager();
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -1283,11 +1280,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mContextualSearchManager = null;
         }
 
-        if (mModalDialogManager != null) {
-            mModalDialogManager.destroy();
-            mModalDialogManager = null;
-        }
-
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
             mTabModelSelectorTabObserver = null;
@@ -1376,27 +1368,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 : mSnackbarManager;
     }
 
-    /**
-     * @return The {@link ModalDialogManager} created for this class.
-     */
+    @Override
     protected ModalDialogManager createModalDialogManager() {
         return new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
-    }
-
-    /**
-     * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
-     *         JavaScript dialogs).
-     */
-    public ModalDialogManager getModalDialogManager() {
-        return mModalDialogManager;
-    }
-
-    /**
-     * Sets the modal dialog mangaer.
-     */
-    public void setModalDialogManager(ModalDialogManager modalDialogManager) {
-        mModalDialogManager = modalDialogManager;
     }
 
     protected Drawable getBackgroundDrawable() {
