@@ -1042,8 +1042,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
       same_origin_request_ || upload_events ||
-      !CORS::IsCORSSafelistedMethod(method_) ||
-      !CORS::ContainsOnlyCORSSafelistedHeaders(request_headers_);
+      !cors::IsCORSSafelistedMethod(method_) ||
+      !cors::ContainsOnlyCORSSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
   request.SetRequestorOrigin(GetSecurityOrigin());
@@ -1414,7 +1414,7 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name,
 
   // "5. Terminate these steps if |name| is a forbidden header name."
   // No script (privileged or not) can set unsafe headers.
-  if (CORS::IsForbiddenHeaderName(name)) {
+  if (cors::IsForbiddenHeaderName(name)) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to set unsafe header \"" + name + "\"");
     return;
@@ -1726,7 +1726,7 @@ void XMLHttpRequest::EndLoading() {
     return;
 
   if (GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetPage() && CORS::IsOkStatus(status()))
+      GetDocument()->GetFrame()->GetPage() && cors::IsOkStatus(status()))
     GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
         GetDocument()->GetFrame());
 }

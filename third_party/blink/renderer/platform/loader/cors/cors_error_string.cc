@@ -19,7 +19,7 @@
 
 namespace blink {
 
-namespace CORS {
+namespace cors {
 
 namespace {
 
@@ -209,6 +209,6 @@ String GetErrorString(const network::CORSErrorStatus& status,
   return builder.ToString();
 }
 
-}  // namespace CORS
+}  // namespace cors
 
 }  // namespace blink

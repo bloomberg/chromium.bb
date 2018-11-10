@@ -732,7 +732,7 @@ void DocumentLoader::ResponseReceived(
   }
 
   if (frame_->Owner() && response_.IsHTTP() &&
-      !CORS::IsOkStatus(response_.HttpStatusCode()))
+      !cors::IsOkStatus(response_.HttpStatusCode()))
     frame_->Owner()->RenderFallbackContent(frame_);
 }
 
