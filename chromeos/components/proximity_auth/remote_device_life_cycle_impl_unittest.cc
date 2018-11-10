@@ -19,11 +19,8 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/authenticator.h"
-#include "components/cryptauth/connection_finder.h"
-#include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,99 +34,6 @@ using testing::StrictMock;
 namespace proximity_auth {
 
 namespace {
-
-class StubSecureContext : public cryptauth::SecureContext {
- public:
-  StubSecureContext() {}
-  ~StubSecureContext() override {}
-
-  void Decode(const std::string& encoded_message,
-              const MessageCallback& callback) override {
-    NOTREACHED();
-  }
-
-  void Encode(const std::string& message,
-              const MessageCallback& callback) override {
-    NOTREACHED();
-  }
-
-  ProtocolVersion GetProtocolVersion() const override {
-    NOTREACHED();
-    return SecureContext::PROTOCOL_VERSION_THREE_ONE;
-  }
-
-  std::string GetChannelBindingData() const override { return std::string(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubSecureContext);
-};
-
-class FakeConnectionFinder : public cryptauth::ConnectionFinder {
- public:
-  explicit FakeConnectionFinder(cryptauth::RemoteDeviceRef remote_device)
-      : remote_device_(remote_device), connection_(nullptr) {}
-  ~FakeConnectionFinder() override {}
-
-  void OnConnectionFound() {
-    ASSERT_FALSE(connection_callback_.is_null());
-    std::unique_ptr<cryptauth::FakeConnection> scoped_connection_(
-        new cryptauth::FakeConnection(remote_device_));
-    connection_ = scoped_connection_.get();
-    connection_callback_.Run(std::move(scoped_connection_));
-  }
-
-  cryptauth::FakeConnection* connection() { return connection_; }
-
- private:
-  // cryptauth::ConnectionFinder:
-  void Find(const cryptauth::ConnectionFinder::ConnectionCallback&
-                connection_callback) override {
-    ASSERT_TRUE(connection_callback_.is_null());
-    connection_callback_ = connection_callback;
-  }
-
-  const cryptauth::RemoteDeviceRef remote_device_;
-
-  cryptauth::FakeConnection* connection_;
-
-  cryptauth::ConnectionFinder::ConnectionCallback connection_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConnectionFinder);
-};
-
-class FakeAuthenticator : public cryptauth::Authenticator {
- public:
-  explicit FakeAuthenticator(cryptauth::Connection* connection)
-      : connection_(connection) {}
-  ~FakeAuthenticator() override {
-    // This object should be destroyed immediately after authentication is
-    // complete in order not to outlive the underlying connection.
-    EXPECT_FALSE(callback_.is_null());
-    EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
-              connection_->remote_device().public_key());
-  }
-
-  void OnAuthenticationResult(cryptauth::Authenticator::Result result) {
-    ASSERT_FALSE(callback_.is_null());
-    std::unique_ptr<cryptauth::SecureContext> secure_context;
-    if (result == Authenticator::Result::SUCCESS)
-      secure_context.reset(new StubSecureContext());
-    callback_.Run(result, std::move(secure_context));
-  }
-
- private:
-  // cryptauth::Authenticator:
-  void Authenticate(const AuthenticationCallback& callback) override {
-    ASSERT_TRUE(callback_.is_null());
-    callback_ = callback;
-  }
-
-  cryptauth::Connection* connection_;
-
-  AuthenticationCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAuthenticator);
-};
 
 // Subclass of RemoteDeviceLifeCycleImpl to make it testable.
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
