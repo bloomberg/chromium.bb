@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApplicationState;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
@@ -270,14 +271,77 @@ public class OfflineIndicatorControllerTest {
         checkOfflineIndicatorVisibility(mActivityTestRule.getActivity(), true);
     }
 
+    @Test
+    @MediumTest
+    public void testReshowOfflineIndicatorWhenResumed() throws Exception {
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        String testUrl = testServer.getURL(TEST_PAGE);
+
+        // Load a page.
+        loadPage(testUrl);
+
+        // Disconnect the network.
+        setNetworkConnectivity(false);
+
+        // Offline indicator should be shown.
+        checkOfflineIndicatorVisibility(mActivityTestRule.getActivity(), true);
+
+        // Hide offline indicator.
+        hideOfflineIndicator(mActivityTestRule.getActivity());
+
+        // Simulate switching to other app and then coming back.
+        setApplicationState(ApplicationState.HAS_STOPPED_ACTIVITIES);
+        setApplicationState(ApplicationState.HAS_RUNNING_ACTIVITIES);
+
+        // Offline indicator should be shown again.
+        checkOfflineIndicatorVisibility(mActivityTestRule.getActivity(), true);
+    }
+
+    @Test
+    @MediumTest
+    public void testDoNotShowOfflineIndicatorWhenTemporarilyPaused() throws Exception {
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        String testUrl = testServer.getURL(TEST_PAGE);
+
+        // Load a page.
+        loadPage(testUrl);
+
+        // Disconnect the network.
+        setNetworkConnectivity(false);
+
+        // Offline indicator should be shown.
+        checkOfflineIndicatorVisibility(mActivityTestRule.getActivity(), true);
+
+        // Hide offline indicator.
+        hideOfflineIndicator(mActivityTestRule.getActivity());
+
+        // The paused state can be set when the activity is temporarily covered by another
+        // activity's Fragment. So switching to this state temporarily should not bring back
+        // the offline indicator.
+        setApplicationState(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        setApplicationState(ApplicationState.HAS_RUNNING_ACTIVITIES);
+
+        // Offline indicator should not be shown.
+        checkOfflineIndicatorVisibility(mActivityTestRule.getActivity(), false);
+    }
+
     private void setNetworkConnectivity(boolean connected) {
         mIsConnected = connected;
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            NetworkChangeNotifier.forceConnectivityState(connected);
             OfflineIndicatorController.getInstance()
                     .getConnectivityDetectorForTesting()
                     .setConnectionState(connected
                                     ? ConnectivityDetector.ConnectionState.VALIDATED
                                     : ConnectivityDetector.ConnectionState.DISCONNECTED);
+        });
+    }
+
+    private void setApplicationState(int newState) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            OfflineIndicatorController.getInstance().onApplicationStateChange(newState);
         });
     }
 
@@ -361,6 +425,15 @@ public class OfflineIndicatorControllerTest {
                         }
                     }
                 });
+    }
+
+    private static void hideOfflineIndicator(ChromeActivity activity) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OfflineIndicatorController.getInstance().hideOfflineIndicator(activity);
+            }
+        });
     }
 
     private static boolean isErrorPage(final Tab tab) {
