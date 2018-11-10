@@ -28,6 +28,7 @@ class PixelExpectations(GpuTestExpectations):
               ['android'])
     self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
     self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
+    self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
     # Tests running with SwiftShader are skipped on platforms where SwiftShader
     # isn't supported.
