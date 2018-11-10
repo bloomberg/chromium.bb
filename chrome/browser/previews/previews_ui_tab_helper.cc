@@ -35,6 +35,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -84,10 +85,12 @@ bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
   if (type == previews::PreviewsType::NONE)
     return false;
 
-  // Show the UI for LoFi at commit if the UI is the Android Omnibox.
-  if (type == previews::PreviewsType::LOFI)
-    return previews::params::IsPreviewsOmniboxUiEnabled();
-
+  // Show the UI for LoFi at commit if the UI is the Android Omnibox or when
+  // network-service is enabled.
+  if (type == previews::PreviewsType::LOFI) {
+    return previews::params::IsPreviewsOmniboxUiEnabled() ||
+           base::FeatureList::IsEnabled(network::features::kNetworkService);
+  }
   return true;
 }
 
