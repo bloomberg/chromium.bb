@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/renderer_updater.h"
 
+#include <utility>
+
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -174,11 +176,12 @@ void RendererUpdater::UpdateAllRenderers() {
 
 void RendererUpdater::UpdateRenderer(
     chrome::mojom::RendererConfigurationAssociatedPtr* renderer_configuration) {
-  bool is_signed_in = signin_manager_->IsAuthenticated();
   (*renderer_configuration)
-      ->SetConfiguration(force_google_safesearch_.GetValue(),
-                         force_youtube_restrict_.GetValue(),
-                         allowed_domains_for_apps_.GetValue(),
-                         is_signed_in ? cached_variation_ids_header_signed_in_
-                                      : cached_variation_ids_header_);
+      ->SetConfiguration(chrome::mojom::DynamicParams::New(
+          force_google_safesearch_.GetValue(),
+          force_youtube_restrict_.GetValue(),
+          allowed_domains_for_apps_.GetValue(),
+          signin_manager_->IsAuthenticated()
+              ? cached_variation_ids_header_signed_in_
+              : cached_variation_ids_header_));
 }

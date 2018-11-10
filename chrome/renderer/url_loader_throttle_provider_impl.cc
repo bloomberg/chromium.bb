@@ -264,10 +264,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       ChromeRenderThreadObserver::is_incognito_process(),
-      ChromeRenderThreadObserver::force_safe_search(),
-      ChromeRenderThreadObserver::youtube_restrict(),
-      ChromeRenderThreadObserver::allowed_domains_for_apps(),
-      ChromeRenderThreadObserver::variation_ids_header()));
+      ChromeRenderThreadObserver::GetDynamicParams()));
 
   return throttles;
 }

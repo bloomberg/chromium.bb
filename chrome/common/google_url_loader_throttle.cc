@@ -13,15 +13,9 @@
 
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
     bool is_off_the_record,
-    bool force_safe_search,
-    int32_t youtube_restrict,
-    const std::string& allowed_domains_for_apps,
-    const std::string& variation_ids_header)
+    chrome::mojom::DynamicParams dynamic_params)
     : is_off_the_record_(is_off_the_record),
-      force_safe_search_(force_safe_search),
-      youtube_restrict_(youtube_restrict),
-      allowed_domains_for_apps_(allowed_domains_for_apps),
-      variation_ids_header_(variation_ids_header) {}
+      dynamic_params_(std::move(dynamic_params)) {}
 
 GoogleURLLoaderThrottle::~GoogleURLLoaderThrottle() {}
 
@@ -32,12 +26,12 @@ void GoogleURLLoaderThrottle::WillStartRequest(
     bool* defer) {
   if (!is_off_the_record_ &&
       variations::ShouldAppendVariationHeaders(request->url) &&
-      !variation_ids_header_.empty()) {
+      !dynamic_params_.variation_ids_header.empty()) {
     request->headers.SetHeaderIfMissing(variations::kClientDataHeader,
-                                        variation_ids_header_);
+                                        dynamic_params_.variation_ids_header);
   }
 
-  if (force_safe_search_) {
+  if (dynamic_params_.force_safe_search) {
     GURL new_url;
     safe_search_util::ForceGoogleSafeSearch(request->url, &new_url);
     if (!new_url.is_empty())
@@ -46,17 +40,20 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 
   static_assert(safe_search_util::YOUTUBE_RESTRICT_OFF == 0,
                 "OFF must be first");
-  if (youtube_restrict_ > safe_search_util::YOUTUBE_RESTRICT_OFF &&
-      youtube_restrict_ < safe_search_util::YOUTUBE_RESTRICT_COUNT) {
+  if (dynamic_params_.youtube_restrict >
+          safe_search_util::YOUTUBE_RESTRICT_OFF &&
+      dynamic_params_.youtube_restrict <
+          safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
         request->url, &request->headers,
-        static_cast<safe_search_util::YouTubeRestrictMode>(youtube_restrict_));
+        static_cast<safe_search_util::YouTubeRestrictMode>(
+            dynamic_params_.youtube_restrict));
   }
 
-  if (!allowed_domains_for_apps_.empty() &&
+  if (!dynamic_params_.allowed_domains_for_apps.empty() &&
       request->url.DomainIs("google.com")) {
     request->headers.SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
-                               allowed_domains_for_apps_);
+                               dynamic_params_.allowed_domains_for_apps);
   }
 }
 

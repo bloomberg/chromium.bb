@@ -4440,14 +4440,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         !is_off_the_record &&
         !io_data->google_services_account_id()->GetValue().empty();
 
-    std::string variation_ids_header =
-        variations::VariationsHttpHeaderProvider::GetInstance()
-            ->GetClientDataHeader(is_signed_in);
-
-    result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-        is_off_the_record, io_data->force_google_safesearch()->GetValue(),
+    chrome::mojom::DynamicParams dynamic_params = {
+        io_data->force_google_safesearch()->GetValue(),
         io_data->force_youtube_restrict()->GetValue(),
-        io_data->allowed_domains_for_apps()->GetValue(), variation_ids_header));
+        io_data->allowed_domains_for_apps()->GetValue(),
+        variations::VariationsHttpHeaderProvider::GetInstance()
+            ->GetClientDataHeader(is_signed_in)};
+    result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
+        is_off_the_record, std::move(dynamic_params)));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
