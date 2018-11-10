@@ -27,21 +27,15 @@ ProximityAuthProfilePrefManager::ProximityAuthProfilePrefManager(
     : pref_service_(pref_service),
       multidevice_setup_client_(multidevice_setup_client),
       weak_ptr_factory_(this) {
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
+  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
 
-    multidevice_setup_client_->AddObserver(this);
-  }
+  multidevice_setup_client_->AddObserver(this);
 }
 
 ProximityAuthProfilePrefManager::~ProximityAuthProfilePrefManager() {
   registrar_.RemoveAll();
 
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    multidevice_setup_client_->RemoveObserver(this);
-  }
+  multidevice_setup_client_->RemoveObserver(this);
 }
 
 // static
@@ -128,9 +122,7 @@ void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      !is_in_legacy_host_mode_) {
+  if (!is_in_legacy_host_mode_) {
     return feature_state_ ==
            chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
   }
