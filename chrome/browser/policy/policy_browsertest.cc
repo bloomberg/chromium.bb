@@ -269,6 +269,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -280,7 +281,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
@@ -1001,6 +1001,20 @@ class PolicyTest : public InProcessBrowserTest {
               std::move(youtube_restrict));
     UpdateProviderPolicy(policies);
   }
+
+#if defined(OS_CHROMEOS)
+  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+    keyboard_client->SetEnableFlag(flag);
+    keyboard_client->FlushForTesting();
+  }
+
+  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+    keyboard_client->ClearEnableFlag(flag);
+    keyboard_client->FlushForTesting();
+  }
+#endif
 
   static GURL GetExpectedSearchURL(bool expect_safe_search) {
     std::string expected_url("http://google.com/");
@@ -3875,13 +3889,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  ASSERT_TRUE(keyboard_client);
+
   // Verify keyboard disabled by default.
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
+
   // Verify keyboard can be toggled by default.
-  keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(false);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
+  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 
   // Verify enabling the policy takes effect immediately and that that user
   // cannot disable the keyboard..
@@ -3890,9 +3908,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(false);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
+  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
 
   // Verify that disabling the policy takes effect immediately and that the user
   // cannot enable the keyboard.
@@ -3900,9 +3918,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
+  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 }
 
 #endif
