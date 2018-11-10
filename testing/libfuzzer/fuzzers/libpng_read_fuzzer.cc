@@ -27,26 +27,6 @@ void default_free(png_structp, png_voidp ptr) {
   return free(ptr);
 }
 
-#ifndef PNG_FUZZ_PROGRESSIVE
-
-// Read sequentially, with png_read_row.
-struct BufState {
-  const uint8_t* data;
-  size_t bytes_left;
-};
-
-void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
-  BufState* buf_state = static_cast<BufState*>(png_get_io_ptr(png_ptr));
-  if (length > buf_state->bytes_left) {
-    png_error(png_ptr, "read error");
-  }
-  memcpy(data, buf_state->data, length);
-  buf_state->bytes_left -= length;
-  buf_state->data += length;
-}
-
-#endif  // PNG_FUZZ_PROGRESSIVE
-
 static const int kPngHeaderSize = 8;
 
 // Entry point for LibFuzzer.
@@ -85,60 +65,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::ScopedClosureRunner struct_deleter(base::Bind(
         &png_destroy_read_struct, &png_ptr, &info_ptr, nullptr));
 
-#ifdef PNG_FUZZ_PROGRESSIVE
   if (setjmp(png_jmpbuf(png_ptr))) {
     return 0;
   }
 
   png_set_progressive_read_fn(png_ptr, nullptr, nullptr, nullptr, nullptr);
   png_process_data(png_ptr, info_ptr, const_cast<uint8_t*>(data), size);
-#else
-  // Setting up reading from buffer.
-  std::unique_ptr<BufState> buf_state(new BufState());
-  buf_state->data = data + kPngHeaderSize;
-  buf_state->bytes_left = size - kPngHeaderSize;
-  png_set_read_fn(png_ptr, buf_state.get(), user_read_data);
-  png_set_sig_bytes(png_ptr, kPngHeaderSize);
-
-  // libpng error handling.
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    return 0;
-  }
-
-  // Reading.
-  png_read_info(png_ptr, info_ptr);
-  png_voidp row = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
-  base::ScopedClosureRunner png_deleter(base::Bind(
-        &png_free, png_ptr, row));
-
-  // reset error handler to put png_deleter into scope.
-  if (setjmp(png_jmpbuf(png_ptr))) {
-    return 0;
-  }
-
-  png_uint_32 width, height;
-  int bit_depth, color_type, interlace_type, compression_type;
-  int filter_type;
-
-  if (!png_get_IHDR(png_ptr, info_ptr, &width, &height,
-        &bit_depth, &color_type, &interlace_type,
-        &compression_type, &filter_type)) {
-    return 0;
-  }
-
-  // This is going to be too slow.
-  if (width && height > 100000000 / width)
-    return 0;
-
-  int passes = png_set_interlace_handling(png_ptr);
-  png_start_read_image(png_ptr);
-
-  for (int pass = 0; pass < passes; ++pass) {
-    for (png_uint_32 y = 0; y < height; ++y) {
-      png_read_row(png_ptr, static_cast<png_bytep>(row), NULL);
-    }
-  }
-#endif  // PNG_FUZZ_PROGRESSIVE
 
   return 0;
 }
