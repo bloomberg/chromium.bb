@@ -1068,6 +1068,9 @@ INSTANTIATE_TEST_CASE_P(All,
 using AutofillUploadTest = AutofillServerCommunicationTest;
 
 TEST_P(AutofillUploadTest, RichMetadata) {
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(features::kAutofillMetadataUploads);
+
   FormData form;
   form.origin = GURL("https://origin.com");
   form.action = GURL("https://origin.com/submit-me");
