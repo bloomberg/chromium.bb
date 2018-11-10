@@ -4,6 +4,8 @@
 
 #include "content/renderer/loader/url_response_body_consumer.h"
 
+#include <algorithm>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -84,10 +86,9 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
                                        : nullptr),
       has_seen_end_of_data_(!handle_.is_valid()) {
   if (zlib_wrapper_ && !zlib_wrapper_->Init()) {
-    // If zlib can't be initialized then release the wrapper which will result
+    // If zlib can't be initialized then reset the wrapper which will result
     // in the compressed response being received and unable to be processed.
-    zlib_wrapper_.release();
-    inflate_buffer_.reset();
+    ReleaseZlibWrapper();
   }
   handle_watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
@@ -100,14 +101,21 @@ void URLResponseBodyConsumer::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (has_been_cancelled_)
     return;
+  ReleaseZlibWrapper();
   has_received_completion_ = true;
   status_ = status;
   NotifyCompletionIfAppropriate();
 }
 
+void URLResponseBodyConsumer::ReleaseZlibWrapper() {
+  zlib_wrapper_.reset();
+  inflate_buffer_.reset();
+}
+
 void URLResponseBodyConsumer::Cancel() {
   has_been_cancelled_ = true;
   handle_watcher_.Cancel();
+  ReleaseZlibWrapper();
 }
 
 void URLResponseBodyConsumer::SetDefersLoading() {
@@ -222,6 +230,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     }
     reclaim_accountant.reset();
   }
+  ReleaseZlibWrapper();
 }
 
 void URLResponseBodyConsumer::NotifyCompletionIfAppropriate() {
