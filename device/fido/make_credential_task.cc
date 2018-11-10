@@ -27,7 +27,7 @@ namespace {
 // See: https://crbug.com/870892
 bool IsClientPinOptionCompatible(const FidoDevice* device,
                                  const CtapMakeCredentialRequest& request) {
-  if (request.user_verification_required())
+  if (request.user_verification() == UserVerificationRequirement::kRequired)
     return true;
 
   DCHECK(device && device->device_info());

@@ -175,15 +175,6 @@ void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
     }
   }
 
-  // TODO(crbug/896522): The Windows API uses the W3C WebAuthn Authenticator
-  // Model abstraction whereas FidoAuthenticator operates at the CTAP2 spec
-  // level (e.g. CtapMakeCredentialRequest). As a result we only have the
-  // boolean "uv" rather than the enum value from the original request.
-  const uint32_t user_verification_requirement =
-      request.user_verification_required()
-          ? WEBAUTHN_USER_VERIFICATION_REQUIREMENT_REQUIRED
-          : WEBAUTHN_USER_VERIFICATION_REQUIREMENT_DISCOURAGED;
-
   std::vector<WEBAUTHN_EXTENSION> extensions;
   if (request.hmac_secret()) {
     static BOOL kHMACSecretTrue = TRUE;
@@ -202,7 +193,8 @@ void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
       // generally displayed first in the Windows UI.
       use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
                     : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
-      request.resident_key_supported(), user_verification_requirement,
+      request.resident_key_required(),
+      ToWinUserVerificationRequirement(request.user_verification()),
       WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT, 0 /* flags */,
       &cancellation_id_};
 

@@ -112,6 +112,13 @@ void MakeCredentialRequestHandler::DispatchRequest(
           authenticator, authenticator_selection_criteria_))
     return;
 
+  // Set the rk and uv fields, which were only initialized to default values
+  // up to here.
+  request_parameter_.SetResidentKeyRequired(
+      authenticator_selection_criteria_.require_resident_key());
+  request_parameter_.SetUserVerification(
+      authenticator_selection_criteria_.user_verification_requirement());
+
   authenticator->MakeCredential(
       request_parameter_,
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,

@@ -177,7 +177,7 @@ TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
-  request.SetUserVerificationRequired(true);
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
   const auto task = std::make_unique<MakeCredentialTask>(
       device.get(), std::move(request), callback_receiver_.callback());
 

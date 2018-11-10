@@ -45,9 +45,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
   std::vector<uint8_t> EncodeAsCBOR() const;
 
-  CtapMakeCredentialRequest& SetUserVerificationRequired(
-      bool user_verfication_required);
-  CtapMakeCredentialRequest& SetResidentKeySupported(bool resident_key);
+  CtapMakeCredentialRequest& SetUserVerification(
+      UserVerificationRequirement user_verification);
+  CtapMakeCredentialRequest& SetResidentKeyRequired(bool resident_key);
   CtapMakeCredentialRequest& SetExcludeList(
       std::vector<PublicKeyCredentialDescriptor> exclude_list);
   CtapMakeCredentialRequest& SetPinAuth(std::vector<uint8_t> pin_auth);
@@ -65,10 +65,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   const PublicKeyCredentialParams& public_key_credential_params() const {
     return public_key_credential_params_;
   }
-  bool user_verification_required() const {
-    return user_verification_required_;
+  UserVerificationRequirement user_verification() const {
+    return user_verification_;
   }
-  bool resident_key_supported() const { return resident_key_supported_; }
+  bool resident_key_required() const { return resident_key_required_; }
   bool is_individual_attestation() const { return is_individual_attestation_; }
   bool hmac_secret() const { return hmac_secret_; }
   const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
@@ -85,8 +85,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   PublicKeyCredentialRpEntity rp_;
   PublicKeyCredentialUserEntity user_;
   PublicKeyCredentialParams public_key_credential_params_;
-  bool user_verification_required_ = false;
-  bool resident_key_supported_ = false;
+  UserVerificationRequirement user_verification_ =
+      UserVerificationRequirement::kPreferred;
+  bool resident_key_required_ = false;
   bool is_individual_attestation_ = false;
   // hmac_secret_ indicates whether the "hmac-secret" extension should be
   // asserted to CTAP2 authenticators.
