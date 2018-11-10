@@ -1194,6 +1194,20 @@ void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
   }
 }
 
+bool LayoutFlexibleBox::ChildLogicalHeightStretchesToFlexboxSize(
+    FlexItem& item) const {
+  if (IsMultiline())
+    return false;
+  if (!NeedToStretchChildLogicalHeight(*item.box))
+    return false;
+  if (HasAutoMarginsInCrossAxis(*item.box))
+    return false;
+  if (item.box->IntrinsicContentLogicalHeight() == -1)
+    return false;
+
+  return HasDefiniteLogicalHeight();
+}
+
 LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
     const LayoutBox& child) {
   const LayoutUnit available_space =
@@ -1350,6 +1364,35 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     child->SetShouldCheckForPaintInvalidation();
 
     SetOverrideMainAxisContentSizeForChild(flex_item);
+
+    // We may have already forced relayout for orthogonal flowing children in
+    // computeInnerFlexBaseSizeForChild.
+    bool force_child_relayout =
+        relayout_children && !relaid_out_children_.Contains(child);
+
+    // Apply optimization 1 from section 9.8 for row flexboxes by overriding
+    // the logical height of stretchable children to the parent's definite
+    // height, if present (https://crbug.com/703512).
+    if (ChildLogicalHeightStretchesToFlexboxSize(flex_item)) {
+      LogicalExtentComputedValues computed_values;
+      ComputeLogicalHeight(computed_values);
+      LayoutUnit cross_axis_extent = computed_values.extent_;
+      DCHECK_NE(cross_axis_extent, LayoutUnit(-1));
+
+      // Compute the maximum possible cross axis extent available, since we
+      // don't optimize for intrinsically sized children.
+      LayoutUnit stretched_logical_height =
+          std::max(child->BorderAndPaddingLogicalHeight(),
+                   cross_axis_extent - flex_item.CrossAxisMarginExtent());
+      LayoutUnit clamped_logical_height = child->ConstrainLogicalHeightByMinMax(
+          stretched_logical_height, child->IntrinsicContentLogicalHeight());
+
+      child->SetOverrideLogicalHeight(clamped_logical_height);
+      if (clamped_logical_height != child->LogicalHeight()) {
+        force_child_relayout = true;
+      }
+    }
+
     // The flexed content size and the override size include the scrollbar
     // width, so we need to compare to the size including the scrollbar.
     if (flex_item.flexed_content_size !=
@@ -1360,10 +1403,6 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
       // updateAutoMarginsInCrossAxis, we reset the margins here.
       ResetAutoMarginsAndLogicalTopInCrossAxis(*child);
     }
-    // We may have already forced relayout for orthogonal flowing children in
-    // computeInnerFlexBaseSizeForChild.
-    bool force_child_relayout =
-        relayout_children && !relaid_out_children_.Contains(child);
     // TODO(dgrogan): Broaden the NG part of this check once NG types other
     // than Mixin derivatives are cached.
     if (child->IsLayoutBlock() &&
@@ -1581,7 +1620,7 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
         flex_item.cross_axis_size != child.LogicalHeight();
     if (child.IsLayoutBlock() &&
         ToLayoutBlock(child).HasPercentHeightDescendants() &&
-        !CanAvoidLayoutForNGChild(child)) {
+        !CanAvoidLayoutForNGChild(child) && !child.HasOverrideLogicalHeight()) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
