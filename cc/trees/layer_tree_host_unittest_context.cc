@@ -829,18 +829,21 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeHostContextTest::DidActivateTreeOnThread(host_impl);
 
+    ++num_commits_;
+
     FakePictureLayerImpl* root_picture = nullptr;
     FakePictureLayerImpl* child_picture = nullptr;
     FakePictureLayerImpl* grandchild_picture = nullptr;
-
-    root_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->root_layer_for_testing());
-    child_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->LayerById(child_->id()));
-    grandchild_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->LayerById(grandchild_->id()));
-
-    ++num_commits_;
+    // Root layer isn't attached on first activation so the static_cast will
+    // fail before second activation.
+    if (num_commits_ >= 2) {
+      root_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->root_layer_for_testing());
+      child_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(child_->id()));
+      grandchild_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(grandchild_->id()));
+    }
     switch (num_commits_) {
       case 1:
         // Because setting the colorspace on the first activation releases
