@@ -199,10 +199,11 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   if (is_force_sign_in_with_usermanager_) {
     // If user sign in in UserManager with force sign in enabled, the browser
     // window won't be opened until now.
+    UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
     profiles::OpenBrowserWindowForProfile(
         base::Bind(&InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened,
                    base::Unretained(this), result),
-        true, false, profile_, create_status_);
+        true, false, true, profile_, create_status_);
   } else {
     OnClientOAuthSuccessAndBrowserOpened(result, profile_, create_status_);
   }
@@ -212,8 +213,6 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     const ClientOAuthResult& result,
     Profile* profile,
     Profile::CreateStatus status) {
-  if (is_force_sign_in_with_usermanager_)
-    UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
   Browser* browser = NULL;
   if (handler_) {
     browser = handler_->GetDesktopBrowser();

@@ -221,12 +221,12 @@ void FindOrCreateNewWindowForProfile(
       command_line, profile, base::FilePath(), process_startup, is_first_run);
 }
 
-void OpenBrowserWindowForProfile(
-    ProfileManager::CreateCallback callback,
-    bool always_create,
-    bool is_new_profile,
-    Profile* profile,
-    Profile::CreateStatus status) {
+void OpenBrowserWindowForProfile(ProfileManager::CreateCallback callback,
+                                 bool always_create,
+                                 bool is_new_profile,
+                                 bool unblock_extensions,
+                                 Profile* profile,
+                                 Profile::CreateStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (status != Profile::CREATE_STATUS_INITIALIZED)
@@ -242,18 +242,22 @@ void OpenBrowserWindowForProfile(
     is_first_run = chrome::startup::IS_FIRST_RUN;
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // The signin bit will still be set if the profile is being unlocked and the
-  // browser window for it is opening. As part of this unlock process, unblock
-  // all the extensions.
+#if !defined(OS_CHROMEOS)
   if (!profile->IsGuestSession()) {
     ProfileAttributesEntry* entry;
     if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
             GetProfileAttributesWithPath(profile->GetPath(), &entry) &&
         entry->IsSigninRequired()) {
-      UnblockExtensions(profile);
+      UserManager::Show(profile->GetPath(),
+                        profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+      return;
     }
   }
+#endif  // !defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (unblock_extensions)
+    UnblockExtensions(profile);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // If |always_create| is false, and we have a |callback| to run, check
@@ -308,7 +312,7 @@ void SwitchToProfile(const base::FilePath& path,
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
       base::Bind(&profiles::OpenBrowserWindowForProfile, callback,
-                 always_create, false),
+                 always_create, false, false),
       base::string16(), std::string());
 }
 
@@ -319,7 +323,7 @@ void SwitchToGuestProfile(ProfileManager::CreateCallback callback) {
                                    path);
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
-      base::Bind(&profiles::OpenBrowserWindowForProfile, callback, false,
+      base::Bind(&profiles::OpenBrowserWindowForProfile, callback, false, false,
                  false),
       base::string16(), std::string());
 }
@@ -341,7 +345,8 @@ void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
   ProfileManager::CreateMultiProfileAsync(
       storage.ChooseNameForNewProfile(placeholder_avatar_index),
       profiles::GetDefaultAvatarIconUrl(placeholder_avatar_index),
-      base::Bind(&profiles::OpenBrowserWindowForProfile, callback, true, true));
+      base::Bind(&profiles::OpenBrowserWindowForProfile, callback, true, true,
+                 false));
   ProfileMetrics::LogProfileAddNewUser(metric);
 }
 
