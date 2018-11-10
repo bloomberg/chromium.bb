@@ -17,7 +17,6 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -44,17 +43,6 @@ AppListControllerImpl::AppListControllerImpl()
     : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);
-
-  // Create only for non-mash. Mash uses window tree embed API to get a
-  // token to map answer card contents.
-  //
-  // TODO(https://crbug.com/894987): This is now only used (as a singleton) by
-  // assistant UI code to display its answer card contents. It can be removed
-  // once that code is ported to use Content Service.
-  if (!::features::IsUsingWindowService()) {
-    answer_card_contents_registry_ =
-        std::make_unique<app_list::AnswerCardContentsRegistry>();
-  }
 
   SessionController* session_controller = Shell::Get()->session_controller();
   session_controller->AddObserver(this);

@@ -17,7 +17,6 @@ class Connector;
 }  // namespace service_manager
 
 class AssistantImageDownloader;
-class WebContentsManager;
 class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
@@ -45,8 +44,6 @@ class AssistantClient : chromeos::assistant::mojom::Client {
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
-
-  std::unique_ptr<WebContentsManager> web_contents_manager_;
 
   bool initialized_ = false;
 

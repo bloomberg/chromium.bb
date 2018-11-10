@@ -3278,8 +3278,6 @@ jumbo_split_static_library("ui") {
       "ash/assistant/assistant_setup.h",
       "ash/assistant/device_actions.cc",
       "ash/assistant/device_actions.h",
-      "ash/assistant/web_contents_manager.cc",
-      "ash/assistant/web_contents_manager.h",
     ]
   }
 

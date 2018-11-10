@@ -212,20 +212,17 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
   if (!from_user_gesture)
     return;
 
-  // We defer to |assistant_controller_| to tell us if we should allow
-  // navigation to continue or not as we, in some cases, intercept navigation
-  // to perform special handling for deep links, etc.
-  assistant_controller_->ShouldOpenUrlFromTab(
-      url, disposition,
-      base::BindOnce(
-          [](const base::WeakPtr<AssistantWebView>& assistant_web_view,
-             const GURL& url, bool should_navigate) {
-            // If the navigation attempt hasn't been specially handled we can
-            // allow the web contents to continue navigating.
-            if (should_navigate && assistant_web_view)
-              assistant_web_view->contents_->Navigate(url);
-          },
-          weak_factory_.GetWeakPtr(), url));
+  // Deep links are always handled by AssistantController. If the |disposition|
+  // indicates a desire to open a new foreground tab, we also defer to the
+  // AssistantController so that it can open the |url| in the browser.
+  if (assistant::util::IsDeepLinkUrl(url) ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
+    assistant_controller_->OpenUrl(url);
+    return;
+  }
+
+  // Otherwise we'll allow our web contents to navigate freely.
+  contents_->Navigate(url);
 }
 
 void AssistantWebView::RemoveContents() {
