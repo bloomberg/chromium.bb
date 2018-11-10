@@ -6,7 +6,6 @@
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
-#include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "chromeos/components/proximity_auth/unlock_manager_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
@@ -17,31 +16,21 @@ ProximityAuthSystem::ProximityAuthSystem(
     ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client,
     chromeos::secure_channel::SecureChannelClient* secure_channel_client)
-    : screenlock_type_(screenlock_type),
-      proximity_auth_client_(proximity_auth_client),
-      secure_channel_client_(secure_channel_client),
-      pref_manager_(proximity_auth_client->GetPrefManager()),
-      unlock_manager_(new UnlockManagerImpl(screenlock_type,
-                                            proximity_auth_client_,
-                                            pref_manager_)),
+    : secure_channel_client_(secure_channel_client),
+      unlock_manager_(
+          new UnlockManagerImpl(screenlock_type,
+                                proximity_auth_client,
+                                proximity_auth_client->GetPrefManager())),
       suspended_(false),
-      started_(false),
-      weak_ptr_factory_(this) {}
+      started_(false) {}
 
 ProximityAuthSystem::ProximityAuthSystem(
-    ScreenlockType screenlock_type,
-    ProximityAuthClient* proximity_auth_client,
     chromeos::secure_channel::SecureChannelClient* secure_channel_client,
-    std::unique_ptr<UnlockManager> unlock_manager,
-    ProximityAuthPrefManager* pref_manager)
-    : screenlock_type_(screenlock_type),
-      proximity_auth_client_(proximity_auth_client),
-      secure_channel_client_(secure_channel_client),
-      pref_manager_(pref_manager),
+    std::unique_ptr<UnlockManager> unlock_manager)
+    : secure_channel_client_(secure_channel_client),
       unlock_manager_(std::move(unlock_manager)),
       suspended_(false),
-      started_(false),
-      weak_ptr_factory_(this) {}
+      started_(false) {}
 
 ProximityAuthSystem::~ProximityAuthSystem() {
   ScreenlockBridge::Get()->RemoveObserver(this);
