@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/trace_util.h"
 
@@ -21,16 +22,6 @@ namespace {
 // Put an arbitrary (high) limit on number of cache entries to prevent
 // unbounded handle growth with tiny entries.
 static size_t kMaxCacheEntries = 2000;
-
-size_t ServiceTransferCacheSizeLimit() {
-  size_t memory_usage = 128 * 1024 * 1024;
-  if (base::SysInfo::IsLowEndDevice()) {
-    // Based on the 512KB limit used for discardable images in non-OOP-R, but
-    // gives an extra 256KB to allow for additional (non-image) cache items.
-    memory_usage = 768 * 1024;
-  }
-  return memory_usage;
-}
 
 // TODO(ericrk): Move this into ServiceImageTransferCacheEntry - here for now
 // due to ui/gl dependency.
@@ -78,7 +69,7 @@ ServiceTransferCache::CacheEntryInternal::operator=(
 
 ServiceTransferCache::ServiceTransferCache()
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(ServiceTransferCacheSizeLimit()),
+      cache_size_limit_(DiscardableCacheSizeLimit()),
       max_cache_entries_(kMaxCacheEntries) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -193,7 +184,7 @@ void ServiceTransferCache::PurgeMemory(
   }
 
   EnforceLimits();
-  cache_size_limit_ = ServiceTransferCacheSizeLimit();
+  cache_size_limit_ = DiscardableCacheSizeLimit();
 }
 
 bool ServiceTransferCache::OnMemoryDump(
