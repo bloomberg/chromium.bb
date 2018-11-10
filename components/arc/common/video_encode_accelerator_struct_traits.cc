@@ -147,37 +147,4 @@ bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
   return true;
 }
 
-// static
-bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDeprecatedDataView,
-                  media::VideoEncodeAccelerator::Config>::
-    Read(arc::mojom::VideoEncodeAcceleratorConfigDeprecatedDataView input,
-         media::VideoEncodeAccelerator::Config* output) {
-  media::VideoPixelFormat input_format;
-  if (!input.ReadInputFormat(&input_format))
-    return false;
-
-  gfx::Size input_visible_size;
-  if (!input.ReadInputVisibleSize(&input_visible_size))
-    return false;
-
-  media::VideoCodecProfile output_profile;
-  if (!input.ReadOutputProfile(&output_profile))
-    return false;
-
-  base::Optional<uint32_t> initial_framerate;
-  if (input.has_initial_framerate()) {
-    initial_framerate = input.initial_framerate();
-  }
-
-  base::Optional<uint8_t> h264_output_level;
-  if (input.has_h264_output_level()) {
-    h264_output_level = input.h264_output_level();
-  }
-
-  *output = media::VideoEncodeAccelerator::Config(
-      input_format, input_visible_size, output_profile, input.initial_bitrate(),
-      initial_framerate, h264_output_level);
-  return true;
-}
-
 }  // namespace mojo

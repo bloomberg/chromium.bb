@@ -99,15 +99,6 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   std::move(callback).Run(true);
 }
 
-void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
-    const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeAccelerator::StorageTypeDeprecated input_storage,
-    VideoEncodeClientPtr client,
-    InitializeCallback callback) {
-  // Intentionally ignore input_storage. It has never been used since now.
-  Initialize(config, std::move(client), std::move(callback));
-}
-
 static void DropShareMemoryAndVideoFrameDoneNotifier(
     std::unique_ptr<base::SharedMemory> shm,
     std::unique_ptr<VideoFrameDoneNotifier> notifier) {
