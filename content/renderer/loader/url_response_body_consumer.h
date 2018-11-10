@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -83,6 +84,8 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   void Reclaim(uint32_t size);
 
   void NotifyCompletionIfAppropriate();
+
+  void ReleaseZlibWrapper();
 
   const int request_id_;
   ResourceDispatcher* resource_dispatcher_;
