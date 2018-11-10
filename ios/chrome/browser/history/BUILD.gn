@@ -28,7 +28,6 @@ source_set("history") {
     "//components/keyed_service/ios",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//components/sync",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

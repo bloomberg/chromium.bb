@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"

@@ -57,7 +57,6 @@ source_set("autofill") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

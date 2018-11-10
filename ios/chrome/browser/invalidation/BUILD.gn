@@ -18,7 +18,6 @@ source_set("invalidation") {
     "//components/keyed_service/ios",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/gcm",
