@@ -556,6 +556,25 @@
         },
         'os_type': 'android',
       },
+      'Android WebView O NetworkService (dbg)': {
+        'test_suites': {
+          'isolated_scripts': 'webview_cts_tests_isolated_scripts',
+        },
+        'args': [
+          '--enable-features=NetworkService',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'OPM1.171019.021',
+              'device_type': 'walleye',
+              'os': 'Android',
+            },
+          ],
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'Memory Infra Tester': {
         'swarming': {
           'dimension_sets': [
