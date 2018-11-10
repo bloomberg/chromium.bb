@@ -6,16 +6,21 @@ module chrome.mojom;
 
 import "components/content_settings/core/common/content_settings.mojom";
 
+// The renderer configuration parameters which can change post renderer launch.
+struct DynamicParams {
+  bool force_safe_search = true;
+  int32 youtube_restrict = 0;
+  string allowed_domains_for_apps;
+  string variation_ids_header;
+};
+
 // Configures the renderer.
 interface RendererConfiguration {
   // Configures the renderer with settings that won't change.
   SetInitialConfiguration(bool is_incognito_process);
 
   // Update renderer configuration with settings that can change.
-  SetConfiguration(bool force_safe_search,
-                   int32 youtube_restrict,
-                   string allowed_domains_for_apps,
-                   string variation_ids_header);
+  SetConfiguration(DynamicParams params);
 
   // Set the content setting rules stored by the renderer.
   SetContentSettingRules(
