@@ -302,10 +302,6 @@ public abstract class CafBaseMediaRouteProvider
 
     abstract public BaseSessionController sessionController();
 
-    public CafMessageHandler getMessageHandler() {
-        return null;
-    }
-
     /** Adds a route for bookkeeping. */
     protected void addRoute(
             MediaRoute route, String origin, int tabId, int nativeRequestId, boolean wasLaunched) {
