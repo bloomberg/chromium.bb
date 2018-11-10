@@ -364,10 +364,10 @@ TEST_F(ButtonTest, GestureEventsSetState) {
 TEST_F(ButtonTest, AsButton) {
   base::string16 text;
 
-  LabelButton label_button(NULL, text);
+  LabelButton label_button(nullptr, text);
   EXPECT_TRUE(Button::AsButton(&label_button));
 
-  ImageButton image_button(NULL);
+  ImageButton image_button(nullptr);
   EXPECT_TRUE(Button::AsButton(&image_button));
 
   Checkbox checkbox(text);
@@ -376,10 +376,10 @@ TEST_F(ButtonTest, AsButton) {
   RadioButton radio_button(text, 0);
   EXPECT_TRUE(Button::AsButton(&radio_button));
 
-  MenuButton menu_button(text, NULL, false);
+  MenuButton menu_button(text, nullptr);
   EXPECT_TRUE(Button::AsButton(&menu_button));
 
-  ToggleButton toggle_button(NULL);
+  ToggleButton toggle_button(nullptr);
   EXPECT_TRUE(Button::AsButton(&toggle_button));
 
   Label label;
