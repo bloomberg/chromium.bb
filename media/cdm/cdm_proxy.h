@@ -16,6 +16,10 @@
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 
+namespace base {
+class Token;
+}
+
 namespace media {
 
 // A class that proxies part of ContentDecryptionModule (CDM) functionalities to
@@ -143,7 +147,7 @@ class MEDIA_EXPORT CdmProxy {
 };
 
 using CdmProxyFactoryCB = base::RepeatingCallback<std::unique_ptr<CdmProxy>(
-    const std::string& cdm_guid)>;
+    const base::Token& cdm_guid)>;
 
 }  // namespace media
 

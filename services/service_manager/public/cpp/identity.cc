@@ -16,16 +16,16 @@ Identity::Identity(const std::string& name) : Identity(name, base::nullopt) {}
 
 Identity::Identity(const std::string& name,
                    const base::Optional<base::Token>& instance_group)
-    : Identity(name, instance_group, "") {}
+    : Identity(name, instance_group, base::nullopt) {}
 
 Identity::Identity(const std::string& name,
                    const base::Optional<base::Token>& instance_group,
-                   const std::string& instance_id)
+                   const base::Optional<base::Token>& instance_id)
     : Identity(name, instance_group, instance_id, base::nullopt) {}
 
 Identity::Identity(const std::string& name,
                    const base::Optional<base::Token>& instance_group,
-                   const std::string& instance_id,
+                   const base::Optional<base::Token>& instance_id,
                    const base::Optional<base::Token>& globally_unique_id)
     : name_(name),
       instance_group_(instance_group),
@@ -59,7 +59,7 @@ std::string Identity::ToString() const {
   return base::StringPrintf(
       "%s/%s/%s/%s",
       instance_group_ ? instance_group_->ToString().c_str() : "*",
-      name_.c_str(), instance_id_.c_str(),
+      name_.c_str(), instance_id_ ? instance_id_->ToString().c_str() : "*",
       globally_unique_id_ ? globally_unique_id_->ToString().c_str() : "*");
 }
 

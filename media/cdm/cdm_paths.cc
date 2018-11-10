@@ -15,8 +15,10 @@ const char kClearKeyCdmLibraryName[] = "clearkeycdm";
 
 const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
 const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
-const char kClearKeyCdmGuid[] = "C1A6B4E3-FE48-4D53-9F52-244AEEAD5335";
-const char kClearKeyCdmDifferentGuid[] = "747C565D-34EE-4B0D-AC1E-4F9FB17DDB40";
+const base::Token kClearKeyCdmGuid{0x3a2e0fadde4bd1b7ull,
+                                   0xcb90df3e240d1694ull};
+const base::Token kClearKeyCdmDifferentGuid{0xc3914773474bdb02ull,
+                                            0x8e8de4d84d3ca030ull};
 
 // As the file system was initially used by the CDM running as a pepper plugin,
 // this ID is based on the pepper plugin MIME type.

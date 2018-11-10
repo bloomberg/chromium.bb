@@ -245,7 +245,7 @@ SandboxedUnpacker::SandboxedUnpacker(
   // decoder service (running in its own process).
   data_decoder_identity_ = service_manager::Identity(
       data_decoder::mojom::kServiceName, base::nullopt /* instance_group */,
-      base::UnguessableToken::Create().ToString());
+      base::Token::CreateRandom());
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {

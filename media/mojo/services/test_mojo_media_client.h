@@ -37,7 +37,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::unique_ptr<CdmProxy> CreateCdmProxy(const std::string& cdm_guid) final;
+  std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid) final;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  private:

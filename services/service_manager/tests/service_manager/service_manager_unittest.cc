@@ -457,9 +457,10 @@ TEST_F(ServiceManagerTest, CreatePackagedRegularInstances) {
                                base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/true);
 
-  // Starting with a different instance name creates a new service as well.
+  // Starting with a different instance ID creates a new service as well.
   Identity instance_identity(kRegularServiceName,
-                             base::nullopt /* instance_group */, "my_instance");
+                             base::nullopt /* instance_group */,
+                             base::Token{1, 2});
   StartService(instance_identity, /*expect_service_started=*/true);
 }
 
@@ -484,10 +485,10 @@ TEST_F(ServiceManagerTest, CreatePackagedAllUsersInstances) {
                                base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/false);
 
-  // Start again with a difference instance name, in that case a new service
+  // Start again with a difference instance ID, in that case a new service
   // should get created.
   Identity instance_identity(kAllUsersServiceName, base::Token::CreateRandom(),
-                             "my_instance");
+                             base::Token{1, 2});
   StartService(instance_identity, /*expect_service_started=*/true);
 }
 
@@ -509,11 +510,11 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstances) {
                                base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/false);
 
-  // Start again with the same user-ID but a difference instance name, the
+  // Start again with the same instance group but a difference instance ID, the
   // existing service should still be reused.
   // should get created.
   Identity instance_identity(kSingletonServiceName,
-                             base::nullopt /* instance_group */, "my_instance");
+                             base::nullopt /* instance_group */, base::Token{});
   StartService(instance_identity, /*expect_service_started=*/false);
 }
 
@@ -543,7 +544,8 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   AddListenerAndWaitForApplications();
 
   const std::string kTestService = "service_manager_unittest_target";
-  const Identity kInstance1Id(kTestService, kSystemInstanceGroup, "1");
+  const Identity kInstance1Id(kTestService, kSystemInstanceGroup,
+                              base::Token{1, 2});
   const Identity kInstance2Id(kTestService, kSystemInstanceGroup);
 
   // Introduce a new service instance for service_manager_unittest_target,

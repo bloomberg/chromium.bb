@@ -59,6 +59,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -1876,7 +1877,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   service_manager::Identity child_identity(
       mojom::kRendererServiceName,
       BrowserContext::GetServiceInstanceGroupFor(GetBrowserContext()),
-      base::StringPrintf("%d_%d", id_, instance_id_++));
+      base::Token::CreateRandom());
   child_connection_ = std::make_unique<ChildConnection>(
       child_identity, &mojo_invitation_, connector, io_task_runner);
 

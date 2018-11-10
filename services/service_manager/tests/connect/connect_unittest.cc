@@ -237,31 +237,47 @@ TEST_F(ConnectTest, BindInterface) {
 }
 
 TEST_F(ConnectTest, Instances) {
-  Identity identity_a(kTestAppName, base::nullopt /* instance_group */, "A");
-  std::string instance_a1, instance_a2;
+  const base::Token kInstanceIdA{1, 2};
+  const base::Token kInstanceIdB{3, 4};
+  Identity identity_a(kTestAppName, base::nullopt /* instance_group */,
+                      kInstanceIdA);
+  base::Token instance_a1, instance_a2;
   test::mojom::ConnectTestServicePtr service_a1;
   {
     connector()->BindInterface(identity_a, &service_a1);
     base::RunLoop loop;
-    service_a1->GetInstance(base::Bind(&ReceiveOneString, &instance_a1, &loop));
+    service_a1->GetInstanceId(
+        base::BindLambdaForTesting([&](const base::Token& instance_id) {
+          instance_a1 = instance_id;
+          loop.Quit();
+        }));
     loop.Run();
   }
   test::mojom::ConnectTestServicePtr service_a2;
   {
     connector()->BindInterface(identity_a, &service_a2);
     base::RunLoop loop;
-    service_a2->GetInstance(base::Bind(&ReceiveOneString, &instance_a2, &loop));
+    service_a2->GetInstanceId(
+        base::BindLambdaForTesting([&](const base::Token& instance_id) {
+          instance_a2 = instance_id;
+          loop.Quit();
+        }));
     loop.Run();
   }
   EXPECT_EQ(instance_a1, instance_a2);
 
-  Identity identity_b(kTestAppName, base::nullopt /* instance_group */, "B");
-  std::string instance_b;
+  Identity identity_b(kTestAppName, base::nullopt /* instance_group */,
+                      kInstanceIdB);
+  base::Token instance_b;
   test::mojom::ConnectTestServicePtr service_b;
   {
     connector()->BindInterface(identity_b, &service_b);
     base::RunLoop loop;
-    service_b->GetInstance(base::Bind(&ReceiveOneString, &instance_b, &loop));
+    service_b->GetInstanceId(
+        base::BindLambdaForTesting([&](const base::Token& instance_id) {
+          instance_b = instance_id;
+          loop.Quit();
+        }));
     loop.Run();
   }
 
@@ -320,7 +336,8 @@ TEST_F(ConnectTest, QueryService) {
   std::string sandbox_type;
   base::RunLoop run_loop;
   connector()->QueryService(
-      Identity(kTestSandboxedAppName, base::nullopt /* instance_group */, "A"),
+      Identity(kTestSandboxedAppName, base::nullopt /* instance_group */,
+               base::Token{1, 2}),
       base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
   run_loop.Run();
   EXPECT_EQ(mojom::ConnectResult::SUCCEEDED, result);
@@ -333,7 +350,7 @@ TEST_F(ConnectTest, QueryNonexistentService) {
   base::RunLoop run_loop;
   connector()->QueryService(
       Identity(kTestNonexistentAppName, base::nullopt /* instance_group */,
-               "A"),
+               base::Token{1, 2}),
       base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
   run_loop.Run();
   EXPECT_EQ(mojom::ConnectResult::INVALID_ARGUMENT, result);
@@ -484,7 +501,12 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
     loop.Run();
   }
   EXPECT_EQ(result, mojom::ConnectResult::SUCCEEDED);
-  EXPECT_TRUE(target.Matches(result_identity));
+  EXPECT_EQ(target.name(), result_identity.name());
+  EXPECT_TRUE(result_identity.instance_group().has_value());
+  EXPECT_EQ(target.instance_group(), result_identity.instance_group());
+  EXPECT_TRUE(result_identity.instance_id().has_value());
+  EXPECT_EQ(result_identity.instance_id().value(), base::Token(0, 0));
+  EXPECT_TRUE(result_identity.globally_unique_id().has_value());
 }
 
 TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
@@ -510,7 +532,7 @@ TEST_F(ConnectTest, ConnectWithDifferentInstanceName_Blocked) {
 
   mojom::ConnectResult result;
   Identity target(kTestClassAppName, base::nullopt /* instance_group */,
-                  base::GenerateGUID());
+                  base::Token::CreateRandom());
   Identity result_identity;
   base::RunLoop loop;
   identity_test->ConnectToClassAppWithIdentity(

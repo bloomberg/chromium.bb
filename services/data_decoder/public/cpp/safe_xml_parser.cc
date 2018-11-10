@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -23,7 +22,7 @@ class SafeXmlParser {
   SafeXmlParser(service_manager::Connector* connector,
                 const std::string& unsafe_xml,
                 XmlParserCallback callback,
-                const std::string& batch_id);
+                const base::Token& batch_id);
   ~SafeXmlParser();
 
  private:
@@ -40,7 +39,7 @@ class SafeXmlParser {
 SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
                              const std::string& unsafe_xml,
                              XmlParserCallback callback,
-                             const std::string& batch_id)
+                             const base::Token& batch_id)
     : callback_(std::move(callback)) {
   DCHECK(callback_);  // Parsing without a callback is useless.
 
@@ -48,8 +47,7 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
   // connection is to a new service running in its own process.
   service_manager::Identity identity(
       mojom::kServiceName, base::nullopt /* instance_group */,
-      batch_id.empty() ? base::UnguessableToken::Create().ToString()
-                       : batch_id);
+      batch_id.is_zero() ? base::Token::CreateRandom() : batch_id);
   connector->BindInterface(identity, &xml_parser_ptr_);
 
   // Unretained(this) is safe as the xml_parser_ptr_ is owned by this class.
@@ -95,7 +93,7 @@ std::string GetXmlQualifiedName(const std::string& name_space,
 void ParseXml(service_manager::Connector* connector,
               const std::string& unsafe_xml,
               XmlParserCallback callback,
-              const std::string& batch_id) {
+              const base::Token& batch_id) {
   new SafeXmlParser(connector, unsafe_xml, std::move(callback), batch_id);
 }
 

@@ -40,7 +40,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final;
   void CreateDecryptor(int cdm_id, mojom::DecryptorRequest request) final;
-  void CreateCdmProxy(const std::string& cdm_guid,
+  void CreateCdmProxy(const base::Token& cdm_guid,
                       mojom::CdmProxyRequest request) final;
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.

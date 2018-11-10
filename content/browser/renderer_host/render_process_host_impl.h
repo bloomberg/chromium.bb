@@ -744,12 +744,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RPH.
   const int id_;
 
-  // A secondary ID used by the Service Manager to distinguish different
-  // incarnations of the same RPH from each other. Unlike |id_| this is not
-  // globally unique, but it is guaranteed to change every time ProcessDied() is
-  // called.
-  int instance_id_ = 1;
-
   BrowserContext* const browser_context_;
 
   // Owned by |browser_context_|.

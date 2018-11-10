@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -59,7 +60,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       child_identity_(
           mojom::kRendererServiceName,
           BrowserContext::GetServiceInstanceGroupFor(browser_context),
-          base::StringPrintf("%d", id_)),
+          base::Token::CreateRandom()),
       url_loader_factory_(nullptr),
       weak_ptr_factory_(this) {
   // Child process security operations can't be unit tested unless we add

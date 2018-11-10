@@ -119,8 +119,8 @@ class ProvidedService : public Service,
     std::move(callback).Run(title_);
   }
 
-  void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(service_binding_.identity().instance_id());
+  void GetInstanceId(GetInstanceIdCallback callback) override {
+    std::move(callback).Run(*service_binding_.identity().instance_id());
   }
 
   // test::mojom::BlockedInterface:
@@ -245,8 +245,8 @@ class ConnectTestService : public Service,
     std::move(callback).Run("ROOT");
   }
 
-  void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(service_binding_.identity().instance_id());
+  void GetInstanceId(GetInstanceIdCallback callback) override {
+    std::move(callback).Run(*service_binding_.identity().instance_id());
   }
 
   void OnConnectionError() {
