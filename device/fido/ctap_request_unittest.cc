@@ -30,9 +30,10 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
                                  {CredentialType::kPublicKey, 257}}));
-  auto serialized_data = make_credential_param.SetResidentKeySupported(true)
-                             .SetUserVerificationRequired(true)
-                             .EncodeAsCBOR();
+  auto serialized_data =
+      make_credential_param.SetResidentKeyRequired(true)
+          .SetUserVerification(UserVerificationRequirement::kRequired)
+          .EncodeAsCBOR();
   EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(
                                    test_data::kCtapMakeCredentialRequest));
 }
@@ -111,8 +112,9 @@ TEST(VirtualCtap2DeviceTest, ParseMakeCredentialRequestForVirtualCtapKey) {
                      .public_key_credential_params()
                      .at(1)
                      .algorithm);
-  EXPECT_TRUE(request.user_verification_required());
-  EXPECT_TRUE(request.resident_key_supported());
+  EXPECT_EQ(UserVerificationRequirement::kRequired,
+            request.user_verification());
+  EXPECT_TRUE(request.resident_key_required());
 }
 
 TEST(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {

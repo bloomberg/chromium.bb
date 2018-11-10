@@ -128,14 +128,15 @@ TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
 
 TEST(U2fCommandConstructorTest, TestU2fRegisterUserVerificationRequirement) {
   auto make_credential_param = ConstructMakeCredentialRequest();
-  make_credential_param.SetUserVerificationRequired(true);
+  make_credential_param.SetUserVerification(
+      UserVerificationRequirement::kRequired);
 
   EXPECT_FALSE(IsConvertibleToU2fRegisterCommand(make_credential_param));
 }
 
 TEST(U2fCommandConstructorTest, TestU2fRegisterResidentKeyRequirement) {
   auto make_credential_param = ConstructMakeCredentialRequest();
-  make_credential_param.SetResidentKeySupported(true);
+  make_credential_param.SetResidentKeyRequired(true);
 
   EXPECT_FALSE(IsConvertibleToU2fRegisterCommand(make_credential_param));
 }

@@ -15,7 +15,8 @@ namespace device {
 
 bool IsConvertibleToU2fRegisterCommand(
     const CtapMakeCredentialRequest& request) {
-  if (request.user_verification_required() || request.resident_key_supported())
+  if (request.user_verification() == UserVerificationRequirement::kRequired ||
+      request.resident_key_required())
     return false;
 
   const auto& public_key_credential_info =

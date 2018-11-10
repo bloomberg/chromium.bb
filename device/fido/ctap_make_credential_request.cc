@@ -71,16 +71,15 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
 
   cbor::Value::MapValue option_map;
 
-  // Resident keys are not supported by default.
-  if (resident_key_supported_) {
+  // Resident keys are not required by default.
+  if (resident_key_required_) {
     option_map[cbor::Value(kResidentKeyMapKey)] =
-        cbor::Value(resident_key_supported_);
+        cbor::Value(resident_key_required_);
   }
 
   // User verification is not required by default.
-  if (user_verification_required_) {
-    option_map[cbor::Value(kUserVerificationMapKey)] =
-        cbor::Value(user_verification_required_);
+  if (user_verification_ == UserVerificationRequirement::kRequired) {
+    option_map[cbor::Value(kUserVerificationMapKey)] = cbor::Value(true);
   }
 
   if (!option_map.empty()) {
@@ -97,16 +96,15 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
   return cbor_request;
 }
 
-CtapMakeCredentialRequest&
-CtapMakeCredentialRequest::SetUserVerificationRequired(
-    bool user_verification_required) {
-  user_verification_required_ = user_verification_required;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetUserVerification(
+    UserVerificationRequirement user_verification) {
+  user_verification_ = user_verification;
   return *this;
 }
 
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeySupported(
-    bool resident_key_supported) {
-  resident_key_supported_ = resident_key_supported;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeyRequired(
+    bool resident_key_required) {
+  resident_key_required_ = resident_key_required;
   return *this;
 }
 

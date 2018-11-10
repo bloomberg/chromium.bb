@@ -52,10 +52,11 @@ void ReturnCtap2Response(
 
 bool AreMakeCredentialOptionsValid(const AuthenticatorSupportedOptions& options,
                                    const CtapMakeCredentialRequest& request) {
-  if (request.resident_key_supported() && !options.supports_resident_key())
+  if (request.resident_key_required() && !options.supports_resident_key())
     return false;
 
-  return !request.user_verification_required() ||
+  return request.user_verification() !=
+             UserVerificationRequirement::kRequired ||
          options.user_verification_availability() ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured;
@@ -555,12 +556,15 @@ ParseCtapMakeCredentialRequest(base::span<const uint8_t> request_bytes) {
     const auto resident_key_option =
         option_map.find(cbor::Value(kResidentKeyMapKey));
     if (resident_key_option != option_map.end())
-      request.SetResidentKeySupported(resident_key_option->second.GetBool());
+      request.SetResidentKeyRequired(resident_key_option->second.GetBool());
 
     const auto uv_option =
         option_map.find(cbor::Value(kUserVerificationMapKey));
     if (uv_option != option_map.end())
-      request.SetUserVerificationRequired(uv_option->second.GetBool());
+      request.SetUserVerification(
+          uv_option->second.GetBool()
+              ? UserVerificationRequirement::kRequired
+              : UserVerificationRequirement::kDiscouraged);
   }
 
   const auto pin_auth_it = request_map.find(cbor::Value(8));

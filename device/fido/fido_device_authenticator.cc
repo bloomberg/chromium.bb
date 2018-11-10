@@ -57,8 +57,17 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
   DCHECK(!task_);
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-
   DCHECK(Options());
+
+  // Update the request to the "effective" user verification requirement.
+  // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-credential-creation
+  if (Options()->user_verification_availability() ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    request.SetUserVerification(UserVerificationRequirement::kRequired);
+  } else {
+    request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  }
 
   // TODO(martinkr): Change FidoTasks to take all request parameters by const
   // reference, so we can avoid copying these from the RequestHandler.
@@ -68,12 +77,13 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
+  DCHECK(!task_);
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
 
   // Update the request to the "effective" user verification requirement.
   // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-  DCHECK(Options());
   if (Options()->user_verification_availability() ==
       AuthenticatorSupportedOptions::UserVerificationAvailability::
           kSupportedAndConfigured) {
