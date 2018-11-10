@@ -66,12 +66,12 @@ class CommonMenuModel : public ui::MenuModel {
   bool GetIconAt(int index, gfx::Image* icon) override { return false; }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
-    return nullptr;
+    return NULL;
   }
 
   bool IsEnabledAt(int index) const override { return true; }
 
-  ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
+  ui::MenuModel* GetSubmenuModelAt(int index) const override { return NULL; }
 
   void HighlightChangedTo(int index) override {}
 
@@ -79,9 +79,7 @@ class CommonMenuModel : public ui::MenuModel {
 
   void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
 
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override {
-    return nullptr;
-  }
+  ui::MenuModelDelegate* GetMenuModelDelegate() const override { return NULL; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommonMenuModel);
@@ -164,17 +162,18 @@ class MenuModelAdapterTest : public ViewEventTestBase,
  public:
   MenuModelAdapterTest()
       : ViewEventTestBase(),
-        button_(nullptr),
+        button_(NULL),
         menu_model_adapter_(&top_menu_model_),
-        menu_(nullptr) {}
+        menu_(NULL) {
+  }
 
   ~MenuModelAdapterTest() override {}
 
   // ViewEventTestBase implementation.
 
   void SetUp() override {
-    button_ =
-        new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"), this);
+    button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"),
+                                    this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
     menu_runner_.reset(
@@ -184,8 +183,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   void TearDown() override {
-    menu_runner_ = nullptr;
-    menu_ = nullptr;
+    menu_runner_.reset(NULL);
+    menu_ = NULL;
     ViewEventTestBase::TearDown();
   }
 

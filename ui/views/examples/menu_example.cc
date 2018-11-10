@@ -171,9 +171,10 @@ void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
 // ExampleMenuButton -----------------------------------------------------------
 
 ExampleMenuButton::ExampleMenuButton(const base::string16& test)
-    : MenuButton(test, this) {}
+    : MenuButton(test, this, true) {}
 
-ExampleMenuButton::~ExampleMenuButton() {}
+ExampleMenuButton::~ExampleMenuButton() {
+}
 
 void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
                                             const gfx::Point& point,

@@ -56,7 +56,7 @@ void TabIconView::InitializeIfNeeded() {
 
 TabIconView::TabIconView(TabIconViewModel* model,
                          views::MenuButtonListener* listener)
-    : views::MenuButton(base::string16(), listener),
+    : views::MenuButton(base::string16(), listener, false),
       model_(model),
       is_light_(false) {
   InitializeIfNeeded();
