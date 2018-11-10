@@ -65,7 +65,7 @@ void SetTooltipAndAccessibleName(views::Button* parent,
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
-    : views::MenuButton(text, this, false),
+    : views::MenuButton(text, this),
       title_(nullptr),
       subtitle_(nullptr),
       icon_view_(nullptr),
