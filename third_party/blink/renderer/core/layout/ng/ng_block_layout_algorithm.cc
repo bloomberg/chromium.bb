@@ -371,15 +371,15 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
-
   border_padding_ = borders + padding;
-  NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
 
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
+  NGLogicalSize border_box_size = CalculateBorderBoxSize(
+      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
+
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
@@ -2299,7 +2299,8 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateDefaultBlockSize() {
   if (Node().IsQuirkyAndFillsViewport()) {
     LayoutUnit block_size = ConstraintSpace().AvailableSize().block_size;
     block_size -= ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
-    return block_size.ClampNegativeToZero();
+    return std::max(block_size.ClampNegativeToZero(),
+                    border_scrollbar_padding_.BlockSum());
   }
   return NGSizeIndefinite;
 }
