@@ -193,7 +193,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     mojo::OutgoingInvitation invitation;
     service_manager::Identity child_identity(mojom::kRendererServiceName,
                                              base::nullopt /* instance_group */,
-                                             "test");
+                                             base::Token{});
     child_connection_.reset(new ChildConnection(
         child_identity, &invitation,
         ServiceManagerConnection::GetForProcess()->GetConnector(),

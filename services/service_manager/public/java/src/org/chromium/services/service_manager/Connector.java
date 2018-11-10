@@ -40,7 +40,7 @@ public class Connector implements ConnectionErrorHandler {
         Identity target = new Identity();
         target.name = serviceName;
         target.instanceGroup = null;
-        target.instanceId = "";
+        target.instanceId = null;
 
         org.chromium.service_manager.mojom.Connector.BindInterfaceResponse callback =
                 new ConnectorBindInterfaceResponseImpl();

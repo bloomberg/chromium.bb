@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/token.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 
@@ -17,7 +18,8 @@ class Connector;
 namespace media_router {
 
 // The batch ID used by data_decoder_util functions.
-static constexpr char kDataDecoderServiceBatchId[] = "media_router";
+static constexpr base::Token kDataDecoderServiceBatchId{0xabf3003d50bb0170ull,
+                                                        0x0c659c570136566eull};
 
 // A wrapper over their data_decoder functions for parsing XML/JSON that batches
 // all calls with a shared batch ID.

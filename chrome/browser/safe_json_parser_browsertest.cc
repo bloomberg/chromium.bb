@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/token.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
@@ -54,7 +55,7 @@ class SafeJsonParserTest : public InProcessBrowserTest {
   // and verifies that the correct callbacks are called. If |batch_id| is not
   // empty, uses SafeJsonParser::ParseBatch to batch multiple parse requests.
   void Parse(const std::string& json,
-             const base::Optional<std::string>& batch_id = base::nullopt) {
+             const base::Optional<base::Token>& batch_id = base::nullopt) {
     SCOPED_TRACE(json);
     DCHECK(!message_loop_runner_);
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -159,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Isolation) {
 
 // Tests that using a batch ID allows service reuse.
 IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, IsolationWithGroups) {
-  constexpr char kBatchId1[] = "batch1";
-  constexpr char kBatchId2[] = "batch2";
+  constexpr base::Token kBatchId1{0, 1};
+  constexpr base::Token kBatchId2{0, 2};
   for (int i = 0; i < 5; i++) {
     SCOPED_TRACE(base::StringPrintf("Testing iteration %d", i));
     Parse(kTestJson, kBatchId1);

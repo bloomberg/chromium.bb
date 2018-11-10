@@ -9,7 +9,7 @@ import "services/service_manager/public/mojom/connector.mojom";
 
 interface ConnectTestService {
   GetTitle() => (string title);
-  GetInstance() => (string instance);
+  GetInstanceId() => (mojo_base.mojom.Token instance_id);
 };
 
 interface ClassInterface {

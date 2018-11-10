@@ -25,6 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -168,9 +169,9 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_manager::Identity child_identity(
-        service_name, base::nullopt /* instance_group */,
-        base::StringPrintf("%d", data_.id));
+    service_manager::Identity child_identity(service_name,
+                                             base::nullopt /* instance_group */,
+                                             base::Token::CreateRandom());
     child_connection_.reset(
         new ChildConnection(child_identity, &mojo_invitation_,
                             ServiceManagerContext::GetConnectorForIOThread(),

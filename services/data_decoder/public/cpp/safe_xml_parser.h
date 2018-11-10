@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/token.h"
 
 namespace base {
 class Value;
@@ -47,7 +48,7 @@ using XmlParserCallback =
 void ParseXml(service_manager::Connector* connector,
               const std::string& unsafe_xml,
               XmlParserCallback callback,
-              const std::string& batch_id = "");
+              const base::Token& batch_id = base::Token{});
 
 // Below are convenience methods for handling the elements returned by
 // ParseXml().

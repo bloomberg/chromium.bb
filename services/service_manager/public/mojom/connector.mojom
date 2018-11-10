@@ -53,9 +53,9 @@ struct Identity {
   // is only meaningful if the target service is not designated as a singleton
   // service in its manifest.
   //
-  // May be (and is typically) empty, indicating the default and singular
-  // instance of the service within the target instance group.
-  string instance_id;
+  // May be (and is typically) null, indicating an instance with the default
+  // instance ID.
+  mojo_base.mojom.Token? instance_id;
 
   // A Token which globally and uniquely identifies a service instance across
   // space and time.

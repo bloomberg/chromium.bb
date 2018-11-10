@@ -354,7 +354,7 @@ void IndexAndPersistRules(service_manager::Connector* connector,
   if (identity) {
     data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,
                                              success_callback, error_callback,
-                                             identity->instance_id());
+                                             *identity->instance_id());
   } else {
     data_decoder::SafeJsonParser::Parse(connector, json_contents,
                                         success_callback, error_callback);

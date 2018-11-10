@@ -28,9 +28,9 @@ namespace service_manager {
 //
 // |instance_id| identifies a more specific instance within the targeted
 // instance group, or globally if the target's instances are shared across
-// instance groups. Typically this is also the empty string unless a client
-// knows there are multiple instances of the target service and wants to connect
-// to a specific one.
+// instance groups. Typically this is also null unless a client knows there are
+// multiple instances of the target service and wants to connect to a specific
+// one.
 //
 // Finally, every service instance also has a globally unique ID Token
 // associated with it. This Token is generated and assigned by the Service
@@ -39,9 +39,6 @@ namespace service_manager {
 // If an interface request targets an Identity with a specific globally unique
 // ID, that request will be processed only if the instance identified by that ID
 // is still running.
-//
-// TODO(https://crbug.com/895591): Switch |instance_id| to
-// base::Optional<base::Token> instead of a free-form.
 //
 // TODO(https://crbug.com/902590): Also consider whether partial Identity
 // values used for service instance resolution (i.e. passed to
@@ -54,10 +51,10 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
            const base::Optional<base::Token>& instance_group);
   Identity(const std::string& name,
            const base::Optional<base::Token>& instance_group,
-           const std::string& instance_id);
+           const base::Optional<base::Token>& instance_id);
   Identity(const std::string& name,
            const base::Optional<base::Token>& instance_group,
-           const std::string& instance_id,
+           const base::Optional<base::Token>& instance_id,
            const base::Optional<base::Token>& globally_unique_id);
   Identity(const Identity& other);
   ~Identity();
@@ -87,7 +84,12 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
   void set_instance_group(const base::Optional<base::Token>& instance_group) {
     instance_group_ = instance_group;
   }
-  const std::string& instance_id() const { return instance_id_; }
+  const base::Optional<base::Token>& instance_id() const {
+    return instance_id_;
+  }
+  void set_instance_id(const base::Optional<base::Token>& instance_id) {
+    instance_id_ = instance_id;
+  }
   const base::Optional<base::Token>& globally_unique_id() const {
     return globally_unique_id_;
   }
@@ -95,7 +97,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
  private:
   std::string name_;
   base::Optional<base::Token> instance_group_;
-  std::string instance_id_;
+  base::Optional<base::Token> instance_id_;
   base::Optional<base::Token> globally_unique_id_;
 };
 

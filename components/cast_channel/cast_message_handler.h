@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
+#include "base/token.h"
 #include "base/values.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
@@ -122,7 +123,7 @@ class CastMessageHandler : public CastSocket::Observer {
   // |data_decoder_batch_id|: Batch ID used for data_decoder service.
   CastMessageHandler(CastSocketService* socket_service,
                      std::unique_ptr<service_manager::Connector> connector,
-                     const std::string& data_decoder_batch_id,
+                     const base::Token& data_decoder_batch_id,
                      const std::string& user_agent,
                      const std::string& browser_version,
                      const std::string& locale);
@@ -243,7 +244,7 @@ class CastMessageHandler : public CastSocket::Observer {
 
   // Used for parsing JSON payload from receivers.
   std::unique_ptr<service_manager::Connector> connector_;
-  const std::string data_decoder_batch_id_;
+  const base::Token data_decoder_batch_id_;
 
   // User agent and browser version strings included in virtual connection
   // messages.

@@ -44,8 +44,9 @@ on behalf of specific profiles, including renderers.
 
 ### Instance ID
 
-An arbitrary free-form string used to disambiguate multiple instances of a
-service for the same user.
+Another `base::Token` in `service_manager::Identity`, used to disambiguate
+multiple instances of a service for the same user. Every instance has an
+instance ID, but it typically takes on the default value of a zero-token.
 
 ### Globally Unique ID
 
@@ -170,7 +171,7 @@ Example:
 [chrome_browser](https://cs.chromium.org/chromium/src/chrome/app/chrome_manifest.json)
 
 Code in chrome_browser calls an XML parsing library function, which generates a
-random instance name to
+random instance ID to
 [isolate unrelated decode operations](https://cs.chromium.org/chromium/src/services/data_decoder/public/cpp/safe_xml_parser.cc?l=50).
 
 #### can\_create\_other\_service\_instances (bool)

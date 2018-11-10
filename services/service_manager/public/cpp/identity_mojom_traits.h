@@ -21,7 +21,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
       const service_manager::Identity& identity) {
     return identity.instance_group();
   }
-  static const std::string& instance_id(
+  static const base::Optional<base::Token>& instance_id(
       const service_manager::Identity& identity) {
     return identity.instance_id();
   }
@@ -32,7 +32,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
 
   static bool Read(service_manager::mojom::IdentityDataView data,
                    service_manager::Identity* out) {
-    std::string name, instance_id;
+    std::string name;
     if (!data.ReadName(&name))
       return false;
 
@@ -40,6 +40,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_MOJOM)
     if (!data.ReadInstanceGroup(&instance_group))
       return false;
 
+    base::Optional<base::Token> instance_id;
     if (!data.ReadInstanceId(&instance_id))
       return false;
 

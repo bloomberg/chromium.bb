@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/token.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
@@ -48,7 +49,7 @@ class SafeXmlParserTest : public InProcessBrowserTest {
   // If |expected_json| is empty, the XML parsing is expected to fail.
   void TestParse(base::StringPiece xml,
                  const std::string& expected_json,
-                 const std::string& batch_id = std::string()) {
+                 const base::Token& batch_id = base::Token{}) {
     SCOPED_TRACE(xml);
 
     base::RunLoop run_loop;
@@ -110,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Isolation) {
 
 // Tests that using a batch ID allows service reuse.
 IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, IsolationWithBatchId) {
-  constexpr char kBatchId1[] = "batch1";
-  constexpr char kBatchId2[] = "batch2";
+  constexpr base::Token kBatchId1{0, 1};
+  constexpr base::Token kBatchId2{0, 2};
   for (int i = 0; i < 5; i++) {
     TestParse(kTestXml, kTestJson, kBatchId1);
     TestParse(kTestXml, kTestJson, kBatchId2);

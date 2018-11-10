@@ -109,7 +109,8 @@ InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
 }
 
 Identity CreateCatalogIdentity() {
-  return Identity(catalog::mojom::kServiceName, kSystemInstanceGroup);
+  return Identity(catalog::mojom::kServiceName, kSystemInstanceGroup,
+                  base::Token{});
 }
 
 const InterfaceProviderSpec& GetEmptyInterfaceProviderSpec() {
@@ -179,7 +180,8 @@ bool AllowsInterface(const Identity& source,
 }  // namespace
 
 Identity CreateServiceManagerIdentity() {
-  return Identity(service_manager::mojom::kServiceName, kSystemInstanceGroup);
+  return Identity(service_manager::mojom::kServiceName, kSystemInstanceGroup,
+                  base::Token{});
 }
 
 // Encapsulates a connection to an instance of a service, tracked by the
@@ -211,9 +213,11 @@ class ServiceManager::Instance
     }
     DCHECK_GT(id_, 0u);
 
-    // All service instances must have a valid GUID assigned at construction
-    // time.
-    DCHECK(identity_.globally_unique_id().has_value());
+    // All service instances must have a valid instance group, instance ID, and
+    // GUID assigned at construction time.
+    DCHECK(!identity_.instance_group().value_or(base::Token{}).is_zero());
+    DCHECK(identity_.instance_id());
+    DCHECK(!identity_.globally_unique_id().value_or(base::Token{}).is_zero());
   }
 
   void Stop() {
@@ -552,6 +556,8 @@ class ServiceManager::Instance
       const std::string* target_interface_name) {
     if (!target->instance_group())
       target->set_instance_group(identity_.instance_group());
+    if (!target->instance_id())
+      target->set_instance_id(base::Token{});
 
     mojom::ConnectResult result = ValidateIdentity(*target);
     if (!Succeeded(result))
@@ -596,9 +602,7 @@ class ServiceManager::Instance
       }
       if (service_manager_->GetExistingInstance(target)) {
         LOG(ERROR) << "Cannot find a client process matching existing identity:"
-                   << "Name: " << target.name()
-                   << " Instance Group: " << target.instance_group()->ToString()
-                   << " Instance: " << target.instance_id();
+                   << "Name: " << target.ToString();
         return mojom::ConnectResult::INVALID_ARGUMENT;
       }
     }
@@ -623,22 +627,17 @@ class ServiceManager::Instance
     if (!skip_instance_group_check &&
         target.instance_group() != identity_.instance_group() &&
         target.instance_group() != kSystemInstanceGroup) {
-      LOG(ERROR) << "Instance: " << identity_.name() << " running in group: "
-                 << identity_.instance_group()->ToString()
-                 << " attempting to connect to: " << target.name()
-                 << " in group: " << target.instance_group()->ToString()
-                 << " without"
-                 << " the 'can_connect_to_instances_in_any_group' option.";
+      LOG(ERROR) << "Instance " << identity_.ToString() << " attempting to "
+                 << "connect to " << target.ToString() << " without the "
+                 << " 'can_connect_to_instances_in_any_group' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
-    if (!target.instance_id().empty() &&
-        target.instance_id() != target.name() &&
+    if (target.instance_id().has_value() && !target.instance_id()->is_zero() &&
         !options_.can_connect_to_other_services_with_any_instance_name) {
       LOG(ERROR)
-          << "Instance: " << identity_.name() << " attempting to"
-          << " connect to " << target.name()
-          << " using Instance name: " << target.instance_id() << " without the"
-          << " 'can_connect_to_other_services_with_any_instance_name' option.";
+          << "Instance " << identity_.ToString() << " attempting to connect to "
+          << target.ToString() << " without the "
+          << "'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
 
@@ -796,7 +795,7 @@ class ServiceManager::IdentityToInstanceMap {
 
   struct SharedInstanceKey {
     SharedInstanceKey(const std::string& service_name,
-                      const std::string& instance_id)
+                      const base::Token& instance_id)
         : service_name(service_name), instance_id(instance_id) {}
     SharedInstanceKey(const SharedInstanceKey& other) = default;
     ~SharedInstanceKey() = default;
@@ -813,14 +812,18 @@ class ServiceManager::IdentityToInstanceMap {
     }
 
     const std::string service_name;
-    const std::string instance_id;
+    const base::Token instance_id;
   };
 
   IdentityToInstanceMap() = default;
   ~IdentityToInstanceMap() = default;
 
   void Insert(const Identity& identity, InstanceType type, Instance* instance) {
-    // All inserted identities must specify a valid GUID.
+    // All inserted identities must specify a valid instance group, instance ID,
+    // and GUID.
+    DCHECK(identity.instance_group().has_value());
+    DCHECK(!identity.instance_group()->is_zero());
+    DCHECK(identity.instance_id().has_value());
     DCHECK(identity.globally_unique_id().has_value());
     DCHECK(!identity.globally_unique_id()->is_zero());
 
@@ -834,7 +837,7 @@ class ServiceManager::IdentityToInstanceMap {
 
       case InstanceType::kSharedAcrossInstanceGroups:
         shared_instances_[SharedInstanceKey(identity.name(),
-                                            identity.instance_id())]
+                                            *identity.instance_id())]
             .emplace_back(*identity.globally_unique_id(), instance);
         break;
 
@@ -849,13 +852,16 @@ class ServiceManager::IdentityToInstanceMap {
   }
 
   Instance* Get(const Identity& identity) {
+    DCHECK(identity.instance_group());
+    DCHECK(identity.instance_id());
+
     auto regular_iter =
         regular_instances_.find(identity.WithoutGloballyUniqueId());
     if (regular_iter != regular_instances_.end())
       return FindMatchingInstance(regular_iter->second, identity);
 
     auto shared_iter = shared_instances_.find(
-        SharedInstanceKey(identity.name(), identity.instance_id()));
+        SharedInstanceKey(identity.name(), *identity.instance_id()));
     if (shared_iter != shared_instances_.end())
       return FindMatchingInstance(shared_iter->second, identity);
 
@@ -867,8 +873,9 @@ class ServiceManager::IdentityToInstanceMap {
   }
 
   bool Erase(const Identity& identity) {
-    DCHECK(identity.globally_unique_id().has_value());
-    DCHECK(!identity.globally_unique_id()->is_zero());
+    DCHECK(!identity.instance_group().value_or(base::Token{}).is_zero());
+    DCHECK(identity.instance_id());
+    DCHECK(!identity.globally_unique_id().value_or(base::Token{}).is_zero());
 
     auto regular_iter =
         regular_instances_.find(identity.WithoutGloballyUniqueId());
@@ -882,7 +889,7 @@ class ServiceManager::IdentityToInstanceMap {
     }
 
     auto shared_iter = shared_instances_.find(
-        SharedInstanceKey(identity.name(), identity.instance_id()));
+        SharedInstanceKey(identity.name(), *identity.instance_id()));
     if (shared_iter != shared_instances_.end()) {
       auto& entries = shared_iter->second;
       if (EraseEntry(*identity.globally_unique_id(), &entries)) {
@@ -1031,9 +1038,14 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
-  DCHECK(!params->target().name().empty());
-  DCHECK(params->target().instance_group());
-  DCHECK(!params->target().instance_group()->is_zero());
+  DCHECK(!params->source().instance_group().value_or(base::Token{}).is_zero());
+  DCHECK(!params->target().instance_group().value_or(base::Token{}).is_zero());
+  DCHECK(params->source().instance_id());
+  DCHECK(params->target().instance_id());
+  DCHECK(!params->source().globally_unique_id() ||
+         !params->source().globally_unique_id()->is_zero());
+  DCHECK(!params->target().globally_unique_id() ||
+         !params->target().globally_unique_id()->is_zero());
   DCHECK(!params->HasClientProcessInfo() ||
          GetExistingInstance(params->target()) == nullptr);
 
@@ -1057,7 +1069,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     return;
   }
 
-  const std::string& instance_name = params->target().instance_id();
+  const base::Token& instance_id = *params->target().instance_id();
   const InterfaceProviderSpecMap& interface_provider_specs =
       entry->interface_provider_specs();
 
@@ -1091,16 +1103,17 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   Identity target;
   if (instance_type == InstanceType::kSingleton) {
     source_identity_for_creation = CreateServiceManagerIdentity();
-    target = Identity(params->target().name(), base::Token::CreateRandom());
+    target = Identity(params->target().name(), base::Token::CreateRandom(),
+                      base::Token{});
   } else if (instance_type == InstanceType::kSharedAcrossInstanceGroups) {
     source_identity_for_creation = CreateServiceManagerIdentity();
     target = Identity(params->target().name(), base::Token::CreateRandom(),
-                      instance_name);
+                      instance_id);
   } else {
     DCHECK_EQ(instance_type, InstanceType::kRegular);
     source_identity_for_creation = params->source();
     target = Identity(params->target().name(),
-                      params->target().instance_group(), instance_name);
+                      params->target().instance_group(), instance_id);
   }
   params->set_target(target);
 
@@ -1131,7 +1144,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   if (entry->parent()) {
     // This service is provided by another service via a ServiceFactory.
-    std::string factory_instance_name = instance_name;
+    base::Token factory_instance_id = instance_id;
 
     // We normally ignore the target instance group and generate a unique
     // instance group identifier when starting shared instances, but when those
@@ -1145,7 +1158,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     instance->set_identity(packaged_service_target);
 
     Identity factory(entry->parent()->name(), original_target.instance_group(),
-                     factory_instance_name);
+                     factory_instance_id);
 
     mojom::PIDReceiverPtr pid_receiver;
     instance->BindPIDReceiver(mojo::MakeRequest(&pid_receiver));
@@ -1181,6 +1194,8 @@ void ServiceManager::StartService(const Identity& identity) {
   Identity target_identity = identity;
   if (!target_identity.instance_group())
     target_identity.set_instance_group(kSystemInstanceGroup);
+  if (!target_identity.instance_id())
+    target_identity.set_instance_id(base::Token{});
   params->set_target(target_identity);
 
   Connect(std::move(params));
@@ -1209,8 +1224,12 @@ void ServiceManager::RegisterService(
     pid_receiver->SetPID(GetCurrentPid());
   }
 
-  params->set_source(identity);
-  params->set_target(identity);
+  Identity target = identity;
+  DCHECK(target.instance_group());
+  if (!target.instance_id())
+    target.set_instance_id(base::Token{});
+  params->set_source(target);
+  params->set_target(target);
   params->set_client_process_info(
       std::move(service), std::move(pid_receiver_request));
   Connect(std::move(params));
@@ -1319,12 +1338,17 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     const catalog::ServiceOptions& options) {
   CHECK(target.instance_group());
 
+  // Ensure that new instances always have an instance ID. If none is given, the
+  // default is zero.
+  base::Token instance_id;
+  if (target.instance_id())
+    instance_id = *target.instance_id();
+
   // We add a newly minted globally unique ID to the target Identity here. This
   // ensures that every new Instance has a globally unique ID as part of its
   // Identity.
   Identity target_with_unique_id(target.name(), target.instance_group(),
-                                 target.instance_id(),
-                                 base::Token::CreateRandom());
+                                 instance_id, base::Token::CreateRandom());
   auto instance =
       std::make_unique<Instance>(this, target_with_unique_id, specs, options);
   Instance* raw_instance = instance.get();
@@ -1368,9 +1392,9 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
   if (it != service_factories_.end())
     return it->second.get();
 
-  Identity source_identity(service_manager::mojom::kServiceName);
   mojom::ServiceFactoryPtr factory;
-  BindInterface(this, source_identity, service_factory_identity, &factory);
+  BindInterface(this, CreateServiceManagerIdentity(), service_factory_identity,
+                &factory);
   mojom::ServiceFactory* factory_interface = factory.get();
   factory.set_connection_error_handler(
       base::BindOnce(&service_manager::ServiceManager::OnServiceFactoryLost,

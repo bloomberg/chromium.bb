@@ -42,7 +42,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::unique_ptr<media::CdmProxy> CreateCdmProxy(
-      const std::string& cdm_guid) override;
+      const base::Token& cdm_guid) override;
 #endif
 
  private:
