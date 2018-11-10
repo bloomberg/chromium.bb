@@ -92,7 +92,6 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/metrics",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

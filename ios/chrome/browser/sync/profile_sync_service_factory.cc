@@ -15,7 +15,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/unified_consent/feature.h"

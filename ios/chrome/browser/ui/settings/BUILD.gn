@@ -398,7 +398,6 @@ source_set("eg_tests") {
     "//components/password_manager/core/common",
     "//components/prefs",
     "//components/search_engines",
-    "//components/signin/core/browser",
     "//components/strings",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",

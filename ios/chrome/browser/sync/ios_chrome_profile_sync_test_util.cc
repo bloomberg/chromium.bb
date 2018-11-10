@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browser_sync/profile_sync_test_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"

@@ -103,7 +103,6 @@ source_set("test_support") {
     "//components/browser_sync:test_support",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
-    "//components/signin/core/browser",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//ios/chrome/browser/browser_state",
