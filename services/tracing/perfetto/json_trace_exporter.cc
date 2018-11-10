@@ -26,6 +26,8 @@ namespace tracing {
 
 namespace {
 
+const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
+
 void AppendProtoArrayAsJSON(std::string* out,
                             const perfetto::protos::ChromeTracedValue& array);
 
@@ -329,7 +331,12 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   DCHECK(json_callback_);
   DCHECK(!packets.empty() || !has_more);
 
+  // Since we write each event before checking the limit, we'll
+  // always go slightly over and hence we reserve some extra space
+  // to avoid most reallocs.
+  const size_t kReserveCapacity = kTraceEventBufferSizeInBytes * 5 / 4;
   std::string out;
+  out.reserve(kReserveCapacity);
 
   if (!has_output_json_preamble_) {
     out = "{\"traceEvents\":[";
@@ -353,8 +360,13 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
     }
 
     for (auto& event : bundle.trace_events()) {
+      if (out.size() > kTraceEventBufferSizeInBytes) {
+        json_callback_.Run(out, nullptr, true);
+        out.clear();
+      }
+
       if (has_output_first_event_) {
-        out += ",";
+        out += ",\n";
       } else {
         has_output_first_event_ = true;
       }
