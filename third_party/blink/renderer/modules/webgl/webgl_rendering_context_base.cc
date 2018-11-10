@@ -1619,8 +1619,10 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
   if (!image)
     return false;
+  cc::PaintFlags paint_flags;
+  paint_flags.setBlendMode(SkBlendMode::kSrc);
   resource_provider->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0,
-                                         0, nullptr);
+                                         0, &paint_flags);
   return true;
 }
 

@@ -91,6 +91,8 @@ SCALE_FACTOR_OVERRIDES = {
 
 
 def DefaultPages(base_name):
+  sw_compositing_args = ['--disable-gpu-compositing']
+
   return [
     PixelTestPage(
       'pixel_background_image.html',
@@ -253,6 +255,41 @@ def DefaultPages(base_name):
           'comment': 'green',
           'location': [1, 1],
           'size': [180, 180],
+          'color': [0, 255, 0],
+          'tolerance': 3
+        },
+      ]),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D',
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
+          'color': [0, 255, 0],
+          'tolerance': 3,
+        },
+      ]),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      browser_args=sw_compositing_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
           'color': [0, 255, 0],
           'tolerance': 3
         },
@@ -618,6 +655,24 @@ def SwiftShaderPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=2,
       browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_repeated_webgl_to_2d.html',
+      base_name + '_RepeatedWebGLTo2D' + suffix,
+      test_rect=[0, 0, 256, 256],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        SCALE_FACTOR_OVERRIDES,
+        {
+          'comment': 'green',
+          # 64x64 rectangle around the center at (128,128)
+          'location': [96, 96],
+          'size': [64, 64],
+          'color': [0, 255, 0],
+          'tolerance': 3
+        },
+      ]),
   ]
 
 # Test rendering where GPU process is blocked.
