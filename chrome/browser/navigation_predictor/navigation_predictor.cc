@@ -152,6 +152,10 @@ TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (browser_context_->IsOffTheRecord())
+    return;
+
   if (!IsValidMetricFromRenderer(*metrics)) {
     mojo::ReportBadMessage("Bad anchor element metrics: onClick.");
     return;
@@ -343,6 +347,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   // Each document should only report metrics once when page is loaded.
   DCHECK(navigation_scores_map_.empty());
 
+  if (browser_context_->IsOffTheRecord())
+    return;
+
   if (metrics.empty()) {
     mojo::ReportBadMessage("Bad anchor element metrics: empty.");
     return;
@@ -460,6 +467,8 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
     double target_engagement_score,
     int area_rank,
     int number_of_anchors) const {
+  DCHECK(!browser_context_->IsOffTheRecord());
+
   if (sum_scales_ == 0)
     return 0.0;
 
@@ -524,6 +533,8 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
 void NavigationPredictor::MaybeTakeActionOnLoad(
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) const {
+  DCHECK(!browser_context_->IsOffTheRecord());
+
   // TODO(chelu): https://crbug.com/850624/. Given the calculated navigation
   // scores, this function decides which action to take, or decides not to do
   // anything. Example actions including preresolve, preload, prerendering, etc.
@@ -537,6 +548,8 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
 
 void NavigationPredictor::RecordMetricsOnLoad(
     const blink::mojom::AnchorElementMetrics& metric) const {
+  DCHECK(!browser_context_->IsOffTheRecord());
+
   UMA_HISTOGRAM_PERCENTAGE("AnchorElementMetrics.Visible.RatioArea",
                            static_cast<int>(metric.ratio_area * 100));
 

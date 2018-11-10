@@ -112,6 +112,21 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, Pipeline) {
   }
 }
 
+// Test that no metrics are recorded in off-the-record profiles.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineOffTheRecord) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/simple_page_with_anchors.html");
+  Browser* incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito, url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
+}
+
 // Test that anchor elements within an iframe tagged as an ad are discarded when
 // predicting next navigation.
 IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
@@ -224,6 +239,27 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, ClickAnchorElement) {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
   }
+}
+
+// Simulate a click at the anchor element in off-the-record profile. Metrics
+// should not be recorded.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ClickAnchorElementOffTheRecord) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/simple_page_with_anchors.html");
+
+  Browser* incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(incognito, url);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(content::ExecuteScript(
+      incognito->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('google').click();"));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
 }
 
 // Simulate click at the anchor element.
