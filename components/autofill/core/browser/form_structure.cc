@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/field_candidates.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -330,6 +331,77 @@ void EncodePasswordAttributesVote(
       NOTREACHED();
   }
   upload->set_password_length(password_length_vote);
+}
+
+void EncodeRandomizedValue(const RandomizedEncoder& encoder,
+                           FormSignature form_signature,
+                           FieldSignature field_signature,
+                           base::StringPiece data_type,
+                           base::StringPiece data_value,
+                           AutofillRandomizedValue* output) {
+  DCHECK(output);
+  output->set_encoding_type(encoder.encoding_type());
+  output->set_encoded_bits(
+      encoder.Encode(form_signature, field_signature, data_type, data_value));
+}
+
+void EncodeRandomizedValue(const RandomizedEncoder& encoder,
+                           FormSignature form_signature,
+                           FieldSignature field_signature,
+                           base::StringPiece data_type,
+                           base::StringPiece16 data_value,
+                           AutofillRandomizedValue* output) {
+  EncodeRandomizedValue(encoder, form_signature, field_signature, data_type,
+                        base::UTF16ToUTF8(data_value), output);
+}
+
+void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
+                                    const FormStructure& form,
+                                    AutofillRandomizedFormMetadata* metadata) {
+  const FormSignature form_signature = form.form_signature();
+  constexpr FieldSignature kNullFieldSignature =
+      0;  // Not relevant for form level metadata.
+  EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
+                        RandomizedEncoder::FORM_ID, form.id_attribute(),
+                        metadata->mutable_id());
+  EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
+                        RandomizedEncoder::FORM_NAME, form.name_attribute(),
+                        metadata->mutable_name());
+}
+
+void PopulateRandomizedFieldMetadata(
+    const RandomizedEncoder& encoder,
+    const FormStructure& form,
+    const AutofillField& field,
+    AutofillRandomizedFieldMetadata* metadata) {
+  const FormSignature form_signature = form.form_signature();
+  const FieldSignature field_signature = field.GetFieldSignature();
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_ID, field.id_attribute,
+                        metadata->mutable_id());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_NAME, field.name_attribute,
+                        metadata->mutable_name());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_CONTROL_TYPE,
+                        field.form_control_type, metadata->mutable_type());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_LABEL, field.label,
+                        metadata->mutable_label());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label,
+                        metadata->mutable_aria_label());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                        field.aria_description,
+                        metadata->mutable_aria_description());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes,
+                        metadata->mutable_css_class());
+  EncodeRandomizedValue(encoder, form_signature, field_signature,
+                        RandomizedEncoder::FIELD_PLACEHOLDER, field.placeholder,
+                        metadata->mutable_placeholder());
+  // TODO(rogerm): Add hash of initial value.
 }
 
 }  // namespace
@@ -1592,6 +1664,11 @@ void FormStructure::EncodeFormForQuery(
 void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
   DCHECK(!IsMalformed());
 
+  if (randomized_encoder_) {
+    PopulateRandomizedFormMetadata(*randomized_encoder_, *this,
+                                   upload->mutable_randomized_form_metadata());
+  }
+
   for (const auto& field : fields_) {
     // Don't upload checkable fields.
     if (IsCheckable(field->check_status))
@@ -1633,14 +1710,20 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
     if (field->properties_mask)
       added_field->set_properties_mask(field->properties_mask);
 
+    if (randomized_encoder_) {
+      PopulateRandomizedFieldMetadata(
+          *randomized_encoder_, *this, *field,
+          added_field->mutable_randomized_field_metadata());
+    }
+
     if (IsAutofillFieldMetadataEnabled()) {
       added_field->set_type(field->form_control_type);
 
       if (!field->name.empty())
         added_field->set_name(base::UTF16ToUTF8(field->name));
 
-      if (!field->id.empty())
-        added_field->set_id(base::UTF16ToUTF8(field->id));
+      if (!field->id_attribute.empty())
+        added_field->set_id(base::UTF16ToUTF8(field->id_attribute));
 
       if (!field->autocomplete_attribute.empty())
         added_field->set_autocomplete(field->autocomplete_attribute);
@@ -1847,6 +1930,11 @@ base::string16 FormStructure::GetIdentifierForRefill() const {
     return field(0)->unique_name();
 
   return base::string16();
+}
+
+void FormStructure::set_randomized_encoder(
+    std::unique_ptr<RandomizedEncoder> encoder) {
+  randomized_encoder_ = std::move(encoder);
 }
 
 }  // namespace autofill

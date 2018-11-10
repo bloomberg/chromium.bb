@@ -121,7 +121,8 @@ bool StringMatchesCVC(const base::string16& str) {
 // fields.
 // Returns true if the |field|'s name or id hint at the field being a CVC field.
 bool IsFieldCVC(const FormFieldData& field) {
-  return StringMatchesCVC(field.name) || StringMatchesCVC(field.id);
+  return StringMatchesCVC(field.name_attribute) ||
+         StringMatchesCVC(field.id_attribute);
 }
 
 // Returns true iff |processed_field| matches the |interactability_bar|. That is
@@ -574,9 +575,13 @@ void ParseUsingBaseHeuristics(
   return;
 }
 
+// Helper to get the platform specific identifier by which autofill and password
+// manager refer to a field. The fuzzing infrastructure doed not run on iOS, so
+// the iOS specific parts of PasswordForm are also built on fuzzer enabled
+// platforms. See http://crbug.com/896594
 string16 GetPlatformSpecificIdentifier(const FormFieldData& field) {
 #if defined(OS_IOS)
-  return field.id;
+  return field.unique_id;
 #else
   return field.name;
 #endif

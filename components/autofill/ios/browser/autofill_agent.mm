@@ -72,7 +72,8 @@ void GetFormField(autofill::FormFieldData* field,
                   const autofill::FormData& form,
                   const base::string16& fieldIdentifier) {
   for (const auto& currentField : form.fields) {
-    if (currentField.id == fieldIdentifier && currentField.is_focusable) {
+    if (currentField.unique_id == fieldIdentifier &&
+        currentField.is_focusable) {
       *field = currentField;
       break;
     }
@@ -827,7 +828,7 @@ autofillManagerFromWebState:(web::WebState*)webState
     base::Value fieldData(base::Value::Type::DICTIONARY);
     fieldData.SetKey("value", base::Value(field.value));
     fieldData.SetKey("section", base::Value(field.section));
-    fieldsData.SetKey(base::UTF16ToUTF8(field.id), std::move(fieldData));
+    fieldsData.SetKey(base::UTF16ToUTF8(field.unique_id), std::move(fieldData));
   }
   autofillData->SetKey("fields", std::move(fieldsData));
 
@@ -894,7 +895,7 @@ autofillManagerFromWebState:(web::WebState*)webState
     base::Value fieldData(base::Value::Type::DICTIONARY);
     DCHECK(form.fields.size() == form.data.fields.size());
     for (size_t i = 0; i < form.fields.size(); i++) {
-      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].id),
+      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].unique_id),
                        base::Value(form.fields[i].overall_type));
     }
     predictionData->SetKey(base::UTF16ToUTF8(form.data.name),

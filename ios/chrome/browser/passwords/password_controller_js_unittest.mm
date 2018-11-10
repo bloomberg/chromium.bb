@@ -145,12 +145,14 @@ TEST_F(PasswordControllerJsTest,
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form\",\"origin\":\"%s\",\"action\":\"https://"
-          @"chromium.test/"
-          @"generic_submit\",\"fields\":[{\"identifier\":\"name\",\"name\":"
-          @"\"name\",\"form_control_type\":\"text\",\"should_autocomplete\":"
+          @"chromium.test/generic_submit\",\"name_attribute\":\"login_form\","
+          @"\"id_attribute\":\"\",\"fields\":[{\"identifier\":\"name\","
+          @"\"name\":\"name\",\"name_attribute\":\"name\",\"id_attribute\":"
+          @"\"\",\"form_control_type\":\"text\",\"should_autocomplete\":"
           @"true,\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":"
           @"false,\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
-          @"\"password\",\"name\":\"password\",\"form_control_type\":"
+          @"\"password\",\"name\":\"password\",\"name_attribute\":\"password\","
+          @"\"id_attribute\":\"\",\"form_control_type\":"
           @"\"password\",\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
           @"\"label\":\"Password:\"}]}]",
@@ -180,20 +182,26 @@ TEST_F(PasswordControllerJsTest,
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form1\",\"origin\":\"%s\",\"action\":\"%s"
-          @"generic_submit\",\"fields\":[{\"identifier\":\"name\",\"name\":"
-          @"\"name\",\"form_control_type\":\"text\",\"should_autocomplete\":"
+          @"generic_submit\",\"name_attribute\":\"\",\"id_attribute\":"
+          @"\"login_form1\",\"fields\":[{\"identifier\":\"name\","
+          @"\"name\":\"name\",\"name_attribute\":\"name\",\"id_attribute\":"
+          @"\"\",\"form_control_type\":\"text\",\"should_autocomplete\":"
           @"true,\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":"
           @"false,\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
-          @"\"password\",\"name\":\"password\",\"form_control_type\":"
+          @"\"password\",\"name\":\"password\",\"name_attribute\":\"password\","
+          @"\"id_attribute\":\"\",\"form_control_type\":"
           @"\"password\",\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
           @"\"label\":\"Password:\"}]},{\"name\":\"login_form2\",\"origin\":"
           @"\"https://chromium.test/\",\"action\":\"https://chromium.test/"
-          @"generic_s2\",\"fields\":[{\"identifier\":\"name2\",\"name\":"
-          @"\"name2\",\"form_control_type\":\"text\",\"should_autocomplete\":"
+          @"generic_s2\",\"name_attribute\":\"login_form2\","
+          @"\"id_attribute\":\"\",\"fields\":[{\"identifier\":\"name2\","
+          @"\"name\":\"name2\",\"name_attribute\":\"name2\",\"id_attribute\":"
+          @"\"\",\"form_control_type\":\"text\",\"should_autocomplete\":"
           @"true,\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":"
           @"false,\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
-          @"\"password2\",\"name\":\"password2\",\"form_control_type\":"
+          @"\"password2\",\"name\":\"password2\",\"name_attribute\":"
+          @"\"password2\",\"id_attribute\":\"\",\"form_control_type\":"
           @"\"password\",\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
           @"\"label\":\"Password:\"}]}]",
@@ -220,11 +228,14 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   NSString* result = [NSString
       stringWithFormat:
           @"{\"name\":\"np\",\"origin\":\"%s\",\"action\":\"%sgeneric_submit\","
-          @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\",\"form_"
+          @"\"name_attribute\":\"np\",\"id_attribute\":\"np1\","
+          @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\","
+          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"form_"
           @"control_type\":\"text\",\"should_autocomplete\":true,\"is_"
           @"focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
           @"\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":\"password\","
-          @"\"name\":\"password\",\"form_control_type\":\"password\",\"should_"
+          @"\"name\":\"password\",\"name_attribute\":\"password\","
+          @"\"id_attribute\":\"\",\"form_control_type\":\"password\",\"should_"
           @"autocomplete\":true,\"is_focusable\":true,\"max_length\":524288,"
           @"\"is_checkable\":false,\"value\":\"\",\"label\":\"Password:\"}]}",
           base_url.c_str(), base_url.c_str()];
@@ -252,11 +263,14 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form\",\"origin\":\"%s\",\"action\":\"%s\","
-          @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\",\"form_"
+          @"\"name_attribute\":\"login_form\",\"id_attribute\":\"\","
+          @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\","
+          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"form_"
           @"control_type\":\"text\",\"should_autocomplete\":true,\"is_"
           @"focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
           @"\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":\"password\","
-          @"\"name\":\"password\",\"form_control_type\":\"password\",\"should_"
+          @"\"name\":\"password\",\"name_attribute\":\"password\","
+          @"\"id_attribute\":\"\",\"form_control_type\":\"password\",\"should_"
           @"autocomplete\":true,\"is_focusable\":true,\"max_length\":524288,"
           @"\"is_checkable\":false,\"value\":\"\",\"label\":\"Password:\"}]}]",
           base_url.c_str(), base_url.c_str()];
@@ -303,15 +317,19 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
   NSString* expected_command = [NSString
       stringWithFormat:
           @"{\"name\":\"login_form\",\"origin\":\"https://chromium.test/"
-          @"\",\"action\":\"%s\",\"fields\":[{\"identifier\":\"username\","
-          @"\"name\":\"username\",\"form_control_type\":\"text\",\"should_"
+          @"\",\"action\":\"%s\",\"name_attribute\":\"login_form\","
+          @"\"id_attribute\":\"login_form\",\"fields\":"
+          @"[{\"identifier\":\"username\","
+          @"\"name\":\"username\",\"name_attribute\":\"username\","
+          @"\"id_attribute\":\"\",\"form_control_type\":\"text\",\"should_"
           @"autocomplete\":true,\"is_focusable\":true,\"max_length\":524288,"
           @"\"is_checkable\":false,\"value\":\"user1\",\"label\":\"Name:\"},{"
-          @"\"identifier\":\"password\",\"name\":\"password\",\"form_control_"
-          @"type\":\"password\",\"should_autocomplete\":true,\"is_focusable\":"
-          @"true,\"max_length\":524288,\"is_checkable\":false,\"value\":"
-          @"\"password1\",\"label\":\"Password:\"}],\"command\":\"passwordForm."
-          @"submitButtonClick\"}",
+          @"\"identifier\":\"password\",\"name\":\"password\","
+          @"\"name_attribute\":\"password\",\"id_attribute\":\"\","
+          @"\"form_control_type\":\"password\",\"should_autocomplete\":true,"
+          @"\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
+          @"\"value\":\"password1\",\"label\":\"Password:\"}],"
+          @"\"command\":\"passwordForm.submitButtonClick\"}",
           BaseUrl().c_str()];
 
   // Check that invokeOnHost was called with the correct argument.

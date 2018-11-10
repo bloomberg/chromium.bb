@@ -63,7 +63,8 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   const std::string kTestFormName("form-name");
   const std::string kTestFormData(
       "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
-      "\",\"action\":\"https://chromium.test/\"}]");
+      "\",\"action\":\"https://chromium.test/\","
+      "\"name_attribute\":\"form-name\",\"id_attribute\":\"\"}]");
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -94,7 +95,8 @@ TEST_F(FormActivityTabHelperTest, TestFormSubmittedHook) {
   const std::string kTestFormName("form-name");
   const std::string kTestFormData(
       "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
-      "\",\"action\":\"https://chromium.test/\"}]");
+      "\",\"action\":\"https://chromium.test/\","
+      "\"name_attribute\":\"form-name\",\"id_attribute\":\"form\"}]");
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(

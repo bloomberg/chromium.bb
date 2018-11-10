@@ -1604,6 +1604,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
     @"fields" : @[
       @{
         @"name" : @"firstname",
+        @"name_attribute" : @"firstname",
+        @"id_attribute" : @"firstname",
         @"identifier" : @"firstname",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
@@ -1615,6 +1617,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"name_attribute" : @"vehicle",
+        @"id_attribute" : @"vehicle1",
         @"identifier" : @"vehicle1",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
@@ -1625,6 +1629,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"name_attribute" : @"vehicle",
+        @"id_attribute" : @"vehicle2",
         @"identifier" : @"vehicle2",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
@@ -1635,6 +1641,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"name_attribute" : @"vehicle",
+        @"id_attribute" : @"vehicle3",
         @"identifier" : @"vehicle3",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
@@ -1645,6 +1653,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"nameintableth",
+        @"name_attribute" : @"nameintableth",
+        @"id_attribute" : @"nameintableth",
         @"identifier" : @"nameintableth",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
@@ -1656,6 +1666,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"emailtableth",
+        @"name_attribute" : @"",
+        @"id_attribute" : @"emailtableth",
         @"identifier" : @"emailtableth",
         @"form_control_type" : @"email",
         @"max_length" : GetDefaultMaxLength(),
@@ -1667,6 +1679,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"pwd",
+        @"name_attribute" : @"pwd",
+        @"id_attribute" : @"pwd",
         @"identifier" : @"pwd",
         @"form_control_type" : @"password",
         @"autocomplete_attribute" : @"off",
@@ -1679,6 +1693,8 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"state",
+        @"name_attribute" : @"state",
+        @"id_attribute" : @"state",
         @"identifier" : @"state",
         @"form_control_type" : @"select-one",
         @"is_focusable" : @1,

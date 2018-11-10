@@ -2973,6 +2973,21 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Manage cards button pressed"/>
 </enum>
 
+<enum name="AutofillMetadataEncodingType">
+  <int value="-1" label="Invalid"/>
+  <int value="0" label="Bit 0"/>
+  <int value="1" label="Bit 1"/>
+  <int value="2" label="Bit 2"/>
+  <int value="3" label="Bit 3"/>
+  <int value="4" label="Bit 4"/>
+  <int value="5" label="Bit 5"/>
+  <int value="6" label="Bit 6"/>
+  <int value="7" label="Bit 7"/>
+  <int value="8" label="Even Bits"/>
+  <int value="9" label="Odd Bits"/>
+  <int value="10" label="All Bits"/>
+</enum>
+
 <enum name="AutofillProfileAction">
   <int value="0" label="Existing profile used"/>
   <int value="1" label="Existing profile updated"/>

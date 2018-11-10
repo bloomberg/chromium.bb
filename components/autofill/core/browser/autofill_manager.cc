@@ -24,7 +24,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,12 +55,14 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -388,6 +389,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
       personal_data_->GetCreditCards();
   if (profiles.empty() && credit_cards.empty())
     return false;
+
   // Copy the profile and credit card data, so that it can be accessed on a
   // separate thread.
   std::vector<AutofillProfile> copied_profiles;
@@ -399,6 +401,10 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   copied_credit_cards.reserve(credit_cards.size());
   for (const CreditCard* card : credit_cards)
     copied_credit_cards.push_back(*card);
+
+  // Attach the Randomized Encoder.
+  form_structure->set_randomized_encoder(
+      RandomizedEncoder::Create(client_->GetPrefs()));
 
   // Note that ownership of |form_structure| is passed to the second task,
   // using |base::Owned|. We MUST temporarily hang on to the raw form pointer

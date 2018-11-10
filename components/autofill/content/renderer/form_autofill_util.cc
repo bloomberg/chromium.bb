@@ -1459,7 +1459,7 @@ bool IsWebElementVisible(const blink::WebElement& element) {
   return element.IsFocusable();
 }
 
-const base::string16 GetFormIdentifier(const WebFormElement& form) {
+base::string16 GetFormIdentifier(const WebFormElement& form) {
   base::string16 identifier = form.GetName().Utf16();
   static base::NoDestructor<WebString> kId("id");
   if (identifier.empty())
@@ -1512,6 +1512,7 @@ void WebFormControlElementToFormField(
   DCHECK(!element.IsNull());
   static base::NoDestructor<WebString> kAutocomplete("autocomplete");
   static base::NoDestructor<WebString> kId("id");
+  static base::NoDestructor<WebString> kName("name");
   static base::NoDestructor<WebString> kRole("role");
   static base::NoDestructor<WebString> kPlaceholder("placeholder");
   static base::NoDestructor<WebString> kClass("class");
@@ -1519,10 +1520,8 @@ void WebFormControlElementToFormField(
   // Save both id and name attributes, if present. If there is only one of them,
   // it will be saved to |name|. See HTMLFormControlElement::nameForAutofill.
   field->name = element.NameForAutofill().Utf16();
-  base::string16 id = element.GetAttribute(*kId).Utf16();
-  if (id != field->name)
-    field->id = id;
-
+  field->id_attribute = element.GetAttribute(*kId).Utf16();
+  field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id = element.UniqueRendererFormControlId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(*kAutocomplete).Utf8();

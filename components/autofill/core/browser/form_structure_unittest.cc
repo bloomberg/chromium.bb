@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -3315,7 +3316,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
-  field.id = ASCIIToUTF16("first_name");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("first_name");
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
@@ -3324,7 +3326,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
-  field.id = ASCIIToUTF16("last_name");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("last_name");
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   field.properties_mask =
@@ -3334,7 +3337,8 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
       possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
-  field.id = ASCIIToUTF16("e-mail");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("e-mail");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
@@ -3410,16 +3414,19 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
+  field.name_attribute = field.name;
   field.form_control_type = "email";
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
@@ -3559,12 +3566,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.css_classes = ASCIIToUTF16("last_name_field");
-  field.id = ASCIIToUTF16("lastname_id");
+  field.id_attribute = ASCIIToUTF16("lastname_id");
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.css_classes = ASCIIToUTF16("email_field required_field");
-  field.id = ASCIIToUTF16("email_id");
+  field.id_attribute = ASCIIToUTF16("email_id");
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
@@ -3721,6 +3728,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
+  field.name_attribute = field.name;
   field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
@@ -3797,7 +3805,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
-  field.id = ASCIIToUTF16("first_name");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("first_name");
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
@@ -3805,7 +3814,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
-  field.id = ASCIIToUTF16("last_name");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("last_name");
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
@@ -3813,7 +3823,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
       possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
-  field.id = ASCIIToUTF16("e-mail");
+  field.name_attribute = field.name;
+  field.id_attribute = ASCIIToUTF16("e-mail");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
@@ -3878,14 +3889,17 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("last");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
@@ -4153,24 +4167,28 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("last");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
@@ -4288,10 +4306,15 @@ TEST_F(FormStructureTest, EncodeUploadRequest_PasswordsRevealed) {
   // Add 3 fields, to make the form uploadable.
   FormFieldData field;
   field.name = ASCIIToUTF16("email");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
+
   field.name = ASCIIToUTF16("first");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
+
   field.name = ASCIIToUTF16("last");
+  field.name_attribute = field.name;
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
@@ -4302,6 +4325,97 @@ TEST_F(FormStructureTest, EncodeUploadRequest_PasswordsRevealed) {
       std::string() /* login_form_signature */, true /* observed_submission */,
       &upload));
   EXPECT_EQ(true, upload.passwords_revealed());
+}
+
+TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
+  struct FieldMetadata {
+    const char *id, *name, *label, *placeholder, *aria_label, *aria_description,
+        *css_classes;
+  };
+
+  static const FieldMetadata kFieldMetadata[] = {
+      {"fname_id", "fname_name", "First Name:", "Please enter your first name",
+       "Type your first name", "You can type your first name here", "blah"},
+      {"lname_id", "lname_name", "Last Name:", "Please enter your last name",
+       "Type your lat name", "You can type your last name here", "blah"},
+      {"email_id", "email_name", "Email:", "Please enter your email address",
+       "Type your email address", "You can type your email address here",
+       "blah"},
+  };
+
+  FormData form;
+  form.origin = GURL("http://www.foo.com/");
+  for (const auto& f : kFieldMetadata) {
+    FormFieldData field;
+    field.id_attribute = ASCIIToUTF16(f.id);
+    field.name_attribute = ASCIIToUTF16(f.name);
+    field.name = field.name_attribute;
+    field.label = ASCIIToUTF16(f.label);
+    field.placeholder = ASCIIToUTF16(f.placeholder);
+    field.aria_label = ASCIIToUTF16(f.aria_label);
+    field.aria_description = ASCIIToUTF16(f.aria_description);
+    field.css_classes = ASCIIToUTF16(f.css_classes);
+    form.fields.push_back(field);
+  }
+
+  RandomizedEncoder encoder("seed for testing",
+                            AutofillRandomizedValue_EncodingType_ALL_BITS);
+
+  FormStructure form_structure(form);
+  form_structure.set_randomized_encoder(
+      std::make_unique<RandomizedEncoder>(encoder));
+
+  AutofillUploadContents upload;
+  ASSERT_TRUE(form_structure.EncodeUploadRequest(
+      {{}} /* available_field_types */, false /* form_was_autofilled */,
+      std::string() /* login_form_signature */, true /* observed_submission */,
+      &upload));
+
+  const auto form_signature = form_structure.form_signature();
+  EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
+            encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_ID,
+                           form_structure.id_attribute()));
+  EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
+            encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_NAME,
+                           form_structure.name_attribute()));
+
+  ASSERT_EQ(static_cast<size_t>(upload.field_size()),
+            base::size(kFieldMetadata));
+  for (int i = 0; i < upload.field_size(); ++i) {
+    const auto& metadata = upload.field(i).randomized_field_metadata();
+    const auto& field = *form_structure.field(i);
+    const auto field_signature = field.GetFieldSignature();
+    EXPECT_EQ(metadata.id().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_ID, field.id_attribute));
+    EXPECT_EQ(
+        metadata.name().encoded_bits(),
+        encoder.Encode(form_signature, field_signature,
+                       RandomizedEncoder::FIELD_NAME, field.name_attribute));
+    EXPECT_EQ(metadata.type().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_CONTROL_TYPE,
+                             field.form_control_type));
+    EXPECT_EQ(metadata.label().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_LABEL, field.label));
+    EXPECT_EQ(
+        metadata.aria_label().encoded_bits(),
+        encoder.Encode(form_signature, field_signature,
+                       RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label));
+    EXPECT_EQ(metadata.aria_description().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                             field.aria_description));
+    EXPECT_EQ(
+        metadata.css_class().encoded_bits(),
+        encoder.Encode(form_signature, field_signature,
+                       RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes));
+    EXPECT_EQ(metadata.placeholder().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_PLACEHOLDER,
+                             field.placeholder));
+  }
 }
 
 TEST_F(FormStructureTest, CheckFormSignature) {

@@ -464,7 +464,8 @@ bool GetPasswordForm(
     } else if (flag != AutocompleteFlag::CREDIT_CARD) {
       const bool is_credit_card_verification =
           input->form_control_type == "password" &&
-          (StringMatchesCVC(input->name) || StringMatchesCVC(input->id));
+          (StringMatchesCVC(input->name_attribute) ||
+           StringMatchesCVC(input->id_attribute));
       if (!is_credit_card_verification) {
         // Otherwise ensure that nothing hints that |input| is a credit-card
         // field.

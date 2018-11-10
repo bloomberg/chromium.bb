@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -22,6 +23,7 @@ using autofill::AutofillUploadContents;
 using autofill::FormData;
 using autofill::FormStructure;
 using autofill::PasswordForm;
+using autofill::RandomizedEncoder;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
 using autofill::ValueElementPair;
@@ -304,6 +306,10 @@ bool VotesUploader::UploadPasswordVote(
     logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
   }
 
+  // Attach the Randomized Encoder.
+  form_structure.set_randomized_encoder(
+      RandomizedEncoder::Create(client_->GetPrefs()));
+
   bool success = autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       login_form_signature, true /* observed_submission */,
@@ -352,6 +358,10 @@ void VotesUploader::UploadFirstLoginVotes(
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
   }
+
+  // Attach the Randomized Encoder.
+  form_structure.set_randomized_encoder(
+      RandomizedEncoder::Create(client_->GetPrefs()));
 
   autofill_manager->download_manager()->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,

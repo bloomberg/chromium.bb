@@ -164,12 +164,13 @@ FormData GetFormDataAndExpectation(
     FormFieldData field;
     const uint32_t unique_id = GetUniqueId();
     field.unique_renderer_id = unique_id;
-    field.id = StampUniqueSuffix("html_id");
+    field.id_attribute = StampUniqueSuffix("html_id");
     if (field_description.name == kNonimportantValue) {
       field.name = StampUniqueSuffix("html_name");
     } else {
       field.name = ASCIIToUTF16(field_description.name);
     }
+    field.name_attribute = field.name;
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
@@ -242,10 +243,10 @@ void CheckField(const std::vector<FormFieldData>& fields,
   ASSERT_TRUE(field_it != fields.end())
       << "Could not find a field with renderer ID " << renderer_id;
 
-// On iOS |id| is used for identifying DOM elements, so the parser should return
-// it.
+// On iOS |unique_id| is used for identifying DOM elements, so the parser should
+// return it. See crbug.com/896594
 #if defined(OS_IOS)
-  EXPECT_EQ(element_name, field_it->id);
+  EXPECT_EQ(element_name, field_it->unique_id);
 #else
   EXPECT_EQ(element_name, field_it->name);
 #endif

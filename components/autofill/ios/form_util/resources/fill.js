@@ -814,6 +814,10 @@ __gCrWeb.fill.webFormElementToFormData = function(
       __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
   form['action'] = __gCrWeb.fill.getCanonicalActionForForm(formElement);
 
+  // The raw name and id attributes, which may be empty.
+  form['name_attribute'] = formElement.getAttribute('name') || '';
+  form['id_attribute'] = formElement.getAttribute('id') || '';
+
   // Note different from form_autofill_util.cc version of this method, which
   // computes |form.action| using document.completeURL(form_element.action())
   // and falls back to formElement.action() if the computed action is invalid,
@@ -1898,6 +1902,11 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   // form data.
   field['identifier'] = __gCrWeb.form.getFieldIdentifier(element);
   field['name'] = __gCrWeb.form.getFieldName(element);
+
+  // The raw name and id attributes, which may be empty.
+  field['name_attribute'] = element.getAttribute('name') || '';
+  field['id_attribute'] = element.getAttribute('id') || '';
+
   field['form_control_type'] = element.type;
   var autocomplete_attribute = element.getAttribute('autocomplete');
   if (autocomplete_attribute) {

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -168,28 +169,48 @@ class NewPasswordFormManagerTest : public testing::Test {
 
     FormFieldData field;
     field.name = ASCIIToUTF16("firstname");
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.form_control_type = "text";
     field.unique_renderer_id = 1;
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("username");
-    field.id = field.name;
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.form_control_type = "text";
     field.unique_renderer_id = 2;
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("password");
-    field.id = field.name;
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.form_control_type = "password";
     field.unique_renderer_id = 3;
     observed_form_.fields.push_back(field);
     observed_form_only_password_fields_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("password2");
-    field.id = field.name;
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.form_control_type = "password";
     field.unique_renderer_id = 5;
     observed_form_only_password_fields_.fields.push_back(field);
+
+// On iOS the unique_id member uniquely addresses this field in the DOM.
+// This is an ephemeral value which is not guaranteed to be stable across
+// page loads. It serves to allow a given field to be found during the
+// current navigation.
+// TODO(crbug.com/896689): Expand the logic/application of this to other
+// platforms and/or merge this concept with |unique_renderer_id|.
+#if defined(OS_IOS)
+    for (auto& f : observed_form_.fields) {
+      f.unique_id = f.id_attribute;
+    }
+    for (auto& f : observed_form_only_password_fields_.fields) {
+      f.unique_id = f.id_attribute;
+    }
+#endif
 
     submitted_form_ = observed_form_;
     submitted_form_.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
@@ -1221,7 +1242,10 @@ TEST_F(NewPasswordFormManagerTest, FillForm) {
     if (observed_form_changed) {
       form.fields[kUsernameFieldIndex].unique_renderer_id += 1000;
       form.fields[kUsernameFieldIndex].name += ASCIIToUTF16("1");
-      form.fields[kUsernameFieldIndex].id += ASCIIToUTF16("1");
+      form.fields[kUsernameFieldIndex].id_attribute += ASCIIToUTF16("1");
+#if defined(OS_IOS)
+      form.fields[kUsernameFieldIndex].unique_id += ASCIIToUTF16("1");
+#endif
       form.fields[kPasswordFieldIndex].unique_renderer_id += 1000;
     }
 

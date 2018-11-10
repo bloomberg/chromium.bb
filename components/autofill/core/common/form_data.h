@@ -43,7 +43,17 @@ struct FormData {
   // Allow FormData to be a key in STL containers.
   bool operator<(const FormData& form) const;
 
-  // The name of the form.
+  // The id attribute of the form.
+  base::string16 id_attribute;
+
+  // The name attribute of the form.
+  base::string16 name_attribute;
+
+  // The name by which autofill knows this form. This is generally either the
+  // name attribute or the id_attribute value, which-ever is non-empty with
+  // priority given to the name_attribute. This value is used when computing
+  // form signatures.
+  // TODO(crbug/896689): remove this and use attributes/unique_id instead.
   base::string16 name;
   // The form submission button's title.
   base::string16 button_title;

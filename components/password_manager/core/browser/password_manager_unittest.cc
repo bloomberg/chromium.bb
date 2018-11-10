@@ -162,7 +162,8 @@ void SanitizeFormData(FormData* form) {
     field.option_contents.clear();
     field.placeholder.clear();
     field.css_classes.clear();
-    field.id.clear();
+    field.id_attribute.clear();
+    field.name_attribute.clear();
   }
 }
 
@@ -227,18 +228,32 @@ class PasswordManagerTest : public testing::Test {
 
     autofill::FormFieldData field;
     field.name = ASCIIToUTF16("Email");
-    field.id = field.name;
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.value = ASCIIToUTF16("googleuser");
     field.form_control_type = "text";
     field.unique_renderer_id = 2;
     form.form_data.fields.push_back(field);
 
     field.name = ASCIIToUTF16("Passwd");
-    field.id = field.name;
+    field.id_attribute = field.name;
+    field.name_attribute = field.name;
     field.value = ASCIIToUTF16("p4ssword");
     field.form_control_type = "password";
     field.unique_renderer_id = 3;
     form.form_data.fields.push_back(field);
+
+// On iOS the unique_id member uniquely addresses this field in the DOM.
+// This is an ephemeral value which is not guaranteed to be stable across
+// page loads. It serves to allow a given field to be found during the
+// current navigation.
+// TODO(crbug.com/896689): Expand the logic/application of this to other
+// platforms and/or merge this concept with |unique_renderer_id|.
+#if defined(OS_IOS)
+    for (auto& f : form.form_data.fields) {
+      f.unique_id = f.id_attribute;
+    }
+#endif
 
     return form;
   }

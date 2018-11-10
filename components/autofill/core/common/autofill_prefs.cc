@@ -70,6 +70,10 @@ const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
 
+// The (randomly inititialied) seed value to use when encoding form/field
+// metadata for randomized uploads. The value of this pref is a string.
+const char kAutofillUploadEncodingSeed[] = "autofill.upload_encoding_seed";
+
 // Dictionary pref used to track which form signature uploads have been
 // performed. Each entry in the dictionary maps a form signature (reduced
 // via a 10-bit modulus) to a integer bit-field where each bit denotes whether
@@ -133,6 +137,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kAutofillMigrateLocalCardsCancelledPrompt, false);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
+  registry->RegisterStringPref(prefs::kAutofillUploadEncodingSeed, "");
   registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
   registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
                              base::Time());

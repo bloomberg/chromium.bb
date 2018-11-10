@@ -48,6 +48,8 @@ enum class PasswordAttribute {
 struct FormData;
 struct FormDataPredictions;
 
+class RandomizedEncoder;
+
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
@@ -215,6 +217,10 @@ class FormStructure {
 
   const base::string16& form_name() const { return form_name_; }
 
+  const base::string16& id_attribute() const { return id_attribute_; }
+
+  const base::string16& name_attribute() const { return name_attribute_; }
+
   const GURL& source_url() const { return source_url_; }
 
   const GURL& target_url() const { return target_url_; }
@@ -308,6 +314,8 @@ class FormStructure {
   base::string16 GetIdentifierForRefill() const;
 
   int developer_engagement_metrics() { return developer_engagement_metrics_; };
+
+  void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
 
  private:
   friend class AutofillMergeTest;
@@ -453,6 +461,12 @@ class FormStructure {
   static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
 
+  // The id attribute of the form.
+  base::string16 id_attribute_;
+
+  // The name attribute of the form.
+  base::string16 name_attribute_;
+
   // The name of the form.
   base::string16 form_name_;
 
@@ -546,6 +560,10 @@ class FormStructure {
   int developer_engagement_metrics_;
 
   SubmissionSource submission_source_ = SubmissionSource::NONE;
+
+  // The randomized encoder to use to encode form metadata during upload.
+  // If this is nullptr, no randomized metadata will be sent.
+  std::unique_ptr<RandomizedEncoder> randomized_encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

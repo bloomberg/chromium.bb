@@ -36,7 +36,8 @@ void SanitizeFormData(FormData* form) {
     field.option_contents.clear();
     field.placeholder.clear();
     field.css_classes.clear();
-    field.id.clear();
+    field.id_attribute.clear();
+    field.name_attribute.clear();
   }
 }
 
