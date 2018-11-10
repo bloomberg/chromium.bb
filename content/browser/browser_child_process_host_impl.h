@@ -104,6 +104,15 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Adds an IPC message filter.
   void AddFilter(BrowserMessageFilter* filter);
 
+  // Unlike Launch(), AppendExtraCommandLineSwitches will not be called
+  // in this function. If AppendExtraCommandLineSwitches has been called before
+  // reaching launch, call this function instead so the command line switches
+  // won't be appended twice
+  void LaunchWithoutExtraCommandLineSwitches(
+      std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+      std::unique_ptr<base::CommandLine> cmd_line,
+      bool terminate_on_shutdown);
+
   static void HistogramBadMessageTerminated(ProcessType process_type);
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
