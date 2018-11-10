@@ -37,10 +37,20 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         Runnable get(Callback<Drawable> consumer, int widthPx, int heightPx);
     }
 
+    /** Provides the callers an opportunity to override the image size before it is drawn. */
+    public interface ImageResizer {
+        /**
+         * Called by the {@link AsyncImageView} before drawing to the screen.
+         * @param drawable The {@link Drawable} to be drawn.
+         */
+        void maybeResizeImage(Drawable drawable);
+    }
+
     private Drawable mUnavailableDrawable;
     private Drawable mWaitingDrawable;
 
     private Factory mFactory;
+    private ImageResizer mImageResizer;
 
     private Runnable mCancelable;
     private boolean mWaitingForResponse;
@@ -115,6 +125,13 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         if (mWaitingForResponse) setForegroundDrawableCompat(mWaitingDrawable);
     }
 
+    /**
+     * @param resizer Sets a {@link ImageResizer} to use when drawing the image to the screen.
+     */
+    public void setImageResizer(ImageResizer resizer) {
+        mImageResizer = resizer;
+    }
+
     // RoundedCornerImageView implementation.
     @Override
     public void setImageDrawable(Drawable drawable) {
@@ -122,6 +139,7 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         // to something else.
         cancelPreviousDrawableRequest();
 
+        if (mImageResizer != null) mImageResizer.maybeResizeImage(drawable);
         setForegroundDrawableCompat(null);
         super.setImageDrawable(drawable);
     }
@@ -132,6 +150,13 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         super.onLayout(changed, left, top, right, bottom);
 
         retrieveDrawableIfNeeded();
+    }
+
+    @Override
+    protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
+        if (width == oldWidth && height == oldHeight) return;
+        if (mImageResizer != null) mImageResizer.maybeResizeImage(getDrawable());
     }
 
     private void setAsyncImageDrawableResponse(Drawable drawable, Object identifier) {
