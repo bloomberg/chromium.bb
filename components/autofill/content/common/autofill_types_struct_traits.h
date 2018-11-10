@@ -130,8 +130,13 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.name;
   }
 
-  static const base::string16& id(const autofill::FormFieldData& r) {
-    return r.id;
+  static const base::string16& id_attribute(const autofill::FormFieldData& r) {
+    return r.id_attribute;
+  }
+
+  static const base::string16& name_attribute(
+      const autofill::FormFieldData& r) {
+    return r.name_attribute;
   }
 
   static const base::string16& value(const autofill::FormFieldData& r) {
@@ -232,6 +237,14 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
 
 template <>
 struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
+  static const base::string16& id_attribute(const autofill::FormData& r) {
+    return r.id_attribute;
+  }
+
+  static const base::string16& name_attribute(const autofill::FormData& r) {
+    return r.name_attribute;
+  }
+
   static const base::string16& name(const autofill::FormData& r) {
     return r.name;
   }

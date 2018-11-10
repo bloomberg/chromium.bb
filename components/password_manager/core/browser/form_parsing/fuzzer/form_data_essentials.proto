@@ -28,5 +28,6 @@ message Form {
   string action = 5;
   string origin = 6;
   string main_frame_origin = 7;
+  string id = 9;
   repeated FormField fields = 8;
 }

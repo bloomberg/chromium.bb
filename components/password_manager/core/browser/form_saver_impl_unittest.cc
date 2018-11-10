@@ -540,7 +540,8 @@ TEST_F(FormSaverImplTest, FormDataSanitized) {
   field.value = ASCIIToUTF16("value");
   field.label = ASCIIToUTF16("label");
   field.placeholder = ASCIIToUTF16("placeholder");
-  field.id = ASCIIToUTF16("id");
+  field.id_attribute = ASCIIToUTF16("id");
+  field.name_attribute = field.name;
   field.css_classes = ASCIIToUTF16("css_classes");
   pending.form_data.fields.push_back(field);
 
@@ -559,7 +560,8 @@ TEST_F(FormSaverImplTest, FormDataSanitized) {
     EXPECT_TRUE(saved_field.value.empty());
     EXPECT_TRUE(saved_field.label.empty());
     EXPECT_TRUE(saved_field.placeholder.empty());
-    EXPECT_TRUE(saved_field.id.empty());
+    EXPECT_TRUE(saved_field.id_attribute.empty());
+    EXPECT_TRUE(saved_field.name_attribute.empty());
     EXPECT_TRUE(saved_field.css_classes.empty());
   }
 }

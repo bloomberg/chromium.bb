@@ -39,7 +39,7 @@ ScopedJavaLocalRef<jobject> FormFieldDataAndroid::GetJavaPeer() {
     ScopedJavaLocalRef<jstring> jplaceholder =
         ConvertUTF16ToJavaString(env, field_ptr_->placeholder);
     ScopedJavaLocalRef<jstring> jid =
-        ConvertUTF16ToJavaString(env, field_ptr_->id);
+        ConvertUTF16ToJavaString(env, field_ptr_->id_attribute);
     ScopedJavaLocalRef<jstring> jtype =
         ConvertUTF8ToJavaString(env, field_ptr_->form_control_type);
     ScopedJavaLocalRef<jobjectArray> joption_values =

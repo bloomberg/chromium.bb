@@ -103,6 +103,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
     @"fields" : @[
       @{
         @"name" : @"firstname",
+        @"name_attribute" : @"firstname",
+        @"id_attribute" : @"firstname",
         @"identifier" : @"firstname",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
@@ -114,6 +116,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
       },
       @{
         @"name" : @"lastname",
+        @"name_attribute" : @"lastname",
+        @"id_attribute" : @"lastname",
         @"identifier" : @"lastname",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
@@ -125,6 +129,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
       },
       @{
         @"name" : @"email",
+        @"name_attribute" : @"email",
+        @"id_attribute" : @"email",
         @"identifier" : @"email",
         @"form_control_type" : @"email",
         @"max_length" : GetDefaultMaxLength(),

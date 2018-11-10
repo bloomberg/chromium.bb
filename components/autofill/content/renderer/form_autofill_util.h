@@ -124,7 +124,7 @@ bool IsWebElementVisible(const blink::WebElement& element);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
-const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
+base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 
 // Returns text alignment for |element|.
 base::i18n::TextDirection GetTextDirectionForElement(

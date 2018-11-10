@@ -127,6 +127,8 @@ bool ExtractFormData(const base::Value& form_value,
   form_data->action = GURL(action);
 
   // Optional fields.
+  form_dictionary->GetString("name_attribute", &form_data->name_attribute);
+  form_dictionary->GetString("id_attribute", &form_data->id_attribute);
   form_dictionary->GetBoolean("is_form_tag", &form_data->is_form_tag);
   form_dictionary->GetBoolean("is_formless_checkout",
                               &form_data->is_formless_checkout);
@@ -151,12 +153,14 @@ bool ExtractFormData(const base::Value& form_value,
 bool ExtractFormFieldData(const base::DictionaryValue& field,
                           autofill::FormFieldData* field_data) {
   if (!field.GetString("name", &field_data->name) ||
-      !field.GetString("identifier", &field_data->id) ||
+      !field.GetString("identifier", &field_data->unique_id) ||
       !field.GetString("form_control_type", &field_data->form_control_type)) {
     return false;
   }
 
   // Optional fields.
+  field.GetString("name_attribute", &field_data->name_attribute);
+  field.GetString("id_attribute", &field_data->id_attribute);
   field.GetString("label", &field_data->label);
   field.GetString("value", &field_data->value);
   field.GetString("autocomplete_attribute",

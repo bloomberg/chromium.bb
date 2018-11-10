@@ -63,7 +63,7 @@ TEST_F(AccountSelectFillDataTest, IsSuggestionsAvailableOneForm) {
 
   // Suggestions are avaialable for the correct form and field names.
   EXPECT_TRUE(account_select_fill_data.IsSuggestionsAvailable(
-      form_data_[0].name, form_data_[0].username_field.id, false));
+      form_data_[0].name, form_data_[0].username_field.unique_id, false));
   // Suggestion should be available to any password field.
   EXPECT_TRUE(account_select_fill_data.IsSuggestionsAvailable(
       form_data_[0].name, base::ASCIIToUTF16("password"), true));
@@ -71,15 +71,15 @@ TEST_F(AccountSelectFillDataTest, IsSuggestionsAvailableOneForm) {
   // Suggestions are not avaialable for different form name.
   EXPECT_FALSE(account_select_fill_data.IsSuggestionsAvailable(
       form_data_[0].name + base::ASCIIToUTF16("1"),
-      form_data_[0].username_field.id, false));
+      form_data_[0].username_field.unique_id, false));
   EXPECT_FALSE(account_select_fill_data.IsSuggestionsAvailable(
       form_data_[0].name + base::ASCIIToUTF16("1"),
-      form_data_[0].password_field.id, true));
+      form_data_[0].password_field.unique_id, true));
 
   // Suggestions are not avaialable for different field name.
   EXPECT_FALSE(account_select_fill_data.IsSuggestionsAvailable(
       form_data_[0].name,
-      form_data_[0].username_field.id + base::ASCIIToUTF16("1"), false));
+      form_data_[0].username_field.unique_id + base::ASCIIToUTF16("1"), false));
 }
 
 TEST_F(AccountSelectFillDataTest, IsSuggestionsAvailableTwoForms) {
@@ -89,14 +89,14 @@ TEST_F(AccountSelectFillDataTest, IsSuggestionsAvailableTwoForms) {
 
   // Suggestions are avaialable for the correct form and field names.
   EXPECT_TRUE(account_select_fill_data.IsSuggestionsAvailable(
-      form_data_[0].name, form_data_[0].username_field.id, false));
+      form_data_[0].name, form_data_[0].username_field.unique_id, false));
   // Suggestions are avaialable for the correct form and field names.
   EXPECT_TRUE(account_select_fill_data.IsSuggestionsAvailable(
-      form_data_[1].name, form_data_[1].username_field.id, false));
+      form_data_[1].name, form_data_[1].username_field.unique_id, false));
   // Suggestions are not avaialable for different form name.
   EXPECT_FALSE(account_select_fill_data.IsSuggestionsAvailable(
       form_data_[0].name + base::ASCIIToUTF16("1"),
-      form_data_[0].username_field.id, false));
+      form_data_[0].username_field.unique_id, false));
 }
 
 TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsOneForm) {
@@ -104,9 +104,9 @@ TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsOneForm) {
   account_select_fill_data.Add(form_data_[0]);
 
   for (bool is_password_field : {false, true}) {
-    const base::string16 field_id = is_password_field
-                                        ? form_data_[0].password_field.id
-                                        : form_data_[0].username_field.id;
+    const base::string16 field_id =
+        is_password_field ? form_data_[0].password_field.unique_id
+                          : form_data_[0].username_field.unique_id;
     std::vector<UsernameAndRealm> suggestions =
         account_select_fill_data.RetrieveSuggestions(
             form_data_[0].name, field_id, is_password_field);
@@ -130,12 +130,12 @@ TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsTwoForm) {
 
   std::vector<UsernameAndRealm> suggestions =
       account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id, false);
+          form_data_[0].name, form_data_[0].username_field.unique_id, false);
   EXPECT_EQ(1u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), suggestions[0].username);
 
   suggestions = account_select_fill_data.RetrieveSuggestions(
-      form_data_[1].name, form_data_[1].username_field.id, false);
+      form_data_[1].name, form_data_[1].username_field.unique_id, false);
   EXPECT_EQ(1u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), suggestions[0].username);
 }
@@ -152,7 +152,7 @@ TEST_F(AccountSelectFillDataTest, RetrievePSLMatchedSuggestions) {
   account_select_fill_data.Add(form_data_[0]);
   std::vector<UsernameAndRealm> suggestions =
       account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id, false);
+          form_data_[0].name, form_data_[0].username_field.unique_id, false);
   EXPECT_EQ(2u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[0]), suggestions[0].username);
   EXPECT_EQ(kRealm, suggestions[0].realm);
@@ -173,10 +173,11 @@ TEST_F(AccountSelectFillDataTest, GetFillData) {
       // case of clicking on a password field it is taken an id different from
       // existing field ids.
       const base::string16 password_field =
-          form_data.password_field.id +
+          form_data.password_field.unique_id +
           (is_password_field ? base::ASCIIToUTF16("1") : base::string16());
       const base::string16 clicked_field =
-          is_password_field ? password_field : form_data.username_field.id;
+          is_password_field ? password_field
+                            : form_data.username_field.unique_id;
 
       // GetFillData() doesn't have form identifier in arguments, it should be
       // provided in RetrieveSuggestions().
@@ -206,7 +207,7 @@ TEST_F(AccountSelectFillDataTest, GetFillDataOldCredentials) {
   // GetFillData() doesn't have form identifier in arguments, it should be
   // provided in RetrieveSuggestions().
   account_select_fill_data.RetrieveSuggestions(
-      form_data_[0].name, form_data_[0].username_field.id, false);
+      form_data_[0].name, form_data_[0].username_field.unique_id, false);
 
   // AccountSelectFillData should keep only last credentials. Check that in
   // request of old credentials nothing is returned.

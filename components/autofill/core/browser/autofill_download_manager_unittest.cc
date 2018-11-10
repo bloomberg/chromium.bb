@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -855,6 +856,7 @@ class AutofillServerCommunicationTest
     }
 
     if (absolute_url.path() == "/tbproxy/af/upload") {
+      upload_contents_.push_back(request.content);
       auto response = std::make_unique<BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
       return response;
@@ -907,6 +909,7 @@ class AutofillServerCommunicationTest
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<TestAutofillDriver> driver_;
   std::unique_ptr<PrefService> pref_service_;
+  std::vector<std::string> upload_contents_;
 };
 
 }  // namespace
@@ -1063,6 +1066,98 @@ INSTANTIATE_TEST_CASE_P(All,
                         ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
 
 using AutofillUploadTest = AutofillServerCommunicationTest;
+
+TEST_P(AutofillUploadTest, RichMetadata) {
+  FormData form;
+  form.origin = GURL("https://origin.com");
+  form.action = GURL("https://origin.com/submit-me");
+  form.id_attribute = ASCIIToUTF16("form-id_attribute");
+  form.name_attribute = ASCIIToUTF16("form-id_attribute");
+  form.name = form.name_attribute;
+
+  FormFieldData field;
+  field.id_attribute = ASCIIToUTF16("field-id-attribute-1");
+  field.name_attribute = ASCIIToUTF16("field-name-attribute-1");
+  field.name = field.name_attribute;
+  field.label = ASCIIToUTF16("field-label");
+  field.aria_label = ASCIIToUTF16("field-aria-label");
+  field.aria_description = ASCIIToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = ASCIIToUTF16("field-css-classes");
+  field.placeholder = ASCIIToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  field.id_attribute = ASCIIToUTF16("field-id-attribute-2");
+  field.name_attribute = ASCIIToUTF16("field-name-attribute-2");
+  field.name = field.name_attribute;
+  field.label = ASCIIToUTF16("field-label");
+  field.aria_label = ASCIIToUTF16("field-aria-label");
+  field.aria_description = ASCIIToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = ASCIIToUTF16("field-css-classes");
+  field.placeholder = ASCIIToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  field.id_attribute = ASCIIToUTF16("field-id-attribute-3");
+  field.name_attribute = ASCIIToUTF16("field-name-attribute-3");
+  field.name = field.name_attribute;
+  field.label = ASCIIToUTF16("field-label");
+  field.aria_label = ASCIIToUTF16("field-aria-label");
+  field.aria_description = ASCIIToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = ASCIIToUTF16("field-css-classes");
+  field.placeholder = ASCIIToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  FormStructure form_structure(form);
+
+  for (int i = 0; i < 8; ++i) {
+    SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
+    base::HistogramTester histogram_tester;
+    auto submission_source = static_cast<SubmissionSource>(i);
+    form_structure.set_submission_source(submission_source);
+    form_structure.set_randomized_encoder(
+        RandomizedEncoder::Create(pref_service_.get()));
+
+    upload_contents_.clear();
+
+    // The first attempt should succeed.
+    EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
+
+    // The second attempt should always fail.
+    EXPECT_FALSE(SendUploadRequest(form_structure, true, {}, "", true));
+
+    // One upload was sent.
+    histogram_tester.ExpectBucketCount("Autofill.UploadEvent", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
+        1, 1);
+
+    // Three encoding events should be sent.
+    histogram_tester.ExpectUniqueSample("Autofill.Upload.MetadataConfigIsValid",
+                                        true, 1);
+
+    ASSERT_EQ(1u, upload_contents_.size());
+    AutofillUploadContents upload;
+    ASSERT_TRUE(upload.ParseFromString(upload_contents_.front()));
+    ASSERT_TRUE(upload.has_randomized_form_metadata());
+    EXPECT_TRUE(upload.randomized_form_metadata().has_id());
+    EXPECT_TRUE(upload.randomized_form_metadata().has_name());
+    EXPECT_EQ(3, upload.field_size());
+    for (const auto& f : upload.field()) {
+      ASSERT_TRUE(f.has_randomized_field_metadata());
+      EXPECT_TRUE(f.randomized_field_metadata().has_id());
+      EXPECT_TRUE(f.randomized_field_metadata().has_name());
+      EXPECT_TRUE(f.randomized_field_metadata().has_type());
+      EXPECT_TRUE(f.randomized_field_metadata().has_label());
+      EXPECT_TRUE(f.randomized_field_metadata().has_aria_label());
+      EXPECT_TRUE(f.randomized_field_metadata().has_aria_description());
+      EXPECT_TRUE(f.randomized_field_metadata().has_css_class());
+      EXPECT_TRUE(f.randomized_field_metadata().has_placeholder());
+    }
+  }
+}
 
 TEST_P(AutofillUploadTest, Throttling) {
   ASSERT_NE(DISABLED, GetParam());

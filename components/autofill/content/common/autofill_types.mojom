@@ -106,7 +106,8 @@ enum FillingStatus {
 struct FormFieldData {
   mojo_base.mojom.String16 label;
   mojo_base.mojom.String16 name;
-  mojo_base.mojom.String16 id;
+  mojo_base.mojom.String16 id_attribute;
+  mojo_base.mojom.String16 name_attribute;
   mojo_base.mojom.String16 value;
   string form_control_type;
   string autocomplete_attribute;
@@ -135,6 +136,8 @@ struct FormFieldData {
 
 // autofill::FormData
 struct FormData {
+  mojo_base.mojom.String16 id_attribute;
+  mojo_base.mojom.String16 name_attribute;
   mojo_base.mojom.String16 name;
   mojo_base.mojom.String16 button_title;
   // TODO(crbug.com/788181): Either change type to Origin or rename to URL.

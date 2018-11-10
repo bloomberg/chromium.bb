@@ -7,20 +7,23 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/feature_list.h"
 #include "base/format_macros.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_switches.h"
+#include "components/prefs/pref_service.h"
 #include "crypto/hkdf.h"
 
 namespace autofill {
-
-struct RandomizedEncoder::EncodingInfo {
-  AutofillRandomizedValue_EncodingType encoding_type;
-  size_t final_size;
-  size_t bit_offset;
-  size_t bit_stride;
-};
 
 namespace {
 
@@ -122,7 +125,111 @@ std::string GetPseudoRandomBits(base::StringPiece secret,
   return crypto::HkdfSha256(secret, {}, info, kMaxEncodedLengthInBytes);
 }
 
+// Returns the "random" encoding type to use for encoding.
+AutofillRandomizedValue_EncodingType GetEncodingType(const std::string& seed) {
+  DCHECK(!seed.empty());
+  // How many bits should be encoded per byte? This value will determine which
+  // of the encodings are eligible for consideration.
+  const int kDefaultBitsPerByte = 4;
+  const int bits_per_byte =
+      base::FeatureParam<int>(&features::kAutofillMetadataUploads,
+                              switches::kAutofillMetadataUploadEncoding,
+                              kDefaultBitsPerByte)
+          .Get();
+
+  // Depending on the number of bytes to encode per byte, "randomly" select one
+  // of eligible encodings. This "random" selection is persistent in that it is
+  // based directly on the persistent seed.
+  const uint8_t rand_byte = static_cast<uint8_t>(seed.front());
+  int encoding_type_as_int = static_cast<int>(
+      AutofillRandomizedValue_EncodingType_UNSPECIFIED_ENCODING_TYPE);
+  bool config_is_valid = true;
+  switch (bits_per_byte) {
+    case 1:
+      // Sending one bit per byte means sending any encoding from BIT_0 through
+      // BIT_7, which are in numeric order.
+      encoding_type_as_int =
+          static_cast<int>(AutofillRandomizedValue_EncodingType_BIT_0) +
+          (rand_byte % 8);
+      break;
+    default:
+      NOTREACHED();
+      config_is_valid = false;
+      FALLTHROUGH;
+    case 4:
+      // Sending four bits per byte means sending either the EVEN_BITS or
+      // ODD_BITS encoding, which are in numeric order.
+      encoding_type_as_int =
+          static_cast<int>(AutofillRandomizedValue_EncodingType_EVEN_BITS) +
+          (rand_byte % 2);
+      break;
+    case 8:
+      encoding_type_as_int =
+          static_cast<int>(AutofillRandomizedValue_EncodingType_ALL_BITS);
+      break;
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Autofill.Upload.MetadataConfigIsValid",
+                        config_is_valid);
+  base::SparseHistogram::FactoryGet(
+      "Autofill.Upload.MetadataEncodingType",
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(encoding_type_as_int);
+
+  // Cast back to a valid encoding type value.
+  DCHECK(AutofillRandomizedValue_EncodingType_IsValid(encoding_type_as_int));
+  const auto encoding_type =
+      static_cast<AutofillRandomizedValue_EncodingType>(encoding_type_as_int);
+  DCHECK_NE(encoding_type,
+            AutofillRandomizedValue_EncodingType_UNSPECIFIED_ENCODING_TYPE);
+  return encoding_type;
+}
+
+// Returns the "random" seed to use for encoding.
+std::string GetEncodingSeed(PrefService* pref_service) {
+  // Get the persistent seed to use for the randomization.
+  std::string s = pref_service->GetString(prefs::kAutofillUploadEncodingSeed);
+  if (s.empty()) {
+    s = base::UnguessableToken::Create().ToString();
+    pref_service->SetString(prefs::kAutofillUploadEncodingSeed, s);
+  }
+  return s;
+}
+
 }  // namespace
+
+const char RandomizedEncoder::FORM_ID[] = "form-id";
+const char RandomizedEncoder::FORM_NAME[] = "form-name";
+const char RandomizedEncoder::FORM_ACTION[] = "form-action";
+const char RandomizedEncoder::FORM_CSS_CLASS[] = "form-css-class";
+
+const char RandomizedEncoder::FIELD_ID[] = "field-id";
+const char RandomizedEncoder::FIELD_NAME[] = "field-name";
+const char RandomizedEncoder::FIELD_CONTROL_TYPE[] = "field-control-type";
+const char RandomizedEncoder::FIELD_LABEL[] = "field-label";
+const char RandomizedEncoder::FIELD_ARIA_LABEL[] = "field-aria-label";
+const char RandomizedEncoder::FIELD_ARIA_DESCRIPTION[] =
+    "field-aria-description";
+const char RandomizedEncoder::FIELD_CSS_CLASS[] = "field-css-classes";
+const char RandomizedEncoder::FIELD_PLACEHOLDER[] = "field-placeholder";
+const char RandomizedEncoder::FIELD_INITIAL_VALUE_HASH[] =
+    "field-initial-hash-value";
+
+// static
+std::unique_ptr<RandomizedEncoder> RandomizedEncoder::Create(
+    PrefService* pref_service) {
+  // Early abort if metadata uploads are not enabled.
+  if (!pref_service ||
+      !base::FeatureList::IsEnabled(features::kAutofillMetadataUploads)) {
+    return nullptr;
+  }
+
+  // Return the randomized encoder. Note that for a given client, the seed and
+  // encoding type are constant via prefs/config.
+  const auto seed = GetEncodingSeed(pref_service);
+  const auto encoding_type = GetEncodingType(seed);
+  return std::make_unique<RandomizedEncoder>(std::move(seed), encoding_type);
+}
 
 RandomizedEncoder::RandomizedEncoder(
     std::string seed,
@@ -190,6 +297,14 @@ std::string RandomizedEncoder::Encode(FormSignature form_signature,
 
   DCHECK_EQ(dst_offset, encoding_info_->final_size * kBitsPerByte);
   return output;
+}
+
+std::string RandomizedEncoder::Encode(FormSignature form_signature,
+                                      FieldSignature field_signature,
+                                      base::StringPiece data_type,
+                                      base::StringPiece16 data_value) const {
+  return Encode(form_signature, field_signature, data_type,
+                base::UTF16ToUTF8(data_value));
 }
 
 std::string RandomizedEncoder::GetCoins(FormSignature form_signature,

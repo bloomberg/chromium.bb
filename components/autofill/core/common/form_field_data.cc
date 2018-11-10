@@ -10,13 +10,15 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
+// TODO(crbug/897756): Clean up the (de)serialization code.
+
 namespace autofill {
 
 namespace {
 
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kFormFieldDataPickleVersion format.
-const int kFormFieldDataPickleVersion = 7;
+const int kFormFieldDataPickleVersion = 8;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
                        base::Pickle* pickle) {
@@ -79,7 +81,6 @@ bool DeserializeSection5(base::PickleIterator* iter,
 bool DeserializeSection6(base::PickleIterator* iter,
                          FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->check_status);
-  ;
 }
 
 bool DeserializeSection7(base::PickleIterator* iter,
@@ -117,7 +118,12 @@ bool DeserializeSection9(base::PickleIterator* iter,
 
 bool DeserializeSection10(base::PickleIterator* iter,
                           FormFieldData* field_data) {
-  return iter->ReadString16(&field_data->id);
+  return iter->ReadString16(&field_data->id_attribute);
+}
+
+bool DeserializeSection11(base::PickleIterator* iter,
+                          FormFieldData* field_data) {
+  return iter->ReadString16(&field_data->name_attribute);
 }
 
 bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
@@ -154,6 +160,13 @@ FormFieldData::FormFieldData(const FormFieldData& other) = default;
 FormFieldData::~FormFieldData() {}
 
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
+// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
+// this field in the DOM.
+#if defined(OS_IOS)
+  if (unique_id != field.unique_id)
+    return false;
+#endif
+
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
   // Similarly, flags like is_enabled, which are only used for parsing but are
@@ -161,7 +174,8 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // is_autofilled and section are also secondary properties of a field. Two
   // fields could be the same, and have different sections, because the section
   // is updated for one, but not for the other.
-  return name == field.name && id == field.id &&
+  return name == field.name && id_attribute == field.id_attribute &&
+         name_attribute == field.name_attribute &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
          placeholder == field.placeholder && max_length == field.max_length &&
@@ -183,14 +197,17 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
 }
 
 bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
-  return HaveSameLabel(*this, field) && name == field.name && id == field.id &&
+  return HaveSameLabel(*this, field) && name == field.name &&
+         id_attribute == field.id_attribute &&
+         name_attribute == field.name_attribute &&
          form_control_type == field.form_control_type &&
          IsCheckable(check_status) == IsCheckable(field.check_status);
 }
 
 bool FormFieldData::DynamicallySameFieldAs(const FormFieldData& field) const {
-  return name == field.name && id == field.id && HaveSameLabel(*this, field) &&
-         IsVisible() == field.IsVisible() &&
+  return name == field.name && id_attribute == field.id_attribute &&
+         name_attribute == field.name_attribute &&
+         HaveSameLabel(*this, field) && IsVisible() == field.IsVisible() &&
          form_control_type == field.form_control_type;
 }
 
@@ -228,9 +245,23 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
     return true;
   if (name > field.name)
     return false;
-  if (id < field.id)
+
+// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
+// this field in the DOM.
+#if defined(OS_IOS)
+  if (unique_id < field.unique_id)
     return true;
-  if (id > field.id)
+  if (unique_id < field.unique_id)
+    return false;
+#endif
+
+  if (id_attribute < field.id_attribute)
+    return true;
+  if (id_attribute > field.id_attribute)
+    return false;
+  if (name_attribute < field.name_attribute)
+    return true;
+  if (name_attribute > field.name_attribute)
     return false;
   if (form_control_type < field.form_control_type)
     return true;
@@ -298,7 +329,8 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.placeholder);
   pickle->WriteString16(field_data.css_classes);
   pickle->WriteUInt32(field_data.properties_mask);
-  pickle->WriteString16(field_data.id);
+  pickle->WriteString16(field_data.id_attribute);
+  pickle->WriteString16(field_data.name_attribute);
 }
 
 bool DeserializeFormFieldData(base::PickleIterator* iter,
@@ -398,6 +430,22 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
       }
       break;
     }
+    case 8: {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection6(iter, &temp_form_field_data) ||
+          !DeserializeSection7(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data) ||
+          !DeserializeSection4(iter, &temp_form_field_data) ||
+          !DeserializeSection8(iter, &temp_form_field_data) ||
+          !DeserializeSection9(iter, &temp_form_field_data) ||
+          !DeserializeSection10(iter, &temp_form_field_data) ||
+          !DeserializeSection11(iter, &temp_form_field_data)) {
+        LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
+        return false;
+      }
+      break;
+    }
     default: {
       LOG(ERROR) << "Unknown FormFieldData pickle version " << version;
       return false;
@@ -439,7 +487,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
 
   return os << "label='" << base::UTF16ToUTF8(field.label) << "' "
             << "name='" << base::UTF16ToUTF8(field.name) << "' "
-            << "id='" << base::UTF16ToUTF8(field.id) << "' "
+            << "id_attribute='" << base::UTF16ToUTF8(field.id_attribute) << "' "
+            << "name_attribute='" << base::UTF16ToUTF8(field.name_attribute)
+            << "' "
             << "value='" << base::UTF16ToUTF8(field.value) << "' "
             << "control='" << field.form_control_type << "' "
             << "autocomplete='" << field.autocomplete_attribute << "' "

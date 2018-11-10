@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -39,6 +40,16 @@ namespace {
 constexpr TimeDelta kMaxFillingDelayForServerPredictions =
     TimeDelta::FromMilliseconds(500);
 
+// Helper to get the platform specific identifier by which autofill and password
+// manager refer to a field. See http://crbug.com/896594
+base::string16 GetPlatformSpecificIdentifier(const FormFieldData& field) {
+#if defined(OS_IOS)
+  return field.unique_id;
+#else
+  return field.name;
+#endif
+}
+
 ValueElementPair PasswordToSave(const PasswordForm& form) {
   if (form.new_password_value.empty()) {
     DCHECK(!form.password_value.empty());
@@ -55,7 +66,8 @@ void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
 
   for (size_t i = 0; i < from.fields.size(); ++i) {
     to->fields[i].properties_mask =
-        to->fields[i].name == from.fields[i].name
+        GetPlatformSpecificIdentifier(to->fields[i]) ==
+                GetPlatformSpecificIdentifier(from.fields[i])
             ? from.fields[i].properties_mask
             : autofill::FieldPropertiesFlags::ERROR_OCCURRED;
   }

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -38,6 +39,19 @@ struct ParseResult {
     return password_field == nullptr && new_password_field == nullptr;
   }
 };
+
+// Helper to get the platform specific identifier by which autofill and password
+// manager refer to a field. The fuzzing infrastructure doed not run on iOS, so
+// the iOS specific parts of PasswordForm are also built on fuzzer enabled
+// platforms. See http://crbug.com/896594
+base::string16 GetPlatformSpecificIdentifier(const FormFieldData* field) {
+  DCHECK(field);
+#if defined(OS_IOS)
+  return field->unique_id;
+#else
+  return field->name;
+#endif
+}
 
 // Checks in a case-insensitive way if credit card autocomplete attributes for
 // the given |element| are present.
@@ -296,23 +310,26 @@ std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
 // Set username and password fields from |parse_result| in |password_form|.
 void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
   if (parse_result.username_field) {
-    password_form->username_element = parse_result.username_field->id;
+    password_form->username_element =
+        GetPlatformSpecificIdentifier(parse_result.username_field);
     password_form->username_value = parse_result.username_field->value;
   }
 
   if (parse_result.password_field) {
-    password_form->password_element = parse_result.password_field->id;
+    password_form->password_element =
+        GetPlatformSpecificIdentifier(parse_result.password_field);
     password_form->password_value = parse_result.password_field->value;
   }
 
   if (parse_result.new_password_field) {
-    password_form->new_password_element = parse_result.new_password_field->id;
+    password_form->new_password_element =
+        GetPlatformSpecificIdentifier(parse_result.new_password_field);
     password_form->new_password_value = parse_result.new_password_field->value;
   }
 
   if (parse_result.confirmation_password_field) {
     password_form->confirmation_password_element =
-        parse_result.confirmation_password_field->id;
+        GetPlatformSpecificIdentifier(parse_result.confirmation_password_field);
   }
 }
 

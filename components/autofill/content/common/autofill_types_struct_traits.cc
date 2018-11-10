@@ -553,7 +553,9 @@ bool StructTraits<
     return false;
   if (!data.ReadName(&out->name))
     return false;
-  if (!data.ReadId(&out->id))
+  if (!data.ReadIdAttribute(&out->id_attribute))
+    return false;
+  if (!data.ReadNameAttribute(&out->name_attribute))
     return false;
   if (!data.ReadValue(&out->value))
     return false;
@@ -609,6 +611,10 @@ bool StructTraits<
 bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     autofill::mojom::FormDataDataView data,
     autofill::FormData* out) {
+  if (!data.ReadIdAttribute(&out->id_attribute))
+    return false;
+  if (!data.ReadNameAttribute(&out->name_attribute))
+    return false;
   if (!data.ReadName(&out->name))
     return false;
   if (!data.ReadButtonTitle(&out->button_title))
