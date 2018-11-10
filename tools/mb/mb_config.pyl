@@ -327,14 +327,14 @@
       'Cast Linux': 'cast_release_bot',
       'Deterministic Linux (dbg)': 'debug_bot',
       'Deterministic Linux': 'release_bot',
-      'Fuchsia ARM64 Cast Audio': 'release_bot_fuchsia_arm64_cast_audio',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
-      'Fuchsia x64 Cast Audio': 'release_bot_fuchsia_cast_audio',
       'Fuchsia x64': 'release_bot_fuchsia',
       'Leak Detection Linux': 'release_bot',
       'Linux Builder (dbg)': 'gpu_tests_debug_bot',
       'Linux Builder (dbg)(32)': 'gpu_tests_debug_bot_x86',
       'Linux Builder': 'gpu_tests_release_bot',
+      'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
+      'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'linux-ozone-rel': 'ozone_linux_release_bot',
@@ -603,10 +603,10 @@
       'chromium_presubmit': 'presubmit',
       'closure_compilation': 'closure_compilation',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
-      'fuchsia_arm64_cast_audio': 'release_trybot_fuchsia_arm64_cast_audio',
+      'fuchsia-arm64-cast': 'release_trybot_fuchsia_arm64_cast',
       'fuchsia-fyi-x64-dbg': 'debug_trybot_fuchsia',
       'fuchsia_x64': 'release_trybot_fuchsia',
-      'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
+      'fuchsia-x64-cast': 'release_trybot_fuchsia_cast',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
       'linux-blink-gen-property-trees': 'release_trybot',
@@ -1543,16 +1543,16 @@
       'release_bot', 'fuchsia',
     ],
 
-    'release_bot_fuchsia_cast_audio': [
-      'release_bot', 'fuchsia', 'cast', 'cast_audio', 'no_symbols',
+    'release_bot_fuchsia_cast': [
+      'release_bot', 'fuchsia', 'cast', 'cast', 'no_symbols',
     ],
 
     'release_bot_fuchsia_arm64': [
       'release_bot', 'fuchsia', 'arm64',
     ],
 
-    'release_bot_fuchsia_arm64_cast_audio': [
-      'release_bot', 'fuchsia', 'arm64', 'cast', 'cast_audio', 'no_symbols',
+    'release_bot_fuchsia_arm64_cast': [
+      'release_bot', 'fuchsia', 'arm64', 'cast', 'no_symbols',
     ],
 
     'release_bot_mac_strip': [
@@ -1605,16 +1605,16 @@
       'release_trybot', 'fuchsia',
     ],
 
-    'release_trybot_fuchsia_cast_audio': [
-      'release_trybot', 'fuchsia', 'cast', 'cast_audio',
+    'release_trybot_fuchsia_cast': [
+      'release_trybot', 'fuchsia', 'cast',
     ],
 
     'release_trybot_fuchsia_arm64': [
       'release_trybot', 'fuchsia', 'arm64',
     ],
 
-    'release_trybot_fuchsia_arm64_cast_audio': [
-      'release_trybot', 'fuchsia', 'arm64', 'cast', 'cast_audio',
+    'release_trybot_fuchsia_arm64_cast': [
+      'release_trybot', 'fuchsia', 'arm64', 'cast',
     ],
 
     'release_trybot_x86': [
