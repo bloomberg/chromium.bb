@@ -270,11 +270,11 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
   base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
-  std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<content::NotificationRegistrar>
       profile_notification_registrar_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
+  std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<NotificationManager> notification_manager_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
