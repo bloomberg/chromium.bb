@@ -675,6 +675,36 @@
       }
     ]
   },
+  "Android WebView O NetworkService (dbg)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "isolate_name": "webview_cts_tests",
+        "name": "webview_cts_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "android_webview/tools/cts_archive",
+              "revision": "version:1.0"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "OPM1.171019.021",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "hard_timeout": 960,
+          "shards": 3
+        }
+      }
+    ]
+  },
   "Memory Infra Tester": {
     "isolated_scripts": [
       {
