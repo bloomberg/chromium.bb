@@ -94,16 +94,10 @@ class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
 class TestableProximityAuthSystem : public ProximityAuthSystem {
  public:
   TestableProximityAuthSystem(
-      ScreenlockType screenlock_type,
-      ProximityAuthClient* proximity_auth_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<UnlockManager> unlock_manager,
       ProximityAuthPrefManager* pref_manager)
-      : ProximityAuthSystem(screenlock_type,
-                            proximity_auth_client,
-                            secure_channel_client,
-                            std::move(unlock_manager),
-                            pref_manager),
+      : ProximityAuthSystem(secure_channel_client, std::move(unlock_manager)),
         life_cycle_(nullptr) {}
   ~TestableProximityAuthSystem() override {}
 
@@ -157,15 +151,6 @@ class ProximityAuthSystemTest : public testing::Test {
     user2_remote_devices_.push_back(
         CreateRemoteDevice(kUser2, "user2_device3"));
 
-    InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
-    proximity_auth_system_->SetRemoteDevicesForUser(
-        AccountId::FromUserEmail(kUser1), user1_remote_devices_,
-        user1_local_device_);
-    proximity_auth_system_->Start();
-    LockScreen();
-  }
-
-  void InitProximityAuthSystem(ProximityAuthSystem::ScreenlockType type) {
     std::unique_ptr<MockUnlockManager> unlock_manager(
         new NiceMock<MockUnlockManager>());
     unlock_manager_ = unlock_manager.get();
@@ -174,8 +159,14 @@ class ProximityAuthSystemTest : public testing::Test {
         std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
 
     proximity_auth_system_.reset(new TestableProximityAuthSystem(
-        type, &proximity_auth_client_, fake_secure_channel_client_.get(),
-        std::move(unlock_manager), pref_manager_.get()));
+        fake_secure_channel_client_.get(), std::move(unlock_manager),
+        pref_manager_.get()));
+
+    proximity_auth_system_->SetRemoteDevicesForUser(
+        AccountId::FromUserEmail(kUser1), user1_remote_devices_,
+        user1_local_device_);
+    proximity_auth_system_->Start();
+    LockScreen();
   }
 
   void LockScreen() {
@@ -226,8 +217,6 @@ class ProximityAuthSystemTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
-  InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
-
   AccountId account1 = AccountId::FromUserEmail(kUser1);
   AccountId account2 = AccountId::FromUserEmail(kUser2);
   proximity_auth_system_->SetRemoteDevicesForUser(
@@ -250,7 +239,6 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
 }
 
 TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_Started) {
-  InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
   AccountId account1 = AccountId::FromUserEmail(kUser1);
   AccountId account2 = AccountId::FromUserEmail(kUser2);
   proximity_auth_system_->SetRemoteDevicesForUser(
@@ -340,7 +328,6 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_UnregisteredUsers) {
 }
 
 TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
-
   // Focus User 1, who is registered. This should create a new life cycle.
   RemoteDeviceLifeCycle* life_cycle = nullptr;
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
