@@ -71,8 +71,8 @@ public class AspectRatioFrameLayout extends FrameLayout {
             if (!(view.getLayoutParams() instanceof LayoutParams)) continue;
             LayoutParams params = (LayoutParams) view.getLayoutParams();
 
-            params.mRestorableWidth = params.width;
-            params.mRestorableHeight = params.height;
+            params.mRestorableWidth = params.mOriginalWidth;
+            params.mRestorableHeight = params.mOriginalHeight;
 
             float aspectRatio = params.aspectRatio;
             if (aspectRatio <= 0.f) continue;
@@ -124,6 +124,8 @@ public class AspectRatioFrameLayout extends FrameLayout {
         private boolean mOverrodeHeight;
         private int mRestorableWidth;
         private int mRestorableHeight;
+        private int mOriginalWidth;
+        private int mOriginalHeight;
 
         public LayoutParams(Context context, AttributeSet attrs) {
             super(context, attrs);
@@ -157,6 +159,8 @@ public class AspectRatioFrameLayout extends FrameLayout {
             // Do not throw errors if width or height aren't supplied.
             width = a.getLayoutDimension(widthAttr, 0);
             height = a.getLayoutDimension(heightAttr, 0);
+            mOriginalWidth = width;
+            mOriginalHeight = height;
         }
     }
 }
