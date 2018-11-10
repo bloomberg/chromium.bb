@@ -3188,7 +3188,7 @@
     Your Assisatant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in assistant settings. View or delete voice commands in your Google activity controls.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
-    Teach Assistant to recognize your voice
+    Teach the Assistant to recognize your voice
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
     Ok Google is all set
@@ -3213,6 +3213,27 @@
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_UPLOADING" desc="Uploading message for assistant voice match recording.">
     Uploading...
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_TITLE" desc="Title for assistant voice match already setup.">
+    Your Assistant can already recognize your voice
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_MESSAGE" desc="Message for assistant voice match already setup.">
+    It looks like you've already set up Voice Match with your Google Assistant on another device. These previous recordings can be used to make a voice model on this device. This should take less than a minute.
+  </message>
+  <message name="IDS_ASSISTANT_NO_THANKS_BUTTON" desc="No thanks button for asssitant optin flow.">
+    No thanks
+  </message>
+  <message name="IDS_ASSISTANT_LATER_BUTTON" desc="Do it later button for asssitant optin flow.">
+    Do it later
+  </message>
+  <message name="IDS_ASSISTANT_AGREE_BUTTON" desc="Agree button for asssitant optin flow.">
+    I agree
+  </message>
+  <message name="IDS_ASSISTANT_SAVE_BUTTON" desc="Save button for asssitant optin flow.">
+    Save
+  </message>
+  <message name="IDS_ASSISTANT_WAIT_MESSAGE" desc="Wait message for asssitant optin flow.">
+    Please wait...
   </message>
 
   <!-- Print Job Notification -->
