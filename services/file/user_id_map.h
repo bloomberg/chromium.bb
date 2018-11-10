@@ -5,18 +5,24 @@
 #ifndef SERVICES_FILE_USER_ID_MAP_H_
 #define SERVICES_FILE_USER_ID_MAP_H_
 
-#include <string>
 #include "base/files/file_path.h"
+
+namespace base {
+class Token;
+}
 
 namespace file {
 
 // These methods are called from BrowserContext::Initialize() to associate
-// the BrowserContext's Service user-id with its user directory.
-void AssociateServiceUserIdWithUserDir(const std::string& user_id,
-                                     const base::FilePath& user_dir);
-void ForgetServiceUserIdUserDirAssociation(const std::string& user_id);
+// the BrowserContext's Service instance group with its user directory.
+//
+// TODO(https://crbug.com/895591): Rename this file.
+void AssociateServiceInstanceGroupWithUserDir(const base::Token& instance_group,
+                                              const base::FilePath& user_dir);
+void ForgetServiceInstanceGroupUserDirAssociation(
+    const base::Token& instance_group);
 
-base::FilePath GetUserDirForUserId(const std::string& user_id);
+base::FilePath GetUserDirForInstanceGroup(const base::Token& instance_group);
 
 }  // namespace file
 

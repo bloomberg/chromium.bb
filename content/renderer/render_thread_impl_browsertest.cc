@@ -191,9 +191,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
         io_task_runner, mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     shell_context_.reset(new TestServiceManagerContext);
     mojo::OutgoingInvitation invitation;
-    service_manager::Identity child_identity(
-        mojom::kRendererServiceName, service_manager::mojom::kInheritUserID,
-        "test");
+    service_manager::Identity child_identity(mojom::kRendererServiceName,
+                                             base::nullopt /* instance_group */,
+                                             "test");
     child_connection_.reset(new ChildConnection(
         child_identity, &invitation,
         ServiceManagerConnection::GetForProcess()->GetConnector(),

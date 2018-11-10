@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/token.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -106,7 +107,9 @@ class TestConnectorFactory : public mojom::ServiceControl {
   void RegisterServiceHandler(const std::string& service_name,
                               const ServiceHandler& handler);
 
-  const std::string& test_user_id() const { return test_user_id_; }
+  const base::Token& test_instance_group() const {
+    return test_instance_group_;
+  }
 
   // Normally when a service instance registered via either |RegisterInstance()|
   // or |RegisterServiceHandler()| requests termination from the Service
@@ -120,7 +123,7 @@ class TestConnectorFactory : public mojom::ServiceControl {
 
  private:
   explicit TestConnectorFactory(std::unique_ptr<mojom::Connector> impl,
-                                std::string test_user_id);
+                                const base::Token& test_instance_group);
 
   void OnStartResponseHandler(
       const std::string& service_name,
@@ -133,7 +136,7 @@ class TestConnectorFactory : public mojom::ServiceControl {
   NameToServiceMap names_to_services_;
 
   std::unique_ptr<mojom::Connector> impl_;
-  std::string test_user_id_;
+  base::Token test_instance_group_;
 
   // Mapping used only in the default-constructed case where Service instances
   // are unowned by the TestConnectorFactory. Maps service names to their

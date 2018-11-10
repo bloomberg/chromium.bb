@@ -38,6 +38,7 @@ mojom("interfaces") {
     "connect_test.mojom",
   ]
   deps = [
+    "//mojo/public/mojom/base",
     "//services/service_manager/public/mojom",
   ]
 }

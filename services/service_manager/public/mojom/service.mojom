@@ -34,8 +34,8 @@ interface Service {
   //    The identity of this instance in the service manager. Includes:
   //    * The resolved name used in the connection request that resulted in this
   //      instance being initialized.
-  //    * The user associated with this instance in the service manager. This
-  //      will never be kInheritUserID.
+  //    * The instance_group associated with this instance in the service
+  //      manager. This will never be null.
   //    * The instance group this instance belongs to.
   //
   // Response parameters:

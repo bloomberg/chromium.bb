@@ -572,12 +572,6 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   return false;
 }
 
-std::string ContentBrowserClient::GetServiceUserIdForBrowserContext(
-    BrowserContext* browser_context) {
-  DCHECK(browser_context);
-  return base::GenerateGUID();
-}
-
 bool ContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,

@@ -12,9 +12,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_manager.h"
@@ -130,9 +130,9 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
     mojom::ServicePtr proxy;
     mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
     mojom::PIDReceiverPtr pid_receiver;
-    service_manager_.RegisterService(Identity(service_name, mojom::kRootUserID),
-                                     std::move(proxy),
-                                     mojo::MakeRequest(&pid_receiver));
+    service_manager_.RegisterService(
+        Identity(service_name, kSystemInstanceGroup), std::move(proxy),
+        mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(fake_pid);
     return request;
   }

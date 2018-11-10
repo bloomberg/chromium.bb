@@ -1875,7 +1875,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   mojo_invitation_ = {};
   service_manager::Identity child_identity(
       mojom::kRendererServiceName,
-      BrowserContext::GetServiceUserIdFor(GetBrowserContext()),
+      BrowserContext::GetServiceInstanceGroupFor(GetBrowserContext()),
       base::StringPrintf("%d_%d", id_, instance_id_++));
   child_connection_ = std::make_unique<ChildConnection>(
       child_identity, &mojo_invitation_, connector, io_task_runner);

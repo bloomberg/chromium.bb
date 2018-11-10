@@ -27,7 +27,7 @@ class UserIdService : public service_manager::Service, public mojom::UserId {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // mojom::UserId:
-  void GetUserId(GetUserIdCallback callback) override;
+  void GetInstanceGroup(GetInstanceGroupCallback callback) override;
 
   void BindUserIdRequest(mojom::UserIdRequest request);
 

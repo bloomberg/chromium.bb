@@ -52,7 +52,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
@@ -373,7 +373,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   service_manager::mojom::PIDReceiverPtr pid_receiver;
   service_manager_->RegisterService(
       service_manager::Identity(content::mojom::kBrowserServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup),
       std::move(browser_proxy), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
   pid_receiver.reset();
@@ -384,7 +384,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
       mojo_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u));
   service_manager_->RegisterService(
       service_manager::Identity(content::mojom::kUtilityServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup),
       std::move(utility_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 

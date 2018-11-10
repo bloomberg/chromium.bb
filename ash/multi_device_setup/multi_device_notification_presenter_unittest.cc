@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/token.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -32,8 +33,8 @@ namespace {
 const char kTestUserEmail[] = "test@example.com";
 const char kTestHostDeviceName[] = "Test Device";
 
-// Note: Must be formatted as a GUID.
-const char kTestServiceUserId[] = "01234567-89ab-cdef-0123-456789abcdef";
+const base::Token kTestServiceInstanceGroup{0x0123456789abcdefull,
+                                            0xfedcba9876543210ull};
 
 class TestMessageCenter : public message_center::FakeMessageCenter {
  public:
@@ -137,7 +138,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     test_api.OverrideBinderForTesting(
         service_manager::Identity(
             chromeos::multidevice_setup::mojom::kServiceName,
-            kTestServiceUserId),
+            kTestServiceInstanceGroup),
         chromeos::multidevice_setup::mojom::MultiDeviceSetup::Name_,
         base::BindRepeating(
             &chromeos::multidevice_setup::FakeMultiDeviceSetup::BindHandle,
@@ -163,7 +164,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     test_session_client->AddUserSession(
         kTestUserEmail, user_manager::USER_TYPE_REGULAR,
         true /* enable_settings */, true /* provide_pref_service */,
-        false /* is_new_profile */, kTestServiceUserId);
+        false /* is_new_profile */, kTestServiceInstanceGroup);
     test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
     test_session_client->SwitchActiveUser(
         AccountId::FromUserEmail(kTestUserEmail));

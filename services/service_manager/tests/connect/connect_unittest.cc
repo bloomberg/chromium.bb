@@ -18,9 +18,11 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
+#include "base/token.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
@@ -160,9 +162,9 @@ class ConnectTest : public testing::Test,
   void CompareConnectionState(
       const std::string& connection_local_name,
       const std::string& connection_remote_name,
-      const std::string& connection_remote_instance_group,
+      const base::Optional<base::Token>& connection_remote_instance_group,
       const std::string& initialize_local_name,
-      const std::string& initialize_local_instance_group) {
+      const base::Optional<base::Token>& initialize_local_instance_group) {
     EXPECT_EQ(connection_remote_name,
               connection_state_->connection_remote_name);
     EXPECT_EQ(connection_remote_instance_group,
@@ -177,9 +179,9 @@ class ConnectTest : public testing::Test,
     mojom::ServicePtr proxy;
     mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
     mojom::PIDReceiverPtr pid_receiver;
-    service_manager_.RegisterService(Identity(service_name, mojom::kRootUserID),
-                                     std::move(proxy),
-                                     mojo::MakeRequest(&pid_receiver));
+    service_manager_.RegisterService(
+        Identity(service_name, kSystemInstanceGroup), std::move(proxy),
+        mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(1);
     return request;
   }
@@ -235,7 +237,7 @@ TEST_F(ConnectTest, BindInterface) {
 }
 
 TEST_F(ConnectTest, Instances) {
-  Identity identity_a(kTestAppName, mojom::kInheritUserID, "A");
+  Identity identity_a(kTestAppName, base::nullopt /* instance_group */, "A");
   std::string instance_a1, instance_a2;
   test::mojom::ConnectTestServicePtr service_a1;
   {
@@ -253,7 +255,7 @@ TEST_F(ConnectTest, Instances) {
   }
   EXPECT_EQ(instance_a1, instance_a2);
 
-  Identity identity_b(kTestAppName, mojom::kInheritUserID, "B");
+  Identity identity_b(kTestAppName, base::nullopt /* instance_group */, "B");
   std::string instance_b;
   test::mojom::ConnectTestServicePtr service_b;
   {
@@ -318,7 +320,7 @@ TEST_F(ConnectTest, QueryService) {
   std::string sandbox_type;
   base::RunLoop run_loop;
   connector()->QueryService(
-      Identity(kTestSandboxedAppName, mojom::kInheritUserID, "A"),
+      Identity(kTestSandboxedAppName, base::nullopt /* instance_group */, "A"),
       base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
   run_loop.Run();
   EXPECT_EQ(mojom::ConnectResult::SUCCEEDED, result);
@@ -330,7 +332,8 @@ TEST_F(ConnectTest, QueryNonexistentService) {
   std::string sandbox_type;
   base::RunLoop run_loop;
   connector()->QueryService(
-      Identity(kTestNonexistentAppName, mojom::kInheritUserID, "A"),
+      Identity(kTestNonexistentAppName, base::nullopt /* instance_group */,
+               "A"),
       base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
   run_loop.Run();
   EXPECT_EQ(mojom::ConnectResult::INVALID_ARGUMENT, result);
@@ -471,7 +474,7 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
   test::mojom::IdentityTestPtr identity_test;
   connector()->BindInterface(kTestAppName, &identity_test);
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, base::GenerateGUID());
+  Identity target(kTestClassAppName, base::Token::CreateRandom());
   Identity result_identity;
   {
     base::RunLoop loop;
@@ -488,7 +491,7 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
   test::mojom::IdentityTestPtr identity_test;
   connector()->BindInterface(kTestAppAName, &identity_test);
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, base::GenerateGUID());
+  Identity target(kTestClassAppName, base::Token::CreateRandom());
   Identity result_identity;
   {
     base::RunLoop loop;
@@ -506,7 +509,7 @@ TEST_F(ConnectTest, ConnectWithDifferentInstanceName_Blocked) {
   connector()->BindInterface(kTestAppAName, &identity_test);
 
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, mojom::kInheritUserID,
+  Identity target(kTestClassAppName, base::nullopt /* instance_group */,
                   base::GenerateGUID());
   Identity result_identity;
   base::RunLoop loop;
@@ -531,7 +534,7 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
           "connect_test_exe",
 #endif
           service_manager::Identity("connect_test_exe",
-                                    service_manager::mojom::kInheritUserID),
+                                    base::nullopt /* instance_group */),
           connector(), &process);
   EXPECT_EQ(result, mojom::ConnectResult::ACCESS_DENIED);
 }
@@ -543,7 +546,7 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   // Connect to an instance with an explicitly different user_id. This supplied
   // user id should be ignored by the service manager (which will generate its
   // own synthetic user id for all-user singleton instances).
-  const std::string singleton_instance_group = base::GenerateGUID();
+  const base::Token singleton_instance_group = base::Token::CreateRandom();
   Identity singleton_id(kTestSingletonAppName, singleton_instance_group);
   connector()->StartService(singleton_id);
   Identity first_resolved_identity;
@@ -553,7 +556,7 @@ TEST_F(ConnectTest, AllUsersSingleton) {
     test_api.SetStartServiceCallback(base::Bind(
         &StartServiceResponse, &loop, nullptr, &first_resolved_identity));
     loop.Run();
-    EXPECT_NE(first_resolved_identity.instance_group(),
+    EXPECT_NE(*first_resolved_identity.instance_group(),
               singleton_instance_group);
   }
   // This connects using the current client's user_id. It should be bound to the

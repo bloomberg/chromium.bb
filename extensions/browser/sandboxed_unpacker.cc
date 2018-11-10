@@ -244,7 +244,7 @@ SandboxedUnpacker::SandboxedUnpacker(
   // Use a random instance ID to guarantee the connection is to a new data
   // decoder service (running in its own process).
   data_decoder_identity_ = service_manager::Identity(
-      data_decoder::mojom::kServiceName, service_manager::mojom::kInheritUserID,
+      data_decoder::mojom::kServiceName, base::nullopt /* instance_group */,
       base::UnguessableToken::Create().ToString());
 }
 

@@ -16,6 +16,7 @@
 
 namespace base {
 class FilePath;
+class Token;
 }
 
 namespace net {
@@ -81,11 +82,12 @@ class BrowserState : public base::SupportsUserData {
   static BrowserState* FromSupportsUserData(
       base::SupportsUserData* supports_user_data);
 
-  // Returns a Service User ID associated with this BrowserState. This ID is
-  // not persistent across runs. See
+  // Returns a service instance group associated with this BrowserState. This ID
+  // is not persistent across runs. See
   // services/service_manager/public/mojom/connector.mojom. By default,
-  // this user id is randomly generated when Initialize() is called.
-  static const std::string& GetServiceUserIdFor(BrowserState* browser_state);
+  // this instance group ID is randomly generated when Initialize() is called.
+  static const base::Token& GetServiceInstanceGroupFor(
+      BrowserState* browser_state);
 
   // Returns a Connector associated with this BrowserState, which can be used
   // to connect to service instances bound as this user.
@@ -106,9 +108,9 @@ class BrowserState : public base::SupportsUserData {
  protected:
   BrowserState();
 
-  // Makes the Service Manager aware of this BrowserState, and assigns a user
-  // ID number to it. Must be called for each BrowserState created. |path|
-  // should be the same path that would be returned by GetStatePath().
+  // Makes the Service Manager aware of this BrowserState, and assigns an
+  // instance group ID to it. Must be called for each BrowserState created.
+  // |path| should be the same path that would be returned by GetStatePath().
   static void Initialize(BrowserState* browser_state,
                          const base::FilePath& path);
 

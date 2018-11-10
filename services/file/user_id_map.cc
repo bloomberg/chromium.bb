@@ -7,28 +7,36 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
+#include "base/token.h"
 
 namespace file {
 
 namespace {
-base::LazyInstance<std::map<std::string, base::FilePath>>::DestructorAtExit
-    g_user_id_to_data_dir = LAZY_INSTANCE_INITIALIZER;
+
+using TokenToPathMap = std::map<base::Token, base::FilePath>;
+
+TokenToPathMap& GetTokenToPathMap() {
+  static base::NoDestructor<TokenToPathMap> map;
+  return *map;
+}
+
 }  // namespace
 
-void AssociateServiceUserIdWithUserDir(const std::string& user_id,
-                                       const base::FilePath& user_dir) {
-  g_user_id_to_data_dir.Get()[user_id] = user_dir;
+void AssociateServiceInstanceGroupWithUserDir(const base::Token& instance_group,
+                                              const base::FilePath& user_dir) {
+  GetTokenToPathMap()[instance_group] = user_dir;
 }
 
-void ForgetServiceUserIdUserDirAssociation(const std::string& user_id) {
-  auto it = g_user_id_to_data_dir.Get().find(user_id);
-  if (it != g_user_id_to_data_dir.Get().end())
-    g_user_id_to_data_dir.Get().erase(it);
+void ForgetServiceInstanceGroupUserDirAssociation(
+    const base::Token& instance_group) {
+  GetTokenToPathMap().erase(instance_group);
 }
 
-base::FilePath GetUserDirForUserId(const std::string& user_id) {
-  auto it = g_user_id_to_data_dir.Get().find(user_id);
-  DCHECK(it != g_user_id_to_data_dir.Get().end());
+base::FilePath GetUserDirForInstanceGroup(const base::Token& instance_group) {
+  auto& map = GetTokenToPathMap();
+  auto it = map.find(instance_group);
+  DCHECK(it != map.end());
   return it->second;
 }
 

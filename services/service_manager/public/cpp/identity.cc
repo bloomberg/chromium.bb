@@ -6,34 +6,32 @@
 
 #include <tuple>
 
-#include "base/guid.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
+#include "base/strings/stringprintf.h"
 
 namespace service_manager {
 
 Identity::Identity() : Identity("") {}
 
-Identity::Identity(const std::string& name)
-    : Identity(name, mojom::kInheritUserID) {}
+Identity::Identity(const std::string& name) : Identity(name, base::nullopt) {}
 
-Identity::Identity(const std::string& name, const std::string& instance_group)
+Identity::Identity(const std::string& name,
+                   const base::Optional<base::Token>& instance_group)
     : Identity(name, instance_group, "") {}
 
 Identity::Identity(const std::string& name,
-                   const std::string& instance_group,
+                   const base::Optional<base::Token>& instance_group,
                    const std::string& instance_id)
     : Identity(name, instance_group, instance_id, base::nullopt) {}
 
 Identity::Identity(const std::string& name,
-                   const std::string& instance_group,
+                   const base::Optional<base::Token>& instance_group,
                    const std::string& instance_id,
                    const base::Optional<base::Token>& globally_unique_id)
     : name_(name),
       instance_group_(instance_group),
       instance_id_(instance_id),
       globally_unique_id_(globally_unique_id) {
-  DCHECK(!instance_group_.empty());
-  DCHECK(base::IsValidGUID(instance_group_));
+  DCHECK(!instance_group_ || !instance_group_->is_zero());
   DCHECK(!globally_unique_id_ || !globally_unique_id_->is_zero());
 }
 
@@ -53,6 +51,18 @@ bool Identity::operator==(const Identity& other) const {
   return Matches(other) && globally_unique_id_ == other.globally_unique_id_;
 }
 
+bool Identity::IsValid() const {
+  return !name_.empty();
+}
+
+std::string Identity::ToString() const {
+  return base::StringPrintf(
+      "%s/%s/%s/%s",
+      instance_group_ ? instance_group_->ToString().c_str() : "*",
+      name_.c_str(), instance_id_.c_str(),
+      globally_unique_id_ ? globally_unique_id_->ToString().c_str() : "*");
+}
+
 bool Identity::Matches(const Identity& other) const {
   return name_ == other.name_ && instance_group_ == other.instance_group_ &&
          instance_id_ == other.instance_id_;
@@ -60,10 +70,6 @@ bool Identity::Matches(const Identity& other) const {
 
 Identity Identity::WithoutGloballyUniqueId() const {
   return Identity(name_, instance_group_, instance_id_);
-}
-
-bool Identity::IsValid() const {
-  return !name_.empty() && base::IsValidGUID(instance_group_);
 }
 
 }  // namespace service_manager

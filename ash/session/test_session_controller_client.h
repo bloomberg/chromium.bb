@@ -11,6 +11,8 @@
 
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/token.h"
 #include "components/user_manager/user_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -70,7 +72,8 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
       bool enable_settings = true,
       bool provide_pref_service = true,
       bool is_new_profile = false,
-      const std::string& service_user_id = std::string());
+      const base::Optional<base::Token>& service_instance_group =
+          base::nullopt);
 
   // Creates a test PrefService and associates it with the user.
   void ProvidePrefServiceForUser(const AccountId& account_id);

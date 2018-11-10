@@ -161,8 +161,7 @@ class LifecycleTest : public test::ServiceTest {
 #else
         "lifecycle_unittest_exe",
 #endif
-        Identity(kTestExeName, mojom::kInheritUserID),
-        connector(),
+        Identity(kTestExeName, base::nullopt /* instance_group */), connector(),
         &process);
     return process;
   }

@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
@@ -76,21 +77,24 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<std::map<std::string, BrowserContext*>>::DestructorAtExit
-    g_user_id_to_context = LAZY_INSTANCE_INITIALIZER;
+using TokenToContextMap = std::map<base::Token, BrowserContext*>;
+TokenToContextMap& GetTokenToContextMap() {
+  static base::NoDestructor<TokenToContextMap> map;
+  return *map;
+}
 
-class ServiceUserIdHolder : public base::SupportsUserData::Data {
+class ServiceInstanceGroupHolder : public base::SupportsUserData::Data {
  public:
-  explicit ServiceUserIdHolder(const std::string& user_id)
-      : user_id_(user_id) {}
-  ~ServiceUserIdHolder() override {}
+  explicit ServiceInstanceGroupHolder(const base::Token& instance_group)
+      : instance_group_(instance_group) {}
+  ~ServiceInstanceGroupHolder() override {}
 
-  const std::string& user_id() const { return user_id_; }
+  const base::Token& instance_group() const { return instance_group_; }
 
  private:
-  std::string user_id_;
+  base::Token instance_group_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceUserIdHolder);
+  DISALLOW_COPY_AND_ASSIGN(ServiceInstanceGroupHolder);
 };
 
 class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
@@ -157,10 +161,9 @@ class CorsOriginPatternSetter
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceDelegateKey[] = "content-service-delegate";
 const char kDownloadManagerKeyName[] = "download_manager";
-const char kMojoWasInitialized[] = "mojo-was-initialized";
 const char kPermissionControllerKey[] = "permission-controller";
 const char kServiceManagerConnection[] = "service-manager-connection";
-const char kServiceUserId[] = "service-user-id";
+const char kServiceInstanceGroup[] = "service-instance-group";
 const char kSharedCorsOriginAccessListKey[] = "shared-cors-origin-access-list";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
@@ -169,13 +172,13 @@ const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 const char kMountPointsKey[] = "mount_points";
 #endif  // defined(OS_CHROMEOS)
 
-void RemoveBrowserContextFromUserIdMap(BrowserContext* browser_context) {
-  ServiceUserIdHolder* holder = static_cast<ServiceUserIdHolder*>(
-      browser_context->GetUserData(kServiceUserId));
+void RemoveBrowserContextFromInstanceGroupMap(BrowserContext* browser_context) {
+  ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
+      browser_context->GetUserData(kServiceInstanceGroup));
   if (holder) {
-    auto it = g_user_id_to_context.Get().find(holder->user_id());
-    if (it != g_user_id_to_context.Get().end())
-      g_user_id_to_context.Get().erase(it);
+    auto it = GetTokenToContextMap().find(holder->instance_group());
+    if (it != GetTokenToContextMap().end())
+      GetTokenToContextMap().erase(it);
   }
 }
 
@@ -555,27 +558,19 @@ void BrowserContext::SetDownloadManagerForTesting(
 void BrowserContext::Initialize(
     BrowserContext* browser_context,
     const base::FilePath& path) {
-  std::string new_id;
-  if (GetContentClient() && GetContentClient()->browser()) {
-    new_id = GetContentClient()->browser()->GetServiceUserIdForBrowserContext(
-        browser_context);
-  } else {
-    // Some test scenarios initialize a BrowserContext without a content client.
-    new_id = base::GenerateGUID();
+  const base::Token new_group = base::Token::CreateRandom();
+  ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
+      browser_context->GetUserData(kServiceInstanceGroup));
+  if (holder) {
+    file::ForgetServiceInstanceGroupUserDirAssociation(
+        holder->instance_group());
   }
-
-  ServiceUserIdHolder* holder = static_cast<ServiceUserIdHolder*>(
-      browser_context->GetUserData(kServiceUserId));
-  if (holder)
-    file::ForgetServiceUserIdUserDirAssociation(holder->user_id());
-  file::AssociateServiceUserIdWithUserDir(new_id, path);
-  RemoveBrowserContextFromUserIdMap(browser_context);
-  g_user_id_to_context.Get()[new_id] = browser_context;
-  browser_context->SetUserData(kServiceUserId,
-                               std::make_unique<ServiceUserIdHolder>(new_id));
-
+  file::AssociateServiceInstanceGroupWithUserDir(new_group, path);
+  RemoveBrowserContextFromInstanceGroupMap(browser_context);
+  GetTokenToContextMap()[new_group] = browser_context;
   browser_context->SetUserData(
-      kMojoWasInitialized, std::make_unique<base::SupportsUserData::Data>());
+      kServiceInstanceGroup,
+      std::make_unique<ServiceInstanceGroupHolder>(new_group));
 
   ServiceManagerConnection* service_manager_connection =
       ServiceManagerConnection::GetForProcess();
@@ -587,7 +582,7 @@ void BrowserContext::Initialize(
     auto service_request = mojo::MakeRequest(&service);
 
     service_manager::mojom::PIDReceiverPtr pid_receiver;
-    service_manager::Identity identity(mojom::kBrowserServiceName, new_id);
+    service_manager::Identity identity(mojom::kBrowserServiceName, new_group);
     service_manager_connection->GetConnector()->StartService(
         identity, std::move(service), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
@@ -643,22 +638,20 @@ void BrowserContext::Initialize(
 }
 
 // static
-const std::string& BrowserContext::GetServiceUserIdFor(
+const base::Token& BrowserContext::GetServiceInstanceGroupFor(
     BrowserContext* browser_context) {
-  CHECK(browser_context->GetUserData(kMojoWasInitialized))
-      << "Attempting to get the mojo user id for a BrowserContext that was "
-      << "never Initialize()ed.";
-
-  ServiceUserIdHolder* holder = static_cast<ServiceUserIdHolder*>(
-      browser_context->GetUserData(kServiceUserId));
-  return holder->user_id();
+  ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
+      browser_context->GetUserData(kServiceInstanceGroup));
+  CHECK(holder) << "Attempting to get the instance group for a BrowserContext "
+                << "that was never Initialized().";
+  return holder->instance_group();
 }
 
 // static
-BrowserContext* BrowserContext::GetBrowserContextForServiceUserId(
-    const std::string& user_id) {
-  auto it = g_user_id_to_context.Get().find(user_id);
-  return it != g_user_id_to_context.Get().end() ? it->second : nullptr;
+BrowserContext* BrowserContext::GetBrowserContextForServiceInstanceGroup(
+    const base::Token& instance_group) {
+  auto it = GetTokenToContextMap().find(instance_group);
+  return it != GetTokenToContextMap().end() ? it->second : nullptr;
 }
 
 // static
@@ -716,7 +709,7 @@ BrowserContext::BrowserContext()
 }
 
 BrowserContext::~BrowserContext() {
-  CHECK(GetUserData(kMojoWasInitialized))
+  CHECK(GetUserData(kServiceInstanceGroup))
       << "Attempting to destroy a BrowserContext that never called "
       << "Initialize()";
 
@@ -725,7 +718,7 @@ BrowserContext::~BrowserContext() {
 
   DCHECK(was_notify_will_be_destroyed_called_);
 
-  RemoveBrowserContextFromUserIdMap(this);
+  RemoveBrowserContextFromInstanceGroupMap(this);
 
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();

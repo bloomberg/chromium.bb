@@ -335,7 +335,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
   service_manager::Identity identity(media::mojom::kCdmServiceName,
-                                     service_manager::mojom::kInheritUserID,
+                                     base::nullopt /* instance_group */,
                                      cdm_guid);
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.

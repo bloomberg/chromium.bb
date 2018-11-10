@@ -10,6 +10,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
@@ -22,7 +23,7 @@ ServiceTestClient::~ServiceTestClient() {}
 
 void ServiceTestClient::OnStart() {
   test_->OnStartCalled(context()->connector(), context()->identity().name(),
-                       context()->identity().instance_group());
+                       *context()->identity().instance_group());
 }
 
 void ServiceTestClient::OnBindInterface(
@@ -53,7 +54,7 @@ std::unique_ptr<base::Value> ServiceTest::CreateCustomTestCatalog() {
 
 void ServiceTest::OnStartCalled(Connector* connector,
                                 const std::string& name,
-                                const std::string& instance_group) {
+                                const base::Token& instance_group) {
   DCHECK_EQ(connector_, connector);
   initialize_name_ = name;
   initialize_called_.Run();
@@ -82,7 +83,7 @@ void ServiceTest::SetUp() {
   context_ = std::make_unique<ServiceContext>(CreateService(),
                                               mojo::MakeRequest(&service));
   background_service_manager_->RegisterService(
-      Identity(test_name_, mojom::kRootUserID), std::move(service), nullptr);
+      Identity(test_name_, kSystemInstanceGroup), std::move(service), nullptr);
   connector_ = context_->connector();
   run_loop.Run();
 }

@@ -182,8 +182,8 @@ void SpellcheckService::InitForRenderer(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =
-      content::BrowserContext::GetBrowserContextForServiceUserId(
-          renderer_identity.instance_group());
+      content::BrowserContext::GetBrowserContextForServiceInstanceGroup(
+          *renderer_identity.instance_group());
   if (SpellcheckServiceFactory::GetForContext(context) != this)
     return;
 

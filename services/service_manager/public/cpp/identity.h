@@ -21,10 +21,10 @@ namespace service_manager {
 //
 // |name| is the name of the service, as specified in the service's manifest.
 //
-// |instance_group| is a GUID string representing the identity of an isolated
+// |instance_group| is a base::Token representing the identity of an isolated
 // group of instances running in the system. Most services may only connect to
 // instances in the same instance group as themselves. This group is implied
-// when |instance_group| is empty.
+// when |instance_group| is null.
 //
 // |instance_id| identifies a more specific instance within the targeted
 // instance group, or globally if the target's instances are shared across
@@ -40,8 +40,8 @@ namespace service_manager {
 // ID, that request will be processed only if the instance identified by that ID
 // is still running.
 //
-// TODO(https://crbug.com/895591): Switch |instance_group| and |instance_id|
-// fields to base::Optional<base::Token> instead of free-form strings.
+// TODO(https://crbug.com/895591): Switch |instance_id| to
+// base::Optional<base::Token> instead of a free-form.
 //
 // TODO(https://crbug.com/902590): Also consider whether partial Identity
 // values used for service instance resolution (i.e. passed to
@@ -50,12 +50,13 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
  public:
   Identity();
   explicit Identity(const std::string& name);
-  Identity(const std::string& name, const std::string& instance_group);
   Identity(const std::string& name,
-           const std::string& instance_group,
+           const base::Optional<base::Token>& instance_group);
+  Identity(const std::string& name,
+           const base::Optional<base::Token>& instance_group,
            const std::string& instance_id);
   Identity(const std::string& name,
-           const std::string& instance_group,
+           const base::Optional<base::Token>& instance_group,
            const std::string& instance_id,
            const base::Optional<base::Token>& globally_unique_id);
   Identity(const Identity& other);
@@ -68,6 +69,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
 
   bool IsValid() const;
 
+  std::string ToString() const;
+
   // Indicates whether this Identity matches |other|, meaning that the name,
   // instance group, and instance ID are identical in both. Note in particular
   // that GUID is completely ignored, so this is not a strict equality test.
@@ -78,8 +81,10 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
   Identity WithoutGloballyUniqueId() const;
 
   const std::string& name() const { return name_; }
-  const std::string& instance_group() const { return instance_group_; }
-  void set_instance_group(const std::string& instance_group) {
+  const base::Optional<base::Token>& instance_group() const {
+    return instance_group_;
+  }
+  void set_instance_group(const base::Optional<base::Token>& instance_group) {
     instance_group_ = instance_group;
   }
   const std::string& instance_id() const { return instance_id_; }
@@ -89,7 +94,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
 
  private:
   std::string name_;
-  std::string instance_group_;
+  base::Optional<base::Token> instance_group_;
   std::string instance_id_;
   base::Optional<base::Token> globally_unique_id_;
 };
