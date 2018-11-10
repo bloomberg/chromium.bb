@@ -32,8 +32,10 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   dc_layer_overlay->color_space = quad->video_color_space;
   dc_layer_overlay->require_overlay = quad->require_overlay;
   dc_layer_overlay->is_protected_video = quad->is_protected_video;
+  // Protected Videos have to go through the overlay swapchain path,
+  // so they can be protected by Windows OS and hardware
   if (dc_layer_overlay->is_protected_video)
-    DCHECK(dc_layer_overlay->require_overlay);
+    dc_layer_overlay->require_overlay = true;
 
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }

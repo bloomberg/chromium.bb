@@ -575,10 +575,8 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // that ALLOW_OVERLAY is required for encrypted video path.
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
 
-  if (is_encrypted_) {
+  if (is_encrypted_)
     frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
-    frame->metadata()->SetBoolean(VideoFrameMetadata::REQUIRE_OVERLAY, true);
-  }
 
   frame->set_color_space(picture->get_colorspace().ToGfxColorSpace());
   output_cb_.Run(frame);
