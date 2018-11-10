@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -22,6 +23,7 @@
 namespace blink {
 
 using testing::Return;
+using testing::MatchesRegex;
 
 class LayoutObjectTest : public RenderingTest {
  public:
@@ -54,8 +56,8 @@ TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   DCHECK(div);
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
-  EXPECT_STREQ("LayoutBlockFlow (positioned)",
-               obj->DecoratedName().Ascii().data());
+  EXPECT_THAT(obj->DecoratedName().Ascii().data(),
+              MatchesRegex("LayoutN?G?BlockFlow \\(positioned\\)"));
 }
 
 // Some display checks.
@@ -719,9 +721,9 @@ lime'>
 
   StringBuilder result;
   block->DumpLayoutObject(result, false, 0);
-  EXPECT_EQ(
-      result.ToString(),
-      String("LayoutBlockFlow\tDIV id=\"block\" style=\"background:\\nlime\""));
+  EXPECT_THAT(result.ToString().Utf8().data(),
+              MatchesRegex("LayoutN?G?BlockFlow\tDIV id=\"block\" "
+                           "style=\"background:\\\\nlime\""));
 
   result.Clear();
   text->DumpLayoutObject(result, false, 0);
