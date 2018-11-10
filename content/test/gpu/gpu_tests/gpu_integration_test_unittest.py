@@ -98,9 +98,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self._test_state = json.load(f)
       actual_successes, actual_failures, actual_skips = (
           self._ExtracTestResults(test_result))
-      self.assertEquals(actual_failures, failures)
-      self.assertEquals(actual_successes, successes)
-      self.assertEquals(actual_skips, skips)
+      self.assertEquals(set(actual_failures), set(failures))
+      self.assertEquals(set(actual_successes), set(successes))
+      self.assertEquals(set(actual_skips), set(skips))
     finally:
       shutil.rmtree(temp_dir)
 
