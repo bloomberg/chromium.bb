@@ -30,10 +30,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace app_list {
-class AnswerCardContentsRegistry;
-}  // namespace app_list
-
 namespace ui {
 class MouseWheelEvent;
 }  // namespace ui
@@ -266,12 +262,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Bindings for the AppListController interface.
   mojo::BindingSet<mojom::AppListController> bindings_;
-
-  // TODO(https://crbug.com/894987): Remove this once assistant UI is converted
-  // to use Content Service, as there will then be no more consumers of
-  // AnswerCardContentsRegistry.
-  std::unique_ptr<app_list::AnswerCardContentsRegistry>
-      answer_card_contents_registry_;
 
   // Owned pointer to the object which handles gestures related to the home
   // launcher.

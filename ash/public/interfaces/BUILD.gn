@@ -60,7 +60,6 @@ mojom("interfaces_internal") {
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
-    "web_contents_manager.mojom",
     "window_pin_type.mojom",
     "window_properties.mojom",
     "window_state_type.mojom",

@@ -23,7 +23,6 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/unguessable_token.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -108,11 +107,6 @@ void AssistantController::SetAssistantSetup(
   assistant_setup_controller_->SetAssistantSetup(assistant_setup_.get());
 }
 
-void AssistantController::SetWebContentsManager(
-    mojom::WebContentsManagerPtr web_contents_manager) {
-  web_contents_manager_ = std::move(web_contents_manager);
-}
-
 // TODO(dmblack): Expose AssistantScreenContextController over mojo rather
 // than implementing RequestScreenshot here in AssistantController.
 void AssistantController::RequestScreenshot(
@@ -125,50 +119,6 @@ void AssistantController::RequestScreenshot(
 void AssistantController::OpenAssistantSettings() {
   // Launch Assistant settings via deeplink.
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
-}
-
-void AssistantController::ManageWebContents(
-    const base::UnguessableToken& id_token,
-    mojom::ManagedWebContentsParamsPtr params,
-    mojom::WebContentsManager::ManageWebContentsCallback callback) {
-  DCHECK(web_contents_manager_);
-
-  const mojom::UserSession* user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
-
-  if (!user_session) {
-    LOG(WARNING) << "Unable to retrieve active user session.";
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  // Supply account ID.
-  params->account_id = user_session->user_info->account_id;
-
-  // Specify that we will handle top level browser requests.
-  ash::mojom::ManagedWebContentsOpenUrlDelegatePtr ptr;
-  web_contents_open_url_delegate_bindings_.AddBinding(this,
-                                                      mojo::MakeRequest(&ptr));
-  params->open_url_delegate_ptr_info = ptr.PassInterface();
-
-  web_contents_manager_->ManageWebContents(id_token, std::move(params),
-                                           std::move(callback));
-}
-
-void AssistantController::ReleaseWebContents(
-    const base::UnguessableToken& id_token) {
-  web_contents_manager_->ReleaseWebContents(id_token);
-}
-
-void AssistantController::ReleaseWebContents(
-    const std::vector<base::UnguessableToken>& id_tokens) {
-  web_contents_manager_->ReleaseAllWebContents(id_tokens);
-}
-
-void AssistantController::NavigateWebContentsBack(
-    const base::UnguessableToken& id_token,
-    mojom::WebContentsManager::NavigateWebContentsBackCallback callback) {
-  web_contents_manager_->NavigateWebContentsBack(id_token, std::move(callback));
 }
 
 void AssistantController::DownloadImage(
@@ -227,34 +177,6 @@ void AssistantController::OnDeepLinkReceived(
       // No action needed.
       break;
   }
-}
-
-void AssistantController::ShouldOpenUrlFromTab(
-    const GURL& url,
-    WindowOpenDisposition disposition,
-    ash::mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
-        callback) {
-  // We always handle deep links ourselves.
-  if (assistant::util::IsDeepLinkUrl(url)) {
-    std::move(callback).Run(/*should_open=*/false);
-    NotifyDeepLinkReceived(url);
-    return;
-  }
-
-  AssistantUiMode ui_mode = assistant_ui_controller_->model()->ui_mode();
-
-  // When in main UI mode, WebContents should not navigate as they are hosting
-  // Assistant cards. Instead, we route navigation attempts to the browser. We
-  // also respect open |disposition| to launch in the browser if appropriate.
-  if (ui_mode == AssistantUiMode::kMainUi ||
-      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    std::move(callback).Run(/*should_open=*/false);
-    OpenUrl(url);
-    return;
-  }
-
-  // In all other cases WebContents should be able to navigate freely.
-  std::move(callback).Run(/*should_open=*/true);
 }
 
 void AssistantController::SetVolume(int volume, bool user_initiated) {
