@@ -104,8 +104,8 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
-    session->user_info->service_user_id =
-        content::BrowserContext::GetServiceUserIdFor(profile);
+    session->user_info->service_instance_group =
+        content::BrowserContext::GetServiceInstanceGroupFor(profile);
     session->user_info->is_new_profile = profile->IsNewProfile();
   }
 

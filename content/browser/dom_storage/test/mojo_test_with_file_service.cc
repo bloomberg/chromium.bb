@@ -24,8 +24,8 @@ void MojoTestWithFileService::ResetFileServiceAndConnector(
       service_manager::TestConnectorFactory::CreateForUniqueService(
           std::move(service));
   connector_ = test_connector_->CreateConnector();
-  file::AssociateServiceUserIdWithUserDir(test_connector_->test_user_id(),
-                                          temp_path_.GetPath());
+  file::AssociateServiceInstanceGroupWithUserDir(
+      test_connector_->test_instance_group(), temp_path_.GetPath());
 }
 
 }  // namespace test

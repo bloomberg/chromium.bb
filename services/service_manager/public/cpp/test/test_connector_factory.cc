@@ -34,9 +34,9 @@ class TestServiceControl : public mojom::ServiceControl {
 
 class TestConnectorImplBase : public mojom::Connector {
  public:
-  TestConnectorImplBase(std::string test_user_id,
+  TestConnectorImplBase(const base::Token& test_instance_group,
                         bool release_service_on_quit_request)
-      : test_user_id_(std::move(test_user_id)),
+      : test_instance_group_(test_instance_group),
         release_service_on_quit_request_(release_service_on_quit_request) {}
   ~TestConnectorImplBase() override = default;
 
@@ -53,7 +53,7 @@ class TestConnectorImplBase : public mojom::Connector {
                             base::Unretained(this), service_context_ptr));
     service_contexts_.emplace(service_context_ptr, std::move(service_context));
     (*service_ptr)
-        ->OnStart(Identity("TestConnectorFactory", test_user_id_),
+        ->OnStart(Identity("TestConnectorFactory", test_instance_group_),
                   base::BindOnce(&TestConnectorImplBase::OnStartCallback,
                                  base::Unretained(this), service_context_ptr));
   }
@@ -90,8 +90,9 @@ class TestConnectorImplBase : public mojom::Connector {
                         << target.name();
     (*service_ptr)
         ->OnBindInterface(
-            BindSourceInfo(Identity("TestConnectorFactory", test_user_id_),
-                           CapabilitySet()),
+            BindSourceInfo(
+                Identity("TestConnectorFactory", test_instance_group_),
+                CapabilitySet()),
             interface_name, std::move(interface_pipe), base::DoNothing());
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
@@ -125,7 +126,7 @@ class TestConnectorImplBase : public mojom::Connector {
     NOTREACHED();
   }
 
-  const std::string test_user_id_;
+  base::Token test_instance_group_;
   const bool release_service_on_quit_request_;
   std::map<ServiceContext*, std::unique_ptr<ServiceContext>> service_contexts_;
   std::map<ServiceContext*, std::unique_ptr<TestServiceControl>>
@@ -138,9 +139,9 @@ class TestConnectorImplBase : public mojom::Connector {
 class UniqueServiceConnector : public TestConnectorImplBase {
  public:
   explicit UniqueServiceConnector(std::unique_ptr<Service> service,
-                                  std::string test_user_id,
+                                  const base::Token& test_instance_group,
                                   bool release_service_on_quit_request)
-      : TestConnectorImplBase(std::move(test_user_id),
+      : TestConnectorImplBase(test_instance_group,
                               release_service_on_quit_request) {
     AddService(/*service_name=*/std::string(), std::move(service),
                &service_ptr_);
@@ -160,9 +161,9 @@ class MultipleServiceConnector : public TestConnectorImplBase {
  public:
   explicit MultipleServiceConnector(
       TestConnectorFactory::NameToServiceMap services,
-      std::string test_user_id,
+      const base::Token& test_instance_group,
       bool release_service_on_quit_request)
-      : TestConnectorImplBase(std::move(test_user_id),
+      : TestConnectorImplBase(test_instance_group,
                               release_service_on_quit_request) {
     for (auto& name_and_service : services) {
       mojom::ServicePtr service_ptr;
@@ -192,8 +193,10 @@ class ProxiedServiceConnector : public mojom::Connector {
   ProxiedServiceConnector(
       TestConnectorFactory::NameToServiceProxyMap* proxies,
       TestConnectorFactory::NameToServiceHandlerMap* handlers,
-      const std::string& test_user_id)
-      : proxies_(proxies), handlers_(handlers), test_user_id_(test_user_id) {}
+      const base::Token& test_instance_group)
+      : proxies_(proxies),
+        handlers_(handlers),
+        test_instance_group_(test_instance_group) {}
 
   ~ProxiedServiceConnector() override = default;
 
@@ -225,7 +228,7 @@ class ProxiedServiceConnector : public mojom::Connector {
         << "TestConnectorFactory received a BindInterface request for an "
         << "unregistered service '" << target.name() << "'";
     proxy->OnBindInterface(
-        BindSourceInfo(Identity("TestConnectorFactory", test_user_id_),
+        BindSourceInfo(Identity("TestConnectorFactory", test_instance_group_),
                        CapabilitySet()),
         interface_name, std::move(interface_pipe), base::DoNothing());
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
@@ -262,7 +265,7 @@ class ProxiedServiceConnector : public mojom::Connector {
 
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;
   TestConnectorFactory::NameToServiceHandlerMap* const handlers_;
-  const std::string test_user_id_;
+  const base::Token test_instance_group_;
   mojo::BindingSet<mojom::Connector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxiedServiceConnector);
@@ -271,16 +274,15 @@ class ProxiedServiceConnector : public mojom::Connector {
 }  // namespace
 
 TestConnectorFactory::TestConnectorFactory() {
-  std::string guid = base::GenerateGUID();
-  impl_ = std::make_unique<ProxiedServiceConnector>(&service_proxies_,
-                                                    &service_handlers_, guid);
-  test_user_id_ = guid;
+  test_instance_group_ = base::Token::CreateRandom();
+  impl_ = std::make_unique<ProxiedServiceConnector>(
+      &service_proxies_, &service_handlers_, test_instance_group_);
 }
 
 TestConnectorFactory::TestConnectorFactory(
     std::unique_ptr<mojom::Connector> impl,
-    std::string test_user_id)
-    : impl_(std::move(impl)), test_user_id_(std::move(test_user_id)) {}
+    const base::Token& test_instance_group)
+    : impl_(std::move(impl)), test_instance_group_(test_instance_group) {}
 
 TestConnectorFactory::~TestConnectorFactory() = default;
 
@@ -291,22 +293,22 @@ TestConnectorFactory::CreateForUniqueService(
     bool release_service_on_quit_request) {
   // Note that we are not using std::make_unique below so TestConnectorFactory's
   // constructor can be kept private.
-  std::string guid = base::GenerateGUID();
+  base::Token instance_group = base::Token::CreateRandom();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
-      std::make_unique<UniqueServiceConnector>(std::move(service), guid,
-                                               release_service_on_quit_request),
-      guid));
+      std::make_unique<UniqueServiceConnector>(
+          std::move(service), instance_group, release_service_on_quit_request),
+      instance_group));
 }
 
 // static
 std::unique_ptr<TestConnectorFactory> TestConnectorFactory::CreateForServices(
     NameToServiceMap services,
     bool release_service_on_quit_request) {
-  std::string guid = base::GenerateGUID();
+  base::Token instance_group = base::Token::CreateRandom();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
       std::make_unique<MultipleServiceConnector>(
-          std::move(services), guid, release_service_on_quit_request),
-      guid));
+          std::move(services), instance_group, release_service_on_quit_request),
+      instance_group));
 }
 
 std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
@@ -319,7 +321,7 @@ mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
     const std::string& service_name) {
   mojom::ServicePtr proxy;
   mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
-  proxy->OnStart(Identity(service_name, test_user_id_),
+  proxy->OnStart(Identity(service_name, test_instance_group_),
                  base::BindOnce(&TestConnectorFactory::OnStartResponseHandler,
                                 base::Unretained(this), service_name));
   service_proxies_[service_name] = std::move(proxy);

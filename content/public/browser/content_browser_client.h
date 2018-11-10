@@ -886,11 +886,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Generate a Service user-id for the supplied browser context. Defaults to
-  // returning a random GUID.
-  virtual std::string GetServiceUserIdForBrowserContext(
-      BrowserContext* browser_context);
-
   // Allows to register browser interfaces exposed through the
   // RenderProcessHost. Note that interface factory callbacks added to
   // |registry| will by default be run immediately on the IO thread, unless a

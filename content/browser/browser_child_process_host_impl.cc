@@ -169,7 +169,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_manager::Identity child_identity(
-        service_name, service_manager::mojom::kInheritUserID,
+        service_name, base::nullopt /* instance_group */,
         base::StringPrintf("%d", data_.id));
     child_connection_.reset(
         new ChildConnection(child_identity, &mojo_invitation_,

@@ -25,7 +25,7 @@ void BindNamedInterface(base::WeakPtr<service_manager::Connector> connector,
 
   connector->BindInterface(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::mojom::kInheritUserID),
+                                base::nullopt /* instance_group */),
       name, std::move(handle));
 }
 

@@ -27,6 +27,7 @@
 #include "services/catalog/catalog.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/connect_util.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/service_manager.h"
@@ -108,7 +109,7 @@ void Context::Run(const std::string& name, base::RepeatingClosure on_quit) {
 
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());
-  params->set_target(Identity(name, mojom::kRootUserID));
+  params->set_target(Identity(name, kSystemInstanceGroup));
   service_manager_->Connect(std::move(params));
 }
 

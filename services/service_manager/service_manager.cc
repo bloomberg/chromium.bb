@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -33,10 +32,10 @@
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_control.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
@@ -110,7 +109,7 @@ InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
 }
 
 Identity CreateCatalogIdentity() {
-  return Identity(catalog::mojom::kServiceName, mojom::kRootUserID);
+  return Identity(catalog::mojom::kServiceName, kSystemInstanceGroup);
 }
 
 const InterfaceProviderSpec& GetEmptyInterfaceProviderSpec() {
@@ -180,7 +179,7 @@ bool AllowsInterface(const Identity& source,
 }  // namespace
 
 Identity CreateServiceManagerIdentity() {
-  return Identity(service_manager::mojom::kServiceName, mojom::kRootUserID);
+  return Identity(service_manager::mojom::kServiceName, kSystemInstanceGroup);
 }
 
 // Encapsulates a connection to an instance of a service, tracked by the
@@ -210,7 +209,7 @@ class ServiceManager::Instance
         identity_.name() == catalog::mojom::kServiceName) {
       pid_ = GetCurrentPid();
     }
-    DCHECK_NE(mojom::kInvalidInstanceID, id_);
+    DCHECK_GT(id_, 0u);
 
     // All service instances must have a valid GUID assigned at construction
     // time.
@@ -470,7 +469,8 @@ class ServiceManager::Instance
   void QueryService(const Identity& target,
                     QueryServiceCallback callback) override {
     std::string sandbox;
-    bool success = service_manager_->QueryCatalog(target, &sandbox);
+    bool success = service_manager_->QueryCatalog(
+        Identity(target.name(), identity_.instance_group()), &sandbox);
     std::move(callback).Run(success ? mojom::ConnectResult::SUCCEEDED
                                     : mojom::ConnectResult::INVALID_ARGUMENT,
                             std::move(sandbox));
@@ -550,7 +550,7 @@ class ServiceManager::Instance
       mojom::ServicePtr* service,
       mojom::PIDReceiverRequest* pid_receiver_request,
       const std::string* target_interface_name) {
-    if (target->instance_group() == mojom::kInheritUserID)
+    if (!target->instance_group())
       target->set_instance_group(identity_.instance_group());
 
     mojom::ConnectResult result = ValidateIdentity(*target);
@@ -568,9 +568,8 @@ class ServiceManager::Instance
       LOG(ERROR) << "Error: empty service name.";
       return mojom::ConnectResult::INVALID_ARGUMENT;
     }
-    if (!base::IsValidGUID(identity.instance_group())) {
-      LOG(ERROR) << "Error: invalid instance group: "
-                 << identity.instance_group();
+    if (identity.instance_group()->is_zero()) {
+      LOG(ERROR) << "Error: invalid instance group.";
       return mojom::ConnectResult::INVALID_ARGUMENT;
     }
     return mojom::ConnectResult::SUCCEEDED;
@@ -598,7 +597,7 @@ class ServiceManager::Instance
       if (service_manager_->GetExistingInstance(target)) {
         LOG(ERROR) << "Cannot find a client process matching existing identity:"
                    << "Name: " << target.name()
-                   << " Instance Group: " << target.instance_group()
+                   << " Instance Group: " << target.instance_group()->ToString()
                    << " Instance: " << target.instance_id();
         return mojom::ConnectResult::INVALID_ARGUMENT;
       }
@@ -623,11 +622,12 @@ class ServiceManager::Instance
 
     if (!skip_instance_group_check &&
         target.instance_group() != identity_.instance_group() &&
-        target.instance_group() != mojom::kRootUserID) {
-      LOG(ERROR) << "Instance: " << identity_.name()
-                 << " running in group: " << identity_.instance_group()
+        target.instance_group() != kSystemInstanceGroup) {
+      LOG(ERROR) << "Instance: " << identity_.name() << " running in group: "
+                 << identity_.instance_group()->ToString()
                  << " attempting to connect to: " << target.name()
-                 << " in group: " << target.instance_group() << " without"
+                 << " in group: " << target.instance_group()->ToString()
+                 << " without"
                  << " the 'can_connect_to_instances_in_any_group' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
@@ -657,9 +657,9 @@ class ServiceManager::Instance
   }
 
   uint32_t GenerateUniqueID() const {
-    static uint32_t id = mojom::kInvalidInstanceID;
+    static uint32_t id = 0;
     ++id;
-    CHECK_NE(mojom::kInvalidInstanceID, id);
+    CHECK_NE(0u, id);
     return id;
   }
 
@@ -1032,8 +1032,8 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
   DCHECK(!params->target().name().empty());
-  DCHECK(base::IsValidGUID(params->target().instance_group()));
-  DCHECK_NE(mojom::kInheritUserID, params->target().instance_group());
+  DCHECK(params->target().instance_group());
+  DCHECK(!params->target().instance_group()->is_zero());
   DCHECK(!params->HasClientProcessInfo() ||
          GetExistingInstance(params->target()) == nullptr);
 
@@ -1048,7 +1048,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     return;
 
   const catalog::Entry* entry =
-      catalog_.GetInstanceForGroup(params->target().instance_group())
+      catalog_.GetInstanceForGroup(*params->target().instance_group())
           ->Resolve(params->target().name());
   if (!entry) {
     LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
@@ -1091,11 +1091,11 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   Identity target;
   if (instance_type == InstanceType::kSingleton) {
     source_identity_for_creation = CreateServiceManagerIdentity();
-    target = Identity(params->target().name(), base::GenerateGUID());
+    target = Identity(params->target().name(), base::Token::CreateRandom());
   } else if (instance_type == InstanceType::kSharedAcrossInstanceGroups) {
     source_identity_for_creation = CreateServiceManagerIdentity();
-    target =
-        Identity(params->target().name(), base::GenerateGUID(), instance_name);
+    target = Identity(params->target().name(), base::Token::CreateRandom(),
+                      instance_name);
   } else {
     DCHECK_EQ(instance_type, InstanceType::kRegular);
     source_identity_for_creation = params->source();
@@ -1179,8 +1179,8 @@ void ServiceManager::StartService(const Identity& identity) {
   params->set_source(CreateServiceManagerIdentity());
 
   Identity target_identity = identity;
-  if (target_identity.instance_group() == mojom::kInheritUserID)
-    target_identity.set_instance_group(mojom::kRootUserID);
+  if (!target_identity.instance_group())
+    target_identity.set_instance_group(kSystemInstanceGroup);
   params->set_target(target_identity);
 
   Connect(std::move(params));
@@ -1189,7 +1189,7 @@ void ServiceManager::StartService(const Identity& identity) {
 bool ServiceManager::QueryCatalog(const Identity& identity,
                                   std::string* sandbox_type) {
   const catalog::Entry* entry =
-      catalog_.GetInstanceForGroup(identity.instance_group())
+      catalog_.GetInstanceForGroup(*identity.instance_group())
           ->Resolve(identity.name());
   if (!entry)
     return false;
@@ -1317,7 +1317,7 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     InstanceType instance_type,
     const InterfaceProviderSpecMap& specs,
     const catalog::ServiceOptions& options) {
-  CHECK(target.instance_group() != mojom::kInheritUserID);
+  CHECK(target.instance_group());
 
   // We add a newly minted globally unique ID to the target Identity here. This
   // ensures that every new Instance has a globally unique ID as part of its
@@ -1368,8 +1368,7 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
   if (it != service_factories_.end())
     return it->second.get();
 
-  Identity source_identity(service_manager::mojom::kServiceName,
-                           mojom::kInheritUserID);
+  Identity source_identity(service_manager::mojom::kServiceName);
   mojom::ServiceFactoryPtr factory;
   BindInterface(this, source_identity, service_factory_identity, &factory);
   mojom::ServiceFactory* factory_interface = factory.get();

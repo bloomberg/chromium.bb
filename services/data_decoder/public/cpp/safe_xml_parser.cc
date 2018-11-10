@@ -12,7 +12,6 @@
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 
@@ -48,7 +47,7 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
   service_manager::Identity identity(
-      mojom::kServiceName, service_manager::mojom::kInheritUserID,
+      mojom::kServiceName, base::nullopt /* instance_group */,
       batch_id.empty() ? base::UnguessableToken::Create().ToString()
                        : batch_id);
   connector->BindInterface(identity, &xml_parser_ptr_);

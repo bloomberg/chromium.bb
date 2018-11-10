@@ -40,7 +40,7 @@ void Connector::StartService(const Identity& identity) {
 }
 
 void Connector::StartService(const std::string& name) {
-  StartService(Identity(name, mojom::kInheritUserID));
+  StartService(Identity(name, base::nullopt /* instance_group */));
 }
 
 void Connector::StartService(const Identity& identity,

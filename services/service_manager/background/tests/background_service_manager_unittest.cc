@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "services/service_manager/background/tests/test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +54,7 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   ServiceContext service_context(std::make_unique<ServiceImpl>(),
                                  mojo::MakeRequest(&service));
   background_service_manager.RegisterService(
-      Identity(kTestName, mojom::kRootUserID), std::move(service), nullptr);
+      Identity(kTestName, kSystemInstanceGroup), std::move(service), nullptr);
 
   mojom::TestServicePtr test_service;
   service_context.connector()->BindInterface(kAppName, &test_service);

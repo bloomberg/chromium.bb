@@ -8,20 +8,19 @@ import "mojo/public/mojom/base/token.mojom";
 import "services/service_manager/public/mojom/constants.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 
-// TODO(beng): Evalute the utility of this enum. There are some inconsistencies
+// TODO(beng): Evaluate the utility of this enum. There are some inconsistencies
 //             in its use with BindInterface/StartService.
 enum ConnectResult {
-  // The operation was established successfully.
+  // The operation was completed successfully.
   SUCCEEDED,
 
-  // The name or user id supplied was malformed, or the service specified by
-  // |name| could not be loaded.
+  // The given service name specified by |name| does not match a known service.
   INVALID_ARGUMENT,
 
   // Policy prevented the successful completion of this operation. Either
   // requests to bind to |name| are forbidden from the calling service by its
-  // manifest, or the service attempted to connect using a user id other than
-  // its own, |kInheritUserID| or |kRootUserID|.
+  // manifest, or the service attempted to connect to an instance in an instance
+  // group with which it's not allowed to communicate.
   ACCESS_DENIED
 };
 
@@ -36,21 +35,18 @@ struct Identity {
   // isolation which is useful for modeling, e.g., different users in a multi-
   // user system.
   //
-  // If the special value |kInheritUserID| is given in an Identity passed to
-  // |Connector.BindInterface()|, it is implied that the connecting service
-  // wants to connect to an instance in its own instance group.
+  // If this is null in an Identity passed to |Connector.BindInterface()|, it is
+  // implied that the connecting service wants to connect to an instance in its
+  // own instance group.
   //
-  // Services with appropriate permissions (declared in manifest options) may
-  // explicitly choose other instance groups when making outgoing service
-  // interface requests.
+  // Only services with appropriate permissions (declared in manifest options
+  // via |can_connect_to_instances_in_any_group|) may explicitly choose other
+  // instance groups when making outgoing service interface requests.
   //
   // When a new service instance is initialized and the Service Manager provides
-  // its Identity via |Service.OnStart()|, that Identity always includes a
-  // concrete instance group ID.
-  //
-  // TODO(https://crbug.com/895591): Switch this to a nullable UnguessableToken
-  // field, where a null implies "inherit instance group."
-  string instance_group;
+  // its Identity via |Service.OnStart()|, that Identity always includes a valid
+  // instance group ID.
+  mojo_base.mojom.Token? instance_group;
 
   // When making outgoing connections to a service, the |instance_id| field may
   // be used to select one of multiple instances within the instance group. This
@@ -123,15 +119,15 @@ interface Connector {
   //    Indicates the result of the BindInterface() operation.
   //
   //  identity
-  //    The fully resolved identity of the instance in the service manager, with
-  //    a resolved user id. Typically the client passes |kInheritUserID| as the
-  //    user id to BindInterface(), which will be resolved by the service
-  //    manager into a concrete user id.
+  //    The fully resolved identity of the instance in the service manager,
+  //    including instance group and globally unique ID. Typically the client
+  //    passes null for the instance group in |target|, defaulting to the
+  //    caller's own instance group.
   //
   BindInterface(Identity target,
                 string interface_name,
                 handle<message_pipe> interface_pipe) =>
-      (ConnectResult result, Identity user_id);
+      (ConnectResult result, Identity identity);
 
   // Asks the service manager whether it knows how to manage a given service,
   // and how the service is to be sandboxed per the mainifest. No processes are
@@ -171,10 +167,10 @@ interface Connector {
   //    Indicates the result of the StartService() operation.
   //
   //  identity
-  //    The fully resolved identity of the instance in the service manager, with
-  //    a resolved user id. Typically the client passes |kInheritUserID| as the
-  //    user id to BindInterface(), which will be resolved by the service
-  //    manager into a concrete user id.
+  //    The fully resolved identity of the instance in the service manager,
+  //    including instance group and globally unique ID. Typically the client
+  //    passes null for the instance group in |target|, defaulting to the
+  //    caller's own instance group.
   //
   StartService(Identity target) => (ConnectResult result, Identity identity);
 

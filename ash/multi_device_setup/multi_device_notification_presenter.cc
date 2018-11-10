@@ -226,15 +226,17 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   if (!user_session)
     return;
 
-  std::string service_user_id = user_session->user_info->service_user_id;
+  base::Optional<base::Token> service_instance_group =
+      user_session->user_info->service_instance_group;
 
-  // Cannot proceed if there is no service user ID.
-  if (service_user_id.empty())
+  // Cannot proceed if there is no known service instance group.
+  if (!service_instance_group)
     return;
 
   connector_->BindInterface(
       service_manager::Identity(
-          chromeos::multidevice_setup::mojom::kServiceName, service_user_id),
+          chromeos::multidevice_setup::mojom::kServiceName,
+          service_instance_group),
       &multidevice_setup_ptr_);
 
   // Add this object as the delegate of the MultiDeviceSetup Service.

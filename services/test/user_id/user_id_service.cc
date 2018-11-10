@@ -33,8 +33,8 @@ void UserIdService::BindUserIdRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void UserIdService::GetUserId(GetUserIdCallback callback) {
-  std::move(callback).Run(context()->identity().instance_group());
+void UserIdService::GetInstanceGroup(GetInstanceGroupCallback callback) {
+  std::move(callback).Run(context()->identity().instance_group().value());
 }
 
 }  // namespace user_id

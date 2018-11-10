@@ -498,8 +498,9 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
   // User session was sent.
   EXPECT_EQ(1, session_controller.update_user_session_count());
   ASSERT_TRUE(session_controller.last_user_session());
-  EXPECT_EQ(content::BrowserContext::GetServiceUserIdFor(user_profile),
-            session_controller.last_user_session()->user_info->service_user_id);
+  EXPECT_EQ(content::BrowserContext::GetServiceInstanceGroupFor(user_profile),
+            session_controller.last_user_session()
+                ->user_info->service_instance_group.value());
 
   // Simulate a request for an update where nothing changed.
   client.SendUserSession(*user_manager()->GetLoggedInUsers()[0]);

@@ -25,6 +25,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -106,7 +107,7 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
 // TODO(sky): refactor and move to services.
 class TestConnector : public service_manager::mojom::Connector {
  public:
-  TestConnector() : test_user_id_(base::GenerateGUID()) {}
+  TestConnector() : test_instance_group_(base::Token::CreateRandom()) {}
 
   ~TestConnector() override = default;
 
@@ -116,7 +117,7 @@ class TestConnector : public service_manager::mojom::Connector {
 
   void Start() {
     service_ptr_->OnStart(
-        service_manager::Identity("TestConnectorFactory", test_user_id_),
+        service_manager::Identity("TestConnectorFactory", test_instance_group_),
         base::BindOnce(&TestConnector::OnStartCallback,
                        base::Unretained(this)));
   }
@@ -146,7 +147,7 @@ class TestConnector : public service_manager::mojom::Connector {
     (*service_ptr)
         ->OnBindInterface(service_manager::BindSourceInfo(
                               service_manager::Identity("TestConnectorFactory",
-                                                        test_user_id_),
+                                                        test_instance_group_),
                               service_manager::CapabilitySet()),
                           interface_name, std::move(interface_pipe),
                           base::DoNothing());
@@ -184,7 +185,7 @@ class TestConnector : public service_manager::mojom::Connector {
     NOTREACHED();
   }
 
-  const std::string test_user_id_;
+  const base::Token test_instance_group_;
   mojo::BindingSet<service_manager::mojom::Connector> bindings_;
   service_manager::mojom::ServicePtr service_ptr_;
 

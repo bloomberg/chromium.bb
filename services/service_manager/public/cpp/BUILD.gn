@@ -10,6 +10,8 @@ component("cpp") {
     "connect.h",
     "connector.cc",
     "connector.h",
+    "constants.cc",
+    "constants.h",
     "embedded_instance_manager.cc",
     "embedded_instance_manager.h",
     "embedded_service_info.cc",

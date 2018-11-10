@@ -33,15 +33,14 @@ which are designed to be accessible cross-group (such as singleton services), as
 well as for connecting services which are sufficiently privileged to connect to
 any service instance in the system.
 
-Instance group is represented by a string identifier (typically a GUID) in
-`service_manager::Identity`. When instance group has the special value
-`kInheritUserID` in an Identity passed to the Service Manager along with an
-interface request, the Service Manager assumes that the request should be
-routed to a service instance in the requestor's own instance group.
+Instance group is represented by a `base::Token` in `service_manager::Identity`.
+When instance group is omitted from an Identity passed with an interface request
+to the Service Manager, the Service Manager assumes that the request should be
+routed to a service instance in the requestor's same instance group.
 
 In Chrome, every `BrowserContext` has a randomly generated instance group ID
-associated with it, and this is used to isolate service processes which run on
-behalf of specific profiles, including renderers themselves.
+associated with it, and this is used to isolate the service instances which run
+on behalf of specific profiles, including renderers.
 
 ### Instance ID
 

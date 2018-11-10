@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
@@ -21,16 +20,17 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
@@ -274,8 +274,7 @@ class ServiceManagerTest : public test::ServiceTest,
                                                          &child_command_line);
     service_manager::mojom::PIDReceiverPtr receiver;
 
-    service_manager::Identity target("service_manager_unittest_target",
-                                     service_manager::mojom::kInheritUserID);
+    service_manager::Identity target("service_manager_unittest_target");
     connector()->StartService(target, std::move(client),
                               MakeRequest(&receiver));
     Connector::TestApi test_api(connector());
@@ -454,12 +453,13 @@ TEST_F(ServiceManagerTest, CreatePackagedRegularInstances) {
   StartService(identity, /*expect_service_started=*/false);
 
   // Starting with a different user ID creates a new service.
-  Identity other_user_identity(kRegularServiceName, base::GenerateGUID());
+  Identity other_user_identity(kRegularServiceName,
+                               base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/true);
 
   // Starting with a different instance name creates a new service as well.
-  Identity instance_identity(kRegularServiceName, mojom::kInheritUserID,
-                             "my_instance");
+  Identity instance_identity(kRegularServiceName,
+                             base::nullopt /* instance_group */, "my_instance");
   StartService(instance_identity, /*expect_service_started=*/true);
 }
 
@@ -480,12 +480,13 @@ TEST_F(ServiceManagerTest, CreatePackagedAllUsersInstances) {
 
   // Start again with a different user-id, the existing service should be
   // reused.
-  Identity other_user_identity(kAllUsersServiceName, base::GenerateGUID());
+  Identity other_user_identity(kAllUsersServiceName,
+                               base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/false);
 
   // Start again with a difference instance name, in that case a new service
   // should get created.
-  Identity instance_identity(kAllUsersServiceName, base::GenerateGUID(),
+  Identity instance_identity(kAllUsersServiceName, base::Token::CreateRandom(),
                              "my_instance");
   StartService(instance_identity, /*expect_service_started=*/true);
 }
@@ -504,14 +505,15 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstances) {
 
   // Start again with a different user-id, the existing service should be
   // reused.
-  Identity other_user_identity(kSingletonServiceName, base::GenerateGUID());
+  Identity other_user_identity(kSingletonServiceName,
+                               base::Token::CreateRandom());
   StartService(other_user_identity, /*expect_service_started=*/false);
 
   // Start again with the same user-ID but a difference instance name, the
   // existing service should still be reused.
   // should get created.
-  Identity instance_identity(kSingletonServiceName, mojom::kInheritUserID,
-                             "my_instance");
+  Identity instance_identity(kSingletonServiceName,
+                             base::nullopt /* instance_group */, "my_instance");
   StartService(instance_identity, /*expect_service_started=*/false);
 }
 
@@ -541,8 +543,8 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   AddListenerAndWaitForApplications();
 
   const std::string kTestService = "service_manager_unittest_target";
-  const Identity kInstance1Id(kTestService, mojom::kRootUserID, "1");
-  const Identity kInstance2Id(kTestService, mojom::kRootUserID);
+  const Identity kInstance1Id(kTestService, kSystemInstanceGroup, "1");
+  const Identity kInstance2Id(kTestService, kSystemInstanceGroup);
 
   // Introduce a new service instance for service_manager_unittest_target,
   // using the client_process capability.

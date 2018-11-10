@@ -73,6 +73,7 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -473,7 +474,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
     packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
-                                  service_manager::mojom::kRootUserID),
+                                  service_manager::kSystemInstanceGroup),
         std::move(packaged_services_service), nullptr);
     service_manager_->SetInstanceQuitCallback(
         base::Bind(&OnInstanceQuitOnServiceManagerThread,
@@ -584,7 +585,7 @@ ServiceManagerContext::ServiceManagerContext(
   service_manager::mojom::PIDReceiverPtr pid_receiver;
   packaged_services_connection_->GetConnector()->StartService(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup),
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 

@@ -8,4 +8,7 @@ mojom("mojom") {
   sources = [
     "user_id.mojom",
   ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
 }

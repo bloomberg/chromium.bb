@@ -38,8 +38,8 @@ inline void BindInterface(ServiceManager* service_manager,
                                const std::string& name,
                                mojo::InterfacePtr<Interface>* ptr) {
   mojo::ScopedMessagePipeHandle service_handle = BindInterface(
-      service_manager, source, Identity(name, mojom::kInheritUserID),
-      Interface::Name_);
+      service_manager, source,
+      Identity(name, base::nullopt /* instance_group */), Interface::Name_);
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 

@@ -321,15 +321,16 @@ void AssistantController::GetNavigableContentsFactory(
     return;
   }
 
-  const std::string& service_user_id = user_session->user_info->service_user_id;
-
-  if (service_user_id.empty()) {
-    LOG(ERROR) << "Unable to retrieve service user id.";
+  const base::Optional<base::Token>& service_instance_group =
+      user_session->user_info->service_instance_group;
+  if (!service_instance_group) {
+    LOG(ERROR) << "Unable to retrieve service instance group.";
     return;
   }
 
   Shell::Get()->connector()->BindInterface(
-      service_manager::Identity(content::mojom::kServiceName, service_user_id),
+      service_manager::Identity(content::mojom::kServiceName,
+                                service_instance_group),
       std::move(request));
 }
 
