@@ -134,7 +134,7 @@ const base::Feature kAutofillManualFallbackPhaseTwo{
     "AutofillManualFallbackPhaseTwo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillPreferServerNamePredictions{
     "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
