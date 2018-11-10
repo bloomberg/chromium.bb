@@ -130,7 +130,7 @@ base::PortProvider* BrowserChildProcessHost::GetPortProvider() {
 
 // static
 BrowserChildProcessHostImpl::BrowserChildProcessList*
-    BrowserChildProcessHostImpl::GetIterator() {
+BrowserChildProcessHostImpl::GetIterator() {
   return g_child_process_list.Pointer();
 }
 
@@ -240,45 +240,10 @@ void BrowserChildProcessHostImpl::Launch(
     std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
     std::unique_ptr<base::CommandLine> cmd_line,
     bool terminate_on_shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(cmd_line.get(),
                                                                 data_.id);
-
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  static const char* const kForwardSwitches[] = {
-      service_manager::switches::kDisableInProcessStackTraces,
-      switches::kDisableBackgroundTasks,
-      switches::kDisableLogging,
-      switches::kEnableLogging,
-      switches::kIPCConnectionTimeout,
-      switches::kLoggingLevel,
-      switches::kTraceToConsole,
-      switches::kV,
-      switches::kVModule,
-  };
-  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
-                             arraysize(kForwardSwitches));
-
-  if (child_connection_) {
-    cmd_line->AppendSwitchASCII(
-        service_manager::switches::kServiceRequestChannelToken,
-        child_connection_->service_token());
-  }
-
-  // All processes should have a non-empty metrics name.
-  DCHECK(!data_.metrics_name.empty());
-
-  notify_child_disconnected_ = true;
-  child_process_.reset(new ChildProcessLauncher(
-      std::move(delegate), std::move(cmd_line), data_.id, this,
-      std::move(mojo_invitation_),
-      base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
-                 weak_factory_.GetWeakPtr(),
-                 base::ThreadTaskRunnerHandle::Get()),
-      terminate_on_shutdown));
-  ShareMetricsAllocatorToProcess();
+  LaunchWithoutExtraCommandLineSwitches(
+      std::move(delegate), std::move(cmd_line), terminate_on_shutdown);
 }
 
 const ChildProcessData& BrowserChildProcessHostImpl::GetData() const {
@@ -336,6 +301,47 @@ void BrowserChildProcessHostImpl::ForceShutdown() {
 
 void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   child_process_host_->AddFilter(filter->GetFilter());
+}
+
+void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
+    std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+    std::unique_ptr<base::CommandLine> cmd_line,
+    bool terminate_on_shutdown) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  static const char* const kForwardSwitches[] = {
+      service_manager::switches::kDisableInProcessStackTraces,
+      switches::kDisableBackgroundTasks,
+      switches::kDisableLogging,
+      switches::kEnableLogging,
+      switches::kIPCConnectionTimeout,
+      switches::kLoggingLevel,
+      switches::kTraceToConsole,
+      switches::kV,
+      switches::kVModule,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                             base::size(kForwardSwitches));
+
+  if (child_connection_) {
+    cmd_line->AppendSwitchASCII(
+        service_manager::switches::kServiceRequestChannelToken,
+        child_connection_->service_token());
+  }
+
+  // All processes should have a non-empty metrics name.
+  DCHECK(!data_.metrics_name.empty());
+
+  notify_child_disconnected_ = true;
+  child_process_.reset(new ChildProcessLauncher(
+      std::move(delegate), std::move(cmd_line), data_.id, this,
+      std::move(mojo_invitation_),
+      base::BindRepeating(&BrowserChildProcessHostImpl::OnMojoError,
+                          weak_factory_.GetWeakPtr(),
+                          base::ThreadTaskRunnerHandle::Get()),
+      terminate_on_shutdown));
+  ShareMetricsAllocatorToProcess();
 }
 
 void BrowserChildProcessHostImpl::BindInterface(
