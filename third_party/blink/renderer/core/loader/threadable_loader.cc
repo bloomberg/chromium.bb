@@ -79,7 +79,7 @@ namespace {
 // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
 AtomicString CreateAccessControlRequestHeadersHeader(
     const HTTPHeaderMap& headers) {
-  Vector<String> filtered_headers = CORS::CORSUnsafeRequestHeaderNames(headers);
+  Vector<String> filtered_headers = cors::CORSUnsafeRequestHeaderNames(headers);
 
   if (!filtered_headers.size())
     return g_null_atom;
@@ -223,7 +223,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   DCHECK(async_ || request.HttpReferrer().IsEmpty());
 
   bool cors_enabled =
-      CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
+      cors::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
 
   // kPreventPreflight can be used only when the CORS is enabled.
   DCHECK(request.CORSPreflightPolicy() ==
@@ -241,7 +241,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
       network::mojom::FetchRequestMode::kNoCORS) {
     SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(request_context_));
   }
-  cors_flag_ = CORS::CalculateCORSFlag(request.Url(), GetSecurityOrigin(),
+  cors_flag_ = cors::CalculateCORSFlag(request.Url(), GetSecurityOrigin(),
                                        request.GetFetchRequestMode());
 
   // The CORS flag variable is not yet used at the step in the spec that
@@ -328,7 +328,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  if (CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
+  if (cors::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
     // Save the request to fallback_request_for_service_worker to use when the
     // service worker doesn't handle (call respondWith()) a CORS enabled
     // request.
@@ -346,7 +346,7 @@ void ThreadableLoader::DispatchInitialRequest(ResourceRequest& request) {
     return;
   }
 
-  DCHECK(CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(cors::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
 
   MakeCrossOriginAccessRequest(request);
@@ -386,7 +386,7 @@ void ThreadableLoader::LoadPreflightRequest(
 
 void ThreadableLoader::MakeCrossOriginAccessRequest(
     const ResourceRequest& request) {
-  DCHECK(CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(cors::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
   DCHECK(client_);
   DCHECK(!GetResource());
@@ -447,8 +447,8 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
     // the user's input). For example, referrer. We need to accept them. For
     // security, we must reject forbidden headers/methods at the point we
     // accept user's input. Not here.
-    if (CORS::IsCORSSafelistedMethod(request.HttpMethod()) &&
-        CORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    if (cors::IsCORSSafelistedMethod(request.HttpMethod()) &&
+        cors::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PrepareCrossOriginRequest(cross_origin_request);
       LoadRequest(cross_origin_request, cross_origin_options);
@@ -465,7 +465,7 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
   probe::shouldForceCORSPreflight(execution_context_,
                                   &should_ignore_preflight_cache);
   if (should_ignore_preflight_cache ||
-      !CORS::CheckIfRequestCanSkipPreflight(
+      !cors::CheckIfRequestCanSkipPreflight(
           GetSecurityOrigin()->ToString(), cross_origin_request.Url(),
           cross_origin_request.GetFetchCredentialsMode(),
           cross_origin_request.HttpMethod(),
@@ -589,7 +589,7 @@ bool ThreadableLoader::RedirectReceived(
     }
 
     if (cors_flag_) {
-      if (const auto error_status = CORS::CheckAccess(
+      if (const auto error_status = cors::CheckAccess(
               original_url, redirect_response.HttpStatusCode(),
               redirect_response.HttpHeaderFields(),
               new_request.GetFetchCredentialsMode(), *GetSecurityOrigin())) {
@@ -635,11 +635,11 @@ bool ThreadableLoader::RedirectReceived(
     // Allow same origin requests to continue after allowing clients to audit
     // the redirect.
     if (!(cors_flag_ ||
-          CORS::CalculateCORSFlag(new_url, GetSecurityOrigin(),
+          cors::CalculateCORSFlag(new_url, GetSecurityOrigin(),
                                   new_request.GetFetchRequestMode()))) {
       bool follow =
           client_->WillFollowRedirect(new_url, redirect_response_to_pass);
-      response_tainting_ = CORS::CalculateResponseTainting(
+      response_tainting_ = cors::CalculateResponseTainting(
           new_url, new_request.GetFetchRequestMode(), GetSecurityOrigin(),
           CORSFlag::Unset);
       return follow;
@@ -652,7 +652,7 @@ bool ThreadableLoader::RedirectReceived(
             : nullptr,
         redirect_response_to_pass, resource);
 
-    if (auto error_status = CORS::CheckRedirectLocation(
+    if (auto error_status = cors::CheckRedirectLocation(
             new_url, fetch_request_mode_, GetSecurityOrigin(),
             cors_flag_ ? CORSFlag::Set : CORSFlag::Unset)) {
       DispatchDidFail(ResourceError(original_url, *error_status));
@@ -767,7 +767,7 @@ void ThreadableLoader::DidDownloadToBlob(Resource* resource,
 void ThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
   base::Optional<network::CORSErrorStatus> cors_error_status =
-      CORS::CheckPreflightAccess(response.Url(), response.HttpStatusCode(),
+      cors::CheckPreflightAccess(response.Url(), response.HttpStatusCode(),
                                  response.HttpHeaderFields(),
                                  actual_request_.GetFetchCredentialsMode(),
                                  *GetSecurityOrigin());
@@ -777,7 +777,7 @@ void ThreadableLoader::HandlePreflightResponse(
   }
 
   base::Optional<network::mojom::CORSError> preflight_error =
-      CORS::CheckPreflight(response.HttpStatusCode());
+      cors::CheckPreflight(response.HttpStatusCode());
   if (preflight_error) {
     HandlePreflightFailure(response.Url(),
                            network::CORSErrorStatus(*preflight_error));
@@ -786,7 +786,7 @@ void ThreadableLoader::HandlePreflightResponse(
 
   base::Optional<network::CORSErrorStatus> error_status;
   if (actual_request_.IsExternalRequest()) {
-    error_status = CORS::CheckExternalPreflight(response.HttpHeaderFields());
+    error_status = cors::CheckExternalPreflight(response.HttpHeaderFields());
     if (error_status) {
       HandlePreflightFailure(response.Url(), *error_status);
       return;
@@ -794,7 +794,7 @@ void ThreadableLoader::HandlePreflightResponse(
   }
 
   String access_control_error_description;
-  error_status = CORS::EnsurePreflightResultAndCacheOnSuccess(
+  error_status = cors::EnsurePreflightResultAndCacheOnSuccess(
       response.HttpHeaderFields(), GetSecurityOrigin()->ToString(),
       actual_request_.Url(), actual_request_.HttpMethod(),
       actual_request_.HttpHeaderFields(),
@@ -890,7 +890,7 @@ void ThreadableLoader::ResponseReceived(
   fallback_request_for_service_worker_ = ResourceRequest();
 
   if (cors_flag_) {
-    base::Optional<network::CORSErrorStatus> access_error = CORS::CheckAccess(
+    base::Optional<network::CORSErrorStatus> access_error = cors::CheckAccess(
         response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
         fetch_credentials_mode_, *GetSecurityOrigin());
     if (access_error) {
@@ -1021,7 +1021,7 @@ void ThreadableLoader::HandlePreflightFailure(
 
 void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
   if (!out_of_blink_cors_ && error.CORSErrorStatus()) {
-    String message = CORS::GetErrorString(
+    String message = cors::GetErrorString(
         *error.CORSErrorStatus(), initial_request_url_, last_request_url_,
         *GetSecurityOrigin(), ResourceType::kRaw,
         resource_loader_options_.initiator_info.name);
@@ -1050,10 +1050,10 @@ void ThreadableLoader::LoadRequest(
     }
   } else {
     if (actual_request_.IsNull()) {
-      response_tainting_ = CORS::CalculateResponseTainting(
+      response_tainting_ = cors::CalculateResponseTainting(
           request.Url(), request.GetFetchRequestMode(), GetSecurityOrigin(),
           cors_flag_ ? CORSFlag::Set : CORSFlag::Unset);
-      request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+      request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
           request.GetFetchCredentialsMode(), response_tainting_));
     } else {
       request.SetAllowStoredCredentials(false);

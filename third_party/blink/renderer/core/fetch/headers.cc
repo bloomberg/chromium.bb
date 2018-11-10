@@ -95,12 +95,12 @@ void Headers::append(const String& name,
   }
   // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && cors::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     no-CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, normalized_value)) {
+      !cors::IsNoCORSSafelistedHeader(name, normalized_value)) {
     return;
   }
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response
@@ -127,12 +127,12 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
   }
   // "3. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && cors::IsForbiddenHeaderName(name))
     return;
   // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
   //     a no-CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, "invalid")) {
+      !cors::IsNoCORSSafelistedHeader(name, "invalid")) {
     return;
   }
   // "5. Otherwise, if guard is |response| and |name| is a forbidden response
@@ -195,12 +195,12 @@ void Headers::set(const String& name,
   }
   // "4. Otherwise, if guard is |request| and |name| is a forbidden header
   //     name, return."
-  if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
+  if (guard_ == kRequestGuard && cors::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
   //     no-CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, normalized_value)) {
+      !cors::IsNoCORSSafelistedHeader(name, normalized_value)) {
     return;
   }
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response

@@ -411,7 +411,7 @@ unsigned short Response::status() const {
 bool Response::ok() const {
   // "The ok attribute's getter must return true
   // if response's status is in the range 200 to 299, and false otherwise."
-  return CORS::IsOkStatus(status());
+  return cors::IsOkStatus(status());
 }
 
 String Response::statusText() const {

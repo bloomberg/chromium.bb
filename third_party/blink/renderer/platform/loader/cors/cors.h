@@ -25,7 +25,7 @@ enum class CORSFlag : uint8_t {
 };
 
 // CORS related utility functions.
-namespace CORS {
+namespace cors {
 
 // Thin wrapper functions below are for calling ::network::cors functions from
 // Blink core. Once Out-of-renderer CORS is enabled, following functions will
@@ -115,7 +115,7 @@ PLATFORM_EXPORT bool CalculateCORSFlag(
     const SecurityOrigin* origin,
     network::mojom::FetchRequestMode request_mode);
 
-}  // namespace CORS
+}  // namespace cors
 
 }  // namespace blink
 

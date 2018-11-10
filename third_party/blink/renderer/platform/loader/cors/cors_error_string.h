@@ -19,7 +19,7 @@ class SecurityOrigin;
 enum class ResourceType : uint8_t;
 
 // CORS error strings related utility functions.
-namespace CORS {
+namespace cors {
 
 // Stringify CORSError mainly for inspector messages. Generated string should
 // not be exposed to JavaScript for security reasons.
@@ -30,7 +30,7 @@ PLATFORM_EXPORT String GetErrorString(const network::CORSErrorStatus& status,
                                       ResourceType resource_type,
                                       const AtomicString& initiator_name);
 
-}  // namespace CORS
+}  // namespace cors
 
 }  // namespace blink
 

@@ -77,7 +77,7 @@ url::Origin AsUrlOrigin(const SecurityOrigin& origin) {
 
 }  // namespace
 
-namespace CORS {
+namespace cors {
 
 base::Optional<network::CORSErrorStatus> CheckAccess(
     const KURL& response_url,
@@ -303,6 +303,6 @@ bool CalculateCORSFlag(const KURL& url,
   return !origin->CanReadContent(url);
 }
 
-}  // namespace CORS
+}  // namespace cors
 
 }  // namespace blink

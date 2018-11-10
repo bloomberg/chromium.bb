@@ -84,7 +84,7 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
 void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
                                              const WebString& value) {
   is_safe_ = is_safe_ && IsValidHTTPToken(name) &&
-             !CORS::IsForbiddenHeaderName(name) &&
+             !cors::IsForbiddenHeaderName(name) &&
              IsValidHTTPHeaderValue(value);
 }
 
