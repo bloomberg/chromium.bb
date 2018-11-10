@@ -25,7 +25,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_web_view_inttests",
@@ -35,7 +36,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_components_unittests",
@@ -45,7 +47,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "components_unittests",
@@ -55,7 +58,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "net_unittests",
@@ -65,7 +69,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_net_unittests",
@@ -75,7 +80,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_web_unittests",
@@ -85,7 +91,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_web_inttests",
@@ -95,7 +102,8 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "10.3"
+      "os": "10.3",
+      "priority": 29
     },
     {
       "app": "ios_web_shell_egtests",
@@ -106,6 +114,7 @@
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
       "os": "10.3",
+      "priority": 29,
       "xctest": true
     }
   ]
