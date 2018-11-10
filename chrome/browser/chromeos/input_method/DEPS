@@ -26,7 +26,9 @@ specific_include_rules = {
   "input_method_manager_impl\.cc": [
     # TODO(erikwright): Much/all of language_preferences can/should be decoupled
     # from chrome/browser.
-    "!chrome/browser/chromeos/language_preferences.h"
+    "!chrome/browser/chromeos/language_preferences.h",
+    # TODO(stevenjb/shuchen): Fix this for Mash. https://crbug.com/756059
+    "+ui/keyboard/keyboard_controller.h",
   ],
 
   # For testing.

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -37,10 +39,34 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+
+namespace {
+
+class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
+ public:
+  KeyboardVisibleWaiter() {
+    ChromeKeyboardControllerClient::Get()->AddObserver(this);
+  }
+  ~KeyboardVisibleWaiter() override {
+    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  // ChromeKeyboardControllerClient::Observer
+  void OnKeyboardVisibilityChanged(bool visible) override {
+    if (visible)
+      run_loop_.QuitWhenIdle();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
 
 class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
  public:
@@ -426,6 +452,9 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
   waiter.EnableVirtualKeyboard();
 
+  auto* client = ChromeKeyboardControllerClient::Get();
+  EXPECT_FALSE(client->is_keyboard_visible());
+
   // Open the file dialog to save a file, providing a suggested file path.
   // Ensure the "Save" button is enabled by waiting for notification from
   // chrome.test.sendMessage().
@@ -438,8 +467,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_NO_FATAL_FAILURE(ClickElement("#filename-input-textbox"));
 
   // The virtual keyboard should be shown.
-  keyboard::WaitUntilShown();
-  ASSERT_TRUE(keyboard::IsKeyboardShowing());
+  KeyboardVisibleWaiter().Wait();
+  EXPECT_TRUE(client->is_keyboard_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,

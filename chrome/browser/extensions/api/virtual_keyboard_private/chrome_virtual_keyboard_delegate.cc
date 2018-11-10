@@ -43,6 +43,7 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -62,6 +63,20 @@ aura::Window* GetKeyboardWindow() {
 
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
+}
+
+keyboard::ContainerType ConvertKeyboardModeToContainerType(int mode) {
+  switch (mode) {
+    case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
+      return keyboard::ContainerType::FULL_WIDTH;
+    case keyboard_api::KEYBOARD_MODE_FLOATING:
+      return keyboard::ContainerType::FLOATING;
+    case keyboard_api::KEYBOARD_MODE_FULLSCREEN:
+      return keyboard::ContainerType::FULLSCREEN;
+  }
+
+  NOTREACHED();
+  return keyboard::ContainerType::FULL_WIDTH;
 }
 
 const char kKeyDown[] = "keydown";
@@ -280,22 +295,6 @@ bool ChromeVirtualKeyboardDelegate::SetHitTestBounds(
 
   controller->SetHitTestBounds(bounds);
   return true;
-}
-
-keyboard::ContainerType
-ChromeVirtualKeyboardDelegate::ConvertKeyboardModeToContainerType(
-    int mode) const {
-  switch (mode) {
-    case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
-      return keyboard::ContainerType::FULL_WIDTH;
-    case keyboard_api::KEYBOARD_MODE_FLOATING:
-      return keyboard::ContainerType::FLOATING;
-    case keyboard_api::KEYBOARD_MODE_FULLSCREEN:
-      return keyboard::ContainerType::FULLSCREEN;
-  }
-
-  NOTREACHED();
-  return keyboard::ContainerType::FULL_WIDTH;
 }
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
