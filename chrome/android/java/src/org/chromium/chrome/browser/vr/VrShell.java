@@ -343,7 +343,7 @@ public class VrShell extends GvrLayout
         mVrModalPresenter = new VrModalPresenter(this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
-        mActivity.setModalDialogManager(mVrModalDialogManager);
+        mActivity.overrideModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -747,7 +747,7 @@ public class VrShell extends GvrLayout
         if (mVrBrowsingEnabled) {
             if (mVrModalDialogManager != null) {
                 mVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-                mActivity.setModalDialogManager(mNonVrModalDialogManager);
+                mActivity.overrideModalDialogManager(mNonVrModalDialogManager);
                 mVrModalDialogManager = null;
             }
             mNonVrViews.destroy();

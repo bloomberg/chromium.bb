@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -72,6 +73,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private long mOnCreateTimestampUptimeMs;
 
     private ActivityWindowAndroid mWindowAndroid;
+    private ModalDialogManager mModalDialogManager;
     private Bundle mSavedInstanceState;
     private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mDestroyed;
@@ -101,6 +103,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
             mWindowAndroid = null;
+        }
+
+        if (mModalDialogManager != null) {
+            mModalDialogManager.destroy();
+            mModalDialogManager = null;
         }
 
         super.onDestroy();
@@ -313,6 +320,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mWindowAndroid != null) {
             getWindowAndroid().restoreInstanceState(getSavedInstanceState());
         }
+        mModalDialogManager = createModalDialogManager();
 
         mStartupDelayed = shouldDelayBrowserStartup();
         ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
@@ -361,14 +369,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected boolean isStartupDelayed() {
         return mStartupDelayed;
-    }
-
-    /**
-     * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
-     */
-    @Nullable
-    protected ActivityWindowAndroid createWindowAndroid() {
-        return null;
     }
 
     /**
@@ -568,11 +568,42 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     /**
+     * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
+     */
+    @Nullable
+    protected ActivityWindowAndroid createWindowAndroid() {
+        return null;
+    }
+
+    /**
      * @return A {@link ActivityWindowAndroid} instance.  May be null if one was not created.
      */
     @Nullable
     public ActivityWindowAndroid getWindowAndroid() {
         return mWindowAndroid;
+    }
+
+    /**
+     * @return The {@link ModalDialogManager} created for this class.
+     */
+    @Nullable
+    protected ModalDialogManager createModalDialogManager() {
+        return null;
+    }
+
+    /**
+     * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
+     *         JavaScript dialogs).
+     */
+    public ModalDialogManager getModalDialogManager() {
+        return mModalDialogManager;
+    }
+
+    /**
+     * Overrides the originally created modal dialog manager.
+     */
+    public void overrideModalDialogManager(ModalDialogManager modalDialogManager) {
+        mModalDialogManager = modalDialogManager;
     }
 
     /**
@@ -718,7 +749,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * @return {@link ActivityLifecycleDispatcher} associated with this activity.
      */
-    protected ActivityLifecycleDispatcher getLifecycleDispatcher() {
+    public ActivityLifecycleDispatcher getLifecycleDispatcher() {
         return mLifecycleDispatcher;
     }
 
