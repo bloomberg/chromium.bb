@@ -144,6 +144,10 @@ namespace {
 
 const char kDownloadTest1Path[] = "download-test1.lib";
 
+void VerifyNewDownloadId(uint32_t expected_download_id, uint32_t download_id) {
+  ASSERT_EQ(expected_download_id, download_id);
+}
+
 class DownloadTestContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit DownloadTestContentBrowserClient(bool must_download)
@@ -1625,6 +1629,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
+  uint32_t download_id = download_items[0]->GetId();
+  // Verify that manager will increment the download ID when a new download is
+  // requested.
+  DownloadManagerForBrowser(browser())->GetNextId(
+      base::BindOnce(&VerifyNewDownloadId, download_id + 1));
 
   // Setup an incognito window.
   Browser* incognito = CreateIncognitoBrowser();
@@ -1648,6 +1657,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
+  // The incognito download should increment the download ID again.
+  ASSERT_EQ(download_id + 2, download_items[0]->GetId());
 }
 
 // Navigate to a new background page, but don't download.

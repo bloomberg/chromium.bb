@@ -378,8 +378,8 @@ void ChromeDownloadManagerDelegate::GetNextId(
     const content::DownloadIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_->IsOffTheRecord()) {
-    content::BrowserContext::GetDownloadManager(
-        profile_->GetOriginalProfile())->GetDelegate()->GetNextId(callback);
+    content::BrowserContext::GetDownloadManager(profile_->GetOriginalProfile())
+        ->GetNextId(callback);
     return;
   }
   if (!next_id_retrieved_) {

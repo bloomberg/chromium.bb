@@ -133,6 +133,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       base::OnceClosure load_history_downloads_cb) override;
   download::DownloadItem* GetDownload(uint32_t id) override;
   download::DownloadItem* GetDownloadByGuid(const std::string& guid) override;
+  void GetNextId(GetNextIdCallback callback) override;
 
   // UrlDownloadHandler::Delegate implementation.
   void OnUrlDownloadStarted(
@@ -214,11 +215,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       const download::DownloadUrlParameters::OnStartedCallback& on_started,
       download::InProgressDownloadManager::StartDownloadItemCallback callback,
       uint32_t id);
-
-  using GetNextIdCallback = base::OnceCallback<void(uint32_t)>;
-  // Called to get an ID for a new download. |callback| may be called
-  // synchronously.
-  void GetNextId(GetNextIdCallback callback);
 
   // Sets the |next_download_id_| if the |next_id| is larger. Runs all the
   // |id_callbacks_| if both the ID from both history db and in-progress db
