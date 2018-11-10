@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
@@ -152,9 +153,14 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   }
 
   if (layout_replaced_.CanResize()) {
-    ScrollableAreaPainter(*layout_replaced_.Layer()->GetScrollableArea())
-        .PaintResizer(local_paint_info.context, RoundedIntPoint(paint_offset),
-                      local_paint_info.GetCullRect());
+    auto* scrollable_area = layout_replaced_.GetScrollableArea();
+    DCHECK(scrollable_area);
+    if (!scrollable_area->HasLayerForScrollCorner()) {
+      ScrollableAreaPainter(*scrollable_area)
+          .PaintResizer(local_paint_info.context, RoundedIntPoint(paint_offset),
+                        local_paint_info.GetCullRect());
+    }
+    // Otherwise the resizer will be painted by the scroll corner layer.
   }
 
   // The selection tint never gets clipped by border-radius rounding, since we
