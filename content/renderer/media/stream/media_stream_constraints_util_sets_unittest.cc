@@ -10,6 +10,7 @@
 
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
 namespace media_constraints {
@@ -1362,6 +1363,53 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
   EXPECT_TRUE(set.is_universal());
   EXPECT_TRUE(set.HasExplicitElements());
   EXPECT_FALSE(set.FirstElement());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
+  factory_.Reset();
+  factory_.CreateWebMediaConstraints();
+  BoolSet set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_FALSE(set.HasExplicitElements());
+
+  // Invalid exact value.
+  factory_.basic().resize_mode.SetExact(
+      {blink::WebString::FromASCII("invalid")});
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.IsEmpty());
+
+  // No rescaling
+  factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(false));
+  EXPECT_FALSE(set.Contains(true));
+
+  // Rescaling
+  factory_.basic().resize_mode.SetExact(blink::WebString::FromASCII(
+      blink::WebMediaStreamTrack::kResizeModeRescale));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(true));
+  EXPECT_FALSE(set.Contains(false));
+
+  // Both explicit
+  blink::WebString rescale_modes[] = {
+      blink::WebString::FromASCII(
+          blink::WebMediaStreamTrack::kResizeModeRescale),
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone)};
+  factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
+      rescale_modes, base::size(rescale_modes)));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(true));
+  EXPECT_TRUE(set.Contains(false));
+
+  // Invalid and no rescaling.
+  rescale_modes[0] = "invalid";
+  factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
+      rescale_modes, base::size(rescale_modes)));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_FALSE(set.Contains(true));
+  EXPECT_TRUE(set.Contains(false));
 }
 
 }  // namespace media_constraints

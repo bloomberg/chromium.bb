@@ -406,6 +406,15 @@ class CONTENT_EXPORT ResolutionSet {
 CONTENT_EXPORT ResolutionSet::Point operator*(double d,
                                               const ResolutionSet::Point& p);
 
+// This function returns a set of bools from a resizeMode StringConstraint.
+// If |resize_mode_constraint| includes
+// blink::WebMediaStreamTrack::kResizeModeNone, false is included in the
+// returned value. If |resize_mode_constraint| includes
+// blink::WebMediaStreamTrack::kResizeModeRescale, true is included in the
+// returned value.
+CONTENT_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
+    const blink::StringConstraint& resize_mode_constraint);
+
 }  // namespace media_constraints
 }  // namespace content
 

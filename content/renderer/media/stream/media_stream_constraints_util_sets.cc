@@ -563,5 +563,28 @@ DiscreteSet<bool> BoolSetFromConstraint(
   return DiscreteSet<bool>({constraint.Exact()});
 }
 
+DiscreteSet<bool> RescaleSetFromConstraint(
+    const blink::StringConstraint& resize_mode_constraint) {
+  DCHECK_EQ(resize_mode_constraint.GetName(),
+            blink::WebMediaTrackConstraintSet().resize_mode.GetName());
+  bool contains_none = resize_mode_constraint.Matches(
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
+  bool contains_rescale =
+      resize_mode_constraint.Matches(blink::WebString::FromASCII(
+          blink::WebMediaStreamTrack::kResizeModeRescale));
+  if (resize_mode_constraint.Exact().empty() ||
+      (contains_none && contains_rescale)) {
+    return DiscreteSet<bool>::UniversalSet();
+  }
+
+  if (contains_none)
+    return DiscreteSet<bool>({false});
+
+  if (contains_rescale)
+    return DiscreteSet<bool>({true});
+
+  return DiscreteSet<bool>::EmptySet();
+}
+
 }  // namespace media_constraints
 }  // namespace content
