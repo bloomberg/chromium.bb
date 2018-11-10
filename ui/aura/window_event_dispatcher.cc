@@ -836,15 +836,19 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   }
 
   if (held_move_event_) {
+    // |held_move_event_| should be cleared here. Some event handler can
+    // create its own run loop on an event (e.g. WindowMove loop for
+    // tab-dragging), which means the other move events need to be processed
+    // before this OnEventFromSource() finishes. See also b/119260190.
+    std::unique_ptr<ui::LocatedEvent> event = std::move(held_move_event_);
+
     // If a mouse move has been synthesized, the target location is suspect,
     // so drop the held mouse event.
-    if (held_move_event_->IsTouchEvent() ||
-        (held_move_event_->IsMouseEvent() && !synthesize_mouse_move_)) {
-      dispatching_held_event_ = held_move_event_.get();
-      dispatch_details = OnEventFromSource(held_move_event_.get());
+    if (event->IsTouchEvent() ||
+        (event->IsMouseEvent() && !synthesize_mouse_move_)) {
+      dispatching_held_event_ = event.get();
+      dispatch_details = OnEventFromSource(event.get());
     }
-    if (!dispatch_details.dispatcher_destroyed)
-      held_move_event_.reset();
   }
 
   if (!dispatch_details.dispatcher_destroyed) {
