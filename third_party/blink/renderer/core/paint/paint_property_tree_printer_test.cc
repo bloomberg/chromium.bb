@@ -49,9 +49,10 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTree) {
   SetBodyInnerHTML("<div style='opacity: 0.9;'>hello world</div>");
   String effect_tree_as_string =
       effectPropertyTreeAsString(*GetDocument().View());
-  EXPECT_THAT(effect_tree_as_string.Ascii().data(),
-              testing::MatchesRegex("root .*"
-                                    "  Effect \\(LayoutBlockFlow DIV\\) .*"));
+  EXPECT_THAT(
+      effect_tree_as_string.Ascii().data(),
+      testing::MatchesRegex("root .*"
+                            "  Effect \\(LayoutN?G?BlockFlow DIV\\) .*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree) {

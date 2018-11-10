@@ -87,21 +87,23 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px");
     UpdateAllLifecyclePhasesForTest();
-    EXPECT_THAT(get_debug_info(),
-                MatchesRegex(
-                    "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
-                    "\\{\"geometry_rect\":\\[8,108,100,100\\],"
-                    "\"reason\":\"incremental\","
-                    "\"client\":\"LayoutBlockFlow DIV id='target'\"\\}\\]\\}"));
+    EXPECT_THAT(
+        get_debug_info(),
+        MatchesRegex(
+            "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
+            "\\{\"geometry_rect\":\\[8,108,100,100\\],"
+            "\"reason\":\"incremental\","
+            "\"client\":\"LayoutN?G?BlockFlow DIV id='target'\"\\}\\]\\}"));
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px; width: 200px");
     UpdateAllLifecyclePhasesForTest();
-    EXPECT_THAT(get_debug_info(),
-                MatchesRegex(
-                    "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
-                    "\\{\"geometry_rect\":\\[108,8,100,200\\],"
-                    "\"reason\":\"incremental\","
-                    "\"client\":\"LayoutBlockFlow DIV id='target'\"\\}\\]\\}"));
+    EXPECT_THAT(
+        get_debug_info(),
+        MatchesRegex(
+            "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
+            "\\{\"geometry_rect\":\\[108,8,100,200\\],"
+            "\"reason\":\"incremental\","
+            "\"client\":\"LayoutN?G?BlockFlow DIV id='target'\"\\}\\]\\}"));
   }
 
   target->setAttribute(html_names::kStyleAttr, "height: 300px; width: 300px");
