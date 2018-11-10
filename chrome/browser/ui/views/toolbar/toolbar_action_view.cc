@@ -51,7 +51,7 @@ const int kBorderInset = 0;
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(base::string16(), this),
+    : MenuButton(base::string16(), this, false),
       view_controller_(view_controller),
       delegate_(delegate),
       called_register_command_(false),

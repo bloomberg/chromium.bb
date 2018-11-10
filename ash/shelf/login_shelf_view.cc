@@ -193,7 +193,10 @@ class KioskAppsButton : public views::MenuButton,
                         public ui::SimpleMenuModel::Delegate {
  public:
   KioskAppsButton(const base::string16& text, const gfx::ImageSkia& image)
-      : MenuButton(text, this), ui::SimpleMenuModel(this) {
+      : MenuButton(text, this, true), ui::SimpleMenuModel(this) {
+    // We don't want a menu marker for the apps button.
+    set_menu_marker(&empty_menu_marker_);
+
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
         kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
@@ -321,6 +324,8 @@ class KioskAppsButton : public views::MenuButton,
  private:
   std::unique_ptr<views::MenuRunner> menu_runner_;
   std::vector<mojom::KioskAppInfoPtr> kiosk_apps_;
+  // Passed to set_menu_marker to remove menu marker
+  gfx::ImageSkia empty_menu_marker_;
   bool is_launch_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);

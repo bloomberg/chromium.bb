@@ -7,12 +7,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -62,10 +65,15 @@ MenuButton::PressedLock::~PressedLock() {
 ////////////////////////////////////////////////////////////////////////////////
 
 MenuButton::MenuButton(const base::string16& text,
-                       MenuButtonListener* menu_button_listener)
+                       MenuButtonListener* menu_button_listener,
+                       bool show_menu_marker)
     : LabelButton(nullptr, text),
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
       listener_(menu_button_listener),
+      show_menu_marker_(show_menu_marker),
+      menu_marker_(ui::ResourceBundle::GetSharedInstance()
+                       .GetImageNamed(IDR_MENU_DROPARROW)
+                       .ToImageSkia()),
       weak_factory_(this) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
@@ -167,6 +175,16 @@ bool MenuButton::IsTriggerableEventType(const ui::Event& event) {
 // MenuButton - Events
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+gfx::Size MenuButton::CalculatePreferredSize() const {
+  gfx::Size prefsize = LabelButton::CalculatePreferredSize();
+  if (show_menu_marker_) {
+    prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +
+                         kMenuMarkerPaddingRight,
+                     0);
+  }
+  return prefsize;
+}
 
 const char* MenuButton::GetClassName() const {
   return kViewClassName;
@@ -275,6 +293,31 @@ void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }
 
+void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {
+  gfx::Insets insets = GetInsets();
+
+  // Using the Views mirroring infrastructure incorrectly flips icon content.
+  // Instead, manually mirror the position of the down arrow.
+  gfx::Rect arrow_bounds(width() - insets.right() -
+                         menu_marker_->width() - kMenuMarkerPaddingRight,
+                         height() / 2 - menu_marker_->height() / 2,
+                         menu_marker_->width(),
+                         menu_marker_->height());
+  arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
+  canvas->DrawImageInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
+}
+
+gfx::Rect MenuButton::GetChildAreaBounds() {
+  gfx::Size s = size();
+
+  if (show_menu_marker_) {
+    s.set_width(s.width() - menu_marker_->width() - kMenuMarkerPaddingLeft -
+                kMenuMarkerPaddingRight);
+  }
+
+  return gfx::Rect(s);
+}
+
 bool MenuButton::IsTriggerableEvent(const ui::Event& event) {
   if (!IsTriggerableEventType(event))
     return false;
@@ -309,6 +352,11 @@ void MenuButton::NotifyClick(const ui::Event& event) {
   // We don't forward events to the normal button listener, instead using the
   // MenuButtonListener.
   Activate(&event);
+}
+
+void MenuButton::PaintButtonContents(gfx::Canvas* canvas) {
+  if (show_menu_marker_)
+    PaintMenuMarker(canvas);
 }
 
 void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated,

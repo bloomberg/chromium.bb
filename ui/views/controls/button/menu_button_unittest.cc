@@ -38,7 +38,8 @@ class TestMenuButton : public MenuButton {
  public:
   explicit TestMenuButton(MenuButtonListener* menu_button_listener)
       : MenuButton(base::string16(ASCIIToUTF16("button")),
-                   menu_button_listener) {}
+                   menu_button_listener,
+                   false) {}
 
   ~TestMenuButton() override {}
 
@@ -692,7 +693,7 @@ TEST_F(MenuButtonTest,
 class DestroyButtonInGestureListener : public MenuButtonListener {
  public:
   DestroyButtonInGestureListener() {
-    menu_button_ = std::make_unique<MenuButton>(base::string16(), this);
+    menu_button_ = std::make_unique<MenuButton>(base::string16(), this, true);
   }
 
   ~DestroyButtonInGestureListener() override = default;

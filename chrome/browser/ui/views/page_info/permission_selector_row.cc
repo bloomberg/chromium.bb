@@ -180,7 +180,9 @@ PermissionSelectorRow::PermissionSelectorRow(
     const GURL& url,
     const PageInfoUI::PermissionInfo& permission,
     views::GridLayout* layout)
-    : profile_(profile), icon_(nullptr), combobox_(nullptr) {
+    : profile_(profile),
+      icon_(nullptr),
+      combobox_(nullptr) {
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
