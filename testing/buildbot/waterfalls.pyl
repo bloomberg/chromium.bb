@@ -2607,12 +2607,6 @@
           'all',
         ],
       },
-      'Fuchsia ARM64 Cast Audio': {
-        'additional_compile_targets': [
-          'cast_shell',
-          'cast_test_lists',
-        ],
-      },
       'Fuchsia x64': {
         'additional_compile_targets': [
           'all',
@@ -2630,15 +2624,6 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
         },
-      },
-      'Fuchsia x64 Cast Audio': {
-        'additional_compile_targets': [
-          'cast_shell',
-          'cast_test_lists',
-        ],
-        'args': [
-          '--qemu-require-kvm',
-        ],
       },
       'Leak Detection Linux': {
         'test_suites': {
@@ -2682,6 +2667,21 @@
           'gtest_tests': 'chromium_linux_gtests',
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
+      },
+      'fuchsia-arm64-cast': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+      },
+      'fuchsia-x64-cast': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+        'args': [
+          '--qemu-require-kvm',
+        ],
       },
       'linux-gcc-rel': {
         'additional_compile_targets': [
