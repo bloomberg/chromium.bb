@@ -2358,6 +2358,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/media/router/caf/ShadowMediaRouter.java",
   "junit/src/org/chromium/chrome/browser/media/router/caf/ShadowCastContext.java",
   "junit/src/org/chromium/chrome/browser/media/router/caf/BaseSessionControllerTest.java",
+  "junit/src/org/chromium/chrome/browser/media/router/caf/CastSessionControllerTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaImageManagerTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationActionsUpdatedTest.java",
   "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationButtonComputationTest.java",
