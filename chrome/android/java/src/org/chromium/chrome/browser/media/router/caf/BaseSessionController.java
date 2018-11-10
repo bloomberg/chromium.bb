@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.caf;
 
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.CastDevice;
@@ -32,7 +33,8 @@ public class BaseSessionController {
     private final CafBaseMediaRouteProvider mProvider;
     private final MediaRouter.Callback mMediaRouterCallbackForSessionLaunch;
     private CreateRouteRequestInfo mRouteCreationInfo;
-    private final CafNotificationController mNotificationController;
+    @VisibleForTesting
+    CafNotificationController mNotificationController;
     private final RemoteMediaClient.Callback mRemoteMediaClientCallback;
 
     public BaseSessionController(CafBaseMediaRouteProvider provider) {
@@ -81,7 +83,7 @@ public class BaseSessionController {
     }
 
     public RemoteMediaClient getRemoteMediaClient() {
-        return mCastSession.getRemoteMediaClient();
+        return isConnected() ? mCastSession.getRemoteMediaClient() : null;
     }
 
     public CafNotificationController getNotificationController() {
@@ -89,8 +91,8 @@ public class BaseSessionController {
     }
 
     public void endSession() {
-        MediaRouter mediaRouter = mProvider.getAndroidMediaRouter();
-        mediaRouter.selectRoute(mediaRouter.getDefaultRoute());
+        CastUtils.getCastContext().getSessionManager().endCurrentSession(/* stopCasting= */ true);
+        CastUtils.getCastContext().setReceiverApplicationId(null);
     }
 
     public List<String> getCapabilities() {
