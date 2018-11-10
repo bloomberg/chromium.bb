@@ -263,6 +263,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
 
+  void OnBackgroundedOnMainThread();
+
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
