@@ -166,6 +166,10 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
           // Adjust retargeting navigation event's attributes.
           retargeting_nav_event->server_redirect_urls.push_back(
               std::move(search_url));
+        } else {
+          // The retargeting_nav_event original request url is unreliable, since
+          // that navigation can be canceled.
+          retargeting_nav_event->original_request_url = std::move(search_url);
         }
         return retargeting_nav_event;
       } else {
