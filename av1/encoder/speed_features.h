@@ -446,6 +446,9 @@ typedef struct SPEED_FEATURES {
   // Whether fast wedge sign estimate is used
   int fast_wedge_sign_estimate;
 
+  // Whether to prune wedge search based on predictor difference
+  int prune_wedge_pred_diff_based;
+
   // These bit masks allow you to enable or disable intra modes for each
   // transform size separately.
   int intra_y_mode_mask[TX_SIZES];

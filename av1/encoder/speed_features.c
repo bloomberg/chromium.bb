@@ -199,6 +199,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_angle_estimation = 1;
   sf->selective_ref_frame = 1;
+  sf->prune_wedge_pred_diff_based = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -443,6 +444,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_accurate_subpel_search = USE_8_TAPS;
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
+  sf->prune_wedge_pred_diff_based = 0;
   sf->drop_ref = 0;
   sf->skip_intra_in_interframe = 1;
   sf->txb_split_cap = 1;

@@ -7894,6 +7894,19 @@ static int64_t build_and_cost_compound_type(
                                          preds1, residual1, diff10, strides);
     *calc_pred_masked_compound = 0;
   }
+  if (cpi->sf.prune_wedge_pred_diff_based && compound_type == COMPOUND_WEDGE) {
+    unsigned int sse;
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      (void)cpi->fn_ptr[bsize].vf(CONVERT_TO_BYTEPTR(*preds0), *strides,
+                                  CONVERT_TO_BYTEPTR(*preds1), *strides, &sse);
+    else
+      (void)cpi->fn_ptr[bsize].vf(*preds0, *strides, *preds1, *strides, &sse);
+    const unsigned int mse =
+        ROUND_POWER_OF_TWO(sse, num_pels_log2_lookup[bsize]);
+    // If two predictors are very similar, skip wedge compound mode search
+    if (mse < 8 || (!have_newmv_in_inter_mode(this_mode) && mse < 64))
+      return INT64_MAX;
+  }
 
   best_rd_cur =
       pick_interinter_mask(cpi, x, bsize, *preds0, *preds1, residual1, diff10);
