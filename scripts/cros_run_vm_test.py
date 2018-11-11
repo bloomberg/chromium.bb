@@ -61,7 +61,7 @@ class VMTest(object):
   def __del__(self):
     self._StopVM()
 
-    logging.info('Time elapsed %s.',
+    logging.info('Time elapsed: %s',
                  datetime.datetime.utcnow() - self.start_time)
 
   def Run(self):
@@ -202,8 +202,8 @@ class VMTest(object):
     Args:
       result: cros_build_lib.CommandResult object.
     """
-    result_str = 'succeeded' if result.returncode == 0 else 'failed'
-    logging.info('Tests %s.', result_str)
+    name = self.args[0] if self.args else 'Test process'
+    logging.info('%s exited with status code %d.', name, result.returncode)
     if not self.output:
       return
 
