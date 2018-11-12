@@ -219,7 +219,8 @@ unpacker.Volume.ENCODING_TABLE = {
 // supproted by TextEncoder class. We may add more encodings but only if there's
 // evidence that such archives are widespread.
 unpacker.Volume.MIME_TO_ENCODING_TABLE = {
-  'Shift_JIS': 'Shift_JIS'
+  'Shift_JIS': 'Shift_JIS',
+  'UTF-8': 'UTF-8',  // macOS stores file names in UTF-8 without setting EFS
 };
 
 /**

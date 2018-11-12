@@ -45,6 +45,17 @@ function getUnzippedFileListRowEntriesSjisSubdir() {
 
 /**
  * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchiveMacOs file list entry.
+ */
+function getUnzippedFileListRowEntriesMacOsRoot() {
+  return [
+    // File name in non-ASCII (UTF-8) characters.
+    ['ファイル.dat', '16 bytes', 'DAT file', 'Jul 8, 2001, 12:34 PM']
+  ];
+}
+
+/**
+ * Returns the expected file list row entries after opening (unzipping) the
  * ENTRIES.zipArchiveWithAbsolutePaths file list entry.
  */
 function getUnzippedFileListRowEntriesAbsolutePathsRoot() {
@@ -462,6 +473,40 @@ testcase.zipFileOpenDownloadsShiftJIS = function() {
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
       const files = getUnzippedFileListRowEntriesSjisSubdir();
+      remoteCall.waitForFiles(appId, files).then(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests zip file open (aka unzip) from Downloads. The file name in the archive
+ * is encoded in UTF-8, but the language encoding flag bit is set to 0.
+ */
+testcase.zipFileOpenDownloadsMacOs = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing a zip file.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.zipArchiveMacOs], []);
+    },
+    // Select the zip file.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['archive_macos.zip'])
+          .then(this.next);
+    },
+    // Press the Enter key.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      const key = ['#file-list', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Check: the zip file content should be shown (unzip).
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      const files = getUnzippedFileListRowEntriesMacOsRoot();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
