@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "cwv_export.h"
 #import "cwv_navigation_type.h"
 
 @protocol CRIWVTranslateDelegate;
@@ -23,10 +22,6 @@ typedef NS_ENUM(NSInteger, CWVSSLErrorDecision) {
   // Ignore the error and reload the page.
   CWVSSLErrorDecisionOverrideErrorAndReload,
 };
-
-// A key of NSError.userInfo. The corresponding value is CWVCertStatus which
-// indicates the type of the SSL error.
-FOUNDATION_EXPORT CWV_EXPORT NSErrorUserInfoKey CWVCertStatusKey;
 
 // Navigation delegate protocol for CWVWebViews.  Allows embedders to hook
 // page loading and receive events for navigation.
@@ -67,10 +62,6 @@ FOUNDATION_EXPORT CWV_EXPORT NSErrorUserInfoKey CWVCertStatusKey;
 // calling |decisionHandler| with CWVSSLErrorDecisionOverrideErrorAndReload. The
 // method can leave the failure as is by calling |decisionHandler| with
 // CWVSSLErrorDecisionDoNothing.
-//
-// error.localizedDescription contains localized description of the SSL error.
-// error.userInfo[CWVCertStatusKey] contains CWVCertStatus which indicates the
-// type of the SSL error.
 //
 // Note: When |decisionHandler| is called with
 // CWVSSLErrorDecisionOverrideErrorAndReload, it must not be called
