@@ -91,11 +91,22 @@ enum class NavigationDownloadPolicy {
   kDisallowViewSource = 1,
   kDisallowInterstitial = 2,
 
-  // TODO(csharrison): Temporary to collect metrics. Opener navigations should
-  // be disallowed from creating downloads. See http://crbug.com/632514.
+  // TODO(csharrison): Temporary to collect metrics. Some opener navigations
+  // should be disallowed from creating downloads. See http://crbug.com/632514.
+  // All of these policies are mutually exclusive, and more specific policies
+  // will be set if their conditions match.
+  //
+  // The navigation was initiated on an opener.
   kAllowOpener = 3,
+  // Opener navigation without a user gesture.
+  kAllowOpenerNoGesture = 4,
+  // Opener navigation initiated by a site that is cross origin from the target.
+  kAllowOpenerCrossOrigin = 5,
+  // Opener navigation initiated by a site that is cross origin from the target,
+  // and without a user gesture.
+  kAllowOpenerCrossOriginNoGesture = 6,
 
-  kMaxValue = kAllowOpener
+  kMaxValue = kAllowOpenerCrossOriginNoGesture
 };
 
 // Returns whether the given |policy| should allow for a download. This function

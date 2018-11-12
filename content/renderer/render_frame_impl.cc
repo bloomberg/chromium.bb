@@ -491,7 +491,25 @@ WebURLRequest CreateURLRequestForNavigation(
   return request;
 }
 
+NavigationDownloadPolicy GetDownloadPolicy(
+    bool is_opener_navigation,
+    const blink::WebURLRequest& request,
+    const WebSecurityOrigin& current_origin) {
+  if (!is_opener_navigation)
+    return NavigationDownloadPolicy::kAllow;
+  bool gesture = request.HasUserGesture();
+  bool cross_origin = request.RequestorOrigin().CanAccess(current_origin);
+  if (!gesture && cross_origin)
+    return NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture;
+  if (!gesture)
+    return NavigationDownloadPolicy::kAllowOpenerNoGesture;
+  if (cross_origin)
+    return NavigationDownloadPolicy::kAllowOpenerCrossOrigin;
+  return NavigationDownloadPolicy::kAllowOpener;
+}
+
 CommonNavigationParams MakeCommonNavigationParams(
+    const WebSecurityOrigin& current_origin,
     const blink::WebLocalFrameClient::NavigationPolicyInfo& info,
     int load_flags,
     base::TimeTicks input_start) {
@@ -530,9 +548,8 @@ CommonNavigationParams MakeCommonNavigationParams(
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.url_request.GetExtraData());
   DCHECK(extra_data);
-  NavigationDownloadPolicy download_policy =
-      info.is_opener_navigation ? NavigationDownloadPolicy::kAllowOpener
-                                : NavigationDownloadPolicy::kAllow;
+  NavigationDownloadPolicy download_policy = GetDownloadPolicy(
+      info.is_opener_navigation, info.url_request, current_origin);
   return CommonNavigationParams(
       info.url_request.Url(), referrer, extra_data->transition_type(),
       navigation_type, download_policy,
@@ -6769,7 +6786,8 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
           std::move(info.navigation_initiator_handle), 0));
 
   GetFrameHost()->BeginNavigation(
-      MakeCommonNavigationParams(info, load_flags, info.input_start),
+      MakeCommonNavigationParams(frame_->GetSecurityOrigin(), info, load_flags,
+                                 info.input_start),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
 

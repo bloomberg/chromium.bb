@@ -43,6 +43,9 @@ bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy) {
     case NavigationDownloadPolicy::kDisallowInterstitial:
       return false;
     case NavigationDownloadPolicy::kAllowOpener:
+    case NavigationDownloadPolicy::kAllowOpenerNoGesture:
+    case NavigationDownloadPolicy::kAllowOpenerCrossOrigin:
+    case NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture:
       return true;
   }
 }
