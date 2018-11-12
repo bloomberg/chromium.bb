@@ -371,8 +371,8 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
   switch (reason) {
     case ScriptStreamer::kNotHTTP:
       return "not http/https protocol";
-    case ScriptStreamer::kReload:
-      return "reload event";
+    case ScriptStreamer::kRevalidate:
+      return "revalidation event";
     case ScriptStreamer::kContextNotValid:
       return "script context not valid";
     case ScriptStreamer::kEncodingNotSupported:
@@ -395,6 +395,10 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "start streaming not called";
     case ScriptStreamer::kErrorOccurred:
       return "an error occurred";
+    case ScriptStreamer::kStreamingDisabled:
+      return "already disabled streaming";
+    case ScriptStreamer::kSecondScriptResourceUse:
+      return "already used streamed data";
     case ScriptStreamer::kWorkerTopLevelScript:
       return "worker top-level scripts are not streamable";
     case ScriptStreamer::kAlreadyLoaded:
