@@ -165,6 +165,23 @@
   }
 }
 
+- (void)removeFromModelItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
+  // Sort and enumerate in reverse order to delete the items from the collection
+  // view model.
+  NSArray* sortedIndexPaths =
+      [indexPaths sortedArrayUsingSelector:@selector(compare:)];
+  for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+    NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+    NSUInteger index =
+        [self.tableViewModel indexInItemTypeForIndexPath:indexPath];
+    [self.tableViewModel removeItemWithType:itemType
+                  fromSectionWithIdentifier:sectionIdentifier
+                                    atIndex:index];
+  }
+}
+
 #pragma mark - ChromeTableViewConsumer
 
 - (void)reconfigureCellsForItems:(NSArray*)items {

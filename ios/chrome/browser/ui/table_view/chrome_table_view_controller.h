@@ -83,6 +83,10 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 - (void)performBatchTableViewUpdates:(void (^)(void))updates
                           completion:(void (^)(BOOL finished))completion;
 
+// Removes the items at |indexPaths| from the model only. The changes need to be
+// also done on the table view to avoid being in an inconsistent state.
+- (void)removeFromModelItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths;
+
 // Methods for reconfiguring and reloading the table view are provided by
 // ChromeTableViewConsumer.
 
