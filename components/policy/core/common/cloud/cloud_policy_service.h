@@ -37,7 +37,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
     // Invoked when CloudPolicyService has finished initializing (any initial
     // policy load activity has completed and the CloudPolicyClient has
     // been registered, if possible).
-    virtual void OnInitializationCompleted(CloudPolicyService* service) = 0;
+    virtual void OnCloudPolicyServiceInitializationCompleted() = 0;
     virtual ~Observer() {}
   };
 

@@ -26,7 +26,8 @@ class MockCloudPolicyServiceObserver : public CloudPolicyService::Observer {
   MockCloudPolicyServiceObserver() {}
   ~MockCloudPolicyServiceObserver() override {}
 
-  MOCK_METHOD1(OnInitializationCompleted, void(CloudPolicyService* service));
+  MOCK_METHOD0(OnCloudPolicyServiceInitializationCompleted, void());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyServiceObserver);
 };
@@ -260,14 +261,14 @@ TEST_F(CloudPolicyServiceTest, StoreLoadAfterCreation) {
   MockCloudPolicyServiceObserver observer;
   service_.AddObserver(&observer);
   // Service should be marked as initialized and observer should be called back.
-  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(1);
+  EXPECT_CALL(observer, OnCloudPolicyServiceInitializationCompleted()).Times(1);
   store_.NotifyStoreLoaded();
   EXPECT_TRUE(service_.IsInitializationComplete());
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Now, the next time the store is loaded, the observer should not be called
   // again.
-  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(0);
+  EXPECT_CALL(observer, OnCloudPolicyServiceInitializationCompleted()).Times(0);
   store_.NotifyStoreLoaded();
   service_.RemoveObserver(&observer);
 }

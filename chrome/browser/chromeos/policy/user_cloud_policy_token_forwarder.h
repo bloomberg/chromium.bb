@@ -40,7 +40,7 @@ class UserCloudPolicyTokenForwarder
   void Shutdown() override;
 
   // CloudPolicyService::Observer:
-  void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnCloudPolicyServiceInitializationCompleted() override;
 
  private:
   void Initialize();
