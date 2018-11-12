@@ -687,10 +687,11 @@ void AutocompleteMatch::ApplyPedal() {
 
   // Note: Always use empty classifications for empty text and non-empty
   // classifications for non-empty text.
-  contents = pedal->GetLabelStrings().suggestion_contents;
+  const auto& labels = pedal->GetLabelStrings();
+  contents = labels.suggestion_contents;
   contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
-  description.clear();
-  description_class.clear();
+  description = labels.hint;
+  description_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
