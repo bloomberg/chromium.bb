@@ -96,8 +96,7 @@ class ReadingListStoreTest : public testing::Test,
         .WillByDefault(testing::Return(true));
     ClearState();
     reading_list_store_ = std::make_unique<ReadingListStore>(
-        base::BindOnce(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
-                       std::move(store_)),
+        syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)),
         processor_.CreateForwardingProcessor());
     model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
     reading_list_store_->SetReadingListModel(model_.get(), this, &clock_);

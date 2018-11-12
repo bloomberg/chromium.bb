@@ -84,12 +84,14 @@ ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
 }
 
 // static
-void ModelTypeStoreTestUtil::MoveStoreToCallback(
-    std::unique_ptr<ModelTypeStore> store,
-    ModelType type,
-    ModelTypeStore::InitCallback callback) {
-  ASSERT_TRUE(store);
-  std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
+OnceModelTypeStoreFactory ModelTypeStoreTestUtil::MoveStoreToFactory(
+    std::unique_ptr<ModelTypeStore> store) {
+  return base::BindOnce(
+      [](std::unique_ptr<ModelTypeStore> store, ModelType type,
+         ModelTypeStore::InitCallback callback) {
+        std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
+      },
+      std::move(store));
 }
 
 // static
