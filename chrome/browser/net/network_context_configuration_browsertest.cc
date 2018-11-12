@@ -42,6 +42,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -68,6 +69,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -1490,7 +1492,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
 // file URLs.
 class NetworkContextConfigurationFilePacBrowserTest
-    : public NetworkContextConfigurationBrowserTest {
+    : public NetworkContextConfigurationBrowserTest,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   NetworkContextConfigurationFilePacBrowserTest() {}
 
@@ -1512,8 +1515,37 @@ class NetworkContextConfigurationFilePacBrowserTest
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());
   }
 
+  void SetUpOnMainThread() override {
+    NetworkContextConfigurationBrowserTest::SetUpOnMainThread();
+
+    // The network service will have just been killed if network_service_state
+    // is kRestarted. Make sure it knows about the correct network state before
+    // continuing.
+    network::NetworkConnectionTracker* tracker =
+        content::GetNetworkConnectionTracker();
+    auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
+    run_loop_.reset(new base::RunLoop());
+    tracker->AddNetworkConnectionObserver(this);
+    while (!tracker->GetConnectionType(
+               &connection_type,
+               base::BindOnce(&NetworkContextConfigurationFilePacBrowserTest::
+                                  OnConnectionChanged,
+                              base::Unretained(this))) ||
+           connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
+      run_loop_->Run();
+      run_loop_.reset(new base::RunLoop());
+    }
+    tracker->RemoveNetworkConnectionObserver(this);
+  }
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    run_loop_->Quit();
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFilePacBrowserTest);
 };

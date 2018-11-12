@@ -18,6 +18,44 @@ enum ConnectionType {
   CONNECTION_LAST = CONNECTION_BLUETOOTH
 };
 
+// This needs to match the definition of net::ConnectionSubtype.
+enum ConnectionSubtype {
+  SUBTYPE_UNKNOWN = 0,
+  SUBTYPE_NONE,
+  SUBTYPE_OTHER,
+  SUBTYPE_GSM,
+  SUBTYPE_IDEN,
+  SUBTYPE_CDMA,
+  SUBTYPE_1XRTT,
+  SUBTYPE_GPRS,
+  SUBTYPE_EDGE,
+  SUBTYPE_UMTS,
+  SUBTYPE_EVDO_REV_0,
+  SUBTYPE_EVDO_REV_A,
+  SUBTYPE_HSPA,
+  SUBTYPE_EVDO_REV_B,
+  SUBTYPE_HSDPA,
+  SUBTYPE_HSUPA,
+  SUBTYPE_EHRPD,
+  SUBTYPE_HSPAP,
+  SUBTYPE_LTE,
+  SUBTYPE_LTE_ADVANCED,
+  SUBTYPE_BLUETOOTH_1_2,
+  SUBTYPE_BLUETOOTH_2_1,
+  SUBTYPE_BLUETOOTH_3_0,
+  SUBTYPE_BLUETOOTH_4_0,
+  SUBTYPE_ETHERNET,
+  SUBTYPE_FAST_ETHERNET,
+  SUBTYPE_GIGABIT_ETHERNET,
+  SUBTYPE_10_GIGABIT_ETHERNET,
+  SUBTYPE_WIFI_B,
+  SUBTYPE_WIFI_G,
+  SUBTYPE_WIFI_N,
+  SUBTYPE_WIFI_AC,
+  SUBTYPE_WIFI_AD,
+  SUBTYPE_LAST = SUBTYPE_WIFI_AD
+};
+
 // A client interface that subscribes to network change events from
 // NetworkChangeManager.
 interface NetworkChangeManagerClient {
@@ -43,8 +81,22 @@ interface NetworkChangeManagerClient {
   OnNetworkChanged(ConnectionType type);
 };
 
-// An interface that broadcasts network change events.
+// An interface for facilitating notifications of network change events.
 interface NetworkChangeManager {
   // Requests to receive notification when there is a network change.
   RequestNotifications(NetworkChangeManagerClient client_ptr);
+
+  // Notifies the network service that the network configuration has changed.
+  // This is needed for ChromeOS because only one process can listen for network
+  // changes from Shill, and currently that has to be the browser process. This
+  // allows the browser process to forward the network changes to the network
+  // service.
+  [EnableIf=is_chromeos]
+  OnNetworkChanged(
+      bool dns_changed,
+      bool ip_address_changed,
+      bool connection_type_changed,
+      ConnectionType new_connection_type,
+      bool connection_subtype_changed,
+      ConnectionSubtype new_connection_subtype);
 };
