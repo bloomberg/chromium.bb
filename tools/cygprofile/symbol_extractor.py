@@ -161,7 +161,12 @@ def _SymbolInfosFromStream(objdump_lines):
   for line in objdump_lines:
     symbol_info = _FromObjdumpLine(line.rstrip('\n'))
     if symbol_info is not None:
-      name_to_offsets[symbol_info.name].append(symbol_info.offset)
+      # On ARM the LLD linker inserts pseudo-functions (thunks) that allow
+      # jumping distances farther than 16 MiB. Such thunks are known to often
+      # reside on multiple offsets, they are not instrumented and hence they do
+      # not reach the orderfiles. Exclude the thunk symbols from the warning.
+      if not symbol_info.name.startswith('__ThumbV7PILongThunk_'):
+        name_to_offsets[symbol_info.name].append(symbol_info.offset)
       symbol_infos.append(symbol_info)
 
   repeated_symbols = filter(lambda s: len(name_to_offsets[s]) > 1,
