@@ -1969,6 +1969,7 @@ public class ChromeTabbedActivity
         if (!mLayoutManager.overviewVisible()) {
             getCompositorViewHolder().hideKeyboard(() -> mLayoutManager.showOverview(true));
             updateAccessibilityState(false);
+            TasksUma.recordTabLaunchType(getCurrentTabModel());
         } else {
             Layout activeLayout = mLayoutManager.getActiveLayout();
             if (activeLayout instanceof StackLayout) {

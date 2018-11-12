@@ -262,6 +262,13 @@ public class Tab
     private final @Nullable @TabLaunchType Integer mLaunchType;
 
     /**
+     * Saves how this tab was initially launched so that we can record metrics on how the
+     * tab was created. This is different than {@code mLaunchType}, since {@code mLaunchType} will
+     * be overridden to "FROM_RESTORE" during tab restoration.
+     */
+    private @Nullable @TabLaunchType Integer mLaunchTypeAtCreation;
+
+    /**
      * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
      * stored to be inflated on demand using unfreezeContents(). If this is not null, there is no
      * WebContents around. Upon tab switch WebContents will be unfrozen and the variable will be set
@@ -498,6 +505,7 @@ public class Tab
                 ContextUtils.getApplicationContext(), ChromeActivity.getThemeId());
         mWindowAndroid = window;
         mLaunchType = type;
+        mLaunchTypeAtCreation = type;
         mIsDetached = getActivity() == null;
 
         Resources resources = mThemedApplicationContext.getResources();
@@ -569,6 +577,7 @@ public class Tab
         mIsTitleDirectionRtl = mTitle != null
                 && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
                         == LocalizationUtils.RIGHT_TO_LEFT;
+        mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
     }
 
     /**
@@ -804,6 +813,7 @@ public class Tab
         tabState.shouldPreserve = mShouldPreserve;
         tabState.timestampMillis = mTimestampMillis;
         tabState.themeColor = getThemeColor();
+        tabState.tabLaunchTypeAtCreation = mLaunchTypeAtCreation;
         return tabState;
     }
 
@@ -2492,6 +2502,13 @@ public class Tab
      */
     public @TabLaunchType int getLaunchType() {
         return mLaunchType;
+    }
+
+    /**
+     * @return The reason the Tab was launched.
+     */
+    public @Nullable @TabLaunchType Integer getLaunchTypeAtInitialTabCreation() {
+        return mLaunchTypeAtCreation;
     }
 
     /**
