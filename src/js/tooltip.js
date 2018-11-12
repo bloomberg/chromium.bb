@@ -15,61 +15,81 @@ var cca = cca || {};
 cca.tooltip = cca.tooltip || {};
 
 /**
- * Sets up the tooltip.
+ * Wrapper element that shows tooltip.
+ * @type {HTMLElement}
+ */
+cca.tooltip.wrapper_ = null;
+
+/**
+ * Hovered element whose tooltip to be shown.
+ * @type {HTMLElement}
+ */
+cca.tooltip.hovered_ = null;
+
+/**
+ * Sets up tooltip for button/input with i18n-label attribute.
  */
 cca.tooltip.setup = function() {
-  // Add tooltip handlers to every element with the i18n-label attribute.
-  document.querySelectorAll('*[i18n-label]').forEach((element) => {
-    var handler = cca.tooltip.show_.bind(undefined, element);
-    element.addEventListener('mouseover', handler);
-    element.addEventListener('focus', handler);
+  cca.tooltip.wrapper_ = document.querySelector('#tooltip');
+  document.querySelectorAll(
+      'button[i18n-label], input[i18n-label]').forEach((element) => {
+    var handler = () => {
+      // Handler hides tooltip only when it's for the element.
+      if (element == cca.tooltip.hovered_) {
+        cca.tooltip.hide();
+      }
+    };
+    element.addEventListener('mouseout', handler);
+    element.addEventListener('click', handler);
+    element.addEventListener('mouseover',
+        cca.tooltip.show_.bind(undefined, element));
   });
 };
 
 /**
- * Positions the tooltip by the element.
- * @param {HTMLElement} element Element for tooltip to be positioned to.
+ * Positions the tooltip wrapper over the hovered element.
  * @private
  */
-cca.tooltip.position_ = function(element) {
-  var tooltip = document.querySelector('#tooltip');
+cca.tooltip.position_ = function() {
   const [edgeMargin, elementMargin] = [5, 8];
-  var rect = element.getBoundingClientRect();
-  var tooltipTop = rect.top - tooltip.offsetHeight - elementMargin;
+  var wrapper = cca.tooltip.wrapper_;
+  var hovered = cca.tooltip.hovered_;
+  var rect = hovered.getBoundingClientRect();
+  var tooltipTop = rect.top - wrapper.offsetHeight - elementMargin;
   if (tooltipTop < edgeMargin) {
     tooltipTop = rect.bottom + elementMargin;
   }
-  tooltip.style.top = tooltipTop + 'px';
+  wrapper.style.top = tooltipTop + 'px';
 
-  // Center over the element, but avoid touching edges.
-  var elementCenter = rect.left + element.offsetWidth / 2;
+  // Center over the hovered element but avoid touching edges.
+  var hoveredCenter = rect.left + hovered.offsetWidth / 2;
   var left = Math.min(
-      Math.max(elementCenter - tooltip.clientWidth / 2, edgeMargin),
-      document.body.offsetWidth - tooltip.offsetWidth - edgeMargin);
-  tooltip.style.left = Math.round(left) + 'px';
+      Math.max(hoveredCenter - wrapper.clientWidth / 2, edgeMargin),
+      document.body.offsetWidth - wrapper.offsetWidth - edgeMargin);
+  wrapper.style.left = Math.round(left) + 'px';
 };
 
 /**
- * Shows a tooltip over the element.
- * @param {HTMLElement} element Element whose tooltip to be shown.
+ * Shows a tooltip over the hovered element.
+ * @param {HTMLElement} element Hovered element whose tooltip to be shown.
  * @private
  */
 cca.tooltip.show_ = function(element) {
-  var tooltip = document.querySelector('#tooltip');
-  var hide = () => {
-    tooltip.classList.remove('visible');
-    element.removeEventListener('mouseout', hide);
-    element.removeEventListener('click', hide);
-    element.removeEventListener('blur', hide);
-  };
-  element.addEventListener('mouseout', hide);
-  element.addEventListener('click', hide);
-  element.addEventListener('blur', hide);
-
-  tooltip.classList.remove('visible');
-  tooltip.offsetWidth; // Force calculation to hide tooltip if shown.
-  tooltip.textContent = chrome.i18n.getMessage(
+  cca.tooltip.hide();
+  cca.tooltip.wrapper_.textContent = chrome.i18n.getMessage(
       element.getAttribute('i18n-label'));
-  cca.tooltip.position_(element);
-  tooltip.classList.add('visible');
+  cca.tooltip.hovered_ = element;
+  cca.tooltip.position_();
+  cca.tooltip.wrapper_.classList.add('visible');
+};
+
+/**
+ * Hides the shown tooltip if any.
+ */
+cca.tooltip.hide = function() {
+  if (cca.tooltip.hovered_) {
+    cca.tooltip.hovered_ = null;
+    cca.tooltip.wrapper_.textContent = '';
+    cca.tooltip.wrapper_.classList.remove('visible');
+  }
 };

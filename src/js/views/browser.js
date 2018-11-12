@@ -108,8 +108,6 @@ cca.views.Browser.prototype.onEnter = function(opt_arguments) {
     index = this.pictures.length - 1;
   }
   this.setSelectedIndex(index);
-
-  this.onResize();
   this.scrollTracker_.start();
 };
 
@@ -117,7 +115,6 @@ cca.views.Browser.prototype.onEnter = function(opt_arguments) {
  * @override
  */
 cca.views.Browser.prototype.onActivate = function() {
-  cca.views.GalleryBase.prototype.onActivate.apply(this, arguments);
   if (!this.scroller_.animating)
     this.synchronizeFocus();
 };
@@ -252,6 +249,7 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
 
   var replaceElement = function(wrapper, element) {
     wrapper.replaceChild(element, wrapper.firstElementChild);
+    cca.views.Browser.initElementTabIndex_(element);
     cca.views.Browser.updateElementSize_(wrapper);
   };
 
@@ -259,7 +257,6 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
     var img = wrappedElement(wrapper, 'IMG');
     if (!img) {
       img = document.createElement('img');
-      img.tabIndex = -1;
       img.onload = function() {
         replaceElement(wrapper, img);
       };
@@ -274,7 +271,6 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
 
   var updateVideo = function(wrapper, url) {
     var video = document.createElement('video');
-    video.tabIndex = -1;
     video.controls = true;
     video.setAttribute('controlsList', 'nodownload nofullscreen');
     video.onloadeddata = function() {
@@ -317,11 +313,15 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
  * @override
  */
 cca.views.Browser.prototype.setSelectedIndex = function(index) {
+  var scrollMode = (this.lastSelectedIndex() === null) ?
+      cca.util.SmoothScroller.Mode.INSTANT :
+      cca.util.SmoothScroller.Mode.SMOOTH;
   cca.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
 
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
-    cca.util.scrollToCenter(selectedPicture.element, this.scroller_);
+    cca.util.scrollToCenter(
+        selectedPicture.element, this.scroller_, scrollMode);
   }
   this.updateButtons_();
 
@@ -394,9 +394,10 @@ cca.views.Browser.prototype.onPictureDeleted = function(picture) {
  */
 cca.views.Browser.prototype.addPictureToDOM = function(picture) {
   var wrapper = document.createElement('div');
+  cca.views.Browser.initElementTabIndex_(wrapper);
+  cca.util.makeUnfocusableByMouse(wrapper);
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
-  wrapper.tabIndex = -1;
   wrapper.setAttribute('role', 'option');
   wrapper.setAttribute('aria-selected', 'false');
 
@@ -407,6 +408,7 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
     var isVideo = !thumbnailURL && picture.isMotionPicture;
     var element = wrapper.appendChild(document.createElement(
         isVideo ? 'video' : 'img'));
+    cca.views.Browser.initElementTabIndex_(element);
     var updateElementSize = () => {
       cca.views.Browser.updateElementSize_(wrapper);
     };
@@ -417,7 +419,6 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
     } else {
       element.onload = updateElementSize;
     }
-    element.tabIndex = -1;
     element.src = url;
 
     // Insert the picture's DOM element in a sorted timestamp order.
@@ -435,9 +436,6 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
     var domPicture = new cca.views.GalleryBase.DOMPicture(picture, wrapper);
     this.pictures.splice(index + 1, 0, domPicture);
 
-    wrapper.addEventListener('mousedown', event => {
-      event.preventDefault(); // Prevent focusing.
-    });
     wrapper.addEventListener('click', event => {
       // If scrolled while clicking, then discard this selection, since another
       // one will be choosen in the onScrollEnded handler.
@@ -446,11 +444,6 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
         return;
       }
       this.setSelectedIndex(this.pictures.indexOf(domPicture));
-    });
-    wrapper.addEventListener('focus', () => {
-      var index = this.pictures.indexOf(domPicture);
-      if (this.lastSelectedIndex() != index)
-        this.setSelectedIndex(index);
     });
   });
 };
@@ -469,8 +462,13 @@ cca.views.Browser.updateElementSize_ = function(wrapper) {
 };
 
 /**
- * @override
+ * Initializes the element's tabindex.
+ * @param {HTMLElement} element Element whose tabindex to be initialized.
+ * @private
  */
-cca.views.Browser.prototype.ariaListNode = function() {
-  return document.querySelector('#browser');
+cca.views.Browser.initElementTabIndex_ = function(element) {
+  if (!this.active) {
+    element.dataset.tabindex = '-1';
+  }
+  element.tabIndex = -1;
 };

@@ -46,12 +46,6 @@ cca.views.GalleryBase = function(router, model, rootElement, name) {
    * @protected
    */
   this.selectedIndexes = [];
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.forceUpcomingFocusSync_ = false;
 };
 
 /**
@@ -199,58 +193,30 @@ cca.views.GalleryBase.prototype.pictureIndex = function(picture) {
 };
 
 /**
- * @override
- */
-cca.views.GalleryBase.prototype.onActivate = function() {
-  // Tab indexes have to be recalculated, since they might have changed while
-  // the view wasn't active. Therefore, the restoring logic in the View class
-  // might have restored old tabIndex values.
-  var selectedPicture = this.lastSelectedPicture();
-  for (var index = 0; index < this.pictures.length; index++) {
-    var picture = this.pictures[index];
-    picture.element.tabIndex = (picture == selectedPicture) ? 0 : -1;
-  }
-};
-
-/**
- * Sets the picture as selected.
- * @param {number} index Index of the picture to be selected.
- * @protected
- */
-cca.views.GalleryBase.prototype.setPictureSelected = function(index) {
-  this.pictures[index].element.tabIndex = this.active ? 0 : -1;
-  this.pictures[index].element.classList.add('selected');
-  this.pictures[index].element.setAttribute('aria-selected', 'true');
-
-  this.ariaListNode().setAttribute('aria-activedescendant',
-      this.pictures[index].element.id);
-};
-
-/**
- * Sets the picture as unselected.
- * @param {number} index Index of the picture to be unselected.
- * @protected
- */
-cca.views.GalleryBase.prototype.setPictureUnselected = function(index) {
-  this.pictures[index].element.tabIndex = -1;
-  this.pictures[index].element.classList.remove('selected');
-  this.pictures[index].element.setAttribute('aria-selected', 'false');
-};
-
-/**
  * Sets the selected index.
  * @param {number} index Index of the picture to be selected.
  * @protected
  */
 cca.views.GalleryBase.prototype.setSelectedIndex = function(index) {
+  var updateSelection = (element, select) => {
+    if (this.active) {
+      element.tabIndex = select ? 0 : -1;
+    } else {
+      element.tabIndex = -1;
+      element.dataset.tabindex = select ? '0' : '-1';
+    }
+    element.classList.toggle('selected', select);
+    element.setAttribute('aria-selected', select ? 'true' : 'false');
+  };
+  // Unselect selected pictures and select a new picture by the given index.
   var selectedIndexes = this.selectedIndexes;
-  for (var i = 0; i < selectedIndexes.length; i++) {
-    this.setPictureUnselected(selectedIndexes[i]);
-  }
+  selectedIndexes.forEach((selectedIndex) => {
+    updateSelection(this.pictures[selectedIndex].element, false);
+  });
   selectedIndexes.splice(0, selectedIndexes.length);
 
   if (index !== null) {
-    this.setPictureSelected(index);
+    updateSelection(this.pictures[index].element, true);
     selectedIndexes.push(index);
   }
 };
@@ -268,7 +234,6 @@ cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
   // was on the selected element, then after removing it from DOM, there will
   // be nothing focused, while we still want to restore the focus.
   var element = this.pictures[index].element;
-  this.forceUpcomingFocusSync_ = document.activeElement == element;
   element.parentNode.removeChild(element);
   this.pictures.splice(index, 1);
 
@@ -335,30 +300,13 @@ cca.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
 };
 
 /**
- * Provides node for the picture list to be used to set list aria attributes.
- * @return {HTMLElement}
- * @protected
- */
-cca.views.GalleryBase.prototype.ariaListNode = function() {
-  throw new Error('Not implemented.');
-};
-
-/**
- * Synchronizes focus with the selection, if it was previously set on anything
- * else.
+ * Synchronizes focus with the selection if the view is active.
  * @protected
  */
 cca.views.GalleryBase.prototype.synchronizeFocus = function() {
-  // Force focusing only once, after deleting a picture. This is because, the
-  // focus might be lost since the deleted picture is removed from DOM.
-  var force = this.forceUpcomingFocusSync_;
-  this.forceUpcomingFocusSync_ = false;
-
   // Synchronize focus on the last selected picture.
   var selectedPicture = this.lastSelectedPicture();
-  if (selectedPicture && (document.activeElement != document.body || force) &&
-      selectedPicture.element.getAttribute('tabindex') !== undefined &&
-      selectedPicture.element.getAttribute('tabindex') != -1) {
+  if (selectedPicture && this.active) {
     selectedPicture.element.focus();
   }
 };

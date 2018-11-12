@@ -46,12 +46,6 @@ cca.View = function(router, rootElement, name) {
    * @private
    */
   this.name_ = name;
-
-  /**
-   * Remembered tabIndex attribute values of elements on the view.
-   * @type {Array.<HTMLElement, string>}
-   */
-  this.tabIndexes_ = [];
 };
 
 cca.View.prototype = {
@@ -124,40 +118,25 @@ cca.View.prototype.leave = function() {
 };
 
 /**
- * Activates the view. Makes all of the elements on the view focusable.
+ * Activates the view by restoring child elements' tabindex.
  */
 cca.View.prototype.activate = function() {
-  // Restore tabIndex attribute values.
-  for (var index = 0; index < this.tabIndexes_.length; index++) {
-    var element = this.tabIndexes_[index][0];
-    var rememberedTabIndex = this.tabIndexes_[index][1];
-    element.tabIndex = rememberedTabIndex;
-  }
-
+  this.rootElement_.querySelectorAll('[data-tabindex]').forEach((element) => {
+    element.setAttribute('tabindex', element.dataset.tabindex);
+    element.removeAttribute('data-tabindex');
+  });
   this.active_ = true;
   this.onActivate();
 };
 
 /**
- * Inactivates the view. Makes all of the elements on the view not focusable.
+ * Inactivates the view by making child elements unfocusable.
  */
 cca.View.prototype.inactivate = function() {
   this.onInactivate();
   this.active_ = false;
-
-  // Remember tabIndex attribute values, and set them to -1, so the elements
-  // are not focusable.
-  var childElements = this.rootElement_.querySelectorAll('[tabindex]');
-  var elementsArray = Array.prototype.slice.call(childElements);
-  if (this.rootElement_.getAttribute('tabindex') !== null)
-    elementsArray.push(this.rootElement_);
-  this.tabIndexes_ = [];
-  for (var index = 0; index < elementsArray.length; index++) {
-    var element = elementsArray[index];
-    this.tabIndexes_.push([
-      element,
-      element.tabIndex,
-    ]);
-    element.tabIndex = -1;
-  }
+  this.rootElement_.querySelectorAll('[tabindex]').forEach((element) => {
+    element.dataset.tabindex = element.getAttribute('tabindex');
+    element.setAttribute('tabindex', '-1');
+  });
 };
