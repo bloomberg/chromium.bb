@@ -105,8 +105,16 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintBoxDecorationBackground(local_paint_info)) {
-    if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible &&
-        layout_replaced_.HasBoxDecorationBackground()) {
+    bool should_paint_background = false;
+    if (layout_replaced_.StyleRef().Visibility() == EVisibility::kVisible) {
+      if (layout_replaced_.HasBoxDecorationBackground())
+        should_paint_background = true;
+      if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
+          layout_replaced_.HasEffectiveWhitelistedTouchAction()) {
+        should_paint_background = true;
+      }
+    }
+    if (should_paint_background) {
       if (layout_replaced_.HasLayer() &&
           layout_replaced_.Layer()->GetCompositingState() ==
               kPaintsIntoOwnBacking &&

@@ -1937,6 +1937,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       return TouchAction::kTouchActionNone;
     return StyleRef().GetEffectiveTouchAction();
   }
+  bool HasEffectiveWhitelistedTouchAction() const {
+    return EffectiveWhitelistedTouchAction() != TouchAction::kTouchActionAuto;
+  }
 
   // Whether this object's Node has a blocking touch event handler on itself
   // or an ancestor.

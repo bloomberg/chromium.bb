@@ -517,6 +517,20 @@ TEST_P(ScrollingCoordinatorTest, elementTouchEventHandlerPassive) {
   EXPECT_TRUE(region.IsEmpty());
 }
 
+TEST_P(ScrollingCoordinatorTest, TouchActionRectsOnImage) {
+  LoadHTML(R"HTML(
+    <img id="image" style="width: 100px; height: 100px; touch-action: none;">
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  cc::Layer* cc_layer = mapping->ScrollingContentsLayer()->CcLayer();
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 100, 100));
+}
+
 TEST_P(ScrollingCoordinatorTest, touchEventHandlerBoth) {
   RegisterMockedHttpURLLoad("touch-event-handler-both.html");
   NavigateTo(base_url_ + "touch-event-handler-both.html");
