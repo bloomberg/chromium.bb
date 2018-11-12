@@ -2074,10 +2074,9 @@ class ComputedStyle : public ComputedStyleBase,
   // will-change:transform should result in the same rendering behavior as
   // having a transform, including the creation of a containing block for fixed
   // position descendants.
-  CORE_EXPORT bool HasTransformRelatedProperty() const {
+  bool HasTransformRelatedProperty() const {
     return HasTransform() || Preserves3D() || HasPerspective() ||
-           HasWillChangeTransformHint() ||
-           HasTransformAnimationWithForwardsOrBothFillMode();
+           HasWillChangeTransformHint();
   }
 
   // Paint utility functions.
@@ -2124,6 +2123,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool CanContainFixedPositionObjects(bool is_document_element) const {
     return HasTransformRelatedProperty() ||
+           HasTransformAnimationWithForwardsOrBothFillMode() ||
            // Filter establishes containing block for non-document elements:
            // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
            (!is_document_element && HasFilter());
