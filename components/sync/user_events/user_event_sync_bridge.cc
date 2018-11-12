@@ -90,8 +90,12 @@ UserEventSyncBridge::CreateMetadataChangeList() {
 base::Optional<ModelError> UserEventSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_data) {
-  NOTREACHED();
-  return {};
+  DCHECK(entity_data.empty());
+  DCHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(!change_processor()->TrackedAccountId().empty());
+  ReadAllDataAndResubmit();
+  return ApplySyncChanges(std::move(metadata_change_list),
+                          std::move(entity_data));
 }
 
 base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
@@ -145,24 +149,10 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
-void UserEventSyncBridge::OnSyncStarting(
-    const DataTypeActivationRequest& request) {
-  DCHECK(!request.authenticated_account_id.empty());
-  DCHECK(syncing_account_id_.empty());
-
-  syncing_account_id_ = request.authenticated_account_id;
-
-  if (store_ && change_processor()->IsTrackingMetadata()) {
-    ReadAllDataAndResubmit();
-  }
-}
-
 ModelTypeSyncBridge::StopSyncResponse UserEventSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be stopped after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
-
-  syncing_account_id_.clear();
 
   if (delete_metadata_change_list) {
     // Delete everything except user consents. With DICE the signout may happen
@@ -207,7 +197,6 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
 }
 
 void UserEventSyncBridge::ReadAllDataAndResubmit() {
-  DCHECK(!syncing_account_id_.empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
   store_->ReadAllData(
@@ -218,7 +207,7 @@ void UserEventSyncBridge::ReadAllDataAndResubmit() {
 void UserEventSyncBridge::OnReadAllDataToResubmit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<RecordList> data_records) {
-  if (syncing_account_id_.empty()) {
+  if (change_processor()->TrackedAccountId().empty()) {
     // Meanwhile the sync has been disabled. We will try next time.
     return;
   }
@@ -229,24 +218,32 @@ void UserEventSyncBridge::OnReadAllDataToResubmit(
     return;
   }
 
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+
   for (const Record& r : *data_records) {
     auto specifics = std::make_unique<UserEventSpecifics>();
     if (specifics->ParseFromString(r.value) &&
         specifics->event_case() ==
             UserEventSpecifics::EventCase::kUserConsent &&
-        specifics->user_consent().account_id() == syncing_account_id_) {
-      RecordUserEventImpl(std::move(specifics));
+        specifics->user_consent().account_id() ==
+            change_processor()->TrackedAccountId()) {
+      change_processor()->Put(r.id, MoveToEntityData(std::move(specifics)),
+                              batch->GetMetadataChangeList());
     }
   }
+
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&UserEventSyncBridge::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::RecordUserEvent(
     std::unique_ptr<UserEventSpecifics> specifics) {
   // TODO(vitaliii): Sanity-check specifics->user_consent().account_id() against
-  // syncing_account_id_, maybe DCHECK.
+  // change_processor()->TrackedAccountId(), maybe DCHECK.
   DCHECK(!specifics->has_user_consent() ||
          !specifics->user_consent().account_id().empty());
-  if (change_processor()->IsTrackingMetadata()) {
+  if (store_) {
     RecordUserEventImpl(std::move(specifics));
     return;
   }
@@ -260,10 +257,18 @@ std::string UserEventSyncBridge::GetStorageKeyFromSpecificsForTest(
   return GetStorageKeyFromSpecifics(specifics);
 }
 
+std::unique_ptr<ModelTypeStore> UserEventSyncBridge::StealStoreForTest() {
+  return std::move(store_);
+}
+
 void UserEventSyncBridge::RecordUserEventImpl(
     std::unique_ptr<UserEventSpecifics> specifics) {
   DCHECK(store_);
-  DCHECK(change_processor()->IsTrackingMetadata());
+
+  if (specifics->event_case() != UserEventSpecifics::EventCase::kUserConsent &&
+      !change_processor()->IsTrackingMetadata()) {
+    return;
+  }
 
   std::string storage_key = GetStorageKeyFromSpecifics(*specifics);
   // There are two scenarios we need to guard against here. First, the given
@@ -286,15 +291,22 @@ void UserEventSyncBridge::RecordUserEventImpl(
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   batch->WriteData(storage_key, specifics->SerializeAsString());
 
-  change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
-                          batch->GetMetadataChangeList());
+  // For consents, only Put() if account ID matches, and unconditionally for
+  // other event types.
+  if (specifics->event_case() != UserEventSpecifics::EventCase::kUserConsent ||
+      specifics->user_consent().account_id() ==
+          change_processor()->TrackedAccountId()) {
+    DCHECK(change_processor()->IsTrackingMetadata());
+    change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
+                            batch->GetMetadataChangeList());
+  }
+
   store_->CommitWriteBatch(std::move(batch),
                            base::BindOnce(&UserEventSyncBridge::OnCommit,
                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::ProcessQueuedEvents() {
-  DCHECK(change_processor()->IsTrackingMetadata());
   for (std::unique_ptr<sync_pb::UserEventSpecifics>& event :
        deferred_user_events_while_initializing_) {
     RecordUserEventImpl(std::move(event));
@@ -324,8 +336,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
     change_processor()->ReportError(*error);
   } else {
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
-    DCHECK(change_processor()->IsTrackingMetadata());
-    if (!syncing_account_id_.empty()) {
+    if (!change_processor()->TrackedAccountId().empty()) {
       ReadAllDataAndResubmit();
     }
     ProcessQueuedEvents();

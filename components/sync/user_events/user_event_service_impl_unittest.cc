@@ -81,6 +81,8 @@ class UserEventServiceImplTest : public testing::Test {
     sync_service_.SetPreferredDataTypes({HISTORY_DELETE_DIRECTIVES});
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
+    ON_CALL(mock_processor_, TrackedAccountId())
+        .WillByDefault(testing::Return("account_id"));
   }
 
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {

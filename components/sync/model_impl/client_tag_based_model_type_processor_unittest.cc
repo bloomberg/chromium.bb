@@ -2218,6 +2218,32 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
 }
 
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
+       ShouldCallMergeWhenSyncEnabled) {
+  ModelReadyToSync();
+  ASSERT_EQ("", type_processor()->TrackedAccountId());
+  ASSERT_EQ(0, bridge()->merge_call_count());
+  OnSyncStarting();
+  EXPECT_EQ(1, bridge()->merge_call_count());
+}
+
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
+       ShouldNotCallMergeAfterRestart) {
+  std::unique_ptr<MetadataBatch> metadata_batch = db().CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_authenticated_account_id("PersistedAccountId");
+  metadata_batch->SetModelTypeState(model_type_state);
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // Even prior to starting sync, the account ID should already be tracked.
+  ASSERT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+
+  // When sync gets started, MergeSyncData() should not be called.
+  OnSyncStarting("PersistedAccountId");
+  ASSERT_EQ(0, bridge()->merge_call_count());
+}
+
 // Test that commit only types are deleted after commit response.
 TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
        ShouldCommitAndDeleteWhenAcked) {

@@ -22,11 +22,10 @@ class ModelTypeStoreTestUtil {
   // Creates a factory callback to synchronously return in memory stores.
   static RepeatingModelTypeStoreFactory FactoryForInMemoryStoreForTest();
 
-  // Can be curried with an owned store object to allow passing an already
-  // created store to a service constructor in a unit test.
-  static void MoveStoreToCallback(std::unique_ptr<ModelTypeStore> store,
-                                  ModelType type,
-                                  ModelTypeStore::InitCallback callback);
+  // Returns a once-factory that returns an already created store to a service
+  // constructor in a unit test.
+  static OnceModelTypeStoreFactory MoveStoreToFactory(
+      std::unique_ptr<ModelTypeStore> store);
 
   // Returns a callback that constructs a store that forwards all calls to
   // |target|. |*target| must outlive the returned factory as well any store

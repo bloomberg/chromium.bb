@@ -31,7 +31,6 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   ~UserEventSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -50,6 +49,7 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
 
   static std::string GetStorageKeyFromSpecificsForTest(
       const sync_pb::UserEventSpecifics& specifics);
+  std::unique_ptr<ModelTypeStore> StealStoreForTest();
 
  private:
   void RecordUserEventImpl(
@@ -98,9 +98,6 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
       in_flight_nav_linked_events_;
 
   GlobalIdMapper* global_id_mapper_;
-
-  // Empty if sync not running.
-  std::string syncing_account_id_;
 
   base::WeakPtrFactory<UserEventSyncBridge> weak_ptr_factory_;
 

@@ -133,6 +133,9 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     }
     model_type_state_ = batch->GetModelTypeState();
   } else {
+    // In older versions of the binary, commit-only types did not persist
+    // initial_sync_done(). So this branch can be exercised for commit-only
+    // types exactly once as an upgrade flow.
     // TODO(crbug.com/872360): This DCHECK can currently trigger if the user's
     // persisted Sync metadata is in an inconsistent state.
     DCHECK(commit_only_ || batch->TakeAllMetadata().empty())
@@ -140,9 +143,6 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     // First time syncing; initialize metadata.
     model_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));
-    // For commit-only types, no updates are expected and hence we can consider
-    // initial_sync_done().
-    model_type_state_.set_initial_sync_done(commit_only_);
   }
 
   ConnectIfReady();
@@ -185,9 +185,6 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
         // The model is still ready to sync (with the same |bridge_|) - replay
         // the initialization.
         model_ready_to_sync_ = true;
-        // For commit-only types, no updates are expected and hence we can
-        // consider initial_sync_done().
-        model_type_state_.set_initial_sync_done(commit_only_);
         // Notify the bridge sync is starting to simulate an enable event.
         bridge_->OnSyncStarting(activation_request_);
         break;
@@ -203,9 +200,18 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     }
   }
 
-  // Cache GUID verification guarantees the user is the same.
+  // Cache GUID verification earlier above guarantees the user is the same.
   model_type_state_.set_authenticated_account_id(
       activation_request_.authenticated_account_id);
+
+  // For commit-only types, no updates are expected and hence we can consider
+  // initial_sync_done(), reflecting that sync is enabled.
+  if (commit_only_ && !model_type_state_.initial_sync_done()) {
+    sync_pb::ModelTypeState model_type_state = model_type_state_;
+    model_type_state.set_initial_sync_done(true);
+    OnFullUpdateReceived(model_type_state, UpdateResponseDataList());
+    DCHECK(IsTrackingMetadata());
+  }
 
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = model_type_state_;

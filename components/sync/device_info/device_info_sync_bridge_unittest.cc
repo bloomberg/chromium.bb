@@ -198,8 +198,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
     ASSERT_TRUE(store_);
     bridge_ = std::make_unique<DeviceInfoSyncBridge>(
         provider_.get(),
-        base::BindOnce(&ModelTypeStoreTestUtil::MoveStoreToCallback,
-                       std::move(store_)),
+        ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)),
         mock_processor_.CreateForwardingProcessor());
     bridge_->AddObserver(this);
   }
