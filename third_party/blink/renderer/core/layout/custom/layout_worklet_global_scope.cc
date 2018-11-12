@@ -146,7 +146,7 @@ void LayoutWorkletGlobalScope::registerLayout(
       pending_layout_registry_->NotifyLayoutReady(name);
   } else {
     DocumentLayoutDefinition* document_definition =
-        new DocumentLayoutDefinition(definition);
+        MakeGarbageCollected<DocumentLayoutDefinition>(definition);
     document_definition_map->Set(name, document_definition);
   }
 }

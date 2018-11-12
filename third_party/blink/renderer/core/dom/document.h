@@ -250,7 +250,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
  public:
   static Document* Create(const DocumentInit& init) {
-    return new Document(init);
+    return MakeGarbageCollected<Document>(init);
   }
   static Document* CreateForTest();
   // Factory for web-exposed Document constructor. The argument document must be
@@ -258,7 +258,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // source of ExecutionContext and security origin of the new document.
   // https://dom.spec.whatwg.org/#dom-document-document
   static Document* Create(Document&);
+
+  Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
   ~Document() override;
+
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
 
@@ -1498,8 +1501,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementNumberOfCanvases();
 
  protected:
-  Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
-
   void DidUpdateSecurityOrigin() final;
 
   void ClearXMLVersion() { xml_version_ = String(); }

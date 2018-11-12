@@ -22,6 +22,8 @@ class HTMLIFrameElementPayments final
  public:
   static const char kSupplementName[];
 
+  HTMLIFrameElementPayments();
+
   static bool FastHasAttribute(const QualifiedName&, const HTMLIFrameElement&);
   static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLIFrameElement&,
@@ -30,9 +32,6 @@ class HTMLIFrameElementPayments final
   static bool AllowPaymentRequest(HTMLIFrameElement&);
 
   void Trace(blink::Visitor*) override;
-
- private:
-  HTMLIFrameElementPayments();
 };
 
 }  // namespace blink

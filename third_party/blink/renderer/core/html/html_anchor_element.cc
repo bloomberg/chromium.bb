@@ -87,7 +87,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
       rel_list_(RelList::Create(this)) {}
 
 HTMLAnchorElement* HTMLAnchorElement::Create(Document& document) {
-  return new HTMLAnchorElement(kATag, document);
+  return MakeGarbageCollected<HTMLAnchorElement>(kATag, document);
 }
 
 HTMLAnchorElement::~HTMLAnchorElement() = default;

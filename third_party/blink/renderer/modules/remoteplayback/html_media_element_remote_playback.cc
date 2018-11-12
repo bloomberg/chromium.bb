@@ -41,7 +41,7 @@ HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::From(
       Supplement<HTMLMediaElement>::From<HTMLMediaElementRemotePlayback>(
           element);
   if (!supplement) {
-    supplement = new HTMLMediaElementRemotePlayback();
+    supplement = MakeGarbageCollected<HTMLMediaElementRemotePlayback>();
     ProvideTo(element, supplement);
   }
   return *supplement;

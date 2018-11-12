@@ -67,6 +67,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  public:
   static HTMLAnchorElement* Create(Document&);
 
+  HTMLAnchorElement(const QualifiedName&, Document&);
   ~HTMLAnchorElement() override;
 
   // Returns attributes that should be checked against Trusted Types
@@ -102,8 +103,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   void Trace(blink::Visitor*) override;
 
  protected:
-  HTMLAnchorElement(const QualifiedName&, Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool SupportsFocus() const override;
   bool MatchesEnabledPseudoClass() const override;

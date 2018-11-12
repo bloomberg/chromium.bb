@@ -104,7 +104,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
                                             scope->GetModuleResponsesMap());
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-    return new DocumentModuleScriptFetcher(Fetcher());
+    return MakeGarbageCollected<DocumentModuleScriptFetcher>(Fetcher());
   }
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }

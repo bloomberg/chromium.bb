@@ -69,8 +69,12 @@ class HTMLParserScheduler final
   static HTMLParserScheduler* Create(
       HTMLDocumentParser* parser,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
-    return new HTMLParserScheduler(parser, std::move(loading_task_runner));
+    return MakeGarbageCollected<HTMLParserScheduler>(
+        parser, std::move(loading_task_runner));
   }
+
+  HTMLParserScheduler(HTMLDocumentParser*,
+                      scoped_refptr<base::SingleThreadTaskRunner>);
   ~HTMLParserScheduler();
 
   bool IsScheduledForUnpause() const;
@@ -94,9 +98,6 @@ class HTMLParserScheduler final
   void Trace(blink::Visitor*);
 
  private:
-  HTMLParserScheduler(HTMLDocumentParser*,
-                      scoped_refptr<base::SingleThreadTaskRunner>);
-
   bool ShouldYield(const SpeculationsPumpSession&, bool starting_script) const;
   void ContinueParsing();
 

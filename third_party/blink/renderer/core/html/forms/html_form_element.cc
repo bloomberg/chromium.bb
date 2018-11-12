@@ -81,7 +81,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
 
 HTMLFormElement* HTMLFormElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kFormElement);
-  return new HTMLFormElement(document);
+  return MakeGarbageCollected<HTMLFormElement>(document);
 }
 
 HTMLFormElement::~HTMLFormElement() = default;

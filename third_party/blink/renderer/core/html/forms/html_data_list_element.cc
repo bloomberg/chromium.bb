@@ -44,7 +44,7 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
 
 HTMLDataListElement* HTMLDataListElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kDataListElement);
-  return new HTMLDataListElement(document);
+  return MakeGarbageCollected<HTMLDataListElement>(document);
 }
 
 HTMLDataListOptionsCollection* HTMLDataListElement::options() {

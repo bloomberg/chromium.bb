@@ -43,7 +43,7 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
     : HTMLFormControlElement(kFieldsetTag, document) {}
 
 HTMLFieldSetElement* HTMLFieldSetElement::Create(Document& document) {
-  return new HTMLFieldSetElement(document);
+  return MakeGarbageCollected<HTMLFieldSetElement>(document);
 }
 
 bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {

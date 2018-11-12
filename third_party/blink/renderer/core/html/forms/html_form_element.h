@@ -45,6 +45,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
  public:
   static HTMLFormElement* Create(Document&);
+
+  explicit HTMLFormElement(Document&);
   ~HTMLFormElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -113,8 +115,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
 
  private:
-  explicit HTMLFormElement(Document&);
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
   void FinishParsingChildren() override;

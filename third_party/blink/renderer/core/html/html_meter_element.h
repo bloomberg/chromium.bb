@@ -34,6 +34,8 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
  public:
   static HTMLMeterElement* Create(Document&);
 
+  explicit HTMLMeterElement(Document&);
+
   enum GaugeRegion {
     kGaugeRegionOptimum,
     kGaugeRegionSuboptimal,
@@ -66,7 +68,6 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLMeterElement(Document&);
   ~HTMLMeterElement() override;
 
   bool AreAuthorShadowsAllowed() const override { return false; }

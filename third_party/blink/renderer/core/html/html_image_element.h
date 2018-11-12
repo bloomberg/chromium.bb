@@ -70,6 +70,7 @@ class CORE_EXPORT HTMLImageElement final
                                                   unsigned width,
                                                   unsigned height);
 
+  explicit HTMLImageElement(Document&, bool created_by_parser = false);
   ~HTMLImageElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -181,8 +182,6 @@ class CORE_EXPORT HTMLImageElement final
     // |shouldCollapseInitiator| flag set.
     kCollapsed
   };
-
-  explicit HTMLImageElement(Document&, bool created_by_parser = false);
 
   void DidMoveToNewDocument(Document& old_document) override;
 

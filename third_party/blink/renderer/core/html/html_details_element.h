@@ -32,6 +32,8 @@ class HTMLDetailsElement final : public HTMLElement {
  public:
   static HTMLDetailsElement* Create(Document&);
   void ToggleOpen();
+
+  explicit HTMLDetailsElement(Document&);
   ~HTMLDetailsElement() override;
 
   Element* FindMainSummary() const;
@@ -40,8 +42,6 @@ class HTMLDetailsElement final : public HTMLElement {
   static bool IsFirstSummary(const Node&);
 
  private:
-  explicit HTMLDetailsElement(Document&);
-
   void DispatchPendingEvent();
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;

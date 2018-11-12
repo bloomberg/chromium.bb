@@ -43,7 +43,7 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
 
   // Used by document fragment node and context element.
   static HTMLStackItem* Create(ContainerNode* node, ItemType type) {
-    return new HTMLStackItem(node, type);
+    return MakeGarbageCollected<HTMLStackItem>(node, type);
   }
 
   // Used by HTMLElementStack and HTMLFormattingElementList.
@@ -51,8 +51,31 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
       ContainerNode* node,
       AtomicHTMLToken* token,
       const AtomicString& namespace_uri = html_names::xhtmlNamespaceURI) {
-    return new HTMLStackItem(node, token, namespace_uri);
+    return MakeGarbageCollected<HTMLStackItem>(node, token, namespace_uri);
   }
+
+  HTMLStackItem(ContainerNode* node, ItemType type) : node_(node) {
+    switch (type) {
+      case kItemForDocumentFragmentNode:
+        is_document_fragment_node_ = true;
+        break;
+      case kItemForContextElement:
+        token_local_name_ = GetElement()->localName();
+        namespace_uri_ = GetElement()->namespaceURI();
+        is_document_fragment_node_ = false;
+        break;
+    }
+  }
+
+  HTMLStackItem(
+      ContainerNode* node,
+      AtomicHTMLToken* token,
+      const AtomicString& namespace_uri = html_names::xhtmlNamespaceURI)
+      : node_(node),
+        token_local_name_(token->GetName()),
+        token_attributes_(token->Attributes()),
+        namespace_uri_(namespace_uri),
+        is_document_fragment_node_(false) {}
 
   Element* GetElement() const { return ToElement(node_.Get()); }
   ContainerNode* GetNode() const { return node_.Get(); }
@@ -198,29 +221,6 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
   void Trace(blink::Visitor* visitor) { visitor->Trace(node_); }
 
  private:
-  HTMLStackItem(ContainerNode* node, ItemType type) : node_(node) {
-    switch (type) {
-      case kItemForDocumentFragmentNode:
-        is_document_fragment_node_ = true;
-        break;
-      case kItemForContextElement:
-        token_local_name_ = GetElement()->localName();
-        namespace_uri_ = GetElement()->namespaceURI();
-        is_document_fragment_node_ = false;
-        break;
-    }
-  }
-
-  HTMLStackItem(
-      ContainerNode* node,
-      AtomicHTMLToken* token,
-      const AtomicString& namespace_uri = html_names::xhtmlNamespaceURI)
-      : node_(node),
-        token_local_name_(token->GetName()),
-        token_attributes_(token->Attributes()),
-        namespace_uri_(namespace_uri),
-        is_document_fragment_node_(false) {}
-
   Member<ContainerNode> node_;
 
   AtomicString token_local_name_;

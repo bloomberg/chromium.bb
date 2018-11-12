@@ -43,7 +43,7 @@ inline HTMLButtonElement::HTMLButtonElement(Document& document)
       is_activated_submit_(false) {}
 
 HTMLButtonElement* HTMLButtonElement::Create(Document& document) {
-  return new HTMLButtonElement(document);
+  return MakeGarbageCollected<HTMLButtonElement>(document);
 }
 
 void HTMLButtonElement::setType(const AtomicString& type) {

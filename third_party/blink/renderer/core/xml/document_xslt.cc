@@ -169,7 +169,7 @@ bool DocumentXSLT::HasTransformSourceDocument(Document& document) {
 DocumentXSLT& DocumentXSLT::From(Document& document) {
   DocumentXSLT* supplement = Supplement<Document>::From<DocumentXSLT>(document);
   if (!supplement) {
-    supplement = new DocumentXSLT(document);
+    supplement = MakeGarbageCollected<DocumentXSLT>(document);
     Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;

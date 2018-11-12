@@ -57,7 +57,8 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
 }
 
 HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
-  HTMLMarqueeElement* marquee_element = new HTMLMarqueeElement(document);
+  HTMLMarqueeElement* marquee_element =
+      MakeGarbageCollected<HTMLMarqueeElement>(document);
   marquee_element->EnsureUserAgentShadowRoot();
   return marquee_element;
 }
@@ -201,7 +202,7 @@ void HTMLMarqueeElement::start() {
     return;
 
   RequestAnimationFrameCallback* callback =
-      new RequestAnimationFrameCallback(this);
+      MakeGarbageCollected<RequestAnimationFrameCallback>(this);
   continue_callback_request_id_ = GetDocument().RequestAnimationFrame(callback);
 }
 
@@ -310,7 +311,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
       KeyframeEffect::Create(mover_, effect_model, timing);
   Animation* player = mover_->GetDocument().Timeline().Play(keyframe_effect);
   player->setId(g_empty_string);
-  player->setOnfinish(new AnimationFinished(this));
+  player->setOnfinish(MakeGarbageCollected<AnimationFinished>(this));
 
   player_ = player;
 }

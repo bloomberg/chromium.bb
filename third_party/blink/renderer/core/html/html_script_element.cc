@@ -49,7 +49,7 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document,
 
 HTMLScriptElement* HTMLScriptElement::Create(Document& document,
                                              const CreateElementFlags flags) {
-  return new HTMLScriptElement(document, flags);
+  return MakeGarbageCollected<HTMLScriptElement>(document, flags);
 }
 
 const HashSet<AtomicString>& HTMLScriptElement::GetCheckedAttributeNames()

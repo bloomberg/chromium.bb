@@ -30,6 +30,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  public:
   static HTMLElement* Create(Document&);
 
+  explicit HTMLPortalElement(Document&);
   ~HTMLPortalElement() override;
 
   // idl implementation.
@@ -42,8 +43,6 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   }
 
  private:
-  explicit HTMLPortalElement(Document&);
-
   // Navigates the portal to |url_|.
   void Navigate();
 

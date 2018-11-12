@@ -15,7 +15,6 @@ class CORE_EXPORT HTMLDataElement final : public HTMLElement {
  public:
   static HTMLDataElement* Create(Document&);
 
- private:
   HTMLDataElement(Document&);
 };
 

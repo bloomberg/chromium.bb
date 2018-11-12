@@ -23,6 +23,8 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
  public:
   static ModulatorImplBase* Create(ScriptState*, ResourceFetcher*);
 
+  DocumentModulatorImpl(ScriptState*, ResourceFetcher*);
+
   // Implements Modulator.
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override;
@@ -33,7 +35,6 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   // Implements ModulatorImplBase.
   bool IsDynamicImportForbidden(String* reason) override;
 
-  DocumentModulatorImpl(ScriptState*, ResourceFetcher*);
   Member<ResourceFetcher> fetcher_;
 };
 

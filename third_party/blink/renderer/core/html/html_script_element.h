@@ -41,6 +41,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
  public:
   static HTMLScriptElement* Create(Document&, const CreateElementFlags);
 
+  HTMLScriptElement(Document&, const CreateElementFlags);
+
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
@@ -60,8 +62,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLScriptElement(Document&, const CreateElementFlags);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;

@@ -44,7 +44,8 @@ namespace blink {
 using namespace html_names;
 
 HTMLDetailsElement* HTMLDetailsElement::Create(Document& document) {
-  HTMLDetailsElement* details = new HTMLDetailsElement(document);
+  HTMLDetailsElement* details =
+      MakeGarbageCollected<HTMLDetailsElement>(document);
   details->EnsureUserAgentShadowRoot();
   return details;
 }

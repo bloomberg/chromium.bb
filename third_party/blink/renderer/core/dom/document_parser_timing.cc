@@ -17,7 +17,7 @@ DocumentParserTiming& DocumentParserTiming::From(Document& document) {
   DocumentParserTiming* timing =
       Supplement<Document>::From<DocumentParserTiming>(document);
   if (!timing) {
-    timing = new DocumentParserTiming(document);
+    timing = MakeGarbageCollected<DocumentParserTiming>(document);
     ProvideTo(document, timing);
   }
   return *timing;

@@ -50,7 +50,8 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
 HTMLOptGroupElement::~HTMLOptGroupElement() = default;
 
 HTMLOptGroupElement* HTMLOptGroupElement::Create(Document& document) {
-  HTMLOptGroupElement* opt_group_element = new HTMLOptGroupElement(document);
+  HTMLOptGroupElement* opt_group_element =
+      MakeGarbageCollected<HTMLOptGroupElement>(document);
   opt_group_element->EnsureUserAgentShadowRoot();
   return opt_group_element;
 }

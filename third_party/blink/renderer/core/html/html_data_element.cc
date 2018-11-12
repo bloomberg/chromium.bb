@@ -14,7 +14,7 @@ HTMLDataElement::HTMLDataElement(Document& document)
 }
 
 HTMLDataElement* HTMLDataElement::Create(Document& document) {
-  return new HTMLDataElement(document);
+  return MakeGarbageCollected<HTMLDataElement>(document);
 }
 
 }  // namespace blink

@@ -46,6 +46,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static HTMLSlotElement* CreateUserAgentDefaultSlot(Document&);
   static HTMLSlotElement* CreateUserAgentCustomAssignSlot(Document&);
 
+  HTMLSlotElement(Document&);
+
   const HeapVector<Member<Node>>& AssignedNodes() const;
   const HeapVector<Member<Node>> AssignedNodesForBinding(
       const AssignedNodesOptions*);
@@ -112,8 +114,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLSlotElement(Document&);
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
   void DidRecalcStyle(StyleRecalcChange) final;

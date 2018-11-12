@@ -38,15 +38,15 @@ class HTMLTagCollection final : public TagCollection {
                                    CollectionType type,
                                    const AtomicString& qualified_name) {
     DCHECK_EQ(type, kHTMLTagCollectionType);
-    return new HTMLTagCollection(root_node, qualified_name);
+    return MakeGarbageCollected<HTMLTagCollection>(root_node, qualified_name);
   }
+
+  HTMLTagCollection(ContainerNode& root_node,
+                    const AtomicString& qualified_name);
 
   bool ElementMatches(const Element&) const;
 
  private:
-  HTMLTagCollection(ContainerNode& root_node,
-                    const AtomicString& qualified_name);
-
   AtomicString lowered_qualified_name_;
 };
 

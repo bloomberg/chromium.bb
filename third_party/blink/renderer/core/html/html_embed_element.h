@@ -37,6 +37,8 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
       Document&,
       const CreateElementFlags = CreateElementFlags());
 
+  HTMLEmbedElement(Document&, const CreateElementFlags);
+
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
@@ -47,8 +49,6 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
   }
 
  private:
-  HTMLEmbedElement(Document&, const CreateElementFlags);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

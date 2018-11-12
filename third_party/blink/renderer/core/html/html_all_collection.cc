@@ -32,7 +32,7 @@ namespace blink {
 HTMLAllCollection* HTMLAllCollection::Create(ContainerNode& node,
                                              CollectionType type) {
   DCHECK_EQ(type, kDocAll);
-  return new HTMLAllCollection(node);
+  return MakeGarbageCollected<HTMLAllCollection>(node);
 }
 
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node)

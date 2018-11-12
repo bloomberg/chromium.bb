@@ -38,7 +38,7 @@ HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
   HTMLIFrameElementPayments* supplement =
       Supplement<HTMLIFrameElement>::From<HTMLIFrameElementPayments>(iframe);
   if (!supplement) {
-    supplement = new HTMLIFrameElementPayments();
+    supplement = MakeGarbageCollected<HTMLIFrameElementPayments>();
     ProvideTo(iframe, supplement);
   }
   return *supplement;

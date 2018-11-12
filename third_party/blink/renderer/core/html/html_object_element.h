@@ -45,6 +45,8 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
  public:
   static HTMLObjectElement* Create(Document&, const CreateElementFlags);
+
+  HTMLObjectElement(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -90,8 +92,6 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   void AssociateWith(HTMLFormElement*) override;
 
  private:
-  HTMLObjectElement(Document&, const CreateElementFlags);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

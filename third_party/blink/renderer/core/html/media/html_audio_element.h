@@ -43,6 +43,8 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
       Document&,
       const AtomicString& src = g_null_atom);
 
+  HTMLAudioElement(Document&);
+
   bool IsHTMLAudioElement() const override { return true; }
 
   // WebMediaPlayerClient implementation.
@@ -53,9 +55,6 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
   void PictureInPictureControlClicked(const WebString& control_id) override {
     NOTREACHED();
   }
-
- private:
-  HTMLAudioElement(Document&);
 };
 
 }  // namespace blink

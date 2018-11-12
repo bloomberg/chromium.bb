@@ -74,11 +74,11 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 }
 
 HTMLDocument* HTMLDocument::Create(const DocumentInit& initializer) {
-  return new HTMLDocument(initializer);
+  return MakeGarbageCollected<HTMLDocument>(initializer);
 }
 
 HTMLDocument* HTMLDocument::CreateForTest() {
-  return new HTMLDocument(DocumentInit::Create());
+  return MakeGarbageCollected<HTMLDocument>(DocumentInit::Create());
 }
 
 HTMLDocument::~HTMLDocument() = default;

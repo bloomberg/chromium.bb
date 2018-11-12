@@ -15,7 +15,6 @@ class CORE_EXPORT HTMLTimeElement final : public HTMLElement {
  public:
   static HTMLTimeElement* Create(Document&);
 
- private:
   HTMLTimeElement(Document&);
 };
 

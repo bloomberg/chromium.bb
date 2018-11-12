@@ -77,7 +77,7 @@ void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
     return;
   // TODO(aboxhall): Trigger a call when lifecycle is next at kPrePaintClean.
   RequestAnimationFrameCallback* callback =
-      new RequestAnimationFrameCallback(this);
+      MakeGarbageCollected<RequestAnimationFrameCallback>(this);
   continue_callback_request_id_ =
       element_->GetDocument().RequestAnimationFrame(callback);
 }

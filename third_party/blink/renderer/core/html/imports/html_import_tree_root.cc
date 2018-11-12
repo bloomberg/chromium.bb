@@ -12,7 +12,7 @@
 namespace blink {
 
 HTMLImportTreeRoot* HTMLImportTreeRoot::Create(Document* document) {
-  return new HTMLImportTreeRoot(document);
+  return MakeGarbageCollected<HTMLImportTreeRoot>(document);
 }
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)

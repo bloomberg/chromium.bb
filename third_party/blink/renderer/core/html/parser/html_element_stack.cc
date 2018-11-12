@@ -319,7 +319,8 @@ void HTMLElementStack::InsertAbove(HTMLStackItem* item,
       continue;
 
     stack_depth_++;
-    record_above->SetNext(new ElementRecord(item, record_above->ReleaseNext()));
+    record_above->SetNext(
+        MakeGarbageCollected<ElementRecord>(item, record_above->ReleaseNext()));
     record_above->Next()->GetElement()->BeginParsingChildren();
     return;
   }
@@ -491,7 +492,7 @@ void HTMLElementStack::PushCommon(HTMLStackItem* item) {
   DCHECK(root_node_);
 
   stack_depth_++;
-  top_ = new ElementRecord(item, top_.Release());
+  top_ = MakeGarbageCollected<ElementRecord>(item, top_.Release());
 }
 
 void HTMLElementStack::PopCommon() {
