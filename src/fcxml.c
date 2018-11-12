@@ -3259,8 +3259,8 @@ FcConfigParseAndLoadDir (FcConfig	*config,
 	/*
 	 * Add all files of the form [0-9]*.conf
 	 */
+	d_len = strlen (e->d_name);
 	if ('0' <= e->d_name[0] && e->d_name[0] <= '9' &&
-	    (d_len = strlen (e->d_name)) < FC_MAX_FILE_LEN &&
 	    d_len > TAIL_LEN &&
 	    strcmp (e->d_name + d_len - TAIL_LEN, TAIL) == 0)
 	{
