@@ -35,11 +35,18 @@ class CastDialogSinkButton : public HoverButton {
   const UIMediaSink& sink() const { return sink_; }
 
  private:
-  UIMediaSink sink_;
+  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest, OverrideStatusText);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
+                           SetStatusLabelForActiveSink);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
+                           SetStatusLabelForAvailableSink);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
+                           SetStatusLabelForSinkWithIssue);
+
+  const UIMediaSink sink_;
   base::Optional<base::string16> saved_status_text_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogSinkButton);
-  FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest, OverrideStatusText);
 };
 
 }  // namespace media_router

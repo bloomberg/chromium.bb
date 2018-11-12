@@ -219,8 +219,14 @@
   <message name="IDS_MEDIA_ROUTER_SINK_CONNECTING" desc="Text shown as the status of a Cast destination that we are starting a Cast session on.">
     Connecting...
   </message>
+  <message name="IDS_MEDIA_ROUTER_SINK_DISCONNECTING" desc="Text shown as the status of a Cast device that has a Cast session that is ending.">
+    Disconnecting...
+  </message>
   <message name="IDS_MEDIA_ROUTER_STOP_CASTING" desc="Text shown when user hovers over the stop icon for a cast device.">
     Stop casting
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED" desc="Text shown as the status of a Cast device that is not compatible with the selected Cast source (contents).">
+    Source not supported
   </message>
 
   <!-- Sink Search -->
