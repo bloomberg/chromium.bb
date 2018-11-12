@@ -21,16 +21,9 @@ namespace arc {
 
 namespace {
 
-// Helper class to notify client about the end of processing a video frame.
-class VideoFrameDoneNotifier {
- public:
-  explicit VideoFrameDoneNotifier(base::OnceClosure notify_closure)
-      : notify_closure_(std::move(notify_closure)) {}
-  ~VideoFrameDoneNotifier() { std::move(notify_closure_).Run(); }
-
- private:
-  base::OnceClosure notify_closure_;
-};
+void DropSharedMemory(std::unique_ptr<base::SharedMemory> shm) {
+  // Just let |shm| fall out of scope.
+}
 
 }  // namespace
 
@@ -99,12 +92,6 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   std::move(callback).Run(true);
 }
 
-static void DropShareMemoryAndVideoFrameDoneNotifier(
-    std::unique_ptr<base::SharedMemory> shm,
-    std::unique_ptr<VideoFrameDoneNotifier> notifier) {
-  // Just let |shm| and |notifier| fall out of scope.
-}
-
 void GpuArcVideoEncodeAccelerator::Encode(
     mojo::ScopedHandle handle,
     std::vector<::arc::VideoFramePlane> planes,
@@ -116,8 +103,6 @@ void GpuArcVideoEncodeAccelerator::Encode(
     DLOG(ERROR) << "Accelerator is not initialized.";
     return;
   }
-
-  auto notifier = std::make_unique<VideoFrameDoneNotifier>(std::move(callback));
 
   if (planes.empty()) {  // EOS
     accelerator_->Encode(media::VideoFrame::CreateEOSFrame(), force_keyframe);
@@ -167,14 +152,12 @@ void GpuArcVideoEncodeAccelerator::Encode(
       shm_memory + aligned_offset, allocation_size, shm_handle,
       planes[0].offset, base::TimeDelta::FromMicroseconds(timestamp));
 
-  // Wrap |shm| and |notifier| in a callback and add it as a destruction
-  // observer. When the |frame| goes out of scope, it unmaps and releases
-  // the shared memory as well as notifies |client_| about the end of processing
-  // the |frame|.
+  // Add the function to relase |shm| and |callback| to |frame|'s  destruction
+  // observer. When the |frame| goes out of scope, it unmaps and releases the
+  // shared memory as well as executes |callback|.
   frame->AddDestructionObserver(
-      base::BindOnce(&DropShareMemoryAndVideoFrameDoneNotifier, std::move(shm),
-                     std::move(notifier)));
-
+      base::BindOnce(&DropSharedMemory, std::move(shm)));
+  frame->AddDestructionObserver(std::move(callback));
   accelerator_->Encode(frame, force_keyframe);
 }
 
