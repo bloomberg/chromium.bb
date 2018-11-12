@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -101,7 +102,13 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
  private:
   friend class CastDialogViewTest;
+  FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, CancelLocalFileSelection);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, CastLocalFile);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, DisableUnsupportedSinks);
   FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, ShowAndHideDialog);
+  FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, ShowSourcesMenu);
+
+  enum SourceType { kTab, kDesktop, kLocalFile };
 
   // Instantiates and shows the singleton dialog. The dialog must not be
   // currently shown.
@@ -134,6 +141,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Shows the sources menu that allows the user to choose a source to cast.
   void ShowSourcesMenu();
 
+  // Stores |source| as the source to be used when user selects a sink to start
+  // casting, and updates the UI to reflect the selection.
+  void SelectSource(SourceType source);
+
   void SinkPressed(size_t index);
 
   void MaybeSizeToContents();
@@ -153,6 +164,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Records the number of sinks shown with the metrics recorder.
   void RecordSinkCount();
 
+  // Sets local file as the selected source if |file_info| is not null.
+  void OnFilePickerClosed(const ui::SelectedFileInfo* file_info);
+
   // The singleton dialog instance. This is a nullptr when a dialog is not
   // shown.
   static CastDialogView* instance_;
@@ -163,7 +177,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // The source selected in the sources menu. This defaults to "tab"
   // (presentation or tab mirroring). "Tab" is represented by a single item in
   // the sources menu.
-  int selected_source_;
+  SourceType selected_source_ = SourceType::kTab;
 
   // Contains references to sink buttons in the order they appear.
   std::vector<CastDialogSinkButton*> sink_buttons_;
@@ -194,6 +208,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // The sink that the user has selected to cast to. If the user is using
   // multiple sinks at the same time, the last activated sink is used.
   base::Optional<size_t> selected_sink_index_;
+
+  // This value is set if the user has chosen a local file to cast.
+  base::Optional<base::string16> local_file_name_;
 
   base::WeakPtrFactory<CastDialogView> weak_factory_;
 
