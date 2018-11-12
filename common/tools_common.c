@@ -424,3 +424,44 @@ void aom_img_downshift(aom_image_t *dst, const aom_image_t *src,
     lowbd_img_downshift(dst, src, down_shift);
   }
 }
+
+static int img_shifted_realloc_required(const aom_image_t *img,
+                                        const aom_image_t *shifted,
+                                        aom_img_fmt_t required_fmt) {
+  return img->d_w != shifted->d_w || img->d_h != shifted->d_h ||
+         required_fmt != shifted->fmt;
+}
+
+void aom_shift_img(unsigned int output_bit_depth, aom_image_t **img_ptr,
+                   aom_image_t **img_shifted_ptr) {
+  aom_image_t *img = *img_ptr;
+  aom_image_t *img_shifted = *img_shifted_ptr;
+
+  const aom_img_fmt_t shifted_fmt = output_bit_depth == 8
+                                        ? img->fmt & ~AOM_IMG_FMT_HIGHBITDEPTH
+                                        : img->fmt | AOM_IMG_FMT_HIGHBITDEPTH;
+
+  if (shifted_fmt != img->fmt || output_bit_depth != img->bit_depth) {
+    if (img_shifted &&
+        img_shifted_realloc_required(img, img_shifted, shifted_fmt)) {
+      aom_img_free(img_shifted);
+      img_shifted = NULL;
+    }
+    if (img_shifted) {
+      img_shifted->monochrome = img->monochrome;
+    }
+    if (!img_shifted) {
+      img_shifted = aom_img_alloc(NULL, shifted_fmt, img->d_w, img->d_h, 16);
+      img_shifted->bit_depth = output_bit_depth;
+      img_shifted->monochrome = img->monochrome;
+      img_shifted->csp = img->csp;
+    }
+    if (output_bit_depth > img->bit_depth) {
+      aom_img_upshift(img_shifted, img, output_bit_depth - img->bit_depth);
+    } else {
+      aom_img_downshift(img_shifted, img, img->bit_depth - output_bit_depth);
+    }
+    *img_shifted_ptr = img_shifted;
+    *img_ptr = img_shifted;
+  }
+}
