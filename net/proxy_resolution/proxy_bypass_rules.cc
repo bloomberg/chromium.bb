@@ -382,8 +382,8 @@ bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
   return true;
 }
 
-void ProxyBypassRules::AddRuleToBypassLocal() {
-  rules_.push_back(std::make_unique<WinLocalRule>());
+void ProxyBypassRules::PrependRuleToBypassLocal() {
+  rules_.insert(rules_.begin(), std::make_unique<WinLocalRule>());
 }
 
 bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed,

@@ -21,8 +21,8 @@
       }
     },
     "ExcludeDomains": [
-      "google.com",
-      "<local>"
+      "<local>",
+      "google.com"
     ]
   },
   "Type": "WiFi",

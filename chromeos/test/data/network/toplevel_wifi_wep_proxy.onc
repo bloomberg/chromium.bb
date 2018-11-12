@@ -30,8 +30,8 @@
           }
         },
         "ExcludeDomains": [
-          "google.com",
-          "<local>"
+          "<local>",
+          "google.com"
         ]
       }
     }
