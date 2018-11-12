@@ -83,6 +83,8 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kWebVrAudioCaptureIndicator;
     case UserFriendlyElementName::kWebXrHostedContent:
       return kWebVrHostedUiContent;
+    case UserFriendlyElementName::kMicrophonePermissionIndicator:
+      return kAudioCaptureIndicator;
     default:
       NOTREACHED();
       return kNone;
