@@ -4,12 +4,9 @@
 
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 
-#include <math.h>
 #include <stddef.h>
 
-#include "base/base64url.h"
 #include "base/md5.h"
-#include "base/sha1.h"
 
 namespace cryptauth {
 
@@ -30,15 +27,6 @@ int64_t HashStringToInt64(const std::string& string) {
   }
 
   return hash;
-}
-
-std::string CalculateDeviceUserId(const std::string& device_id,
-                                  const std::string& user_id) {
-  std::string device_user_id;
-  base::Base64UrlEncode(base::SHA1HashString(device_id + "|" + user_id),
-                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                        &device_user_id);
-  return device_user_id;
 }
 
 }  // namespace cryptauth
