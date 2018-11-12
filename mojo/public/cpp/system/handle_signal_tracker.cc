@@ -9,14 +9,16 @@
 
 namespace mojo {
 
-HandleSignalTracker::HandleSignalTracker(Handle handle,
-                                         MojoHandleSignals signals)
+HandleSignalTracker::HandleSignalTracker(
+    Handle handle,
+    MojoHandleSignals signals,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : high_watcher_(FROM_HERE,
                     SimpleWatcher::ArmingPolicy::MANUAL,
-                    base::SequencedTaskRunnerHandle::Get()),
+                    task_runner),
       low_watcher_(FROM_HERE,
                    SimpleWatcher::ArmingPolicy::MANUAL,
-                   base::SequencedTaskRunnerHandle::Get()) {
+                   std::move(task_runner)) {
   MojoResult rv = high_watcher_.Watch(
       handle, signals, MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
       base::Bind(&HandleSignalTracker::OnNotify, base::Unretained(this)));
