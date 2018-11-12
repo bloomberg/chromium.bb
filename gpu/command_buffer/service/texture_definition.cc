@@ -346,6 +346,9 @@ TextureDefinition::TextureDefinition(
   if (!defined_)
     return;
   if (!image_buffer_.get()) {
+    // Don't attempt to share textures that have bound images, as it can't work.
+    if (level->image)
+      return;
     image_buffer_ = NativeImageBuffer::Create(texture->service_id());
     DCHECK(image_buffer_.get());
   }

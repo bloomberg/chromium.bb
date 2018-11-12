@@ -301,10 +301,10 @@ void MailboxManagerSync::UpdateDefinitionLocked(TextureBase* texture_base,
   if (definition.Matches(texture))
     return;
 
-  if (image && (!image_buffer || !image_buffer->IsClient(image))) {
-    LOG(ERROR) << "MailboxSync: Incompatible attachment";
+  // Don't try to push updates to texture that have a bound image (not created
+  // by the MailboxManagerSync), as they were never shared to begin with.
+  if (image && (!image_buffer || !image_buffer->IsClient(image)))
     return;
-  }
 
   group->SetDefinition(TextureDefinition(texture, ++group_ref->version,
                                          image ? image_buffer : nullptr));
