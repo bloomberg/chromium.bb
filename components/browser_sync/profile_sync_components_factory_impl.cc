@@ -267,8 +267,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // disabled because the tab sync data is added to the web history on the
     // server.
     if (!disabled_types.Has(syncer::PROXY_TABS)) {
-      controllers.push_back(
-          std::make_unique<ProxyDataTypeController>(syncer::PROXY_TABS));
+      controllers.push_back(std::make_unique<ProxyDataTypeController>(
+          syncer::PROXY_TABS,
+          base::BindRepeating(
+              &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
+              base::Unretained(sync_client_->GetSessionSyncService()))));
       if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(

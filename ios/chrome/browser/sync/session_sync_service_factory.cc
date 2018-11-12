@@ -112,15 +112,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return local_session_event_router_.get();
   }
 
-  void NotifyForeignSessionUpdated() override {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state_);
-    if (profile_sync_service) {
-      profile_sync_service->NotifyForeignSessionUpdated();
-    }
-  }
-
  private:
   ios::ChromeBrowserState* const browser_state_;
   const std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>

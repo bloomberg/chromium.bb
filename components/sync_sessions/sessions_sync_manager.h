@@ -53,7 +53,9 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
                             public syncer::SyncableService,
                             public LocalSessionEventHandlerImpl::Delegate {
  public:
-  explicit SessionsSyncManager(SyncSessionsClient* sessions_client);
+  SessionsSyncManager(
+      const base::RepeatingClosure& notify_foreign_session_updated_cb,
+      SyncSessionsClient* sessions_client);
   ~SessionsSyncManager() override;
 
   // AbstractSessionsSyncManager implementation.
@@ -164,6 +166,8 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
 
   void ProcessLocalSessionSyncChanges(
       const syncer::SyncChangeList& change_list);
+
+  const base::RepeatingClosure notify_foreign_session_updated_cb_;
 
   // The client of this sync sessions datatype.
   SyncSessionsClient* const sessions_client_;

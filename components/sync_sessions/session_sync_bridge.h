@@ -42,6 +42,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
  public:
   // Raw pointers must not be null and their pointees must outlive this object.
   SessionSyncBridge(
+      const base::RepeatingClosure& notify_foreign_session_updated_cb,
       SyncSessionsClient* sessions_client,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
@@ -94,6 +95,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   void ResubmitLocalSession();
   void ReportError(const syncer::ModelError& error);
 
+  const base::RepeatingClosure notify_foreign_session_updated_cb_;
   SyncSessionsClient* const sessions_client_;
   LocalSessionEventRouter* const local_session_event_router_;
 

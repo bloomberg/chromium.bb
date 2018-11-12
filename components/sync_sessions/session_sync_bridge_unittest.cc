@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
@@ -202,7 +203,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     // Instantiate the bridge.
     bridge_ = std::make_unique<SessionSyncBridge>(
-        &mock_sync_sessions_client_,
+        mock_foreign_session_updated_cb_.Get(), &mock_sync_sessions_client_,
         mock_processor_.CreateForwardingProcessor());
   }
 
@@ -307,6 +308,11 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return mock_sync_sessions_client_;
   }
 
+  base::MockCallback<base::RepeatingClosure>&
+  mock_foreign_session_updated_cb() {
+    return mock_foreign_session_updated_cb_;
+  }
+
   SessionSyncBridge* bridge() { return bridge_.get(); }
 
   syncer::MockModelTypeChangeProcessor& mock_processor() {
@@ -325,6 +331,8 @@ class SessionSyncBridgeTest : public ::testing::Test {
   // Dependencies.
   TestingPrefServiceSimple pref_service_;
   SessionSyncPrefs session_sync_prefs_;
+  testing::NiceMock<base::MockCallback<base::RepeatingClosure>>
+      mock_foreign_session_updated_cb_;
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestSyncedWindowDelegatesGetter window_getter_;
@@ -460,8 +468,7 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
   StartSyncing();
 
   ASSERT_THAT(GetAllData(), SizeIs(2));
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated())
-      .Times(0);
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(0);
 
   // Expectations for the processor.
   std::string header_storage_key;
@@ -995,7 +1002,7 @@ TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
   EXPECT_CALL(
       mock_processor(),
       Put(_, EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)), _));
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
   StartSyncing({foreign_header, foreign_tab});
 
   std::vector<const SyncedSession*> foreign_sessions;
@@ -1142,7 +1149,7 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
   sync_pb::ModelTypeState state;
   state.set_initial_sync_done(true);
 
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
   real_processor()->OnUpdateReceived(
       state, {CreateTombstone(SessionStore::GetClientTag(foreign_header))});
 
@@ -1311,7 +1318,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDeleteForeignSessionFromUI) {
   // Mimic the user requesting a session deletion from the UI.
   EXPECT_CALL(mock_processor(), Delete(foreign_header_storage_key, _));
   EXPECT_CALL(mock_processor(), Delete(foreign_tab_storage_key, _));
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
   bridge()->GetOpenTabsUIDelegate()->DeleteForeignSession(kForeignSessionTag);
 
   // Verify what gets exposed to the UI.
@@ -1333,8 +1340,7 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreLocalSessionDeletionFromUI) {
   InitializeBridge();
   StartSyncing();
 
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated())
-      .Times(0);
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(0);
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
 
   bridge()->GetOpenTabsUIDelegate()->DeleteForeignSession(kLocalSessionTag);
@@ -1352,8 +1358,7 @@ TEST_F(SessionSyncBridgeTest, ShouldNotBroadcastUpdatesIfEmpty) {
   InitializeBridge();
   StartSyncing();
 
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated())
-      .Times(0);
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(0);
 
   // Mimic receiving an empty list of remote updates.
   sync_pb::ModelTypeState state;
@@ -1404,7 +1409,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
   EXPECT_CALL(
       mock_processor(),
       Delete(SessionStore::GetTabStorageKey(kStaleSessionTag, kTabNodeId), _));
-  EXPECT_CALL(mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
 
   bridge()->ScheduleGarbageCollection();
   base::RunLoop().RunUntilIdle();

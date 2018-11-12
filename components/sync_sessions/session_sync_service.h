@@ -8,8 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/version_info/channel.h"
 
@@ -38,10 +41,14 @@ class SessionSyncService : public KeyedService {
 
   syncer::GlobalIdMapper* GetGlobalIdMapper() const;
 
-  // Intended for ProfileSyncService: returns the OpenTabsUIDelegate instance,
-  // which is guaranteed to be non-null (independently of whether sync is
-  // running or not)
-  OpenTabsUIDelegate* GetRawOpenTabsUIDelegate();
+  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
+  // not currently syncing, returns nullptr.
+  OpenTabsUIDelegate* GetOpenTabsUIDelegate();
+
+  // Allows client code to be notified when foreign sessions change.
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  SubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb)
+      WARN_UNUSED_RESULT;
 
   // Schedules garbage collection of foreign sessions.
   void ScheduleGarbageCollection();
@@ -55,15 +62,25 @@ class SessionSyncService : public KeyedService {
   // FAVICON_TRACKING.
   FaviconCache* GetFaviconCache();
 
+  // Intended to be used by ProxyDataTypeController: influences whether
+  // GetOpenTabsUIDelegate() returns null or not.
+  void ProxyTabsStateChanged(syncer::DataTypeController::State state);
+
   // Used on Android only, to override the machine tag.
   void SetSyncSessionsGUID(const std::string& guid);
 
  private:
+  void NotifyForeignSessionUpdated();
+
   std::unique_ptr<SyncSessionsClient> sessions_client_;
+
+  bool proxy_tabs_running_ = false;
 
   // Locally owned SyncableService or ModelTypeSyncBridge implementations.
   std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
       sessions_sync_manager_;
+
+  base::CallbackList<void()> foreign_sessions_changed_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionSyncService);
 };

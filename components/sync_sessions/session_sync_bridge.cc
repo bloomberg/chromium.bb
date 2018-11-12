@@ -101,9 +101,11 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 }  // namespace
 
 SessionSyncBridge::SessionSyncBridge(
+    const base::RepeatingClosure& notify_foreign_session_updated_cb,
     SyncSessionsClient* sessions_client,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
+      notify_foreign_session_updated_cb_(notify_foreign_session_updated_cb),
       sessions_client_(sessions_client),
       local_session_event_router_(
           sessions_client->GetLocalSessionEventRouter()),
@@ -258,7 +260,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   SessionStore::WriteBatch::Commit(std::move(batch));
 
   if (!entity_changes.empty()) {
-    sessions_client_->NotifyForeignSessionUpdated();
+    notify_foreign_session_updated_cb_.Run();
   }
 
   return base::nullopt;
@@ -445,7 +447,7 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
   change_processor()->Delete(header_storage_key,
                              batch->GetMetadataChangeList());
 
-  sessions_client_->NotifyForeignSessionUpdated();
+  notify_foreign_session_updated_cb_.Run();
 }
 
 std::unique_ptr<SessionStore::WriteBatch>

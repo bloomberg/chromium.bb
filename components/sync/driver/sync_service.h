@@ -22,10 +22,6 @@ struct AccountInfo;
 class GoogleServiceAuthError;
 class GURL;
 
-namespace sync_sessions {
-class OpenTabsUIDelegate;
-}  // namespace sync_sessions
-
 namespace syncer {
 
 class BaseTransaction;
@@ -363,10 +359,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS
   //////////////////////////////////////////////////////////////////////////////
-
-  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
-  // not currently syncing, returns nullptr.
-  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // TODO(akalin): This is called mostly by ModelAssociators and
   // tests.  Figure out how to pass the handle to the ModelAssociators

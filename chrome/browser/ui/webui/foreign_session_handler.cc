@@ -22,15 +22,15 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -142,7 +142,7 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
 
 }  // namespace
 
-ForeignSessionHandler::ForeignSessionHandler() : scoped_observer_(this) {
+ForeignSessionHandler::ForeignSessionHandler() {
   load_attempt_time_ = base::TimeTicks::Now();
 }
 
@@ -211,25 +211,26 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
 sync_sessions::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
     content::WebUI* web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-
-  // Only return the delegate if it exists and it is done syncing sessions.
-  if (service && service->IsSyncFeatureActive())
-    return service->GetOpenTabsUIDelegate();
-
-  return NULL;
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  return service ? service->GetOpenTabsUIDelegate() : nullptr;
 }
 
 void ForeignSessionHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
-  // NOTE: The ProfileSyncService can be null in tests.
-  if (service)
-    scoped_observer_.Add(service);
+  // NOTE: The SessionSyncService can be null in tests.
+  if (service) {
+    // base::Unretained() is safe below because the subscription itself is a
+    // class member field and handles destruction well.
+    foreign_session_updated_subscription_ =
+        service->SubscribeToForeignSessionsChanged(
+            base::BindRepeating(&ForeignSessionHandler::OnForeignSessionUpdated,
+                                base::Unretained(this)));
+  }
 
   web_ui()->RegisterMessageCallback(
       "deleteForeignSession",
@@ -250,12 +251,7 @@ void ForeignSessionHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
-void ForeignSessionHandler::OnSyncConfigurationCompleted(
-    syncer::SyncService* sync) {
-  HandleGetForeignSessions(nullptr);
-}
-
-void ForeignSessionHandler::OnForeignSessionUpdated(syncer::SyncService* sync) {
+void ForeignSessionHandler::OnForeignSessionUpdated() {
   HandleGetForeignSessions(nullptr);
 }
 

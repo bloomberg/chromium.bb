@@ -80,7 +80,6 @@ class TestSyncService : public SyncService {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
 
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   UserShare* GetUserShare() const override;
 
   SyncTokenStatus GetSyncTokenStatus() const override;

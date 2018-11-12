@@ -26,6 +26,8 @@ SessionSyncService::SessionSyncService(
   DCHECK(sessions_client_);
   if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
     sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(
+        base::BindRepeating(&SessionSyncService::NotifyForeignSessionUpdated,
+                            base::Unretained(this)),
         sessions_client_.get(),
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::SESSIONS,
@@ -33,6 +35,9 @@ SessionSyncService::SessionSyncService(
   } else {
     sessions_sync_manager_ =
         std::make_unique<sync_sessions::SessionsSyncManager>(
+            base::BindRepeating(
+                &SessionSyncService::NotifyForeignSessionUpdated,
+                base::Unretained(this)),
             sessions_client_.get());
   }
 }
@@ -43,8 +48,17 @@ syncer::GlobalIdMapper* SessionSyncService::GetGlobalIdMapper() const {
   return sessions_sync_manager_->GetGlobalIdMapper();
 }
 
-OpenTabsUIDelegate* SessionSyncService::GetRawOpenTabsUIDelegate() {
+OpenTabsUIDelegate* SessionSyncService::GetOpenTabsUIDelegate() {
+  if (!proxy_tabs_running_) {
+    return nullptr;
+  }
   return sessions_sync_manager_->GetOpenTabsUIDelegate();
+}
+
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+SessionSyncService::SubscribeToForeignSessionsChanged(
+    const base::RepeatingClosure& cb) {
+  return foreign_sessions_changed_callback_list_.Add(cb);
 }
 
 void SessionSyncService::ScheduleGarbageCollection() {
@@ -66,8 +80,21 @@ FaviconCache* SessionSyncService::GetFaviconCache() {
   return sessions_sync_manager_->GetFaviconCache();
 }
 
+void SessionSyncService::ProxyTabsStateChanged(
+    syncer::DataTypeController::State state) {
+  const bool was_proxy_tabs_running = proxy_tabs_running_;
+  proxy_tabs_running_ = (state == syncer::DataTypeController::RUNNING);
+  if (proxy_tabs_running_ != was_proxy_tabs_running) {
+    NotifyForeignSessionUpdated();
+  }
+}
+
 void SessionSyncService::SetSyncSessionsGUID(const std::string& guid) {
   sessions_client_->GetSessionSyncPrefs()->SetSyncSessionsGUID(guid);
+}
+
+void SessionSyncService::NotifyForeignSessionUpdated() {
+  foreign_sessions_changed_callback_list_.Notify();
 }
 
 }  // namespace sync_sessions

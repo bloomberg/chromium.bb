@@ -56,7 +56,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(RequestStart, void());
   MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
 
-  MOCK_METHOD0(NotifyForeignSessionUpdated, void());
   MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());
@@ -81,9 +80,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(IsSyncConfirmationNeeded, bool());
   MOCK_METHOD1(OnActionableError, void(const syncer::SyncProtocolError&));
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
-
-  MOCK_METHOD0(GetOpenTabsUIDelegateMock, sync_sessions::OpenTabsUIDelegate*());
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
 
   MOCK_METHOD0(StartUpSlowEngineComponents, void());
 

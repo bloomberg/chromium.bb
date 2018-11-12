@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -18,13 +19,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -134,9 +135,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientSessionsSyncTest,
                        RequireProxyTabsForUiDelegate) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
-  EXPECT_NE(nullptr, GetClient(0)->service()->GetOpenTabsUIDelegate());
+
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetForProfile(GetProfile(0));
+
+  EXPECT_NE(nullptr, service->GetOpenTabsUIDelegate());
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
-  EXPECT_EQ(nullptr, GetClient(0)->service()->GetOpenTabsUIDelegate());
+  EXPECT_EQ(nullptr, service->GetOpenTabsUIDelegate());
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientSessionsSyncTest, Sanity) {

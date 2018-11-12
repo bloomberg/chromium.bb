@@ -246,7 +246,6 @@ class ProfileSyncService : public syncer::SyncService,
       override;
   bool IsSetupInProgress() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -293,8 +292,8 @@ class ProfileSyncService : public syncer::SyncService,
       syncer::SyncTypePreferenceProvider* provider) const;
 
   const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
-  void SetLocalDeviceInfoProviderForTest(
-      std::unique_ptr<syncer::LocalDeviceInfoProvider> provider);
+
+  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProviderForTest();
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -440,12 +439,6 @@ class ProfileSyncService : public syncer::SyncService,
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
   void FlushDirectory() const;
-
-  // Notifies observers that foreign sessions have been updated.
-  // TODO(crbug.com/883199): This doesn't belong here, just like
-  // OnForeignSessionUpdated() doesn't belong in the observer. Let's move them
-  // to OpenTabsUIDelegate by introducing a similar observer mechanism.
-  virtual void NotifyForeignSessionUpdated();
 
   // Set whether sync is currently allowed by the platform.
   void SetSyncAllowedByPlatform(bool allowed);

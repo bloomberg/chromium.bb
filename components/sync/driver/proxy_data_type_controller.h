@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/sync/driver/data_type_controller.h"
 
@@ -18,7 +19,10 @@ namespace syncer {
 // service.
 class ProxyDataTypeController : public DataTypeController {
  public:
-  explicit ProxyDataTypeController(ModelType type);
+  // |state_changed_cb| can be used to listen to state changes.
+  ProxyDataTypeController(
+      ModelType type,
+      const base::RepeatingCallback<void(State)>& state_changed_cb);
   ~ProxyDataTypeController() override;
 
   // DataTypeController interface.
@@ -38,6 +42,7 @@ class ProxyDataTypeController : public DataTypeController {
   void RecordMemoryUsageAndCountsHistograms() override;
 
  private:
+  const base::RepeatingCallback<void(State)> state_changed_cb_;
   State state_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyDataTypeController);

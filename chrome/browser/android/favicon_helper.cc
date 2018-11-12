@@ -19,12 +19,12 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/FaviconHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -143,13 +143,13 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
 
   std::string page_url = ConvertJavaStringToUTF8(env, j_page_url);
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(sync_service);
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  DCHECK(session_sync_service);
 
   scoped_refptr<base::RefCountedMemory> favicon_png;
   sync_sessions::OpenTabsUIDelegate* open_tabs =
-      sync_service->GetOpenTabsUIDelegate();
+      session_sync_service->GetOpenTabsUIDelegate();
   DCHECK(open_tabs);
 
   if (!open_tabs->GetSyncedFaviconForPageURL(page_url, &favicon_png))

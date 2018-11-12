@@ -113,14 +113,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return router;
   }
 
-  void NotifyForeignSessionUpdated() override {
-    if (!ProfileSyncServiceFactory::HasProfileSyncService(profile_)) {
-      return;
-    }
-    ProfileSyncServiceFactory::GetForProfile(profile_)
-        ->NotifyForeignSessionUpdated();
-  }
-
  private:
   Profile* const profile_;
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
