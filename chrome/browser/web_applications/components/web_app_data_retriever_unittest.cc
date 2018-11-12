@@ -10,13 +10,13 @@
 
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
-#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -30,14 +30,9 @@ const char kFooUrl2[] = "https://foo.example/bar";
 const char kFooTitle[] = "Foo Title";
 const char kBarUrl[] = "https://bar.example";
 
-constexpr int kIconSizesToGenerate[] = {
-    extension_misc::EXTENSION_ICON_SMALL,
-    extension_misc::EXTENSION_ICON_SMALL * 2,
-    extension_misc::EXTENSION_ICON_MEDIUM,
-    extension_misc::EXTENSION_ICON_MEDIUM * 2,
-    extension_misc::EXTENSION_ICON_LARGE,
-    extension_misc::EXTENSION_ICON_LARGE * 2,
-};
+constexpr int kIconSizesToGenerate[] = {icon_size::k24,  icon_size::k32,
+                                        icon_size::k48,  icon_size::k128,
+                                        icon_size::k256, icon_size::k512};
 
 }  // namespace
 
