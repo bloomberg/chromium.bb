@@ -40,7 +40,6 @@
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -239,7 +238,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
 
   if (request.GetFetchRequestMode() ==
       network::mojom::FetchRequestMode::kNoCORS) {
-    SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(request_context_));
+    SECURITY_CHECK(cors::IsNoCORSAllowedContext(request_context_));
   }
   cors_flag_ = cors::CalculateCORSFlag(request.Url(), GetSecurityOrigin(),
                                        request.GetFetchRequestMode());

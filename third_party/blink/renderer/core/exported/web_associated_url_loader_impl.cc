@@ -40,7 +40,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -235,12 +234,12 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  WebHTTPHeaderSet exposed_headers = WebCORS::ExtractCorsExposedHeaderNamesList(
-      credentials_mode_, WrappedResourceResponse(response));
+  WebHTTPHeaderSet exposed_headers =
+      cors::ExtractCorsExposedHeaderNamesList(credentials_mode_, response);
   WebHTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
-        (!WebCORS::IsOnAccessControlResponseHeaderWhitelist(header.key) &&
+        (!cors::IsOnAccessControlResponseHeaderWhitelist(header.key) &&
          exposed_headers.find(header.key.Ascii().data()) ==
              exposed_headers.end()))
       blocked_headers.insert(header.key.Ascii().data());

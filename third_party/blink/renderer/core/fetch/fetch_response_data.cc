@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -95,7 +96,7 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
-    if (WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) ||
+    if (cors::IsOnAccessControlResponseHeaderWhitelist(name) ||
         (exposed_headers.find(name.Ascii().data()) != exposed_headers.end() &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       response->header_list_->Append(name, header.second);

@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -36,7 +35,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -582,10 +580,8 @@ void FetchManager::Loader::DidReceiveResponse(
         tainted_response = response_data->CreateBasicFilteredResponse();
         break;
       case FetchRequestData::kCORSTainting: {
-        WebHTTPHeaderSet header_names =
-            WebCORS::ExtractCorsExposedHeaderNamesList(
-                fetch_request_data_->Credentials(),
-                WrappedResourceResponse(response));
+        WebHTTPHeaderSet header_names = cors::ExtractCorsExposedHeaderNamesList(
+            fetch_request_data_->Credentials(), response);
         tainted_response =
             response_data->CreateCORSFilteredResponse(header_names);
         break;
