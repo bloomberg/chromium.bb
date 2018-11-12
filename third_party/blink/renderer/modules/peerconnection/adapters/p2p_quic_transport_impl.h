@@ -44,7 +44,9 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       public quic::QuicCryptoClientStream::ProofHandler {
  public:
   P2PQuicTransportImpl(
-      P2PQuicTransportConfig p2p_transport_config,
+      Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& p2p_transport_config,
       std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
       std::unique_ptr<quic::QuicConnection> connection,
       const quic::QuicConfig& quic_config,

@@ -135,7 +135,9 @@ class DummyCryptoServerStreamHelper
 }  // namespace
 
 P2PQuicTransportImpl::P2PQuicTransportImpl(
-    P2PQuicTransportConfig p2p_transport_config,
+    Delegate* delegate,
+    P2PQuicPacketTransport* packet_transport,
+    const P2PQuicTransportConfig& p2p_transport_config,
     std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
     std::unique_ptr<quic::QuicConnection> connection,
     const quic::QuicConfig& quic_config,
@@ -146,11 +148,9 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
                         quic::CurrentSupportedVersions()),
       helper_(std::move(helper)),
       connection_(std::move(connection)),
-      perspective_(p2p_transport_config.is_server
-                       ? quic::Perspective::IS_SERVER
-                       : quic::Perspective::IS_CLIENT),
-      packet_transport_(p2p_transport_config.packet_transport),
-      delegate_(p2p_transport_config.delegate),
+      perspective_(p2p_transport_config.perspective),
+      packet_transport_(packet_transport),
+      delegate_(delegate),
       clock_(clock),
       stream_delegate_read_buffer_size_(
           p2p_transport_config.stream_delegate_read_buffer_size),

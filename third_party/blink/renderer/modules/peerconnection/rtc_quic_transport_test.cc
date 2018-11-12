@@ -123,14 +123,16 @@ TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStart) {
   rtc::scoped_refptr<rtc::RTCCertificate> certificate =
       rtc::RTCCertificateGenerator::GenerateCertificate(rtc::KeyParams::ECDSA(),
                                                         absl::nullopt);
-  auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>(
-      std::make_unique<MockP2PQuicTransport>());
-  EXPECT_CALL(*mock_factory, OnCreateQuicTransport(_))
-      .WillOnce(Invoke([quic_packet_transport_ptr,
-                        certificate](const P2PQuicTransportConfig& config) {
-        EXPECT_EQ(quic_packet_transport_ptr, config.packet_transport);
-        EXPECT_TRUE(config.is_server);
+  auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>();
+  EXPECT_CALL(*mock_factory, CreateQuicTransport(_, _, _))
+      .WillOnce(Invoke([quic_packet_transport_ptr, certificate](
+                           P2PQuicTransport::Delegate* delegate,
+                           P2PQuicPacketTransport* packet_transport,
+                           const P2PQuicTransportConfig& config) {
+        EXPECT_EQ(quic_packet_transport_ptr, packet_transport);
+        EXPECT_EQ(quic::Perspective::IS_SERVER, config.perspective);
         EXPECT_THAT(config.certificates, ElementsAre(certificate));
+        return std::make_unique<MockP2PQuicTransport>();
       }));
   HeapVector<Member<RTCCertificate>> certificates;
   certificates.push_back(new RTCCertificate(certificate));
@@ -139,8 +141,8 @@ TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStart) {
   quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
 }
 
-// Test that calling start() creates a P2PQuicTransport with
-// |config.is_server| = false if the RTCIceTransport role is 'controlled'.
+// Test that calling start() creates a P2PQuicTransport with client perspective
+// if the RTCIceTransport role is 'controlled'.
 TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStartClient) {
   V8TestingScope scope;
 
@@ -153,9 +155,12 @@ TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStartClient) {
 
   auto mock_factory = std::make_unique<MockP2PQuicTransportFactory>(
       std::make_unique<MockP2PQuicTransport>());
-  EXPECT_CALL(*mock_factory, OnCreateQuicTransport(_))
-      .WillOnce(Invoke([](const P2PQuicTransportConfig& config) {
-        EXPECT_FALSE(config.is_server);
+  EXPECT_CALL(*mock_factory, CreateQuicTransport(_, _, _))
+      .WillOnce(Invoke([](P2PQuicTransport::Delegate* delegate,
+                          P2PQuicPacketTransport* packet_transport,
+                          const P2PQuicTransportConfig& config) {
+        EXPECT_EQ(quic::Perspective::IS_CLIENT, config.perspective);
+        return std::make_unique<MockP2PQuicTransport>();
       }));
   Persistent<RTCQuicTransport> quic_transport =
       CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),

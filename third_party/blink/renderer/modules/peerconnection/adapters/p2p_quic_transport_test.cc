@@ -392,10 +392,8 @@ class P2PQuicTransportTest : public testing::Test {
     std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> client_certificates;
     client_certificates.push_back(client_cert);
     P2PQuicTransportConfig client_config(
-        client_quic_transport_delegate.get(), client_packet_transport.get(),
-        client_certificates, kTransportDelegateReadBufferSize,
-        kTransportWriteBufferSize);
-    client_config.is_server = false;
+        quic::Perspective::IS_CLIENT, client_certificates,
+        kTransportDelegateReadBufferSize, kTransportWriteBufferSize);
     client_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
     // We can't downcast a unique_ptr to an object, so we have to release, cast
@@ -403,7 +401,9 @@ class P2PQuicTransportTest : public testing::Test {
     P2PQuicTransportImpl* client_quic_transport_ptr =
         static_cast<P2PQuicTransportImpl*>(
             quic_transport_factory_
-                ->CreateQuicTransport(std::move(client_config))
+                ->CreateQuicTransport(client_quic_transport_delegate.get(),
+                                      client_packet_transport.get(),
+                                      client_config)
                 .release());
     std::unique_ptr<P2PQuicTransportImpl> client_quic_transport =
         std::unique_ptr<P2PQuicTransportImpl>(client_quic_transport_ptr);
@@ -420,16 +420,16 @@ class P2PQuicTransportTest : public testing::Test {
     std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> server_certificates;
     server_certificates.push_back(server_cert);
     P2PQuicTransportConfig server_config(
-        server_quic_transport_delegate.get(), server_packet_transport.get(),
-        server_certificates, kTransportDelegateReadBufferSize,
-        kTransportWriteBufferSize);
-    server_config.is_server = true;
+        quic::Perspective::IS_SERVER, server_certificates,
+        kTransportDelegateReadBufferSize, kTransportWriteBufferSize);
     server_config.can_respond_to_crypto_handshake =
         can_respond_to_crypto_handshake;
     P2PQuicTransportImpl* server_quic_transport_ptr =
         static_cast<P2PQuicTransportImpl*>(
             quic_transport_factory_
-                ->CreateQuicTransport(std::move(server_config))
+                ->CreateQuicTransport(server_quic_transport_delegate.get(),
+                                      server_packet_transport.get(),
+                                      server_config)
                 .release());
     std::unique_ptr<P2PQuicTransportImpl> server_quic_transport =
         std::unique_ptr<P2PQuicTransportImpl>(server_quic_transport_ptr);

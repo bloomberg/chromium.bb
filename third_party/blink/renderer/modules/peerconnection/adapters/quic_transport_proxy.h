@@ -12,11 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "net/third_party/quic/core/quic_types.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace rtc {
-class RTCCertificate;
 struct SSLFingerprint;
 }  // namespace rtc
 
@@ -25,7 +24,6 @@ namespace blink {
 class IceTransportProxy;
 class QuicStreamProxy;
 class QuicTransportHost;
-class P2PQuicTransportFactory;
 
 // This class allows the QUIC implementation (P2PQuicTransport) to run on a
 // thread different from the thread from which it is controlled. All
@@ -66,9 +64,8 @@ class QuicTransportProxy final {
   QuicTransportProxy(
       Delegate* delegate,
       IceTransportProxy* ice_transport_proxy,
-      quic::Perspective perspective,
-      const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates,
-      std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory);
+      std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory,
+      const P2PQuicTransportConfig& config);
   ~QuicTransportProxy();
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
