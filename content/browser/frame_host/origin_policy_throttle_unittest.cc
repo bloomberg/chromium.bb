@@ -41,7 +41,7 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
   void CreateHandleFor(const GURL& url) {
     net::HttpRequestHeaders headers;
     if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url, nullptr))
-      headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy, "1");
+      headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy, "0");
 
     // Except for url and headers (which are determined by the test case)
     // all parameters below are cargo-culted from
@@ -101,7 +101,7 @@ TEST_P(OriginPolicyThrottleTest, ShouldRequestLastKnownVersion) {
   std::string version;
 
   OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
-  EXPECT_EQ(version, "1");
+  EXPECT_EQ(version, "0");
 
   OriginPolicyThrottle::GetKnownVersionsForTesting()[url::Origin::Create(url)] =
       "abcd";
