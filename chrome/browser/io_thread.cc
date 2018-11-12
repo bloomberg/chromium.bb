@@ -292,7 +292,7 @@ void IOThread::Init() {
   globals_->dns_probe_service =
       std::make_unique<chrome_browser_net::DnsProbeService>();
 
-  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+  if (command_line.HasSwitch(network::switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
 
 #if defined(OS_MACOSX)
