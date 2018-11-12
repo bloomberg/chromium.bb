@@ -626,10 +626,6 @@ body.capturing.grid #preview-grid-vertical {
   width: 50%;
 }
 
-#browser div.media-wrapper.selected {
-  /* TODO(yuli): Maybe add borders for selection */
-}
-
 /* Printing in the browser view. */
 @media print {
   html {

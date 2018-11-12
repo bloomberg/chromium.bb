@@ -194,11 +194,10 @@ cca.util.isChromeOS = function() {
 };
 
 /**
- * Sets up localized aria attributes for TTS on the entire document. Uses the
- * dedicated i18n-label attribute as a strings identifier.
+ * Sets up localized aria-label for TTS on elements with i18n-label.
  */
 cca.util.setupElementsAria = function() {
-  document.querySelectorAll('*[i18n-label]').forEach((element) => {
+  document.querySelectorAll('[i18n-label]').forEach((element) => {
     element.setAttribute('aria-label', chrome.i18n.getMessage(
         element.getAttribute('i18n-label')));
   });
@@ -259,16 +258,15 @@ cca.util.waitAnimationCompleted = function(element, timeout, callback) {
  * Scrolls the parent of the element so the element is centered.
  * @param {HTMLElement} element Element to be visible.
  * @param {cca.util.SmoothScroller} scroller Scroller to be used.
- * @param {cca.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
- *     SMOOTH.
+ * @param {cca.util.SmoothScroller.Mode} mode Scrolling mode.
  */
-cca.util.scrollToCenter = function(element, scroller, opt_mode) {
+cca.util.scrollToCenter = function(element, scroller, mode) {
   var scrollLeft = Math.round(element.offsetLeft + element.offsetWidth / 2 -
     scroller.clientWidth / 2);
   var scrollTop = Math.round(element.offsetTop + element.offsetHeight / 2 -
     scroller.clientHeight / 2);
 
-  scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
+  scroller.scrollTo(scrollLeft, scrollTop, mode);
 };
 
 /**
@@ -379,12 +377,9 @@ cca.util.SmoothScroller.prototype.flushScroll_ = function() {
  * Scrolls smoothly to specified position.
  * @param {number} x X Target scrollLeft value.
  * @param {number} y Y Target scrollTop value.
- * @param {cca.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
- *     SMOOTH.
+ * @param {cca.util.SmoothScroller.Mode} mode Scrolling mode.
  */
-cca.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
-  var mode = opt_mode || cca.util.SmoothScroller.Mode.SMOOTH;
-
+cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
   // Limit to the allowed values.
   var x = Math.max(0, Math.min(x, this.scrollWidth - this.clientWidth));
   var y = Math.max(0, Math.min(y, this.scrollHeight - this.clientHeight));
@@ -857,15 +852,11 @@ cca.util.getShortcutIdentifier = function(event) {
 };
 
 /**
- * Makes all elements with a tabindex attribute unfocusable by mouse.
+ * Makes the element unfocusable by mouse.
+ * @param {HTMLElement} element Element to be unfocusable.
  */
-cca.util.makeElementsUnfocusableByMouse = function() {
-  var elements = document.querySelectorAll('[tabindex]');
-  for (var index = 0; index < elements.length; index++) {
-    elements[index].addEventListener('mousedown', function(event) {
-      event.preventDefault();
-    });
-  }
+cca.util.makeUnfocusableByMouse = function(element) {
+  element.addEventListener('mousedown', (event) => event.preventDefault());
 };
 
 /**

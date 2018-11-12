@@ -116,7 +116,7 @@ cca.App.ViewsStack.prototype.push = function(
     view: view,
     callback: opt_callback || function(result) {},
   });
-
+  view.onResize();
   view.enter(opt_arguments);
   view.activate();
 };
@@ -171,9 +171,10 @@ cca.App.prototype.start = function() {
     this.browserView_.prepare();
     model.load([this.cameraView_.galleryButton, this.browserView_]);
 
-    cca.tooltip.setup();
-    cca.util.makeElementsUnfocusableByMouse();
+    document.querySelectorAll('[tabindex]').forEach(
+        (element) => cca.util.makeUnfocusableByMouse(element));
     cca.util.setupElementsAria();
+    cca.tooltip.setup();
     this.router_.navigate(cca.Router.ViewIdentifier.CAMERA);
   }).catch((error) => {
     console.error(error);
@@ -270,6 +271,7 @@ cca.App.prototype.onWindowResize_ = function(aspectRatio) {
  * @private
  */
 cca.App.prototype.onKeyPressed_ = function(event) {
+  cca.tooltip.hide(); // Hide shown tooltip on any keypress.
   if (cca.util.getShortcutIdentifier(event) == 'BrowserBack') {
     chrome.app.window.current().minimize();
     return;

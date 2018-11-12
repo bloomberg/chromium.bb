@@ -193,17 +193,8 @@ cca.views.Camera.prototype.prepare = function() {
 /**
  * @override
  */
-cca.views.Camera.prototype.onEnter = function() {
-  this.onResize();
-};
-
-/**
- * @override
- */
 cca.views.Camera.prototype.onActivate = function() {
-  if (document.activeElement != document.body) {
-    this.shutterButton_.focus();
-  }
+  this.shutterButton_.focus();
 };
 
 /**
