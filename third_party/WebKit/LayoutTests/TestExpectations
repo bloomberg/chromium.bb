@@ -2889,7 +2889,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-margin-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-margin-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-restyle-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-grayscale-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-grayscale-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-external-002-test.html [ Failure ]
