@@ -241,7 +241,6 @@ source_set("material_components_ios") {
     "src/components/ProgressView/src/private/MDCProgressViewMotionSpec.h",
     "src/components/ProgressView/src/private/MDCProgressViewMotionSpec.m",
     "src/components/ShadowElevations/src/MDCShadowElevations.h",
-    "src/components/ShadowElevations/src/MDCShadowElevations.m",
     "src/components/ShadowElevations/src/MaterialShadowElevations.h",
     "src/components/ShadowLayer/src/MDCShadowLayer.h",
     "src/components/ShadowLayer/src/MDCShadowLayer.m",
