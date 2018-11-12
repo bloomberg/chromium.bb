@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.RectF;
@@ -71,9 +72,11 @@ class AutofillAssistantUiDelegate {
     /** How long the snackbars created by {@link #showAutofillAssistantStoppedSnackbar} stay up. */
     static final int SNACKBAR_DELAY_MS = 5_000;
 
-    // TODO(crbug.com/806868): Use correct user locale.
+    // TODO(crbug.com/806868): Use correct user locale and remove suppressions.
+    @SuppressLint("ConstantLocale")
     private static final SimpleDateFormat sDetailsTimeFormat =
             new SimpleDateFormat("H:mma", Locale.getDefault());
+    @SuppressLint("ConstantLocale")
     private static final SimpleDateFormat sDetailsDateFormat =
             new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
 

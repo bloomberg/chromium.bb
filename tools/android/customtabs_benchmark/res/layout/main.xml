@@ -30,7 +30,7 @@
         android:ems="10"
         android:id="@+id/url_text" />
 
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    <RadioGroup
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">

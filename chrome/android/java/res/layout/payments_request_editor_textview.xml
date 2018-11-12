@@ -16,7 +16,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <AutoCompleteTextView
+            tools:ignore="LabelFor"
             android:id="@+id/text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

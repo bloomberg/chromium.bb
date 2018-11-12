@@ -5,6 +5,7 @@
 <org.chromium.chrome.browser.ntp.NewTabPageLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ntp_content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -40,7 +41,9 @@
         android:orientation="horizontal"
         android:paddingStart="@dimen/location_bar_lateral_padding"
         android:paddingEnd="@dimen/location_bar_lateral_padding" >
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
+            tools:ignore="Autofill,LabelFor"
             style="@style/TextAppearance.NewTabPageSearchBoxText"
             android:id="@+id/search_box_text"
             android:layout_width="0dp"

@@ -60,7 +60,9 @@
                 android:orientation="horizontal"
                 android:visibility="gone">
 
+              <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
               <EditText
+                  tools:ignore="Autofill"
                   android:id="@+id/expiration_month"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
@@ -77,7 +79,9 @@
                   android:layout_height="wrap_content"
                   android:text="@string/autofill_card_unmask_expiration_date_separator" />
 
+              <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
               <EditText
+                  tools:ignore="Autofill"
                   android:id="@+id/expiration_year"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
@@ -89,7 +93,9 @@
                   android:hint="@string/card_unmask_year_hint" />
             </LinearLayout>
 
+            <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
             <EditText
+                tools:ignore="Autofill"
                 android:id="@+id/card_unmask_input"
                 android:inputType="number"
                 android:layout_height="wrap_content"

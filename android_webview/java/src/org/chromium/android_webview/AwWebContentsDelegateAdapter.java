@@ -179,6 +179,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
+    @SuppressLint("HandlerLeak")
     public void showRepostFormWarningDialog() {
         // TODO(mkosiba) We should be using something akin to the JsResultReceiver as the
         // callback parameter (instead of WebContents) and implement a way of converting
