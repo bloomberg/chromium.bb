@@ -130,7 +130,7 @@ class NotificationViewMDTest
 
   void UpdateNotificationViews(const Notification& notification);
   float GetNotificationSlideAmount() const;
-  bool IsRemoved(const std::string& notification_id) const;
+  bool IsRemovedAfterIdle(const std::string& notification_id) const;
   void DispatchGesture(const ui::GestureEventDetails& details);
   void BeginScroll();
   void EndScroll();
@@ -283,8 +283,9 @@ float NotificationViewMDTest::GetNotificationSlideAmount() const {
       .x();
 }
 
-bool NotificationViewMDTest::IsRemoved(
+bool NotificationViewMDTest::IsRemovedAfterIdle(
     const std::string& notification_id) const {
+  base::RunLoop().RunUntilIdle();
   return !MessageCenter::Get()->FindVisibleNotificationById(notification_id);
 }
 
@@ -639,22 +640,22 @@ TEST_F(NotificationViewMDTest, SlideOut) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(kDefaultNotificationId));
+  EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
 TEST_F(NotificationViewMDTest, SlideOutNested) {
@@ -664,18 +665,18 @@ TEST_F(NotificationViewMDTest, SlideOutNested) {
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(kDefaultNotificationId));
+  EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
 TEST_F(NotificationViewMDTest, DisableSlideForcibly) {
@@ -686,20 +687,20 @@ TEST_F(NotificationViewMDTest, DisableSlideForcibly) {
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   notification_view()->DisableSlideForcibly(false);
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
 // Pinning notification is ChromeOS only feature.
@@ -716,10 +717,10 @@ TEST_F(NotificationViewMDTest, SlideOutPinned) {
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_LT(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
 TEST_F(NotificationViewMDTest, Pinned) {
@@ -758,10 +759,10 @@ TEST_F(NotificationViewMDTest, FixedViewMode) {
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
 
   EXPECT_EQ(MessageView::Mode::SETTING, notification_view()->GetMode());
 }
