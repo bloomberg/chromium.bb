@@ -50,7 +50,7 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
     if (!waiting_to_record_stats_) {
       task_runner->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
+          base::BindOnce(&ParkableStringManager::RecordStatistics,
                          base::Unretained(this)),
           base::TimeDelta::FromSeconds(10 + 30));
       waiting_to_record_stats_ = true;
