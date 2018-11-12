@@ -54,8 +54,9 @@ class ManualFillingMediator extends EmptyTabObserver
      * Provides a cache for a given Provider which can repeat the last notification to all
      * observers.
      */
-    private class ActionProviderCacheAdapter extends KeyboardAccessoryData.PropertyProvider<Action>
-            implements KeyboardAccessoryData.Observer<Action> {
+    private class ActionProviderCacheAdapter
+            extends KeyboardAccessoryData.PropertyProvider<Action[]>
+            implements KeyboardAccessoryData.Observer<Action[]> {
         private final Tab mTab;
         private Action[] mLastItems;
 
@@ -66,8 +67,8 @@ class ManualFillingMediator extends EmptyTabObserver
          * @param provider The {@link Provider} to observe and whose data to cache.
          * @param defaultItems The items to be notified about if the Provider hasn't provided any.
          */
-        ActionProviderCacheAdapter(Tab tab, KeyboardAccessoryData.PropertyProvider<Action> provider,
-                Action[] defaultItems) {
+        ActionProviderCacheAdapter(Tab tab,
+                KeyboardAccessoryData.PropertyProvider<Action[]> provider, Action[] defaultItems) {
             super(provider.mType);
             mTab = tab;
             provider.addObserver(this);
@@ -75,7 +76,7 @@ class ManualFillingMediator extends EmptyTabObserver
         }
 
         /**
-         * Calls {@link #onItemsAvailable} with the last used items again. If there haven't been
+         * Calls {@link #onItemAvailable} with the last used items again. If there haven't been
          * any calls, call it with an empty list to avoid putting observers in an undefined state.
          */
         void notifyAboutCachedItems() {
@@ -83,7 +84,7 @@ class ManualFillingMediator extends EmptyTabObserver
         }
 
         @Override
-        public void onItemsAvailable(int typeId, Action[] actions) {
+        public void onItemAvailable(int typeId, Action[] actions) {
             mLastItems = actions;
             // Update the contents immediately, if the adapter connects to an active element.
             if (mTab == mActiveBrowserTab) notifyObservers(actions);
@@ -211,19 +212,19 @@ class ManualFillingMediator extends EmptyTabObserver
         }
     }
 
-    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
+    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item[]> itemProvider) {
         PasswordAccessorySheetCoordinator accessorySheet = getPasswordAccessorySheet();
         if (accessorySheet == null) return; // Not available or initialized yet.
         accessorySheet.registerItemProvider(itemProvider);
     }
 
-    void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action> actionProvider) {
+    void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action[]> actionProvider) {
         if (!isInitialized()) return;
         if (mActiveBrowserTab == null) return;
         ActionProviderCacheAdapter adapter =
                 new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
-        mKeyboardAccessory.registerActionListProvider(adapter);
+        mKeyboardAccessory.registerActionProvider(adapter);
     }
 
     void destroy() {

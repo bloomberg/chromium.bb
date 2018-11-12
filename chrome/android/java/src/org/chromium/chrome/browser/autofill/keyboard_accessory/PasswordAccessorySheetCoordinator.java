@@ -27,7 +27,8 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.Tab.Listener {
     private final Context mContext;
     private final ListModel<Item> mModel = new ListModel<>();
-    private final KeyboardAccessoryData.Observer<Item> mMediator = (t, items) -> mModel.set(items);
+    private final KeyboardAccessoryData.Observer<Item[]> mMediator =
+            (t, items) -> mModel.set(items);
 
     private final KeyboardAccessoryData.Tab mTab;
 
@@ -101,10 +102,10 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
     // TODO(fhorschig): There is only one. Make this a ctor param and self-destruct with it.
     /**
      * Registered item providers can replace the currently shown data in the password sheet.
-     * @param actionProvider The provider this component will listen to.
+     * @param itemProvider The provider this component will listen to.
      */
-    public void registerItemProvider(KeyboardAccessoryData.Provider<Item> actionProvider) {
-        actionProvider.addObserver(mMediator);
+    public void registerItemProvider(KeyboardAccessoryData.Provider<Item[]> itemProvider) {
+        itemProvider.addObserver(mMediator);
     }
 
     /**

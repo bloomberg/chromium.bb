@@ -73,7 +73,7 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        final KeyboardAccessoryData.PropertyProvider<Item> testProvider =
+        final KeyboardAccessoryData.PropertyProvider<Item[]> testProvider =
                 new KeyboardAccessoryData.PropertyProvider<>();
         final Item testItem = Item.createLabel("Test Item", null);
 

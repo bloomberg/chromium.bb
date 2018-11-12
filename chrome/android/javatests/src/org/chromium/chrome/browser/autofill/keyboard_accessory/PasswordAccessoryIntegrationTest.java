@@ -254,7 +254,7 @@ public class PasswordAccessoryIntegrationTest {
      * @param items The items to be provided to the password accessory sheet.
      */
     private void provideItems(Item[] items) {
-        KeyboardAccessoryData.PropertyProvider<Item> itemProvider =
+        KeyboardAccessoryData.PropertyProvider<Item[]> itemProvider =
                 new KeyboardAccessoryData.PropertyProvider<>();
         mActivityTestRule.getActivity()
                 .getManualFillingController()

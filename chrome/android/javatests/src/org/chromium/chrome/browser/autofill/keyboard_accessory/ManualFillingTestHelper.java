@@ -176,7 +176,7 @@ public class ManualFillingTestHelper {
      * Creates and adds a password tab to keyboard accessory and sheet.
      */
     public void createTestTab() {
-        KeyboardAccessoryData.Provider<KeyboardAccessoryData.Item> provider =
+        KeyboardAccessoryData.Provider<KeyboardAccessoryData.Item[]> provider =
                 new KeyboardAccessoryData.PropertyProvider<>();
         mActivityTestRule.getActivity().getManualFillingController().registerPasswordProvider(
                 provider);

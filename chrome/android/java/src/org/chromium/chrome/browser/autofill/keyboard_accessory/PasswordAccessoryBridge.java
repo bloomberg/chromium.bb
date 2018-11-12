@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 class PasswordAccessoryBridge {
-    private final KeyboardAccessoryData.PropertyProvider<Item> mItemProvider =
+    private final KeyboardAccessoryData.PropertyProvider<Item[]> mItemProvider =
             new KeyboardAccessoryData.PropertyProvider<>();
-    private final KeyboardAccessoryData.PropertyProvider<Action> mActionProvider =
+    private final KeyboardAccessoryData.PropertyProvider<Action[]> mActionProvider =
             new KeyboardAccessoryData.PropertyProvider<>(
                     AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
     private final ManualFillingCoordinator mManualFillingCoordinator;

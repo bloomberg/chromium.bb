@@ -21,40 +21,37 @@ import java.util.List;
  */
 public class KeyboardAccessoryData {
     /**
-     * A provider notifies all registered {@link Observer} if the list of actions
-     * changes.
-     * TODO(fhorschig): Replace with android.databinding.ObservableField if available.
-     * @param <T> Either an {@link Action} or a {@link Tab} that this instance provides.
+     * A provider notifies all registered {@link Observer}s about a changed object.
+     * @param <T> The object this provider provides.
      */
     public interface Provider<T> {
         /**
-         * Every observer added by this need to be notified whenever the list of items changes.
+         * Every observer added by this needs to be notified whenever the object changes.
          * @param observer The observer to be notified.
          */
         void addObserver(Observer<T> observer);
 
         /**
-         * Passes the given items to all subscribed {@link Observer}s.
-         * @param items The array of items to be passed to the {@link Observer}s.
+         * Passes the given item to all subscribed {@link Observer}s.
+         * @param item The item to be passed to the {@link Observer}s.
          */
-        void notifyObservers(T[] items);
+        void notifyObservers(T item);
     }
 
     /**
      * An observer receives notifications from an {@link Provider} it is subscribed to.
-     * @param <T> An {@link Action}, {@link Tab} or {@link Item} that this instance observes.
+     * @param <T> Any object that this instance observes.
      */
     public interface Observer<T> {
         int DEFAULT_TYPE = Integer.MIN_VALUE;
 
         /**
-         * A provider calls this function with a list of items that should be available in the
-         * keyboard accessory.
+         * A provider calls this function with an item that should be available in the keyboard
+         * accessory.
          * @param typeId Specifies which type of item this update affects.
-         * @param items The items to be displayed in the Accessory. It's a native array as the
-         *                provider is typically a bridge called via JNI which prefers native types.
+         * @param item An item to be displayed in the Accessory.
          */
-        void onItemsAvailable(int typeId, T[] items);
+        void onItemAvailable(int typeId, T item);
     }
 
     /**
@@ -485,8 +482,8 @@ public class KeyboardAccessoryData {
 
     /**
      * A simple class that holds a list of {@link Observer}s which can be notified about new data by
-     * directly passing that data into {@link PropertyProvider#notifyObservers(T[])}.
-     * @param <T> Either {@link Action}s or {@link Tab}s provided by this class.
+     * directly passing that data into {@link PropertyProvider#notifyObservers(T)}.
+     * @param <T> The object this provider provides.
      */
     public static class PropertyProvider<T> implements Provider<T> {
         private final List<Observer<T>> mObservers = new ArrayList<>();
@@ -506,9 +503,9 @@ public class KeyboardAccessoryData {
         }
 
         @Override
-        public void notifyObservers(T[] items) {
+        public void notifyObservers(T item) {
             for (Observer<T> observer : mObservers) {
-                observer.onItemsAvailable(mType, items);
+                observer.onItemAvailable(mType, item);
             }
         }
     }

@@ -38,7 +38,7 @@ import java.util.List;
 class KeyboardAccessoryMediator
         implements ListObservable.ListObserver<Void>,
                    PropertyObservable.PropertyObserver<PropertyKey>,
-                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action>,
+                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action[]>,
                    TabLayout.OnTabSelectedListener {
     private final PropertyModel mModel;
     private final VisibilityDelegate mVisibilityDelegate;
@@ -57,7 +57,7 @@ class KeyboardAccessoryMediator
     }
 
     @Override
-    public void onItemsAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
+    public void onItemAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
         assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
         // If there is a new list, retain all actions that are of a different type than the provided
         // actions.
@@ -138,7 +138,7 @@ class KeyboardAccessoryMediator
             mVisibilityDelegate.onBottomControlSpaceChanged();
             if (!mModel.get(VISIBLE)) {
                 // TODO(fhorschig|ioanap): Maybe the generation bridge should take care of that.
-                onItemsAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
+                onItemAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
             }
             return;
         }

@@ -91,11 +91,11 @@ public class ManualFillingCoordinator {
     }
 
     void registerActionProvider(
-            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action> actionProvider) {
+            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 
-    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
+    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item[]> itemProvider) {
         mMediator.registerPasswordProvider(itemProvider);
     }
 
