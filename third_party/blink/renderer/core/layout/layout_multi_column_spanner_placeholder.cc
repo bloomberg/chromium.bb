@@ -27,11 +27,7 @@ LayoutMultiColumnSpannerPlaceholder::CreateAnonymous(
       new LayoutMultiColumnSpannerPlaceholder(&layout_object_in_flow_thread);
   Document& document = layout_object_in_flow_thread.GetDocument();
   new_spanner->SetDocumentForAnonymous(&document);
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
-                                                     EDisplay::kBlock);
-  CopyMarginProperties(*new_style, layout_object_in_flow_thread.StyleRef());
-  new_spanner->SetStyle(new_style);
+  new_spanner->UpdateProperties(parent_style);
   return new_spanner;
 }
 
@@ -60,13 +56,16 @@ void LayoutMultiColumnSpannerPlaceholder::
     }
     return;
   }
-  UpdateMarginProperties();
+  UpdateProperties(Parent()->StyleRef());
 }
 
-void LayoutMultiColumnSpannerPlaceholder::UpdateMarginProperties() {
-  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+void LayoutMultiColumnSpannerPlaceholder::UpdateProperties(
+    const ComputedStyle& parent_style) {
+  scoped_refptr<ComputedStyle> new_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
+                                                     EDisplay::kBlock);
   CopyMarginProperties(*new_style, layout_object_in_flow_thread_->StyleRef());
-  SetStyle(new_style);
+  SetStyle(std::move(new_style));
 }
 
 void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
