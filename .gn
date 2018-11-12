@@ -357,6 +357,8 @@ check_targets = [
   "//third_party/blanketjs/*",
 
   # "//third_party/blink/*",  # Errors: https://crbug.com/800764
+  "//third_party/blink/public/*",
+
   #"//third_party/breakpad/*",  # Small errors.
   "//third_party/boringssl/*",
   "//third_party/bouncycastle/*",
