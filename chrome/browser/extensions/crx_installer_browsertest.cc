@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, NonStrictManifestCheck) {
   // version of the manifest, but the downloaded .crx file is old since
   // the newly published version hasn't fully propagated to all the download
   // servers yet. So load the v2 manifest, but then install the v1 crx file.
-  std::string id = "lhnaeclnpobnlbjbgogdanmhadigfnjp";
+  std::string id = "ooklpoaelmiimcjipecogjfcejghbogp";
   std::unique_ptr<WebstoreInstaller::Approval> approval =
       GetApproval("crx_installer/v2_no_permission_change/", id, false);
 
@@ -737,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   // version of the manifest, but the downloaded .crx file is old since
   // the newly published version hasn't fully propagated to all the download
   // servers yet. So load the v2 manifest, but then install the v1 crx file.
-  const std::string id = "lhnaeclnpobnlbjbgogdanmhadigfnjp";
+  const std::string id = "ooklpoaelmiimcjipecogjfcejghbogp";
   std::unique_ptr<WebstoreInstaller::Approval> approval =
       GetApproval("crx_installer/v2_no_permission_change/", id, false);
 
