@@ -472,8 +472,13 @@ const base::Feature kWebAssemblyThreads{"WebAssemblyThreads",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable WebAssembly trap handler.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Controls whether the visibility of a WebContents can be OCCLUDED. When
 // disabled, an occluded WebContents behaves exactly like a VISIBLE WebContents.
