@@ -617,12 +617,6 @@ base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
-base::FilePath TestingProfile::GetCachePath() const {
-  base::FilePath cache_path;
-  chrome::GetUserCacheDirectory(profile_path_, &cache_path);
-  return cache_path;
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {

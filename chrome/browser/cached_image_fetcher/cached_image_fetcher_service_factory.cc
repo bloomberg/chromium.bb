@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/cache/image_data_store_disk.h"
 #include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
@@ -40,7 +41,9 @@ std::unique_ptr<ImageDecoder> CreateImageDecoderImpl() {
 // static
 base::FilePath CachedImageFetcherServiceFactory::GetCachePath(
     Profile* profile) {
-  return profile->GetCachePath().Append(kImageCacheSubdir);
+  base::FilePath cache_path;
+  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_path);
+  return cache_path.Append(kImageCacheSubdir);
 }
 
 // static

@@ -30,7 +30,6 @@ class CastBrowserContext final : public content::BrowserContext {
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
   bool IsOffTheRecord() const override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;

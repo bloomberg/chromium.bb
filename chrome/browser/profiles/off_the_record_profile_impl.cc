@@ -275,10 +275,6 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
 
-base::FilePath OffTheRecordProfileImpl::GetCachePath() const {
-  return profile_->GetCachePath();
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
