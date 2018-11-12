@@ -26,8 +26,8 @@ import java.util.List;
 public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
-            ViewType.CUSTOM_VIEW, ViewType.PREFETCH, ViewType.SECTION_HEADER,
-            ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE})
+            ViewType.IMAGE_FULL_WIDTH, ViewType.CUSTOM_VIEW, ViewType.PREFETCH,
+            ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -35,11 +35,12 @@ public class ListUtils {
         int GENERIC = 2;
         int VIDEO = 3;
         int IMAGE = 4;
-        int CUSTOM_VIEW = 5;
-        int PREFETCH = 6;
-        int SECTION_HEADER = 7;
-        int IN_PROGRESS_VIDEO = 8;
-        int IN_PROGRESS_IMAGE = 9;
+        int IMAGE_FULL_WIDTH = 5;
+        int CUSTOM_VIEW = 6;
+        int PREFETCH = 7;
+        int SECTION_HEADER = 8;
+        int IN_PROGRESS_VIDEO = 9;
+        int IN_PROGRESS_IMAGE = 10;
     }
 
     /**
@@ -95,7 +96,9 @@ public class ListUtils {
                 case OfflineItemFilter.FILTER_VIDEO:
                     return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
                 case OfflineItemFilter.FILTER_IMAGE:
-                    return inProgress ? ViewType.IN_PROGRESS_IMAGE : ViewType.IMAGE;
+                    return inProgress ? ViewType.IN_PROGRESS_IMAGE
+                                      : (offlineItem.spanFullWidth ? ViewType.IMAGE_FULL_WIDTH
+                                                                   : ViewType.IMAGE);
                 // case OfflineItemFilter.FILTER_PAGE:
                 // case OfflineItemFilter.FILTER_AUDIO:
                 // case OfflineItemFilter.FILTER_OTHER:
@@ -142,10 +145,6 @@ public class ListUtils {
      * @see             GridLayoutManager.SpanSizeLookup
      */
     public static int getSpanSize(ListItem item, DownloadManagerUiConfig config, int spanCount) {
-        if (item instanceof OfflineItemListItem && ((OfflineItemListItem) item).spanFullWidth) {
-            return spanCount;
-        }
-
         switch (getViewTypeForItem(item, config)) {
             case ViewType.IMAGE: // Intentional fallthrough.
             case ViewType.IN_PROGRESS_IMAGE:

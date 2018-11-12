@@ -35,7 +35,8 @@ public abstract class ListItemViewHolder extends ViewHolder {
                 return GenericViewHolder.create(parent);
             case ListUtils.ViewType.VIDEO:
                 return VideoViewHolder.create(parent);
-            case ListUtils.ViewType.IMAGE:
+            case ListUtils.ViewType.IMAGE: // intentional fall-through
+            case ListUtils.ViewType.IMAGE_FULL_WIDTH:
                 return ImageViewHolder.create(parent);
             case ListUtils.ViewType.CUSTOM_VIEW:
                 return new CustomViewHolder(parent);
