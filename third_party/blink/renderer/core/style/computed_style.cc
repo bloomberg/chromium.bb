@@ -536,8 +536,8 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   if (DiffNeedsPaintInvalidationSubtree(other))
     diff.SetNeedsPaintInvalidationSubtree();
-  else if (DiffNeedsPaintInvalidationObject(other))
-    diff.SetNeedsPaintInvalidationObject();
+  else
+    AdjustDiffForNeedsPaintInvalidationObject(other, diff);
 
   if (DiffNeedsVisualRectUpdate(other))
     diff.SetNeedsVisualRectUpdate();
@@ -699,24 +699,46 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
   return ComputedStyleBase::DiffNeedsPaintInvalidationSubtree(*this, other);
 }
 
-bool ComputedStyle::DiffNeedsPaintInvalidationObject(
-    const ComputedStyle& other) const {
-  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other))
-    return true;
+void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
+    const ComputedStyle& other,
+    StyleDifference& diff) const {
+  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other) ||
+      !BorderVisuallyEqual(other) || !RadiiEqual(other))
+    diff.SetNeedsPaintInvalidationObject();
 
-  if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
-      !BackgroundVisuallyEqual(other))
-    return true;
+  AdjustDiffForBackgroundVisuallyEqual(other, diff);
+
+  if (diff.NeedsPaintInvalidationObject())
+    return;
 
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
-      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other))
-        return true;
+      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other)) {
+        diff.SetNeedsPaintInvalidationObject();
+        return;
+      }
     }
   }
+}
 
-  return false;
+void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
+    const ComputedStyle& other,
+    StyleDifference& diff) const {
+  if (BackgroundColorInternal() != other.BackgroundColorInternal()) {
+    diff.SetNeedsPaintInvalidationObject();
+    if (BackgroundColorInternal().HasAlpha() !=
+        other.BackgroundColorInternal().HasAlpha()) {
+      diff.SetHasAlphaChanged();
+      return;
+    }
+  }
+  if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
+    diff.SetNeedsPaintInvalidationObject();
+    // Changes of background fill layers, such as images, may have
+    // changed alpha.
+    diff.SetHasAlphaChanged();
+  }
 }
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(

@@ -1706,10 +1706,9 @@ class ComputedStyle : public ComputedStyleBase,
     return BorderImage().Outset() == o.BorderImage().Outset();
   }
 
-  bool BackgroundVisuallyEqual(const ComputedStyle& o) const {
-    return BackgroundColorInternal() == o.BackgroundColorInternal() &&
-           BackgroundInternal().VisuallyEqual(o.BackgroundInternal());
-  }
+  CORE_EXPORT void AdjustDiffForBackgroundVisuallyEqual(
+      const ComputedStyle& o,
+      StyleDifference& diff) const;
 
   void ResetBorder() {
     ResetBorderImage();
@@ -2513,7 +2512,8 @@ class ComputedStyle : public ComputedStyleBase,
       const Document&,
       const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
-  bool DiffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
+  void AdjustDiffForNeedsPaintInvalidationObject(const ComputedStyle& other,
+                                                 StyleDifference&) const;
   bool DiffNeedsPaintInvalidationObjectForPaintImage(
       const StyleImage&,
       const ComputedStyle& other) const;
@@ -2603,6 +2603,8 @@ class ComputedStyle : public ComputedStyleBase,
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,
       UpdatePropertySpecificDifferencesCompositingReasonsContainsPaint);
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest,
+                           UpdatePropertySpecificDifferencesHasAlpha);
 };
 
 inline bool ComputedStyle::SetEffectiveZoom(float f) {

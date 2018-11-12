@@ -1742,4 +1742,24 @@ TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
             result.InnerPossiblyPseudoNode());
 }
 
+TEST_P(PaintLayerTest, ChangeAlphaNeedsCompositingInputs) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        background: white;
+        width: 100px;
+        height: 100px;
+        position: relative;
+      }
+    </style>
+    <div id='target'>
+    </div>
+  )HTML");
+  PaintLayer* target = GetPaintLayerByElementId("target");
+  StyleDifference diff;
+  diff.SetHasAlphaChanged();
+  target->StyleDidChange(diff, target->GetLayoutObject().Style());
+  EXPECT_TRUE(target->NeedsCompositingInputsUpdate());
+}
+
 }  // namespace blink

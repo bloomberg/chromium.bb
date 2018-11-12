@@ -55,6 +55,8 @@ class StyleColor {
     return current_color_ ? current_color : color_;
   }
 
+  bool HasAlpha() const { return !current_color_ && color_.HasAlpha(); }
+
   static Color ColorFromKeyword(CSSValueID);
   static bool IsColorKeyword(CSSValueID);
   static bool IsSystemColor(CSSValueID);
