@@ -13,6 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -81,6 +83,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,6 +94,8 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
@@ -98,6 +103,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -143,6 +149,9 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -157,6 +166,10 @@
 namespace chromeos {
 
 namespace {
+
+// http://crbug/866790: After Supervised Users are deprecated, remove this.
+const char kUserSessionManagerNotifier[] = "chrome://settings/people";
+const char kSupervisedUserDeprecated[] = "supervised_user_deprecated";
 
 // Milliseconds until we timeout our attempt to fetch flags from the child
 // account service.
@@ -1178,6 +1191,52 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
   }
 }
 
+// http://crbug/866790: After Supervised Users are deprecated, remove this.
+void ShowSupervisedUserDeprecationNotification(Profile* profile) {
+  base::string16 title = l10n_util::GetStringUTF16(
+      IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE);
+  base::string16 message =
+      l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY);
+
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([](base::Optional<int> button_index) {
+            if (button_index) {
+              user_manager::UserManager* user_manager =
+                  user_manager::UserManager::Get();
+              Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+                  user_manager->GetPrimaryUser());
+
+              NavigateParams params(profile,
+                                    GURL("https://support.google.com/chrome/"
+                                         "?p=ui_supervised_user"),
+                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+              params.disposition = WindowOpenDisposition::SINGLETON_TAB;
+              Navigate(&params);
+            }
+          }));
+
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE)));
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kSupervisedUserDeprecated,
+          title, message, base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kUserSessionManagerNotifier),
+          rich_notification_data, std::move(delegate),
+          ash::kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
+
+  NotificationDisplayService::GetForProfile(profile)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification);
+}
+
 void UserSessionManager::InitProfilePreferences(
     Profile* profile,
     const UserContext& user_context) {
@@ -1282,6 +1341,10 @@ void UserSessionManager::InitProfilePreferences(
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
+  // http://crbug/866790: After Supervised Users are deprecated, remove this.
+  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
+    ShowSupervisedUserDeprecationNotification(profile);
+
   // Demo user signed in.
   if (is_incognito_profile) {
     profile->OnLogin();

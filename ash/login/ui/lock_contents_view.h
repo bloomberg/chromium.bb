@@ -84,6 +84,7 @@ class ASH_EXPORT LockContentsView
     LoginBubble* auth_error_bubble() const;
     LoginBubble* detachable_base_error_bubble() const;
     LoginBubble* warning_banner_bubble() const;
+    LoginBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
@@ -383,6 +384,9 @@ class ASH_EXPORT LockContentsView
 
   // Bubble for displaying warning banner message.
   std::unique_ptr<LoginBubble> warning_banner_bubble_;
+
+  // Bubble for displaying supervised user deprecation message.
+  std::unique_ptr<LoginBubble> supervised_user_deprecation_bubble_;
 
   int unlock_attempt_ = 0;
 

@@ -1155,6 +1155,16 @@
   <message name="IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT" desc="Text shown in notification bubble when user enters name of user that can be imported.">
     Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>import <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph> to this device<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>?
   </message>
+  <!-- Supervised users deprecation notification -->
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on supervised user login indicating that the feature is expiring soon.">
+     Your supervised user account is expiring soon.
+  </message>
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY" desc="Body of notification displayed on supervised user login indicating that the feature is expiring soon.">
+    Please save your local files and set up a new account.
+  </message>
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE" desc="Learn more text for button on Supervised User expiration notification.">
+    Learn more
+  </message>
   <message name="IDS_MULTI_PROFILES_RESTRICTED_POLICY_TITLE" desc="Text that is shown on the title of the bubble shown for user pod which is not allowed in multi-profiles session.">
     Can't set up multiple sign-in
   </message>

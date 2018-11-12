@@ -102,7 +102,7 @@ void SetPreferredWidthForView(views::View* view, int width) {
 class AuthErrorLearnMoreButton : public views::Button,
                                  public views::ButtonListener {
  public:
-  AuthErrorLearnMoreButton(LoginBubble* parent_bubble)
+  explicit AuthErrorLearnMoreButton(LoginBubble* parent_bubble)
       : views::Button(this), parent_bubble_(parent_bubble) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label =
@@ -309,6 +309,11 @@ LoginBubble* LockContentsView::TestApi::warning_banner_bubble() const {
   return view_->warning_banner_bubble_.get();
 }
 
+LoginBubble* LockContentsView::TestApi::supervised_user_deprecation_bubble()
+    const {
+  return view_->supervised_user_deprecation_bubble_.get();
+}
+
 views::View* LockContentsView::TestApi::system_info() const {
   return view_->system_info_;
 }
@@ -351,6 +356,7 @@ LockContentsView::LockContentsView(
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
   auth_error_bubble_ = std::make_unique<LoginBubble>();
+  supervised_user_deprecation_bubble_ = std::make_unique<LoginBubble>();
   detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
   tooltip_bubble_ = std::make_unique<LoginBubble>();
   warning_banner_bubble_ = std::make_unique<LoginBubble>();
@@ -1447,13 +1453,14 @@ void LockContentsView::RemoveUser(bool is_primary) {
 }
 
 void LockContentsView::OnBigUserChanged() {
-  const AccountId new_big_user =
-      CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
+  const mojom::LoginUserInfoPtr& big_user =
+      CurrentBigUserView()->GetCurrentUser();
+  const AccountId big_user_account_id = big_user->basic_user_info->account_id;
 
   CurrentBigUserView()->RequestFocus();
 
-  Shell::Get()->login_screen_controller()->OnFocusPod(new_big_user);
-  UpdateEasyUnlockIconForUser(new_big_user);
+  Shell::Get()->login_screen_controller()->OnFocusPod(big_user_account_id);
+  UpdateEasyUnlockIconForUser(big_user_account_id);
 
   if (unlock_attempt_ > 0) {
     // Times a password was incorrectly entered until user gives up (change
@@ -1463,6 +1470,24 @@ void LockContentsView::OnBigUserChanged() {
 
     // Reset unlock attempt when the auth user changes.
     unlock_attempt_ = 0;
+  }
+
+  // http://crbug/866790: After Supervised Users are deprecated, remove this.
+  if (big_user->basic_user_info->type == user_manager::USER_TYPE_SUPERVISED) {
+    base::string16 message = l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);
+    // Shows supervised user deprecation message as a persistent error bubble.
+    views::Label* label =
+        new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                         views::style::STYLE_PRIMARY);
+    label->SetMultiLine(true);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SK_ColorWHITE);
+    supervised_user_deprecation_bubble_->ShowErrorBubble(
+        label,
+        CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
+        LoginBubble::kFlagPersistent);
   }
 
   // The new auth user might have different last used detachable base - make
