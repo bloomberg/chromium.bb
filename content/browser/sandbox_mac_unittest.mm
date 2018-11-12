@@ -26,7 +26,7 @@ namespace {
 // crbug.com/740009: This allows the unit test to cleanup temporary directories,
 // and is safe since this is only a unit test.
 constexpr char kTempDirSuffix[] =
-    "(allow file* (subpath \"/private/var/folders/\"))";
+    "(allow file* (subpath \"/private/var/folders\"))";
 
 class SandboxMacTest : public base::MultiProcessTest {
  protected:
