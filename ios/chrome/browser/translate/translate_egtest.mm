@@ -739,7 +739,7 @@ using translate::LanguageDetectionController;
   }
 
   // Do a translation in incognito
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:URL];
   [self simulateTranslationFromSpanishToEnglish];
   // Check that the infobar does not contain the "Always Translate" switch.

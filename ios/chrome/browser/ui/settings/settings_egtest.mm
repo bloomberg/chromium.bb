@@ -607,8 +607,7 @@ bool IsCertificateCleared() {
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
 - (void)testSettingsSignedOutIncognito {
-  chrome_test_util::OpenNewIncognitoTab();
-
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];

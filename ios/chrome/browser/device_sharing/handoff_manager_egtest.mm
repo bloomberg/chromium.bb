@@ -71,7 +71,7 @@ void AssertHandoffURL(const GURL& gurl) {
 
 // Tests Handoff URL for a new tab.
 - (void)testTypicalURLInNewTab {
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   const GURL destinationUrl = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -81,7 +81,7 @@ void AssertHandoffURL(const GURL& gurl) {
 // Tests that Handoff URL should never be set for an incognito tab.
 - (void)testTypicalURLInNewIncognitoTab {
   // Opens an incognito tab and loads a web page. Check that Handoff URL is nil.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   const GURL destinationUrl = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -107,9 +107,9 @@ void AssertHandoffURL(const GURL& gurl) {
 
   // Sets up the state for 3 tabs.
   [ChromeEarlGrey loadURL:tab1URL];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:tab2URL];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:tab3URL];
 
   // When tab 3 is closed, tab 2 is front and Handoff URL should be the URL for
@@ -135,13 +135,13 @@ void AssertHandoffURL(const GURL& gurl) {
   // Loads one page.
   [ChromeEarlGrey loadURL:tab1URL];
   // Loads page two in incognito and verifies that Handoff URL is nil.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:tab2URL];
   AssertHandoffURL(GURL());
 
   // Loads page three in a new normal tab and verify that Handoff URL is not
   // nil.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:tab3URL];
   AssertHandoffURL(tab3URL);
 }

@@ -47,7 +47,7 @@ using web::test::HttpServer;
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
                  @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title1")]
@@ -59,9 +59,7 @@ using web::test::HttpServer;
   // with the icon present.
   [ChromeEarlGrey goBack];
 
-  chrome_test_util::OpenNewTab();
-  // New tab page is not loaded within a single tick so wait before assert.
-  [ChromeEarlGrey waitForPageToFinishLoading];
+  [ChromeEarlGrey openNewTab];
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title1")]
@@ -95,7 +93,7 @@ using web::test::HttpServer;
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
                  @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title2")]
       assertWithMatcher:grey_nil()];
@@ -107,7 +105,7 @@ using web::test::HttpServer;
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
   [ChromeEarlGrey goBack];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
 
   // Which of the two tiles that is displayed is an implementation detail, and
   // this test helps document it. The purpose of the test is to verify that only

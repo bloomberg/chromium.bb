@@ -18,6 +18,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -61,7 +62,7 @@ void WaitForHistoryToDisappear() {
 
 // Tests that all items are accessible on the incognito page.
 - (void)testAccessibilityOnIncognitoTab {
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   WaitForHistoryToDisappear();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");

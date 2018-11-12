@@ -144,7 +144,7 @@ void ClearBrowsingData() {
 
 void OpenNewIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)];
   GREYAssert(IsIncognitoMode(), @"Failed to switch to incognito mode.");
 }
@@ -171,7 +171,7 @@ void CloseAllIncognitoTabs() {
 
 void OpenNewRegularTab() {
   NSUInteger tab_count = chrome_test_util::GetMainTabCount();
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
 }
 

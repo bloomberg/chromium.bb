@@ -765,7 +765,7 @@ void FocusOmnibox() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdleWithTimeout:2];
 
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
 
   // Check that the bottom toolbar is visible.
   [[EarlGrey selectElementWithMatcher:SearchButton()]

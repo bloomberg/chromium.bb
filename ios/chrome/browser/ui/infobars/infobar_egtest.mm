@@ -133,7 +133,7 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   NSString* infoBarMessage = @"TestInfoBar";
 
   // Create the second tab, navigate to the test page, and add the test infobar.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:ponyURL];
   [ChromeEarlGrey waitForMainTabCount:2];
   VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);

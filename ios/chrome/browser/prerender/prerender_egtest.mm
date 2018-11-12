@@ -76,8 +76,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey openNewTab];
 
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
@@ -89,8 +88,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
   [ChromeEarlGrey waitForPageToFinishLoading];
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey openNewTab];
 
   // Type the begining of the address to have the autocomplete suggestion.
   [[EarlGrey

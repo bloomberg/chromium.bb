@@ -503,10 +503,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGrey goBack];
 
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to open a new
-  // tab and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey openNewTab];
 
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle)]

@@ -577,7 +577,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // with the icon present.
   [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
 }
 
 @end

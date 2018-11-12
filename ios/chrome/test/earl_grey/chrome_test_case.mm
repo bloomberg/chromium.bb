@@ -19,6 +19,7 @@
 #include "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/coverage_util_ios.h"
 
@@ -194,8 +195,7 @@ const CFTimeInterval kDrainTimeout = 5;
 
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
-  chrome_test_util::OpenNewTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey openNewTab];
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the
