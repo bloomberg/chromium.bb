@@ -351,10 +351,6 @@ const base::Feature kRasterInducingScroll{"RasterInducingScroll",
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When loading CSS from a 'file:' URL, require a CSS-like file extension.
-const base::Feature kRequireCSSExtensionForFile{
-    "RequireCSSExtensionForFile", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables resampling input events on main thread.
 const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

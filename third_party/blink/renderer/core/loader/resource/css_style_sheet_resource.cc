@@ -178,9 +178,7 @@ bool CSSStyleSheetResource::CanUseSheet(const CSSParserContext* parser_context,
         parser_context->CountDeprecation(
             WebFeature::kLocalCSSFileExtensionRejected);
       }
-      if (RuntimeEnabledFeatures::RequireCSSExtensionForFileEnabled()) {
-        return false;
-      }
+      return false;
     }
   }
 

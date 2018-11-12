@@ -1026,10 +1026,6 @@
       status: "stable",
     },
     {
-      name: "RequireCSSExtensionForFile",
-      status: "stable",
-    },
-    {
       name: "ResourceLoadScheduler",
       status: "experimental",
     },

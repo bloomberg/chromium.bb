@@ -422,9 +422,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
 
-  WebRuntimeFeatures::EnableRequireCSSExtensionForFile(
-      base::FeatureList::IsEnabled(features::kRequireCSSExtensionForFile));
-
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));
 
