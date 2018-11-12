@@ -47,6 +47,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
   void ReportMemoryStats(OomInterventionMetrics& current_memory);
 
+  void TimerFiredUMAReport(TimerBase*);
+
   mojom::blink::DetectionArgsPtr detection_args_;
 
   mojom::blink::OomInterventionHostPtr host_;
@@ -54,6 +56,9 @@ class CONTROLLER_EXPORT OomInterventionImpl
   bool navigate_ads_enabled_ = false;
   TaskRunnerTimer<OomInterventionImpl> timer_;
   std::unique_ptr<ScopedPagePauser> pauser_;
+  OomInterventionMetrics metrics_at_intervention_;
+  int number_of_report_needed_ = 0;
+  TaskRunnerTimer<OomInterventionImpl> delayed_report_timer_;
 };
 
 }  // namespace blink

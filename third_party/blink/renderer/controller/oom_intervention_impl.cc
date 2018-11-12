@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -25,7 +26,10 @@ void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
 OomInterventionImpl::OomInterventionImpl()
     : timer_(Thread::MainThread()->GetTaskRunner(),
              this,
-             &OomInterventionImpl::Check) {}
+             &OomInterventionImpl::Check),
+      delayed_report_timer_(Thread::MainThread()->GetTaskRunner(),
+                            this,
+                            &OomInterventionImpl::TimerFiredUMAReport) {}
 
 OomInterventionImpl::~OomInterventionImpl() {}
 
@@ -94,6 +98,11 @@ void OomInterventionImpl::Check(TimerBase*) {
     // Notify V8GCForContextDispose that page navigation gc is needed when
     // intervention runs, as it indicates that memory usage is high.
     V8GCForContextDispose::Instance().SetForcePageNavigationGC();
+
+    // Report the memory impact of intervention after 10, 20, 30 seconds.
+    metrics_at_intervention_ = current_memory;
+    number_of_report_needed_ = 3;
+    delayed_report_timer_.StartRepeating(TimeDelta::FromSeconds(10), FROM_HERE);
   }
 }
 
@@ -115,6 +124,43 @@ void OomInterventionImpl::ReportMemoryStats(
 
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(
       current_memory);
+}
+
+void OomInterventionImpl::TimerFiredUMAReport(TimerBase*) {
+  OomInterventionMetrics current_memory = GetCurrentMemoryMetrics();
+  switch (number_of_report_needed_--) {
+    case 3:
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs",
+          current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024);
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs",
+          current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024);
+      break;
+    case 2:
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs",
+          current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024);
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs",
+          current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024);
+      break;
+    case 1:
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs",
+          current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024);
+      base::UmaHistogramSparse(
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs",
+          current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024);
+      delayed_report_timer_.Stop();
+      break;
+  }
 }
 
 }  // namespace blink
