@@ -15,6 +15,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -142,6 +143,8 @@ public class TabState {
 
     /** The tab's theme color. */
     public int themeColor;
+
+    public @Nullable @TabModel.TabLaunchType Integer tabLaunchTypeAtCreation;
 
     /** Whether this TabState was created from a file containing info about an incognito Tab. */
     protected boolean mIsIncognito;
@@ -287,6 +290,15 @@ public class TabState {
                 Log.w(TAG, "Failed to read theme color from tab state. "
                         + "Assuming theme color is white");
             }
+            try {
+                tabState.tabLaunchTypeAtCreation = stream.readInt();
+                if (tabState.tabLaunchTypeAtCreation == -1) tabState.tabLaunchTypeAtCreation = null;
+            } catch (EOFException eof) {
+                tabState.tabLaunchTypeAtCreation = null;
+                Log.w(TAG,
+                        "Failed to read tab launch type at creation from tab state. "
+                                + "Assuming tab launch type is null");
+            }
             return tabState;
         } finally {
             stream.close();
@@ -348,6 +360,8 @@ public class TabState {
             dataOutputStream.writeLong(-1); // Obsolete sync ID.
             dataOutputStream.writeBoolean(state.shouldPreserve);
             dataOutputStream.writeInt(state.themeColor);
+            dataOutputStream.writeInt(
+                    state.tabLaunchTypeAtCreation != null ? state.tabLaunchTypeAtCreation : -1);
         } catch (FileNotFoundException e) {
             Log.w(TAG, "FileNotFoundException while attempting to save TabState.");
         } catch (IOException e) {
