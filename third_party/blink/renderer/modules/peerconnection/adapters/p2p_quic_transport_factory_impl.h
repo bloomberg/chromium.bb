@@ -26,7 +26,9 @@ class MODULES_EXPORT P2PQuicTransportFactoryImpl final
 
   // QuicTransportFactoryInterface override.
   std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
-      P2PQuicTransportConfig config) override;
+      P2PQuicTransport::Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& config) override;
 
  private:
   // This is used to create a QuicChromiumConnectionHelper for the session.

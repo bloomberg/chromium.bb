@@ -33,9 +33,12 @@ class DefaultP2PQuicTransportFactory : public P2PQuicTransportFactory {
 
   // P2PQuicTransportFactory overrides.
   std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
-      P2PQuicTransportConfig config) override {
+      P2PQuicTransport::Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& config) override {
     DCHECK(host_thread_->RunsTasksInCurrentSequence());
-    return GetFactory()->CreateQuicTransport(std::move(config));
+    return GetFactory()->CreateQuicTransport(delegate, packet_transport,
+                                             config);
   }
 
  private:
@@ -229,9 +232,16 @@ void RTCQuicTransport::StartConnection() {
     rtc_certificates.push_back(certificate->Certificate());
   }
   IceTransportProxy* transport_proxy = transport_->ConnectConsumer(this);
-  proxy_.reset(new QuicTransportProxy(
-      this, transport_proxy, QuicPerspectiveFromIceRole(transport_->GetRole()),
-      rtc_certificates, std::move(p2p_quic_transport_factory_)));
+  // TODO(https://crbug.com/874296): Use the proper read/write buffer sizees
+  // once write() and readInto() are implemented.
+  const uint32_t stream_buffer_size = 24 * 1024 * 1024;
+  P2PQuicTransportConfig quic_transport_config(
+      QuicPerspectiveFromIceRole(transport_->GetRole()), rtc_certificates,
+      /*stream_delegate_read_buffer_size_in=*/stream_buffer_size,
+      /*stream_write_buffer_size_in=*/stream_buffer_size);
+  proxy_.reset(new QuicTransportProxy(this, transport_proxy,
+                                      std::move(p2p_quic_transport_factory_),
+                                      quic_transport_config));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
   for (const RTCDtlsFingerprint* fingerprint :

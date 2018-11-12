@@ -36,25 +36,16 @@ QuicTransportHost::~QuicTransportHost() {
   }
 }
 
-void QuicTransportHost::Initialize(
-    IceTransportHost* ice_transport_host,
-    quic::Perspective perspective,
-    const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates) {
+void QuicTransportHost::Initialize(IceTransportHost* ice_transport_host,
+                                   const P2PQuicTransportConfig& config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ice_transport_host);
   DCHECK(!ice_transport_host_);
   ice_transport_host_ = ice_transport_host;
-  // TODO(https://crbug.com/874296): Pass through values for read and write
-  // stream buffer sizes in the P2PQuicTransportConfig. Currently this is just
-  // set to the same size as the QUIC receive window size (24 MB).
-  uint32_t stream_buffer_size = 24 * 1024 * 1024;
-  P2PQuicTransportConfig config(
-      this, ice_transport_host->ConnectConsumer(this)->packet_transport(),
-      certificates, /*stream_delegate_read_buffer_size_in=*/stream_buffer_size,
-      /*stream_write_buffer_size_in=*/stream_buffer_size);
-  config.is_server = (perspective == quic::Perspective::IS_SERVER);
-  quic_transport_ =
-      quic_transport_factory_->CreateQuicTransport(std::move(config));
+  IceTransportAdapter* ice_transport_adapter =
+      ice_transport_host_->ConnectConsumer(this);
+  quic_transport_ = quic_transport_factory_->CreateQuicTransport(
+      /*delegate=*/this, ice_transport_adapter->packet_transport(), config);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> QuicTransportHost::proxy_thread()
