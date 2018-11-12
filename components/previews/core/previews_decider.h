@@ -24,8 +24,9 @@ class PreviewsDecider {
   // Some types of previews will be checked for an applicable network quality
   // threshold - these are client previews that do not have optimization hint
   // support. Previews with optimization hint support can have variable
-  // network quality thresholds based on the committed URL. Server previews
-  // perform a network quality check on the server.
+  // network quality thresholds based on the committed URL. Data Reduction
+  // Proxy previews (i.e., LITE_PAGE) perform a network quality check on the
+  // server.
   virtual bool ShouldAllowPreviewAtNavigationStart(
       PreviewsUserData* previews_data,
       const GURL& url,

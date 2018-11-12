@@ -214,9 +214,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtNavigationStart(
                                   is_drp_server_preview, &passed_reasons);
   LogPreviewDecisionMade(eligibility, url, clock_->Now(), type,
                          std::move(passed_reasons), previews_data->page_id());
-  return eligibility == PreviewsEligibilityReason::ALLOWED ||
-         eligibility ==
-             PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS;
+  return eligibility == PreviewsEligibilityReason::ALLOWED;
 }
 
 bool PreviewsDeciderImpl::ShouldConsiderPreview(
@@ -311,21 +309,11 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     if (params::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
-      PreviewsEligibilityReason status = ShouldAllowPreviewPerOptimizationHints(
-          previews_data, url, type, passed_reasons);
-      if (status != PreviewsEligibilityReason::ALLOWED) {
-        return status;
-      }
-    } else if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
-      // RESOURCE_LOADING_HINTS optimization can be applied only when a server
-      // provided whitelist is available.
+      return ShouldAllowPreviewPerOptimizationHints(previews_data, url, type,
+                                                    passed_reasons);
+    } else if (type == PreviewsType::RESOURCE_LOADING_HINTS ||
+               type == PreviewsType::NOSCRIPT) {
       return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
-    } else {
-      DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
-             type == PreviewsType::NOSCRIPT);
-      // Since server optimization guidance not configured, allow the preview
-      // but with qualified eligibility reason.
-      return PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS;
     }
   }
 
@@ -369,18 +357,16 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
   }
 
   // Re-check server optimization hints (if provided) on this commit-time URL.
-  if (ShouldCheckOptimizationHints(type)) {
-    if (params::IsOptimizationHintsEnabled()) {
-      std::vector<PreviewsEligibilityReason> passed_reasons;
-      PreviewsEligibilityReason status =
-          ShouldCommitPreviewPerOptimizationHints(previews_data, committed_url,
-                                                  type, &passed_reasons);
-      if (status != PreviewsEligibilityReason::ALLOWED) {
-        LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
-                               std::move(passed_reasons),
-                               previews_data->page_id());
-        return false;
-      }
+  if (ShouldCheckOptimizationHints(type) &&
+      params::IsOptimizationHintsEnabled()) {
+    std::vector<PreviewsEligibilityReason> passed_reasons;
+    PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
+        previews_data, committed_url, type, &passed_reasons);
+    if (status != PreviewsEligibilityReason::ALLOWED) {
+      LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
+                             std::move(passed_reasons),
+                             previews_data->page_id());
+      return false;
     }
   }
   return true;

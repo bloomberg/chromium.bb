@@ -202,17 +202,35 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   ~PreviewsNoScriptBrowserTest() override {}
 
   void SetUp() override {
-    // Explicitly disable server hints.
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
+        {previews::features::kPreviews, previews::features::kOptimizationHints,
+         previews::features::kNoScriptPreviews,
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
-        {previews::features::kOptimizationHints});
+        {});
     PreviewsBrowserTest::SetUp();
+  }
+
+  void SetUpNoScriptWhitelist(
+      std::vector<std::string> whitelisted_noscript_sites) {
+    TestOptimizationGuideServiceObserver observer;
+    g_browser_process->optimization_guide_service()->AddObserver(&observer);
+    base::RunLoop().RunUntilIdle();
+
+    const optimization_guide::ComponentInfo& component_info =
+        test_component_creator_.CreateComponentInfoWithTopLevelWhitelist(
+            optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites);
+    g_browser_process->optimization_guide_service()->ProcessHints(
+        component_info);
+
+    // Wait for hints to be processed by PreviewsOptimizationGuide.
+    observer.WaitForNotification();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  optimization_guide::testing::TestComponentCreator test_component_creator_;
 };
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
@@ -233,6 +251,9 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabled) {
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({https_url().host()});
+
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_url());
 
@@ -246,6 +267,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        NoScriptPreviewsEnabledButHttpRequest) {
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({http_url().host()});
+
   ui_test_utils::NavigateToURL(browser(), http_url());
 
   // Verify loaded js resource but not css triggered by noscript tag.
@@ -264,6 +288,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledButNoTransformDirective) {
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({https_no_transform_url().host()});
+
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
 
@@ -277,6 +304,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({redirect_url().host()});
+
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), redirect_url());
 
@@ -298,6 +328,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsRecordsOptOut) {
+  // Whitelist test URL for NoScript.
+  SetUpNoScriptWhitelist({redirect_url().host()});
+
   base::HistogramTester histogram_tester;
 
   // Navigate to a No Script Preview page.
@@ -317,44 +350,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                                      1);
 }
 
-// This test class enables NoScriptPreviews with OptimizationHints.
-class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
- public:
-  PreviewsOptimizationGuideBrowserTest() {}
-
-  ~PreviewsOptimizationGuideBrowserTest() override {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kOptimizationHints,
-         previews::features::kNoScriptPreviews},
-        {});
-    PreviewsBrowserTest::SetUp();
-  }
-
-  void SetNoScriptWhitelist(
-      std::vector<std::string> whitelisted_noscript_sites) {
-    const optimization_guide::ComponentInfo& component_info =
-        test_component_creator_.CreateComponentInfoWithTopLevelWhitelist(
-            optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites);
-    g_browser_process->optimization_guide_service()->ProcessHints(
-        component_info);
-
-    // Wait for hints to be processed by PreviewsOptimizationGuide.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void AddTestOptimizationGuideServiceObserver(
-      TestOptimizationGuideServiceObserver* observer) {
-    g_browser_process->optimization_guide_service()->AddObserver(observer);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  optimization_guide::testing::TestComponentCreator test_component_creator_;
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideBrowserTest);
-};
-
 // Previews InfoBar (which this test triggers) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789948) and Ubuntu 16.04
@@ -367,15 +362,10 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
   DISABLED_NoScriptPreviewsEnabledByWhitelist
 #endif
 
-IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledByWhitelist) {
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
   // Whitelist test URL for NoScript.
-  SetNoScriptWhitelist({https_url().host()});
-  observer.WaitForNotification();
+  SetUpNoScriptWhitelist({https_url().host()});
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
@@ -384,15 +374,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        NoScriptPreviewsNotEnabledByWhitelist) {
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
   // Whitelist random site for NoScript.
-  SetNoScriptWhitelist({"foo.com"});
-  observer.WaitForNotification();
+  SetUpNoScriptWhitelist({"foo.com"});
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 

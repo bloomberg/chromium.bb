@@ -41342,7 +41342,8 @@ Called by update_net_trust_anchors.py.-->
       label="Host blacklisted by server rules provided to the client."/>
   <int value="10"
       label="Host not whitelisted by server rules provided to the client."/>
-  <int value="11" label="Preview Allowed without server rule check."/>
+  <int value="11"
+      label="Preview Allowed without server rule check (obsolete)."/>
   <int value="12" label="Committed Preview."/>
   <int value="13" label="Received no-transform directive.">
     Response header had Cache-Control:no-transform directive (developer
