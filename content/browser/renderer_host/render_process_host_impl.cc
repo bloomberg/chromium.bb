@@ -1587,10 +1587,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           id_)),
       channel_connected_(false),
       sent_render_process_ready_(false),
-#if defined(OS_ANDROID)
-      never_signaled_(base::WaitableEvent::ResetPolicy::MANUAL,
-                      base::WaitableEvent::InitialState::NOT_SIGNALED),
-#endif
       renderer_host_binding_(this),
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
@@ -1902,9 +1898,11 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // See crbug.com/526842 for details.
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    channel_ = IPC::SyncChannel::Create(this, io_task_runner.get(),
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        &never_signaled_);
+    // Android never performs a clean shutdown, so we pass nullptr for
+    // shudown_event to indicate that we never intend to signal a shutdown.
+    channel_ =
+        IPC::SyncChannel::Create(this, io_task_runner.get(),
+                                 base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 #endif  // OS_ANDROID
   if (!channel_) {
