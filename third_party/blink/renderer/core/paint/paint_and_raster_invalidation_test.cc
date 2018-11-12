@@ -937,6 +937,10 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   FloatSize page_size(400, 200);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  // In LayoutNG these may be different layout objects, so get them again
+  a = GetDocument().getElementById("a")->GetLayoutObject();
+  b = GetDocument().getElementById("b")->GetLayoutObject();
+  c = GetDocument().getElementById("c")->GetLayoutObject();
 
   EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
@@ -945,6 +949,9 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
 
   GetFrame().EndPrinting();
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  a = GetDocument().getElementById("a")->GetLayoutObject();
+  b = GetDocument().getElementById("b")->GetLayoutObject();
+  c = GetDocument().getElementById("c")->GetLayoutObject();
 
   EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());

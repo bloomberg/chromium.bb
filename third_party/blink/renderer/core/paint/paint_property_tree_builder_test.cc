@@ -5841,6 +5841,9 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   FloatSize page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  fixed = GetLayoutObjectByElementId("fixed");
+  fixed_child = GetLayoutObjectByElementId("fixed-child");
+  normal = GetLayoutObjectByElementId("normal");
 
   // "fixed" should create fragments to repeat in each printed page.
   EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
@@ -5864,6 +5867,9 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
 
   GetFrame().EndPrinting();
   UpdateAllLifecyclePhasesForTest();
+  fixed = GetLayoutObjectByElementId("fixed");
+  fixed_child = GetLayoutObjectByElementId("fixed-child");
+  normal = GetLayoutObjectByElementId("normal");
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
@@ -5894,6 +5900,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   FloatSize page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  fixed = GetLayoutObjectByElementId("fixed");
+  fixed_child = GetLayoutObjectByElementId("fixed-child");
 
   // "fixed" should create fragments to repeat in each printed page.
   EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
@@ -5922,6 +5930,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   GetFrame().EndPrinting();
   UpdateAllLifecyclePhasesForTest();
+  fixed = GetLayoutObjectByElementId("fixed");
+  fixed_child = GetLayoutObjectByElementId("fixed-child");
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
@@ -5962,6 +5972,9 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   FloatSize page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  // In LayoutNG, these may be different objects
+  head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
+  foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
 
   // "fixed" should create fragments to repeat in each printed page.
   EXPECT_TRUE(head->IsRepeatingHeaderGroup());
@@ -5996,6 +6009,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
 
   GetFrame().EndPrinting();
   UpdateAllLifecyclePhasesForTest();
+  head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
+  foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
   EXPECT_FALSE(head->IsRepeatingHeaderGroup());
   EXPECT_EQ(1u, NumFragments(head));
   EXPECT_EQ(1u, NumFragments(head->FirstRow()));
