@@ -11,7 +11,7 @@ namespace blink {
 
 class PLATFORM_EXPORT PlatformPaintWorkletInput : public cc::PaintWorkletInput {
  public:
-  PlatformPaintWorkletInput(const String& name,
+  PlatformPaintWorkletInput(const std::string& name,
                             const FloatSize& container_size,
                             float effective_zoom)
       : name_(name),
@@ -20,12 +20,12 @@ class PLATFORM_EXPORT PlatformPaintWorkletInput : public cc::PaintWorkletInput {
 
   ~PlatformPaintWorkletInput() override = default;
 
-  const String& Name() const { return name_; }
+  const std::string& Name() const { return name_; }
   const FloatSize& ContainerSize() const { return container_size_; }
   float EffectiveZoom() const { return effective_zoom_; }
 
  private:
-  String name_;
+  std::string name_;
   FloatSize container_size_;
   float effective_zoom_;
   // TODO(crbug.com/895579): add a cross thread style map.
