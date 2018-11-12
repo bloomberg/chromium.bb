@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -12,7 +13,9 @@
         android:textSize="16sp"
         android:text="@string/urlText" />
 
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
     <EditText
+        tools:ignore="LabelFor"
         android:id="@+id/urlText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,7 +30,9 @@
         android:textSize="16sp"
         android:text="@string/postText" />
 
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
     <EditText
+        tools:ignore="LabelFor"
         android:id="@+id/postText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

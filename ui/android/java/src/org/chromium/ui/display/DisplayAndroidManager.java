@@ -219,6 +219,7 @@ public class DisplayAndroidManager {
         return ContextUtils.getApplicationContext();
     }
 
+    @SuppressLint("NewApi")
     private static DisplayManager getDisplayManager() {
         return (DisplayManager) getContext().getSystemService(Context.DISPLAY_SERVICE);
     }

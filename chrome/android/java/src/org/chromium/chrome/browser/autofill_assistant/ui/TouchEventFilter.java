@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -171,6 +172,7 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
 
     /** Returns the origin of the visual viewport in this view. */
     @Override
+    @SuppressLint("CanvasSize")
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (!mEnabled) {
