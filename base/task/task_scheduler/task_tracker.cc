@@ -691,7 +691,7 @@ void TaskTracker::PerformShutdown() {
   // It is safe to access |shutdown_event_| without holding |lock_| because the
   // pointer never changes after being set above.
   {
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
     shutdown_event_->Wait();
   }
 }
