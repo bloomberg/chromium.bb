@@ -345,6 +345,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         gpu_preferences_.watchdog_starts_backgrounded);
   }
 
+  UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
+
   if (!gpu_info_.sandboxed && !attempted_startsandbox) {
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
         watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
@@ -389,6 +391,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_AIMAGEREADER)) {
     base::android::AndroidImageReader::DisableSupport();
   }
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }
 #else
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
@@ -487,6 +491,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
   }
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }
 #endif  // OS_ANDROID
 

@@ -23627,6 +23627,18 @@ Called by update_net_error_codes.py.-->
   <int value="1286" label="0x0506 - GL_INVALID_FRAMEBUFFER_OPERATION"/>
 </enum>
 
+<enum name="GLImplementation">
+  <int value="0" label="kGLImplementationNone"/>
+  <int value="1" label="kGLImplementationDesktopGL"/>
+  <int value="2" label="kGLImplementationDesktopGLCoreProfile"/>
+  <int value="3" label="kGLImplementationSwiftShaderGL"/>
+  <int value="4" label="kGLImplementationAppleGL"/>
+  <int value="5" label="kGLImplementationEGLGLES2"/>
+  <int value="6" label="kGLImplementationMockGL)"/>
+  <int value="7" label="kGLImplementationStubGL"/>
+  <int value="8" label="kGLImplementationDisabled"/>
+</enum>
+
 <enum name="GoogleCaptchaEvent">
   <int value="0" label="Google CAPTCHA shown"/>
   <int value="1" label="Google CAPTCHA solved"/>
