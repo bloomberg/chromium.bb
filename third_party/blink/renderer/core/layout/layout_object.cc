@@ -2406,10 +2406,18 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
   // implementation above, but it would require propagating the StyleType()
   // somehow because there is code relying on generated content having a certain
   // StyleType().
-  for (LayoutObject* child = NextInPreOrder(this); child;
-       child = child->NextInPreOrder(this)) {
+  LayoutObject* child = NextInPreOrder(this);
+  while (child) {
+    if (!child->IsAnonymous()) {
+      // Don't propagate into non-anonymous descendants of pseudo elements. This
+      // can typically happen for ::first-letter inside ::before. The
+      // ::first-letter will propagate to its anonymous children separately.
+      child = child->NextInPreOrderAfterChildren(this);
+      continue;
+    }
     if (child->IsText() || child->IsQuote() || child->IsImage())
       child->SetPseudoStyle(MutableStyle());
+    child = child->NextInPreOrder(this);
   }
 }
 
