@@ -93,8 +93,8 @@ class PopupBlockerTabHelper
 
   explicit PopupBlockerTabHelper(content::WebContents* web_contents);
 
-  // Called when the blocked popup notification is shown or hidden.
-  void PopupNotificationVisibilityChanged(bool visible);
+  // Called when the blocked popup notification is hidden.
+  void HidePopupNotification();
 
   // Note, this container should be sorted based on the position in the popup
   // list, so it is keyed by an id which is continually increased.

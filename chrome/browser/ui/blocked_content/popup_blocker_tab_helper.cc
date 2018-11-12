@@ -76,15 +76,14 @@ void PopupBlockerTabHelper::DidFinishNavigation(
   // Close blocked popups.
   if (!blocked_popups_.empty()) {
     blocked_popups_.clear();
-    PopupNotificationVisibilityChanged(false);
+    HidePopupNotification();
   }
 }
 
-void PopupBlockerTabHelper::PopupNotificationVisibilityChanged(
-    bool visible) {
+void PopupBlockerTabHelper::HidePopupNotification() {
   if (!web_contents()->IsBeingDestroyed()) {
-    TabSpecificContentSettings::FromWebContents(web_contents())->
-        SetPopupsBlocked(visible);
+    TabSpecificContentSettings::FromWebContents(web_contents())
+        ->ClearPopupsBlocked();
   }
 }
 
@@ -165,7 +164,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
 
   blocked_popups_.erase(id);
   if (blocked_popups_.empty())
-    PopupNotificationVisibilityChanged(false);
+    HidePopupNotification();
 }
 
 size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {

@@ -46,13 +46,13 @@ void ContentSettingImageView::Update() {
       delegate_->GetContentSettingWebContents();
   // Note: We explicitly want to call this even if |web_contents| is NULL, so we
   // get hidden properly while the user is editing the omnibox.
-  content_setting_image_model_->UpdateFromWebContents(web_contents);
+  content_setting_image_model_->Update(web_contents);
 
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
     return;
   }
-
+  DCHECK(web_contents);
   UpdateImage();
   SetVisible(true);
 
