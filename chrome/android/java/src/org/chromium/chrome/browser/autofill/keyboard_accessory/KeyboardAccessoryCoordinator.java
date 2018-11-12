@@ -147,8 +147,8 @@ public class KeyboardAccessoryCoordinator {
      *
      * @param provider The object providing action lists to observers in this component.
      */
-    public void registerActionListProvider(
-            KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action> provider) {
+    public void registerActionProvider(
+            KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action[]> provider) {
         provider.addObserver(mMediator);
     }
 

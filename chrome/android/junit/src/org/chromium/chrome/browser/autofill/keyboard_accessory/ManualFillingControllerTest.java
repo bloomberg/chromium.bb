@@ -171,8 +171,8 @@ public class ManualFillingControllerTest {
     @Test
     public void testPasswordItemsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        Provider<Item> firstTabProvider = new PropertyProvider<>();
-        Provider<Item> secondTabProvider = new PropertyProvider<>();
+        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
+        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
 
         // Simulate opening a new tab which automatically triggers the registration:
         Tab firstTab = addTab(mediator, 1111, null);
@@ -204,9 +204,9 @@ public class ManualFillingControllerTest {
     @Test
     public void testKeyboardAccessoryActionsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        PropertyProvider<Action> firstTabProvider =
+        PropertyProvider<Action[]> firstTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        PropertyProvider<Action> secondTabProvider =
+        PropertyProvider<Action[]> secondTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         ListModel<Action> keyboardActions =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting().get(
@@ -328,14 +328,12 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that never provided actions.
-        mController.registerActionProvider(
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC));
+        mController.registerActionProvider(new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC));
         assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create a new tab with an action:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action[]> provider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
@@ -354,15 +352,14 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that hasn't provided actions yet.
-        PropertyProvider<Action> delayedProvider =
+        PropertyProvider<Action[]> delayedProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(delayedProvider);
         assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create and switch to a new tab:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action[]> provider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
 
         // And provide data to the active tab.
@@ -396,12 +393,12 @@ public class ManualFillingControllerTest {
                                                     .getMediatorForTesting()
                                                     .getModelForTesting();
 
-        Provider<Item> firstTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> firstActionProvider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
-        Provider<Item> secondTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> secondActionProvider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action[]> firstActionProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action[]> secondActionProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
 
         // Simulate opening a new tab:
         Tab firstTab = addTab(mediator, 1111, null);
