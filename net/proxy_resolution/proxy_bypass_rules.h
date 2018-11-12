@@ -122,14 +122,14 @@ class NET_EXPORT ProxyBypassRules {
                           const std::string& hostname_pattern,
                           int optional_port);
 
-  // Adds a rule that bypasses all "local" hostnames.
+  // Adds a rule to the front of the list that bypasses all "local" hostnames.
   // This matches IE's interpretation of the
   // "Bypass proxy server for local addresses" settings checkbox. Fully
   // qualified domain names or IP addresses are considered non-local,
   // regardless of what they map to (except for the loopback addresses).
   //
   // TODO(https://crbug.com/902579): Fix.
-  void AddRuleToBypassLocal();
+  void PrependRuleToBypassLocal();
 
   // Adds a rule given by the string |raw|. The format of |raw| can be any of
   // the following:

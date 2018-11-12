@@ -135,16 +135,10 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 
-// We bypass manually installed proxy for localhost on chromeos.
-#if defined(OS_CHROMEOS)
-#define MAYBE_BasicAuthWSConnect DISABLED_BasicAuthWSConnect
-#else
-#define MAYBE_BasicAuthWSConnect BasicAuthWSConnect
-#endif
 // Test that the browser can establish a WebSocket connection via a proxy
 // that requires basic authentication. This test also checks the headers
 // arrive at WebSocket server.
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
                                    net::GetWebSocketTestDataDirectory());

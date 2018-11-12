@@ -217,7 +217,7 @@ const struct TestParams {
     net::ProxyRulesExpectation::Single(  // proxy_rules
         "www.google.com:80",             // single proxy
         // bypass_rules
-        "*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8,<local>"),
+        "<local>,*.google.com,*foo.com:99,1.2.3.4:22,127.0.0.1/8"),
   },
 };  // tests
 
