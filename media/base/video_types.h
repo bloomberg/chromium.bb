@@ -53,8 +53,9 @@ enum VideoPixelFormat {
   // Plane size = Row pitch * (((height+31)/32)*32)
   PIXEL_FORMAT_MT21 = 15,
 
-  // The P* in the formats below designates the number of bits per pixel. I.e.
-  // P9 is 9-bits per pixel, P10 is 10-bits per pixel, etc.
+  // The P* in the formats below designates the number of bits per pixel
+  // component. I.e. P9 is 9-bits per pixel component, P10 is 10-bits per pixel
+  // component, etc.
   PIXEL_FORMAT_YUV420P9 = 16,
   PIXEL_FORMAT_YUV420P10 = 17,
   PIXEL_FORMAT_YUV422P9 = 18,
@@ -68,8 +69,8 @@ enum VideoPixelFormat {
   /* PIXEL_FORMAT_Y8 = 25, Deprecated */
   PIXEL_FORMAT_Y16 = 26,  // single 16bpp plane.
 
-  PIXEL_FORMAT_ABGR = 27, // 32bpp RGBA, 1 plane.
-  PIXEL_FORMAT_XBGR = 28, // 24bpp RGB, 1 plane.
+  PIXEL_FORMAT_ABGR = 27,  // 32bpp RGBA, 1 plane.
+  PIXEL_FORMAT_XBGR = 28,  // 24bpp RGB, 1 plane.
 
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
