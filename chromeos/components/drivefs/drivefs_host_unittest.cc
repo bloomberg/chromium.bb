@@ -324,7 +324,9 @@ ACTION_P(RunQuitClosure, quit) {
 
 class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
-  DriveFsHostTest() : bootstrap_binding_(this), binding_(&mock_drivefs_) {}
+  DriveFsHostTest() : bootstrap_binding_(this), binding_(&mock_drivefs_) {
+    clock_.SetNow(base::Time::Now());
+  }
 
  protected:
   void SetUp() override {
@@ -1282,6 +1284,86 @@ TEST_F(DriveFsHostTest, Search_OnlineToOfflineFallback) {
 
   bool called = false;
   mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, Search_SharedWithMeCaching) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kCloudOnly,
+                             nullptr, nullptr, true, false)))
+      .Times(2);
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kLocalOnly,
+                             nullptr, nullptr, true, false)))
+      .Times(1);
+
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->shared_with_me = true;
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->shared_with_me = true;
+
+  called = false;
+  source = host_->PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kLocalOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  // Time has passed...
+  clock_.Advance(base::TimeDelta::FromHours(1));
+
+  params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->shared_with_me = true;
+
+  called = false;
+  source = host_->PerformSearch(
       std::move(params),
       base::BindLambdaForTesting(
           [&called](drive::FileError err,

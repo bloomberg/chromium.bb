@@ -30,6 +30,7 @@ constexpr char kMountScheme[] = "drivefs://";
 constexpr char kDataPath[] = "GCache/v2";
 constexpr char kIdentityConsumerId[] = "drivefs";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kQueryCacheTtl = base::TimeDelta::FromMinutes(5);
 
 class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
  public:
@@ -272,6 +273,16 @@ class DriveFsHost::MountState
   mojom::QueryParameters::QuerySource SearchDriveFs(
       mojom::QueryParametersPtr query,
       mojom::SearchQuery::GetNextPageCallback callback) {
+    // The only cacheable query is 'shared with me'.
+    if (IsCloudSharedWithMeQuery(query)) {
+      // Check if we should have the response cached.
+      auto delta = host_->clock_->Now() - last_shared_with_me_response_;
+      if (delta <= kQueryCacheTtl) {
+        query->query_source =
+            drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
+      }
+    }
+
     drivefs::mojom::SearchQueryPtr search;
     drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
     if (net::NetworkChangeNotifier::IsOffline() &&
@@ -471,7 +482,19 @@ class DriveFsHost::MountState
       return;
     }
 
+    if (IsCloudSharedWithMeQuery(query)) {
+      // Mark that DriveFS should have cached the required info.
+      last_shared_with_me_response_ = host_->clock_->Now();
+    }
+
     std::move(callback).Run(error, std::move(items));
+  }
+
+  static bool IsCloudSharedWithMeQuery(
+      const drivefs::mojom::QueryParametersPtr& query) {
+    return query->query_source ==
+               drivefs::mojom::QueryParameters::QuerySource::kCloudOnly &&
+           query->shared_with_me && !query->text_content && !query->title;
   }
 
   // Owns |this|.
@@ -497,6 +520,8 @@ class DriveFsHost::MountState
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
   bool token_fetch_attempted_ = false;
+
+  base::Time last_shared_with_me_response_;
 
   base::WeakPtrFactory<MountState> weak_ptr_factory_;
 
