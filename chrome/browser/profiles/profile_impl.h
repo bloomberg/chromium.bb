@@ -78,7 +78,6 @@ class ProfileImpl : public Profile {
       const base::FilePath& partition_path) override;
 #endif
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -208,7 +207,6 @@ class ProfileImpl : public Profile {
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
-  base::FilePath base_cache_path_;
 
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

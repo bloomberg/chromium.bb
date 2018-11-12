@@ -213,10 +213,6 @@ base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
 }
 
-base::FilePath AwBrowserContext::GetCachePath() const {
-  return GetCacheDir();
-}
-
 bool AwBrowserContext::IsOffTheRecord() const {
   // Android WebView does not support off the record profile yet.
   return false;

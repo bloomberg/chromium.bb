@@ -60,7 +60,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
   bool IsOffTheRecord() const override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;

@@ -628,12 +628,13 @@ void ProfileImpl::DoFinalInit() {
 
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
+  base::FilePath base_cache_path;
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
   // to PathService.
-  chrome::GetUserCacheDirectory(path_, &base_cache_path_);
+  chrome::GetUserCacheDirectory(path_, &base_cache_path);
   // Always create the cache directory asynchronously.
-  CreateProfileDirectory(io_task_runner_.get(), base_cache_path_, false);
+  CreateProfileDirectory(io_task_runner_.get(), base_cache_path, false);
 
   // Initialize components that depend on the current value.
   UpdateSupervisedUserIdInStorage();
@@ -658,7 +659,7 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  base::FilePath media_cache_path = base_cache_path_;
+  base::FilePath media_cache_path = base_cache_path;
   int media_cache_max_size;
   GetMediaCacheParameters(&media_cache_path, &media_cache_max_size);
   media_cache_path = GetMediaCachePath(media_cache_path);
@@ -816,10 +817,6 @@ ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
 
 base::FilePath ProfileImpl::GetPath() const {
   return path_;
-}
-
-base::FilePath ProfileImpl::GetCachePath() const {
-  return base_cache_path_;
 }
 
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {

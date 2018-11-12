@@ -95,11 +95,6 @@ base::FilePath WebRunnerBrowserContext::GetPath() const {
   return data_dir_path_;
 }
 
-base::FilePath WebRunnerBrowserContext::GetCachePath() const {
-  NOTIMPLEMENTED();
-  return base::FilePath();
-}
-
 bool WebRunnerBrowserContext::IsOffTheRecord() const {
   return data_dir_path_.empty();
 }

@@ -146,10 +146,6 @@ base::FilePath ShellBrowserContext::GetPath() const {
   return path_;
 }
 
-base::FilePath ShellBrowserContext::GetCachePath() const {
-  return path_;
-}
-
 bool ShellBrowserContext::IsOffTheRecord() const {
   return off_the_record_;
 }
