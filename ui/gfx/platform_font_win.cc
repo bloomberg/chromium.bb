@@ -677,7 +677,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   paint.setAntiAlias(font_params.antialiasing);
   paint.setTypeface(std::move(skia_face));
   paint.setTextSize(-font_info.lfHeight);
-  SkPaint::FontMetrics skia_metrics;
+  SkFontMetrics skia_metrics;
   paint.getFontMetrics(&skia_metrics);
 
   // The calculations below are similar to those in the CreateHFontRef

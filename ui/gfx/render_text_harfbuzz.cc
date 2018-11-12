@@ -494,7 +494,7 @@ class HarfBuzzLineBreaker {
     paint.setTypeface(run.font_params.skia_face);
     paint.setTextSize(SkIntToScalar(run.font_params.font_size));
     paint.setAntiAlias(run.font_params.render_params.antialiasing);
-    SkPaint::FontMetrics metrics;
+    SkFontMetrics metrics;
     paint.getFontMetrics(&metrics);
 
     // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down

@@ -319,7 +319,7 @@ void PlatformFontLinux::ComputeMetricsIfNecessary() {
                           !typeface_->isBold());
     paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic() ?
                         -SK_Scalar1/4 : 0);
-    SkPaint::FontMetrics metrics;
+    SkFontMetrics metrics;
     paint.getFontMetrics(&metrics);
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
