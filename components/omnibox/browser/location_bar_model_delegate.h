@@ -24,8 +24,6 @@ class X509Certificate;
 // Delegate which is used by LocationBarModel class.
 class LocationBarModelDelegate {
  public:
-  using SecurityLevel = security_state::SecurityLevel;
-
   // Formats |url| using AutocompleteInput::FormattedStringWithEquivalentMeaning
   // providing an appropriate AutocompleteSchemeClassifier for the embedder.
   virtual base::string16 FormattedStringWithEquivalentMeaning(
@@ -40,9 +38,9 @@ class LocationBarModelDelegate {
   // in the location bar.
   virtual bool ShouldDisplayURL() const;
 
-  // Returns the underlying security level of the page without regard to any
+  // Returns the underlying security info of the page without regard to any
   // user edits that may be in progress.
-  virtual SecurityLevel GetSecurityLevel() const;
+  virtual void GetSecurityInfo(security_state::SecurityInfo* result) const;
 
   // Returns the certificate for the current navigation entry.
   virtual scoped_refptr<net::X509Certificate> GetCertificate() const;

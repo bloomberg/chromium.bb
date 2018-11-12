@@ -29,7 +29,7 @@ class LocationBarModelDelegateIOS : public LocationBarModelDelegate {
       const base::string16& formatted_url) const override;
   bool GetURL(GURL* url) const override;
   bool ShouldDisplayURL() const override;
-  SecurityLevel GetSecurityLevel() const override;
+  void GetSecurityInfo(security_state::SecurityInfo* result) const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;

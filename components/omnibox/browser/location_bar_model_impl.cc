@@ -95,9 +95,18 @@ GURL LocationBarModelImpl::GetURL() const {
 security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
   // When editing or empty, assume no security style.
-  return ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
-             ? security_state::NONE
-             : delegate_->GetSecurityLevel();
+  if ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
+    return security_state::NONE;
+
+  security_state::SecurityInfo info;
+  delegate_->GetSecurityInfo(&info);
+  return info.security_level;
+}
+
+bool LocationBarModelImpl::IsSecurityInfoInitialized() const {
+  security_state::SecurityInfo info;
+  delegate_->GetSecurityInfo(&info);
+  return info.connection_info_initialized;
 }
 
 const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
