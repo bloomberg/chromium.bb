@@ -125,6 +125,15 @@
 <translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
+<translation id="1297117713060236551">Cette règle contrôle la liste des sites Web qui n'entraîneront jamais de changement de navigateur.
+
+      Notez que vous pouvez ajouter des éléments à cette liste avec la règle <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+
+      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
+
+      Si cette règle est définie, chaque élément est traité comme une instruction, à l'instar de la règle <ph name="URL_LIST_POLICY_NAME" />. Toutefois, la logique est inversée : les instructions correspondantes n'ouvrent pas d'autre navigateur.
+
+      Contrairement à <ph name="URL_LIST_POLICY_NAME" />, les instructions s'appliquent dans les deux sens. Autrement dit, si la macro complémentaire Internet Explorer est présente et qu'elle est activée, elle détermine également si <ph name="IE_PRODUCT_NAME" /> doit ouvrir ces URL dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
 <translation id="1304973015437969093">Identifiants d'extension ou d'application et URL de mise à jour à installer en arrière-plan</translation>
 <translation id="1307454923744766368">Origines ou modèles de nom d'hôte non soumis aux restrictions
@@ -217,6 +226,7 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Activer <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
+<translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
 <translation id="1541170838458414064">Limiter le format de la page d'impression</translation>
@@ -227,6 +237,12 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 
       Si ce paramètre est désactivé ou s'il n'est pas configuré, les utilisateurs d'entreprise
       ne peuvent pas utiliser ARC.</translation>
+<translation id="1559980755219453326">Cette règle détermine si les informations des extensions et des plug-ins doivent être enregistrées.
+
+      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données des extensions et des plug-ins sont collectées.
+      Si cette règle est définie sur "False", les données des extensions et des plug-ins ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
 <translation id="1574554504290354326">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
@@ -401,6 +417,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
 <translation id="209586405398070749">Version stable</translation>
 <translation id="2098658257603918882">Autoriser l'envoi de statistiques d'utilisation et de rapports d'erreur</translation>
+<translation id="2104418465060359056">Enregistrer les informations des extensions et des plug-ins</translation>
 <translation id="2111016292707172233">Active la fonctionnalité "Appuyer pour rechercher" dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
 
       Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité "Appuyer pour rechercher".
@@ -602,6 +619,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2536525645274582300">L'utilisateur décide d'activer ou non les services de localisation Google</translation>
 <translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
+<translation id="2548572254685798999">Enregistrer les informations de navigation sécurisée</translation>
 <translation id="2550593661567988768">Impression recto seulement</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
@@ -664,6 +682,13 @@ Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilis
 
       Si vous ne configurez pas cette règle, le paramètre sera désactivé par défaut pour les utilisateurs gérés et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
+<translation id="2663739737868438950">
+      Cette règle s'applique à l'écran de connexion. Veuillez vous reporter également à la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" />, qui s'applique à la session utilisateur. Il est recommandé de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
+      Si cette règle est activée, chaque site exécute son propre processus.
+      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement avec des indicateurs de ligne de commande.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      </translation>
 <translation id="2672012807430078509">Contrôle l'activation du protocole d'authentification NTLM pour les installations SMB</translation>
 <translation id="267596348720209223">Spécifie les encodages de caractères compatibles avec le moteur de recherche. Les encodages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
@@ -794,6 +819,17 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3038323923255997294">Poursuivre l'exécution des applications en arrière-plan après la fermeture de <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne</translation>
 <translation id="3047732214002457234">Contrôler comment Chrome Cleanup transmet des données à Google</translation>
+<translation id="304775240152542058">Cette règle contrôle les paramètres de ligne de commande pour lancer le navigateur secondaire.
+
+      Si cette règle n'est pas définie, seule l'URL est transmise comme paramètre de ligne de commande.
+
+      Si cette règle est définie sur une liste de chaînes, chaque chaîne est transmise au navigateur secondaire comme paramètres de ligne de commande séparés. Pour Windows, les paramètres sont séparés par des espaces. Pour Mac OS X et Linux, un paramètre peut contenir des espaces et être quand même traité comme un seul et même paramètre.
+
+      Si un élément contient ${url}, il est remplacé par l'URL de la page à ouvrir.
+
+      Si aucun élément ne contient ${url}, l'URL est ajoutée à la fin de la ligne de commande.
+
+      Les variables d'environnement sont développées. Pour Windows, la variable %ABC% est remplacée par la valeur de la variable d'environnement ABC. Pour Mac OS X et Linux, la variable ${ABC} est remplacée par la valeur de la variable d'environnement ABC.</translation>
 <translation id="3048744057455266684">Si cette règle est définie et que la chaîne de requête ou l'identifiant du fragment d'une URL de recherche suggérée à partir de l'Omnibox contient ce paramètre, la suggestion affiche les termes et le moteur de recherche, et non l'URL de recherche brute.
 
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
@@ -878,6 +914,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
                       Si elle n'est pas définie, la durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
+<translation id="3251500716404598358">Configurer les règles pour passer d'un navigateur à l'autre.
+
+      Les sites Web configurés s'ouvrent automatiquement dans un navigateur autre que <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
 <translation id="3273221114520206906">Paramètre JavaScript par défaut</translation>
 <translation id="3284094172359247914">Contrôler l'utilisation de l'API WebUSB</translation>
@@ -961,6 +1000,14 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
         La valeur de cette règle est un jeton d'inscription qui peut être récupéré depuis la console d'administration Google.</translation>
 <translation id="3496296378755072552">Gestionnaire de mots de passe</translation>
+<translation id="3500732098526756068">Vous permet de contrôler le déclenchement de l'avertissement relatif à la protection par mot de passe. La protection par mot de passe affiche une alerte lorsque les utilisateurs réutilisent leur mot de passe protégé sur des sites potentiellement suspects.
+
+      Vous pouvez utiliser les règles "PasswordProtectionLoginURLs" et "PasswordProtectionChangePasswordURL" pour configurer le mot de passe à protéger.
+
+      Si cette règle est définie sur "PasswordProtectionWarningOff", aucun avertissement relatif à la protection par mot de passe ne s'affiche.
+      Si cette règle est définie sur "PasswordProtectionWarningOnPasswordReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsque l'utilisateur réutilise son mot de passe protégé sur un site qui ne figure pas dans la liste blanche.
+      Si cette règle est définie sur "PasswordProtectionWarningOnPhishingReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsque l'utilisateur réutilise son mot de passe protégé sur un site d'hameçonnage.
+      Si cette règle n'est pas définie, le service de protection par mot de passe ne protège que les mots de passe Google. Toutefois, l'utilisateur peut modifier ce paramètre.</translation>
 <translation id="3502555714327823858">Autoriser tous les modes recto verso</translation>
 <translation id="350443680860256679">Configurer ARC</translation>
 <translation id="3504791027627803580">Spécifie l'URL du moteur de recherche utilisé pour la recherche d'image. Les requêtes de recherche seront envoyées à l'aide la méthode GET. Si la règle "DefaultSearchProviderImageURLPostParams" est activée, elles seront envoyées à l'aide la méthode POST à la place de GET.
@@ -979,6 +1026,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
+<translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3556806727696701427">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
       Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
@@ -994,6 +1042,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
+<translation id="3624171042292187668">
+      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
+      Si cette règle est activée, chaque site exécute son propre processus.
+      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement avec des indicateurs de ligne de commande.
+      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
+      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+
+      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer SitePerProcess sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
+      </translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
 <translation id="3646859102161347133">Définir le type de loupe</translation>
@@ -1159,6 +1216,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True", les paquets réseau de contrôle (appelés "<ph name="HEARTBEATS_TERM" />") seront transmis.
       Si elle est définie sur "False" ou si elle n'est pas configurée, aucun paquet ne sera transmis.</translation>
 <translation id="3950239119790560549">Mettre à jour les restrictions de temps</translation>
+<translation id="3956686688560604829">Utiliser la règle SiteList d'Internet Explorer pour Legacy Browser Support.</translation>
 <translation id="3958586912393694012">Autoriser l'utilisation de Smart Lock</translation>
 <translation id="3963602271515417124">Si cette règle est définie sur "True", l'attestation à distance est autorisée pour l'appareil, et un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
 
@@ -1575,6 +1633,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5208240613060747912">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="5213038356678567351">Sites Web qui ne doivent jamais déclencher un changement de navigateur.</translation>
 <translation id="5219844027738217407">Cette règle ne s'applique qu'au micro pour les applications Android. Lorsqu'elle est définie sur "True", le son du micro est coupé pour toutes les applications Android sans exception.</translation>
 <translation id="5228316810085661003">Détermine le délai de connexion automatique à un compte local de l'appareil.
 
@@ -1634,6 +1693,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Cette règle peut également être définie sur l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions de SSL/TLS supérieures à la version spécifiée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
+<translation id="5365476955714838841">Paramètres de ligne de commande pour le navigateur secondaire.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366745336748853475">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), lorsque le site nécessite un certificat. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
 
@@ -1745,6 +1805,19 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Ces règles ne sont effectives que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Gérer les services de localisation Android</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
+<translation id="5592242031005200087">
+      Si cette règle est activée, chacune des origines définies et répertoriées dans une
+      liste d'éléments séparés par des virgules exécute son propre processus.
+      Elle isole également les origines par sous-domaines. Par exemple, si vous
+      indiquez https://example.com/, https://foo.example.com/ est également isolé
+      en tant que partie du site https://example.com/.
+      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOriginsAndroid et de SitePerProcessAndroid sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec un indicateur de ligne de commande.
+      Si cette règle n'est pas configurée, l'utilisateur peut toujours modifier ce paramètre.
+
+      REMARQUE : Pour Android, l'isolation de sites est une fonctionnalité expérimentale. Nous allons améliorer sa compatibilité au fil du temps. Toutefois, elle peut actuellement entraîner des problèmes de performances.
+
+      REMARQUE : Cette règle ne s'applique qu'à Chrome sur les appareils Android disposant de plus de 1 Go de RAM. Pour l'appliquer sur d'autres plates-formes, utilisez IsolateOrigins.
+      </translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5689430183304951538">Format de page d'impression par défaut</translation>
@@ -1767,6 +1840,17 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5728154254076636808">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" /></translation>
+<translation id="5728661376331491504">Cette règle contrôle la liste des sites Web à ouvrir dans un navigateur secondaire.
+
+      Notez que vous pouvez ajouter des éléments à cette liste avec la règle <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+
+      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
+
+      Si cette règle est définie, chaque élément est traité comme une instruction pour un élément à ouvrir dans un navigateur secondaire. <ph name="PRODUCT_NAME" /> utilise ces instructions pour décider si une URL doit être ouverte dans un navigateur secondaire ou non.
+
+      Si la macro complémentaire d'Internet Explorer est présente et activée, Internet Explorer rebascule sur <ph name="PRODUCT_NAME" /> lorsque les instructions ne concordent pas.
+
+      Si les instructions se contredisent, <ph name="PRODUCT_NAME" /> utilise l'instruction la plus spécifique.</translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
@@ -1835,6 +1919,12 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
           S'il est désactivé ou n'est pas configuré, ces demandes ne seront pas envoyées par un proxy.</translation>
 <translation id="5898486742390981550">Lorsque plusieurs personnes sont connectées, l'utilisateur principal est le seul à pouvoir se servir des applications Android.</translation>
+<translation id="5900196529149231477">
+      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+      Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par une virgule exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez https://example.com/, https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
+      Si cette règle est désactivée, IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec des indicateurs de ligne de commande.
+      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
+      </translation>
 <translation id="5901427587865226597">Impression recto verso seulement</translation>
 <translation id="5906199912611534122">Permet d'activer ou de désactiver la limitation du débit réseau.
       Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de
@@ -2199,6 +2289,12 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne sont pas répercutés dans les sessions utilisateur.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
+<translation id="6857824281777105940">Cette règle détermine si les informations de la navigation sécurisée, y compris le nombre d'avertissements de navigation sécurisée et le nombre de clics sur les avertissements de navigation sécurisée, doivent être enregistrées.
+
+      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données de navigation sécurisée sont collectées.
+      Si cette règle est définie sur "False", les données de navigation sécurisée ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou version ultérieure</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
 
@@ -2350,6 +2446,17 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si cette règle n'est pas configurée, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le lanceur d'applications.</translation>
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
+<translation id="7158064522994309072">Cette règle détermine la commande à utiliser pour ouvrir les URL dans un navigateur secondaire.
+
+      Si cette règle n'est pas définie, un navigateur par défaut propre à la plate-forme est utilisé : Internet Explorer pour Windows et Safari pour Mac OS X. Pour Linux, l'ouverture d'un navigateur secondaire échoue si cette règle n'est pas définie.
+
+      Si cette règle est définie sur ${ie}, ${firefox}, ${safari} ou
+      ${opera}, le navigateur correspondant est ouvert, s'il est installé. ${ie} n'est
+      disponible que pour Windows et ${safari} n'est disponible que pour Windows
+      et Mac OS X.
+
+      Si cette règle est définie sur le chemin d'accès à un fichier, ce dernier
+      est utilisé comme fichier exécutable.</translation>
 <translation id="7167436895080860385">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe (obsolète).</translation>
 <translation id="7173856672248996428">Profil éphémère</translation>
 <translation id="717630378807352957">Autorise toutes les imprimantes répertoriées dans le fichier de configuration.</translation>
@@ -2888,6 +2995,13 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.
 
       Si cette règle n'est pas définie ou si elle est désactivée, le plug-in PDF est utilisé pour ouvrir les fichiers PDF, sauf si l'utilisateur le désactive.</translation>
+<translation id="8396145449084377015">Cette règle détermine si les instructions de la règle SiteList d'Internet Explorer doivent être chargées.
+
+      Si cette règle n'est pas définie, ou si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer comme source des instructions relatives au changement de navigateur.
+
+      Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> lit la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer pour obtenir l'URL de la liste des sites. <ph name="PRODUCT_NAME" /> télécharge ensuite la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
+
+      Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez l'article suivant : https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="8417305981081876834">Définir le nombre maximal de caractères pour le code de l'écran de verrouillage</translation>
@@ -3173,6 +3287,18 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="906631898352326790">
+      Si cette règle est activée, chacune des origines définies et répertoriées
+      dans une liste d'éléments séparés par des virgules exécute son propre
+      processus. Elle isole également les origines par sous-domaines. Par exemple,
+      si vous indiquez https://example.com/, https://foo.example.com/ est également
+      isolé en tant que partie du site https://example.com/.
+      Si cette règle est désactivée, les fonctionnalités IsolateOrigins et SitePerProcess sont désactivées. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec des indicateurs de ligne de commande.
+      Si cette règle n'est pas configurée, l'utilisateur peut toujours modifier ce paramètre.
+      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
+
+      REMARQUE : Cette règle ne s'applique pas à Android. Pour activer IsolateOrigins sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid
+      </translation>
 <translation id="9077227880520270584">Minuteur de connexion automatique au compte local de l'appareil</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>

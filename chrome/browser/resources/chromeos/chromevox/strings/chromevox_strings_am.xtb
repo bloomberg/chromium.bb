@@ -397,6 +397,7 @@
 <translation id="4058278702844053247">የገጽ ጭነት በሂደት ላይ</translation>
 <translation id="4065205963140826639">የ«ቀጣይ» አዝራርን ለማግኘት Search + የቀኝ ቀስትን አሁን ለመጠቀም ይሞክሩ ከዚያ እሱን ጠቅ ለማድረግ Search + Space ይጫኑ።</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ድፋትቅናት}one{# ድፋትቅናቶች}other{# ድፋትቅናቶች}}</translation>
+<translation id="4086311032171418648">መማር ሁነታን በማቆም ላይ።</translation>
 <translation id="409334809956508737">ቀዳሚ ነገር</translation>
 <translation id="4099274309791143834">ከንዑስ ምናሌ ጋር</translation>
 <translation id="4101527861445851766">ምልክት የተደረገበት አመልካች ሳጥን</translation>
@@ -499,6 +500,7 @@
 <translation id="4877261390094455813">የፍለጋ መጠይቅ ያስገቡ።</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">ውስጣዊ አገናኝ</translation>
+<translation id="4915087353619183190">መማር ሁነታን በማስጀመር ላይ። የqwerty ቁልፍን፣ ሊታደስ የሚችል የብሬይል ቁልፍን ይጫኑ ወይም ተግባሩን ለመረዳት በጣት ይጥረጉ። ለመውጣት control ከw ጋር ወይም escapeን ይጫኑ።</translation>
 <translation id="492295894462528572">መቅድም</translation>
 <translation id="495170559598752135">እርምጃዎች</translation>
 <translation id="4953585991029886728">ጽሑፍ ያርትዑ</translation>
@@ -871,6 +873,7 @@
 <translation id="8076492880354921740">ትሮች</translation>
 <translation id="8091452896542422286">ክፍተት</translation>
 <translation id="8110647606445335195">ምንም የARIA ምልክቶች የሉም።</translation>
+<translation id="8138880386467279117">ይንኩ</translation>
 <translation id="8153880621934657047">በሠንጠረዥ ውስጥ አይደሉም።</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ሰረዘዘብጥ}one{# ሰረዘዘብጦች}other{# ሰረዘዘብጦች}}</translation>
 <translation id="8179976553408161302">አስገባ</translation>

@@ -398,6 +398,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4058278702844053247">Un chargement de page en cours</translation>
 <translation id="4065205963140826639">Pour accéder au bouton Suivant, appuyez sur la touche de recherche + la flèche vers la droite, puis pour cliquer dessus, appuyez sur la touche de recherche + la barre d'espace.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}one{# tilde}other{# tildes}}</translation>
+<translation id="4086311032171418648">Arrêt du mode d'apprentissage.</translation>
 <translation id="409334809956508737">Objet précédent</translation>
 <translation id="4099274309791143834">avec sous-menu</translation>
 <translation id="4101527861445851766">Une case cochée</translation>
@@ -500,6 +501,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4877261390094455813">Saisissez une requête de recherche.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> sur <ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Lien interne</translation>
+<translation id="4915087353619183190">Démarrage du mode d'apprentissage. Appuyez sur une touche du clavier, sur une touche braille actualisable ou sur un geste pour en savoir plus sur son fonctionnement. Appuyez sur Ctrl+W ou sur Échap pour quitter.</translation>
 <translation id="492295894462528572">Avant-propos</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Modifier le texte</translation>
@@ -872,6 +874,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8076492880354921740">Onglets</translation>
 <translation id="8091452896542422286">Espace</translation>
 <translation id="8110647606445335195">Aucun repère ARIA</translation>
+<translation id="8138880386467279117">Tactile</translation>
 <translation id="8153880621934657047">Hors du tableau</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{trait de soulignement}one{# trait de soulignement}other{# traits de soulignement}}</translation>
 <translation id="8179976553408161302">Entrée</translation>

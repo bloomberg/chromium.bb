@@ -398,6 +398,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4058278702844053247">Um carregamento de página em curso</translation>
 <translation id="4065205963140826639">Experimente utilizar Pesquisar + Seta para a direita agora para encontrar o botão Seguinte e, em seguida, prima Pesquisar + Espaço para clicar no mesmo.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TIL}other{# sinais de til}}</translation>
+<translation id="4086311032171418648">A parar o Modo de aprendizagem…</translation>
 <translation id="409334809956508737">Objeto anterior</translation>
 <translation id="4099274309791143834">com submenu</translation>
 <translation id="4101527861445851766">Uma caixa de verificação selecionada</translation>
@@ -500,6 +501,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4877261390094455813">Introduza uma consulta de pesquisa.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Link interno</translation>
+<translation id="4915087353619183190">A iniciar o Modo de aprendizagem… Prima uma tecla qwerty, uma tecla de braille atualizável ou utilize um gesto de toque para conhecer a respetiva função. Prima control com w ou escape para sair.</translation>
 <translation id="492295894462528572">Prefácio</translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4953585991029886728">Editar texto</translation>
@@ -872,6 +874,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8076492880354921740">Separadores</translation>
 <translation id="8091452896542422286">Espaço</translation>
 <translation id="8110647606445335195">Não existe nenhum ponto de referência ARIA.</translation>
+<translation id="8138880386467279117">Tocar</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Enter</translation>

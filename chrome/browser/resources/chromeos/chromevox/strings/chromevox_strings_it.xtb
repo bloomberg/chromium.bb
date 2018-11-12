@@ -397,6 +397,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4058278702844053247">Un caricamento di pagina in corso</translation>
 <translation id="4065205963140826639">Prova a utilizzare il tasto per la ricerca + Freccia destra per cercare il pulsante Avanti, quindi premi il tasto per la ricerca + Spazio per fare clic su tale pulsante.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# caratteri tilde}}</translation>
+<translation id="4086311032171418648">Arresto modalità di apprendimento in corso.</translation>
 <translation id="409334809956508737">Oggetto precedente</translation>
 <translation id="4099274309791143834">con sottomenu</translation>
 <translation id="4101527861445851766">Una casella di controllo selezionata</translation>
@@ -499,6 +500,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4877261390094455813">Inserisci una query di ricerca.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Link interno</translation>
+<translation id="4915087353619183190">Avvio modalità di apprendimento in corso. Premi un tasto Qwerty, un tasto braille aggiornabile o un gesto di tocco per imparare come funziona. Premi W per controllare o ESC per uscire.</translation>
 <translation id="492295894462528572">Premessa</translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4953585991029886728">Modifica testo</translation>
@@ -871,6 +873,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8076492880354921740">Schede</translation>
 <translation id="8091452896542422286">Spazio</translation>
 <translation id="8110647606445335195">Nessun landmark ARIA.</translation>
+<translation id="8138880386467279117">Touch</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
 <translation id="8179976553408161302">Invio</translation>

@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">Poteka nalaganje strani</translation>
 <translation id="4065205963140826639">Pritisnite tipko za iskanje in puščico desno, da poiščete gumb za naprej, nato pritisnite tipko za iskanje in preslednico, da ga kliknete.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}one{# tilda}two{# tildi}few{# tilde}other{# tild}}</translation>
+<translation id="4086311032171418648">Ustavljanje načina učenja.</translation>
 <translation id="409334809956508737">Prejšnji predmet</translation>
 <translation id="4099274309791143834">ima podmeni</translation>
 <translation id="4101527861445851766">Izbrano potrditveno polje</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">Vnesite iskalno poizvedbo.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Notranja povezava</translation>
+<translation id="4915087353619183190">Začenjanje načina učenja. Pritisnite tipko na tipkovnici qwerty, tipko na zaslonu braille, ki omogoča osveževanje, ali potezo dotika, če želite izvedeti njeno funkcijo. Pritisnite tipko Control in tipko W ali Escape, če želite zapreti način.</translation>
 <translation id="492295894462528572">Predgovor</translation>
 <translation id="495170559598752135">Dejanja</translation>
 <translation id="4953585991029886728">Urejanje besedila</translation>
@@ -872,6 +874,7 @@
 <translation id="8076492880354921740">Zavihki</translation>
 <translation id="8091452896542422286">Presledek</translation>
 <translation id="8110647606445335195">Ni mejnika v različici ARIA.</translation>
+<translation id="8138880386467279117">Dotik</translation>
 <translation id="8153880621934657047">Zunaj tabele.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
 <translation id="8179976553408161302">Enter</translation>

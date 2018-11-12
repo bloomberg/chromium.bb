@@ -397,6 +397,7 @@
 <translation id="4058278702844053247">Зарежда се страница</translation>
 <translation id="4065205963140826639">Сега опитайте да намерите бутона „Напред“ с помощта на „търсене“ + стрелка за надясно, след което натиснете „търсене“ + интервал, за да кликнете върху него.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ТИЛДА}other{# тилди}}</translation>
+<translation id="4086311032171418648">Режимът за изговаряне на клавишите се спира.</translation>
 <translation id="409334809956508737">Предишният обект</translation>
 <translation id="4099274309791143834">с подменю</translation>
 <translation id="4101527861445851766">Квадратче с отметка</translation>
@@ -499,6 +500,7 @@
 <translation id="4877261390094455813">Въведете заявка за търсене.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Вътрешна връзка</translation>
+<translation id="4915087353619183190">Режимът за изговаряне на клавишите стартира. Натиснете стандартен клавиш или клавиш от брайловия дисплей или изпълнете жест с докосване, за да научите функцията му. Натиснете Control и W или Escape, за да излезете.</translation>
 <translation id="492295894462528572">Предговор</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4953585991029886728">Текстово поле</translation>
@@ -871,6 +873,7 @@
 <translation id="8076492880354921740">Раздели</translation>
 <translation id="8091452896542422286">Празен ред</translation>
 <translation id="8110647606445335195">Няма отличителни белези на ARIA.</translation>
+<translation id="8138880386467279117">Докосване</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
 <translation id="8179976553408161302">Enter</translation>

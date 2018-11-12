@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Skoraj končano</translation>
 <translation id="5932224571077948991">Spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
+<translation id="5946937721014915347">Odpiranje spletnega mesta <ph name="SITE_NAME" /> …</translation>
 <translation id="5951495562196540101">S potrošniškim računom se ni mogoče včlaniti (na voljo je pridružena licenca).</translation>
 <translation id="5966151627327109289">Odjavljeni boste z večine spletnih mest. Morda boste izgubili dostop do zaščitene vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
@@ -1200,6 +1201,7 @@ Dodatne podrobnosti:
 <translation id="935608979562296692">POČISTI OBRAZEC</translation>
 <translation id="936602727769022409">Izgubite lahko dostop do Google Računa. Chromium priporoča, da spremenite geslo. Pozvani boste, da se prijavite.</translation>
 <translation id="939736085109172342">Nova mapa</translation>
+<translation id="945855313015696284">Preverite spodnje podatke in izbrišite neveljavne kartice</translation>
 <translation id="951104842009476243">Sprejete debetne in predplačniške kartice</translation>
 <translation id="962484866189421427">Ta vsebina lahko poskusi namestiti zavajajoče aplikacije, ki se izdajajo za kaj drugega ali zbirajo podatke, s katerimi vas je mogoče spremljati. <ph name="BEGIN_LINK" />Vseeno pokaži<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Uradna različica</translation>

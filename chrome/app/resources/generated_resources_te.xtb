@@ -167,6 +167,7 @@
 <translation id="1217668622537098248">చర్య తర్వాత తిరిగి ఎడమ క్లిక్ వద్దకు మారు</translation>
 <translation id="121783623783282548">పాస్‌‌వర్డ్‌లు సరిపోలలేదు.</translation>
 <translation id="1218860753635451122">"నేను అంగీకరిస్తున్నాను" బటన్‌ని క్లిక్ చేయడం ద్వారా, ఈ Google సేవల కోసం ఎగువ పేర్కొన్న వాటిని ప్రాసెస్ చేయడానికి మీరు అంగీకరిస్తున్నారు.</translation>
+<translation id="1219533395013150448">మీ అసిస్టెంట్ మీ పరికరంలో నిల్వ చేయబడిన ఈ రికార్డింగ్‌లను, వాయిస్ మోడల్‌ని సృష్టించడానికి ఉపయోగిస్తుంది. అలాగే మీరు అసిస్టెంట్ సెట్టింగ్‌లలోకి వెళ్లి ఆ వాయిస్ మోడల్‌ని తొలగించవచ్చు లేదంటే మళ్లీ శిక్షణ ఇవ్వవచ్చు. ఇంకా Google కార్యకలాప నియంత్రణలులోకి వెళ్లి వాయిస్ ఆదేశాలను చూడడం లేదా తొలగించడం చేసుకోవచ్చు.</translation>
 <translation id="122082903575839559">సర్టిఫికెట్ సంతకం అల్గారిథమ్</translation>
 <translation id="1221024147024329929">RSA గుప్తీకరణతో PKCS #1 MD2</translation>
 <translation id="1221825588892235038">ఎంపిక మాత్రమే</translation>
@@ -617,6 +618,7 @@
 <translation id="1880905663253319515">ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />"ని తొలగించాలా?</translation>
 <translation id="1886996562706621347">ప్రోటోకాల్స్‌కు డిఫాల్ట్ హ్యాండ్లర్‌లుగా కావడం కోసం అడగటానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేయబడింది)</translation>
 <translation id="1887442540531652736">సైన్ ఇన్ ఎర్రర్</translation>
+<translation id="1887597546629269384">మళ్లీ ఒక్కసారి "Hey Google" అని చెప్పండి</translation>
 <translation id="1887850431809612466">హార్డ్‌వేర్ పునర్విమర్శ</translation>
 <translation id="1889984860246851556">ప్రాక్సీ సెట్టింగ్‌లని తెరవండి</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -714,6 +716,7 @@
 <translation id="2048653237708779538">చర్య అందుబాటులో లేదు</translation>
 <translation id="204914487372604757">సత్వరమార్గాన్ని సృష్టించు</translation>
 <translation id="2050339315714019657">నిలువు</translation>
+<translation id="2052369079215022979">మీ సంస్థ ద్వారా నిర్వహించబడుతున్నవి</translation>
 <translation id="2053312383184521053">నిష్క్రియ స్థితి డేటా</translation>
 <translation id="205560151218727633">Google సహాయకం లోగో</translation>
 <translation id="2058456167109518507">పరికరం కనుగొనబడింది</translation>
@@ -901,6 +904,7 @@
 <translation id="2336381494582898602">పవర్‌వాష్ చేయి</translation>
 <translation id="2339120501444485379">కొత్త పేరు నమోదు చేయండి</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> దీనితో జత చేయాలనుకుంటోంది</translation>
+<translation id="2342740338116612727">జోడించిన బుక్‌మార్క్‌లు</translation>
 <translation id="2344028582131185878">స్వయంచాలక డౌన్‌లోడ్‌లు</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />కు 1 పేజీ</translation>
 <translation id="2347644257713614136">Hangouts మరియు Cast for Educationల వినియోగం Google గోప్యతా విధానానికి అనుగుణంగా ఉంటుంది.</translation>
@@ -1680,6 +1684,7 @@
 <translation id="3550915441744863158">Chrome స్వయంచాలకంగా నవీకరించబడుతుంది కాబట్టి మీరు ఎల్లప్పుడూ సరికొత్త సంస్కరణను కలిగి ఉంటారు</translation>
 <translation id="3551320343578183772">ట్యాబ్‌ను మూసివేయి</translation>
 <translation id="3552780134252864554">నిష్క్రమణలో క్లియర్ చేయబడింది</translation>
+<translation id="3553146918065661815">⌘Q నుంచి నిష్క్రమించే ముందు ఒక చిన్న హెచ్చరిక చూపించు</translation>
 <translation id="3555812735919707620">పొడిగింపుని తీసివేయి</translation>
 <translation id="3556000484321257665">మీ శోధన ఇంజిన్ <ph name="URL" />కి మార్చబడింది.</translation>
 <translation id="3559262020195162408">పరికరంలో విధానాన్ని ఇన్‌స్టాల్ చేయడంలో విఫలమైంది.</translation>
@@ -1750,6 +1755,7 @@
 <translation id="3651488188562686558">Wi-Fi నుండి డిస్‌కనెక్ట్ చేయి</translation>
 <translation id="3652817283076144888">ప్రారంభిస్తోంది</translation>
 <translation id="3653160965917900914">నెట్‌వర్క్ ఫైల్ షేర్‌లు</translation>
+<translation id="3653842108912548333">మీ అసిస్టెంట్‌ని Voice Match సాయంతో యాక్సెస్ చేసుకోండి</translation>
 <translation id="3653999333232393305">మీ మైక్రోఫోన్‌ను ప్రాప్యత చేయడానికి <ph name="HOST" />కి అనుమతిని కొనసాగించండి</translation>
 <translation id="3654045516529121250">మీ ప్రాప్యత సెట్టింగ్‌లను చదవండి</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ఇది ఒక ఫైల్‌కు శాశ్వత ప్రాప్యతను కలిగి ఉంది.}other{ఇది # ఫైల్‌లకు శాశ్వత ప్రాప్యతను కలిగి ఉంది.}}</translation>
@@ -2077,6 +2083,7 @@
 <translation id="412940972494182898">ఈసారికి ఫ్లాష్‌ని అమలు చేయి</translation>
 <translation id="4130199216115862831">పరికరం లాగ్</translation>
 <translation id="4130207949184424187">ఈ పొడిగింపు మీరు ఓమ్నిపెట్టె నుండి శోధించేటప్పుడు చూపబడే పేజీని మార్చింది.</translation>
+<translation id="4130750466177569591">నేను అంగీకరిస్తున్నాను</translation>
 <translation id="413121957363593859">భాగాలు</translation>
 <translation id="4131410914670010031">నలుపు మరియు తెలుపు</translation>
 <translation id="4136203100490971508">సూర్యోదయ సమయానికి రాత్రి కాంతి స్వయంచాలకంగా ఆఫ్ అవుతుంది</translation>
@@ -2291,6 +2298,7 @@
 <translation id="4524832533047962394">సరఫరా చేయబడిన నమోదు మోడ్‌కు ఈ ఆపరేటింగ్ సిస్టమ్ వెర్షన్‌లో మద్దతు లేదు. దయచేసి మీరు తాజా వెర్షన్‌ను ఉపయోగిస్తున్నారని నిర్ధారించుకోండి.</translation>
 <translation id="4525382759303819021">Play Store యాప్‌లలో తాజా అప్‌డేట్‌లు మరియు సిఫార్సులను పొందండి</translation>
 <translation id="4530494379350999373">మూలం</translation>
+<translation id="4533846798469727141">ఇప్పుడు "Hey Google" అని చెప్పండి</translation>
 <translation id="4533985347672295764">CPU సమయం</translation>
 <translation id="4534661889221639075">మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4535127706710932914">డిఫాల్ట్ ప్రొఫైల్</translation>
@@ -3273,6 +3281,7 @@
 <translation id="5990386583461751448">అనువదించబడింది</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{వెబ్‌ను బ్రౌజ్ చేస్తూనే ఉండడాన్ని నిర్ధారించడానికి, మీ నిర్వాహకుడిని ఈ అప్లికేషన్‌ను తీసివేయమని కోరండి.}other{వెబ్‌ను బ్రౌజ్ చేస్తూనే ఉండడాన్ని నిర్ధారించడానికి, మీ నిర్వాహకుడిని ఈ అప్లికేషన్‌లను తీసివేయమని కోరండి.}}</translation>
 <translation id="5997337190805127100">సైట్ యాక్సెస్ గురించి మరింత తెలుసుకోండి</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' అనే దానికి <ph name="RESULT_COUNT" /> ఫలితాలు లభించాయి</translation>
 <translation id="6002458620803359783">ప్రాధాన్య వాయిస్‌లు</translation>
 <translation id="6005695835120147974">మీడియా రూటర్</translation>
 <translation id="6006484371116297560">క్లాసిక్</translation>
@@ -3522,6 +3531,7 @@
 <translation id="637062427944097960">ఈ పైల్ వేరే డెస్క్‌టాప్‌లో తెరవబడింది. దీన్ని వీక్షించడానికి <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)కి తరలించండి.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">మళ్లీ ప్రయత్నించు</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' అనే దానికి 1 ఫలితం మాత్రమే లభించింది</translation>
 <translation id="6380143666419481200">అంగీకరించి, కొనసాగండి</translation>
 <translation id="6384275966486438344">మీ శోధన సెట్టింగ్‌లను దీనికి మార్చండి: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">సైట్‌లు కుక్కీ డేటాను సేవ్ చేయగలవు మరియు చదవగలవు</translation>
@@ -3539,6 +3549,7 @@
 <translation id="6405510437656969977">మీరు పిన్‌ని నమోదు చేయడానికి సిద్ధంగా ఉన్నప్పుడు కొనసాగించండి</translation>
 <translation id="6406303162637086258">బ్రౌజర్ పునఃప్రారంభాన్ని ప్రారంభించు</translation>
 <translation id="6406506848690869874">Sync</translation>
+<translation id="6406708970972405507">సెట్టింగ్‌లు - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> మరియు <ph name="WEBSITE_3" />లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
 <translation id="6410257289063177456">చిత్రం ఫైళ్ళు</translation>
 <translation id="6410328738210026208">ఛానెల్ మరియు పవర్‌వాష్‌ను మార్చు</translation>
@@ -3822,6 +3833,7 @@
 <translation id="6840184929775541289">ప్రమాణపత్రం అధికారం కాదు</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">లోపాలు</translation>
+<translation id="6843423766595476978">Ok Googleని పూర్తిగా సిద్ధం చేశారు</translation>
 <translation id="6845038076637626672">గరిష్టీకరించిన దాన్ని తెరువు</translation>
 <translation id="685040365210406336">మార్పులు చేయవద్దు</translation>
 <translation id="6851497530878285708">యాప్ ప్రారంభించబడింది</translation>
@@ -4084,6 +4096,7 @@
 <translation id="7246947237293279874">FTP ప్రాక్సీ</translation>
 <translation id="7248671827512403053">అప్లికేషన్‌</translation>
 <translation id="725109152065019550">క్షమించండి, మీ నిర్వాహకుడు మీ ఖాతాలో బాహ్య నిల్వను నిలిపివేసారు.</translation>
+<translation id="7251346854160851420">డిఫాల్ట్ వాల్‌పేపర్</translation>
 <translation id="7253521419891527137">&amp;మరింత తెలుసుకోండి</translation>
 <translation id="7254554697254365959">ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="7254951428499890870">మీరు ఖచ్చితంగా విశ్లేషణ మోడ్‌లో "<ph name="APP_NAME" />"ని లాంచ్ చేయాలనుకుంటున్నారా?</translation>
@@ -4194,6 +4207,7 @@
 <translation id="7417705661718309329">Google మ్యాప్</translation>
 <translation id="741906494724992817">ఈ అనువర్తనానికి ప్రత్యేక అనుమతులు ఏవీ అవసరం లేదు.</translation>
 <translation id="7419433794191666278">మీ ఫోన్‌కి మీ Chromebookను కనెక్ట్ చేయండి. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి.<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">తీసివేసిన బుక్‌మార్క్‌లు</translation>
 <translation id="7421925624202799674">పేజీ మూలాన్ని &amp;వీక్షించండి</translation>
 <translation id="7422192691352527311">ప్రాధాన్యతలు...</translation>
 <translation id="7423098979219808738">ముందుగా అడుగుతుంది</translation>
@@ -4358,6 +4372,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{బుక్‌మార్క్ జాబితాలోని 1 అంశం}other{బుక్‌మార్క్ జాబితాలోని # అంశాలు}}</translation>
 <translation id="7701040980221191251">ఏదీ కాదు</translation>
 <translation id="7701869757853594372">వినియోగదారు నిర్వహించేవి</translation>
+<translation id="7702574632857388784">జాబితా నుంచి <ph name="FILE_NAME" />ని తొలగించు</translation>
 <translation id="7702907602086592255">డొమైన్</translation>
 <translation id="7704305437604973648">విధి</translation>
 <translation id="7704317875155739195">స్వయంపూర్తి శోధనలు మరియు URLలు</translation>
@@ -4749,6 +4764,7 @@
 <translation id="8249296373107784235">రద్దుచెయ్యి</translation>
 <translation id="8249672078237421304">మీరు చదివే భాషలో లేని పేజీలను అనువదించే సౌలభ్యం</translation>
 <translation id="8251578425305135684">సూక్ష్మచిత్రం తొలగించబడింది.</translation>
+<translation id="8252569384384439529">అప్‌లోడ్ చేస్తోంది...</translation>
 <translation id="8253198102038551905">నెట్‌వర్క్ లక్షణాలను పొందడానికి '+' క్లిక్ చేయండి</translation>
 <translation id="825483282309623688">మీ డేటాను పునరుద్ధరించడానికి, మీకు ఇంటర్నెట్ కనెక్షన్ ఉండాలి.</translation>
 <translation id="8256319818471787266">స్పార్కీ</translation>
@@ -4816,6 +4832,7 @@
 <translation id="8371695176452482769">ఇప్పుడు మాట్లాడండి</translation>
 <translation id="8372369524088641025">తప్పుడు WEP కీ</translation>
 <translation id="8373553483208508744">ట్యాబ్‌లను మ్యూట్ చేయి</translation>
+<translation id="8378714024927312812">మీ సంస్థ ద్వారా నిర్వహించబడుతున్నవి</translation>
 <translation id="8379878387931047019">ఈ వెబ్‌సైట్ అభ్యర్థించిన భద్రతా కీ రకానికి ఈ పరికరం మద్దతు ఇవ్వదు</translation>
 <translation id="8382913212082956454">&amp;ఇమెయిల్ చిరునామాను కాపీ చెయ్యి</translation>
 <translation id="8386091599636877289">విధానం కనుగొనబడలేదు.</translation>
@@ -4854,6 +4871,7 @@
 <translation id="8438566539970814960">శోధనలు మరియు బ్రౌజింగ్‌ను మెరుగుపరచండి</translation>
 <translation id="8439506636278576865">ఈ భాషలో పేజీలకు అనువాదం అందించు</translation>
 <translation id="8440630305826533614">Linux యాప్‌లు</translation>
+<translation id="8446474770554547328">3 సార్లు "Ok Google" అని చెప్పి రికార్డు చేస్తే చాలు మీ వాయిస్ మోడల్‌ని సృష్టించి, మీ పరికరంలో నిల్వ చేస్తుంది. అలాగే మీరు అసిస్టెంట్ సెట్టింగ్‌లలోకి వెళ్లి ఆ వాయిస్ మోడల్‌ని తొలగించవచ్చు లేదంటే మళ్లీ శిక్షణ ఇవ్వవచ్చు. ఇంకా Google కార్యకలాప నియంత్రణలులోకి వెళ్లి వాయిస్ ఆదేశాలను చూడడం లేదా తొలగించడం చేసుకోవచ్చు.</translation>
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>
 <translation id="8447409163267621480">Ctrl లేదా Altను చేర్చండి</translation>
 <translation id="8448729345478502352">మీ స్క్రీన్‌లోని అంశాలను చిన్నవిగా లేదా పెద్దవిగా చేయండి</translation>

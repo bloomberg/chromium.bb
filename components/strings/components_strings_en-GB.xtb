@@ -1103,7 +1103,6 @@ Additional details:
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
 <translation id="8557066899867184262">The CVC is located behind your card.</translation>
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
-<translation id="8562974682002272877">It looks as though you want to do this by yourself. It's OK to continue without my help.</translation>
 <translation id="8564985650692024650">Chromium recommends resetting your <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> password if you reused it on other sites.</translation>
 <translation id="8571890674111243710">Translating page into <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Add phone no.</translation>

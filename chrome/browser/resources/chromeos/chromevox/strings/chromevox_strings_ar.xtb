@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">تحميل صفحة قيد التقدم</translation>
 <translation id="4065205963140826639">جرّب استخدام بحث + السهم الأيمن للعثور على زر التالي، ثم اضغط على بحث + مسافة للنقر عليه.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{علامة تلدة واحدة}zero{# tildes}two{علامتا تلدة (#)}few{# علامات تلدة}many{# علامة تلدة}other{# من علامات تلدة}}</translation>
+<translation id="4086311032171418648">إيقاف "وضع التعلُّم".</translation>
 <translation id="409334809956508737">الكائن السابق</translation>
 <translation id="4099274309791143834">بقائمة فرعية</translation>
 <translation id="4101527861445851766">مربع اختيار محدد</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">الدخول إلى طلب بحث.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">رابط داخلي</translation>
+<translation id="4915087353619183190">‏يمكنك بدء "وضع التعلُّم". ويمكنك الضغط على مفتاح Qwerty أو مفتاح لغة برايل القابل لإعادة التحميل أو إيماءة اللمس لمعرفة وظيفته. ويمكنك الضغط على الزر Control مع W أو الزر Escape للخروج.</translation>
 <translation id="492295894462528572">مقدمة</translation>
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4953585991029886728">تعديل النص</translation>
@@ -872,6 +874,7 @@
 <translation id="8076492880354921740">علامات التبويب</translation>
 <translation id="8091452896542422286">المسافة</translation>
 <translation id="8110647606445335195">‏ليست هناك معالم ARIA.</translation>
+<translation id="8138880386467279117">اللمس</translation>
 <translation id="8153880621934657047">ليس بداخل الجدول.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{شرطة سفلية واحدة}zero{# underscores}two{شرطتان سفليتان (#)}few{# شرطات سفلية}many{# شرطة سفلية}other{# من الشرطات السفلية}}</translation>
 <translation id="8179976553408161302">Enter</translation>

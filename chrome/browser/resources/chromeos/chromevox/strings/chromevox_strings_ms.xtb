@@ -398,6 +398,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4058278702844053247">Halaman sedang dimuatkan</translation>
 <translation id="4065205963140826639">Cuba gunakan Carian + Anak Panah Kanan sekarang untuk mencari butang Seterusnya, kemudian tekan Carian + Ruang untuk mengkliknya.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tilde}}</translation>
+<translation id="4086311032171418648">Menghentikan Mod Belajar.</translation>
 <translation id="409334809956508737">Objek Sebelumnya</translation>
 <translation id="4099274309791143834">dengan submenu</translation>
 <translation id="4101527861445851766">Kotak pilihan ditandai</translation>
@@ -500,6 +501,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4877261390094455813">Masukkan carian pertanyaan.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Pautan dalaman</translation>
+<translation id="4915087353619183190">Memulakan Mod Belajar. Tekan kekunci qwerty, kekunci braille boleh dimuat semula atau sentuh gerak isyarat untuk mengetahui fungsinya. Tekan kawalan dengan kekunci w atau escape untuk keluar.</translation>
 <translation id="492295894462528572">Kata pengantar</translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4953585991029886728">Edit teks</translation>
@@ -872,6 +874,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8076492880354921740">Tab</translation>
 <translation id="8091452896542422286">Ruang</translation>
 <translation id="8110647606445335195">Tiada mercu tanda ARIA.</translation>
+<translation id="8138880386467279117">Sentuh</translation>
 <translation id="8153880621934657047">Bukan dalam jadual.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
 <translation id="8179976553408161302">Enter</translation>

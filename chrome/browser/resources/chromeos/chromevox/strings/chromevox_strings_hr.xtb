@@ -398,6 +398,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4058278702844053247">Učitavanje stranice u tijeku</translation>
 <translation id="4065205963140826639">Sada pokušajte pritisnuti tipku za pretraživanje i desnu strelicu da biste pronašli gumb Sljedeća, a zatim pritisnite tipku za pretraživanje i razmaknicu da biste ga kliknuli.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}one{# tilda}few{# tilde}other{# tildi}}</translation>
+<translation id="4086311032171418648">Zaustavljanje načina vodiča.</translation>
 <translation id="409334809956508737">Prethodni objekt</translation>
 <translation id="4099274309791143834">s podizbornikom</translation>
 <translation id="4101527861445851766">Potvrdni okvir s kvačicom</translation>
@@ -500,6 +501,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4877261390094455813">Unesite upit za pretraživanje.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Interna veza</translation>
+<translation id="4915087353619183190">Pokretanje načina vodiča. Pritisnite tipku qwerty tipkovnice, tipku brajevog retka s mogućnošću osvježavanja ili pokret dodira da biste saznali njezinu funkciju. Pritisnite tipku Control i "w" ili Esc za zatvaranje.</translation>
 <translation id="492295894462528572">Predgovor</translation>
 <translation id="495170559598752135">Radnje</translation>
 <translation id="4953585991029886728">Uređivanje teksta</translation>
@@ -872,6 +874,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="8076492880354921740">Kartice</translation>
 <translation id="8091452896542422286">Razmak</translation>
 <translation id="8110647606445335195">Nema ARIA orijentira.</translation>
+<translation id="8138880386467279117">Dodir</translation>
 <translation id="8153880621934657047">Niste unutar tablice.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{donja crta}one{# donja crta}few{# donje crte}other{# donjih crta}}</translation>
 <translation id="8179976553408161302">Enter</translation>

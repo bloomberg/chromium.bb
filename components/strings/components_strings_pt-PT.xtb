@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Estamos quase a terminar</translation>
 <translation id="5932224571077948991">O site apresenta anúncios intrusivos ou enganadores.</translation>
 <translation id="5939518447894949180">Repor</translation>
+<translation id="5946937721014915347">A abrir <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Não é possível inscrever-se com conta de consumidor (licença incluída disponível).</translation>
 <translation id="5966151627327109289">A sua sessão é terminada na maioria dos sites. Pode perder o acesso a conteúdo protegido de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
@@ -943,7 +944,7 @@ Detalhes adicionais:
 <translation id="7526934274050461096">A sua ligação a este site não é privada.</translation>
 <translation id="7537536606612762813">Obrigatório</translation>
 <translation id="7542403920425041731">Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>
-<translation id="7542995811387359312">O preenchimento automático de cartões de crédito está desactivado, porque este formulário não utiliza uma ligação segura.</translation>
+<translation id="7542995811387359312">O preenchimento automático de cartões de crédito está desativado, porque este formulário não utiliza uma ligação segura.</translation>
 <translation id="7543525346216957623">Pede aos teus pais</translation>
 <translation id="7548892272833184391">Corrigir erros de ligação</translation>
 <translation id="7549584377607005141">Esta página Web requer os dados introduzidos anteriormente para ser corretamente apresentada. Pode enviar novamente esses dados, mas ao fazê-lo, irá repetir as ações que esta página executou anteriormente.</translation>
@@ -1200,6 +1201,7 @@ Detalhes adicionais:
 <translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
 <translation id="936602727769022409">Pode perder o acesso à sua Conta Google. O Chromium recomenda que altere a palavra-passe agora. Ser-lhe-á pedido para iniciar sessão.</translation>
 <translation id="939736085109172342">Nova pasta</translation>
+<translation id="945855313015696284">Verifique as informações abaixo e elimine os cartões inválidos</translation>
 <translation id="951104842009476243">Cartões de débito e pré-pagos aceites</translation>
 <translation id="962484866189421427">Este conteúdo poderá tentar instalar aplicações fraudulentas que se fazem passar por algo diferente ou que recolhem dados que podem ser utilizados para o monitorizar. <ph name="BEGIN_LINK" />Mostrar, mesmo assim<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Compilação oficial</translation>

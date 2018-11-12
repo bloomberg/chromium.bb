@@ -727,6 +727,7 @@
 <translation id="5922853866070715753">Fast fertig</translation>
 <translation id="5932224571077948991">Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
+<translation id="5946937721014915347"><ph name="SITE_NAME" /> wird geöffnet…</translation>
 <translation id="5951495562196540101">Registrierung mit Kundenkonto nicht möglich (Paketlizenz verfügbar).</translation>
 <translation id="5966151627327109289">Sie werden von den meisten Websites abgemeldet. Eventuell verlieren Sie den Zugriff auf geschützte Inhalte von <ph name="SITE" /> und einigen anderen Websites.</translation>
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
@@ -1201,6 +1202,7 @@ Weitere Details:
 <translation id="935608979562296692">Formular leeren</translation>
 <translation id="936602727769022409">Sie könnten den Zugriff auf Ihr Google-Konto verlieren. Chromium empfiehlt Ihnen, Ihr Passwort jetzt zu ändern. Sie werden dazu aufgefordert, sich anzumelden.</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
+<translation id="945855313015696284">Lesen Sie sich die unten stehenden Informationen durch und löschen Sie ungültige Karten</translation>
 <translation id="951104842009476243">Akzeptierte Debit- und Prepaidkarten</translation>
 <translation id="962484866189421427">Dieser Inhalt könnte betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten erfassen, um Sie auszuspionieren. <ph name="BEGIN_LINK" />Trotzdem zeigen<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Offizieller Build</translation>

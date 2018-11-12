@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">పేజీ లోడ్ కావడం ప్రోగ్రెస్‌లో ఉంది</translation>
 <translation id="4065205963140826639">ఇప్పుడు తదుపరి బటన్‌ను కనుగొనడానికి శోధన + కుడివైపు బాణాన్ని ఉపయోగించి, ఆపై దాన్ని క్లిక్ చేయడానికి శోధన + Space నొక్కడం ప్రయత్నించండి.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{టిల్డ్ గుర్తు}other{# టిల్డ్ గుర్తులు}}</translation>
+<translation id="4086311032171418648">తెలుసుకునే మోడ్ ఆపివేయబడుతోంది.</translation>
 <translation id="409334809956508737">మునుపటి ఆబ్జెక్ట్</translation>
 <translation id="4099274309791143834">ఉపమెనును కలిగి ఉంది</translation>
 <translation id="4101527861445851766">ఎంచుకున్న ఎంపిక పెట్టె</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">శోధన ప్రశ్నను నమోదు చేయండి.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">అంతర్గత లింక్</translation>
+<translation id="4915087353619183190">తెలుసుకునే మోడ్ ప్రారంభించబడుతోంది. కనుక qwerty కీని గానీ, రిఫ్రెష్ చేయదగిన బ్రెయిలీ కీని గానీ లేదంటే, టచ్ సంజ్ఞలను గానీ నొక్కి అదెలా పని చేస్తుందో తెలుసుకోవచ్చు. w అక్షరాన్ని, కంట్రోల్ కీని కలిపి నొక్కడం లేదా ఎస్కేప్ కీని నొక్కడం గానీ చేస్తే దాని నుండి నిష్క్రమించవచ్చు.</translation>
 <translation id="492295894462528572">ముందుమాట</translation>
 <translation id="495170559598752135">చర్యలు</translation>
 <translation id="4953585991029886728">వచనాన్ని సవరించండి</translation>
@@ -872,6 +874,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8076492880354921740">ట్యాబ్‌లు</translation>
 <translation id="8091452896542422286">ఖాళీ</translation>
 <translation id="8110647606445335195">ARIA మైలురాళ్లు లేవు.</translation>
+<translation id="8138880386467279117">స్పర్శ</translation>
 <translation id="8153880621934657047">లోపల పట్టిక కాదు.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{అండర్‌స్కోర్ గుర్తు}other{# అండర్‌స్కోర్ గుర్తులు}}</translation>
 <translation id="8179976553408161302">Enter</translation>

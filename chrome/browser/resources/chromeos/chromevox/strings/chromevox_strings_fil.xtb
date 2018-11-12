@@ -398,6 +398,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4058278702844053247">Isang kasalukuyang pag-load ng page</translation>
 <translation id="4065205963140826639">Subukang gamitin ngayon ang Paghahanap + Kanang Arrow upang hanapin ang button ng Susunod, pagkatapos ay pindutin ang Paghahanap + Space upang i-click ito.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}one{# tilde}other{# na tilde}}</translation>
+<translation id="4086311032171418648">Ihinihinto ang Learn Mode.</translation>
 <translation id="409334809956508737">Nakaraang Bagay</translation>
 <translation id="4099274309791143834">na may submenu</translation>
 <translation id="4101527861445851766">Isang checkbox na may check</translation>
@@ -500,6 +501,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4877261390094455813">Maglagay ng query sa paghahanap.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Internal na link</translation>
+<translation id="4915087353619183190">Sinisimulan ang Learn Mode. Pumindot ng qwerty key o nare-refresh na braille key o magsagawa ng galaw na pagpindot para malaman ang function nito. Pindutin ang control at w o escape para lumabas.</translation>
 <translation id="492295894462528572">Foreword</translation>
 <translation id="495170559598752135">Mga Pagkilos</translation>
 <translation id="4953585991029886728">I-edit ang text</translation>
@@ -872,6 +874,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8076492880354921740">Mga Tab</translation>
 <translation id="8091452896542422286">Puwang</translation>
 <translation id="8110647606445335195">Walang mga landmark ng ARIA.</translation>
+<translation id="8138880386467279117">Pindutin</translation>
 <translation id="8153880621934657047">Wala sa loob ng talahanayan.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}one{# underscore}other{# na underscore}}</translation>
 <translation id="8179976553408161302">Enter</translation>
