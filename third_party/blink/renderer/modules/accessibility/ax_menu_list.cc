@@ -78,19 +78,19 @@ void AXMenuList::AddChildren() {
 
   AXObjectCacheImpl& cache = AXObjectCache();
 
-  AXObject* list = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
-  if (!list)
+  AXObject* popup = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
+  if (!popup)
     return;
 
-  ToAXMockObject(list)->SetParent(this);
-  if (list->AccessibilityIsIgnored()) {
-    cache.Remove(list->AXObjectID());
+  ToAXMockObject(popup)->SetParent(this);
+  if (popup->AccessibilityIsIgnored()) {
+    cache.Remove(popup->AXObjectID());
     return;
   }
 
-  children_.push_back(list);
+  children_.push_back(popup);
 
-  list->AddChildren();
+  popup->AddChildren();
 }
 
 bool AXMenuList::IsCollapsed() const {
