@@ -91,7 +91,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
   }
 
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(paint_info, paint_offset, paint_rect, *background_client);
+    RecordHitTestData(paint_info, paint_rect, *background_client);
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
@@ -252,7 +252,6 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 }
 
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
-                                   const LayoutPoint& paint_offset,
                                    const LayoutRect& paint_rect,
                                    const DisplayItemClient& background_client) {
   // Hit test display items are only needed for compositing. This flag is used

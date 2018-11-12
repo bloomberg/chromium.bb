@@ -42,7 +42,6 @@ class BoxPainter {
   // called in the background paint phase even if there is no other painted
   // content.
   void RecordHitTestData(const PaintInfo&,
-                         const LayoutPoint& paint_offset,
                          const LayoutRect& paint_rect,
                          const DisplayItemClient& background_client);
 

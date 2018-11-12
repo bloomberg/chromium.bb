@@ -74,8 +74,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   }
   if (has_touch_action_rect) {
     BoxPainter(layout_view_)
-        .RecordHitTestData(paint_info, LayoutPoint(),
-                           LayoutRect(background_rect), *background_client);
+        .RecordHitTestData(paint_info, LayoutRect(background_rect),
+                           *background_client);
   }
 }
 
