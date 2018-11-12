@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_
 
-// TODO(darin): WebCookieJar.h is missing a WebString.h include!
 #include "third_party/blink/public/platform/web_cookie_jar.h"
 
 namespace content {
