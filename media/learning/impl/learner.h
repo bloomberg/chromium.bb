@@ -7,7 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/values.h"
-#include "media/learning/common/instance.h"
+#include "media/learning/common/training_example.h"
 
 namespace media {
 namespace learning {
@@ -20,10 +20,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) Learner {
  public:
   virtual ~Learner() = default;
 
-  // Tell the learner that |instance| has been observed with the target value
-  // |target| during training.
-  virtual void AddExample(const Instance& instance,
-                          const TargetValue& target) = 0;
+  // Tell the learner that |example| has been observed during training.
+  virtual void AddExample(const TrainingExample& example) = 0;
 };
 
 }  // namespace learning

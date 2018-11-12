@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "media/learning/common/learning_task.h"
+#include "media/learning/common/training_example.h"
 
 namespace media {
 namespace learning {
@@ -20,12 +21,10 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningSession {
   LearningSession();
   virtual ~LearningSession();
 
-  // Add an observed example of |instance| with target value |target| to the
-  // learning task |task_name|.
+  // Add an observed example |example| to the learning task |task_name|.
   // TODO(liberato): Consider making this an enum to match mojo.
   virtual void AddExample(const std::string& task_name,
-                          const Instance& instance,
-                          const TargetValue& target) = 0;
+                          const TrainingExample& example) = 0;
 
   // TODO(liberato): Add prediction API.
 

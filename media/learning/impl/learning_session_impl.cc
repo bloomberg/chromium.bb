@@ -13,8 +13,7 @@ LearningSessionImpl::LearningSessionImpl() = default;
 LearningSessionImpl::~LearningSessionImpl() = default;
 
 void LearningSessionImpl::AddExample(const std::string& task_name,
-                                     const Instance& instance,
-                                     const TargetValue& target) {
+                                     const TrainingExample& example) {
   // TODO: match |task_name| against a list of learning tasks, and find the
   // learner(s) for it.  Then add |instance|, |target| to it.
   NOTIMPLEMENTED();

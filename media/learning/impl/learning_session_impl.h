@@ -21,8 +21,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
 
   // LearningSession
   void AddExample(const std::string& task_name,
-                  const Instance& instance,
-                  const TargetValue& target) override;
+                  const TrainingExample& example) override;
 };
 
 }  // namespace learning
