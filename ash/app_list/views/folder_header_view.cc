@@ -80,6 +80,9 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
   folder_name_view_->SetTextColor(kFolderNameColor);
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 FolderHeaderView::~FolderHeaderView() {
