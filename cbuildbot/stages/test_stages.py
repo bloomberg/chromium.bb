@@ -26,6 +26,7 @@ from chromite.lib import hwtest_results
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import parallel
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
@@ -590,3 +591,97 @@ class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
            os.path.join(cros_build_lib.GetSysroot(board=self._current_board),
                         'usr/lib/debug')]
     cros_build_lib.RunCommand(cmd, enter_chroot=True)
+
+
+class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
+  """Stage that constructs test plans."""
+
+  def __init__(self,
+               builder_run,
+               board,
+               **kwargs):
+
+    super(TestPlanStage, self).__init__(builder_run, board, **kwargs)
+
+  def WaitUntilReady(self):
+    config = self._run.config
+    return bool('hw_tests' in config and config.hw_tests)
+
+  def PerformStage(self):
+    builder_run = self._run
+    board = self._current_board
+
+    if not builder_run.options.archive:
+      logging.warning("HWTests were requested but could not be run because "
+                      "artifacts weren't uploaded. Please ensure the archive "
+                      "option in the builder config is set to True.")
+      return
+
+    # For non-uni builds, we don't pass a model (just board)
+    models = [config_lib.ModelTestConfig(None, board)]
+
+    if builder_run.config.models:
+      models = builder_run.config.models
+
+    parallel_stages = []
+    for suite_config in builder_run.config.hw_tests:
+      # Even for blocking stages, all models can still be run in parallel since
+      # it will still block the next stage from executing.
+      for model in models:
+        new_stage = self._GetHWTestStage(
+            builder_run, board, model, suite_config)
+        if new_stage:
+          parallel_stages.append(new_stage)
+
+      # Please see docstring for blocking in the HWTestConfig for more
+      # information on this behavior.
+      # Expected behavior:
+      #     1) Blocking suites are kicked off first, e.g. provision suite.
+      #     2) If it's unibuild, the blocking suites of all models are kicked
+      #        off in parallel first.
+      if suite_config.blocking:
+        steps = [stage.Run for stage in parallel_stages]
+        parallel.RunParallelSteps(steps)
+        parallel_stages = []
+
+    if parallel_stages:
+      steps = [stage.Run for stage in parallel_stages]
+      parallel.RunParallelSteps(steps)
+
+  def _GetHWTestStage(self, builder_run, board, model, suite_config):
+    """Gets the correct hw test stage for a given test suite and model.
+
+    Args:
+      builder_run: BuilderRun object for these background stages.
+      board: board overlay name
+      model: ModelTestConfig object to test against.
+      suite_config: HWTestConfig object that defines the test suite.
+
+    Returns:
+      The test stage or None if the test suite was filtered for the model.
+    """
+    result = None
+
+    # If test_suites doesn't exist, then there is no filter.
+    # Whereas, an empty array will act as a comprehensive filter.
+    if (model.test_suites is None
+        or suite_config.suite in model.test_suites):
+      stage_class = None
+      if suite_config.async:
+        stage_class = ASyncHWTestStage
+      else:
+        stage_class = HWTestStage
+
+      if (builder_run.config.enable_skylab_hw_tests and
+          suite_config.enable_skylab):
+        if suite_config.async:
+          stage_class = ASyncSkylabHWTestStage
+        else:
+          stage_class = SkylabHWTestStage
+
+      result = stage_class(builder_run,
+                           board,
+                           model.name,
+                           suite_config,
+                           lab_board_name=model.lab_board_name)
+    return result

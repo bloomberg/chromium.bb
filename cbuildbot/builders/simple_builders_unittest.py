@@ -198,42 +198,6 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     unified_build.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(unified_build).RunStages()
 
-  def testGetHWTestStageWithPerModelFilters(self):
-    """Verify hwtests are filtered correctly on a per-model basis"""
-    extra_argv = ['--hwtest']
-    unified_build = self._initConfig(
-        'eve-release',
-        extra_argv=extra_argv)
-    unified_build.attrs.chrome_version = 'TheChromeVersion'
-
-    test_phase1 = unified_build.config.hw_tests[0]
-    test_phase2 = unified_build.config.hw_tests[1]
-
-    model1 = config_lib.ModelTestConfig('model1', 'some_lab_board')
-    model2 = config_lib.ModelTestConfig('model2', 'mode11', [test_phase2.suite])
-
-    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
-        unified_build,
-        'eve',
-        model1,
-        test_phase1)
-    self.assertIsNotNone(hw_stage)
-    self.assertEqual(hw_stage._board_name, 'some_lab_board')
-
-    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
-        unified_build,
-        'eve',
-        model2,
-        test_phase1)
-    self.assertIsNone(hw_stage)
-
-    hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
-        unified_build,
-        'eve',
-        model2,
-        test_phase2)
-    self.assertIsNotNone(hw_stage)
-
   def testAllVMTestStagesSucceed(self):
     """Verify all VM test stages are run."""
     self.assertEquals([], self._RunVMTests())
