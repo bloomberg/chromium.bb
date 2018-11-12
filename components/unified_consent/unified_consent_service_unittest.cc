@@ -13,7 +13,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/scoped_unified_consent.h"
@@ -25,35 +25,21 @@
 namespace unified_consent {
 namespace {
 
-class TestSyncService : public syncer::FakeSyncService {
+class TestSyncService : public syncer::TestSyncService {
  public:
   explicit TestSyncService(PrefService* pref_service)
       : pref_service_(pref_service) {}
 
-  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
-  TransportState GetTransportState() const override { return state_; }
-  bool IsFirstSetupComplete() const override { return true; }
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observer_ = observer;
   }
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override {
     syncer::SyncPrefs(pref_service_).SetKeepEverythingSynced(sync_everything);
-    chosen_types_ = chosen_types;
-  }
-  syncer::ModelTypeSet GetPreferredDataTypes() const override {
-    syncer::ModelTypeSet preferred = chosen_types_;
-    // Add this for the Migration_UpdateSettings test.
-    preferred.Put(syncer::HISTORY_DELETE_DIRECTIVES);
-    return preferred;
-  }
-  bool IsUsingSecondaryPassphrase() const override {
-    return is_using_passphrase_;
-  }
 
-  void SetTransportState(TransportState state) { state_ = state; }
-  void SetIsUsingPassphrase(bool using_passphrase) {
-    is_using_passphrase_ = using_passphrase;
+    // Add this for the Migration_UpdateSettings test.
+    chosen_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+    SetPreferredDataTypes(chosen_types);
   }
 
   void FireStateChanged() {
@@ -63,9 +49,6 @@ class TestSyncService : public syncer::FakeSyncService {
 
  private:
   syncer::SyncServiceObserver* observer_ = nullptr;
-  TransportState state_ = TransportState::ACTIVE;
-  syncer::ModelTypeSet chosen_types_ = syncer::UserSelectableTypes();
-  bool is_using_passphrase_ = false;
   PrefService* pref_service_;
 };
 
@@ -315,7 +298,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
   EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
 
   // Set custom passphrase.
-  sync_service_.SetIsUsingPassphrase(true);
+  sync_service_.SetIsUsingSecondaryPassphrase(true);
   sync_service_.FireStateChanged();
 
   // Setting a custom passphrase forces off unified consent given.
@@ -843,7 +826,7 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_SuppressedWithCustomPassphrase) {
   // for the consent bump without custom passphrase.
   identity_test_environment_.SetPrimaryAccount("testaccount");
   sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
-  sync_service_.SetIsUsingPassphrase(true);
+  sync_service_.SetIsUsingSecondaryPassphrase(true);
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
   sync_service_.SetTransportState(
