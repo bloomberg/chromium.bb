@@ -336,6 +336,11 @@ template("grit") {
       # file is specified.
       inputs += [ resource_ids ]
     }
+    if (grit_predetermined_resource_ids_file != "") {
+      # If the predetermined ID file is present, the script outputs depend on
+      # it too.
+      inputs += [ grit_predetermined_resource_ids_file ]
+    }
 
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"
     outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
