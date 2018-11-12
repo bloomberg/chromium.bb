@@ -9,8 +9,7 @@
   function collectMessages(message) {
     messages.push(message);
   }
-  Protocol.TargetBase.prototype._dumpProtocolMessage = collectMessages;
-  Protocol.InspectorBackend.Options.dumpInspectorProtocolMessages = 1;
+  Protocol.test.dumpProtocol = collectMessages;
   messages.push('--> SDK.targetManager.suspendAllTargets();');
   await SDK.targetManager.suspendAllTargets();
   messages.push('');
@@ -18,7 +17,7 @@
   await SDK.targetManager.resumeAllTargets();
   messages.push('');
   messages.push('--> done');
-  Protocol.InspectorBackend.Options.dumpInspectorProtocolMessages = 0;
+  Protocol.test.dumpProtocol = null;
   for (var i = 0; i < messages.length; ++i) {
     var message = messages[i];
     if (message.startsWith('backend'))

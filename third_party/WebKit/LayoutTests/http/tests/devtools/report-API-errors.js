@@ -17,8 +17,8 @@
   TestRunner.RuntimeAgent.evaluate('true', 'test');
   TestRunner.RuntimeAgent.evaluate('true', 'test', function() {});
   TestRunner.RuntimeAgent.evaluate('true', 'test', undefined, function() {});
-  TestRunner.mainTarget._onMessage('{"method": "wrongDomain.something-strange", "params": {}}');
-  TestRunner.mainTarget._onMessage('{"method": "Inspector.something-strange", "params": {}}');
+  TestRunner.mainTarget._router._onMessage('{"method": "wrongDomain.something-strange", "params": {}}');
+  TestRunner.mainTarget._router._onMessage('{"method": "Inspector.something-strange", "params": {}}');
 
   TestRunner.completeTest();
 })();

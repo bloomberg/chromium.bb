@@ -52,7 +52,10 @@
   }
 
   function expandAndDumpConsoleMessages() {
-    ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+    ConsoleTestRunner.expandConsoleMessages(() => {
+      // This is to handle asynchronous console message rendering through runtime extensions.
+      setTimeout(dumpConsoleMessages, 0);
+    });
   }
 
   function dumpConsoleMessages() {
