@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -68,13 +68,12 @@ size_t DistantTab::hashOfUserVisibleProperties() {
 
 DistantSession::DistantSession() {}
 
-DistantSession::DistantSession(syncer::SyncService* sync_service,
+DistantSession::DistantSession(sync_sessions::SessionSyncService* sync_service,
                                const std::string& tag) {
-  if (sync_service->CanSyncFeatureStart() &&
-      sync_service->GetOpenTabsUIDelegate()) {
-    sync_sessions::OpenTabsUIDelegate* open_tabs =
-        sync_service->GetOpenTabsUIDelegate();
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      sync_service->GetOpenTabsUIDelegate();
 
+  if (open_tabs) {
     std::vector<const sync_sessions::SyncedSession*> sessions;
     open_tabs->GetAllForeignSessions(&sessions);
     for (const auto* session : sessions) {
@@ -105,14 +104,13 @@ void DistantSession::InitWithSyncedSession(
 
 SyncedSessions::SyncedSessions() {}
 
-SyncedSessions::SyncedSessions(syncer::SyncService* sync_service) {
+SyncedSessions::SyncedSessions(
+    sync_sessions::SessionSyncService* sync_service) {
   DCHECK(sync_service);
   // Reload Sync open tab sesions.
-  if (sync_service->CanSyncFeatureStart() &&
-      sync_service->GetOpenTabsUIDelegate()) {
-    sync_sessions::OpenTabsUIDelegate* open_tabs =
-        sync_service->GetOpenTabsUIDelegate();
-
+  sync_sessions::OpenTabsUIDelegate* open_tabs =
+      sync_service->GetOpenTabsUIDelegate();
+  if (open_tabs) {
     // Iterating through all remote sessions, then all remote windows, then all
     // remote tabs to retrieve the tabs to display to the user. This will
     // flatten all of those data into a sequential vector of tabs.

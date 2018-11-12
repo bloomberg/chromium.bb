@@ -10,17 +10,16 @@
 #include "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -552,8 +551,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     // won't change.
     return;
   }
-  syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  sync_sessions::SessionSyncService* syncService =
+      SessionSyncServiceFactory::GetForBrowserState(self.browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
 
   if (self.updatesTableView) {
@@ -887,7 +886,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
   sync_sessions::OpenTabsUIDelegate* openTabs =
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState)
+      SessionSyncServiceFactory::GetForBrowserState(self.browserState)
           ->GetOpenTabsUIDelegate();
   const sessions::SessionTab* toLoad = nullptr;
   if (openTabs->GetForeignTab(distantTab->session_tag, distantTab->tab_id,
@@ -1075,10 +1074,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   synced_sessions::DistantSession const* session =
       [self sessionForSection:section];
   std::string sessionTagCopy = session->tag;
-  syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   sync_sessions::OpenTabsUIDelegate* openTabs =
-      syncService->GetOpenTabsUIDelegate();
+      SessionSyncServiceFactory::GetForBrowserState(self.browserState)
+          ->GetOpenTabsUIDelegate();
 
   void (^tableUpdates)(void) = ^{
     [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];

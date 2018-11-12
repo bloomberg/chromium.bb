@@ -194,10 +194,6 @@ bool TestSyncService::IsCryptographerReady(const BaseTransaction* trans) const {
   return false;
 }
 
-sync_sessions::OpenTabsUIDelegate* TestSyncService::GetOpenTabsUIDelegate() {
-  return nullptr;
-}
-
 UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }

@@ -138,8 +138,10 @@ class SyncChangeListWriteBatch
 // |local_device| is owned by ProfileSyncService, its lifetime exceeds
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
+    const base::RepeatingClosure& notify_foreign_session_updated_cb,
     sync_sessions::SyncSessionsClient* sessions_client)
-    : sessions_client_(sessions_client),
+    : notify_foreign_session_updated_cb_(notify_foreign_session_updated_cb),
+      sessions_client_(sessions_client),
       session_tracker_(sessions_client),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
@@ -387,7 +389,7 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
     }
   }
 
-  sessions_client_->NotifyForeignSessionUpdated();
+  notify_foreign_session_updated_cb_.Run();
   return syncer::SyncError();
 }
 
@@ -529,7 +531,7 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
   }
   AppendDeletionsForTabNodes(tab_node_ids_to_delete, tag, change_output);
 
-  sessions_client_->NotifyForeignSessionUpdated();
+  notify_foreign_session_updated_cb_.Run();
 }
 
 void SessionsSyncManager::DeleteForeignSessionFromUI(const std::string& tag) {

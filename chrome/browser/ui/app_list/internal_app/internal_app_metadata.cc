@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 
+#include <memory>
+
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/logging.h"
@@ -15,7 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
@@ -37,6 +39,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -290,11 +293,11 @@ gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip) {
 bool HasRecommendableForeignTab(Profile* profile,
                                 base::string16* title,
                                 GURL* url) {
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetForProfile(profile);
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
   sync_sessions::OpenTabsUIDelegate* delegate =
-      sync_service->GetOpenTabsUIDelegate();
+      service->GetOpenTabsUIDelegate();
   if (delegate != nullptr)
     delegate->GetAllForeignSessions(&foreign_sessions);
 

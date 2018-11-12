@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -18,7 +20,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
@@ -29,13 +31,13 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -178,15 +180,15 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     Browser* browser)
     : ui::SimpleMenuModel(this),
       browser_(browser),
-      sync_service_(ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          browser->profile())),
+      session_sync_service_(
+          SessionSyncServiceFactory::GetInstance()->GetForProfile(
+              browser->profile())),
       last_local_model_index_(kHistorySeparatorIndex),
       default_favicon_(
           ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
               IDR_DEFAULT_FAVICON)),
 #if !defined(OS_MACOSX)
       tab_restore_service_observer_(this),
-      sync_observer_(this),
 #endif  // !defined(OS_MACOSX)
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
@@ -205,8 +207,15 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
 
 // Mac doesn't support the dynamic menu.
 #if !defined(OS_MACOSX)
-  if (sync_service_)
-    sync_observer_.Add(sync_service_);
+  if (session_sync_service_) {
+    // Using a weak pointer below for simplicity although, strictly speaking,
+    // it's not needed because the subscription itself should take care.
+    foreign_session_updated_subscription_ =
+        session_sync_service_->SubscribeToForeignSessionsChanged(
+            base::BindRepeating(
+                &RecentTabsSubMenuModel::OnForeignSessionUpdated,
+                weak_ptr_factory_.GetWeakPtr()));
+  }
 #endif  // !defined(OS_MACOSX)
 
   Build();
@@ -713,9 +722,8 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   // Only return the delegate if it exists and it is done syncing sessions.
-  return sync_service_ && sync_service_->IsSyncFeatureActive()
-             ? sync_service_->GetOpenTabsUIDelegate()
-             : nullptr;
+  return session_sync_service_ ? session_sync_service_->GetOpenTabsUIDelegate()
+                               : nullptr;
 }
 
 void RecentTabsSubMenuModel::TabRestoreServiceChanged(
@@ -734,13 +742,7 @@ void RecentTabsSubMenuModel::TabRestoreServiceDestroyed(
   TabRestoreServiceChanged(service);
 }
 
-void RecentTabsSubMenuModel::OnSyncConfigurationCompleted(
-    syncer::SyncService* sync) {
-  OnForeignSessionUpdated(sync);
-}
-
-void RecentTabsSubMenuModel::OnForeignSessionUpdated(
-    syncer::SyncService* sync) {
+void RecentTabsSubMenuModel::OnForeignSessionUpdated() {
   ClearTabsFromOtherDevices();
 
   BuildTabsFromOtherDevices();

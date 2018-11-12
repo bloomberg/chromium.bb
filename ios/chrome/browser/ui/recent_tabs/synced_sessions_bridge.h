@@ -7,6 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
+#include "base/callback_list.h"
+#include "base/macros.h"
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -37,7 +41,6 @@ class SyncedSessionsObserverBridge
   ~SyncedSessionsObserverBridge() override;
   // SyncObserverBridge implementation.
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
@@ -49,11 +52,17 @@ class SyncedSessionsObserverBridge
   bool IsSignedIn();
 
  private:
+  void OnForeignSessionChanged();
+
   __weak id<SyncedSessionsObserver> owner_ = nil;
   identity::IdentityManager* identity_manager_ = nullptr;
   ios::ChromeBrowserState* browser_state_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncedSessionsObserverBridge);
 };
 
 }  // namespace synced_sessions

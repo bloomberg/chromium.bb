@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -189,8 +190,8 @@ class SessionsSyncManagerTest : public testing::Test {
     ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
         .WillByDefault(testing::Return(window_getter_.router()));
 
-    manager_ =
-        std::make_unique<SessionsSyncManager>(&mock_sync_sessions_client_);
+    manager_ = std::make_unique<SessionsSyncManager>(
+        mock_foreign_session_updated_cb_.Get(), &mock_sync_sessions_client_);
   }
 
   void TearDown() override {
@@ -205,6 +206,11 @@ class SessionsSyncManagerTest : public testing::Test {
   SessionSyncTestHelper* helper() { return &helper_; }
   MockSyncSessionsClient* mock_sync_sessions_client() {
     return &mock_sync_sessions_client_;
+  }
+
+  base::MockCallback<base::RepeatingClosure>*
+  mock_foreign_session_updated_cb() {
+    return &mock_foreign_session_updated_cb_;
   }
 
   void InitWithSyncDataTakeOutput(const SyncDataList& initial_data,
@@ -374,6 +380,8 @@ class SessionsSyncManagerTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   SessionSyncPrefs session_sync_prefs_;
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
+  testing::NiceMock<base::MockCallback<base::RepeatingClosure>>
+      mock_foreign_session_updated_cb_;
   std::unique_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncChangeProcessor* test_processor_ = nullptr;
@@ -1537,17 +1545,17 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
 
   SyncChangeList changes;
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_ADD));
-  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(*mock_foreign_session_updated_cb(), Run());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   changes.clear();
   AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
-  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(*mock_foreign_session_updated_cb(), Run());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   changes.clear();
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_DELETE));
-  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(*mock_foreign_session_updated_cb(), Run());
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -1564,7 +1572,7 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_ADD));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  EXPECT_CALL(*mock_sync_sessions_client(), NotifyForeignSessionUpdated());
+  EXPECT_CALL(*mock_foreign_session_updated_cb(), Run());
   manager()->GetOpenTabsUIDelegate()->DeleteForeignSession(tag);
 }
 

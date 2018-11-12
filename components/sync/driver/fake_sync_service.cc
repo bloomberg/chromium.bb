@@ -85,10 +85,6 @@ const GoogleServiceAuthError& FakeSyncService::GetAuthError() const {
   return error_;
 }
 
-sync_sessions::OpenTabsUIDelegate* FakeSyncService::GetOpenTabsUIDelegate() {
-  return nullptr;
-}
-
 bool FakeSyncService::IsPassphraseRequiredForDecryption() const {
   return false;
 }

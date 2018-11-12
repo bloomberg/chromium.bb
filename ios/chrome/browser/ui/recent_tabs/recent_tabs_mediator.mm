@@ -4,15 +4,15 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
@@ -156,8 +156,8 @@ const CGFloat kFaviconMinWidthHeight = 16;
 }
 
 - (BOOL)hasForeignSessions {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetForBrowserState(_browserState);
   DCHECK(service);
   sync_sessions::OpenTabsUIDelegate* openTabs =
       service->GetOpenTabsUIDelegate();

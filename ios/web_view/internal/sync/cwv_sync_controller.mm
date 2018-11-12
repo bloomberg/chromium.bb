@@ -91,10 +91,6 @@ class WebViewSyncServiceObserverBridge : public syncer::SyncServiceObserver {
     [sync_controller_ didCompleteSyncConfiguration];
   }
 
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override {
-    // No op.
-  }
-
   void OnSyncShutdown(syncer::SyncService* sync) override {
     [sync_controller_ didShutdownSync];
   }

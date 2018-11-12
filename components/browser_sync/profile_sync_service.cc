@@ -349,17 +349,6 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
   return iter->second->state() == DataTypeController::RUNNING;
 }
 
-sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Although the backing data actually is of type |SESSIONS|, the desire to use
-  // open tabs functionality is tracked by the state of the |PROXY_TABS| type.
-  if (!IsDataTypeControllerRunning(syncer::PROXY_TABS)) {
-    return nullptr;
-  }
-
-  return sync_client_->GetSessionSyncService()->GetRawOpenTabsUIDelegate();
-}
-
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return device_info_sync_bridge_.get();
@@ -1861,9 +1850,10 @@ ProfileSyncService::GetLocalDeviceInfoProvider() const {
   return local_device_.get();
 }
 
-void ProfileSyncService::SetLocalDeviceInfoProviderForTest(
-    std::unique_ptr<syncer::LocalDeviceInfoProvider> provider) {
-  local_device_ = std::move(provider);
+syncer::LocalDeviceInfoProvider*
+ProfileSyncService::GetLocalDeviceInfoProviderForTest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return local_device_.get();
 }
 
 namespace {
@@ -2132,12 +2122,6 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (engine_initialized_)
     engine_->FlushDirectory();
-}
-
-void ProfileSyncService::NotifyForeignSessionUpdated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers_)
-    observer.OnForeignSessionUpdated(this);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

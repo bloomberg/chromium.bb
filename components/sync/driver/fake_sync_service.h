@@ -46,7 +46,6 @@ class FakeSyncService : public SyncService {
       override;
   bool IsSetupInProgress() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;

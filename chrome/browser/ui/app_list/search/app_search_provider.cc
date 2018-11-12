@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
+#include "base/callback_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -36,7 +37,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -50,10 +51,8 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -391,23 +390,24 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
-class InternalDataSource : public AppSearchProvider::DataSource,
-                           syncer::SyncServiceObserver {
+class InternalDataSource : public AppSearchProvider::DataSource {
  public:
   InternalDataSource(Profile* profile, AppSearchProvider* owner)
       : AppSearchProvider::DataSource(profile, owner) {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (service)
-      service->AddObserver(this);
+    sync_sessions::SessionSyncService* service =
+        SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    if (service) {
+      // base::Unretained() is safe below because the subscription itself is a
+      // class member field and handles destruction well.
+      foreign_session_updated_subscription_ =
+          service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+              &AppSearchProvider::RefreshAppsAndUpdateResults,
+              base::Unretained(owner),
+              /*force_inline=*/false));
+    }
   }
 
-  ~InternalDataSource() override {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-    if (service)
-      service->RemoveObserver(this);
-  }
+  ~InternalDataSource() override {}
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
@@ -416,10 +416,9 @@ class InternalDataSource : public AppSearchProvider::DataSource,
         if (!app_list_features::IsContinueReadingEnabled())
           continue;
 
-        auto* service =
-            ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-        if (!service ||
-            !service->GetActiveDataTypes().Has(syncer::PROXY_TABS)) {
+        sync_sessions::SessionSyncService* service =
+            SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
+        if (!service || !service->GetOpenTabsUIDelegate()) {
           continue;
         }
       }
@@ -446,12 +445,10 @@ class InternalDataSource : public AppSearchProvider::DataSource,
                                                list_controller, is_recommended);
   }
 
-  // syncer::SyncServiceObserver overrides:
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override {
-    owner()->RefreshAppsAndUpdateResults(/*force_inline=*/false);
-  }
-
  private:
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
+
   DISALLOW_COPY_AND_ASSIGN(InternalDataSource);
 };
 

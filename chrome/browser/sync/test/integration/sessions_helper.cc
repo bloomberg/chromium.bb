@@ -18,7 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,11 +27,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -45,7 +45,7 @@ using sync_datatype_helper::test;
 namespace sessions_helper {
 
 bool GetLocalSession(int index, const sync_sessions::SyncedSession** session) {
-  return ProfileSyncServiceFactory::GetInstance()
+  return SessionSyncServiceFactory::GetInstance()
       ->GetForProfile(test()->GetProfile(index))
       ->GetOpenTabsUIDelegate()
       ->GetLocalSession(session);
@@ -268,7 +268,7 @@ int GetNumWindows(int index) {
 
 int GetNumForeignSessions(int index) {
   SyncedSessionVector sessions;
-  if (!ProfileSyncServiceFactory::GetInstance()
+  if (!SessionSyncServiceFactory::GetInstance()
            ->GetForProfile(test()->GetProfile(index))
            ->GetOpenTabsUIDelegate()
            ->GetAllForeignSessions(&sessions)) {
@@ -278,7 +278,7 @@ int GetNumForeignSessions(int index) {
 }
 
 bool GetSessionData(int index, SyncedSessionVector* sessions) {
-  if (!ProfileSyncServiceFactory::GetInstance()
+  if (!SessionSyncServiceFactory::GetInstance()
            ->GetForProfile(test()->GetProfile(index))
            ->GetOpenTabsUIDelegate()
            ->GetAllForeignSessions(sessions)) {
@@ -422,7 +422,7 @@ bool CheckForeignSessionsAgainst(int index,
 }
 
 void DeleteForeignSession(int index, std::string session_tag) {
-  ProfileSyncServiceFactory::GetInstance()
+  SessionSyncServiceFactory::GetInstance()
       ->GetForProfile(test()->GetProfile(index))
       ->GetOpenTabsUIDelegate()
       ->DeleteForeignSession(session_tag);
