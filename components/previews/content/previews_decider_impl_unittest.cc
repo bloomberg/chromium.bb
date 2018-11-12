@@ -761,7 +761,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {
 #endif  // defined(OS_ANDROID)
 }
 
-TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeature) {
+TEST_F(PreviewsDeciderImplTest, NoScriptNotAllowedWithoutOptimizationHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kNoScriptPreviews},
@@ -775,14 +775,14 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeature) {
 
     base::HistogramTester histogram_tester;
     PreviewsUserData user_data(kDefaultPageId);
-    EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+    EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
         &user_data, GURL("https://www.google.com"), false,
         PreviewsType::NOSCRIPT));
     EXPECT_EQ(test_ect, user_data.navigation_ect());
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(
-            PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
         1);
   }
 }
@@ -902,9 +902,7 @@ TEST_F(PreviewsDeciderImplTest,
 
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(
-          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
-      1);
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
 TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
@@ -1635,8 +1633,6 @@ TEST_F(PreviewsDeciderImplTest, TestIgnoreLongTermRule) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
-
-  previews_decider_impl()->SetIgnoreLongTermBlackListForServerPreviews(true);
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
