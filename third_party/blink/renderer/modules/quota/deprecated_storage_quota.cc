@@ -198,8 +198,11 @@ void DeprecatedStorageQuota::requestQuota(
 mojom::blink::QuotaDispatcherHost& DeprecatedStorageQuota::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
-    ConnectToQuotaDispatcherHost(execution_context,
-                                 mojo::MakeRequest(&quota_host_));
+    ConnectToQuotaDispatcherHost(
+        execution_context,
+        mojo::MakeRequest(&quota_host_,
+                          execution_context->GetTaskRunner(
+                              blink::TaskType::kInternalDefault)));
   }
   return *quota_host_;
 }
