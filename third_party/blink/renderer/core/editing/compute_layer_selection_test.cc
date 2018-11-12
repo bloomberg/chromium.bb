@@ -341,4 +341,43 @@ TEST_F(ComputeLayerSelectionTest, SamplePointOnBoundary) {
   EXPECT_FALSE(composited_selection.end.hidden);
 }
 
+// https://crbug.com/892584.
+TEST_F(ComputeLayerSelectionTest, CrossingBlock1) {
+  // TODO(yoichio): To support this case with ComputeLayoutSelection,
+  // we may need to fix LocalCaretRectOfPosition(<after first br>).
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div style='font: 10px/10px Ahem;'>"
+                             "<div>^<br></div>"
+                             "<div>|<br></div>"
+                             "</div>"),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  Selection().CommitAppearanceIfNeeded();
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
+// https://crbug.com/892584.
+TEST_F(ComputeLayerSelectionTest, CrossingBlock2) {
+  // TODO(yoichio): To support this case with ComputeLayoutSelection,
+  // we may need to fix LocalCaretRectOfPosition(<after first br>).
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<div contenteditable style='font: 10px/10px Ahem;'>"
+          "<div>^<br></div>"
+          "<div>|<br></div>"
+          "</div>"),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  Selection().CommitAppearanceIfNeeded();
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
 }  // namespace blink
