@@ -34,6 +34,9 @@ class TRACING_EXPORT StackUnwinderAndroid {
  public:
   using JniMarker = jni_generator::JniJavaCallContextUnchecked;
 
+  // Whether to use libunwind for android framework frames.
+  static const bool kUseLibunwind;
+
   StackUnwinderAndroid();
   ~StackUnwinderAndroid();
 
