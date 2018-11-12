@@ -10,6 +10,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/user_agent.h"
@@ -111,10 +112,20 @@ void WebViewWebClient::AllowCertificateError(
   SEL selector = @selector
       (webView:didFailNavigationWithSSLError:overridable:decisionHandler:);
   if ([web_view.navigationDelegate respondsToSelector:selector]) {
-    // TODO(crbug.com/898037): Pass a more informative error here.
-    NSError* error = [NSError errorWithDomain:NSURLErrorDomain
-                                         code:NSURLErrorSecureConnectionFailed
-                                     userInfo:nil];
+    CWVCertStatus cert_status = CWVCertStatusFromNetCertStatus(
+        net::MapNetErrorToCertStatus(cert_error));
+    ssl_errors::ErrorInfo error_info = ssl_errors::ErrorInfo::CreateError(
+        ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error),
+        ssl_info.cert.get(), request_url);
+    NSString* error_description =
+        base::SysUTF16ToNSString(error_info.short_description());
+    NSError* error =
+        [NSError errorWithDomain:NSURLErrorDomain
+                            code:NSURLErrorSecureConnectionFailed
+                        userInfo:@{
+                          NSLocalizedDescriptionKey : error_description,
+                          CWVCertStatusKey : @(cert_status),
+                        }];
 
     void (^decisionHandler)(CWVSSLErrorDecision) =
         ^(CWVSSLErrorDecision decision) {
