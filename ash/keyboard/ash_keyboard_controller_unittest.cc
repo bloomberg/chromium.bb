@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -90,6 +91,21 @@ class TestClient {
   void ClearEnableFlag(KeyboardEnableFlag flag) {
     keyboard_controller_->ClearEnableFlag(flag);
     keyboard_controller_.FlushForTesting();
+  }
+
+  std::vector<keyboard::mojom::KeyboardEnableFlag> GetEnableFlags() {
+    std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags;
+    base::RunLoop run_loop;
+    keyboard_controller_->GetEnableFlags(base::BindOnce(
+        [](std::vector<keyboard::mojom::KeyboardEnableFlag>* enable_flags,
+           base::OnceClosure callback,
+           const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
+          *enable_flags = flags;
+          std::move(callback).Run();
+        },
+        &enable_flags, run_loop.QuitClosure()));
+    run_loop.Run();
+    return enable_flags;
   }
 
   void RebuildKeyboardIfEnabled() {
@@ -215,18 +231,32 @@ TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
             test_client()->test_observer()->config_.auto_complete);
 }
 
-TEST_F(AshKeyboardControllerTest, Enabled) {
+TEST_F(AshKeyboardControllerTest, EnableFlags) {
   EXPECT_FALSE(test_client()->IsKeyboardEnabled());
   // Enable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+  std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags =
+      test_client()->GetEnableFlags();
+  EXPECT_TRUE(
+      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 
   // Set the enable override to disable the keyboard.
   test_client()->SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
+  enable_flags = test_client()->GetEnableFlags();
+  EXPECT_TRUE(
+      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
+  EXPECT_TRUE(
+      base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_FALSE(test_client()->IsKeyboardEnabled());
 
   // Clear the enable override; should enable the keyboard.
   test_client()->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
+  enable_flags = test_client()->GetEnableFlags();
+  EXPECT_TRUE(
+      base::ContainsValue(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
+  EXPECT_FALSE(
+      base::ContainsValue(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_TRUE(test_client()->IsKeyboardEnabled());
 }
 

@@ -53,6 +53,9 @@ interface KeyboardController {
   // changes, enables or disables the keyboard to match the new state.
   ClearEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
 
+  // Gets the current set of keyboard enabled flags.
+  GetEnableFlags() => (array<keyboard.mojom.KeyboardEnableFlag> flags);
+
   // Reloads the virtual keyboard if it is enabled and the URL has changed, e.g.
   // the focus has switched from one type of field to another.
   ReloadKeyboardIfNeeded();

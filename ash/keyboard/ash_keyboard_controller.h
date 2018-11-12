@@ -64,6 +64,7 @@ class ASH_EXPORT AshKeyboardController
   void IsKeyboardEnabled(IsKeyboardEnabledCallback callback) override;
   void SetEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
   void ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
+  void GetEnableFlags(GetEnableFlagsCallback callback) override;
   void ReloadKeyboardIfNeeded() override;
   void RebuildKeyboardIfEnabled() override;
   void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override;

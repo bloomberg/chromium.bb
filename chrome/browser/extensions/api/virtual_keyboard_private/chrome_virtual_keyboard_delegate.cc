@@ -56,11 +56,6 @@ namespace {
 // until / unless it is explicitly disabled.
 bool g_hotrod_keyboard_enabled = false;
 
-aura::Window* GetKeyboardWindow() {
-  auto* controller = keyboard::KeyboardController::Get();
-  return controller->IsEnabled() ? controller->GetKeyboardWindow() : nullptr;
-}
-
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
 }
@@ -148,6 +143,15 @@ bool SendKeyEventImpl(const std::string& type,
   ui::EventDispatchDetails details = aura::EventInjector().Inject(host, &event);
   CHECK(!details.dispatcher_destroyed);
   return true;
+}
+
+std::string GetKeyboardLayout() {
+  // TODO(bshe): layout string is currently hard coded. We should use more
+  // standard keyboard layouts.
+  return ChromeKeyboardControllerClient::Get()->IsEnableFlagSet(
+             keyboard::mojom::KeyboardEnableFlag::kAccessibilityEnabled)
+             ? "system-qwerty"
+             : "qwerty";
 }
 
 }  // namespace
@@ -242,7 +246,8 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                                  const std::string& key_name,
                                                  int modifiers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  aura::Window* window = GetKeyboardWindow();
+  aura::Window* window =
+      ChromeKeyboardControllerClient::Get()->GetKeyboardWindow();
   return window && SendKeyEventImpl(type, char_value, key_code, key_name,
                                     modifiers, window->GetHost());
 }
@@ -341,7 +346,8 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
     bool has_audio_input_devices) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetString("layout", keyboard::GetKeyboardLayout());
+  results->SetString("layout", GetKeyboardLayout());
+
   // TODO(bshe): Consolidate a11y, hotrod and normal mode into a mode enum. See
   // crbug.com/529474.
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
