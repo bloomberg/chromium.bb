@@ -37,8 +37,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   bool has_touch_action_rect =
       RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
-      (layout_view_.EffectiveWhitelistedTouchAction() !=
-       TouchAction::kTouchActionAuto);
+      (layout_view_.HasEffectiveWhitelistedTouchAction());
   if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect)
     return;
 

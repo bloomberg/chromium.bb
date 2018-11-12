@@ -226,10 +226,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   } else if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
     // Hit testing rects for touch action paint in the background phase.
-    if (object.EffectiveWhitelistedTouchAction() !=
-        TouchAction::kTouchActionAuto) {
+    if (object.HasEffectiveWhitelistedTouchAction())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-    }
   }
 }
 
