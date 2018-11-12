@@ -127,6 +127,11 @@ class OzonePlatformScenic
 
   void InitializeGPU(const InitParams& params) override {}
 
+  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
+    // Scenic FIDL calls require async dispatcher.
+    return base::MessageLoop::TYPE_IO;
+  }
+
  private:
   // Performs graceful cleanup tasks on main message loop teardown.
   void Shutdown() { window_manager_.reset(); }
