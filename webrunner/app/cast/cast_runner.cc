@@ -33,13 +33,13 @@ void CastRunner::StartComponent(
   constexpr char kCastPresentationUrlScheme[] = "cast";
   GURL cast_url(*package.resolved_url);
   if (!cast_url.is_valid() || !cast_url.SchemeIs(kCastPresentationUrlScheme) ||
-      !cast_url.has_host()) {
+      cast_url.GetContent().empty()) {
     LOG(ERROR) << "Rejected invalid URL: " << cast_url;
     return;
   }
 
   constexpr char kTestCastAppId[] = "00000000";
-  base::StringPiece cast_app_id(cast_url.host_piece());
+  const std::string cast_app_id(cast_url.GetContent());
   if (cast_app_id != kTestCastAppId) {
     LOG(ERROR) << "Unknown Cast app Id: " << cast_app_id;
     return;
