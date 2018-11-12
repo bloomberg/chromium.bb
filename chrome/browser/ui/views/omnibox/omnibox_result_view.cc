@@ -155,9 +155,10 @@ void OmniboxResultView::Invalidate() {
       suggestion_view_->description()->SetText(match_.answer->second_line(),
                                                true);
     }
-  } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+  } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+             match_.type == AutocompleteMatchType::PEDAL) {
     // Entities use match text and calculated classifications, but with style
-    // adjustments like answers above.
+    // adjustments like answers above.  Pedals do likewise.
     suggestion_view_->content()->SetText(match_.contents,
                                          match_.contents_class);
     suggestion_view_->description()->SetText(match_.description,

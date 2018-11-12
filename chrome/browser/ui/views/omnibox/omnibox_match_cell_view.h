@@ -39,6 +39,12 @@ class OmniboxMatchCellView : public views::View {
   bool CanProcessEventsWithinSubtree() const override;
 
  protected:
+  enum class LayoutStyle {
+    OLD_ANSWER,
+    ONE_LINE_SUGGESTION,
+    TWO_LINE_SUGGESTION,
+  };
+
   // views::View:
   void Layout() override;
   const char* GetClassName() const override;
@@ -47,10 +53,9 @@ class OmniboxMatchCellView : public views::View {
   void LayoutNewStyleTwoLineSuggestion();
   void LayoutOneLineSuggestion(int icon_view_width, int text_indent);
 
-  bool is_old_style_answer_;
-  bool is_rich_suggestion_;
-  bool is_search_type_;
-  bool should_show_tab_match_ = false;
+  bool is_rich_suggestion_ = false;
+  bool is_search_type_ = false;
+  LayoutStyle layout_style_ = LayoutStyle::ONE_LINE_SUGGESTION;
 
   // Weak pointers for easy reference.
   // An icon representing the type or content.
