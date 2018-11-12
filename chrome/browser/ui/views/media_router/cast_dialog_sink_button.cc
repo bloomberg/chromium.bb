@@ -135,8 +135,7 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     const UIMediaSink& sink,
     int button_tag) {
   // The stop button has the highest priority, and the issue icon comes second.
-  if (sink.state == UIMediaSinkState::CONNECTED ||
-      sink.state == UIMediaSinkState::DISCONNECTING) {
+  if (sink.state == UIMediaSinkState::CONNECTED) {
     return std::make_unique<StopButton>(
         sink_button, button_listener, sink, button_tag,
         sink.state == UIMediaSinkState::CONNECTED);
@@ -148,7 +147,8 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     icon_view->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     return icon_view;
-  } else if (sink.state == UIMediaSinkState::CONNECTING) {
+  } else if (sink.state == UIMediaSinkState::CONNECTING ||
+             sink.state == UIMediaSinkState::DISCONNECTING) {
     return CreateThrobber();
   }
   auto icon_view = std::make_unique<views::ImageView>();
@@ -161,6 +161,10 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
 base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
   if (sink.issue)
     return base::UTF8ToUTF16(sink.issue->info().title);
+  // If the sink is disconnecting, say so instead of using the source info
+  // stored in |sink.status_text|.
+  if (sink.state == UIMediaSinkState::DISCONNECTING)
+    return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_DISCONNECTING);
   if (!sink.status_text.empty())
     return sink.status_text;
   switch (sink.state) {
@@ -223,20 +227,25 @@ void CastDialogSinkButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void CastDialogSinkButton::OnEnabledChanged() {
   HoverButton::OnEnabledChanged();
+  // If the button has a state other than AVAILABLE (e.g. CONNECTED), there is
+  // no need to change the status or the icon.
+  if (sink_.state != UIMediaSinkState::AVAILABLE)
+    return;
+
   SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor);
-  if (enabled() || sink_.state == UIMediaSinkState::CONNECTED) {
+  if (enabled()) {
     SetTitleTextStyle(views::style::STYLE_PRIMARY, background_color);
-    if (sink_.state == UIMediaSinkState::AVAILABLE) {
-      static_cast<views::ImageView*>(icon_view())
-          ->SetImage(CreateSinkIcon(sink_.icon_type));
-    }
+    if (saved_status_text_)
+      RestoreStatusText();
+    static_cast<views::ImageView*>(icon_view())
+        ->SetImage(CreateSinkIcon(sink_.icon_type));
   } else {
     SetTitleTextStyle(views::style::STYLE_DISABLED, background_color);
-    if (sink_.state == UIMediaSinkState::AVAILABLE) {
-      static_cast<views::ImageView*>(icon_view())
-          ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
-    }
+    OverrideStatusText(
+        l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED));
+    static_cast<views::ImageView*>(icon_view())
+        ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
   }
   // Apply the style change to the title text.
   title()->Layout();
