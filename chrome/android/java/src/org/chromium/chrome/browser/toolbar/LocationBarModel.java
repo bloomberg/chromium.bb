@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -162,8 +163,18 @@ public class LocationBarModel implements ToolbarDataProvider {
             return buildUrlBarData(url, formattedUrl);
         }
 
+        // A preview URL may be shown before commit when isPreview() would first return true. Always
+        // check if the visible URL is a preview, and if so, rewrite it.
+        final String previewsOriginalURL = PreviewsAndroidBridge.getInstance().getOriginalURL(url);
+        if (!previewsOriginalURL.equals(url)) {
+            // Strip the scheme if this is a committed preview.
+            return buildUrlBarData(previewsOriginalURL,
+                    isPreview() ? UrlUtilities.stripScheme(previewsOriginalURL)
+                                : previewsOriginalURL);
+        }
+
+        // Strip the scheme from committed preview pages only.
         if (isPreview()) {
-            // Strip the scheme from the original URL for the Previews UI.
             return buildUrlBarData(url, UrlUtilities.stripScheme(url));
         }
 

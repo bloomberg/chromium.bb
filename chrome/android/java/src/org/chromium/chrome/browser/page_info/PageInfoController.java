@@ -341,7 +341,8 @@ public class PageInfoController
                     bridge.loadOriginal(mTab.getWebContents());
                 });
             };
-            final String previewOriginalHost = bridge.getOriginalHost(mTab.getWebContents());
+            final String previewOriginalHost =
+                    bridge.getOriginalHost(mTab.getWebContents().getVisibleUrl());
             final String loadOriginalText = mContext.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
