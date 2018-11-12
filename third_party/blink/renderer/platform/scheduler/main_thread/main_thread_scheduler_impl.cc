@@ -24,7 +24,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
-#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
@@ -109,11 +109,11 @@ const char* AudioPlayingStateToString(bool is_audio_playing) {
   }
 }
 
-const char* RendererProcessTypeToString(RendererProcessType process_type) {
+const char* RendererProcessTypeToString(WebRendererProcessType process_type) {
   switch (process_type) {
-    case RendererProcessType::kRenderer:
+    case WebRendererProcessType::kRenderer:
       return "normal";
-    case RendererProcessType::kExtensionRenderer:
+    case WebRendererProcessType::kExtensionRenderer:
       return "extension";
   }
   NOTREACHED();
@@ -486,7 +486,7 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl->helper_.HasCPUTimingForEachTask(),
           now,
           renderer_backgrounded),
-      process_type(RendererProcessType::kRenderer,
+      process_type(WebRendererProcessType::kRenderer,
                    "RendererProcessType",
                    main_thread_scheduler_impl,
                    &main_thread_scheduler_impl->tracing_controller_,
@@ -2389,7 +2389,8 @@ void MainThreadSchedulerImpl::AddRAILModeObserver(
   observer->OnRAILModeChanged(main_thread_only().current_policy.rail_mode());
 }
 
-void MainThreadSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
+void MainThreadSchedulerImpl::SetRendererProcessType(
+    WebRendererProcessType type) {
   main_thread_only().process_type = type;
 }
 

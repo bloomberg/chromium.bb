@@ -36,7 +36,7 @@ struct BeginFrameArgs;
 namespace blink {
 namespace scheduler {
 
-enum class RendererProcessType;
+enum class WebRendererProcessType;
 
 class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
@@ -207,7 +207,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
-  virtual void SetRendererProcessType(RendererProcessType type);
+  virtual void SetRendererProcessType(WebRendererProcessType type);
 
   // Returns a WebScopedVirtualTimePauser which can be used to vote for pausing
   // virtual time. Virtual time will be paused if any WebScopedVirtualTimePauser

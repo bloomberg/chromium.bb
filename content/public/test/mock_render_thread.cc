@@ -222,7 +222,7 @@ bool MockRenderThread::IsOnline() {
 }
 
 void MockRenderThread::SetRendererProcessType(
-    blink::scheduler::RendererProcessType type) {}
+    blink::scheduler::WebRendererProcessType type) {}
 
 blink::WebString MockRenderThread::GetUserAgent() const {
   return blink::WebString();

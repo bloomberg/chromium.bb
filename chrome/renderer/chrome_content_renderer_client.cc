@@ -116,7 +116,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -377,8 +377,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()
-          ? blink::scheduler::RendererProcessType::kExtensionRenderer
-          : blink::scheduler::RendererProcessType::kRenderer);
+          ? blink::scheduler::WebRendererProcessType::kExtensionRenderer
+          : blink::scheduler::WebRendererProcessType::kRenderer);
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
