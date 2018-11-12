@@ -120,8 +120,16 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
               kPaintsIntoOwnBacking &&
           layout_replaced_.Layer()
               ->GetCompositedLayerMapping()
-              ->DrawsBackgroundOntoContentLayer())
+              ->DrawsBackgroundOntoContentLayer()) {
+        // If the background paints into the content layer, we can skip painting
+        // the background but still need to paint the touch action rects.
+        if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+          BoxPainter(layout_replaced_)
+              .RecordHitTestData(local_paint_info, paint_offset, border_rect,
+                                 layout_replaced_);
+        }
         return;
+      }
 
       BoxPainter(layout_replaced_)
           .PaintBoxDecorationBackground(local_paint_info, paint_offset);

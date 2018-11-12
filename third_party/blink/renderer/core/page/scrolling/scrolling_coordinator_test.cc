@@ -54,7 +54,10 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -1839,6 +1842,61 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest,
           ->GetScrollableArea();
   ASSERT_TRUE(scrollable_area2);
   ASSERT_TRUE(scrollable_area2->UsesCompositedScrolling());
+}
+
+class ScrollingCoordinatorTestWithAcceleratedContext
+    : public ScrollingCoordinatorTest {
+ public:
+  ScrollingCoordinatorTestWithAcceleratedContext()
+      : ScrollingCoordinatorTest() {}
+
+ protected:
+  void SetUp() override {
+    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
+        -> std::unique_ptr<WebGraphicsContext3DProvider> {
+      *gpu_compositing_disabled = false;
+      gl->SetIsContextLost(false);
+      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
+    };
+    SharedGpuContext::SetContextProviderFactoryForTesting(
+        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
+    ScrollingCoordinatorTest::SetUp();
+  }
+
+  void TearDown() override {
+    SharedGpuContext::ResetForTesting();
+    ScrollingCoordinatorTest::TearDown();
+  }
+
+ private:
+  FakeGLES2Interface gl_;
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ScrollingCoordinatorTestWithAcceleratedContext,
+                        ::testing::Bool());
+
+TEST_P(ScrollingCoordinatorTestWithAcceleratedContext, CanvasTouchActionRects) {
+  LoadHTML(R"HTML(
+    <canvas id="canvas" style="touch-action: none; will-change: transform;">
+    <script>
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      canvas.width = 400;
+      canvas.height = 400;
+      ctx.fillStyle = 'lightgrey';
+      ctx.fillRect(0, 0, 400, 400);
+    </script>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  Element* canvas = GetFrame()->GetDocument()->getElementById("canvas");
+  auto* canvas_box = ToLayoutBox(canvas->GetLayoutObject());
+  auto* mapping = canvas_box->Layer()->GetCompositedLayerMapping();
+  cc::Layer* cc_layer = mapping->MainGraphicsLayer()->CcLayer();
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 400, 400));
 }
 
 }  // namespace blink
