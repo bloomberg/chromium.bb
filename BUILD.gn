@@ -1017,7 +1017,7 @@ if (!is_ios) {
     if (is_win) {
       data += [
         "//third_party/apache-win32/",
-        "//third_party/perl/",
+        "//third_party/perl/perl/",
       ]
     }
 
