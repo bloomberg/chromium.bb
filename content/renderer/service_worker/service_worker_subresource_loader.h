@@ -61,6 +61,22 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
  private:
   class StreamWaiter;
+  enum class Status {
+    kNotStarted,
+    // |binding_| is bound and the fetch event is being dispatched to the
+    // service worker.
+    kStarted,
+    // A redirect happened, waiting for FollowRedirect().
+    kSentRedirect,
+    // The response head has been sent to |url_loader_client_|.
+    kSentHeader,
+    // The data pipe for the response body has been sent to
+    // |url_loader_client_|. The body is being written to the pipe.
+    kSentBody,
+    // OnComplete() was called on |url_loader_client_|, or fallback to network
+    // occurred so the request was not handled.
+    kCompleted,
+  };
 
   void OnConnectionError();
 
@@ -108,6 +124,12 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();
+
+  // Calls url_loader_client_->OnStartLoadingResponseBody() with
+  // |response_body| or with an empty data pipe.
+  void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
+  void CommitResponseBodyEmpty();
+
   // Calls url_loader_client_->OnComplete(). Expected to be called after
   // CommitResponseHeaders (i.e. status_ == kSentHeader).
   void CommitCompleted(int error_code);
@@ -116,6 +138,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // a request is fall back to network. Never called when an error is
   // occurred. |handled| is true when a fetch handler handled a request.
   void RecordTimingMetrics(bool handled);
+
+  void TransitionToStatus(Status new_status);
 
   network::ResourceResponseHead response_head_;
   base::Optional<net::RedirectInfo> redirect_info_;
@@ -159,12 +183,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // For network fallback.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
-  enum class Status {
-    kNotStarted,
-    kStarted,
-    kSentHeader,
-    kCompleted,
-  };
   Status status_ = Status::kNotStarted;
 
   // The task runner where this loader is running.

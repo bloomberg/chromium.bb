@@ -106,9 +106,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
     // |binding_| is bound and the fetch event is being dispatched to the
     // service worker.
     kStarted,
-    // The response head has been sent to |url_loader_client_|. The response
-    // body is being streamed.
+    // The response head has been sent to |url_loader_client_|.
     kSentHeader,
+    // The data pipe for the response body has been sent to
+    // |url_loader_client_|. The body is being written to the pipe.
+    kSentBody,
     // OnComplete() was called on |url_loader_client_|, or fallback to network
     // occurred so the request was not handled.
     kCompleted,
@@ -134,6 +136,12 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();
+
+  // Calls url_loader_client_->OnStartLoadingResponseBody() with
+  // |response_body| or with an empty data pipe.
+  void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
+  void CommitResponseBodyEmpty();
+
   // Calls url_loader_client_->OnComplete().
   void CommitCompleted(int error_code);
 
