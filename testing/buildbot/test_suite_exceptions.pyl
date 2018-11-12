@@ -1020,6 +1020,7 @@
           ],
           'shards': 15,
         },
+        'experiment_percentage': 100, # https://crbug.com/903849
       },
       # chromium.android.fyi
       'x86 Cloud Tester': {
