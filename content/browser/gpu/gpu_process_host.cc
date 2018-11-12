@@ -92,6 +92,7 @@
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/window.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #endif
@@ -307,9 +308,7 @@ class GpuSandboxedProcessLauncherDelegate
   ~GpuSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  bool DisableDefaultPolicy() override {
-    return true;
-  }
+  bool DisableDefaultPolicy() override { return true; }
 
   enum GPUAppContainerEnableState{
       AC_ENABLED = 0, AC_DISABLED_GL = 1, AC_DISABLED_FORCE = 2,
@@ -364,6 +363,21 @@ class GpuSandboxedProcessLauncherDelegate
               JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
           policy);
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    }
+
+    // Check if we are running on the winlogon desktop and use an alternative
+    // desktop in this case as a low integrity gpu process will not be allowed
+    // to access the winlogon desktop (gpu process integrity has to be at least
+    // medium in order to be able to access the winlogon desktop normally).
+    // NOTE: This will effectively disable all video rendering to the screen
+    // unless Chrome is run with the --disable-gpu switch.
+    HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
+    if (thread_desktop) {
+      base::string16 desktop_name =
+          sandbox::GetWindowObjectName(thread_desktop);
+      if (!lstrcmpi(desktop_name.c_str(), L"winlogon"))
+        policy->SetAlternateDesktop(false);
+      ::CloseDesktop(thread_desktop);
     }
 
     // Block this DLL even if it is not loaded by the browser process.
@@ -666,8 +680,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   g_gpu_process_hosts[kind] = this;
 
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_GPU, this, mojom::kGpuServiceName));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_GPU, this,
+                                                 mojom::kGpuServiceName));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -878,7 +892,6 @@ void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   }
 }
 
-
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
                       base::TimeTicks::Now() - init_start_time_);
@@ -1019,8 +1032,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
       std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
 #else
 #if defined(OS_LINUX)
-  int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
-                                           ChildProcessHost::CHILD_NORMAL;
+  int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
+                                         : ChildProcessHost::CHILD_NORMAL;
 #else
   int child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif
