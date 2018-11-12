@@ -138,6 +138,10 @@ public class AwContents implements SmartClipProvider {
     public static final String DATA_URI_HISTOGRAM_NAME =
             "Android.WebView.LoadUrl.DataUriHasOctothorpe";
 
+    @VisibleForTesting
+    public static final String DATA_BASE_URL_SCHEME_HISTOGRAM_NAME =
+            "Android.WebView.LoadDataWithBaseUrl.BaseUrl";
+
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
@@ -145,14 +149,39 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    // Used to record the UMA histogram WebView.LoadDataWithBaseUrl.HistoryUrl. Since these values
-    // are persisted to logs, they should never be renumbered nor reused.
+    // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.HistoryUrl. Since these
+    // values are persisted to logs, they should never be renumbered nor reused.
     @IntDef({HistoryUrl.EMPTY, HistoryUrl.BASEURL, HistoryUrl.DIFFERENT, HistoryUrl.COUNT})
     @interface HistoryUrl {
         int EMPTY = 0;
         int BASEURL = 1;
         int DIFFERENT = 2;
         int COUNT = 3;
+    }
+
+    // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.UrlScheme. Since these
+    // values are persisted to logs, they should never be renumbered nor reused.
+    @VisibleForTesting
+    @IntDef({UrlScheme.EMPTY, UrlScheme.UNKNOWN_SCHEME, UrlScheme.HTTP_SCHEME,
+            UrlScheme.HTTPS_SCHEME, UrlScheme.FILE_SCHEME, UrlScheme.FTP_SCHEME,
+            UrlScheme.DATA_SCHEME, UrlScheme.JAVASCRIPT_SCHEME, UrlScheme.ABOUT_SCHEME,
+            UrlScheme.CHROME_SCHEME, UrlScheme.BLOB_SCHEME, UrlScheme.CONTENT_SCHEME,
+            UrlScheme.INTENT_SCHEME})
+    public @interface UrlScheme {
+        int EMPTY = 0;
+        int UNKNOWN_SCHEME = 1;
+        int HTTP_SCHEME = 2;
+        int HTTPS_SCHEME = 3;
+        int FILE_SCHEME = 4;
+        int FTP_SCHEME = 5;
+        int DATA_SCHEME = 6;
+        int JAVASCRIPT_SCHEME = 7;
+        int ABOUT_SCHEME = 8;
+        int CHROME_SCHEME = 9;
+        int BLOB_SCHEME = 10;
+        int CONTENT_SCHEME = 11;
+        int INTENT_SCHEME = 12;
+        int COUNT = 13;
     }
 
     /**
@@ -1656,6 +1685,11 @@ public class AwContents implements SmartClipProvider {
                 "Android.WebView.LoadDataWithBaseUrl.HistoryUrl", value, HistoryUrl.COUNT);
     }
 
+    private static void recordBaseUrl(@UrlScheme int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
+    }
+
     /**
      * WebView.loadData.
      */
@@ -1689,6 +1723,34 @@ public class AwContents implements SmartClipProvider {
             recordHistoryUrl(HistoryUrl.BASEURL);
         } else {
             recordHistoryUrl(HistoryUrl.DIFFERENT);
+        }
+
+        if (baseUrl.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+            recordBaseUrl(UrlScheme.EMPTY);
+        } else if (baseUrl.startsWith("http:")) {
+            recordBaseUrl(UrlScheme.HTTP_SCHEME);
+        } else if (baseUrl.startsWith("https:")) {
+            recordBaseUrl(UrlScheme.HTTPS_SCHEME);
+        } else if (baseUrl.startsWith("file:")) {
+            recordBaseUrl(UrlScheme.FILE_SCHEME);
+        } else if (baseUrl.startsWith("ftp:")) {
+            recordBaseUrl(UrlScheme.FTP_SCHEME);
+        } else if (baseUrl.startsWith("data:")) {
+            recordBaseUrl(UrlScheme.DATA_SCHEME);
+        } else if (baseUrl.startsWith("javascript:")) {
+            recordBaseUrl(UrlScheme.JAVASCRIPT_SCHEME);
+        } else if (baseUrl.startsWith("about:")) {
+            recordBaseUrl(UrlScheme.ABOUT_SCHEME);
+        } else if (baseUrl.startsWith("chrome:")) {
+            recordBaseUrl(UrlScheme.CHROME_SCHEME);
+        } else if (baseUrl.startsWith("blob:")) {
+            recordBaseUrl(UrlScheme.BLOB_SCHEME);
+        } else if (baseUrl.startsWith("content:")) {
+            recordBaseUrl(UrlScheme.CONTENT_SCHEME);
+        } else if (baseUrl.startsWith("intent:")) {
+            recordBaseUrl(UrlScheme.INTENT_SCHEME);
+        } else {
+            recordBaseUrl(UrlScheme.UNKNOWN_SCHEME);
         }
 
         if (baseUrl.startsWith("data:")) {
