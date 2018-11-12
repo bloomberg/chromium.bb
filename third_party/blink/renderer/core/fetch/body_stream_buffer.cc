@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
-#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -106,10 +105,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       consumer_(consumer),
       signal_(signal),
       made_from_readable_stream_(false) {
-  if (RetainWrapperDuringConstruction(this, script_state)) {
-    stream_ =
-        ReadableStream::CreateWithCountQueueingStrategy(script_state_, this, 0);
-  }
+  stream_ =
+      ReadableStream::CreateWithCountQueueingStrategy(script_state_, this, 0);
   stream_broken_ = !stream_;
 
   consumer_->SetClient(this);
@@ -125,40 +122,13 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
 }
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
-                                   ScriptValue stream,
-                                   ExceptionState& exception_state)
-    : UnderlyingSourceBase(script_state),
-      script_state_(script_state),
-      signal_(nullptr),
-      made_from_readable_stream_(true) {
-  // This is needed because sometimes a BodyStreamBuffer can be detached from
-  // the owner object such as Request. We rely on the wrapper and
-  // HasPendingActivity in such a case.
-  RetainWrapperDuringConstruction(this, script_state);
-
-  stream_ = MakeGarbageCollected<ReadableStream>(
-      script_state, stream.V8Value().As<v8::Object>());
-}
-
-BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
                                    ReadableStream* stream)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       stream_(stream),
       signal_(nullptr),
       made_from_readable_stream_(true) {
-  // This is needed because sometimes a BodyStreamBuffer can be detached from
-  // the owner object such as Request. We rely on the wrapper and
-  // HasPendingActivity in such a case.
-  RetainWrapperDuringConstruction(this, script_state);
-}
-
-ScriptValue BodyStreamBuffer::Stream() {
-  // Since this is the implementation of response.body, we return the stream
-  // even if |stream_broken_| is true, so that expected JavaScript attribute
-  // behaviour is not changed. User code is still permitted to access the
-  // stream even when it has thrown an exception.
-  return stream_ ? stream_->AsScriptValue(script_state_) : ScriptValue();
+  DCHECK(stream_);
 }
 
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(

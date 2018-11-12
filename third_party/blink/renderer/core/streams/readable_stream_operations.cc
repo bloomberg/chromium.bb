@@ -256,14 +256,13 @@ ScriptValue ReadableStreamOperations::Tee(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
   DCHECK(!IsLockedForDCheck(script_state, stream));
-  v8::Local<v8::Value> args[] = {stream.V8Value()};
 
   v8::TryCatch block(script_state->GetIsolate());
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::CallExtra(script_state, "ReadableStreamTee", args)
            .ToLocal(&result)) {
-    if (block.HasCaught())
-      exception_state.RethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
   return ScriptValue(script_state, result);

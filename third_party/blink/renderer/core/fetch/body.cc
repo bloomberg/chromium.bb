@@ -310,12 +310,10 @@ ScriptPromise Body::text(ScriptState* script_state,
   return promise;
 }
 
-ScriptValue Body::body(ScriptState* script_state) {
+ReadableStream* Body::body() {
   if (!BodyBuffer())
-    return ScriptValue::CreateNull(script_state);
-  ScriptValue stream = BodyBuffer()->Stream();
-  DCHECK_EQ(stream.GetScriptState(), script_state);
-  return stream;
+    return nullptr;
+  return BodyBuffer()->Stream();
 }
 
 Body::BodyUsed Body::IsBodyUsed(ExceptionState& exception_state) {

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -123,6 +124,59 @@ TransformStream::TransformStream() = default;
 
 TransformStream::~TransformStream() = default;
 
+TransformStream* TransformStream::Create(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
+  ScriptValue undefined(script_state,
+                        v8::Undefined(script_state->GetIsolate()));
+  return Create(script_state, undefined, undefined, undefined, exception_state);
+}
+
+TransformStream* TransformStream::Create(
+    ScriptState* script_state,
+    ScriptValue transform_stream_transformer,
+    ExceptionState& exception_state) {
+  ScriptValue undefined(script_state,
+                        v8::Undefined(script_state->GetIsolate()));
+  return Create(script_state, transform_stream_transformer, undefined,
+                undefined, exception_state);
+}
+
+TransformStream* TransformStream::Create(
+    ScriptState* script_state,
+    ScriptValue transform_stream_transformer,
+    ScriptValue writable_strategy,
+    ExceptionState& exception_state) {
+  ScriptValue undefined(script_state,
+                        v8::Undefined(script_state->GetIsolate()));
+  return Create(script_state, transform_stream_transformer, writable_strategy,
+                undefined, exception_state);
+}
+
+TransformStream* TransformStream::Create(ScriptState* script_state,
+                                         ScriptValue transformer,
+                                         ScriptValue writable_strategy,
+                                         ScriptValue readable_strategy,
+                                         ExceptionState& exception_state) {
+  auto* ts = MakeGarbageCollected<TransformStream>();
+
+  v8::Local<v8::Value> args[] = {transformer.V8Value(),
+                                 writable_strategy.V8Value(),
+                                 readable_strategy.V8Value()};
+  v8::Local<v8::Value> stream;
+  {
+    v8::TryCatch block(script_state->GetIsolate());
+    if (!V8ScriptRunner::CallExtra(script_state, "createTransformStream", args)
+             .ToLocal(&stream)) {
+      DCHECK(block.HasCaught());
+      exception_state.RethrowV8Exception(block.Exception());
+      return nullptr;
+    }
+  }
+  DCHECK(stream->IsObject());
+  ts->InitInternal(script_state, stream.As<v8::Object>(), exception_state);
+  return ts->stream_.IsEmpty() ? nullptr : ts;
+}
+
 void TransformStream::Init(TransformStreamTransformer* transformer,
                            ScriptState* script_state,
                            ExceptionState& exception_state) {
@@ -131,49 +185,65 @@ void TransformStream::Init(TransformStreamTransformer* transformer,
   auto flush_algorithm = Algorithm::Create<FlushAlgorithm>(
       transformer, script_state, exception_state);
   v8::Local<v8::Value> args[] = {transform_algorithm, flush_algorithm};
-  v8::TryCatch block(script_state->GetIsolate());
   v8::Local<v8::Value> stream;
-  if (!V8ScriptRunner::CallExtra(script_state, "createTransformStreamSimple",
-                                 args)
-           .ToLocal(&stream)) {
-    DCHECK(block.HasCaught());
-    exception_state.RethrowV8Exception(block.Exception());
-    return;
+  {
+    v8::TryCatch block(script_state->GetIsolate());
+    if (!V8ScriptRunner::CallExtra(script_state, "createTransformStreamSimple",
+                                   args)
+             .ToLocal(&stream)) {
+      DCHECK(block.HasCaught());
+      exception_state.RethrowV8Exception(block.Exception());
+      return;
+    }
   }
-  DCHECK(!block.HasCaught());
   DCHECK(stream->IsObject());
-  stream_.Set(script_state->GetIsolate(), stream);
-}
-
-ScriptValue TransformStream::Readable(ScriptState* script_state,
-                                      ExceptionState& exception_state) const {
-  return Accessor("getTransformStreamReadable", script_state, exception_state);
+  InitInternal(script_state, stream.As<v8::Object>(), exception_state);
 }
 
 ScriptValue TransformStream::Writable(ScriptState* script_state,
-                                      ExceptionState& exception_state) const {
-  return Accessor("getTransformStreamWritable", script_state, exception_state);
-}
-
-void TransformStream::Trace(Visitor* visitor) {
-  visitor->Trace(stream_);
-}
-
-ScriptValue TransformStream::Accessor(const char* accessor_function_name,
-                                      ScriptState* script_state,
                                       ExceptionState& exception_state) const {
   v8::Local<v8::Value> result;
   v8::Local<v8::Value> args[] = {stream_.NewLocal(script_state->GetIsolate())};
   DCHECK(args[0]->IsObject());
   v8::TryCatch block(script_state->GetIsolate());
-  if (!V8ScriptRunner::CallExtra(script_state, accessor_function_name, args)
+  if (!V8ScriptRunner::CallExtra(script_state, "getTransformStreamWritable",
+                                 args)
            .ToLocal(&result)) {
-    DCHECK(block.HasCaught());
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
   DCHECK(!block.HasCaught());
   return ScriptValue(script_state, result);
+}
+
+void TransformStream::Trace(Visitor* visitor) {
+  visitor->Trace(stream_);
+  visitor->Trace(readable_);
+  ScriptWrappable::Trace(visitor);
+}
+
+void TransformStream::InitInternal(ScriptState* script_state,
+                                   v8::Local<v8::Object> stream,
+                                   ExceptionState& exception_state) {
+  v8::Local<v8::Value> readable;
+  v8::Local<v8::Value> args[] = {stream};
+  v8::TryCatch block(script_state->GetIsolate());
+  if (!V8ScriptRunner::CallExtra(script_state, "getTransformStreamReadable",
+                                 args)
+           .ToLocal(&readable)) {
+    DCHECK(block.HasCaught());
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+
+  DCHECK(readable->IsObject());
+  readable_ = ReadableStream::CreateFromInternalStream(
+      script_state, readable.As<v8::Object>(), exception_state);
+
+  if (!readable_)
+    return;
+
+  stream_.Set(script_state->GetIsolate(), stream);
 }
 
 }  // namespace blink

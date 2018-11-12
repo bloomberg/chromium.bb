@@ -38,13 +38,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   BodyStreamBuffer(ScriptState*,
                    BytesConsumer* /* consumer */,
                    AbortSignal* /* signal */);
-  // |ReadableStreamOperations::isReadableStream(stream)| must hold.
-  // This function must be called with entering an appropriate V8 context.
-  BodyStreamBuffer(ScriptState*, ScriptValue stream, ExceptionState&);
-
   BodyStreamBuffer(ScriptState*, ReadableStream* stream);
 
-  ScriptValue Stream();
+  ReadableStream* Stream() { return stream_; }
 
   // Callable only when neither locked nor disturbed.
   scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(

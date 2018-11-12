@@ -35,7 +35,6 @@
   // the global object may have been overwritten. See "V8 Extras Design Doc",
   // section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
-  const defineProperty = global.Object.defineProperty;
   const ObjectCreate = global.Object.create;
 
   const TypeError = global.TypeError;
@@ -462,6 +461,19 @@
     return CreateTransformStream(() => Promise_resolve(),
                                  transformAlgorithm, flushAlgorithm);
   }
+  function createTransformStream(
+      transformer, writableStrategy, readableStrategy) {
+    if (transformer === undefined) {
+      transformer = ObjectCreate(null);
+    }
+    if (writableStrategy === undefined) {
+      writableStrategy = ObjectCreate(null);
+    }
+    if (readableStrategy === undefined) {
+      readableStrategy = ObjectCreate(null);
+    }
+    return new TransformStream(transformer, writableStrategy, readableStrategy);
+  }
 
   function getTransformStreamReadable(stream) {
     return stream[_readable];
@@ -472,21 +484,11 @@
   }
 
   //
-  // Additions to the global object
-  //
-
-  defineProperty(global, 'TransformStream', {
-    value: TransformStream,
-    enumerable: false,
-    configurable: true,
-    writable: true
-  });
-
-  //
   // Exports to Blink
   //
   Object.assign(binding, {
     createTransformStreamSimple,
+    createTransformStream,
     TransformStreamDefaultControllerEnqueue,
     getTransformStreamReadable,
     getTransformStreamWritable

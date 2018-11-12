@@ -6,12 +6,13 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -30,14 +31,14 @@ ScriptPromise FileSystemWriter::write(ScriptState* script_state,
     Blob* blob = V8Blob::ToImpl(data.V8Value().As<v8::Object>());
     return WriteBlob(script_state, position, blob);
   }
-  if (!ReadableStreamOperations::IsReadableStream(script_state, data,
-                                                  exception_state)
-           .value_or(false)) {
+  if (!V8ReadableStream::hasInstance(data.V8Value(), isolate)) {
     if (!exception_state.HadException())
       exception_state.ThrowTypeError("data should be a Blob or ReadableStream");
     return ScriptPromise();
   }
-  return WriteStream(script_state, position, data, exception_state);
+  return WriteStream(script_state, position,
+                     V8ReadableStream::ToImpl(data.V8Value().As<v8::Object>()),
+                     exception_state);
 }
 
 ScriptPromise FileSystemWriter::WriteBlob(ScriptState* script_state,
@@ -143,7 +144,7 @@ class FileSystemWriter::StreamWriterClient
 
 ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
                                             uint64_t position,
-                                            ScriptValue stream,
+                                            ReadableStream* stream,
                                             ExceptionState& exception_state) {
   if (!writer_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
@@ -152,8 +153,7 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
   }
   DCHECK(!stream_loader_);
 
-  auto reader = ReadableStreamOperations::GetReader(script_state, stream,
-                                                    exception_state);
+  auto reader = stream->getReader(script_state, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   auto* consumer = new ReadableStreamBytesConsumer(script_state, reader);

@@ -2171,6 +2171,7 @@ jumbo_source_set("unit_tests") {
     "scroll/scrollbar_theme_overlay_test.cc",
     "streams/readable_stream_operations_test.cc",
     "streams/readable_stream_test.cc",
+    "streams/test_underlying_source.h",
     "streams/transform_stream_test.cc",
     "style/border_value_test.cc",
     "style/computed_style_test.cc",
