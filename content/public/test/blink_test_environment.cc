@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "build/build_config.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -69,6 +70,17 @@ TestEnvironment* test_environment;
 void SetUpBlinkTestEnvironment() {
   blink::WebRuntimeFeatures::EnableExperimentalFeatures(true);
   blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  for (const std::string& feature : content::FeaturesFromSwitch(
+           command_line, switches::kEnableBlinkFeatures)) {
+    blink::WebRuntimeFeatures::EnableFeatureFromString(feature, true);
+  }
+  for (const std::string& feature : content::FeaturesFromSwitch(
+           command_line, switches::kDisableBlinkFeatures)) {
+    blink::WebRuntimeFeatures::EnableFeatureFromString(feature, false);
+  }
 
 #if defined(OS_MACOSX)
   mock_cr_app::RegisterMockCrApp();
