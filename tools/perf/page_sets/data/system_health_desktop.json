@@ -3,6 +3,9 @@
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_desktop_057.wprgo"
         },
+        "browse:media:googleplaystore:2018": {
+            "DEFAULT": "system_health_desktop_ea41d8bc49.wprgo"
+        },
         "browse:media:imgur": {
             "DEFAULT": "system_health_desktop_025.wprgo"
         },
