@@ -69,6 +69,24 @@ TEST(SignedExchangeUtilsTest, VersionParam_Quoted) {
   EXPECT_EQ(version, SignedExchangeVersion::kB2);
 }
 
+TEST(SignedExchangeUtilsTest, VersionParam_QuotedNonB2) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\"b22\"");
+  EXPECT_EQ(version, SignedExchangeVersion::kUnknown);
+}
+
+TEST(SignedExchangeUtilsTest, VersionParam_QuotedLeadingWhitespace) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\" b2\"");
+  EXPECT_EQ(version, SignedExchangeVersion::kUnknown);
+}
+
+TEST(SignedExchangeUtilsTest, VersionParam_QuotedTrailingWhitespace) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\"b2 \"");
+  EXPECT_EQ(version, SignedExchangeVersion::kUnknown);
+}
+
 TEST(SignedExchangeUtilsTest, VersionParam_QuotesOpen) {
   base::Optional<SignedExchangeVersion> version =
       GetSignedExchangeVersion("application/signed-exchange;v=\"b2");
