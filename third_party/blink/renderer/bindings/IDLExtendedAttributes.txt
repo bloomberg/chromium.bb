@@ -57,7 +57,7 @@ EnforceRange
 Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
-Global=|*
+Global=*
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
