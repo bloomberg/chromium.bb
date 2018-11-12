@@ -82,7 +82,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
 
 SVGUseElement* SVGUseElement::Create(Document& document) {
   // Always build a user agent #shadow-root for SVGUseElement.
-  SVGUseElement* use = new SVGUseElement(document);
+  SVGUseElement* use = MakeGarbageCollected<SVGUseElement>(document);
   use->AttachShadowRootInternal(ShadowRootType::kClosed);
   return use;
 }

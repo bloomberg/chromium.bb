@@ -42,11 +42,13 @@ class SVGPath final : public SVGPropertyBase {
  public:
   typedef void TearOffType;
 
-  static SVGPath* Create() { return new SVGPath(); }
+  static SVGPath* Create() { return MakeGarbageCollected<SVGPath>(); }
   static SVGPath* Create(cssvalue::CSSPathValue* path_value) {
-    return new SVGPath(path_value);
+    return MakeGarbageCollected<SVGPath>(path_value);
   }
 
+  SVGPath();
+  explicit SVGPath(cssvalue::CSSPathValue*);
   ~SVGPath() override;
 
   const SVGPathByteStream& ByteStream() const {
@@ -77,9 +79,6 @@ class SVGPath final : public SVGPropertyBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  SVGPath();
-  explicit SVGPath(cssvalue::CSSPathValue*);
-
   Member<cssvalue::CSSPathValue> path_value_;
 };
 

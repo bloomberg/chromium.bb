@@ -44,8 +44,11 @@ class SVGNumberList final
  public:
   typedef SVGNumberListTearOff TearOffType;
 
-  static SVGNumberList* Create() { return new SVGNumberList(); }
+  static SVGNumberList* Create() {
+    return MakeGarbageCollected<SVGNumberList>();
+  }
 
+  SVGNumberList();
   ~SVGNumberList() override;
 
   SVGParsingError SetValueAsString(const String&);
@@ -69,8 +72,6 @@ class SVGNumberList final
   Vector<float> ToFloatVector() const;
 
  private:
-  SVGNumberList();
-
   template <typename CharType>
   SVGParsingError Parse(const CharType*& ptr, const CharType* end);
 };

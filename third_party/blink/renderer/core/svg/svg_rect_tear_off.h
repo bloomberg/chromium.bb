@@ -43,9 +43,14 @@ class SVGRectTearOff : public SVGPropertyTearOff<SVGRect> {
   static SVGRectTearOff* Create(SVGRect* target,
                                 SVGAnimatedPropertyBase* binding,
                                 PropertyIsAnimValType property_is_anim_val) {
-    return new SVGRectTearOff(target, binding, property_is_anim_val);
+    return MakeGarbageCollected<SVGRectTearOff>(target, binding,
+                                                property_is_anim_val);
   }
   static SVGRectTearOff* CreateDetached(const FloatRect&);
+
+  SVGRectTearOff(SVGRect*,
+                 SVGAnimatedPropertyBase* binding,
+                 PropertyIsAnimValType);
 
   void setX(float, ExceptionState&);
   void setY(float, ExceptionState&);
@@ -55,11 +60,6 @@ class SVGRectTearOff : public SVGPropertyTearOff<SVGRect> {
   float y() { return Target()->Y(); }
   float width() { return Target()->Width(); }
   float height() { return Target()->Height(); }
-
- private:
-  SVGRectTearOff(SVGRect*,
-                 SVGAnimatedPropertyBase* binding,
-                 PropertyIsAnimValType);
 };
 
 }  // namespace blink

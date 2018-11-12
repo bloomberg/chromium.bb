@@ -39,7 +39,7 @@ SVGStyleElement::~SVGStyleElement() = default;
 
 SVGStyleElement* SVGStyleElement::Create(Document& document,
                                          const CreateElementFlags flags) {
-  return new SVGStyleElement(document, flags);
+  return MakeGarbageCollected<SVGStyleElement>(document, flags);
 }
 
 bool SVGStyleElement::disabled() const {

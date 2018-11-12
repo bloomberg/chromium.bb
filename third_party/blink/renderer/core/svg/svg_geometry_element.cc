@@ -43,8 +43,13 @@ namespace blink {
 class SVGAnimatedPathLength final : public SVGAnimatedNumber {
  public:
   static SVGAnimatedPathLength* Create(SVGGeometryElement* context_element) {
-    return new SVGAnimatedPathLength(context_element);
+    return MakeGarbageCollected<SVGAnimatedPathLength>(context_element);
   }
+
+  explicit SVGAnimatedPathLength(SVGGeometryElement* context_element)
+      : SVGAnimatedNumber(context_element,
+                          svg_names::kPathLengthAttr,
+                          SVGNumber::Create()) {}
 
   SVGParsingError AttributeChanged(const String& value) override {
     SVGParsingError parse_status = SVGAnimatedNumber::AttributeChanged(value);
@@ -52,12 +57,6 @@ class SVGAnimatedPathLength final : public SVGAnimatedNumber {
       parse_status = SVGParseStatus::kNegativeValue;
     return parse_status;
   }
-
- private:
-  explicit SVGAnimatedPathLength(SVGGeometryElement* context_element)
-      : SVGAnimatedNumber(context_element,
-                          svg_names::kPathLengthAttr,
-                          SVGNumber::Create()) {}
 };
 
 SVGGeometryElement::SVGGeometryElement(const QualifiedName& tag_name,

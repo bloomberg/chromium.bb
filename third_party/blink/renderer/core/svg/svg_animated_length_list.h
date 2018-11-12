@@ -48,22 +48,21 @@ class SVGAnimatedLengthList final : public ScriptWrappable,
   static SVGAnimatedLengthList* Create(SVGElement* context_element,
                                        const QualifiedName& attribute_name,
                                        SVGLengthList* initial_value) {
-    return new SVGAnimatedLengthList(context_element, attribute_name,
-                                     initial_value);
+    return MakeGarbageCollected<SVGAnimatedLengthList>(
+        context_element, attribute_name, initial_value);
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    SVGAnimatedProperty<SVGLengthList>::Trace(visitor);
-    ScriptWrappable::Trace(visitor);
-  }
-
- protected:
   SVGAnimatedLengthList(SVGElement* context_element,
                         const QualifiedName& attribute_name,
                         SVGLengthList* initial_value)
       : SVGAnimatedProperty<SVGLengthList>(context_element,
                                            attribute_name,
                                            initial_value) {}
+
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGLengthList>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
 };
 
 }  // namespace blink

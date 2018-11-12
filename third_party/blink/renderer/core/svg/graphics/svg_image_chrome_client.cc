@@ -50,7 +50,7 @@ SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
       timeline_state_(kRunning) {}
 
 SVGImageChromeClient* SVGImageChromeClient::Create(SVGImage* image) {
-  return new SVGImageChromeClient(image);
+  return MakeGarbageCollected<SVGImageChromeClient>(image);
 }
 
 bool SVGImageChromeClient::IsSVGImageChromeClient() const {

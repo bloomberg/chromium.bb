@@ -119,7 +119,7 @@ void SVGElement::WillRecalcStyle(StyleRecalcChange change) {
 
 SVGElementRareData* SVGElement::EnsureSVGRareData() {
   if (!svg_rare_data_)
-    svg_rare_data_ = new SVGElementRareData();
+    svg_rare_data_ = MakeGarbageCollected<SVGElementRareData>();
   return svg_rare_data_.Get();
 }
 

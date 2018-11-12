@@ -21,6 +21,8 @@ class SVGAnimatedHref final : public SVGAnimatedString {
  public:
   static SVGAnimatedHref* Create(SVGElement* context_element);
 
+  explicit SVGAnimatedHref(SVGElement* context_element);
+
   SVGString* CurrentValue();
   const SVGString* CurrentValue() const;
 
@@ -38,8 +40,6 @@ class SVGAnimatedHref final : public SVGAnimatedString {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGAnimatedHref(SVGElement* context_element);
-
   SVGAnimatedString* BackingString();
   const SVGAnimatedString* BackingString() const;
   bool UseXLink() const;

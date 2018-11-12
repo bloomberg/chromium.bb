@@ -45,8 +45,12 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
 
   static SVGIntegerOptionalInteger* Create(SVGInteger* first_integer,
                                            SVGInteger* second_integer) {
-    return new SVGIntegerOptionalInteger(first_integer, second_integer);
+    return MakeGarbageCollected<SVGIntegerOptionalInteger>(first_integer,
+                                                           second_integer);
   }
+
+  SVGIntegerOptionalInteger(SVGInteger* first_integer,
+                            SVGInteger* second_integer);
 
   SVGIntegerOptionalInteger* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;
@@ -78,9 +82,6 @@ class SVGIntegerOptionalInteger final : public SVGPropertyBase {
   void Trace(blink::Visitor*) override;
 
  protected:
-  SVGIntegerOptionalInteger(SVGInteger* first_integer,
-                            SVGInteger* second_integer);
-
   Member<SVGInteger> first_integer_;
   Member<SVGInteger> second_integer_;
 };

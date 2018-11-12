@@ -12,7 +12,7 @@
 namespace blink {
 
 SVGAnimatedHref* SVGAnimatedHref::Create(SVGElement* context_element) {
-  return new SVGAnimatedHref(context_element);
+  return MakeGarbageCollected<SVGAnimatedHref>(context_element);
 }
 
 void SVGAnimatedHref::Trace(blink::Visitor* visitor) {

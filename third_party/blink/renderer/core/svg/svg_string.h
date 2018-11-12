@@ -42,9 +42,14 @@ class SVGString final : public SVGPropertyBase {
   typedef void TearOffType;
   typedef String PrimitiveType;
 
-  static SVGString* Create() { return new SVGString(); }
+  static SVGString* Create() { return MakeGarbageCollected<SVGString>(); }
 
-  static SVGString* Create(const String& value) { return new SVGString(value); }
+  static SVGString* Create(const String& value) {
+    return MakeGarbageCollected<SVGString>(value);
+  }
+
+  SVGString() = default;
+  explicit SVGString(const String& value) : value_(value) {}
 
   SVGString* Clone() const { return Create(value_); }
   SVGPropertyBase* CloneForAnimation(const String& value) const override {
@@ -74,9 +79,6 @@ class SVGString final : public SVGPropertyBase {
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
-  SVGString() = default;
-  explicit SVGString(const String& value) : value_(value) {}
-
   String value_;
 };
 

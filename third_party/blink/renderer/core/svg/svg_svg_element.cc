@@ -118,17 +118,16 @@ void SVGSVGElement::setCurrentScale(float scale) {
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
  public:
   static SVGCurrentTranslateTearOff* Create(SVGSVGElement* context_element) {
-    return new SVGCurrentTranslateTearOff(context_element);
+    return MakeGarbageCollected<SVGCurrentTranslateTearOff>(context_element);
   }
+
+  SVGCurrentTranslateTearOff(SVGSVGElement* context_element)
+      : SVGPointTearOff(context_element->translation_, context_element) {}
 
   void CommitChange() override {
     DCHECK(ContextElement());
     ToSVGSVGElement(ContextElement())->UpdateUserTransform();
   }
-
- private:
-  SVGCurrentTranslateTearOff(SVGSVGElement* context_element)
-      : SVGPointTearOff(context_element->translation_, context_element) {}
 };
 
 SVGPointTearOff* SVGSVGElement::currentTranslateFromJavascript() {
