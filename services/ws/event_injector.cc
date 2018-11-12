@@ -133,6 +133,16 @@ void EventInjector::InjectEventNoAckImpl(int64_t display_id,
   if (!event_and_host.window_tree_host)
     return;
 
+  // Reset the latency time. This way telemetry doesn't include the time from
+  // browser to ash.
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  ui::Event::DispatcherApi dispatcher_api(event_and_host.event.get());
+  dispatcher_api.set_time_stamp(event_time);
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, event_time, 1);
+  event_and_host.event->set_latency(latency_info);
+
   EventQueue::DispatchOrQueueEvent(window_service_,
                                    event_and_host.window_tree_host,
                                    event_and_host.event.get(), honor_rewriters);
