@@ -54,6 +54,8 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   const LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation() const;
 
+  bool HasValidLocalSurfaceIdAllocation() const;
+
   static const LocalSurfaceId& InvalidLocalSurfaceId();
 
   static const LocalSurfaceIdAllocation& InvalidLocalSurfaceIdAllocation();

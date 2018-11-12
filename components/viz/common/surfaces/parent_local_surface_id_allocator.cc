@@ -19,9 +19,7 @@ ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator(
                          kInitialChildSequenceNumber,
                          base::UnguessableToken::Create()),
           base::TimeTicks()),
-      tick_clock_(tick_clock) {
-  GenerateId();
-}
+      tick_clock_(tick_clock) {}
 
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
     : ParentLocalSurfaceIdAllocator(base::DefaultTickClock::GetInstance()) {}
@@ -123,6 +121,10 @@ ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceIdAllocation() const {
   if (is_invalid_)
     return g_invalid_local_surface_id_allocation;
   return current_local_surface_id_allocation_;
+}
+
+bool ParentLocalSurfaceIdAllocator::HasValidLocalSurfaceIdAllocation() const {
+  return current_local_surface_id_allocation_.IsValid();
 }
 
 // static

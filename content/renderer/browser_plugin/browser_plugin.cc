@@ -102,6 +102,12 @@ BrowserPlugin::BrowserPlugin(
   browser_plugin_instance_id_ =
       BrowserPluginManager::Get()->GetNextInstanceID();
 
+  // TODO(jonross): Address the Surface Invariants Violations that led to the
+  // addition of ParentLocalSurfaceIdAllocator::Reset used within
+  // BrowserPlugin::OnAttachACK. Then have BrowserPlugin only generate new ids
+  // as needed.
+  parent_local_surface_id_allocator_.GenerateId();
+
   if (delegate_)
     delegate_->SetElementInstanceID(browser_plugin_instance_id_);
 }

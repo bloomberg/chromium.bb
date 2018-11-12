@@ -53,6 +53,8 @@ class ChildLocalSurfaceIdAllocatorTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     now_src_ = std::make_unique<base::SimpleTestTickClock>();
+    // Advance time by one millisecond to ensure all time stamps are non-null.
+    AdvanceTime(base::TimeDelta::FromMilliseconds(1u));
     allocator_ = std::make_unique<ChildLocalSurfaceIdAllocator>(now_src_.get());
     parent_allocator1_ =
         std::make_unique<ParentLocalSurfaceIdAllocator>(now_src_.get());
@@ -128,6 +130,7 @@ TEST_F(ChildLocalSurfaceIdAllocatorTest, UpdateFromParentEmbedTokenChanged) {
                   .is_valid());
   EXPECT_TRUE(allocator().UpdateFromParent(
       parent_allocator1().GetCurrentLocalSurfaceIdAllocation()));
+  parent_allocator2().GenerateId();
   EXPECT_LE(parent_allocator2()
                 .GetCurrentLocalSurfaceIdAllocation()
                 .local_surface_id()

@@ -331,7 +331,9 @@ class TestView : public TestRenderWidgetHostView {
         use_fake_compositor_viewport_pixel_size_(false),
         ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         top_controls_height_(0.f),
-        bottom_controls_height_(0.f) {}
+        bottom_controls_height_(0.f) {
+    local_surface_id_allocator_.GenerateId();
+  }
 
   // Sets the bounds returned by GetViewBounds.
   void SetBounds(const gfx::Rect& bounds) override {

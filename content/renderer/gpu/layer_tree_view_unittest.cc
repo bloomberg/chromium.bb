@@ -395,6 +395,7 @@ class NotifySwapTimesLayerTreeViewTest : public ::testing::Test {
 
     viz::ParentLocalSurfaceIdAllocator allocator;
     layer_tree_view_.SetVisible(true);
+    allocator.GenerateId();
     layer_tree_view_.SetViewportSizeAndScale(
         gfx::Size(200, 100), 1.f,
         allocator.GetCurrentLocalSurfaceIdAllocation());
