@@ -133,11 +133,10 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
   if (touch_event_iter == outstanding_touches_.end())
     return;
 
-  TouchEventWithLatencyInfoAndAckState event = *touch_event_iter;
-  touch_event_iter = outstanding_touches_.erase(touch_event_iter);
+  TouchEventWithLatencyInfoAndAckState& event =
+      const_cast<TouchEventWithLatencyInfoAndAckState&>(*touch_event_iter);
   event.latency.AddNewLatencyFrom(latency_info);
   event.set_ack_info(ack_source, ack_result);
-  outstanding_touches_.insert(touch_event_iter, event);
 
   AckCompletedEvents();
 }
