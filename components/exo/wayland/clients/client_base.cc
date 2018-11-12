@@ -419,16 +419,8 @@ bool ClientBase::Init(const InitParams& params) {
     LOG(ERROR) << "Can't find linux_dmabuf interface";
     return false;
   }
-  if (!globals_.shell) {
-    LOG(ERROR) << "Can't find shell interface";
-    return false;
-  }
   if (!globals_.seat) {
     LOG(ERROR) << "Can't find seat interface";
-    return false;
-  }
-  if (!globals_.aura_shell) {
-    LOG(ERROR) << "Can't find aura shell interface";
     return false;
   }
 
@@ -577,6 +569,14 @@ bool ClientBase::Init(const InitParams& params) {
                                             surface_.get(), 0, nullptr);
 
   } else {
+    if (!globals_.shell) {
+      LOG(ERROR) << "Can't find shell interface";
+      return false;
+    }
+    if (!globals_.aura_shell) {
+      LOG(ERROR) << "Can't find aura shell interface";
+      return false;
+    }
     std::unique_ptr<wl_shell_surface> shell_surface(
         static_cast<wl_shell_surface*>(
             wl_shell_get_shell_surface(globals_.shell.get(), surface_.get())));
