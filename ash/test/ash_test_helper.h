@@ -13,6 +13,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 class PrefService;
 
@@ -50,7 +51,6 @@ namespace ash {
 class AppListTestHelper;
 class AshTestEnvironment;
 class AshTestViewsDelegate;
-class TestConnector;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -144,8 +144,7 @@ class AshTestHelper {
 
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
 
-  std::unique_ptr<TestConnector> test_connector_;
-
+  service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<service_manager::Connector> window_service_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);

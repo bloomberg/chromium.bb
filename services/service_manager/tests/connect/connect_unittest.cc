@@ -87,9 +87,9 @@ void ReceiveConnectionResult(mojom::ConnectResult* out_result,
 
 void StartServiceResponse(base::RunLoop* quit_loop,
                           mojom::ConnectResult* out_result,
-                          Identity* out_resolved_identity,
+                          base::Optional<Identity>* out_resolved_identity,
                           mojom::ConnectResult result,
-                          const Identity& resolved_identity) {
+                          const base::Optional<Identity>& resolved_identity) {
   if (quit_loop)
     quit_loop->Quit();
   if (out_result)
@@ -382,15 +382,16 @@ TEST_F(ConnectTest, PackagedApp) {
   test::mojom::ConnectTestServicePtr service_a;
   connector()->BindInterface(kTestAppAName, &service_a);
   Connector::TestApi test_api(connector());
-  Identity resolved_identity;
-  test_api.SetStartServiceCallback(
-      base::Bind(&StartServiceResponse, nullptr, nullptr, &resolved_identity));
+  base::Optional<Identity> resolved_identity;
+  test_api.SetStartServiceCallback(base::BindRepeating(
+      &StartServiceResponse, nullptr, nullptr, &resolved_identity));
   base::RunLoop run_loop;
   std::string a_name;
   service_a->GetTitle(base::Bind(&ReceiveOneString, &a_name, &run_loop));
   run_loop.Run();
   EXPECT_EQ("A", a_name);
-  EXPECT_EQ(resolved_identity.name(), kTestAppAName);
+  ASSERT_TRUE(resolved_identity);
+  EXPECT_EQ(resolved_identity->name(), kTestAppAName);
 }
 
 #if DCHECK_IS_ON()
@@ -571,14 +572,15 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   const base::Token singleton_instance_group = base::Token::CreateRandom();
   Identity singleton_id(kTestSingletonAppName, singleton_instance_group);
   connector()->StartService(singleton_id);
-  Identity first_resolved_identity;
+  base::Optional<Identity> first_resolved_identity;
   {
     base::RunLoop loop;
     Connector::TestApi test_api(connector());
-    test_api.SetStartServiceCallback(base::Bind(
+    test_api.SetStartServiceCallback(base::BindRepeating(
         &StartServiceResponse, &loop, nullptr, &first_resolved_identity));
     loop.Run();
-    EXPECT_NE(*first_resolved_identity.instance_group(),
+    ASSERT_TRUE(first_resolved_identity);
+    EXPECT_NE(*first_resolved_identity->instance_group(),
               singleton_instance_group);
   }
   // This connects using the current client's user_id. It should be bound to the
@@ -588,12 +590,13 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   {
     base::RunLoop loop;
     Connector::TestApi test_api(connector());
-    Identity resolved_identity;
-    test_api.SetStartServiceCallback(
-        base::Bind(&StartServiceResponse, &loop, nullptr, &resolved_identity));
+    base::Optional<Identity> resolved_identity;
+    test_api.SetStartServiceCallback(base::BindRepeating(
+        &StartServiceResponse, &loop, nullptr, &resolved_identity));
     loop.Run();
-    EXPECT_EQ(resolved_identity.instance_group(),
-              first_resolved_identity.instance_group());
+    ASSERT_TRUE(resolved_identity);
+    EXPECT_EQ(resolved_identity->instance_group(),
+              first_resolved_identity->instance_group());
   }
 }
 

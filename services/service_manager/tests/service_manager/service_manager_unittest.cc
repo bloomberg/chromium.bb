@@ -277,9 +277,6 @@ class ServiceManagerTest : public test::ServiceTest,
     service_manager::Identity target("service_manager_unittest_target");
     connector()->StartService(target, std::move(client),
                               MakeRequest(&receiver));
-    Connector::TestApi test_api(connector());
-    test_api.SetStartServiceCallback(base::Bind(
-        &ServiceManagerTest::OnConnectionCompleted, base::Unretained(this)));
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
@@ -389,8 +386,6 @@ class ServiceManagerTest : public test::ServiceTest,
     if (!service_pid_received_callback_.is_null())
       service_pid_received_callback_.Run(identity, pid);
   }
-
-  void OnConnectionCompleted(mojom::ConnectResult, const Identity&) {}
 
   ServiceManagerTestClient* service_;
   mojo::Binding<mojom::ServiceManagerListener> binding_;

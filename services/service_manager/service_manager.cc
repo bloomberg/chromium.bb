@@ -449,11 +449,13 @@ class ServiceManager::Instance
   };
 
   // mojom::Connector implementation:
-  void BindInterface(const service_manager::Identity& in_target,
+  void BindInterface(const service_manager::ServiceFilter& service_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    Identity target = in_target;
+    Identity target(
+        service_filter.service_name(), service_filter.instance_group(),
+        service_filter.instance_id(), service_filter.globally_unique_id());
     mojom::ConnectResult result =
         ValidateConnectParams(&target, nullptr, nullptr, &interface_name);
     if (!Succeeded(result)) {
@@ -470,19 +472,22 @@ class ServiceManager::Instance
     service_manager_->Connect(std::move(params));
   }
 
-  void QueryService(const Identity& target,
+  void QueryService(const ServiceFilter& service_filter,
                     QueryServiceCallback callback) override {
     std::string sandbox;
     bool success = service_manager_->QueryCatalog(
-        Identity(target.name(), identity_.instance_group()), &sandbox);
+        Identity(service_filter.service_name(), identity_.instance_group()),
+        &sandbox);
     std::move(callback).Run(success ? mojom::ConnectResult::SUCCEEDED
                                     : mojom::ConnectResult::INVALID_ARGUMENT,
                             std::move(sandbox));
   }
 
-  void StartService(const Identity& in_target,
+  void StartService(const ServiceFilter& service_filter,
                     StartServiceCallback callback) override {
-    Identity target = in_target;
+    Identity target(
+        service_filter.service_name(), service_filter.instance_group(),
+        service_filter.instance_id(), service_filter.globally_unique_id());
     mojom::ConnectResult result =
         ValidateConnectParams(&target, nullptr, nullptr, nullptr);
 

@@ -79,15 +79,16 @@ class TestConnectorImplBase : public mojom::Connector {
   }
 
   // mojom::Connector implementation:
-  void BindInterface(const Identity& target,
+  void BindInterface(const ServiceFilter& service_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    mojom::ServicePtr* service_ptr = GetServicePtr(target.name());
+    mojom::ServicePtr* service_ptr =
+        GetServicePtr(service_filter.service_name());
     // If you hit the DCHECK below, you need to add a call to AddService() in
     // your test for the reported service.
     DCHECK(service_ptr) << "Binding interface for unregistered service "
-                        << target.name();
+                        << service_filter.service_name();
     (*service_ptr)
         ->OnBindInterface(
             BindSourceInfo(
@@ -97,12 +98,12 @@ class TestConnectorImplBase : public mojom::Connector {
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 
-  void StartService(const Identity& target,
+  void StartService(const ServiceFilter& service_filter,
                     StartServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void QueryService(const Identity& target,
+  void QueryService(const ServiceFilter& service_filter,
                     QueryServiceCallback callback) override {
     NOTREACHED();
   }
@@ -219,14 +220,14 @@ class ProxiedServiceConnector : public mojom::Connector {
   }
 
   // mojom::Connector:
-  void BindInterface(const Identity& target,
+  void BindInterface(const ServiceFilter& service_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    auto* proxy = GetServiceProxy(target.name());
+    auto* proxy = GetServiceProxy(service_filter.service_name());
     CHECK(proxy)
         << "TestConnectorFactory received a BindInterface request for an "
-        << "unregistered service '" << target.name() << "'";
+        << "unregistered service '" << service_filter.service_name() << "'";
     proxy->OnBindInterface(
         BindSourceInfo(Identity("TestConnectorFactory", test_instance_group_),
                        CapabilitySet()),
@@ -234,12 +235,12 @@ class ProxiedServiceConnector : public mojom::Connector {
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 
-  void StartService(const Identity& target,
+  void StartService(const ServiceFilter& target,
                     StartServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void QueryService(const Identity& target,
+  void QueryService(const ServiceFilter& target,
                     QueryServiceCallback callback) override {
     NOTREACHED();
   }

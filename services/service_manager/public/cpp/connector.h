@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -19,26 +20,17 @@
 namespace service_manager {
 
 // An interface that encapsulates the Service Manager's brokering interface, by
-// which
-// connections between services are established. Once either StartService() or
-// BindInterface() is called, this class is bound to the thread the call was
-// made on and it cannot be passed to another thread without calling Clone().
+// which connections between services are established. Once any public methods
+// are called on an instance of this class, that instance is bound to the
+// calling thread.
 //
-// An instance of this class is created internally by ServiceContext for use
-// on the thread ServiceContext is instantiated on.
-//
-// To use this interface on another thread, call Clone() and pass the new
-// instance to the desired thread before calling StartService() or
-// BindInterface().
-//
-// While instances of this object are owned by the caller, the underlying
-// connection with the service manager is bound to the lifetime of the instance
-// that created it, i.e. when the application is terminated the Connector pipe
-// is closed.
+// To use the same interface on another thread, call Clone() and pass the new
+// instance to the desired thread before calling any public methods on it.
 class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
  public:
   using StartServiceCallback =
-      base::Callback<void(mojom::ConnectResult, const Identity& identity)>;
+      base::RepeatingCallback<void(mojom::ConnectResult,
+                                   const base::Optional<Identity>&)>;
 
   class TestApi {
    public:
@@ -169,7 +161,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
 
   // Callback passed to mojom methods StartService()/BindInterface().
   void RunStartServiceCallback(mojom::ConnectResult result,
-                               const Identity& user_id);
+                               const base::Optional<Identity>& user_id);
 
   mojom::ConnectorPtrInfo unbound_state_;
   mojom::ConnectorPtr connector_;

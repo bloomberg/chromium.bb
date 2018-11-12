@@ -53,8 +53,8 @@ void Connector::StartService(const Identity& identity,
   connector_->StartServiceWithProcess(
       identity, service.PassInterface().PassHandle(),
       std::move(pid_receiver_request),
-      base::Bind(&Connector::RunStartServiceCallback,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&Connector::RunStartServiceCallback,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void Connector::QueryService(const Identity& identity,
@@ -183,10 +183,11 @@ bool Connector::BindConnectorIfNecessary() {
   return true;
 }
 
-void Connector::RunStartServiceCallback(mojom::ConnectResult result,
-                                        const Identity& user_id) {
+void Connector::RunStartServiceCallback(
+    mojom::ConnectResult result,
+    const base::Optional<Identity>& identity) {
   if (!start_service_callback_.is_null())
-    start_service_callback_.Run(result, user_id);
+    start_service_callback_.Run(result, identity);
 }
 
 }  // namespace service_manager
