@@ -397,6 +397,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4058278702844053247">Probíhá načítání stránky</translation>
 <translation id="4065205963140826639">Zkuste pomocí kláves Hledat + Šipka vpravo najít tlačítko Další a poté na něj stisknutím kláves Hledat + Mezera klikněte.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}few{# tildy}many{# tildes}other{# tild}}</translation>
+<translation id="4086311032171418648">Ukončování režimu výuky.</translation>
 <translation id="409334809956508737">Předchozí objekt</translation>
 <translation id="4099274309791143834">s podnabídkou</translation>
 <translation id="4101527861445851766">Zaškrtnuté zaškrtávací políčko</translation>
@@ -499,6 +500,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4877261390094455813">Zadejte vyhledávací dotaz.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Interní odkaz</translation>
+<translation id="4915087353619183190">Spouští se režim výuky. Stisknutím klávesy qwerty, tlačítka obnovitelného hmatového displeje nebo provedením dotykového gesta získáte informace o jeho funkci. Režim výuky ukončíte stisknutím kombinace kláves Ctrl+W nebo klávesy Escape.</translation>
 <translation id="492295894462528572">Předmluva</translation>
 <translation id="495170559598752135">Akce</translation>
 <translation id="4953585991029886728">Upravit text</translation>
@@ -871,6 +873,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8091452896542422286">Mezera</translation>
 <translation id="8110647606445335195">Žádné orientační body ARIA.</translation>
+<translation id="8138880386467279117">Dotykové</translation>
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
 <translation id="8179976553408161302">Enter</translation>

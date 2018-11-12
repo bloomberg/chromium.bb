@@ -398,6 +398,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4058278702844053247">Lehe laadimine on pooleli</translation>
 <translation id="4065205963140826639">Vajutage otsinguklahvi ja paremnoolt nupu Järgmine leidmiseks, seejärel vajutage sellel klõpsamiseks otsinguklahvi ja tühikut.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tildet}}</translation>
+<translation id="4086311032171418648">Õppimisrežiimi peatamine.</translation>
 <translation id="409334809956508737">Eelmine objekt</translation>
 <translation id="4099274309791143834">koos alammenüüga</translation>
 <translation id="4101527861445851766">Märgitud ruut</translation>
@@ -500,6 +501,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4877261390094455813">Otsingupäringu sisestamine.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Siselink</translation>
+<translation id="4915087353619183190">Õppimisrežiimi käivitamine. Vajutage qwerty-klahvi, värskendatavat Braille'i klahvi või puuteliigutust, et vaadata selle funktsiooni. Väljumiseks vajutage paoklahvi või korraga juhtklahvi ja klahvi W.</translation>
 <translation id="492295894462528572">Eessõna</translation>
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4953585991029886728">Teksti muutmine</translation>
@@ -872,6 +874,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="8076492880354921740">Vahelehed</translation>
 <translation id="8091452896542422286">Tühik</translation>
 <translation id="8110647606445335195">ARIA maamärke ei ole.</translation>
+<translation id="8138880386467279117">Puudutage valikut</translation>
 <translation id="8153880621934657047">Ei ole tabelis.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alljoon}other{# alljoont}}</translation>
 <translation id="8179976553408161302">Sisestusklahv</translation>

@@ -360,7 +360,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3665563998540286755">Caixa de listagem <ph name="VALUE" /></translation>
 <translation id="3687295507293856493">Fazer estimativa do cabeçalho da coluna da célula atual</translation>
 <translation id="3692274950075847560">P:<ph name="RESULT" /></translation>
-<translation id="3712520970944678024">Controle de voz</translation>
+<translation id="3712520970944678024">Comando de voz</translation>
 <translation id="3716845769494773620">Multilinha</translation>
 <translation id="3731746171184829332">Nenhum cabeçalho anterior.</translation>
 <translation id="3735039640698208086">Ao reproduzir áudio…</translation>
@@ -398,6 +398,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4058278702844053247">Um carregamento de página em andamento</translation>
 <translation id="4065205963140826639">Tente usar Pesquisa + seta para a direita agora para localizar o botão "Avançar" e pressione Pesquisa + espaço para clicar nele.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{til}one{# sinais de til}other{# sinais de til}}</translation>
+<translation id="4086311032171418648">Parando o modo de aprendizado.</translation>
 <translation id="409334809956508737">Objeto anterior</translation>
 <translation id="4099274309791143834">com submenu</translation>
 <translation id="4101527861445851766">Uma caixa de seleção marcada</translation>
@@ -500,6 +501,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4877261390094455813">Inserir uma consulta de pesquisa.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Link interno</translation>
+<translation id="4915087353619183190">Iniciando o modo de aprendizado. Pressione uma tecla do QWERTY, tecla de braille atualizável ou um gesto de toque para aprender a função relacionada. Pressione Control com W ou ESC para sair.</translation>
 <translation id="492295894462528572">Prefácio</translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4953585991029886728">Texto de edição</translation>
@@ -872,6 +874,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8076492880354921740">Guias</translation>
 <translation id="8091452896542422286">Espaço</translation>
 <translation id="8110647606445335195">Nenhum ponto de referência ARIA.</translation>
+<translation id="8138880386467279117">Tocar</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}one{# sublinhados}other{# sublinhados}}</translation>
 <translation id="8179976553408161302">Entrar</translation>

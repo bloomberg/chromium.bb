@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
+<translation id="2302092602801625023">Ce compte est géré par Family Link</translation>
 <translation id="2303600792989757991">Activer/Désactiver la vue d'ensemble des fenêtres</translation>
 <translation id="2339073806695260576">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran, et utiliser le pointeur laser ou la loupe.</translation>
 <translation id="2341729377289034582">Verrouillée en position verticale</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="3798670284305777884">Haut-parleur (interne)</translation>
+<translation id="3799080171973636491">Vous avez utilisé le raccourci clavier de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="380165613292957338">Bonjour, comment puis-je vous aider ?</translation>
 <translation id="383629559565718788">Afficher les paramètres du clavier</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
@@ -196,6 +198,7 @@
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4292681942966152062">Activation de <ph name="NETWORK_NAME" />…</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Vous avez utilisé le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Loupe</translation>
@@ -203,6 +206,7 @@
 <translation id="435527878592612277">Sélectionner votre photo</translation>
 <translation id="4378551569595875038">Connexion</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
+<translation id="4389184120735010762">Vous avez utilisé le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
@@ -391,6 +395,7 @@
 <translation id="7886169021410746335">Régler les paramètres de confidentialité</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
+<translation id="7897375687985782769">Vous avez utilisé le raccourci clavier de rotation d'écran. Voulez-vous faire pivoter l'écran ?</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -456,6 +461,7 @@
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> en cours d'utilisation</translation>
 <translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>
 <translation id="8995603266996330174">Géré par <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Mise à jour Adobe Flash Player disponible</translation>

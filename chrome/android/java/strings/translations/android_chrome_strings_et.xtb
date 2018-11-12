@@ -170,6 +170,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, veebirakendus. <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">Automatiseeri</translation>
 <translation id="2227444325776770048">Jätka kasutajana <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Saadab Google'ile teatud süsteemiteavet ja lehe sisu</translation>
 <translation id="2234876718134438132">Sünkroonimine ja Google'i teen.</translation>
@@ -240,6 +241,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="2777555524387840389">Jäänud on <ph name="SECONDS" /> sekundit</translation>
 <translation id="2779651927720337254">ebaõnnestus</translation>
 <translation id="2781151931089541271">Jäänud on 1 sekund</translation>
+<translation id="2783359740176230170">Kiire maksmine</translation>
 <translation id="2803478378562657435">Kuvatud on salvestatud paroolid ja paroolivalikud</translation>
 <translation id="2810645512293415242">Lihtsustatud leht andmemahu säästmiseks ja laadimise kiirendamiseks.</translation>
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
@@ -362,6 +364,7 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="3868004864571585162">Küpsisefailid, meedialitsentsid ja saidiandmed</translation>
 <translation id="3894427358181296146">Kausta lisamine</translation>
 <translation id="3895926599014793903">Sundluba suumimine</translation>
+<translation id="3918221729963301892">Ära enam kuva</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Minu andmete kombineerimine</translation>
 <translation id="393697183122708255">Lubatud häälotsing pole saadaval</translation>
@@ -507,6 +510,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hankige abi<ph name="END_LINK" />, kuni seadmeid otsitakse …</translation>
 <translation id="4943872375798546930">Tulemusi pole</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> jagab teie ekraani</translation>
+<translation id="4961107849584082341">Tõlkige leht mis tahes keelde</translation>
 <translation id="4961334780091921942">Teie paroolid, ajalugu ja muud andmed kõigis seadmetes</translation>
 <translation id="4961700429721424617">Logite välja kontolt, mida haldab <ph name="MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="497421865427891073">Edasiminek</translation>
@@ -544,6 +548,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5240817131241497236">Sünkroonimist, isikupärastamist ja muid Chrome'is saadaolevaid Google'i teenuseid juhtivad seaded on muutunud. See võib teie praegusi seadeid mõjutada.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Seadeid<ph name="END_LINK1" /> saab igal ajal kohandada. Google võib kasutada teie külastatavate saitide sisu ning brauseri interaktsioone ja tegevusi Chrome'i ja muude Google'i teenuste, näiteks tõlke, otsingu ja reklaamide täiustamiseks.</translation>
 <translation id="5271967389191913893">Seade ei saa allalaaditavat sisu avada.</translation>
+<translation id="5274381992091475657">Automaattäite assistent</translation>
 <translation id="528192093759286357">Täisekraanilt väljumiseks lohistage ülaservast alla ja puudutage tagasinuppu.</translation>
 <translation id="5284584623296338184">Järjehoidjates, ajaloos, paroolides ja muudes seadetes tehtud muudatusi ei sünkroonita enam teie Google'i kontoga. Teie olemasolevad andmed jäävad siiski teie Google'i kontole.</translation>
 <translation id="5300589172476337783">Kuva</translation>
@@ -611,6 +616,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5684874026226664614">Vabandust. Lehte ei õnnestunud tõlkida.</translation>
 <translation id="5686790454216892815">Faili nimi on liiga pikk</translation>
 <translation id="5689516760719285838">Asukoht</translation>
+<translation id="569536719314091526">Tõlkige leht mis tahes keelde nupuga Rohkem valikuid</translation>
 <translation id="5719837394786370183">Pärast kõikide inkognito režiimis avatud vahelehtede sulgemist ei jää inkognito režiimi vahelehtedel kuvatud lehtedest jälgi teie brauseri ajalukku, salvestatud küpsisefailidesse ega otsinguajalukku. Allalaaditud failid ja loodud järjehoidjad jäävad alles.
 
 Te ei ole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimistegevust tööandja, Interneti-teenusepakkuja ega külastatud veebisaitide eest.</translation>
@@ -652,6 +658,7 @@ Te ei ole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimi
 <translation id="5962718611393537961">Ahendamiseks puudutage</translation>
 <translation id="5990142338020175451">Isiklikumad Google'i teenused, nt paremad lehesoovitused</translation>
 <translation id="6000066717592683814">Säilita Google</translation>
+<translation id="6001839398155993679">Alustagem</translation>
 <translation id="6005538289190791541">Soovitatud parool</translation>
 <translation id="6039379616847168523">Järgmisele vahelehele liikumine</translation>
 <translation id="6040143037577758943">Sulge</translation>
@@ -826,6 +833,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7253272406652746122">Lisage Google'i konto seadme rakenduse Seaded lehel Kontod.</translation>
 <translation id="7274013316676448362">Blokeeritud sait</translation>
+<translation id="728491846437309531">Google'i assistent aitab teil veebis kiiremini ja lihtsamini tegutseda</translation>
 <translation id="729975465115245577">Seadmes pole sünkroonimiseks piisavalt salvestusruumi.</translation>
 <translation id="7302081693174882195">Üksikasjad: sorditud säästetud andmemahu alusel</translation>
 <translation id="7333031090786104871">Eelmist saiti alles lisatakse</translation>

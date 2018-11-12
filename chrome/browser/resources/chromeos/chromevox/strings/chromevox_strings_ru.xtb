@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">Загрузка страницы</translation>
 <translation id="4065205963140826639">Попробуйте найти кнопку "Далее" с помощью клавиш SEARCH + СТРЕЛКА ВПРАВО и нажать ее, используя клавиши SEARCH + ПРОБЕЛ.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{тильда}one{# тильда}few{# тильды}many{# тильд}other{# tildes}}</translation>
+<translation id="4086311032171418648">Выход из режима обучения.</translation>
 <translation id="409334809956508737">К предыдущему элементу</translation>
 <translation id="4099274309791143834">есть подменю</translation>
 <translation id="4101527861445851766">Установленный флажок</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">Введите поисковый запрос.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Внутренняя ссылка.</translation>
+<translation id="4915087353619183190">Запускается режим обучения. Нажмите клавишу или коснитесь изображения жеста, чтобы узнать, какую функцию они выполняют. Вы можете использовать как стандартную, так и брайлевскую клавиатуру. Для выхода нажмите сочетание клавиш Control и W или клавишу Escape.</translation>
 <translation id="492295894462528572">Предисловие</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4953585991029886728">Изменение текста</translation>
@@ -872,6 +874,7 @@
 <translation id="8076492880354921740">Вкладки</translation>
 <translation id="8091452896542422286">Пробел</translation>
 <translation id="8110647606445335195">Ориентиров ARIA нет.</translation>
+<translation id="8138880386467279117">Нажмите</translation>
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{символ подчеркивания}one{# символ подчеркивания}few{# символа подчеркивания}many{# символов подчеркивания}other{# underscores}}</translation>
 <translation id="8179976553408161302">ВВОД</translation>

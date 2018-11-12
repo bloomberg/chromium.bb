@@ -398,6 +398,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4058278702844053247">Weboldal betöltése folyamatban</translation>
 <translation id="4065205963140826639">A Keresés + jobbra nyíl billentyűkombinációt használva próbálja megtalálni a Következő gombot, majd nyomja le a Keresés + szóköz billentyűkombinációt a rákattintáshoz.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{HULLÁMVONAL}other{# hullámvonal}}</translation>
+<translation id="4086311032171418648">A Tanuló mód leállítása.</translation>
 <translation id="409334809956508737">Előző objektum</translation>
 <translation id="4099274309791143834">almenüvel</translation>
 <translation id="4101527861445851766">Bejelölt négyzet</translation>
@@ -500,6 +501,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4877261390094455813">Adjon meg egy keresési lekérdezést.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Belső link</translation>
+<translation id="4915087353619183190">A Tanuló mód indítása. Nyomja le a kívánt gombot az eszköz billentyűzetén, a frissíthető Braille-billentyűzeten, vagy válassza ki a kívánt érintési kézmozdulatot, ha szeretné megtanulni a funkcióját. A kilépéshez nyomja le a Control és a W vagy az Escape gombot.</translation>
 <translation id="492295894462528572">Előszó</translation>
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4953585991029886728">Szöveg szerkesztése</translation>
@@ -872,6 +874,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8076492880354921740">Lapok</translation>
 <translation id="8091452896542422286">Szóköz</translation>
 <translation id="8110647606445335195">Nincsenek ARIA határjelek.</translation>
+<translation id="8138880386467279117">Érintés</translation>
 <translation id="8153880621934657047">Nem táblázatban van.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alulvonás}other{# alulvonás}}</translation>
 <translation id="8179976553408161302">Enter</translation>

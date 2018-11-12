@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth uitgeschakeld</translation>
 <translation id="2268813581635650749">Alle gebruikers uitloggen</translation>
 <translation id="2292698582925480719">Weergaveschaal</translation>
+<translation id="2302092602801625023">Dit account wordt beheerd door Family Link</translation>
 <translation id="2303600792989757991">Overzicht venster in-/uitschakelen</translation>
 <translation id="2339073806695260576">Tik op de stylusknop op de plank om een notitie of screenshot te maken, of om de Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="2341729377289034582">Vergrendeld in verticale stand</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Vergrendelen</translation>
 <translation id="3798670284305777884">Luidspreker (intern)</translation>
+<translation id="3799080171973636491">Je hebt op de sneltoets voor vergroten op volledige schermgrootte gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="380165613292957338">Hoi, wat kan ik voor je doen?</translation>
 <translation id="383629559565718788">Toetsenbordinstellingen weergeven</translation>
 <translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> activeren</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Je hebt op de sneltoets voor hoog contrast gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Vergrootglas</translation>
 <translation id="4351433414020964307">Assistent wordt geladen...</translation>
 <translation id="435527878592612277">Selecteer je foto</translation>
 <translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
+<translation id="4389184120735010762">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Niet meer tonen</translation>
@@ -390,6 +394,7 @@
 <translation id="7886169021410746335">Privacyinstellingen aanpassen</translation>
 <translation id="7886277072580235377">Je internetsessie wordt gewist wanneer je uitlogt. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Stuur een e-mail</translation>
+<translation id="7897375687985782769">Je hebt op de sneltoets voor schermrotatie gedrukt. Wil je het scherm draaien?</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7933084174919150729">De Google Assistent is alleen beschikbaar voor het primaire profiel.</translation>
 <translation id="79341161159229895">Account wordt beheerd door <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -455,6 +460,7 @@
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="8940956008527784070">Batterij is bijna leeg (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> gebruiken</translation>
 <translation id="899350903320462459">Ontgrendel het apparaat als <ph name="LOGIN_ID" /> om de meldingsactie uit te voeren</translation>
 <translation id="8995603266996330174">Beheerd door <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Update van Adobe Flash Player beschikbaar</translation>

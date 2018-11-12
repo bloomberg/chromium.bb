@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
 <translation id="2292698582925480719">Escala de apresentação</translation>
+<translation id="2302092602801625023">Esta conta é gerida pelo Family Link</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
 <translation id="2339073806695260576">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã, utilizar o ponteiro de laser ou a lupa.</translation>
 <translation id="2341729377289034582">Bloqueado na vertical</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altifalante (interno)</translation>
+<translation id="3799080171973636491">Premiu o atalho de teclado da lupa de ecrã inteiro. Pretende ativá-la?</translation>
 <translation id="380165613292957338">Olá, como posso ajudar?</translation>
 <translation id="383629559565718788">Mostrar definições do teclado</translation>
 <translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4292681942966152062">A ativar <ph name="NETWORK_NAME" />…</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Premiu o atalho de teclado de alto contraste. Pretende ativá-lo?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">A carregar o Assistente...</translation>
 <translation id="435527878592612277">Selecionar a sua foto</translation>
 <translation id="4378551569595875038">A ligar...</translation>
 <translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
+<translation id="4389184120735010762">Premiu o atalho de teclado da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
@@ -390,6 +394,7 @@
 <translation id="7886169021410746335">Ajustar as definições de privacidade</translation>
 <translation id="7886277072580235377">Quando terminar sessão, a sua sessão de Internet será apagada. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar um email</translation>
+<translation id="7897375687985782769">Premiu o atalho de teclado da rotação do ecrã. Pretende rodar o ecrã?</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7933084174919150729">O Assistente Google está disponível apenas no perfil principal.</translation>
 <translation id="79341161159229895">Conta gerida por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" />.</translation>
@@ -455,6 +460,7 @@
 <translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">A utilizar <ph name="IME_NAME" />…</translation>
 <translation id="899350903320462459">Desbloqueie o dispositivo como <ph name="LOGIN_ID" /> para realizar a ação de notificação.</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>

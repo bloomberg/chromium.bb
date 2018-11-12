@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">Μια φόρτωση σελίδας σε εξέλιξη</translation>
 <translation id="4065205963140826639">Δοκιμάστε τώρα να χρησιμοποιήσετε τον συνδυασμό Αναζήτηση + δεξί βέλος για να βρείτε το κουμπί "Επόμενο" και, στη συνέχεια, πατήστε Αναζήτηση + κενό διάστημα για να κάνετε κλικ επάνω του.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ΠΕΡΙΣΠΩΜΕΝΗ}other{# περισπωμένες}}</translation>
+<translation id="4086311032171418648">Διακοπή Λειτουργίας εκμάθησης.</translation>
 <translation id="409334809956508737">Προηγούμενο στοιχείο</translation>
 <translation id="4099274309791143834">με υπομενού</translation>
 <translation id="4101527861445851766">Ένα επιλεγμένο πλαίσιο ελέγχου</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">Εισαγάγετε ένα ερώτημα αναζήτησης.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Ετικέτα "Εσωτερικός σύνδεσμος" (&lt;a&gt;)</translation>
+<translation id="4915087353619183190">Έναρξη Λειτουργίας εκμάθησης. Πατήστε ένα πλήκτρο qwerty, ένα πλήκτρο Μπράιγ με δυνατότητα ανανέωσης ή κάντε μια κίνηση αφής, για να μάθετε πώς λειτουργεί. Πατήστε control και w ή escape για έξοδο.</translation>
 <translation id="492295894462528572">Εισαγωγή</translation>
 <translation id="495170559598752135">Ενέργειες</translation>
 <translation id="4953585991029886728">Επεξεργασία κειμένου</translation>
@@ -873,6 +875,7 @@
 <translation id="8076492880354921740">Καρτέλες</translation>
 <translation id="8091452896542422286">Κενό διάστημα</translation>
 <translation id="8110647606445335195">Δεν υπάρχουν ορόσημα ARIA.</translation>
+<translation id="8138880386467279117">Άγγιγμα</translation>
 <translation id="8153880621934657047">Όχι μέσα στον πίνακα.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{σύμβολο υπογράμμισης}other{# σύμβολα υπογράμμισης}}</translation>
 <translation id="8179976553408161302">Enter</translation>

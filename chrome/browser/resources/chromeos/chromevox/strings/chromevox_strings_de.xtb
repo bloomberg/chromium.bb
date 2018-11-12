@@ -397,6 +397,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4058278702844053247">Eine Seite wird aufgebaut</translation>
 <translation id="4065205963140826639">Verwenden Sie jetzt Suche + Rechtspfeil, um die Schaltfläche "Weiter" zu finden, und drücken Sie dann Suche + Leertaste, um auf die Schaltfläche zu klicken.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{Tilde}other{# Tilden}}</translation>
+<translation id="4086311032171418648">Der Lernmodus wird beendet.</translation>
 <translation id="409334809956508737">Vorheriges Objekt</translation>
 <translation id="4099274309791143834">mit Untermenü</translation>
 <translation id="4101527861445851766">Ein angeklicktes Kästchen</translation>
@@ -499,6 +500,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4877261390094455813">Suchanfrage eingeben</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Interner Link</translation>
+<translation id="4915087353619183190">Der Lernmodus wird gestartet. Drücken Sie eine Taste auf der QWERTY-Tastatur oder der Braillezeile oder tippen Sie auf den Bildschirm, um mehr darüber zu erfahren. Zum Beenden drücken Sie "Strg + w" oder "Esc".</translation>
 <translation id="492295894462528572">Vorwort</translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4953585991029886728">Text bearbeiten</translation>
@@ -871,6 +873,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8091452896542422286">Leertaste</translation>
 <translation id="8110647606445335195">Keine ARIA-Markierungen</translation>
+<translation id="8138880386467279117">Berühren</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
 <translation id="8179976553408161302">Enter</translation>

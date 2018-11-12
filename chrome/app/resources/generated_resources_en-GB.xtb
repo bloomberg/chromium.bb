@@ -888,7 +888,6 @@
 <translation id="2309620859903500144">This site has been blocked from accessing your motion or light sensors.</translation>
 <translation id="2315414688463285945">Error configuring Linux files. Please try again.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
-<translation id="2317571474241981415">Teach Assistant to recognise your voice</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% done</translation>
 <translation id="2318143611928805047">Paper size</translation>
 <translation id="2318817390901984578">To use Android apps, charge &amp; update your <ph name="DEVICE_TYPE" />.</translation>
@@ -2083,6 +2082,7 @@
 <translation id="412940972494182898">Run Flash this time</translation>
 <translation id="4130199216115862831">Device Log</translation>
 <translation id="4130207949184424187">This extension has changed the page that is shown when you search from the Omnibox.</translation>
+<translation id="4130750466177569591">I agree</translation>
 <translation id="413121957363593859">Components</translation>
 <translation id="4131410914670010031">Black and white</translation>
 <translation id="4136203100490971508">Night Light will turn off automatically at sunrise</translation>

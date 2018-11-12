@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">صفحه در حال بارگیری</translation>
 <translation id="4065205963140826639">اکنون برای پیدا کردن دکمه «بعدی»، از :«جستجو» + پیکان راست استفاده کنید و سپس برای کلیک کردن روی آن روی «فاصله» + «جستجو» فشار دهید.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{علامت مد}one{# علامت مد}other{# علامت مد}}</translation>
+<translation id="4086311032171418648">درحال توقف حالت یادگیری.</translation>
 <translation id="409334809956508737">شیء قبلی</translation>
 <translation id="4099274309791143834">دارای منوی فرعی</translation>
 <translation id="4101527861445851766">کادر تأیید علامت‌خورده</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">یک عبارت جستجو را وارد کنید.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">پیوند داخلی</translation>
+<translation id="4915087353619183190">‏درحال شروع حالت یادگیری. یکی از کلیدهای qwerty، کلید بریل قابل‌بازخوانی یا اشاره لمسی را برای یادگیری عملکرد آن فشار دهید. برای خروج کلیدهای control + w یا escape را فشار دهید.</translation>
 <translation id="492295894462528572">پیش‌گفتار</translation>
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4953585991029886728">ویرایش نوشتار</translation>
@@ -872,6 +874,7 @@
 <translation id="8076492880354921740">برگه‌ها</translation>
 <translation id="8091452896542422286">فاصله</translation>
 <translation id="8110647606445335195">‏علامت مشخصه ARIA موجود نیست.</translation>
+<translation id="8138880386467279117">لمس</translation>
 <translation id="8153880621934657047">خارج از جدول</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{زیرخط}one{# زیرخط}other{# زیرخط}}</translation>
 <translation id="8179976553408161302">ورود</translation>

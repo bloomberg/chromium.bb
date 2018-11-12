@@ -397,6 +397,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4058278702844053247">Een pagina die wordt geladen</translation>
 <translation id="4065205963140826639">Gebruik nu Zoeken + pijl-rechts om de knop Volgende te zoeken en druk vervolgens op Zoeken + spatiebalk om erop te klikken.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tilde}other{# tildes}}</translation>
+<translation id="4086311032171418648">Leermodus stoppen.</translation>
 <translation id="409334809956508737">Vorig object</translation>
 <translation id="4099274309791143834">met submenu</translation>
 <translation id="4101527861445851766">Een aangevinkt selectievakje</translation>
@@ -499,6 +500,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4877261390094455813">Een zoekopdracht opgeven.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Interne link</translation>
+<translation id="4915087353619183190">Leermodus starten. Druk op een QWERTY-toets, een vernieuwbare brailletoets of tik op een gebaar om de functie ervan te leren. Druk op Control en W of Escape om af te sluiten.</translation>
 <translation id="492295894462528572">Voorwoord</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4953585991029886728">Tekst bewerken</translation>
@@ -870,6 +872,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8076492880354921740">Tabbladen</translation>
 <translation id="8091452896542422286">Spatie</translation>
 <translation id="8110647606445335195">Geen ARIA-oriëntatiepunten.</translation>
+<translation id="8138880386467279117">Touch</translation>
 <translation id="8153880621934657047">Niet in tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>

@@ -167,6 +167,7 @@
 <translation id="1217668622537098248">Переключаться обратно на нажатие левой кнопки мыши после завершения действия</translation>
 <translation id="121783623783282548">Пароли не совпадают.</translation>
 <translation id="1218860753635451122">Нажимая кнопку "Принимаю", вы соглашаетесь с Условиями использования, описанными выше.</translation>
+<translation id="1219533395013150448">На основе этих записей Ассистент создает образец вашего голоса. Образец хранится на устройстве, и его можно перезаписать или удалить в настройках Ассистента. Чтобы посмотреть или удалить голосовые команды, перейдите на страницу "Отслеживание действий".</translation>
 <translation id="122082903575839559">Алгоритм подписи сертификатов</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 с шифрованием RSA</translation>
 <translation id="1221825588892235038">Только выбранные</translation>
@@ -616,6 +617,7 @@
 <translation id="1880905663253319515">Удалить сертификат <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1886996562706621347">Разрешить запросы на установку обработчиков протоколов (рекомендуется)</translation>
 <translation id="1887442540531652736">Ошибка входа</translation>
+<translation id="1887597546629269384">Скажите "Эй, Google" ещё раз</translation>
 <translation id="1887850431809612466">Версия оборудования</translation>
 <translation id="1889984860246851556">Настройки прокси-сервера</translation>
 <translation id="1890674179660343635">&lt;span&gt;Идентификатор:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
@@ -713,6 +715,7 @@
 <translation id="2048653237708779538">Действие недоступно</translation>
 <translation id="204914487372604757">Создать ярлык</translation>
 <translation id="2050339315714019657">Книжная</translation>
+<translation id="2052369079215022979">Управляется вашей организацией</translation>
 <translation id="2053312383184521053">Данные о состоянии бездействия</translation>
 <translation id="205560151218727633">Логотип Google Ассистента</translation>
 <translation id="2058456167109518507">Обнаружено устройство</translation>
@@ -900,6 +903,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">Введите новое имя</translation>
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> запрашивает подключение</translation>
+<translation id="2342740338116612727">Закладки добавлены</translation>
 <translation id="2344028582131185878">Автоматическая загрузка</translation>
 <translation id="2345723121311404059">Печать 1 страницы на принтере <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">Использование Hangouts и Cast for Education регулируется Политикой конфиденциальности Google.</translation>
@@ -1680,6 +1684,7 @@
 <translation id="3550915441744863158">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
 <translation id="3551320343578183772">Закрыть вкладку</translation>
 <translation id="3552780134252864554">Удаляется при выходе</translation>
+<translation id="3553146918065661815">Предупреждать перед выходом при нажатии ⌘ + Q</translation>
 <translation id="3555812735919707620">Удалить расширение</translation>
 <translation id="3556000484321257665">Поисковая система изменена на <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Не удалось применить политику к устройству.</translation>
@@ -1750,6 +1755,7 @@
 <translation id="3651488188562686558">Отключится от сети Wi-Fi</translation>
 <translation id="3652817283076144888">Инициализация…</translation>
 <translation id="3653160965917900914">Общие папки сети</translation>
+<translation id="3653842108912548333">Voice Match и Ассистент</translation>
 <translation id="3653999333232393305">Разрешить <ph name="HOST" /> доступ к микрофону</translation>
 <translation id="3654045516529121250">Чтение настроек специальных возможностей</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{С постоянным доступом к 1 файлу.}one{С постоянным доступом к # файлу.}few{С постоянным доступом к # файлам.}many{С постоянным доступом к # файлам.}other{С постоянным доступом к # файла.}}</translation>
@@ -2077,6 +2083,7 @@
 <translation id="412940972494182898">Запустить Flash только сейчас</translation>
 <translation id="4130199216115862831">Журнал устройства</translation>
 <translation id="4130207949184424187">Расширение изменило поисковую систему, которая используется по умолчанию при вводе запроса в омнибокс.</translation>
+<translation id="4130750466177569591">Принимаю</translation>
 <translation id="413121957363593859">Компоненты</translation>
 <translation id="4131410914670010031">Черно-белая печать</translation>
 <translation id="4136203100490971508">Ночной режим отключится автоматически на рассвете</translation>
@@ -2291,6 +2298,7 @@
 <translation id="4524832533047962394">Режим регистрации устройства не поддерживается этой версией операционной системы. Убедитесь, что вы используете последнюю версию, и повторите попытку.</translation>
 <translation id="4525382759303819021">Следите за новостями и первыми узнавайте о лучших приложениях в Google Play</translation>
 <translation id="4530494379350999373">Происхождение</translation>
+<translation id="4533846798469727141">Теперь скажите "Эй, Google"</translation>
 <translation id="4533985347672295764">Процессорное время</translation>
 <translation id="4534661889221639075">Повторите попытку.</translation>
 <translation id="4535127706710932914">Профиль по умолчанию</translation>
@@ -3273,6 +3281,7 @@
 <translation id="5990386583461751448">Перевод</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить это приложение.}one{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}few{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}many{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}other{Чтобы продолжить просмотр веб-страниц, попросите администратора удалить эти приложения.}}</translation>
 <translation id="5997337190805127100">Подробнее о доступе для сайта…</translation>
+<translation id="6000758707621254961">Количество результатов поиска по запросу "<ph name="SEARCH_TEXT" />": <ph name="RESULT_COUNT" /></translation>
 <translation id="6002458620803359783">Голоса по умолчанию</translation>
 <translation id="6005695835120147974">Медиамаршрутизатор</translation>
 <translation id="6006484371116297560">Классическая</translation>
@@ -3522,6 +3531,7 @@
 <translation id="637062427944097960">Этот файл открыт на другом рабочем столе. Чтобы увидеть его, переключитесь на профиль пользователя <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Повторить</translation>
+<translation id="6377268785556383139">1 результат поиска по запросу "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380143666419481200">Принять условия и продолжить</translation>
 <translation id="6384275966486438344">Использование поисковой системы <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Сайты могут сохранять и считывать файлы cookie</translation>
@@ -3539,6 +3549,7 @@
 <translation id="6405510437656969977">Продолжите, когда будете готовы ввести PIN-код.</translation>
 <translation id="6406303162637086258">Симулировать перезапуск браузера</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
+<translation id="6406708970972405507">Настройки – <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">Просмотр и изменение данных на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Файлы изображений</translation>
 <translation id="6410328738210026208">Выбрать другой канал и включить Powerwash</translation>
@@ -3822,6 +3833,7 @@
 <translation id="6840184929775541289">Не является Центром сертификации</translation>
 <translation id="6840313690797192085">$1 ПБ</translation>
 <translation id="6841186874966388268">Ошибки</translation>
+<translation id="6843423766595476978">Команда "Окей, Google" настроена</translation>
 <translation id="6845038076637626672">Развернуть</translation>
 <translation id="685040365210406336">Ничего не менять</translation>
 <translation id="6851497530878285708">Приложение включено</translation>
@@ -4084,6 +4096,7 @@
 <translation id="7246947237293279874">FTP-прокси</translation>
 <translation id="7248671827512403053">Приложение</translation>
 <translation id="725109152065019550">Администратор запретил использовать внешний накопитель для этого аккаунта.</translation>
+<translation id="7251346854160851420">Обои по умолчанию</translation>
 <translation id="7253521419891527137">&amp;Подробнее</translation>
 <translation id="7254554697254365959">Не удалось перевести страницу</translation>
 <translation id="7254951428499890870">Запустить приложение "<ph name="APP_NAME" />" в режиме диагностики?</translation>
@@ -4194,6 +4207,7 @@
 <translation id="7417705661718309329">Карта Google</translation>
 <translation id="741906494724992817">Приложению не требуются особые разрешения.</translation>
 <translation id="7419433794191666278">Подключите устройство Chromebook к телефону. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">Закладки удалены</translation>
 <translation id="7421925624202799674">Просмотр кода страницы</translation>
 <translation id="7422192691352527311">Настройки...</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
@@ -4358,6 +4372,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{1 объект в списке закладок}one{# объект в списке закладок}few{# объекта в списке закладок}many{# объектов в списке закладок}other{# объекта в списке закладок}}</translation>
 <translation id="7701040980221191251">Нет</translation>
 <translation id="7701869757853594372">USER-дескрипторы</translation>
+<translation id="7702574632857388784">Удалить файл "<ph name="FILE_NAME" />" из списка</translation>
 <translation id="7702907602086592255">Домен</translation>
 <translation id="7704305437604973648">Задача</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
@@ -4752,6 +4767,7 @@
 <translation id="8249296373107784235">Отмена</translation>
 <translation id="8249672078237421304">Предлагать перевод страниц, если их язык отличается от используемого в браузере</translation>
 <translation id="8251578425305135684">Быстрая ссылка удалена.</translation>
+<translation id="8252569384384439529">Загрузка...</translation>
 <translation id="8253198102038551905">Чтобы просмотреть свойства сети, нажмите "+"</translation>
 <translation id="825483282309623688">Чтобы восстановить данные, необходимо подключение к Интернету.</translation>
 <translation id="8256319818471787266">Дружок</translation>
@@ -4818,6 +4834,7 @@
 <translation id="8371695176452482769">Говорите</translation>
 <translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="8373553483208508744">Отключить звук на вкладках</translation>
+<translation id="8378714024927312812">Управляется вашей организацией</translation>
 <translation id="8379878387931047019">Устройство не поддерживает тип электронного ключа, запрашиваемый этим сайтом.</translation>
 <translation id="8382913212082956454">Копировать &amp;адрес электронной почты</translation>
 <translation id="8386091599636877289">Политика не найдена.</translation>
@@ -4856,6 +4873,7 @@
 <translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
 <translation id="8439506636278576865">Предлагать перевести страницы на этом языке</translation>
 <translation id="8440630305826533614">Приложения для Linux</translation>
+<translation id="8446474770554547328">Скажите "Окей, Google" три раза, чтобы записать образец голоса. Образец хранится на устройстве, и его можно перезаписать или удалить в настройках Ассистента. Чтобы посмотреть или удалить голосовые команды, перейдите на страницу "Отслеживание действий".</translation>
 <translation id="8446884382197647889">Подробнее...</translation>
 <translation id="8447409163267621480">Сочетание должно начинаться с клавиши Ctrl или Alt</translation>
 <translation id="8448729345478502352">Уменьшить или увеличить объекты на экране</translation>

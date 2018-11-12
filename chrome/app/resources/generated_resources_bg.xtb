@@ -167,6 +167,7 @@
 <translation id="1217668622537098248">Връщане към кликване с ляв бутон след действието</translation>
 <translation id="121783623783282548">Паролите не са идентични.</translation>
 <translation id="1218860753635451122">С кликването си върху бутона „Приемам“ приемате описаното по-горе обработване за тези услуги на Google.</translation>
+<translation id="1219533395013150448">Асистент използва тези записи, за да създаде гласов модел за вас, който се съхранява на устройството ви. Можете да изтриете модела или да го обучите отново от настройките на Асистент. Можете да преглеждате или изтривате гласови команди в контролите за активността си в Google.</translation>
 <translation id="122082903575839559">Алгоритъм за подписа на сертификата</translation>
 <translation id="1221024147024329929">PKCS 1 MD2 с RSA шифроване</translation>
 <translation id="1221825588892235038">Само избраното</translation>
@@ -614,6 +615,7 @@
 <translation id="1880905663253319515">Да се изтрие ли сертификатът „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1886996562706621347">Разрешаване на питания от сайтове дали да са манипулаторите по подразбиране за протоколите (препоръчително)</translation>
 <translation id="1887442540531652736">Грешка при влизането</translation>
+<translation id="1887597546629269384">Кажете „Hey Google“ отново</translation>
 <translation id="1887850431809612466">Версия на хардуера</translation>
 <translation id="1889984860246851556">Отваряне на настройките за прокси сървър</translation>
 <translation id="1890674179660343635">&lt;span&gt;Идент. №:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
@@ -711,6 +713,7 @@
 <translation id="2048653237708779538">Действието не може да се извърши</translation>
 <translation id="204914487372604757">Създаване на пряк път</translation>
 <translation id="2050339315714019657">Вертикално</translation>
+<translation id="2052369079215022979">Управлява се от организацията ви</translation>
 <translation id="2053312383184521053">Данни за състоянието на неактивност</translation>
 <translation id="205560151218727633">Лого на Google Асистент</translation>
 <translation id="2058456167109518507">Открито е устройство</translation>
@@ -898,6 +901,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">Въведете ново име</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> иска да се сдвои</translation>
+<translation id="2342740338116612727">Отметките бяха добавени</translation>
 <translation id="2344028582131185878">Автоматични изтегляния</translation>
 <translation id="2345723121311404059">1 страница до „<ph name="PRINTER_NAME" />“</translation>
 <translation id="2347644257713614136">Използването на Hangouts и Cast for Education се урежда от Декларацията за поверителност на Google.</translation>
@@ -1677,6 +1681,7 @@
 <translation id="3550915441744863158">Chrome се актуализира автоматично, така че винаги имате най-новата версия</translation>
 <translation id="3551320343578183772">Затваряне на раздела</translation>
 <translation id="3552780134252864554">Изчистено при изход</translation>
+<translation id="3553146918065661815">Показване на предупреждение преди излизане с ⌘Q</translation>
 <translation id="3555812735919707620">Премахване на разширението</translation>
 <translation id="3556000484321257665">Търсещата ви машина бе променена на <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Правилото не бе инсталирано успешно на устройството.</translation>
@@ -1748,6 +1753,7 @@
 <translation id="3651488188562686558">прекрати връзката си с Wi-Fi</translation>
 <translation id="3652817283076144888">Подготвя се за работа</translation>
 <translation id="3653160965917900914">Споделени хранилища в мрежата</translation>
+<translation id="3653842108912548333">Работете със своя Асистент с помощта на Voice Match</translation>
 <translation id="3653999333232393305">Достъпът на <ph name="HOST" /> до микрофона ви да продължава да е разрешен</translation>
 <translation id="3654045516529121250">Четене на настройките ви за достъпност</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Има постоянен достъп до един файл.}other{Има постоянен достъп до # файла.}}</translation>
@@ -2076,6 +2082,7 @@
 <translation id="412940972494182898">Изпълняване на Flash този път</translation>
 <translation id="4130199216115862831">Регистрационен файл на устройството</translation>
 <translation id="4130207949184424187">Това разширение промени страницата, която се показва при търсене от полето за всичко.</translation>
+<translation id="4130750466177569591">Приемам</translation>
 <translation id="413121957363593859">Компоненти</translation>
 <translation id="4131410914670010031">Черно-бяло</translation>
 <translation id="4136203100490971508">Нощното осветление ще се изключи автоматично по изгрев</translation>
@@ -2290,6 +2297,7 @@
 <translation id="4524832533047962394">Предоставеният режим за регистриране не се поддържа от тази версия на операционната система. Моля, уверете се, че използвате най-новата версия.</translation>
 <translation id="4525382759303819021">Получаване на най-актуалната информация и най-новите препоръки за приложения от Google Play Магазин</translation>
 <translation id="4530494379350999373">Произход</translation>
+<translation id="4533846798469727141">Сега кажете „Hey Google“</translation>
 <translation id="4533985347672295764">Процесорно време</translation>
 <translation id="4534661889221639075">Опитайте отново.</translation>
 <translation id="4535127706710932914">Потребителски профил по подразбиране</translation>
@@ -3273,6 +3281,7 @@
 <translation id="5990386583461751448">Преведено</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{За да продължите да сърфирате безпроблемно в мрежата, помолете администратора да премахне това приложение.}other{За да продължите да сърфирате безпроблемно в мрежата, помолете администратора да премахне тези приложения.}}</translation>
 <translation id="5997337190805127100">Научете повече за достъпа на сайта</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6002458620803359783">Предпочитани гласове</translation>
 <translation id="6005695835120147974">Медиен маршрутизатор</translation>
 <translation id="6006484371116297560">Класическа тема</translation>
@@ -3522,6 +3531,7 @@
 <translation id="637062427944097960">Този файл се отвори на друг работен плот. Преминете към <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), за да го прегледате.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Нов опит</translation>
+<translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380143666419481200">Приемам и продължавам</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Сайтовете могат да запазват и четат данни за „бисквитки“</translation>
@@ -3539,6 +3549,7 @@
 <translation id="6405510437656969977">Продължете, когато сте готови да въведете ПИН кода</translation>
 <translation id="6406303162637086258">Симулиране на рестартиране на браузъра</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
+<translation id="6406708970972405507">Настройки – <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Графични файлове</translation>
 <translation id="6410328738210026208">Промяна на канала и Powerwash</translation>
@@ -3822,6 +3833,7 @@
 <translation id="6840184929775541289">Не е сертифициращ орган</translation>
 <translation id="6840313690797192085">$1 ПБ</translation>
 <translation id="6841186874966388268">Грешки</translation>
+<translation id="6843423766595476978">Настроихте Ok Google</translation>
 <translation id="6845038076637626672">Отваряне с увеличен изглед</translation>
 <translation id="685040365210406336">Без промени</translation>
 <translation id="6851497530878285708">Активиране на приложението</translation>
@@ -4084,6 +4096,7 @@
 <translation id="7246947237293279874">FTP прокси сървър</translation>
 <translation id="7248671827512403053">Приложение</translation>
 <translation id="725109152065019550">За съжаление администраторът ви е деактивирал външното хранилище за профила ви.</translation>
+<translation id="7251346854160851420">Тапет по подразбиране</translation>
 <translation id="7253521419891527137">&amp;Научете повече</translation>
 <translation id="7254554697254365959">Тази страница не можа да се преведе.</translation>
 <translation id="7254951428499890870">Наистина ли искате да стартирате <ph name="APP_NAME" /> в режим за диагностика?</translation>
@@ -4194,6 +4207,7 @@
 <translation id="7417705661718309329">Карта на Google</translation>
 <translation id="741906494724992817">Това приложение не изисква специални разрешения.</translation>
 <translation id="7419433794191666278">Свържете своя Chromebook с телефона си. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">Отметките бяха премахнати</translation>
 <translation id="7421925624202799674">&amp;Преглед на изходния код на страницата</translation>
 <translation id="7422192691352527311">Предпочитания...</translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
@@ -4358,6 +4372,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{1 елемент в списъка с отметки}other{# елемента в списъка с отметки}}</translation>
 <translation id="7701040980221191251">Няма</translation>
 <translation id="7701869757853594372">Манипулатори за потребителски обекти</translation>
+<translation id="7702574632857388784">Премахване на „<ph name="FILE_NAME" />“ от списъка</translation>
 <translation id="7702907602086592255">Домейн</translation>
 <translation id="7704305437604973648">Задача</translation>
 <translation id="7704317875155739195">Автоматично довършване на заявки за търсене и URL адреси</translation>
@@ -4753,6 +4768,7 @@
 <translation id="8249296373107784235">Прекратяване</translation>
 <translation id="8249672078237421304">Извеждане на предложение за превод на страниците, които не са на четим от вас език</translation>
 <translation id="8251578425305135684">Миниизображението е премахнато.</translation>
+<translation id="8252569384384439529">Качва се...</translation>
 <translation id="8253198102038551905">Кликнете върху „+“, за да получите свойствата на мрежата</translation>
 <translation id="825483282309623688">За да възстановите данните си, трябва да имате връзка с интернет.</translation>
 <translation id="8256319818471787266">Спарки</translation>
@@ -4819,6 +4835,7 @@
 <translation id="8371695176452482769">Говорете сега</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
 <translation id="8373553483208508744">Спиране на звука на разделите</translation>
+<translation id="8378714024927312812">Управлява се от организацията ви</translation>
 <translation id="8379878387931047019">Устройството не поддържа типа ключ за сигурност, заявен от този уебсайт</translation>
 <translation id="8382913212082956454">Копиране на име&amp;йл адреса</translation>
 <translation id="8386091599636877289">Правилото не е намерено.</translation>
@@ -4857,6 +4874,7 @@
 <translation id="8438566539970814960">Подобряване на търсенията и сърфирането</translation>
 <translation id="8439506636278576865">Предлагане страниците на този език да се превеждат</translation>
 <translation id="8440630305826533614">Приложения за Linux</translation>
+<translation id="8446474770554547328">С трикратното записване на „Ok Google“ се създава гласов модел за вас, който се съхранява на устройството ви. Можете да изтриете модела или да го обучите отново от настройките на Асистент. Можете да преглеждате или изтривате гласови команди в контролите за активността си в Google.</translation>
 <translation id="8446884382197647889">Научете повече</translation>
 <translation id="8447409163267621480">Използвайте или Ctrl, или Alt</translation>
 <translation id="8448729345478502352">Смаляване или уголемяване на елементите на екрана</translation>

@@ -125,6 +125,15 @@
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
 
       Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
+<translation id="1297117713060236551">Ši politika valdo svetainių, kurios niekada neperjungia naršyklės, sąrašą.
+
+      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="USE_IE_SITELIST_POLICY_NAME" />“.
+
+      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
+
+      Kai ši politika nustatyta, kiekvienas elementas laikomas taisykle, panašiai kaip taikant politiką „<ph name="URL_LIST_POLICY_NAME" />“. Tačiau taikoma atvirkštinė logika: nustačius taisyklių atitiktį alternatyvi naršyklė neatidaroma.
+
+      Taisyklės taikomos abiem kryptimis, priešingai nei „<ph name="URL_LIST_POLICY_NAME" />“. T. y., kai pateikiamas ir įgalinamas „Internet Explorer“ priedas, jis taip pat valdo, ar „<ph name="IE_PRODUCT_NAME" />“ turėtų atidaryti šiuos URL sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
 <translation id="1307454923744766368">Šaltiniai arba prieglobos serverio pavadinimo šablonai, kuriems netaikomi
@@ -216,6 +225,7 @@
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
 <translation id="1514888685242892912">Įgalinti „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
+<translation id="1523774894176285446">Alternatyvi naršyklė, kuri paleidžiama sukonfigūruotoms svetainėms.</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
 <translation id="1541170838458414064">Spausdinamo puslapio dydžio apribojimas</translation>
@@ -226,6 +236,12 @@
 
       Jei šis nustatymas išjungtas arba nesukonfigūruotas, įmonių naudotojai
       negali naudoti ARC.</translation>
+<translation id="1559980755219453326">Ši politika valdo, ar pranešti plėtinių ir papildinių informaciją.
+
+      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, plėtinių ir papildinių duomenys renkami.
+      Kai ši politika nustatyta kaip „Netiesa“, plėtinių ir papildinių duomenys nerenkami.
+
+      Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1561967320164410511">Papildomi U2F asmeninės atestacijos plėtiniai</translation>
 <translation id="1574554504290354326">Šis nustatymas nebenaudojamas. Vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įgalinimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą į „False“.
@@ -399,6 +415,7 @@
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
 <translation id="209586405398070749">Stabilus kanalas</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
+<translation id="2104418465060359056">Plėtinių ir papildinių informacijos pranešimas</translation>
 <translation id="2111016292707172233">Įgalinamas Paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
 
       Jei įgalinsite šį nustatymą, naudotojams bus pasiekiama Paieška palietus ir jie galės įjungti arba išjungti funkciją.
@@ -594,6 +611,7 @@
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2536525645274582300">Ar įgalinti „Google“ vietovės paslaugas, nusprendžia naudotojas</translation>
 <translation id="254653220329944566">Įgalinamas „<ph name="PRODUCT_NAME" />“ ataskaitų teikimas debesyje</translation>
+<translation id="2548572254685798999">Saugaus naršymo informacijos pranešimas</translation>
 <translation id="2550593661567988768">Tik vienpusis spausdinimas</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
 <translation id="2562339630163277285">Nurodomas paieškos variklio, naudoto tiesioginiams rezultatams teikti, URL. URL turi būti eilutė <ph name="SEARCH_TERM_MARKER" />, kuri pateikiant užklausą bus pakeista naudotojo jau įvestu tekstu.
@@ -656,6 +674,13 @@
 
       Jei ši politika nenustatyta, valdomų naudotojų numatytasis nustatymas bus „neleidžiama“, o nevaldomų naudotojų – „leidžiama“.</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
+<translation id="2663739737868438950">
+      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiejų tipų politikai nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte efektyviai naudoti atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
+      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
+      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“, naudodami komandos eilutės žymas.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      </translation>
 <translation id="2672012807430078509">NTLM kaip mažų ir vidutinio dydžio įmonių įrengimo elementų tapatybės nustatymo protokolo įgalinimo valdymas</translation>
 <translation id="267596348720209223">Nurodomos paieškos teikėjo palaikomos simbolių koduotės. Koduotės – tai kodų puslapių pavadinimai, pvz., UTF-8, GB2312 ir ISO-8859-1. Jie išbandomi nurodyta tvarka.
 
@@ -784,6 +809,17 @@
 <translation id="3038323923255997294">Uždarius „<ph name="PRODUCT_NAME" />“ toliau leisti fonines programas</translation>
 <translation id="3046192273793919231">Tinklo paketų siuntimas į valdymo serverį, siekiant stebėti prisijungimo būseną</translation>
 <translation id="3047732214002457234">„Chrome“ valymo įrankio duomenų ataskaitų teikimo „Google“ valdymas</translation>
+<translation id="304775240152542058">Ši politika valdo komandos eilutės parametrus, kurie bus paleisti alternatyvioje naršyklėje.
+
+      Kai ši politika nenustatyta, tik URL perduodamas kaip komandos eilutės parametrai.
+
+      Kai ši politika nustatyta kaip eilučių sąrašas, kiekviena eilutė perduodama alternatyviai naršyklei kaip atskiri komandos eilutės parametrai. Sistemoje „Windows“ parametrai sujungiami su tarpais. Sistemose „Mac OS X“ ir „Linux“ parametrą gali sudaryti tarpai ir jis vis tiek bus laikomas kaip vienas parametras.
+
+      Jei elemente yra ${url}, jis pakeičiamas norimo atidaryti puslapio URL.
+
+      Jei jokiame elemente nėra ${url}, URL pridedamas komandos eilutės pabaigoje.
+
+      Aplinkos kintamieji išplečiami. Sistemoje „Windows“ %ABC% pakeičiama ABC aplinkos kintamojo verte. Sistemose „Mac OS X“ ir „Linux“ ${ABC} pakeičiama ABC aplinkos kintamojo verte.</translation>
 <translation id="3048744057455266684">Jei ši politika yra nustatyta ir paieškos URL, pasiūlyto „Omnibox“, užklausos eilutėje ar fragmento identifikatoriuje yra šis parametras, pasiūlyme bus rodomi paieškos terminai ir paieškos teikėjas, o ne tiesiog paieškos URL.
 
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
@@ -868,6 +904,9 @@
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų ekrano išjungimo delsos laiko (jei jis nustatytas) ar neveikos delsos laiko arba būtų jam lygios.</translation>
+<translation id="3251500716404598358">Konfigūruojamos perjungimo iš vienos naršyklės į kitą politikos nuostatos.
+
+      Sukonfigūruotos svetainės bus automatiškai atidarytos kitoje naršyklėje nei „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
 <translation id="3273221114520206906">Numatytasis „JavaScript“ nustatymas</translation>
 <translation id="3284094172359247914">„WebUSB“ API naudojimo valdymas</translation>
@@ -951,6 +990,14 @@
 
         Šios politikos vertė yra registracijos prieigos raktas, kurį galima gauti iš „Google“ administratoriaus pulto.</translation>
 <translation id="3496296378755072552">Slaptažodžių tvarkytuvė</translation>
+<translation id="3500732098526756068">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
+
+      Naudodami politikos nuostatas „PasswordProtectionLoginURLs“ ir „PasswordProtectionChangePasswordURL“ galite konfigūruoti, kurie slaptažodžiai bus apsaugoti.
+
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOff“, nebus rodomas įspėjimas dėl slaptažodžio apsaugos.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPasswordReuse“, slaptažodžio apsaugos įspėjimas bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kuri neįtraukta į baltąjį sąrašą.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPhishingReuse“, slaptažodžio apsaugos įspėjimas bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kurioje sukčiaujama.
+      Jei ši politika nenustatyta, slaptažodžio apsaugos paslauga apsaugos tik „Google“ slaptažodžius, bet naudotojas galės pakeisti šį nustatymą.</translation>
 <translation id="3502555714327823858">Leisti visus dvipusius režimus</translation>
 <translation id="350443680860256679">ARC konfigūravimas</translation>
 <translation id="3504791027627803580">Nurodomas paieškos variklio URL, naudojamas vaizdų paieškai teikti. Paieškos užklausos bus siunčiamos naudojant GET metodą. Jei nustatyta politika „DefaultSearchProviderImageURLPostParams“, vaizdų paieškos užklausoms naudojamas POST metodas.
@@ -969,6 +1016,7 @@
       Jei ši politika nustatyta kaip „DeveloperToolsAllowed“ (1 vertė), kūrėjo įrankius ir „JavaScript“ pultą galima pasiekti ir naudoti esant bet kokiam kontekstui, įskaitant tuos atvejus, kai naudojami pagal įmonės politiką įdiegti plėtiniai.
       Jei ši politika nustatyta kaip „DeveloperToolsDisallowed“ (2 vertė), kūrėjo įrankių negalima pasiekti ir nebegalima tikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
+<translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
 <translation id="3556806727696701427">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija. Naudotojams šio nustatymo keisti neleidžiama.
 
       Jei įgalinsite šį nustatymą, Saugus naršymas bus visada aktyvus.
@@ -984,6 +1032,15 @@
       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
+<translation id="3624171042292187668">
+      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte efektyviai naudoti atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu „SitePerProcess“ atskiriamos visos svetainės.
+      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
+      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“, naudodami komandos eilutės žymas.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+
+      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „SitePerProcess“ sistemoje „Android“, naudokite politikos nustatymą „SitePerProcessAndroid“.
+      </translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3628480121685794414">Įgalinti vienpusį spausdinimą</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
@@ -1149,6 +1206,7 @@
       Jei ši politika nustatyta į „true“, bus siunčiami stebėjimo tinklo paketai (<ph name="HEARTBEATS_TERM" />).
       Jei ji nustatyta į „false“ arba yra nenustatyta, paketai siunčiami nebus.</translation>
 <translation id="3950239119790560549">Laiko apribojimų atnaujinimas</translation>
+<translation id="3956686688560604829">„Internet Explorer“ politikos „SiteList“ naudojimas pasenusioms naršyklėms palaikyti.</translation>
 <translation id="3958586912393694012">Leisti naudoti „Smart Lock“</translation>
 <translation id="3963602271515417124">Jei ši politika galioja, leidžiama nuotoliniu būdu patvirtinti įrenginį, o sertifikatas bus automatiškai sugeneruotas ir įkeltas į įrenginių tvarkymo serverį.
 
@@ -1564,6 +1622,7 @@
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="5213038356678567351">Svetainė, kurios niekada neturėtų suaktyvinti naršyklės perjungimo.</translation>
 <translation id="5219844027738217407">„Android“ programose ši politika turi įtakos tik mikrofonui. Kai ši politika nustatyta į „Tiesa“, mikrofonas be išimčių nutildomas visose „Android“ programose.</translation>
 <translation id="5228316810085661003">Vietinės įrenginio paskyros automatinio prisijungimo delsa.
 
@@ -1623,6 +1682,7 @@
 
       Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių nei nurodyta SSL / TLS versijų. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="5330684698007383292">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šių tipų turinį</translation>
+<translation id="5365476955714838841">Alternatyviai naršyklei skirti komandos eilutės parametrai.</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="5366745336748853475">Galima sudaryti URL šablonų sąrašą, nurodantį, kurioms svetainėms prisijungimo ekrane, kur rėmelyje priglobiama SAML eiga, automatiškai pasirenkamas kliento sertifikatas (jei svetainėje jo reikalaujama). Naudojimo pavyzdys – sukonfigūruoti įrenginio sertifikatą, kad jis būtų pateiktas „SAML IdP“ eigoje.
 
@@ -1734,6 +1794,19 @@
       Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
 <translation id="5584132346604748282">Valdomos „Android“ skirtos „Google“ vietovių paslaugos</translation>
 <translation id="5586942249556966598">Nieko nedaryti</translation>
+<translation id="5592242031005200087">
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
+      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
+      taip pat bus atskiriamas ir padomenis https://foo.example.com/ kaip
+      svetainės https://example.com/ dalis.
+      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOriginsAndroid“ ir „SitePerProcessAndroid“ bandymai bus išjungti. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“ naudodami komandos eilutės žymą.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+
+      PASTABA: sistemoje „Android“ svetainių atskyrimas yra eksperimentinis. Palaikymas bus pagerintas laikui bėgant, bet šiuo metu tai gali sukelti našumo problemų.
+
+      PASTABA: ši politika taikoma tik naršyklei „Chrome“ sistemoje „Android“, veikiančioje įrenginiuose, kuriuose būtinai turi būti daugiau nei 1 GB laisvosios prieigos atminties. Kad politiką pritaikytumėte ne „Android“ platformose, naudokite „IsolateOrigins“.
+      </translation>
 <translation id="5630352020869108293">Atkurti paskutinę sesiją</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
 <translation id="5689430183304951538">Numatytasis spausdinamo puslapio dydis</translation>
@@ -1756,6 +1829,17 @@
 
       Jei ši politika nenustatyta arba nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ naudoja esamus panaikinimo tikrinimo prisijungus nustatymus.</translation>
 <translation id="5728154254076636808">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą</translation>
+<translation id="5728661376331491504">Ši politika valdo svetainių, kurios turi būti atidarytos alternatyvioje naršyklėje, sąrašą.
+
+      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="USE_IE_SITELIST_POLICY_NAME" />“.
+
+      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
+
+      Kai ši politika nustatyta, kiekvienas elementas laikomas elemento atidarymo alternatyvioje naršyklėje taisykle. Sistemoje „<ph name="PRODUCT_NAME" />“ šios taisyklės naudojamos pasirenkant, ar URL turėtų būti atidarytas alternatyvioje naršyklėje.
+
+      Kai „Internet Explorer“ priedas rodomas ir įgalintas, „Internet Explorer“ vėl perjungiama į „<ph name="PRODUCT_NAME" />“, jei taisyklės neatitinka.
+
+      Jei taisyklės prieštarauja viena kitai, sistemoje „<ph name="PRODUCT_NAME" />“ naudojama konkrečiausia taisyklė.</translation>
 <translation id="5732972008943405952">Automatinio pildymo formų duomenų importavimas iš numatytosios naršyklės paleidus pirmą kartą</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
 <translation id="5770738360657678870">Kuriamas kanalas (gali būti nestabilus)</translation>
@@ -1824,6 +1908,12 @@
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
 <translation id="5898486742390981550">Kai keli naudotojai yra prisijungę, tik pagrindinis naudotojas gali naudoti „Android“ programas.</translation>
+<translation id="5900196529149231477">
+      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama abiejų tipų politikai nustatyti tą pačią vertę. Jei vertės neatitiks, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat bus atskiriamas https://foo.example.com/ kaip svetainės https://example.com/ dalis.
+      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“, naudodami komandos eilutės žymas.
+      Nesukonfigūravus politikos prisijungimo ekrane bus naudojami numatytieji platformos svetainių atskyrimo nustatymai.
+      </translation>
 <translation id="5901427587865226597">Tik dvipusis spausdinimas</translation>
 <translation id="5906199912611534122">Leidžiama įgalinti arba išjungti tinklo reguliavimą.
       Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje. Nustačius
@@ -2185,6 +2275,12 @@
 
       Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką nustatytos žymos nepertraukia naudotojų sesijų.</translation>
 <translation id="685769593149966548">Vykdyti griežtai ribotą režimą sistemoje „YouTube“</translation>
+<translation id="6857824281777105940">Ši politika valdo, ar pranešti Saugaus naršymo informaciją, įskaitant Saugaus naršymo įspėjimų ir Saugaus naršymo įspėjimų paspaudimų skaičių.
+
+      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, Saugaus naršymo duomenys renkami.
+      Kai ši politika nustatyta kaip „Netiesa“, Saugaus naršymo duomenys nerenkami.
+
+      Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
 <translation id="686079137349561371">7 ar naujesnės versijos „Microsoft Windows“</translation>
 <translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME" />“ 35 versiją.
 
@@ -2342,6 +2438,16 @@
 
       Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
+<translation id="7158064522994309072">Ši politika valdo, kuri komanda turi būti naudojama norint atidaryti URL alternatyvioje naršyklėje.
+
+      Kai ši politika nenustatyta, naudojamas konkrečios platformos numatytasis nustatymas: „Internet Explorer“, skirta „Windows“, arba „Safari“, skirta „Mac OS X“. Jei šis nustatymas nenustatytas, sistemoje „Linux“ nepavyks paleisti alternatyvios naršyklės.
+
+      Kai ši politika nustatyta kaip „${ie}“, „${firefox}“, „${safari}“ arba
+      „${opera}“, paleidžiama konkreti naršyklė, jei ji įdiegta. „${ie}“ pasiekiama tik
+      sistemoje „Windows“, o „${safari}“ pasiekiama tik sistemoje „Windows“ ir „Mac OS X“.
+
+      Kai ši politika nustatyta kaip failo kelias, šis failas naudojamas kaip vykdomasis
+      failas.</translation>
 <translation id="7167436895080860385">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje (nebenaudojama)</translation>
 <translation id="7173856672248996428">Efemeriškas profilis</translation>
 <translation id="717630378807352957">Leisti naudoti visus spausdintuvus pasitelkus konfigūracijos failą.</translation>
@@ -2878,6 +2984,13 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8390049129576938611">Išjungiama vidinė PDF peržiūros priemonė „<ph name="PRODUCT_NAME" />“. Failai laikomi atsisiuntimu ir naudotojui leidžiama atidaryti PDF failus naudojant numatytąją programą.
 
       Jei ši politika nenustatyta ar išjungta, PDF failams atidaryti bus naudojamas PDF papildinys (jei naudotojas jo neišjungė).</translation>
+<translation id="8396145449084377015">Ši politika valdo, ar įkelti taisykles iš „Internet Explorer“ politikos „SiteList“.
+
+      Kai ši politika nenustatyta arba nustatyta kaip „Netiesa“, „<ph name="PRODUCT_NAME" />“ nenaudoja „Internet Explorer“ politikos „<ph name="IEEM_SITELIST_POLICY" />“ kaip naršyklių perjungimo taisyklių šaltinio.
+
+      Kai ši politika nustatyta kaip „Tiesa“, „<ph name="PRODUCT_NAME" />“ nuskaito „Internet Explorer“ politiką „<ph name="IEEM_SITELIST_POLICY" />“, kad gautų svetainių sąrašo URL. Tada „<ph name="PRODUCT_NAME" />“ atsisiunčia svetainių sąrašą iš šio URL ir taiko taisykles, lyg jos būtų sukonfigūruotos pagal politiką „<ph name="SITELIST_POLICY_NAME" />“.
+
+      Jei reikia daugiau informacijos apie „Internet Explorer“ politiką „<ph name="IEEM_SITELIST_POLICY" />“, apsilankykite adresu https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Visada atidaryti PDF failus už programos ribų</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
 <translation id="8417305981081876834">Nustatyti maksimalų užrakinimo ekrano PIN kodo ilgį</translation>
@@ -3174,6 +3287,18 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="906631898352326790">
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
+      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
+      taip pat bus atskiriamas https://foo.example.com/ kaip svetainės
+      https://example.com/ dalis.
+      Išjungus politiką, abi funkcijos: „IsolateOrigins“ ir „SitePerProcess“ bus išjungtos. Naudotojai vis tiek galės neautomatiškai įgalinti „IsolateOrigins“, naudodami komandos eilutės žymas.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+
+      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „IsolateOrigins“ sistemoje „Android“, naudokite politikos nustatymą „IsolateOriginsAndroid“.
+      </translation>
 <translation id="9077227880520270584">Automatinio prisijungimo prie vietinės įrenginio paskyros laikmatis</translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
 <translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>

@@ -729,6 +729,7 @@
 <translation id="5922853866070715753">Beveik atlikta</translation>
 <translation id="5932224571077948991">Svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
+<translation id="5946937721014915347">Atidaroma „<ph name="SITE_NAME" />“…</translation>
 <translation id="5951495562196540101">Nepavyko prisiregistruoti su kliento paskyra (galima įsigyti licencijos paketą).</translation>
 <translation id="5966151627327109289">Būsite atjungti nuo daugelio svetainių. Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
@@ -1202,6 +1203,7 @@ Papildoma išsami informacija:
 <translation id="935608979562296692">CLEAR FORM</translation>
 <translation id="936602727769022409">Galite prarasti prieigą prie „Google“ paskyros. „Chromium“ rekomenduoja pakeisti slaptažodį dabar. Bus prašoma prisijungti.</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
+<translation id="945855313015696284">Patikrinkite toliau pateiktą informaciją ir ištrinkite visas netinkamas korteles</translation>
 <translation id="951104842009476243">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
 <translation id="962484866189421427">Šis turinys gali bandyti įdiegti klaidinančių programų, kurios apsimeta kitomis programomis, arba rinkti duomenis, naudojamus jums stebėti. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>

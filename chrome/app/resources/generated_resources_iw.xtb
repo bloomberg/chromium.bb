@@ -167,6 +167,7 @@
 <translation id="1217668622537098248">חזרה ללחיצה שמאלית אחרי פעולה</translation>
 <translation id="121783623783282548">הסיסמאות אינן תואמות.</translation>
 <translation id="1218860753635451122">‏לחיצה על הלחצן "אני מסכים/ה" משמעותה הסכמה לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
+<translation id="1219533395013150448">‏ה-Assisatant משתמש בהקלטות האלה כדי ליצור תבנית של הקול שלך ומאחסן אותה במכשיר. אפשר למחוק או לשמור את התבנית בהגדרות של Assisatant. את הפקודות הקוליות אפשר להציג או למחוק בבחירות הפעילויות של Google.</translation>
 <translation id="122082903575839559">אלגוריתם חתימה של אישור </translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
 <translation id="1221825588892235038">בחירה בלבד</translation>
@@ -614,6 +615,7 @@
 <translation id="1880905663253319515">למחוק את האישור "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">אפשר לאתרים לבקש להפוך למטפלי ברירת המחדל עבור פרוטוקולים (מומלץ)</translation>
 <translation id="1887442540531652736">שגיאת כניסה</translation>
+<translation id="1887597546629269384">‏יש לומר שוב "Hey Google"</translation>
 <translation id="1887850431809612466">שכתוב חומרה</translation>
 <translation id="1889984860246851556">‏פתיחת הגדרות של שרת proxy</translation>
 <translation id="1890674179660343635">‏&lt;span&gt;מזהה: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -711,6 +713,7 @@
 <translation id="2048653237708779538">הפעולה לא זמינה</translation>
 <translation id="204914487372604757">צור קיצור דרך</translation>
 <translation id="2050339315714019657">לאורך</translation>
+<translation id="2052369079215022979">מנוהל על-ידי הארגון</translation>
 <translation id="2053312383184521053">נתוני מצב של חוסר פעילות</translation>
 <translation id="205560151218727633">‏הלוגו של Google Assistant</translation>
 <translation id="2058456167109518507">אותר מכשיר</translation>
@@ -898,6 +901,7 @@
 <translation id="2336381494582898602">שחזור הגדרות יצרן</translation>
 <translation id="2339120501444485379">הזן שם חדש</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> רוצה לבצע התאמה עם</translation>
+<translation id="2342740338116612727">סימניות נוספו</translation>
 <translation id="2344028582131185878">הורדות אוטומטיות</translation>
 <translation id="2345723121311404059">עמוד אחד אל <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">‏השימוש ב-Hangouts וב-Cast for Education כפוף למדיניות הפרטיות של Google.</translation>
@@ -1677,6 +1681,7 @@
 <translation id="3550915441744863158">‏Chrome מתעדכן באופן אוטומטי כך שתשתמש תמיד בגרסה העדכנית ביותר</translation>
 <translation id="3551320343578183772">סגור כרטיסייה</translation>
 <translation id="3552780134252864554">מנוקה בעת היציאה</translation>
+<translation id="3553146918065661815">‏יש להציג אזהרה לפני יציאה בעזרת הקשה על ‎⌘Q</translation>
 <translation id="3555812735919707620">הסר תוסף</translation>
 <translation id="3556000484321257665">מנוע החיפוש השתנה ל-<ph name="URL" />.</translation>
 <translation id="3559262020195162408">התקנת המדיניות במכשיר נכשלה.</translation>
@@ -1747,6 +1752,7 @@
 <translation id="3651488188562686558">‏נתק את חיבור ה-Wi-Fi</translation>
 <translation id="3652817283076144888">מתבצע אתחול</translation>
 <translation id="3653160965917900914">התקני רשת לשיתוף קבצים</translation>
+<translation id="3653842108912548333">‏גישה ל-Assistant באמצעות Voice Match</translation>
 <translation id="3653999333232393305">המשך לאפשר ל-<ph name="HOST" /> לגשת למיקרופון שלך</translation>
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{יש לו גישה קבועה אל קובץ אחד.}two{יש לו גישה קבועה אל # קבצים.}many{יש לו גישה קבועה אל # קבצים.}other{יש לו גישה קבועה אל # קבצים.}}</translation>
@@ -2074,6 +2080,7 @@
 <translation id="412940972494182898">‏הפעלה של Flash בדף הזה</translation>
 <translation id="4130199216115862831">יומן מכשיר</translation>
 <translation id="4130207949184424187">התוסף הזה שינה את הדף שמוצג כשאתה מבצע חיפוש מסרגל הכתובות.</translation>
+<translation id="4130750466177569591">אני מסכים</translation>
 <translation id="413121957363593859">רכיבים</translation>
 <translation id="4131410914670010031">שחור ולבן</translation>
 <translation id="4136203100490971508">תאורת הלילה תכבה באופן אוטומטי בשעת הזריחה</translation>
@@ -2288,6 +2295,7 @@
 <translation id="4524832533047962394">מצב ההרשמה שסופק לא נתמך על ידי הגרסה הזו של מערכת ההפעלה. כדאי לוודא שמשתמשים בגרסה החדשה ביותר.</translation>
 <translation id="4525382759303819021">‏קבלת העדכונים האחרונים והמלצות לגבי אפליקציות מחנות Play</translation>
 <translation id="4530494379350999373">מקור</translation>
+<translation id="4533846798469727141">‏עכשיו צריך לומר "Hey Google"</translation>
 <translation id="4533985347672295764">‏זמן CPU (יחידת עיבוד מרכזית)</translation>
 <translation id="4534661889221639075">יש לנסות שוב.</translation>
 <translation id="4535127706710932914">פרופיל ברירת מחדל</translation>
@@ -3271,6 +3279,7 @@
 <translation id="5990386583461751448">מתורגם</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציה הזו.}two{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}many{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}other{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}}</translation>
 <translation id="5997337190805127100">מידע נוסף על גישה לאתרים</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> תוצאות בשביל '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6002458620803359783">קולות מועדפים</translation>
 <translation id="6005695835120147974">נתב מדיה</translation>
 <translation id="6006484371116297560">קלאסי</translation>
@@ -3520,6 +3529,7 @@
 <translation id="637062427944097960">הקובץ הזה נפתח בשולחן עבודה שונה. עבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי לראות אותו.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">נסה שוב</translation>
+<translation id="6377268785556383139">תוצאה אחת בשביל '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6380143666419481200">קבל והמשך</translation>
 <translation id="6384275966486438344">שנה את הגדרות החיפוש שלך ל: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">‏אתרים יכולים לשמור ולקרוא נתונים של קובצי cookie</translation>
@@ -3537,6 +3547,7 @@
 <translation id="6405510437656969977">‏אפשר להמשיך כשמוכנים להזין את קוד ה-PIN</translation>
 <translation id="6406303162637086258">בצע הדמיה של הפעלת דפדפן מחדש</translation>
 <translation id="6406506848690869874">סנכרן</translation>
+<translation id="6406708970972405507">הגדרות - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">לקרוא ולשנות את הנתונים שלך ב-<ph name="WEBSITE_1" />‏, <ph name="WEBSITE_2" /> וב-<ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">קובצי תמונה</translation>
 <translation id="6410328738210026208">‏החלף ערוץ ובצע Powerwash</translation>
@@ -3820,6 +3831,7 @@
 <translation id="6840184929775541289">אינו רשות אישורים</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">שגיאות</translation>
+<translation id="6843423766595476978">‏התכונה Ok Google מוכנה</translation>
 <translation id="6845038076637626672">פתח בגודל מרבי</translation>
 <translation id="685040365210406336">לא לבצע שינויים</translation>
 <translation id="6851497530878285708">האפליקציה הופעלה</translation>
@@ -4082,6 +4094,7 @@
 <translation id="7246947237293279874">‏שרת proxy של FTP</translation>
 <translation id="7248671827512403053">יישום</translation>
 <translation id="725109152065019550">מצטערים, מנהל המערכת השבית את האחסון החיצוני בחשבונך.</translation>
+<translation id="7251346854160851420">הטפט המוגדר כברירת מחדל</translation>
 <translation id="7253521419891527137">&amp;למידע נוסף</translation>
 <translation id="7254554697254365959">לא ניתן לתרגם את הדף הזה.</translation>
 <translation id="7254951428499890870">האם אתה בטוח שברצונך להפעיל את "<ph name="APP_NAME" />" במצב אבחון?</translation>
@@ -4192,6 +4205,7 @@
 <translation id="7417705661718309329">‏מפת Google</translation>
 <translation id="741906494724992817">אין צורך בהרשאות מיוחדות עבור היישום הזה.</translation>
 <translation id="7419433794191666278">‏חיבור ה-Chromebook לטלפון. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">סימניות הוסרו</translation>
 <translation id="7421925624202799674">&amp;הצג את מקור הדף</translation>
 <translation id="7422192691352527311">העדפות...</translation>
 <translation id="7423098979219808738">בקש אישור</translation>
@@ -4354,6 +4368,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{פריט אחד ברשימת הסימניות}two{# פריטים ברשימת הסימניות}many{# פריטים ברשימת הסימניות}other{# פריטים ברשימת הסימניות}}</translation>
 <translation id="7701040980221191251">ללא</translation>
 <translation id="7701869757853594372">מזהים ייחודיים של משתמשים</translation>
+<translation id="7702574632857388784">הסרת <ph name="FILE_NAME" /> מהרשימה</translation>
 <translation id="7702907602086592255">דומיין</translation>
 <translation id="7704305437604973648">משימה</translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
@@ -4748,6 +4763,7 @@
 <translation id="8249296373107784235">בטל</translation>
 <translation id="8249672078237421304">הצע לתרגם דפים שאינם בשפה שאני קורא</translation>
 <translation id="8251578425305135684">התמונה הממוזערת הוסרה.</translation>
+<translation id="8252569384384439529">מעלה...</translation>
 <translation id="8253198102038551905">לחץ על '+' כדי לקבל מאפייני רשת</translation>
 <translation id="825483282309623688">יש צורך בחיבור לאינטרנט כדי לשחזר את הנתונים.</translation>
 <translation id="8256319818471787266">נבחן</translation>
@@ -4814,6 +4830,7 @@
 <translation id="8371695176452482769">דבר עכשיו</translation>
 <translation id="8372369524088641025">‏מקש WEP גרוע</translation>
 <translation id="8373553483208508744">השתק כרטיסיות</translation>
+<translation id="8378714024927312812">מנוהל על-ידי הארגון</translation>
 <translation id="8379878387931047019">המכשיר לא תומך במפתח אבטחה מהסוג המבוקש באתר הזה</translation>
 <translation id="8382913212082956454">העתק &amp;כתובת אימייל</translation>
 <translation id="8386091599636877289">המדיניות לא נמצאה.</translation>
@@ -4852,6 +4869,7 @@
 <translation id="8438566539970814960">שיפור החיפושים והגלישה</translation>
 <translation id="8439506636278576865">הצעות לתרגום דפים שנכתבו בשפה זו</translation>
 <translation id="8440630305826533614">‏אפליקציות Linux</translation>
+<translation id="8446474770554547328">‏הקלדת הפקודה "Ok Google" ‏3 פעמים יוצרת את תבנית הקול שלך, שמאוחסנת במכשיר. אפשר למחוק או לשמור את התבנית בהגדרות Assistant. ניתן להציג את הפקודות הקוליות בבחירת הפעילויות ב-Google.</translation>
 <translation id="8446884382197647889">למידע נוסף</translation>
 <translation id="8447409163267621480">‏יש לכלול את Ctrl או Alt</translation>
 <translation id="8448729345478502352">הגדלה או הקטנה של פריטים במסך</translation>

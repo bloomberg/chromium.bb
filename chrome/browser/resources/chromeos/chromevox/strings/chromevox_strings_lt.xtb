@@ -398,6 +398,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4058278702844053247">Įkeliamas puslapis</translation>
 <translation id="4065205963140826639">Dabar pabandykite naudoti „Search“ ir rodyklę dešinėn, kad rastumėte mygtuką „Kitas“, tada paspauskite „Search“ ir tarpo klavišą, kad jį spustelėtumėte.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tildė}one{# tildė}few{# tildės}many{# tildes}other{# tildžių}}</translation>
+<translation id="4086311032171418648">Stabdomas mokomasis režimas.</translation>
 <translation id="409334809956508737">Ankstesnis objektas</translation>
 <translation id="4099274309791143834">su submeniu</translation>
 <translation id="4101527861445851766">Pažymėtas žymimasis laukelis</translation>
@@ -500,6 +501,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4877261390094455813">Įveskite paieškos užklaus.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Vidinė nuoroda</translation>
+<translation id="4915087353619183190">Paleidžiamas mokomasis režimas. Paspauskite QWERTY klavišą, atnaujinamą Brailio rašto klavišą arba liečiamąjį gestą, kad sužinotumėte, kaip tai veikia. Paspauskite „Control“ ir w arba „Escape“, kad išeitumėte.</translation>
 <translation id="492295894462528572">Pratarmė</translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4953585991029886728">Redaguoti tekstą</translation>
@@ -872,6 +874,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8076492880354921740">Skirtukai</translation>
 <translation id="8091452896542422286">Tarpas</translation>
 <translation id="8110647606445335195">Nėra ARIA orientyrų.</translation>
+<translation id="8138880386467279117">Jutiklinis</translation>
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{apatinis brūkšnys}one{# apatinis brūkšnys}few{# apatiniai brūkšniai}many{# underscores}other{# apatinių brūkšnių}}</translation>
 <translation id="8179976553408161302">Įvesti</translation>

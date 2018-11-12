@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">Учитавање странице је у току</translation>
 <translation id="4065205963140826639">Покушајте да пронађете дугме Следеће помоћу тастера за претрагу и стрелице надесно, па притисните тастер за претрагу + тастер за размак да бисте кликнули на њега.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ТИЛДА}one{# тилда}few{# тилде}other{# тилда}}</translation>
+<translation id="4086311032171418648">Заустављамо режим за учење.</translation>
 <translation id="409334809956508737">Претходни објекат</translation>
 <translation id="4099274309791143834">са подменијем</translation>
 <translation id="4101527861445851766">Означено поље за потврду</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">Унесите упит за претрагу.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Интерни линк</translation>
+<translation id="4915087353619183190">Покрећемо режим за учење. Притисните тастер на qwerty тастатури, тастер на Брајевој тастатури који може да се освежи или обавите покрет додира да бисте сазнали његову функцију. Притисните control и w или escape да бисте изашли из њега.</translation>
 <translation id="492295894462528572">Предговор</translation>
 <translation id="495170559598752135">Радње</translation>
 <translation id="4953585991029886728">Измена текста</translation>
@@ -872,6 +874,7 @@
 <translation id="8076492880354921740">Картице</translation>
 <translation id="8091452896542422286">Размак</translation>
 <translation id="8110647606445335195">Нема ARIA обележја.</translation>
+<translation id="8138880386467279117">За додирни екран</translation>
 <translation id="8153880621934657047">Нисте унутар табеле.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{доња црта}one{# доња црта}few{# доње црте}other{# доњих црта}}</translation>
 <translation id="8179976553408161302">Enter</translation>
