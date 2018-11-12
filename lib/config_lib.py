@@ -887,6 +887,11 @@ def DefaultSettings():
       # Whether to build factory packages in BuildPackages.
       factory=True,
 
+      # Flag to control if all packages for the target are built. If disabled
+      # and unittests are enabled, the unit tests and their dependencies
+      # will still be built during the testing stage.
+      build_packages=True,
+
       # Tuple of specific packages we want to build.  Most configs won't
       # specify anything here and instead let build_packages calculate.
       packages=[],

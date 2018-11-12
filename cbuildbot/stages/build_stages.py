@@ -507,6 +507,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.PRODUCT_OS_STAGE
   option_name = 'build'
+  config_name = 'build_packages'
+
   def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
     if afdo_use:
