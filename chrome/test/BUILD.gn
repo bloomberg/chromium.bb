@@ -5272,8 +5272,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/typed_urls_helper.h",
       "../browser/sync/test/integration/updated_progress_marker_checker.cc",
       "../browser/sync/test/integration/updated_progress_marker_checker.h",
-      "../browser/sync/test/integration/wallet_helper.cc",
-      "../browser/sync/test/integration/wallet_helper.h",
       "../browser/sync/test/integration/wifi_credentials_helper.cc",
       "../browser/sync/test/integration/wifi_credentials_helper.h",
       "../browser/sync/test/integration/wifi_credentials_helper_chromeos.cc",
@@ -5380,7 +5378,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/two_client_themes_sync_test.cc",
       "../browser/sync/test/integration/two_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/two_client_uss_sync_test.cc",
-      "../browser/sync/test/integration/two_client_wallet_sync_test.cc",
       "data/resource.rc",
     ]
 
