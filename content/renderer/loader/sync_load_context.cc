@@ -217,6 +217,10 @@ void SyncLoadContext::OnCompletedRequest(
   CompleteRequest(true /* remove_pending_request */);
 }
 
+scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() const {
+  return task_runner_;
+}
+
 void SyncLoadContext::OnFinishCreatingBlob(
     blink::mojom::SerializedBlobPtr blob) {
   DCHECK(!Completed());

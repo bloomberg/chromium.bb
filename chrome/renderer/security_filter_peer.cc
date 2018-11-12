@@ -115,6 +115,10 @@ void SecurityFilterPeer::OnCompletedRequest(
   original_peer_->OnCompletedRequest(ok_status);
 }
 
+scoped_refptr<base::TaskRunner> SecurityFilterPeer::GetTaskRunner() const {
+  return original_peer_->GetTaskRunner();
+}
+
 scoped_refptr<net::HttpResponseHeaders> SecurityFilterPeer::CreateHeaders(
     const std::string& mime_type) {
   std::string raw_headers;

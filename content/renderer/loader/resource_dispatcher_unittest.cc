@@ -197,6 +197,9 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
       }
       original_peer_->OnCompletedRequest(status);
     }
+    scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+      return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
+    }
 
    private:
     std::unique_ptr<RequestPeer> original_peer_;

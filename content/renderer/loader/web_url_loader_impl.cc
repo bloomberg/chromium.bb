@@ -478,6 +478,9 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
+  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+    return context_->task_runner();
+  }
 
  private:
   scoped_refptr<Context> context_;
@@ -506,6 +509,9 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
       const network::URLLoaderCompletionStatus& status) override {
     context_->resource_dispatcher()->Cancel(context_->request_id(),
                                             context_->task_runner());
+  }
+  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+    return context_->task_runner();
   }
 
  private:
