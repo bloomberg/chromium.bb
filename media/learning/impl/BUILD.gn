@@ -4,10 +4,14 @@
 
 component("impl") {
   output_name = "learning_impl"
+  visibility = [ "//media/learning/impl:unit_tests" ]
+
   sources = [
     "learner.h",
     "learning_session_impl.cc",
     "learning_session_impl.h",
+    "random_tree.cc",
+    "random_tree.h",
   ]
 
   defines = [ "IS_LEARNING_IMPL_IMPL" ]
@@ -18,5 +22,20 @@ component("impl") {
 
   public_deps = [
     "//media/learning/common",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "random_tree_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media:test_support",
+    "//media/learning/impl",
+    "//testing/gtest",
   ]
 }
