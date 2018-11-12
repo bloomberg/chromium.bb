@@ -104,18 +104,10 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
   // PreviewsDecider implementation:
-  bool ShouldAllowPreviewAtNavigationStart(
-      PreviewsUserData* previews_data,
-      const GURL& url,
-      bool is_reload,
-      PreviewsType type,
-      bool is_server_preview) const override;
-  bool ShouldAllowClientPreviewWithFinchBlacklist(
-      PreviewsUserData* previews_data,
-      const GURL& url,
-      bool is_reload,
-      PreviewsType type,
-      const std::vector<std::string>& host_blacklist_from_finch) const override;
+  bool ShouldAllowPreviewAtNavigationStart(PreviewsUserData* previews_data,
+                                           const GURL& url,
+                                           bool is_reload,
+                                           PreviewsType type) const override;
   bool ShouldCommitPreview(PreviewsUserData* previews_data,
                            const GURL& committed_url,
                            PreviewsType type) const override;
@@ -159,7 +151,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       const GURL& url,
       bool is_reload,
       PreviewsType type,
-      bool is_server_preview,
+      bool is_drp_server_preview,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
   // Whether the preview |type| should be allowed to be considered for |url|

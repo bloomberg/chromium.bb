@@ -304,13 +304,6 @@ net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
                                      net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
-std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial() {
-  return base::SplitString(base::GetFieldTrialParamValueByFeature(
-                               features::kClientLoFi, "short_host_blacklist"),
-                           ",", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_NONEMPTY);
-}
-
 int NoScriptPreviewsInflationPercent() {
   // The default value was determined from lab experiment data of whitelisted
   // URLs. It may be improved once there is enough UKM live experiment data

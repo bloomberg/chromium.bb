@@ -25,27 +25,12 @@ class PreviewsDecider {
   // threshold - these are client previews that do not have optimization hint
   // support. Previews with optimization hint support can have variable
   // network quality thresholds based on the committed URL. Server previews
-  // perform a network quality check on the server. |is_server_preview| is used
-  // to identify such server previews and also means that the blacklist does
-  // not need to be checked for long term rules when Previews has been
-  // configured to allow skipping the blacklist.
+  // perform a network quality check on the server.
   virtual bool ShouldAllowPreviewAtNavigationStart(
       PreviewsUserData* previews_data,
       const GURL& url,
       bool is_reload,
-      PreviewsType type,
-      bool is_server_preview) const = 0;
-
-  // Whether |url| is allowed to show a preview of |type| as can be determined
-  // at the start of a navigation (or start of a redirection). The checks a
-  // provided server blacklist |host_blacklist_from_finch| that is used by
-  // ClientLoFi which pre-dated the optimization hints mechanism.
-  virtual bool ShouldAllowClientPreviewWithFinchBlacklist(
-      PreviewsUserData* previews_data,
-      const GURL& url,
-      bool is_reload,
-      PreviewsType type,
-      const std::vector<std::string>& host_blacklist_from_finch) const = 0;
+      PreviewsType type) const = 0;
 
   // Whether the |committed_url| is allowed to show a preview of |type|.
   virtual bool ShouldCommitPreview(PreviewsUserData* previews_data,
