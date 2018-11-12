@@ -19,6 +19,8 @@
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/web_controller.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
 namespace {
@@ -205,10 +207,12 @@ void ScriptExecutor::Restart() {
   at_end_ = RESTART;
 }
 
-void ScriptExecutor::StopCurrentScript(const std::string& message) {
-  if (!message.empty()) {
-    delegate_->GetUiController()->ShowStatusMessage(message);
-  }
+void ScriptExecutor::StopCurrentScriptAndShutdown(const std::string& message) {
+  // Use a default message when |message| is empty.
+  delegate_->GetUiController()->ShowStatusMessage(
+      message.empty() ? l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP)
+                      : message);
+  at_end_ = SHUTDOWN_GRACEFULLY;
   should_stop_script_ = true;
 }
 

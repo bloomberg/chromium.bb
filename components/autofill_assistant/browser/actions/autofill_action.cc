@@ -77,6 +77,10 @@ class SelfDeleteFullCardRequester
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestFailed() override {
     // Failed might because of cancel, so return nullptr to notice caller.
+    //
+    // TODO(crbug.com/806868): Split the fail notification so that "cancel" and
+    // "wrong cvc" states can be handled differently. One should prompt a retry,
+    // the other a graceful shutdown - the current behavior.
     std::move(callback_).Run(nullptr, base::string16());
     delete this;
   }
@@ -133,7 +137,7 @@ void AutofillAction::InternalProcessAction(
          delegate->GetClientMemory()->selected_address(name_));
     if (!has_valid_data) {
       // User selected 'Fill manually'.
-      delegate->StopCurrentScript(fill_form_message_);
+      delegate->StopCurrentScriptAndShutdown(fill_form_message_);
       EndAction(/* successful= */ true);
       return;
     }
@@ -199,7 +203,7 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
   }
 
   if (guid.empty()) {
-    delegate->StopCurrentScript(fill_form_message_);
+    delegate->StopCurrentScriptAndShutdown(fill_form_message_);
     EndAction(/* successful= */ true);
     return;
   }
@@ -247,9 +251,10 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
                                    std::unique_ptr<autofill::CreditCard> card,
                                    const base::string16& cvc) {
   if (!card) {
-    // TODO(crbug.com/806868): The failure might because of cancel, then ask to
-    // choose a card again.
-    EndAction(false);
+    // Gracefully shutdown the script. The empty message forces the use of the
+    // default message.
+    delegate->StopCurrentScriptAndShutdown("");
+    EndAction(/* successful= */ true);
     return;
   }
 
@@ -333,7 +338,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
   if (!allow_fallback) {
     // Validation failed and we don't want to try the fallback, so we stop
     // the script.
-    delegate->StopCurrentScript(check_form_message_);
+    delegate->StopCurrentScriptAndShutdown(check_form_message_);
     EndAction(/* successful= */ true);
     return;
   }
@@ -353,7 +358,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
     }
   }
   if (!has_fallbacks) {
-    delegate->StopCurrentScript(check_form_message_);
+    delegate->StopCurrentScriptAndShutdown(check_form_message_);
     EndAction(/* successful= */ true);
     return;
   }
@@ -410,7 +415,7 @@ void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
                                              bool successful) {
   if (!successful) {
     // Fallback failed: we stop the script without checking the fields.
-    delegate->StopCurrentScript(check_form_message_);
+    delegate->StopCurrentScriptAndShutdown(check_form_message_);
     EndAction(/* successful= */ true);
     return;
   }

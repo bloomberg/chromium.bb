@@ -119,7 +119,7 @@ class ScriptExecutor : public ActionDelegate {
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
-  void StopCurrentScript(const std::string& message) override;
+  void StopCurrentScriptAndShutdown(const std::string& message) override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
   void ShowProgressBar(int progress, const std::string& message) override;
