@@ -94,6 +94,7 @@
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
+#include "components/exo/wayland/server_util.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/exo/xdg_shell_surface.h"
@@ -123,6 +124,11 @@
 #if defined(OS_CHROMEOS)
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 #endif
+#endif
+
+#if defined(USE_FULLSCREEN_SHELL)
+#include <fullscreen-shell-unstable-v1-server-protocol.h>
+#include "components/exo/wayland/zwp_fullscreen_shell.h"
 #endif
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -164,31 +170,6 @@ constexpr char kNotificationShellNotifierId[] = "exo-notification-shell";
 
 // Incremental id for notification shell instance.
 base::AtomicSequenceNumber g_next_notification_shell_id;
-
-template <class T>
-T* GetUserDataAs(wl_resource* resource) {
-  return static_cast<T*>(wl_resource_get_user_data(resource));
-}
-
-template <class T>
-std::unique_ptr<T> TakeUserDataAs(wl_resource* resource) {
-  std::unique_ptr<T> user_data = base::WrapUnique(GetUserDataAs<T>(resource));
-  wl_resource_set_user_data(resource, nullptr);
-  return user_data;
-}
-
-template <class T>
-void DestroyUserData(wl_resource* resource) {
-  TakeUserDataAs<T>(resource);
-}
-
-template <class T>
-void SetImplementation(wl_resource* resource,
-                       const void* implementation,
-                       std::unique_ptr<T> user_data) {
-  wl_resource_set_implementation(resource, implementation, user_data.release(),
-                                 DestroyUserData<T>);
-}
 
 // Returns the scale factor to be used by remote shell clients.
 double GetDefaultDeviceScaleFactor() {
@@ -5951,6 +5932,11 @@ Server::Server(Display* display)
                    display_, bind_text_input_manager);
   wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
                    display_, bind_notification_shell);
+
+#if defined(USE_FULLSCREEN_SHELL)
+  wl_global_create(wl_display_.get(), &zwp_fullscreen_shell_v1_interface, 1,
+                   display_, bind_fullscreen_shell);
+#endif
 }
 
 Server::~Server() {

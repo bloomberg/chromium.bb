@@ -33,6 +33,7 @@ source_set("wayland") {
     "scoped_wl.h",
     "server.cc",
     "server.h",
+    "server_util.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
@@ -89,6 +90,15 @@ source_set("wayland") {
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
     deps += [ "//ui/events/keycodes:xkb" ]
+  }
+
+  if (is_chromecast) {
+    defines += [ "USE_FULLSCREEN_SHELL" ]
+    sources += [
+      "zwp_fullscreen_shell.cc",
+      "zwp_fullscreen_shell.h",
+    ]
+    deps += [ "//third_party/wayland-protocols:fullscreen_shell_protocol" ]
   }
 }
 
