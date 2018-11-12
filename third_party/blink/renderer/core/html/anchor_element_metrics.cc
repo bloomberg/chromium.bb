@@ -141,7 +141,8 @@ const int AnchorElementMetrics::kMaxAnchorElementMetricsSize = 40;
 
 // static
 base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
-    const HTMLAnchorElement* anchor_element) {
+    const HTMLAnchorElement* anchor_element,
+    bool is_url_incremented_by_one) {
   LocalFrame* local_frame = anchor_element->GetDocument().GetFrame();
   LayoutObject* layout_object = anchor_element->GetLayoutObject();
   if (!local_frame || !layout_object)
@@ -153,7 +154,11 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
     return base::nullopt;
 
   IntRect viewport = root_frame_view->LayoutViewport()->VisibleContentRect();
-  if (viewport.Size().IsEmpty())
+
+  // Do not ignore anchor elements for which |is_url_incremented_by_one| is
+  // true since there is typically high click probability for such anchor
+  // elements.
+  if (viewport.Size().IsEmpty() && !is_url_incremented_by_one)
     return base::nullopt;
 
   // Use the viewport size to normalize anchor element metrics.
@@ -205,7 +210,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
       ratio_distance_top_to_visible_top, ratio_distance_center_to_visible_top,
       ratio_distance_root_top, ratio_distance_root_bottom, ratio_root_height,
       IsInIFrame(*anchor_element), ContainsImage(*anchor_element),
-      IsSameHost(*anchor_element), IsUrlIncrementedByOne(*anchor_element));
+      IsSameHost(*anchor_element), is_url_incremented_by_one);
 }
 
 // static
@@ -219,7 +224,8 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     return base::nullopt;
   }
 
-  auto anchor_metrics = Create(anchor_element);
+  bool is_url_incremented_by_one = IsUrlIncrementedByOne(*anchor_element);
+  auto anchor_metrics = Create(anchor_element, is_url_incremented_by_one);
   if (anchor_metrics.has_value()) {
     anchor_metrics.value().RecordMetricsOnClick();
 
@@ -249,14 +255,22 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
   for (const auto& member_element : sender->GetAnchorElements()) {
     const HTMLAnchorElement& anchor_element = *member_element;
 
+    if (!anchor_element.Href().ProtocolIsInHTTPFamily())
+      continue;
+
+    bool is_url_incremented_by_one = IsUrlIncrementedByOne(anchor_element);
+
     // We ignore anchor elements that are not in the visual viewport.
-    if (!anchor_element.Href().ProtocolIsInHTTPFamily() ||
-        anchor_element.VisibleBoundsInVisualViewport().IsEmpty()) {
+    // Do not ignore anchor elements for which |is_url_incremented_by_one| is
+    // true since there is typically high click probability for such anchor
+    // elements.
+    if (anchor_element.VisibleBoundsInVisualViewport().IsEmpty() &&
+        !is_url_incremented_by_one) {
       continue;
     }
 
     base::Optional<AnchorElementMetrics> anchor_metric =
-        Create(&anchor_element);
+        Create(&anchor_element, is_url_incremented_by_one);
     if (!anchor_metric.has_value())
       continue;
 
