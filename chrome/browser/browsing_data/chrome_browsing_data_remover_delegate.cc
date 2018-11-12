@@ -865,7 +865,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       autofill::StrikeDatabase* strike_database =
           autofill::StrikeDatabaseFactory::GetForProfile(profile_);
       if (strike_database)
-        strike_database->ClearAllStrikes(base::DoNothing());
+        strike_database->ClearAllStrikes(base::AdaptCallbackForRepeating(
+            IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
