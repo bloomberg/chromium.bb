@@ -200,6 +200,11 @@ void ScenicWindow::UpdateSize() {
   shape_node_.SetTranslation(size_dips_.width() / 2.0,
                              size_dips_.height() / 2.0, 0.f);
 
+  // This is necessary when using vulkan because ImagePipes are presented
+  // separately and we need to make sure our sizes change is committed.
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
+
   delegate_->OnBoundsChanged(size_rect);
 }
 
