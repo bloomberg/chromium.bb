@@ -12,6 +12,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Larger inputs trigger OOMs, timeouts and slow units.
+  if (size > 65536)
+    return 0;
+
   static blink::BlinkFuzzerTestSupport test_support;
 
   blink::CommaDelimitedHeaderSet set;
