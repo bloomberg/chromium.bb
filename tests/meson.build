@@ -310,6 +310,8 @@ foreach t : tests_weston
 		args_t += [ '--width=320' ]
 		args_t += [ '--height=240' ]
 		args_t += [ '--shell=weston-test-desktop-shell.so' ]
+	elif t.get(0) == 'linux-explicit-synchronization'
+		args_t += [ '--use-pixman' ]
 	elif t.get(0).startswith('ivi-')
 		args_t += [ '--config=@0@/../ivi-shell/weston-ivi-test.ini'.format(meson.current_build_dir()) ]
 		args_t += [ '--shell=ivi-shell.so' ]
