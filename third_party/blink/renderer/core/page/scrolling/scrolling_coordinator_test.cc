@@ -1046,7 +1046,7 @@ class ScrollingCoordinatorMockEventListener final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event*) final {}
+  void Invoke(ExecutionContext*, Event*) final {}
 };
 }  // namespace
 

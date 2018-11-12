@@ -26,7 +26,7 @@ class XRCanvasInputEventListener : public EventListener {
     return this == &that;
   }
 
-  void handleEvent(ExecutionContext* execution_context, Event* event) override {
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
     if (!input_provider_->ShouldProcessEvents())
       return;
 

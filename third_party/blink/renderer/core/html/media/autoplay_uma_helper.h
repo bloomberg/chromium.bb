@@ -93,7 +93,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   void OnLoadStarted();
 
   explicit AutoplayUmaHelper(HTMLMediaElement*);
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
   void HandlePlayingEvent();
   void HandlePauseEvent();
   virtual void HandleContextDestroyed();  // Make virtual for testing.

@@ -30,14 +30,14 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   JSEventHandlerForContentAttribute(v8::Isolate* isolate,
                                     DOMWrapperWorld& world,
                                     const AtomicString& function_name,
-                                    const String& code,
+                                    const String& script_body,
                                     const String& source_url,
                                     const TextPosition& position,
                                     HandlerType type)
       : JSEventHandler(type),
         did_compile_(false),
         function_name_(function_name),
-        code_(code),
+        script_body_(script_body),
         source_url_(source_url),
         position_(position),
         isolate_(isolate),
@@ -50,7 +50,7 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   v8::Local<v8::Value> GetListenerObject(EventTarget&) override;
   std::unique_ptr<SourceLocation> GetSourceLocation(EventTarget&) override;
 
-  const String& Code() const override { return code_; }
+  const String& ScriptBody() const override { return script_body_; }
 
  protected:
   // blink::JSBasedEventListener override:
@@ -75,7 +75,7 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   // checking that.
   bool did_compile_;
   const AtomicString function_name_;
-  String code_;
+  String script_body_;
   String source_url_;
   TextPosition position_;
   v8::Isolate* isolate_;

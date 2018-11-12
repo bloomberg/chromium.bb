@@ -101,7 +101,7 @@ bool MediaControlsRotateToFullscreenDelegate::operator==(
   return this == &other;
 }
 
-void MediaControlsRotateToFullscreenDelegate::handleEvent(
+void MediaControlsRotateToFullscreenDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->type() == event_type_names::kPlay ||

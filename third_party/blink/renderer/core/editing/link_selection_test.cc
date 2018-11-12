@@ -274,7 +274,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
       return this == &other;
     }
 
-    MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
+    MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 
    private:
     MockEventListener() : EventListener(kCPPEventListenerType) {}
@@ -317,7 +317,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
                              event_handler);
 
     testing::InSequence s;
-    EXPECT_CALL(*event_handler, handleEvent(_, _)).Times(1);
+    EXPECT_CALL(*event_handler, Invoke(_, _)).Times(1);
 
     const auto& elem_bounds = element.BoundsInViewport();
     const int click_count = double_click_event ? 2 : 1;

@@ -81,7 +81,7 @@ class ImageEventListener : public EventListener {
   }
 
  private:
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   Member<ImageDocument> doc_;
 };
@@ -562,7 +562,7 @@ void ImageDocument::Trace(blink::Visitor* visitor) {
 
 // --------
 
-void ImageEventListener::handleEvent(ExecutionContext*, Event* event) {
+void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
   if (event->type() == event_type_names::kResize) {
     doc_->WindowSizeChanged();
   } else if (event->type() == event_type_names::kClick &&

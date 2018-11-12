@@ -269,7 +269,7 @@ Document& MediaControlsOrientationLockDelegate::GetDocument() const {
   return VideoElement().GetDocument();
 }
 
-void MediaControlsOrientationLockDelegate::handleEvent(
+void MediaControlsOrientationLockDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->type() == event_type_names::kFullscreenchange ||

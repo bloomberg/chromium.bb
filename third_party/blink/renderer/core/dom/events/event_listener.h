@@ -49,14 +49,27 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
 
   explicit EventListener(ListenerType type) : type_(type) {}
   ~EventListener() override = default;
-  virtual bool operator==(const EventListener&) const = 0;
-  virtual void handleEvent(ExecutionContext*, Event*) = 0;
-  virtual const String& Code() const { return g_empty_string; }
+
+  // Invokes this event listener.
+  virtual void Invoke(ExecutionContext*, Event*) = 0;
+
+  // Returns true if this implements IDL EventHandler family.
+  virtual bool IsEventHandler() const { return false; }
+
+  // Returns true if this implements IDL EventHandler family and the value is
+  // a content attribute (or compiled from a content attribute).
   virtual bool IsEventHandlerForContentAttribute() const { return false; }
+
+  // Returns an uncompiled script body.
+  // https://html.spec.whatwg.org/C/webappapis.html#internal-raw-uncompiled-handler
+  virtual const String& ScriptBody() const { return g_empty_string; }
+
+  // Returns true if this event listener was created in the current world.
   virtual bool BelongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }
-  virtual bool IsEventHandler() const { return false; }
+
+  virtual bool operator==(const EventListener&) const = 0;
 
   ListenerType GetType() const { return type_; }
 

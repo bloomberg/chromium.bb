@@ -34,7 +34,7 @@ class MediaElementEventListener final : public EventListener {
 
  private:
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
@@ -52,8 +52,8 @@ MediaElementEventListener::MediaElementEventListener(HTMLMediaElement* element,
   UpdateSources(element->GetExecutionContext());
 }
 
-void MediaElementEventListener::handleEvent(ExecutionContext* context,
-                                            Event* event) {
+void MediaElementEventListener::Invoke(ExecutionContext* context,
+                                       Event* event) {
   DVLOG(2) << __func__ << " " << event->type();
   DCHECK(media_stream_);
 

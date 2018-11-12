@@ -82,7 +82,7 @@ class MediaControlPopupMenuElement::EventListener final
   }
 
  private:
-  void handleEvent(ExecutionContext*, Event* event) final {
+  void Invoke(ExecutionContext*, Event* event) final {
     if (event->type() == event_type_names::kKeydown &&
         event->IsKeyboardEvent()) {
       KeyboardEvent* keyboard_event = ToKeyboardEvent(event);

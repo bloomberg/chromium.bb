@@ -16,7 +16,6 @@ namespace blink {
 namespace {
 
 using testing::_;
-using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SaveArg;
@@ -33,7 +32,7 @@ TEST_F(RTCQuicStreamTest, RTCQuicTransportCreateStreamCallsUnderlying) {
 
   auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>();
   EXPECT_CALL(*p2p_quic_stream, SetDelegate(_))
-      .WillOnce(Invoke(
+      .WillOnce(testing::Invoke(
           [](P2PQuicStream::Delegate* delegate) { EXPECT_TRUE(delegate); }));
 
   auto p2p_quic_transport = std::make_unique<MockP2PQuicTransport>();
@@ -59,8 +58,8 @@ TEST_F(RTCQuicStreamTest, NewRemoteStreamFiresEvent) {
 
   Persistent<MockEventListener> quic_stream_listener =
       CreateMockEventListener();
-  EXPECT_CALL(*quic_stream_listener, handleEvent(_, _))
-      .WillOnce(Invoke([](ExecutionContext*, Event* event) {
+  EXPECT_CALL(*quic_stream_listener, Invoke(_, _))
+      .WillOnce(testing::Invoke([](ExecutionContext*, Event* event) {
         auto* stream_event = static_cast<RTCQuicStreamEvent*>(event);
         EXPECT_NE(nullptr, stream_event->stream());
       }));
@@ -71,7 +70,7 @@ TEST_F(RTCQuicStreamTest, NewRemoteStreamFiresEvent) {
 
   auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>();
   EXPECT_CALL(*p2p_quic_stream, SetDelegate(_))
-      .WillOnce(Invoke(
+      .WillOnce(testing::Invoke(
           [](P2PQuicStream::Delegate* delegate) { EXPECT_TRUE(delegate); }));
   transport_delegate->OnStream(p2p_quic_stream.get());
 
@@ -120,7 +119,7 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetFiresStateChangeToClosed) {
 
   Persistent<MockEventListener> state_change_listener =
       CreateMockEventListener();
-  EXPECT_CALL(*state_change_listener, handleEvent(_, _))
+  EXPECT_CALL(*state_change_listener, Invoke(_, _))
       .WillOnce(InvokeWithoutArgs(
           [quic_stream]() { EXPECT_EQ("closed", quic_stream->state()); }));
   quic_stream->addEventListener(event_type_names::kStatechange,
@@ -156,7 +155,7 @@ TEST_F(RTCQuicStreamTest, PendingOnRemoteResetIgnoredAfterReset) {
   // to 'closed'.
   Persistent<MockEventListener> state_change_listener =
       CreateMockEventListener();
-  EXPECT_CALL(*state_change_listener, handleEvent(_, _)).Times(0);
+  EXPECT_CALL(*state_change_listener, Invoke(_, _)).Times(0);
   quic_stream->addEventListener(event_type_names::kStatechange,
                                 state_change_listener);
 

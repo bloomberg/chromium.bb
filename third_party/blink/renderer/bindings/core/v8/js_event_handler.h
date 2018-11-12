@@ -95,9 +95,9 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   // blink::JSBasedEventListener override:
   // Performs "The event handler processing algorithm"
   // https://html.spec.whatwg.org/C/webappapis.html#the-event-handler-processing-algorithm
-  void CallListenerFunction(EventTarget&,
-                            Event&,
-                            v8::Local<v8::Value> js_event) override;
+  void InvokeInternal(EventTarget&,
+                      Event&,
+                      v8::Local<v8::Value> js_event) override;
 
   TraceWrapperMember<V8EventHandlerNonNull> event_handler_;
   const HandlerType type_;

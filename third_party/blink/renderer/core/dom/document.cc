@@ -6576,7 +6576,7 @@ bool Document::AllowInlineEventHandler(Node* node,
   Element* element = node && node->IsElementNode() ? ToElement(node) : nullptr;
   if (!ContentSecurityPolicy::ShouldBypassMainWorld(this) &&
       !GetContentSecurityPolicy()->AllowInlineEventHandler(
-          element, listener->Code(), context_url, context_line))
+          element, listener->ScriptBody(), context_url, context_line))
     return false;
 
   // HTML says that inline script needs browsing context to create its execution

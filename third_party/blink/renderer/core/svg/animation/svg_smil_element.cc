@@ -105,7 +105,7 @@ class ConditionEventListener final : public EventListener {
         animation_(animation),
         condition_(condition) {}
 
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   Member<SVGSMILElement> animation_;
   Member<SVGSMILElement::Condition> condition_;
@@ -119,7 +119,7 @@ bool ConditionEventListener::operator==(const EventListener& listener) const {
   return false;
 }
 
-void ConditionEventListener::handleEvent(ExecutionContext*, Event* event) {
+void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
   if (!animation_)
     return;
   if (event->type() == "repeatn" &&

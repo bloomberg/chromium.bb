@@ -42,9 +42,9 @@ v8::Local<v8::Value> JSEventListener::GetEffectiveFunction(
 }
 
 // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
-void JSEventListener::CallListenerFunction(EventTarget&,
-                                           Event& event,
-                                           v8::Local<v8::Value> js_event) {
+void JSEventListener::InvokeInternal(EventTarget&,
+                                     Event& event,
+                                     v8::Local<v8::Value> js_event) {
   // Step 10: Call a listener with event's currentTarget as receiver and event
   // and handle errors if thrown.
   v8::Maybe<void> maybe_result =

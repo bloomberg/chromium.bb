@@ -72,7 +72,7 @@ class PluginDocument::BeforeUnloadEventListener : public EventListener {
   explicit BeforeUnloadEventListener(PluginDocument* document)
       : EventListener(kCPPEventListenerType), doc_(document) {}
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     DCHECK_EQ(event->type(), event_type_names::kBeforeunload);
     if (show_dialog_)
       ToBeforeUnloadEvent(event)->setReturnValue(g_empty_string);

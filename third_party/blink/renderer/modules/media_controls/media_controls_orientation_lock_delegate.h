@@ -90,7 +90,7 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   };
 
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   HTMLVideoElement& VideoElement() const;
   Document& GetDocument() const;

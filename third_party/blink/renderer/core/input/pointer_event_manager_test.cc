@@ -24,7 +24,7 @@ class CheckPointerEventListenerCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     const String pointer_type = ((PointerEvent*)event)->pointerType();
     if (pointer_type == "mouse")
       mouse_event_received_count_++;
@@ -56,7 +56,7 @@ class PointerEventCoordinateListenerCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     const PointerEvent* pointer_event = (PointerEvent*)event;
     last_client_x_ = pointer_event->clientX();
     last_client_y_ = pointer_event->clientY();

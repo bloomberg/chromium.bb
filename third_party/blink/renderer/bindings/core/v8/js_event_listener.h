@@ -69,9 +69,9 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
 
  private:
   // blink::JSBasedEventListener override:
-  void CallListenerFunction(EventTarget&,
-                            Event&,
-                            v8::Local<v8::Value> js_event) override;
+  void InvokeInternal(EventTarget&,
+                      Event&,
+                      v8::Local<v8::Value> js_event) override;
 
   const TraceWrapperMember<V8EventListener> event_listener_;
 };

@@ -29,7 +29,7 @@ class MockEventListenerForPresentationReceiver : public EventListener {
     return this == &other;
   }
 
-  MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
+  MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 
 class PresentationReceiverTest : public testing::Test {
@@ -84,7 +84,7 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -100,7 +100,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -121,7 +121,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(1);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -152,7 +152,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
   // Receive first connection.
   receiver->OnReceiverConnectionAvailable(
