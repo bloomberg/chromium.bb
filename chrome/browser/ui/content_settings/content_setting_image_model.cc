@@ -143,6 +143,16 @@ class ContentSettingSensorsImageModel : public ContentSettingSimpleImageModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSensorsImageModel);
 };
 
+class ContentSettingPopupImageModel : public ContentSettingSimpleImageModel {
+ public:
+  ContentSettingPopupImageModel();
+
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupImageModel);
+};
+
 namespace {
 
 struct ContentSettingsImageDetails {
@@ -162,8 +172,6 @@ const ContentSettingsImageDetails kImageDetails[] = {
      IDS_BLOCKED_JAVASCRIPT_MESSAGE, 0, 0},
     {CONTENT_SETTINGS_TYPE_PLUGINS, kExtensionIcon, IDS_BLOCKED_PLUGINS_MESSAGE,
      IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
-    {CONTENT_SETTINGS_TYPE_POPUPS, kWebIcon, IDS_BLOCKED_POPUPS_TOOLTIP,
-     IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT, 0},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, kMixedContentIcon,
      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, kExtensionIcon,
@@ -222,8 +230,7 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
       return std::make_unique<ContentSettingBlockedImageModel>(
           ImageType::PLUGINS, CONTENT_SETTINGS_TYPE_PLUGINS);
     case ImageType::POPUPS:
-      return std::make_unique<ContentSettingBlockedImageModel>(
-          ImageType::POPUPS, CONTENT_SETTINGS_TYPE_POPUPS);
+      return std::make_unique<ContentSettingPopupImageModel>();
     case ImageType::GEOLOCATION:
       return std::make_unique<ContentSettingGeolocationImageModel>();
     case ImageType::MIXEDSCRIPT:
@@ -585,6 +592,24 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
   set_icon(kSensorsIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed ? IDS_SENSORS_ALLOWED_TOOLTIP
                                                 : IDS_SENSORS_BLOCKED_TOOLTIP));
+  return true;
+}
+
+// Popups ---------------------------------------------------------------------
+
+ContentSettingPopupImageModel::ContentSettingPopupImageModel()
+    : ContentSettingSimpleImageModel(ImageType::POPUPS,
+                                     CONTENT_SETTINGS_TYPE_POPUPS) {}
+
+bool ContentSettingPopupImageModel::UpdateAndGetVisibility(
+    WebContents* web_contents) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings || !content_settings->IsContentBlocked(content_type()))
+    return false;
+  set_icon(kWebIcon, kBlockedBadgeIcon);
+  set_explanatory_string_id(IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT);
+  set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TOOLTIP));
   return true;
 }
 
