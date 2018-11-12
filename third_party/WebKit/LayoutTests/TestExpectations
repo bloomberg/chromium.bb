@@ -5418,3 +5418,5 @@ crbug.com/902632 [ Win Debug ] fast/xmlhttprequest/xmlhttprequest-recursive-sync
 crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-3.html [ Failure Pass ]
 crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Failure Pass ]
 
+# Test is flaky under load
+crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
