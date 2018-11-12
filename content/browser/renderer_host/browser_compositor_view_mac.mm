@@ -401,8 +401,7 @@ BrowserCompositorMac::GetScopedRendererSurfaceIdAllocator(
 
 const viz::LocalSurfaceIdAllocation&
 BrowserCompositorMac::GetRendererLocalSurfaceIdAllocation() {
-  if (!dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-           .IsValid())
+  if (!dfh_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())
     dfh_local_surface_id_allocator_.GenerateId();
 
   return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();

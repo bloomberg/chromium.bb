@@ -92,11 +92,7 @@ WindowPortMus::WindowPortMus(WindowTreeClient* client,
     : WindowPort(WindowPort::Type::kMus),
       WindowMus(window_mus_type),
       window_tree_client_(client),
-      weak_ptr_factory_(this) {
-  // TODO(fsamuel): Remove this once ParentLocalSurfaceIdAllocator does not
-  // immediately allocate a new viz::LocalSurfaceId on construction.
-  parent_local_surface_id_allocator_.Invalidate();
-}
+      weak_ptr_factory_(this) {}
 
 WindowPortMus::~WindowPortMus() {
   client_surface_embedder_.reset();

@@ -7918,6 +7918,7 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
+    allocator_.GenerateId();
     expected_local_surface_id_allocation_ =
         allocator_.GetCurrentLocalSurfaceIdAllocation();
     PostSetLocalSurfaceIdAllocationToMainThread(
@@ -7957,6 +7958,7 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
+    allocator_.GenerateId();
     expected_local_surface_id_allocation_ =
         allocator_.GetCurrentLocalSurfaceIdAllocation();
     EXPECT_TRUE(child_allocator_.UpdateFromParent(
@@ -8008,6 +8010,7 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
+    allocator_.GenerateId();
     expected_parent_local_surface_id_allocation_ =
         allocator_.GetCurrentLocalSurfaceIdAllocation();
     PostSetLocalSurfaceIdAllocationToMainThread(

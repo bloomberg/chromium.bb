@@ -374,6 +374,7 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   visual_properties.auto_resize_enabled = true;
   visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
   visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
+  allocator.GenerateId();
   visual_properties.local_surface_id_allocation =
       allocator.GetCurrentLocalSurfaceIdAllocation();
   widget()->SynchronizeVisualProperties(visual_properties);

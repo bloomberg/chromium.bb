@@ -173,15 +173,15 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     pipeline_reporting_frame_times_.erase(it);
   }
 
-  const LocalSurfaceId& local_surface_id =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-
   if (frame.size_in_pixels() != last_swap_frame_size_ ||
-      frame.device_scale_factor() != device_scale_factor_) {
+      frame.device_scale_factor() != device_scale_factor_ ||
+      !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
     last_swap_frame_size_ = frame.size_in_pixels();
     device_scale_factor_ = frame.device_scale_factor();
-    display_->SetLocalSurfaceId(local_surface_id, device_scale_factor_);
+    display_->SetLocalSurfaceId(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        device_scale_factor_);
   }
 
   const int64_t trace_id = ~frame.metadata.begin_frame_ack.trace_id;
@@ -191,8 +191,9 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          "SubmitHitTestData");
 
   HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list));
+  support_->SubmitCompositorFrame(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(frame), std::move(hit_test_region_list));
 }
 
 void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {

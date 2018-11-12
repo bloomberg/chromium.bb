@@ -198,6 +198,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
         delegated_frame_host_client_.get(), host()->GetFrameSinkId(),
         features::IsSurfaceSynchronizationEnabled());
     if (is_showing_) {
+      local_surface_id_allocator_.GenerateId();
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
           GetCompositorViewportPixelSize());

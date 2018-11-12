@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
-      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks());
+      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now());
   root->current_frame_host()->GetRenderWidgetHost()->DidUpdateVisualProperties(
       metadata);
 

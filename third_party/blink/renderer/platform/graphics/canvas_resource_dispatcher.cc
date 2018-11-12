@@ -269,7 +269,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   frame->render_pass_list.push_back(std::move(pass));
 
-  if (change_size_for_next_commit_) {
+  if (change_size_for_next_commit_ ||
+      !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
     change_size_for_next_commit_ = false;
   }

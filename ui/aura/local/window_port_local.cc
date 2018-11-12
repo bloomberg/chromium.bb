@@ -194,8 +194,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
 void WindowPortLocal::AllocateLocalSurfaceId() {
   if (!parent_local_surface_id_allocator_)
     parent_local_surface_id_allocator_.emplace();
-  else
-    parent_local_surface_id_allocator_->GenerateId();
+  parent_local_surface_id_allocator_->GenerateId();
   UpdateLocalSurfaceId();
 }
 

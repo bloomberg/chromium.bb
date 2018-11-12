@@ -54,6 +54,8 @@ class ParentLocalSurfaceIdAllocatorTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     now_src_ = std::make_unique<base::SimpleTestTickClock>();
+    // Advance time by one millisecond to ensure all time stamps are non-null.
+    AdvanceTime(base::TimeDelta::FromMilliseconds(1u));
     allocator_ =
         std::make_unique<ParentLocalSurfaceIdAllocator>(now_src_.get());
   }
@@ -69,19 +71,6 @@ class ParentLocalSurfaceIdAllocatorTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ParentLocalSurfaceIdAllocatorTest);
 };
-
-// The default constructor should generate a embed_token and initialize the
-// last known LocalSurfaceId. Allocation should not be suppressed.
-TEST_F(ParentLocalSurfaceIdAllocatorTest,
-       DefaultConstructorShouldInitializeLocalSurfaceIdAndNotBeSuppressed) {
-  const LocalSurfaceId& default_local_surface_id =
-      allocator().GetCurrentLocalSurfaceId();
-  EXPECT_TRUE(default_local_surface_id.is_valid());
-  EXPECT_TRUE(ParentSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_TRUE(EmbedTokenIsValid(default_local_surface_id));
-  EXPECT_FALSE(allocator().is_allocation_suppressed());
-}
 
 // UpdateFromChild() on a parent allocator should accept the child's sequence
 // number. But it should continue to use its own parent sequence number and
@@ -119,6 +108,7 @@ TEST_F(ParentLocalSurfaceIdAllocatorTest,
 // sequence number and use the previous embed_token.
 TEST_F(ParentLocalSurfaceIdAllocatorTest,
        GenerateIdOnlyUpdatesExpectedLocalSurfaceIdComponents) {
+  allocator().GenerateId();
   LocalSurfaceId pregenerateid_local_surface_id =
       allocator().GetCurrentLocalSurfaceId();
 
@@ -141,6 +131,7 @@ TEST_F(ParentLocalSurfaceIdAllocatorTest,
 // This test verifies that calling reset with a LocalSurfaceId updates the
 // GetCurrentLocalSurfaceId and affects GenerateId.
 TEST_F(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
+  allocator().GenerateId();
   LocalSurfaceId default_local_surface_id =
       allocator().GetCurrentLocalSurfaceId();
   EXPECT_TRUE(default_local_surface_id.is_valid());
@@ -173,6 +164,7 @@ TEST_F(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
 // is updated.
 TEST_F(ParentLocalSurfaceIdAllocatorTest,
        CorrectTimeStampUsedInUpdateFromChild) {
+  allocator().GenerateId();
   LocalSurfaceId child_allocated_id = GenerateChildLocalSurfaceId();
   base::TimeTicks child_allocation_time = Now();
 

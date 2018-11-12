@@ -129,6 +129,7 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   // This surface_id is essentially just a placeholder for the real one we will
   // get in OnFirstSurfaceActivation. We need it so that we properly get a
   // WillDraw, which then pushes the first compositor frame.
+  parent_local_surface_id_allocator_.GenerateId();
   current_surface_id_ = viz::SurfaceId(
       frame_sink_id_,
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());

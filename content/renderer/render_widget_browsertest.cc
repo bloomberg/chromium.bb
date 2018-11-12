@@ -69,6 +69,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   // Setting the bounds to a "real" rect should send the ack.
   render_thread_->sink().ClearMessages();
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator;
+  local_surface_id_allocator.GenerateId();
   gfx::Size size(100, 100);
   visual_properties.local_surface_id_allocation =
       local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation();
