@@ -114,9 +114,7 @@ bool WaitForDownloadButton() {
 // presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process. Performs download in Incognito.
 - (void)testSucessfullDownloadInIncognito {
-  chrome_test_util::OpenNewIncognitoTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
@@ -164,8 +162,7 @@ bool WaitForDownloadButton() {
     // does not wait until the download progress bar becomes idle (which will
     // not happen until the download is complete).
     ScopedSynchronizationDisabler disabler;
-    chrome_test_util::OpenNewTab();
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+    [ChromeEarlGrey openNewTab];
   }
 
   // Load a URL in a separate Tab and close that tab.

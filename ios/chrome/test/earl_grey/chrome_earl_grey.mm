@@ -133,6 +133,13 @@ id ExecuteJavaScript(NSString* javascript,
 
 + (void)openNewTab {
   chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
++ (void)openNewIncognitoTab {
+  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey waitForPageToFinishLoading];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 

@@ -373,7 +373,7 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
   // Load both URLs in separate tabs.
   [ChromeEarlGrey loadURL:URL1];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:URL2];
 
   // Sign in to sync, after opening two tabs.

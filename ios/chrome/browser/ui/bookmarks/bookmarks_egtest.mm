@@ -278,7 +278,7 @@ id<GREYMatcher> SearchIconButton() {
   const GURL secondURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
   [ChromeEarlGrey loadURL:firstURL];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey loadURL:secondURL];
 
   [BookmarksTestCase bookmarkCurrentTabWithTitle:@"my bookmark"];
@@ -2115,7 +2115,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
 
   // Switch to Incognito mode by adding a new incognito tab.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
 
   [BookmarksTestCase openBookmarks];
 

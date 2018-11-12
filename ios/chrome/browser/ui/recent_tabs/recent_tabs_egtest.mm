@@ -44,7 +44,7 @@ NSString* const kTitleOfTestPage = @"TestPageTitle";
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
   if (chrome_test_util::GetMainTabCount() == 0)
-    chrome_test_util::OpenNewTab();
+    [ChromeEarlGrey openNewTab];
 
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];

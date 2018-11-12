@@ -111,7 +111,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
   // Opens an incognito tab, loads the dummy page, and sets incognito test
   // cookie.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
   cookies = [ChromeEarlGrey cookies];
@@ -122,7 +122,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
   // Switches back to normal profile by opening up a new tab. Test cookie
   // should not be found.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -138,7 +138,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
   // incognito tabs and synchronize with the UI.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -155,7 +155,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
 
   // Opens an incognito tab, loads a page, and sets an incognito cookie.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
   NSDictionary* cookies = [ChromeEarlGrey cookies];
@@ -170,13 +170,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
   // incognito tabs and synchronize with the UI.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
 
   // Opens a new incognito tab and verify that the previously set cookie
   // is no longer there.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -205,7 +205,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
                   @"Only one cookie should be found in normal mode.");
 
   // Switches to a new incognito tab and verifies that cookie is not there.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -219,7 +219,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
   // incognito tabs and synchronize with the UI.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -237,7 +237,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
   // cookie in incognito tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoSetCookie)];
   NSDictionary* cookies = [ChromeEarlGrey cookies];
@@ -248,7 +248,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
   // Switches back to a normal tab and verifies that cookie set in incognito tab
   // is not available.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -256,7 +256,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
                   @"Incognito cookie should not be found in normal mode.");
 
   // Returns back to Incognito tab and cookie is still there.
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlIncognitoBrowsing)];
   cookies = [ChromeEarlGrey cookies];
@@ -279,7 +279,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
                   @"Only one cookie should be found in normal mode.");
 
   // Creates another normal tab and verifies that the cookie is also there.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
   cookies = [ChromeEarlGrey cookies];
