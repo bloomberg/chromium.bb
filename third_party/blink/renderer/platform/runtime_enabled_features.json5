@@ -1260,6 +1260,7 @@
     {
       name: "WebAnimationsAPI",
       status: "experimental",
+      implied_by: ['AnimationWorklet']
     },
     {
       name: "WebAnimationsSVG",
