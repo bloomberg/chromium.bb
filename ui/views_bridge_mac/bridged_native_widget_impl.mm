@@ -681,8 +681,10 @@ bool BridgedNativeWidgetImpl::HasCapture() {
 }
 
 bool BridgedNativeWidgetImpl::RunMoveLoop(const gfx::Vector2d& drag_offset) {
-  DCHECK(!HasCapture());
   // https://crbug.com/876493
+  CHECK(!HasCapture());
+  // Does some *other* widget have capture?
+  CHECK(!CocoaMouseCapture::GetGlobalCaptureWindow());
   CHECK(!window_move_loop_);
 
   // RunMoveLoop caller is responsible for updating the window to be under the
