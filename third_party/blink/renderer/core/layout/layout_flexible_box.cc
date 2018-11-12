@@ -480,9 +480,12 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
   // This should only be called if the logical width is the cross size
   DCHECK(!MainAxisIsInlineAxis(child));
   // If our height is auto, make sure that our returned height is unaffected by
-  // earlier layouts by returning the max preferred logical width
-  if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth()))
-    return child.MaxPreferredLogicalWidth();
+  // earlier layouts by returning the shrink-to-fit size.
+  if (!CrossAxisLengthIsDefinite(child, child.StyleRef().LogicalWidth())) {
+    MinMaxSize sizes{child.MinPreferredLogicalWidth(),
+                     child.MaxPreferredLogicalWidth()};
+    return sizes.ShrinkToFit(ContentLogicalWidth());
+  }
 
   return child.LogicalWidth();
 }

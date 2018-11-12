@@ -1637,6 +1637,8 @@ crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-008.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-order.html [ Failure ]
 crbug.com/591099 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-vertical-align-effect.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-wrap-002.html [ Skip ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-wrap-003.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-direction-column-reverse.htm [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-direction-column.htm [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox-flex-wrap-flexing.html [ Failure ]
