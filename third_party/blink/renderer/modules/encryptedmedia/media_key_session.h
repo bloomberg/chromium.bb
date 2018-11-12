@@ -149,7 +149,7 @@ class MediaKeySession final
   // Session states.
   bool is_uninitialized_;
   bool is_callable_;
-  bool is_closed_;  // Is the CDM finished with this session?
+  bool is_closing_or_closed_;
 
   // Keep track of the closed promise.
   typedef ScriptPromiseProperty<Member<MediaKeySession>,
