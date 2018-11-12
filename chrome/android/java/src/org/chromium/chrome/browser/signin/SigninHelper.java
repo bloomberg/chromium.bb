@@ -120,6 +120,13 @@ public class SigninHelper {
     }
 
     public void validateAccountSettings(boolean accountsChanged) {
+        // validateAccountsInternal accesses account list (to check whether account exists), so
+        // postpone the call until account list cache in AccountManagerFacade is ready.
+        AccountManagerFacade.get().runAfterCacheIsPopulated(
+                () -> validateAccountsInternal(accountsChanged));
+    }
+
+    private void validateAccountsInternal(boolean accountsChanged) {
         // Ensure System accounts have been seeded.
         mAccountTrackerService.checkAndSeedSystemAccounts();
         if (!accountsChanged) {
@@ -155,7 +162,7 @@ public class SigninHelper {
                     if (renamedAccount == null) {
                         mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
                     } else {
-                        validateAccountSettings(true);
+                        validateAccountsInternal(true);
                     }
                 }
             };
@@ -217,7 +224,7 @@ public class SigninHelper {
                 if (mProfileSyncService != null) {
                     mProfileSyncService.setSetupInProgress(false);
                 }
-                validateAccountSettings(true);
+                validateAccountsInternal(true);
             }
 
             @Override
