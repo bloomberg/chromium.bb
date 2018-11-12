@@ -104,6 +104,9 @@ enum MaliciousContentStatus {
 struct SecurityInfo {
   SecurityInfo();
   ~SecurityInfo();
+  // Whether the connection security fields are initialized.
+  bool connection_info_initialized;
+  // Describes the overall security state of the page.
   SecurityLevel security_level;
   // Describes the nature of the page's malicious content, if any.
   MaliciousContentStatus malicious_content_status;

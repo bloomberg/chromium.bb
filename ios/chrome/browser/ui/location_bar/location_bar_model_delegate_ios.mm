@@ -74,17 +74,17 @@ bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
   return true;
 }
 
-security_state::SecurityLevel LocationBarModelDelegateIOS::GetSecurityLevel()
-    const {
+void LocationBarModelDelegateIOS::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
   web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), assume no security style.
-  if (!web_state)
-    return security_state::NONE;
+  if (!web_state) {
+    *result = security_state::SecurityInfo();
+    return;
+  }
   auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  security_state::SecurityInfo result;
-  client->GetSecurityInfo(&result);
-  return result.security_level;
+  client->GetSecurityInfo(result);
 }
 
 scoped_refptr<net::X509Certificate>

@@ -91,17 +91,17 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   return !profile || !search::IsInstantNTPURL(url, profile);
 }
 
-security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
-    const {
+void ChromeLocationBarModelDelegate::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), assume no security style.
-  if (!web_contents)
-    return security_state::NONE;
+  if (!web_contents) {
+    *result = security_state::SecurityInfo();
+    return;
+  }
   auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_info.security_level;
+  helper->GetSecurityInfo(result);
 }
 
 scoped_refptr<net::X509Certificate>

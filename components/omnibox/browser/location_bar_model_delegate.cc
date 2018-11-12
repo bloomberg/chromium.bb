@@ -8,9 +8,9 @@ bool LocationBarModelDelegate::ShouldDisplayURL() const {
   return true;
 }
 
-LocationBarModelDelegate::SecurityLevel
-LocationBarModelDelegate::GetSecurityLevel() const {
-  return SecurityLevel::NONE;
+void LocationBarModelDelegate::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
+  return;
 }
 
 scoped_refptr<net::X509Certificate> LocationBarModelDelegate::GetCertificate()

@@ -29,6 +29,7 @@ class TestLocationBarModel : public LocationBarModel {
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
+  bool IsSecurityInfoInitialized() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureVerboseText() const override;
   base::string16 GetSecureAccessibilityText() const override;

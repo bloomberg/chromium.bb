@@ -233,6 +233,7 @@ void SecurityInfoForRequest(
     SecurityInfo* security_info) {
   if (!visible_security_state.connection_info_initialized) {
     *security_info = SecurityInfo();
+    security_info->connection_info_initialized = false;
     security_info->malicious_content_status =
         visible_security_state.malicious_content_status;
     if (security_info->malicious_content_status !=
@@ -244,6 +245,7 @@ void SecurityInfoForRequest(
     }
     return;
   }
+  security_info->connection_info_initialized = true;
   security_info->certificate = visible_security_state.certificate;
 
   security_info->sha1_in_chain = visible_security_state.certificate &&
@@ -311,7 +313,8 @@ std::string GetHistogramSuffixForSecurityLevel(
 }  // namespace
 
 SecurityInfo::SecurityInfo()
-    : security_level(NONE),
+    : connection_info_initialized(false),
+      security_level(NONE),
       malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
       sha1_in_chain(false),
       mixed_content_status(CONTENT_STATUS_NONE),

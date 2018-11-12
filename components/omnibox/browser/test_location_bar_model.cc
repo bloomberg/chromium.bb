@@ -43,6 +43,10 @@ security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel(
   return security_level_;
 }
 
+bool TestLocationBarModel::IsSecurityInfoInitialized() const {
+  return true;
+}
+
 const gfx::VectorIcon& TestLocationBarModel::GetVectorIcon() const {
   return *icon_;
 }

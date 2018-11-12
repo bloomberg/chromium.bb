@@ -48,6 +48,10 @@ class LocationBarModel {
   virtual security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const = 0;
 
+  // Returns whether the connection security fields have been initialized.
+  // After a navigation, this is false until the TLS state is updated.
+  virtual bool IsSecurityInfoInitialized() const = 0;
+
   // Returns the id of the icon to show to the left of the address, based on the
   // current URL.  When search term replacement is active, this returns a search
   // icon.  This doesn't cover specialized icons while the user is editing; see
