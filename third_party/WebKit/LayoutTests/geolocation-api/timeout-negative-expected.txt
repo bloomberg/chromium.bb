@@ -2,7 +2,6 @@ Tests that when timeout is negative (and maximumAge is too), the error callback 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS error.code is error.TIMEOUT
 PASS error.message is "Timeout expired"
 PASS successfullyParsed is true

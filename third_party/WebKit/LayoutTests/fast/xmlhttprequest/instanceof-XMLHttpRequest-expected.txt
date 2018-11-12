@@ -2,7 +2,6 @@ instanceof XMLHttpRequest test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS (new XMLHttpRequest()) instanceof XMLHttpRequest is true
 PASS (new Array()) instanceof XMLHttpRequest is false
 PASS (new XMLHttpRequest()) instanceof XMLHttpRequestEventTarget is true

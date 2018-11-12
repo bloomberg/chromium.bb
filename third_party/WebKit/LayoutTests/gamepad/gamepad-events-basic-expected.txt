@@ -2,7 +2,6 @@ Basic test for 'gamepadconnected' and 'gamepaddisconnected' events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Gamepad connected
 PASS event.__proto__ is GamepadEvent.prototype
 PASS event.__proto__.__proto__ is Event.prototype

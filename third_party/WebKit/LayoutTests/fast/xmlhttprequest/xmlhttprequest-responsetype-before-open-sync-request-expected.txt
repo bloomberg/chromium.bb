@@ -2,7 +2,6 @@ This tests that XMLHttpRequest open() disallows synchronous HTTP(S) requests whe
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 xhr.responseType = 'document';
 PASS xhr.open('GET', 'http://mydomain/', false); threw exception InvalidAccessError: Failed to execute 'open' on 'XMLHttpRequest': Synchronous requests from a document must not set a response type..
 xhr.responseType = 'document';

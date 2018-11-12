@@ -2,7 +2,6 @@ Tests that navigator.geolocation.watchPosition returns unique results within its
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS watchID1 > 0 is true
 PASS watchID2 > 0 is true
 PASS watchID3 > 0 is true

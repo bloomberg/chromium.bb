@@ -2,7 +2,6 @@ Test style update of the :placeholder-shown pseudo class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Initial state is without placehoder.
 PASS getComputedStyle(document.getElementById("input-with-renderer")).backgroundColor is "rgb(255, 255, 255)"
 PASS getComputedStyle(document.getElementById("textarea-with-renderer")).backgroundColor is "rgb(255, 255, 255)"
@@ -61,4 +60,5 @@ PASS getComputedStyle(document.getElementById("textarea-without-renderer")).back
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  
+
+ 

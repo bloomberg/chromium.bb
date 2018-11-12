@@ -2,7 +2,6 @@ Tests that when a cached position is available the callback for getCurrentPositi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS isSuccess is true
 PASS getCurrentPositionCallId is reportCount
 PASS isSuccess is true

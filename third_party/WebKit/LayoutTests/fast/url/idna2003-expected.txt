@@ -2,7 +2,6 @@ IDNA2003 handling in domain name labels.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 The PASS/FAIL results of this test are set to the behavior in IDNA2003.
 PASS canonicalize('http://faß.de/') is 'http://fass.de/'
 PASS canonicalize('http://βόλος.com/') is 'http://xn--nxasmq6b.com/'

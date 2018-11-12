@@ -6,4 +6,10 @@ There should be hotpink, lime, cyan, yellow and blue squares below, stacked vert
 
 
 
+
+
+
+
+
+
 PASS

@@ -2,7 +2,6 @@ Tests that gamepad events are not fired when page is hidden but kept as pending 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Received a gamepadconnected event
 PASS event.gamepad.index is 0
 PASS document.visibilityState is "hidden"

@@ -3,7 +3,6 @@ Should update distribution when needed for querySelector and related methods.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS aRoot.querySelector(':host-context(#c) #d') is d
 PASS toArray(aRoot.querySelectorAll(':host-context(#c) #d')) is [d]
 PASS hostRoot.querySelector('::content #a') is null

@@ -2,8 +2,10 @@ Test for chromium bug : 252120. Content of the row spanning cell is flowing out 
 Row spanning cell height is not set as per its content height or given height to this cells.
 Test 1 - One row spanning cell present under the boundries of other row spanning cell and inner row spanning cell have lots of content.
 row0 col0 rowspan=6 height=400px	row0 col1
+
 PASS
 row1 col1
+
 PASS
 row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
@@ -16,6 +18,8 @@ row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
+
+
 FAIL:
 Expected 261 for height, but got 262. 
 
@@ -23,19 +27,26 @@ Expected 261 for height, but got 262.
       <td rowspan="3" style="height:200px">row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br></td>
     </tr>
 row3 col2
+
 PASS
 row4 col2
+
 PASS
 row5 col1
+
 PASS
 row6 col0
+
 PASS
 Test 2 - One row spanning cell present under the boundries of other row spanning cell and inner row spanning cell have its own height.
 row0 col0 rowspan=6 height=600px	row0 col1
+
 PASS
 row1 col1
+
 PASS
 row2 col1 rowspan=3 height=400px
+
 FAIL:
 Expected 461 for height, but got 462. 
 
@@ -43,15 +54,20 @@ Expected 461 for height, but got 462.
       <td rowspan="3" style="height:400px">row2 col1 rowspan=3 height=400px</td>
     </tr>
 row3 col2
+
 PASS
 row4 col2
+
 PASS
 row5 col1
+
 PASS
 row6 col0
+
 PASS
 Test 3 - 2 same row spanning cells with different heights.
 row0 col0 rowspan=6 height=300px	row0 col1 rowspan=6 height=500px
+
 FAIL:
 Expected 308 for height, but got 310. 
 
@@ -60,21 +76,29 @@ Expected 308 for height, but got 310.
       <td rowspan="6" style="height:500px">row0 col1 rowspan=6 height=500px</td>
     </tr>
 row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col1
+
 PASS
 row6 col0
+
 PASS
 Test 4 - some rows are common between 2 row spanning cells.
 row0 col0 rowspan=6 height=400px	row0 col1
+
 PASS
 row1 col1 rowspan=6 height=800px
+
 FAIL:
 Expected 623 for height, but got 625. 
 
@@ -82,21 +106,29 @@ Expected 623 for height, but got 625.
         <td rowspan="6" style="height:800px">row1 col1 rowspan=6 height=800px</td>
     </tr>
 row2 col2
+
 PASS
 row3 col2
+
 PASS
 row4 col2
+
 PASS
 row5 col2
+
 PASS
 row6 col2
+
 PASS
 row7 col0
+
 PASS
 Test 5 - 2 spanning cells starts at different row index but end at same row index.
 row0 col0 rowspan=6 height=400px	row0 col1
+
 PASS
 row1 col1 rowspan=6 height=800px
+
 FAIL:
 Expected 423 for height, but got 425. 
 
@@ -104,34 +136,48 @@ Expected 423 for height, but got 425.
         <td rowspan="5" style="height:300px">row1 col1 rowspan=6 height=800px</td>
     </tr>
 row2 col2
+
 PASS
 row3 col2
+
 PASS
 row4 col2
+
 PASS
 row5 col2
+
 PASS
 row6 col2
+
 PASS
 row7 col0
+
 PASS
 Test 6 - RowSpan and ColSpan.
 row0 col0	row0 col1 - rowspan=3 colspan=2	row0 col2
+
 PASS
 row1 col0
+
 PASS
 row2 col0
+
 PASS
 row3 col0 - colspan=3
+
 PASS
 row4 col0
+
 PASS
 Test 7 - Mix of baseline aligned and non-baseline aligned cells.
 row0 col0	row0 col1 vertical-align=top	row0 col2 vertical-align=bottom
+
 PASS
 row1 col0
+
 PASS
 row2 col0 - rowspan=4 vertical-align=text-top	row2 col1 vertical-align=sub
+
 FAIL:
 Expected 77 for height, but got 32. 
 
@@ -140,6 +186,7 @@ Expected 77 for height, but got 32.
       <td style="vertical-align:sub">row2 col1 vertical-align=sub</td>
     </tr>
 row3 col1 vertical-align=middle
+
 FAIL:
 Expected 77 for height, but got 78. 
 
@@ -147,10 +194,13 @@ Expected 77 for height, but got 78.
       <td style="vertical-align:middle">row3 col1 vertical-align=middle</td>
     </tr>
 row4 col1 vertical-align=super
+
 PASS
 row5 col1 vertical-align=text-bottom
+
 PASS
 row6 col0
+
 PASS
 Test 8 - CSS Table.
 row0 col0	row0 col1	row0 col2
@@ -166,6 +216,7 @@ row9 col0
 row10 col0
 Test 9 - Table Similar to CSS table with rowspan.
 row0 col0	row0 col1	row0 col2
+
 FAIL:
 Expected 21 for height, but got 19. 
 
@@ -175,6 +226,7 @@ Expected 21 for height, but got 19.
         <td>row0 col2</td>
     </tr>
 row1 col1	row1 col2	row1 col3
+
 FAIL:
 Expected 87 for height, but got 52. 
 
@@ -184,6 +236,7 @@ Expected 87 for height, but got 52.
         <td>row1 col3</td>
     </tr>
 row2 col3
+
 FAIL:
 Expected 96 for height, but got 84. 
 
@@ -191,6 +244,7 @@ Expected 96 for height, but got 84.
         <td>row2 col3</td>
     </tr>
 row3 col2
+
 FAIL:
 Expected 40 for height, but got 35. 
 
@@ -198,6 +252,7 @@ Expected 40 for height, but got 35.
         <td>row3 col2</td>
     </tr>
 row4 col1	row4 col2	row4 col3
+
 FAIL:
 Expected 24 for height, but got 38. 
 
@@ -207,6 +262,7 @@ Expected 24 for height, but got 38.
         <td>row4 col3</td>
     </tr>
 row5 col0	row5 col1	row5 col2
+
 FAIL:
 Expected 19 for height, but got 34. 
 
@@ -216,6 +272,7 @@ Expected 19 for height, but got 34.
         <td>row5 col2</td>
     </tr>
 row6 col0	row6 col1
+
 FAIL:
 Expected 74 for height, but got 76. 
 
@@ -224,10 +281,14 @@ Expected 74 for height, but got 76.
         <td rowspan="5" style="height:100px">row6 col1</td>
     </tr>
 row7 col1
+
 PASS
 row8 col1
+
 PASS
 row9 col1
+
 PASS
 row10 col1
+
 PASS

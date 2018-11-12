@@ -1,4 +1,3 @@
-
 crbug.com/637811: Percent height overflow scroll content in a cell should not flex the height of the cell.
 
 PASS

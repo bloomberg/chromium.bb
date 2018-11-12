@@ -6,11 +6,11 @@ location: file:<...>/fast/workers/resources/shared-worker-common.js
 location.href: file:<...>/fast/workers/resources/shared-worker-common.js
 location.origin: file://
 location.protocol: file:
-location.host: 
-location.hostname: 
-location.port: 
+location.host:
+location.hostname:
+location.port:
 location.pathname: <...>/fast/workers/resources/shared-worker-common.js
-location.search: 
-location.hash: 
+location.search:
+location.hash:
 DONE
 

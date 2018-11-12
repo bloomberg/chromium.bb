@@ -2,7 +2,6 @@ Test that when there are multiple gamepad event listeners and one is getting rem
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS gamepadconnected event received
 PASS successfullyParsed is true
 

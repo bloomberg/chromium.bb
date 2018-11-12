@@ -1,4 +1,5 @@
 Table
+
 FAIL:
 Expected 34 for height, but got 32. 
 

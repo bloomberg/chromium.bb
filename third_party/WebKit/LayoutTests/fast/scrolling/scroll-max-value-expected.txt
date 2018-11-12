@@ -7,6 +7,9 @@ PASS Setting test_input_search.scrollTop = 100000000 scrolls all the way to the 
 PASS successfullyParsed is true
 
 TEST COMPLETE
-top leftbottom right
-  
+
+top left
+bottom right
+ 
+
 Tests that large scrollLeft/Top values scroll to maximum possible value, i.e, Element.scrollWidth/Height - Element.clientWidth/Height.

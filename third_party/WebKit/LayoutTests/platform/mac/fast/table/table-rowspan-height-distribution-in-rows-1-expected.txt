@@ -2,32 +2,45 @@ Test for chromium bug : 78724. Extra logical height is not properly spread over 
 Rows in rowspan should get proportional height.
 Test 1 - One rowSpan cell
 row0 col0
+
 PASS
 row1 col0 - rowspan=4	row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col0
+
 PASS
 Test 2 - One rowSpan cell and specified table width
 row0 col0 - rowspan=5	row0 col1
+
 PASS
 row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 Test 3 - One rowSpan cell and specified rowSpan cell height
 row0 col0
+
 PASS
 row1 col0	row1 col1 - rowspan=4
+
 FAIL:
 Expected 57 for height, but got 32. 
 
@@ -36,6 +49,7 @@ Expected 57 for height, but got 32.
 	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
 	</tr>
 row2 col0
+
 FAIL:
 Expected 57 for height, but got 58. 
 
@@ -43,15 +57,20 @@ Expected 57 for height, but got 58.
       <td>row2 col0</td>
     </tr>
 row3 col0
+
 PASS
 row4 col0
+
 PASS
 row5 col0	row5 col1
+
 PASS
 Test 4 - One rowSpan cell and specified cells height
 row0 col0
+
 PASS
 row1 col0	row1 col1 - rowspan=4
+
 FAIL:
 Expected 59 for height, but got 60. 
 
@@ -60,30 +79,42 @@ Expected 59 for height, but got 60.
 	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
 	</tr>
 row2 col0
+
 PASS
 row3 col0
+
 PASS
 row4 col0
+
 PASS
 row5 col0	row5 col1
+
 PASS
 Test 5 - RowSpan and ColSpan.
 row0 col0	row0 col1 - rowspan=3 colspan=2	row0 col2
+
 PASS
 row1 col0
+
 PASS
 row2 col0
+
 PASS
 row3 col0 - colspan=3
+
 PASS
 row4 col0
+
 PASS
 Test 6 - Mix of baseline aligned and non-baseline aligned cells.
 row0 col0	row0 col1 vertical-align=top	row0 col2 vertical-align=bottom
+
 PASS
 row1 col0
+
 PASS
 row2 col0 - rowspan=4 vertical-align=text-top	row2 col1 vertical-align=sub
+
 FAIL:
 Expected 77 for height, but got 32. 
 
@@ -92,6 +123,7 @@ Expected 77 for height, but got 32.
       <td style="vertical-align:sub">row2 col1 vertical-align=sub</td>
     </tr>
 row3 col1 vertical-align=middle
+
 FAIL:
 Expected 77 for height, but got 78. 
 
@@ -99,10 +131,13 @@ Expected 77 for height, but got 78.
       <td style="vertical-align:middle">row3 col1 vertical-align=middle</td>
     </tr>
 row4 col1 vertical-align=super
+
 PASS
 row5 col1 vertical-align=text-bottom
+
 PASS
 row6 col0
+
 PASS
 Test 7 - CSS Table.
 row0 col0	row0 col1	row0 col2
@@ -118,6 +153,7 @@ row9 col0
 row10 col0
 Test 8 - Table Similar to CSS table with rowspan.
 row0 col0	row0 col1	row0 col2
+
 FAIL:
 Expected 21 for height, but got 19. 
 
@@ -127,6 +163,7 @@ Expected 21 for height, but got 19.
         <td>row0 col2</td>
     </tr>
 row1 col1	row1 col2	row1 col3
+
 FAIL:
 Expected 87 for height, but got 52. 
 
@@ -136,6 +173,7 @@ Expected 87 for height, but got 52.
         <td>row1 col3</td>
     </tr>
 row2 col3
+
 FAIL:
 Expected 96 for height, but got 84. 
 
@@ -143,6 +181,7 @@ Expected 96 for height, but got 84.
         <td>row2 col3</td>
     </tr>
 row3 col2
+
 FAIL:
 Expected 40 for height, but got 35. 
 
@@ -150,6 +189,7 @@ Expected 40 for height, but got 35.
         <td>row3 col2</td>
     </tr>
 row4 col1	row4 col2	row4 col3
+
 FAIL:
 Expected 24 for height, but got 38. 
 
@@ -159,6 +199,7 @@ Expected 24 for height, but got 38.
         <td>row4 col3</td>
     </tr>
 row5 col0	row5 col1	row5 col2
+
 FAIL:
 Expected 19 for height, but got 34. 
 
@@ -168,6 +209,7 @@ Expected 19 for height, but got 34.
         <td>row5 col2</td>
     </tr>
 row6 col0	row6 col1
+
 FAIL:
 Expected 74 for height, but got 76. 
 
@@ -176,10 +218,14 @@ Expected 74 for height, but got 76.
         <td rowspan="5" style="height:100px">row6 col1</td>
     </tr>
 row7 col1
+
 PASS
 row8 col1
+
 PASS
 row9 col1
+
 PASS
 row10 col1
+
 PASS

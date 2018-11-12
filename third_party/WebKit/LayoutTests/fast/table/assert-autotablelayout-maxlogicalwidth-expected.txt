@@ -3,3 +3,4 @@ Test for Bugzilla Bug 92471: ASSERTION FAILED: allocatedMaxLogicalWidth <= cellM
 The following test passes if there is no assert or crash.
 
 
+						

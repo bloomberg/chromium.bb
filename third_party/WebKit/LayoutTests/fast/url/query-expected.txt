@@ -2,7 +2,6 @@ Test URLs that have a query string.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS canonicalize('http://www.example.com/?foo=bar') is 'http://www.example.com/?foo=bar'
 PASS canonicalize('http://www.example.com/?as?df') is 'http://www.example.com/?as?df'
 PASS canonicalize('http://www.example.com/?\x02hello bye') is 'http://www.example.com/?%02hello%7F%20bye'

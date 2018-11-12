@@ -2,7 +2,6 @@ This test verifies that XMLHttpRequest objects has correct default value for its
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS xhr.onabort is null
 PASS xhr.onerror is null
 PASS xhr.onload is null

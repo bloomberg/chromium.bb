@@ -2,7 +2,6 @@ Tests mailto: URL canonicalization
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS canonicalize('mailto:addr1') is 'mailto:addr1'
 PASS canonicalize('mailto:addr1@foo.com') is 'mailto:addr1@foo.com'
 PASS canonicalize('mailto:addr1 	 ') is 'mailto:addr1'

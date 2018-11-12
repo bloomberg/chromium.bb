@@ -1,1 +1,5 @@
-This test should not crash.ZeroOneTwoThree
+This test should not crash.
+Zero
+One
+Two
+Three

@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: ./resources/worker-formdata.js
 PASS [Worker] FormData is defined.
 PASS [Worker] FormData.length is 0

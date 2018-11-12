@@ -4,4 +4,5 @@ There should be 3 squares. Outer two are lime, middle one is blue with a lightbl
 
 Firefox 50.0a1 (nightly 2016-07-19) fails this, so it should probably be upstreamed, except it uses chrome-specific `runAfterLayoutAndPaint`.
 
+		
 PASS

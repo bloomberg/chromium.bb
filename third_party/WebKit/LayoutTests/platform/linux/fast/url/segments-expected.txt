@@ -2,7 +2,6 @@ Test URL segmentation
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS segments('http://user:pass@foo:21/bar;par?b#c') is '["http:","foo","21","/bar;par","?b","#c"]'
 PASS segments('http:foo.com') is '["http:","example.org","","/foo/foo.com","",""]'
 PASS segments('\t   :foo.com   \n') is '["http:","example.org","","/foo/:foo.com","",""]'

@@ -2,20 +2,28 @@ Test for chromium bug : 249600. Extra logical height is not properly spread over
 Rows in rowspan should get proportional height.
 Test 1 - Three rowSpan cells
 row0 col0
+
 PASS
 row1 col0 - rowspan=4	row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col0
+
 PASS
 row6 col0
+
 PASS
 row7 col0	row7 col1 - rowspan=4
+
 FAIL:
 Expected 57 for height, but got 32. 
 
@@ -24,6 +32,7 @@ Expected 57 for height, but got 32.
 	  <td rowspan="4" style="height:300px">row7 col1 - rowspan=4</td>
 	</tr>
 row8 col0
+
 FAIL:
 Expected 57 for height, but got 58. 
 
@@ -31,14 +40,19 @@ Expected 57 for height, but got 58.
       <td>row8 col0</td>
     </tr>
 row9 col0
+
 PASS
 row10 col0
+
 PASS
 row11 col0	row11 col1
+
 PASS
 row12 col0
+
 PASS
 row13 col0	row13 col1 - rowspan=4
+
 FAIL:
 Expected 59 for height, but got 60. 
 
@@ -47,27 +61,38 @@ Expected 59 for height, but got 60.
 	  <td rowspan="4" style="height:300px">row13 col1 - rowspan=4</td>
 	</tr>
 row14 col0
+
 PASS
 row15 col0
+
 PASS
 row16 col0
+
 PASS
 row17 col0	row17 col1
+
 PASS
 Test 2 - Three rowSpan cell and specified table width
 row0 col0 - rowspan=5	row0 col1
+
 PASS
 row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col0
+
 PASS
 row6 col0	row6 col1 - rowspan=4
+
 FAIL:
 Expected 57 for height, but got 32. 
 
@@ -76,6 +101,7 @@ Expected 57 for height, but got 32.
 	  <td rowspan="4" style="height:300px">row6 col1 - rowspan=4</td>
 	</tr>
 row7 col0
+
 FAIL:
 Expected 57 for height, but got 58. 
 
@@ -83,10 +109,13 @@ Expected 57 for height, but got 58.
       <td>row7 col0</td>
     </tr>
 row8 col0
+
 PASS
 row9 col0
+
 PASS
 row10 col0	row10 col1
+
 FAIL:
 Expected 19 for height, but got 34. 
 
@@ -95,8 +124,10 @@ Expected 19 for height, but got 34.
       <td>row10 col1</td>
     </tr>
 row11 col0
+
 PASS
 row12 col0	row12 col1 - rowspan=4
+
 FAIL:
 Expected 59 for height, but got 60. 
 
@@ -105,25 +136,35 @@ Expected 59 for height, but got 60.
 	  <td rowspan="4" style="height:300px">row12 col1 - rowspan=4</td>
 	</tr>
 row13 col0
+
 PASS
 row14 col0
+
 PASS
 row15 col0
+
 PASS
 row16 col0	row16 col1
+
 PASS
 Test 3 - Continuous 3 rowSpan cells
 row0 col0
+
 PASS
 row1 col0 - rowspan=4	row1 col1
+
 PASS
 row2 col1
+
 PASS
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col0	row5 col1 - rowspan=4
+
 FAIL:
 Expected 57 for height, but got 32. 
 
@@ -132,6 +173,7 @@ Expected 57 for height, but got 32.
 	  <td rowspan="4" style="height:300px">row5 col1 - rowspan=4</td>
 	</tr>
 row6 col0
+
 FAIL:
 Expected 57 for height, but got 58. 
 
@@ -139,10 +181,13 @@ Expected 57 for height, but got 58.
       <td>row6 col0</td>
     </tr>
 row7 col0
+
 PASS
 row8 col0
+
 PASS
 row9 col0	row9 col1 - rowspan=4
+
 FAIL:
 Expected 59 for height, but got 60. 
 
@@ -151,17 +196,23 @@ Expected 59 for height, but got 60.
 	  <td rowspan="4" style="height:300px">row9 col1 - rowspan=4</td>
 	</tr>
 row10 col0
+
 PASS
 row11 col0
+
 PASS
 row12 col0
+
 PASS
 row13 col0	row13 col1
+
 PASS
 Test 4 - Two rowSpan cells, 2 rows in first spanning cell have percent height and 2 rows in second spanning cell have fixed height
 row0 col0
+
 PASS
 row1 col0 - rowspan=4	row1 col1
+
 FAIL:
 Expected 21 for height, but got 19. 
 
@@ -170,6 +221,7 @@ Expected 21 for height, but got 19.
 	  <td>row1 col1</td>
 	</tr>
 row2 col1
+
 FAIL:
 Expected 199 for height, but got 219. 
 
@@ -177,8 +229,10 @@ Expected 199 for height, but got 219.
       <td>row2 col1</td>
     </tr>
 row3 col1
+
 PASS
 row4 col1
+
 FAIL:
 Expected 74 for height, but got 58. 
 
@@ -186,10 +240,13 @@ Expected 74 for height, but got 58.
       <td>row4 col1</td>
     </tr>
 row5 col0
+
 PASS
 row6 col0
+
 PASS
 row7 col0	row7 col1 - rowspan=4
+
 FAIL:
 Expected 58 for height, but got 59. 
 
@@ -198,21 +255,29 @@ Expected 58 for height, but got 59.
 	  <td rowspan="4" style="height:300px">row7 col1 - rowspan=4</td>
 	</tr>
 row8 col0
+
 PASS
 row9 col0
+
 PASS
 row10 col0
+
 PASS
 row11 col0	row11 col1
+
 PASS
 row12 col0
+
 PASS
 Test 5 - Two rowSpan cells, in first spanning cell, 2 rows have percent height and 2 rows have fixed height and in second spanning cell, 1 row have fixed height, 1 row have percent height and remaining are auto.
 row0 col0
+
 PASS
 row1 col0 - rowspan=4	row1 col1
+
 PASS
 row2 col1
+
 FAIL:
 Expected 152 for height, but got 153. 
 
@@ -220,16 +285,22 @@ Expected 152 for height, but got 153.
       <td>row2 col1</td>
     </tr>
 row3 col1
+
 PASS
 row4 col1
+
 PASS
 row5 col0
+
 PASS
 row6 col0
+
 PASS
 row7 col0	row7 col1 - rowspan=4
+
 PASS
 row8 col0
+
 FAIL:
 Expected 218 for height, but got 144. 
 
@@ -237,6 +308,7 @@ Expected 218 for height, but got 144.
       <td>row8 col0</td>
     </tr>
 row9 col0
+
 FAIL:
 Expected 20 for height, but got 21. 
 
@@ -244,28 +316,39 @@ Expected 20 for height, but got 21.
       <td>row9 col0</td>
     </tr>
 row10 col0
+
 PASS
 row11 col0	row11 col1
+
 PASS
 row12 col0
+
 PASS
 Test 6 - RowSpan and ColSpan.
 row0 col0	row0 col1 - rowspan=3 colspan=2	row0 col2
+
 PASS
 row1 col0
+
 PASS
 row2 col0
+
 PASS
 row3 col0 - colspan=3
+
 PASS
 row4 col0
+
 PASS
 Test 7 - Mix of baseline aligned and non-baseline aligned cells.
 row0 col0	row0 col1 vertical-align=top	row0 col2 vertical-align=bottom
+
 PASS
 row1 col0
+
 PASS
 row2 col0 - rowspan=4 vertical-align=text-top	row2 col1 vertical-align=sub
+
 FAIL:
 Expected 77 for height, but got 32. 
 
@@ -274,6 +357,7 @@ Expected 77 for height, but got 32.
       <td style="vertical-align:sub">row2 col1 vertical-align=sub</td>
     </tr>
 row3 col1 vertical-align=middle
+
 FAIL:
 Expected 77 for height, but got 78. 
 
@@ -281,10 +365,13 @@ Expected 77 for height, but got 78.
       <td style="vertical-align:middle">row3 col1 vertical-align=middle</td>
     </tr>
 row4 col1 vertical-align=super
+
 PASS
 row5 col1 vertical-align=text-bottom
+
 PASS
 row6 col0
+
 PASS
 Test 8 - CSS Table.
 row0 col0	row0 col1	row0 col2
@@ -300,6 +387,7 @@ row9 col0
 row10 col0
 Test 9 - Table Similar to CSS table with rowspan.
 row0 col0	row0 col1	row0 col2
+
 FAIL:
 Expected 21 for height, but got 19. 
 
@@ -309,6 +397,7 @@ Expected 21 for height, but got 19.
         <td>row0 col2</td>
     </tr>
 row1 col1	row1 col2	row1 col3
+
 FAIL:
 Expected 87 for height, but got 52. 
 
@@ -318,6 +407,7 @@ Expected 87 for height, but got 52.
         <td>row1 col3</td>
     </tr>
 row2 col3
+
 FAIL:
 Expected 96 for height, but got 84. 
 
@@ -325,6 +415,7 @@ Expected 96 for height, but got 84.
         <td>row2 col3</td>
     </tr>
 row3 col2
+
 FAIL:
 Expected 40 for height, but got 35. 
 
@@ -332,6 +423,7 @@ Expected 40 for height, but got 35.
         <td>row3 col2</td>
     </tr>
 row4 col1	row4 col2	row4 col3
+
 FAIL:
 Expected 24 for height, but got 38. 
 
@@ -341,6 +433,7 @@ Expected 24 for height, but got 38.
         <td>row4 col3</td>
     </tr>
 row5 col0	row5 col1	row5 col2
+
 FAIL:
 Expected 19 for height, but got 34. 
 
@@ -350,6 +443,7 @@ Expected 19 for height, but got 34.
         <td>row5 col2</td>
     </tr>
 row6 col0	row6 col1
+
 FAIL:
 Expected 74 for height, but got 76. 
 
@@ -358,10 +452,14 @@ Expected 74 for height, but got 76.
         <td rowspan="5" style="height:100px">row6 col1</td>
     </tr>
 row7 col1
+
 PASS
 row8 col1
+
 PASS
 row9 col1
+
 PASS
 row10 col1
+
 PASS

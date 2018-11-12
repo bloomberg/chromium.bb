@@ -2,7 +2,6 @@ Tests that after an explicit scroll, we do not continue to maintain scroll posit
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS 10 is 10
 PASS successfullyParsed is true
 
