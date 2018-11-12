@@ -581,6 +581,73 @@ TEST_P(InstallStaticUtilTest, GetElevatorClsid) {
               StrCaseEq(kElevatorClsidsString[std::get<0>(GetParam())]));
 }
 
+TEST_P(InstallStaticUtilTest, GetElevatorIid) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The Elevator IIDs, one for each of the kInstallModes.
+  static constexpr IID kElevatorIids[] = {
+      {0x463abecf,
+       0x410d,
+       0x407f,
+       {0x8a, 0xf5, 0xd, 0xf3, 0x5a, 0x0, 0x5c,
+        0xc8}},  // IElevator IID and TypeLib
+                 // {463ABECF-410D-407F-8AF5-0DF35A005CC8} for Google Chrome.
+      {0xa2721d66,
+       0x376e,
+       0x4d2f,
+       {0x9f, 0xf, 0x90, 0x70, 0xe9, 0xa4, 0x2b,
+        0x5f}},  // IElevator IID and TypeLib
+                 // {A2721D66-376E-4D2F-9F0F-9070E9A42B5F} for Google Chrome
+                 // Beta.
+      {0xbb2aa26b,
+       0x343a,
+       0x4072,
+       {0x8b, 0x6f, 0x80, 0x55, 0x7b, 0x8c, 0xe5,
+        0x71}},  // IElevator IID and TypeLib
+                 // {BB2AA26B-343A-4072-8B6F-80557B8CE571} for Google Chrome
+                 // Dev.
+      {0x4f7ce041,
+       0x28e9,
+       0x484f,
+       {0x9d, 0xd0, 0x61, 0xa8, 0xca, 0xce, 0xfe,
+        0xe4}},  // IElevator IID and TypeLib
+                 // {4F7CE041-28E9-484F-9DD0-61A8CACEFEE4} for Google Chrome
+                 // Canary.
+  };
+
+  // The string representation of the IIDs above.
+  static constexpr const wchar_t* kElevatorIidsString[] = {
+      L"{463ABECF-410D-407F-8AF5-0DF35A005CC8}",  // Google Chrome.
+      L"{A2721D66-376E-4D2F-9F0F-9070E9A42B5F}",  // Google Chrome Beta.
+      L"{BB2AA26B-343A-4072-8B6F-80557B8CE571}",  // Google Chrome Dev.
+      L"{4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}",  // Google Chrome Canary.
+  };
+#else
+  // The Elevator IIDs, one for each of the kInstallModes.
+  static constexpr IID kElevatorIids[] = {
+      {0xb88c45b9,
+       0x8825,
+       0x4629,
+       {0xb8, 0x3e, 0x77, 0xcc, 0x67, 0xd9, 0xce,
+        0xed}},  // IElevator IID and TypeLib
+                 // {B88C45B9-8825-4629-B83E-77CC67D9CEED} for Chromium.
+  };
+
+  // The string representation of the IIDs above.
+  static constexpr const wchar_t* kElevatorIidsString[] = {
+      L"{B88C45B9-8825-4629-B83E-77CC67D9CEED}",  // Chromium.
+  };
+#endif
+  static_assert(base::size(kElevatorIids) == NUM_INSTALL_MODES,
+                "kElevatorIids needs to be updated for any new modes.");
+
+  EXPECT_EQ(GetElevatorIid(), kElevatorIids[std::get<0>(GetParam())]);
+
+  constexpr int kIIDSize = 39;
+  wchar_t iid_str[kIIDSize] = {};
+  ASSERT_EQ(::StringFromGUID2(GetElevatorIid(), iid_str, kIIDSize), kIIDSize);
+  EXPECT_THAT(iid_str, StrCaseEq(kElevatorIidsString[std::get<0>(GetParam())]));
+}
+
 TEST_P(InstallStaticUtilTest, UsageStatsAbsent) {
   EXPECT_FALSE(GetCollectStatsConsent());
 }

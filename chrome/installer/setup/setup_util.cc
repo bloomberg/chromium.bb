@@ -879,4 +879,19 @@ base::string16 GetElevationServiceAppidRegistryPath() {
   return GetElevationServiceGuid(L"Software\\Classes\\AppID\\");
 }
 
+base::string16 GetElevationServiceIid(base::StringPiece16 prefix) {
+  base::string16 result =
+      InstallUtil::String16FromGUID(install_static::GetElevatorIid());
+  result.insert(0, prefix.data(), prefix.size());
+  return result;
+}
+
+base::string16 GetElevationServiceIidRegistryPath() {
+  return GetElevationServiceIid(L"Software\\Classes\\Interface\\");
+}
+
+base::string16 GetElevationServiceTypeLibRegistryPath() {
+  return GetElevationServiceIid(L"Software\\Classes\\TypeLib\\");
+}
+
 }  // namespace installer

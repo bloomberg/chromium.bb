@@ -640,8 +640,13 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
         GetElevationServiceClsidRegistryPath();
     const base::string16 appid_reg_path =
         GetElevationServiceAppidRegistryPath();
-    for (const auto& reg_path : {clsid_reg_path, appid_reg_path})
+    const base::string16 iid_reg_path = GetElevationServiceIidRegistryPath();
+    const base::string16 typelib_reg_path =
+        GetElevationServiceTypeLibRegistryPath();
+    for (const auto& reg_path :
+         {clsid_reg_path, appid_reg_path, iid_reg_path, typelib_reg_path}) {
       InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+    }
 
     LOG_IF(WARNING, !InstallServiceWorkItem::DeleteService(
                         install_static::GetElevationServiceName()));

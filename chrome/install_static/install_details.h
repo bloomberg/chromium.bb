@@ -114,6 +114,10 @@ class InstallDetails {
   // The CLSID of the COM server that provides silent elevation functionality.
   const CLSID& elevator_clsid() const { return payload_->mode->elevator_clsid; }
 
+  // The IID and the TypeLib of the IElevator interface that provides silent
+  // elevation functionality.
+  const IID& elevator_iid() const { return payload_->mode->elevator_iid; }
+
   // Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
   // used to group an app's windows together on the Windows taskbar along with
   // its corresponding shortcuts; see
