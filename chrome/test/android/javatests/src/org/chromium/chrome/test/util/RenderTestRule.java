@@ -159,6 +159,22 @@ public class RenderTestRule extends TestWatcher {
             }
         });
 
+        compareForResult(testBitmap, id);
+    }
+
+    /**
+     * Compares the given |testBitmap| to the golden with the |id|. The RenderTestRule will throw
+     * an exception after the test method has completed if the view does not match the golden or if
+     * a golden is missing on a device it should be present (see
+     * {@link RenderTestRule#RENDER_TEST_MODEL_SDK_PAIRS}).
+     *
+     * Tests should prefer {@link RenderTestRule#render(View, String) render} to this if possible.
+     *
+     * @throws IOException if the rendered image cannot be saved to the device.
+     */
+    public void compareForResult(Bitmap testBitmap, String id) throws IOException {
+        Assert.assertTrue("Render Tests must have the RenderTest feature.", mHasRenderTestFeature);
+
         String filename = imageName(mTestClassName, mVariantPrefix, id);
 
         BitmapFactory.Options options = new BitmapFactory.Options();

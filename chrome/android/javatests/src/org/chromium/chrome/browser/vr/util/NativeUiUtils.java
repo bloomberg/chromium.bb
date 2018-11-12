@@ -44,6 +44,11 @@ public class NativeUiUtils {
     // waiting for the suggestion box to appear doesn't work, e.g. if you need to input text, wait
     // for autocomplete, then input more text before committing. 20 is arbitrary, but stable.
     public static final int NUM_FRAMES_FOR_SUGGESTION_UPDATE = 20;
+    public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
+    public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
+    public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
+    public static final String FRAME_BUFFER_SUFFIX_BROWSER_CONTENT = "_BrowserContent";
+
     // Arbitrary but reasonable amount of time to expect the UI to stop updating after interacting
     // with an element.
     private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 2000;
@@ -309,8 +314,9 @@ public class NativeUiUtils {
      */
     public static void dumpNextFramesFrameBuffers(String filepathBase) throws InterruptedException {
         // Clear out any existing images with the names of the files that may be created.
-        for (String suffix :
-                new String[] {"_WebXrOverlay", "_WebXrContent", "_BrowserUi", "_BrowserContent"}) {
+        for (String suffix : new String[] {FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY,
+                     FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT, FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                     FRAME_BUFFER_SUFFIX_BROWSER_CONTENT}) {
             File dumpFile = new File(filepathBase, suffix + ".png");
             Assert.assertFalse("Failed to delete existing screenshot",
                     dumpFile.exists() && !dumpFile.delete());

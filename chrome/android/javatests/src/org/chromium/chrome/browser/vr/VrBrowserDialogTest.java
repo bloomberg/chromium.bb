@@ -10,6 +10,8 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -22,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -30,10 +33,12 @@ import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -52,14 +57,18 @@ public class VrBrowserDialogTest {
     // A long enough sleep after triggering/interacting with a dialog to ensure that the interaction
     // has propagated through the render pipeline, i.e. the result of the interaction will actually
     // be visible on the screen.
-    private static final String TEST_IMAGE_DIR = "chrome/test/data/vr/UiCapture";
+    private static final String TEMP_IMAGE_DIR = "chrome/test/data/vr/UiCapture";
     private static final File sBaseDirectory =
-            new File(UrlUtils.getIsolatedTestFilePath(TEST_IMAGE_DIR));
+            new File(UrlUtils.getIsolatedTestFilePath(TEMP_IMAGE_DIR));
 
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
     public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
+
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            new RenderTestRule("components/test/data/permission_dialogs/render_tests");
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
     private EmbeddedTestServer mServer;
@@ -81,12 +90,25 @@ public class VrBrowserDialogTest {
         }
     }
 
-    private void captureScreen(String filename) throws InterruptedException {
-        // Ensure that any UI changes that have been rendered and submitted have actually propogated
-        // to the screen.
-        NativeUiUtils.waitNumFrames(2);
-        File baseFilename = new File(sBaseDirectory, filename);
+    private void captureScreen(String filenameBase) throws InterruptedException {
+        File baseFilename = new File(sBaseDirectory, filenameBase);
         NativeUiUtils.dumpNextFramesFrameBuffers(baseFilename.getPath());
+    }
+
+    private void compareCapturedImaged(String filenameBase, String suffix, String id)
+            throws IOException {
+        File filepath = new File(sBaseDirectory, filenameBase + suffix + ".png");
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(filepath.getPath(), options);
+        // The browser UI dump contains both eyes rendered, which is unnecessary for comparing
+        // since any difference in one should show up in the other. So, take the left half of
+        // the image to get the left eye, which reduces the amount of space the image saved to Git
+        // takes up.
+        if (suffix.equals(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI)) {
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth() / 2, bitmap.getHeight());
+        }
+        mRenderTestRule.compareForResult(bitmap, id);
     }
 
     private void navigateAndDisplayPermissionPrompt(String page, String promptCommand)
@@ -146,15 +168,32 @@ public class VrBrowserDialogTest {
     @Test
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
-    public void testMicrophonePermissionPrompt() throws InterruptedException, TimeoutException {
+    @Feature({"Browser", "RenderTest"})
+    public void testMicrophonePermissionPrompt()
+            throws InterruptedException, TimeoutException, IOException {
         // Display audio permissions prompt.
         navigateAndDisplayPermissionPrompt(
                 "test_navigation_2d_page", "navigator.getUserMedia({audio: true}, ()=>{}, ()=>{})");
 
         // Capture image
-        captureScreen("MicrophonePermissionPrompt_Visible");
-        NativeUiUtils.clickFallbackUiPositiveButton();
-        captureScreen("MicrophonePermissionPrompt_Granted");
+        String filenameBase = "MicrophonePermissionPrompt_Visible";
+        captureScreen(filenameBase);
+        compareCapturedImaged(filenameBase, NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "microphone_permission_prompt_visible_browser_ui");
+        // Ensure that the microphone icon appears before we capture the image.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.MICROPHONE_PERMISSION_INDICATOR, true /* visible */, () -> {
+                    try {
+                        NativeUiUtils.clickFallbackUiPositiveButton();
+                    } catch (InterruptedException e) {
+                        Assert.fail("Interrupted while granting microphone permission: "
+                                + e.toString());
+                    }
+                });
+        filenameBase = "MicrophonePermissionPrompt_Granted";
+        captureScreen(filenameBase);
+        compareCapturedImaged(filenameBase, NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "microphone_permission_prompt_granted_browser_ui");
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
