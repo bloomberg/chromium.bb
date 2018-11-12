@@ -26,6 +26,7 @@
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -35,6 +36,8 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -114,8 +117,34 @@ void HTMLScriptElement::DidNotifySubtreeInsertionsToDocument() {
   loader_->DidNotifySubtreeInsertionsToDocument();
 }
 
-void HTMLScriptElement::setText(const String& value) {
-  setTextContent(value);
+void HTMLScriptElement::setText(
+    const StringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
+  setTextContent(string_or_trusted_script, exception_state);
+}
+
+void HTMLScriptElement::text(StringOrTrustedScript& result) {
+  result.SetString(TextFromChildren());
+}
+
+void HTMLScriptElement::setInnerText(
+    const StringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
+  String value = GetStringFromTrustedScript(string_or_trusted_script,
+                                            &GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    HTMLElement::setInnerText(value, exception_state);
+  }
+}
+
+void HTMLScriptElement::setTextContent(
+    const StringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
+  String value = GetStringFromTrustedScript(string_or_trusted_script,
+                                            &GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    Node::setTextContent(value);
+  }
 }
 
 void HTMLScriptElement::setAsync(bool async) {

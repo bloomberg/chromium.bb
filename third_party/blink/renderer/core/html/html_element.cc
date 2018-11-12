@@ -27,6 +27,8 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -64,6 +66,7 @@
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -670,6 +673,41 @@ DocumentFragment* HTMLElement::TextToFragment(const String& text,
   }
 
   return fragment;
+}
+
+void HTMLElement::setInnerText(
+    const StringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
+  String value;
+  if (string_or_trusted_script.IsString())
+    value = string_or_trusted_script.GetAsString();
+  else if (string_or_trusted_script.IsTrustedScript())
+    value = string_or_trusted_script.GetAsTrustedScript()->toString();
+  setInnerText(value, exception_state);
+}
+
+void HTMLElement::setInnerText(
+    const StringTreatNullAsEmptyStringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
+  StringOrTrustedScript tmp;
+  if (string_or_trusted_script.IsString())
+    tmp.SetString(string_or_trusted_script.GetAsString());
+  else if (string_or_trusted_script.IsTrustedScript())
+    tmp.SetTrustedScript(string_or_trusted_script.GetAsTrustedScript());
+  setInnerText(tmp, exception_state);
+}
+
+void HTMLElement::innerText(
+    StringTreatNullAsEmptyStringOrTrustedScript& result) {
+  result.SetString(innerText());
+}
+
+void HTMLElement::innerText(StringOrTrustedScript& result) {
+  result.SetString(innerText());
+}
+
+String HTMLElement::innerText() {
+  return Element::innerText();
 }
 
 void HTMLElement::setInnerText(const String& text,

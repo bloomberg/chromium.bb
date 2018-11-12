@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -108,6 +109,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -1741,6 +1743,23 @@ String Node::textContent(bool convert_brs_to_newlines) const {
     }
   }
   return content.ToString();
+}
+
+void Node::setTextContent(const StringOrTrustedScript& string_or_trusted_script,
+                          ExceptionState& exception_state) {
+  String value =
+      string_or_trusted_script.IsString()
+          ? string_or_trusted_script.GetAsString()
+          : string_or_trusted_script.IsTrustedScript()
+                ? string_or_trusted_script.GetAsTrustedScript()->toString()
+                : g_empty_string;
+  setTextContent(value);
+}
+
+void Node::textContent(StringOrTrustedScript& result) {
+  String value = textContent();
+  if (!value.IsNull())
+    result.SetString(value);
 }
 
 void Node::setTextContent(const String& text) {

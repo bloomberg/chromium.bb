@@ -33,6 +33,9 @@
 
 namespace blink {
 
+class StringOrTrustedScript;
+class ExceptionState;
+
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -46,8 +49,10 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
-  String text() { return TextFromChildren(); }
-  void setText(const String&);
+  void text(StringOrTrustedScript& result);
+  void setText(const StringOrTrustedScript&, ExceptionState&);
+  void setInnerText(const StringOrTrustedScript&, ExceptionState&) override;
+  void setTextContent(const StringOrTrustedScript&, ExceptionState&) override;
 
   KURL Src() const;
 
