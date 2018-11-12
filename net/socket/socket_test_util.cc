@@ -2017,13 +2017,11 @@ MockTransportClientSocketPool::MockConnectJob::MockConnectJob(
     std::unique_ptr<StreamSocket> socket,
     ClientSocketHandle* handle,
     const SocketTag& socket_tag,
-    CompletionOnceCallback callback,
-    RequestPriority priority)
+    CompletionOnceCallback callback)
     : socket_(std::move(socket)),
       handle_(handle),
       socket_tag_(socket_tag),
-      user_callback_(std::move(callback)),
-      priority_(priority) {}
+      user_callback_(std::move(callback)) {}
 
 MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() = default;
 
@@ -2109,8 +2107,8 @@ int MockTransportClientSocketPool::RequestSocket(
   std::unique_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), NULL, net_log.net_log(), NetLogSource());
-  MockConnectJob* job = new MockConnectJob(
-      std::move(socket), handle, socket_tag, std::move(callback), priority);
+  MockConnectJob* job = new MockConnectJob(std::move(socket), handle,
+                                           socket_tag, std::move(callback));
   job_list_.push_back(base::WrapUnique(job));
   handle->set_pool_id(1);
   return job->Connect();
@@ -2119,13 +2117,7 @@ int MockTransportClientSocketPool::RequestSocket(
 void MockTransportClientSocketPool::SetPriority(const std::string& group_name,
                                                 ClientSocketHandle* handle,
                                                 RequestPriority priority) {
-  for (auto& job : job_list_) {
-    if (job->handle() == handle) {
-      job->set_priority(priority);
-      return;
-    }
-  }
-  NOTREACHED();
+  // TODO: Implement.
 }
 
 void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
