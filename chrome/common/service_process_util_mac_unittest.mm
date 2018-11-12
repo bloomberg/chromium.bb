@@ -129,7 +129,8 @@ TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {
       << " exit_code:" << exit_code << " " << output;
 }
 
-TEST_F(ServiceProcessStateFileManipulationTest, DeleteFile) {
+// Flaky: https://crbug.com/903823
+TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
   GetIOTaskRunner()->PostTask(FROM_HERE,
                               base::Bind(&DeleteFunc, executable_path()));
   Run();
