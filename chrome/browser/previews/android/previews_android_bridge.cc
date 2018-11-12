@@ -36,6 +36,11 @@ jboolean PreviewsAndroidBridge::ShouldShowPreviewUI(
   if (!web_contents)
     return false;
 
+  // Do not show the lite page chip between navigation start and navigation
+  // finish.
+  if (web_contents->GetController().GetPendingEntry())
+    return false;
+
   PreviewsUITabHelper* tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents);
   if (!tab_helper)
