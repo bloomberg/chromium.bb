@@ -39,5 +39,10 @@ bool TrainingExample::operator!=(const TrainingExample& rhs) const {
   return !((*this) == rhs);
 }
 
+TrainingExample& TrainingExample::operator=(const TrainingExample& rhs) =
+    default;
+
+TrainingExample& TrainingExample::operator=(TrainingExample&& rhs) = default;
+
 }  // namespace learning
 }  // namespace media
