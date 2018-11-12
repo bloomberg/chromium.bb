@@ -1647,6 +1647,61 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   }
 }
 
+// Verify that web iframes on extension frames do not attempt to aggressively
+// reuse existing processes for the same site.  This helps prevent a
+// misbehaving web iframe on an extension from slowing down other processes.
+// See https://crbug.com/899418.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       WebSubframeOnExtensionDoesNotReuseExistingProcess) {
+  // This test matters only *with* --site-per-process.  It depends on process
+  // reuse logic that subframes use to look for existing processes, but that
+  // logic is only turned on for sites that require a dedicated process.
+  if (!content::AreAllSitesIsolatedForTesting())
+    return;
+
+  // Create a simple extension with a background page that has an empty iframe.
+  const Extension* extension = CreateExtension("Extension", true);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to a web page on foo.com.
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  NavigateToURL(foo_url);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(foo_url, tab->GetLastCommittedURL());
+
+  // So far, there should be two extension frames: one for the background page,
+  // one for the empty subframe on it.
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  // Navigate the subframe on the extension background page to foo.com, and
+  // wait for the old subframe to go away.
+  ExtensionHost* background_host =
+      pm->GetBackgroundHostForExtension(extension->id());
+  content::RenderFrameHost* background_rfh =
+      background_host->host_contents()->GetMainFrame();
+  content::RenderFrameHost* extension_subframe =
+      ChildFrameAt(background_rfh, 0);
+  content::RenderFrameDeletedObserver deleted_observer(extension_subframe);
+  EXPECT_TRUE(
+      content::ExecJs(extension_subframe,
+                      content::JsReplace("window.location = $1;", foo_url)));
+  deleted_observer.WaitUntilDeleted();
+
+  // There should now only be one extension frame for the background page.  The
+  // subframe should've swapped processes and should now be a web frame.
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  content::RenderFrameHost* subframe = ChildFrameAt(background_rfh, 0);
+  EXPECT_EQ(foo_url, subframe->GetLastCommittedURL());
+
+  // Verify that the subframe did *not* reuse the existing foo.com process.
+  EXPECT_NE(tab->GetMainFrame()->GetProcess(), subframe->GetProcess());
+}
+
 // Test to verify that loading a resource other than an icon file is
 // disallowed for hosted apps, while icons are allowed.
 // See https://crbug.com/717626.
