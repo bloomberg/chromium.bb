@@ -1929,27 +1929,22 @@ TEST_F(AnimationCompositorAnimationsTest, HasCSSAnimationsWithFillMode) {
   Element* target1 = document->getElementById("target1");
   const ComputedStyle* style1 = target1->GetLayoutObject()->Style();
   EXPECT_FALSE(style1->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_FALSE(style1->HasTransformRelatedProperty());
-  // HasOpacity is true;
-  EXPECT_TRUE(style1->IsStackingContext());
+  EXPECT_FALSE(style1->CanContainFixedPositionObjects(false));
 
   Element* target2 = document->getElementById("target2");
   const ComputedStyle* style2 = target2->GetLayoutObject()->Style();
   EXPECT_TRUE(style2->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_TRUE(style2->HasTransformRelatedProperty());
-  EXPECT_TRUE(style2->IsStackingContext());
+  EXPECT_TRUE(style2->CanContainFixedPositionObjects(false));
 
   Element* target3 = document->getElementById("target3");
   const ComputedStyle* style3 = target3->GetLayoutObject()->Style();
   EXPECT_TRUE(style3->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_TRUE(style3->HasTransformRelatedProperty());
-  EXPECT_TRUE(style3->IsStackingContext());
+  EXPECT_TRUE(style3->CanContainFixedPositionObjects(false));
 
   Element* target4 = document->getElementById("target4");
   const ComputedStyle* style4 = target4->GetLayoutObject()->Style();
   EXPECT_FALSE(style4->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_FALSE(style4->HasTransformRelatedProperty());
-  EXPECT_TRUE(style4->IsStackingContext());
+  EXPECT_FALSE(style4->CanContainFixedPositionObjects(false));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, HasWebAnimationsWithFillMode) {
@@ -1958,27 +1953,22 @@ TEST_F(AnimationCompositorAnimationsTest, HasWebAnimationsWithFillMode) {
   Element* target1 = document->getElementById("target1");
   const ComputedStyle* style1 = target1->GetLayoutObject()->Style();
   EXPECT_FALSE(style1->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_FALSE(style1->HasTransformRelatedProperty());
-  // HasOpacity is true;
-  EXPECT_TRUE(style1->IsStackingContext());
+  EXPECT_FALSE(style1->CanContainFixedPositionObjects(false));
 
   Element* target2 = document->getElementById("target2");
   const ComputedStyle* style2 = target2->GetLayoutObject()->Style();
   EXPECT_TRUE(style2->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_TRUE(style2->HasTransformRelatedProperty());
-  EXPECT_TRUE(style2->IsStackingContext());
+  EXPECT_TRUE(style2->CanContainFixedPositionObjects(false));
 
   Element* target3 = document->getElementById("target3");
   const ComputedStyle* style3 = target3->GetLayoutObject()->Style();
   EXPECT_TRUE(style3->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_TRUE(style3->HasTransformRelatedProperty());
-  EXPECT_TRUE(style3->IsStackingContext());
+  EXPECT_TRUE(style3->CanContainFixedPositionObjects(false));
 
   Element* target4 = document->getElementById("target4");
   const ComputedStyle* style4 = target4->GetLayoutObject()->Style();
   EXPECT_FALSE(style4->HasTransformAnimationWithForwardsOrBothFillMode());
-  EXPECT_FALSE(style4->HasTransformRelatedProperty());
-  EXPECT_TRUE(style4->IsStackingContext());
+  EXPECT_FALSE(style4->CanContainFixedPositionObjects(false));
 }
 
 }  // namespace blink
