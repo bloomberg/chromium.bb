@@ -182,9 +182,17 @@ void SlideOutController::SetOpacityIfNecessary(float opacity) {
 }
 
 void SlideOutController::OnImplicitAnimationsCompleted() {
+  if (opacity_ > 0)
+    return;
+
   // Call Delegate::OnSlideOut() if this animation came from SlideOutAndClose().
-  if (opacity_ == 0)
-    delegate_->OnSlideOut();
+
+  // OnImplicitAnimationsCompleted is called from BeginMainFrame, so we should
+  // delay operation that might result in deletion of LayerTreeHost.
+  // https://crbug.com/895883
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Delegate::OnSlideOut, base::Unretained(delegate_)));
 }
 
 void SlideOutController::SetSwipeControlWidth(int swipe_control_width) {
