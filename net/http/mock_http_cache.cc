@@ -67,6 +67,7 @@ struct MockDiskEntry::CallbackInfo {
 MockDiskEntry::MockDiskEntry(const std::string& key)
     : key_(key),
       in_memory_data_(0),
+      max_file_size_(std::numeric_limits<int>::max()),
       doomed_(false),
       sparse_(false),
       fail_requests_(false),
@@ -163,6 +164,9 @@ int MockDiskEntry::WriteData(int index,
     return ERR_FAILED;
 
   DCHECK_LT(offset + buf_len, kMaxMockCacheEntrySize);
+  if (offset + buf_len > max_file_size_ && index == 1)
+    return net::ERR_FAILED;
+
   data_[index].resize(offset + buf_len);
   if (buf_len)
     memcpy(&data_[index][offset], buf->data(), buf_len);
@@ -396,6 +400,7 @@ MockDiskCache::MockDiskCache()
     : open_count_(0),
       create_count_(0),
       doomed_count_(0),
+      max_file_size_(std::numeric_limits<int>::max()),
       fail_requests_(false),
       soft_failures_(false),
       soft_failures_one_instance_(false),
@@ -445,6 +450,8 @@ net::Error MockDiskCache::OpenEntry(const std::string& key,
     soft_failures_one_instance_ = false;
   }
 
+  it->second->set_max_file_size(max_file_size_);
+
   if (GetTestModeForEntry(key) & TEST_MODE_SYNC_CACHE_START)
     return OK;
 
@@ -489,6 +496,8 @@ net::Error MockDiskCache::CreateEntry(const std::string& key,
 
   if (fail_sparse_requests_)
     new_entry->set_fail_sparse_requests();
+
+  new_entry->set_max_file_size(max_file_size_);
 
   if (GetTestModeForEntry(key) & TEST_MODE_SYNC_CACHE_START)
     return OK;
@@ -581,6 +590,10 @@ void MockDiskCache::SetEntryInMemoryData(const std::string& key, uint8_t data) {
   auto it = entries_.find(key);
   if (it != entries_.end())
     it->second->set_in_memory_data(data);
+}
+
+int64_t MockDiskCache::MaxFileSize() const {
+  return max_file_size_;
 }
 
 void MockDiskCache::ReleaseAll() {

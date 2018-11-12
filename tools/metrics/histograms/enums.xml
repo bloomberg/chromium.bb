@@ -25195,6 +25195,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Not joined, not GET"/>
   <int value="5" label="Not joined, read-only"/>
   <int value="6" label="Cache read, no Writers"/>
+  <int value="7" label="Not joined, too big for cache"/>
 </enum>
 
 <enum name="HttpCachePattern">
