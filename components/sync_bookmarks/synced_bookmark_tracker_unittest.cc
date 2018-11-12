@@ -464,6 +464,34 @@ TEST(SyncedBookmarkTrackerTest, ShouldMatchModelAndMetadata) {
       /*sample=*/ExpectedCorruptionReason::NO_CORRUPTION, /*count=*/1);
 }
 
+TEST(SyncedBookmarkTrackerTest,
+     ShouldMatchModelAndMetadataEvenIfMissingMobileFolder) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add entries for all the permanent nodes except for the Mobile bookmarks
+  // folder. This simulates a user who has never signed it to sync on a mobile
+  // device, and hence the Mobile bookmarks folder has never be created on the
+  // server.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->other_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::NO_CORRUPTION, /*count=*/1);
+}
+
 TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
@@ -477,21 +505,17 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
   bookmark_metadata->set_id(model->bookmark_bar_node()->id());
   bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
 
-  bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->other_node()->id());
-  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
-
   base::HistogramTester histogram_tester;
-  // The entry for the Mobile bookmarks is missing.
+  // The entry for the Other bookmarks is missing.
   EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model.get(), model_metadata));
   histogram_tester.ExpectBucketCount(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::COUNT_MISMATCH, /*count=*/1);
 
-  // The entry for the Mobile bookmarks is missing a server id.
+  // The entry for the Other bookmarks is missing a server id.
   bookmark_metadata = model_metadata.add_bookmarks_metadata();
-  bookmark_metadata->set_id(model->mobile_node()->id());
+  bookmark_metadata->set_id(model->other_node()->id());
   EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model.get(), model_metadata));
 
@@ -499,7 +523,7 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::MISSING_SERVER_ID, /*count=*/1);
 
-  // The entry for the Mobile bookmarks is missing a node id.
+  // The entry for the Other bookmarks is missing a node id.
   bookmark_metadata->clear_id();
   bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
   EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
@@ -508,8 +532,8 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::MISSING_BOOKMARK_ID, /*count=*/1);
 
-  // The entry for the Mobile bookmarks is having a wrong node id.
-  bookmark_metadata->set_id(model->mobile_node()->id() + 1);
+  // The entry for the Other bookmarks is having a wrong node id.
+  bookmark_metadata->set_id(model->other_node()->id() + 1000);
   EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model.get(), model_metadata));
   histogram_tester.ExpectBucketCount(
