@@ -3144,7 +3144,8 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
       SetNeedsCompositingInputsUpdate();
   }
 
-  if (diff.NeedsLayout())
+  // HasAlphaChanged can affect whether a composited layer is opaque.
+  if (diff.NeedsLayout() || diff.HasAlphaChanged())
     SetNeedsCompositingInputsUpdate();
 
   // A scroller that changes background color might become opaque or not
