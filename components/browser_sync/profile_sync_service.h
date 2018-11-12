@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/browser_sync/sync_user_settings_impl.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/experiments.h"
@@ -226,6 +227,8 @@ class ProfileSyncService : public syncer::SyncService,
   void Initialize();
 
   // syncer::SyncService implementation
+  syncer::SyncUserSettings* GetUserSettings() override;
+  const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsFirstSetupComplete() const override;
@@ -442,6 +445,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Set whether sync is currently allowed by the platform.
   void SetSyncAllowedByPlatform(bool allowed);
+  void SyncAllowedByPlatformChanged(bool allowed);
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
   scoped_refptr<base::SingleThreadTaskRunner> GetSyncThreadTaskRunnerForTest()
@@ -486,9 +490,6 @@ class ProfileSyncService : public syncer::SyncService,
   };
 
   friend class TestProfileSyncService;
-
-  // Returns whether sync is currently allowed on this platform.
-  bool IsSyncAllowedByPlatform() const;
 
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager(syncer::ConfigureReason reason);
@@ -589,6 +590,8 @@ class ProfileSyncService : public syncer::SyncService,
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address and sign-out upon error.
   identity::IdentityManager* const identity_manager_;
+
+  SyncUserSettingsImpl user_settings_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().
@@ -727,9 +730,6 @@ class ProfileSyncService : public syncer::SyncService,
   // the user. This logic is only enabled on platforms that consume the
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
-
-  // Whether sync is currently allowed on this platform.
-  bool sync_allowed_by_platform_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;

@@ -29,6 +29,7 @@ class JsController;
 class ProtocolEventObserver;
 class SyncCycleSnapshot;
 struct SyncTokenStatus;
+class SyncUserSettings;
 class TypeDebugInfoObserver;
 struct SyncStatus;
 struct UserShare;
@@ -121,6 +122,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   };
 
   ~SyncService() override {}
+
+  // TODO(crbug.com/884159): Remove the default impls and migrate tests over.
+  virtual SyncUserSettings* GetUserSettings();
+  virtual const SyncUserSettings* GetUserSettings() const;
 
   //////////////////////////////////////////////////////////////////////////////
   // BASIC STATE ACCESS
