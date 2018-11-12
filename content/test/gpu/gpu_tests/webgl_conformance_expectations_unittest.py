@@ -56,8 +56,7 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
       'conformance/glsl/constructors/glsl-construct-vec-mat-index.html')
     expectation = exps.GetExpectationForTest(
       browser, test_info.url, test_info.name)
-    # TODO(kbr): change this expectation back to "flaky". crbug.com/534697
-    self.assertEquals(expectation, 'fail')
+    self.assertEquals(expectation, 'flaky')
 
   def testWebGLExpectationsHaveNoCollisions(self):
     exps = webgl_conformance_expectations.WebGLConformanceExpectations()
