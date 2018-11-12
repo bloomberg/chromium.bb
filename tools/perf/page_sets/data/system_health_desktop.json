@@ -213,6 +213,9 @@
         "load:search:flipkart": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
+        "load:search:flipkart:2018": {
+            "DEFAULT": "system_health_desktop_82350a34b0.wprgo"
+        },
         "load:search:google": {
             "DEFAULT": "system_health_desktop_022.wprgo"
         },

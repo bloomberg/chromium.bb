@@ -72,6 +72,13 @@ class LoadTaobaoDesktopStory2018(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
 
 
+class LoadFlipkartDesktop2018(_LoadingStory):
+  NAME = 'load:search:flipkart:2018'
+  URL = 'https://www.flipkart.com/search?q=sneakers'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadTaobaoMobileStory(_LoadingStory):
   NAME = 'load:search:taobao'
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
