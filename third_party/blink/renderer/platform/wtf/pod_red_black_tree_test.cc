@@ -34,9 +34,9 @@
 
 namespace WTF {
 
-using ArenaTestHelpers::TrackedAllocator;
-using TreeTestHelpers::InitRandom;
-using TreeTestHelpers::NextRandom;
+using arena_test_helpers::TrackedAllocator;
+using tree_test_helpers::InitRandom;
+using tree_test_helpers::NextRandom;
 
 TEST(PODRedBlackTreeTest, TestTreeAllocatesFromArena) {
   scoped_refptr<TrackedAllocator> allocator = TrackedAllocator::Create();
