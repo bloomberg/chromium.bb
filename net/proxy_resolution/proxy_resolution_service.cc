@@ -933,6 +933,9 @@ int ProxyResolutionService::RequestImpl::Start() {
   traffic_annotation_ = MutableNetworkTrafficAnnotationTag(
       service_->config_->traffic_annotation());
 
+  if (service_->ApplyPacBypassRules(url_, results_))
+    return OK;
+
   return resolver()->GetProxyForURL(
       url_, results_,
       base::Bind(&ProxyResolutionService::RequestImpl::QueryComplete,
@@ -1177,8 +1180,13 @@ int ProxyResolutionService::TryToCompleteSynchronously(
   DCHECK(config_);
   // If it was impossible to fetch or parse the PAC script, we cannot complete
   // the request here and bail out.
-  if (permanent_error_ != OK)
+  if (permanent_error_ != OK) {
+    // Before returning the permanent error check if the URL would have been
+    // implicitly bypassed.
+    if (ApplyPacBypassRules(url, result))
+      return OK;
     return permanent_error_;
+  }
 
   if (config_->value().HasAutomaticSettings())
     return ERR_IO_PENDING;  // Must submit the request to the proxy resolver.
@@ -1609,6 +1617,18 @@ void ProxyResolutionService::OnProxyConfigChanged(
   fetched_config_ = effective_config;
 
   InitializeUsingLastFetchedConfig();
+}
+
+bool ProxyResolutionService::ApplyPacBypassRules(const GURL& url,
+                                                 ProxyInfo* results) {
+  DCHECK(config_);
+
+  if (ProxyBypassRules::MatchesImplicitRules(url)) {
+    results->UseDirectWithBypassedProxy();
+    return true;
+  }
+
+  return false;
 }
 
 void ProxyResolutionService::InitializeUsingLastFetchedConfig() {

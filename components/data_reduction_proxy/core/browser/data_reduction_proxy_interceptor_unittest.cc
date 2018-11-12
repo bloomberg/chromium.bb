@@ -232,9 +232,11 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         DataReductionProxyServer(origin, ProxyServer::UNSPECIFIED_TYPE));
     test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy_name + ", direct://");
     proxy_resolution_service_ =
-        net::ProxyResolutionService::CreateFixedFromPacResult(
-            "PROXY " + proxy_name + "; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
+        net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
+            proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     context_.set_proxy_resolution_service(proxy_resolution_service_.get());
 

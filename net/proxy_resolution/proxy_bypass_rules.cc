@@ -18,6 +18,34 @@ namespace net {
 
 namespace {
 
+bool IsIPv4LinkLocal(const IPAddress& addr) {
+  // 169.254.0.0/16
+  return addr.IsIPv4() && (addr.bytes()[0] == 169) && (addr.bytes()[1] == 254);
+}
+
+bool IsIPv6LinkLocal(const IPAddress& addr) {
+  // [fe80::]/10
+  return addr.IsIPv6() && (addr.bytes()[0] == 0xFE) &&
+         ((addr.bytes()[1] & 0xC0) == 0x80);
+}
+
+bool IsLinkLocalIP(const GURL& url) {
+  // Quick fail if definitely not link-local, to avoid doing unnecessary work in
+  // common case. The |url| should be canonicalized, which for IPv6 literals
+  // means lowercase.
+  if (!(url.host_piece().starts_with("169.254.") ||
+        url.host_piece().starts_with("[fe"))) {
+    return false;
+  }
+
+  base::StringPiece host(url.host());
+  IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
+    return false;
+
+  return IsIPv4LinkLocal(ip_address) || IsIPv6LinkLocal(ip_address);
+}
+
 class HostnamePatternRule : public ProxyBypassRules::Rule {
  public:
   HostnamePatternRule(const std::string& optional_scheme,
@@ -231,6 +259,39 @@ void ProxyBypassRules::AssignFrom(const ProxyBypassRules& other) {
   for (auto it = other.rules_.begin(); it != other.rules_.end(); ++it) {
     rules_.push_back((*it)->Clone());
   }
+}
+
+bool ProxyBypassRules::MatchesImplicitRules(const GURL& url) {
+  // On Windows the implict rules are:
+  //
+  //     localhost
+  //     loopback
+  //     127.0.0.1
+  //     [::1]
+  //     169.254/16
+  //     [FE80::]/10
+  //
+  // And on macOS they are:
+  //
+  //     localhost
+  //     127.0.0.1/8
+  //     [::1]
+  //     169.254/16
+  //
+  // Our implicit rules are approximately:
+  //
+  //     localhost
+  //     localhost.
+  //     *.localhost
+  //     localhost6
+  //     localhost6.localdomain6
+  //     [::1]
+  //     127.0.0.1/8
+  //     169.254/16
+  //     [FE80::]/10
+  //
+  // TODO(eroman): Does "loopback" need special treatment on Windows?
+  return net::IsLocalhost(url) || IsLinkLocalIP(url);
 }
 
 void ProxyBypassRules::ParseFromStringInternal(

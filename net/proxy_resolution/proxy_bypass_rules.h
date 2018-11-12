@@ -162,6 +162,10 @@ class NET_EXPORT ProxyBypassRules {
   // Sets |*this| to |other|.
   void AssignFrom(const ProxyBypassRules& other);
 
+  // Returns true if |url| matches one of the implicit proxy bypass rules
+  // (localhost or link local).
+  static bool MatchesImplicitRules(const GURL& url);
+
  private:
   // The following are variants of ParseFromString() and AddRuleFromString(),
   // which additionally prefix hostname patterns with a wildcard if
