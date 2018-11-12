@@ -26,6 +26,7 @@ CWVSecurityStyle CWVSecurityStyleFromWebSecurityStyle(
       return CWVSecurityStyleAuthenticated;
   }
 }
+}  // namespace
 
 CWVCertStatus CWVCertStatusFromNetCertStatus(net::CertStatus cert_status) {
   CWVCertStatus cwv_status = 0;
@@ -76,7 +77,6 @@ CWVCertStatus CWVCertStatusFromNetCertStatus(net::CertStatus cert_status) {
   }
   return cwv_status;
 }
-}  // namespace
 
 @implementation CWVSSLStatus {
   web::SSLStatus _internalStatus;
