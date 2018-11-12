@@ -742,6 +742,10 @@ void Tab::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
 }
 
+bool Tab::ShowingLoadingAnimation() const {
+  return icon_->ShowingLoadingAnimation();
+}
+
 void Tab::StartPulse() {
   pulse_animation_.StartThrobbing(std::numeric_limits<int>::max());
 }
