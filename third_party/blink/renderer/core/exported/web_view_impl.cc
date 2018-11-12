@@ -251,7 +251,7 @@ class EmptyEventListener final : public EventListener {
  private:
   EmptyEventListener() : EventListener(kCPPEventListenerType) {}
 
-  void handleEvent(ExecutionContext* execution_context, Event*) override {}
+  void Invoke(ExecutionContext* execution_context, Event*) override {}
 };
 
 }  // namespace

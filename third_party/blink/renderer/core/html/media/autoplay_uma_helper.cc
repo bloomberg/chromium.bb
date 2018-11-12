@@ -356,8 +356,8 @@ void AutoplayUmaHelper::OnVisibilityChangedForMutedVideoOffscreenDuration(
   is_visible_ = is_visible;
 }
 
-void AutoplayUmaHelper::handleEvent(ExecutionContext* execution_context,
-                                    Event* event) {
+void AutoplayUmaHelper::Invoke(ExecutionContext* execution_context,
+                               Event* event) {
   if (event->type() == event_type_names::kLoadstart)
     OnLoadStarted();
   else if (event->type() == event_type_names::kPlaying)

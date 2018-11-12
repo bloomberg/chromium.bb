@@ -144,7 +144,7 @@ RemotePlayback* MediaControlsMediaEventListener::GetRemotePlayback() {
   return HTMLMediaElementRemotePlayback::remote(GetMediaElement());
 }
 
-void MediaControlsMediaEventListener::handleEvent(
+void MediaControlsMediaEventListener::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->type() == event_type_names::kVolumechange) {

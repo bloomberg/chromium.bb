@@ -38,7 +38,7 @@ class DOMContentLoadedListener final
     return this == &rhs;
   }
 
-  void handleEvent(ExecutionContext* execution_context, Event* event) override {
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 

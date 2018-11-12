@@ -41,7 +41,7 @@ class CheckEventListenerCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     event_received_ = true;
   }
 

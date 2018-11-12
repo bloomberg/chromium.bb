@@ -111,7 +111,7 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
     return this == &that;
   }
 
-  void handleEvent(ExecutionContext*, Event*) override {
+  void Invoke(ExecutionContext*, Event*) override {
     ++marquee_->loop_count_;
     marquee_->start();
   }

@@ -47,7 +47,7 @@ class MockEventListenerForRemotePlayback : public EventListener {
     return this == &other;
   }
 
-  MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
+  MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 
 class MockPresentationController final : public PresentationController {
@@ -206,11 +206,9 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   remote_playback->addEventListener(event_type_names::kDisconnect,
                                     disconnect_handler);
 
-  EXPECT_CALL(*connecting_handler, handleEvent(testing::_, testing::_))
-      .Times(1);
-  EXPECT_CALL(*connect_handler, handleEvent(testing::_, testing::_)).Times(1);
-  EXPECT_CALL(*disconnect_handler, handleEvent(testing::_, testing::_))
-      .Times(1);
+  EXPECT_CALL(*connecting_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*connect_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*disconnect_handler, Invoke(testing::_, testing::_)).Times(1);
 
   SetState(remote_playback, WebRemotePlaybackState::kConnecting);
   SetState(remote_playback, WebRemotePlaybackState::kConnecting);

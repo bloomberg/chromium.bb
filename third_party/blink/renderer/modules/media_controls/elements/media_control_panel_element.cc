@@ -63,7 +63,7 @@ class MediaControlPanelElement::TransitionEventListener final
   }
 
  private:
-  void handleEvent(ExecutionContext* context, Event* event) override {
+  void Invoke(ExecutionContext* context, Event* event) override {
     if (event->type() == event_type_names::kTransitionend) {
       callback_.Run();
       return;

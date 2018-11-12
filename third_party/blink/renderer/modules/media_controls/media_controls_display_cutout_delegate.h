@@ -57,7 +57,7 @@ class MODULES_EXPORT MediaControlsDisplayCutoutDelegate final
   void DidExitFullscreen();
 
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   void HandleTouchEvent(TouchEvent*);
 

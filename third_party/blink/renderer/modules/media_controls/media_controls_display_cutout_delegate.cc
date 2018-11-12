@@ -86,7 +86,7 @@ void MediaControlsDisplayCutoutDelegate::DidExitFullscreen() {
                                       true);
 }
 
-void MediaControlsDisplayCutoutDelegate::handleEvent(
+void MediaControlsDisplayCutoutDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->IsTouchEvent()) {

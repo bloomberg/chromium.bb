@@ -44,7 +44,7 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   enum class SimpleOrientation { kPortrait, kLandscape, kUnknown };
 
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   void OnStateChange();
   void OnVisibilityChange(bool is_visible);

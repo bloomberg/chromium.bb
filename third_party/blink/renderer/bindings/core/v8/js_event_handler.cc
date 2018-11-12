@@ -42,9 +42,9 @@ void JSEventHandler::SetCompiledHandler(
 }
 
 // https://html.spec.whatwg.org/C/webappapis.html#the-event-handler-processing-algorithm
-void JSEventHandler::CallListenerFunction(EventTarget& event_target,
-                                          Event& event,
-                                          v8::Local<v8::Value> js_event) {
+void JSEventHandler::InvokeInternal(EventTarget& event_target,
+                                    Event& event,
+                                    v8::Local<v8::Value> js_event) {
   DCHECK(!js_event.IsEmpty());
 
   // Step 1. Let callback be the result of getting the current value of the

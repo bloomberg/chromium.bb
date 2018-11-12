@@ -15,15 +15,13 @@
 
 namespace blink {
 
-using testing::Invoke;
-
 class MockAutoplayUmaHelper : public AutoplayUmaHelper {
  public:
   MockAutoplayUmaHelper(HTMLMediaElement* element)
       : AutoplayUmaHelper(element) {
     ON_CALL(*this, HandleContextDestroyed())
-        .WillByDefault(
-            Invoke(this, &MockAutoplayUmaHelper::ReallyHandleContextDestroyed));
+        .WillByDefault(testing::Invoke(
+            this, &MockAutoplayUmaHelper::ReallyHandleContextDestroyed));
   }
 
   void HandlePlayingEvent() { AutoplayUmaHelper::HandlePlayingEvent(); }

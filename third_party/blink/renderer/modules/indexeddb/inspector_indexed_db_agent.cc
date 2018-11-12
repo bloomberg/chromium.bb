@@ -124,7 +124,7 @@ class GetDatabaseNamesCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
@@ -173,7 +173,7 @@ class DeleteCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(
           Response::Error("Failed to delete database."));
@@ -270,7 +270,7 @@ class OpenDatabaseCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext* context, Event* event) override {
+  void Invoke(ExecutionContext* context, Event* event) override {
     if (event->type() != event_type_names::kSuccess) {
       executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
@@ -323,7 +323,7 @@ class UpgradeDatabaseCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext* context, Event* event) override {
+  void Invoke(ExecutionContext* context, Event* event) override {
     if (event->type() != event_type_names::kUpgradeneeded) {
       executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
@@ -561,7 +561,7 @@ class OpenCursorCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
@@ -870,7 +870,7 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     if (event->type() != event_type_names::kSuccess) {
       request_callback_->sendFailure(
           Response::Error("Failed to delete specified entries"));
@@ -977,7 +977,7 @@ class ClearObjectStoreListener final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     if (event->type() != event_type_names::kComplete) {
       request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;

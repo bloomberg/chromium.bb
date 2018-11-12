@@ -50,7 +50,7 @@ bool JSBasedEventListener::BelongsToTheCurrentWorld(
 
 // Implements step 2. of "inner invoke".
 // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
-void JSBasedEventListener::handleEvent(
+void JSBasedEventListener::Invoke(
     ExecutionContext* execution_context_of_event_target,
     Event* event) {
   DCHECK(execution_context_of_event_target);
@@ -154,7 +154,7 @@ void JSBasedEventListener::handleEvent(
 
     // Step 10: Call a listener with event's currentTarget as receiver and event
     // and handle errors if thrown.
-    CallListenerFunction(*event->currentTarget(), *event, js_event);
+    InvokeInternal(*event->currentTarget(), *event, js_event);
 
     if (try_catch.HasCaught()) {
       // Step 10-2: Set legacyOutputDidListenersThrowFlag if given.

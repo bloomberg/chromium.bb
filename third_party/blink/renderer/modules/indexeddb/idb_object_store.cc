@@ -727,10 +727,10 @@ class IndexPopulator final : public EventListener {
 
   const IDBIndexMetadata& IndexMetadata() const { return *index_metadata_; }
 
-  void handleEvent(ExecutionContext* execution_context, Event* event) override {
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
     if (!script_state_->ContextIsValid())
       return;
-    IDB_TRACE("IDBObjectStore::IndexPopulator::handleEvent");
+    IDB_TRACE("IDBObjectStore::IndexPopulator::Invoke");
 
     DCHECK_EQ(ExecutionContext::From(script_state_), execution_context);
     DCHECK_EQ(event->type(), event_type_names::kSuccess);

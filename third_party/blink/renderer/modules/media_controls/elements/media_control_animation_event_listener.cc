@@ -35,8 +35,8 @@ void MediaControlAnimationEventListener::Trace(Visitor* visitor) {
   EventListener::Trace(visitor);
 }
 
-void MediaControlAnimationEventListener::handleEvent(ExecutionContext* context,
-                                                     Event* event) {
+void MediaControlAnimationEventListener::Invoke(ExecutionContext* context,
+                                                Event* event) {
   if (event->type() == event_type_names::kAnimationend) {
     observer_->OnAnimationEnd();
     return;

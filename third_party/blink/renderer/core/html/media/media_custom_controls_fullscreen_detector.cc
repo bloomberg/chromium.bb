@@ -100,9 +100,8 @@ bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
          intersection_rect.Width();
 }
 
-void MediaCustomControlsFullscreenDetector::handleEvent(
-    ExecutionContext* context,
-    Event* event) {
+void MediaCustomControlsFullscreenDetector::Invoke(ExecutionContext* context,
+                                                   Event* event) {
   DCHECK(event->type() == event_type_names::kLoadedmetadata ||
          event->type() == event_type_names::kWebkitfullscreenchange ||
          event->type() == event_type_names::kFullscreenchange);
