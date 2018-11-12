@@ -68,7 +68,7 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   paint.setTextSize(kTextSize);
 
   // Calculate the vertical margin from the top
-  SkPaint::FontMetrics font_metrics;
+  SkFontMetrics font_metrics;
   paint.getFontMetrics(&font_metrics);
   SkScalar sk_vertical_margin = kMinPadding - font_metrics.fAscent;
 

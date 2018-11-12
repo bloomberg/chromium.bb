@@ -77,7 +77,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
     return;
   }
 
-  SkPaint::FontMetrics metrics;
+  SkFontMetrics metrics;
 
   paint_ = SkPaint();
   platform_data_.SetupSkPaint(&paint_);

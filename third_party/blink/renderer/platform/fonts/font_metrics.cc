@@ -54,7 +54,7 @@ void FontMetrics::AscentDescentWithHacks(
   SkTypeface* face = paint.getTypeface();
   DCHECK(face);
 
-  SkPaint::FontMetrics metrics;
+  SkFontMetrics metrics;
   paint.getFontMetrics(&metrics);
 
   int vdmx_ascent = 0, vdmx_descent = 0;
