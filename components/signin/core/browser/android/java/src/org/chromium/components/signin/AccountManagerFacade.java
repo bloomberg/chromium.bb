@@ -229,7 +229,6 @@ public class AccountManagerFacade {
      * @param runnable The callback to call after cache is populated. Invoked on the main thread.
      */
     @MainThread
-    @VisibleForTesting
     public void runAfterCacheIsPopulated(Runnable runnable) {
         ThreadUtils.assertOnUiThread();
         if (isCachePopulated()) {
