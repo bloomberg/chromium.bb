@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 
 namespace base {
+
 namespace features {
 
 // Use THREAD_MODE_BACKGROUND_BEGIN instead of THREAD_PRIORITY_LOWEST for
@@ -21,6 +22,20 @@ namespace features {
 BASE_EXPORT extern const Feature kWindowsThreadModeBackground;
 
 }  // namespace features
+
+namespace internal {
+
+// The value returned by ::GetThreadPriority() after background thread mode is
+// enabled on Windows 7. Exposed for unit tests.
+constexpr int kWin7BackgroundThreadModePriority = 4;
+
+// Assert that the memory priority of |thread| is |memory_priority|. No-op on
+// Windows 7 because ::GetThreadInformation() is not available. Exposed for unit
+// tests.
+BASE_EXPORT void AssertMemoryPriority(HANDLE thread, int memory_priority);
+
+}  // namespace internal
+
 }  // namespace base
 
 #endif  // BASE_THREADING_PLATFORM_THREAD_WIN_H_
