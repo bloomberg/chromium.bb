@@ -13,6 +13,14 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
   on_destroy_.Run();
 }
 
+SyncUserSettings* SyncService::GetUserSettings() {
+  return nullptr;
+}
+
+const SyncUserSettings* SyncService::GetUserSettings() const {
+  return nullptr;
+}
+
 bool SyncService::IsSyncFeatureEnabled() const {
   // Note: IsFirstSetupComplete() shouldn't usually be true if we don't have a
   // primary account, but it could happen if the account changes from primary to

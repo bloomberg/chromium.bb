@@ -162,6 +162,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
     : sync_client_(std::move(init_params.sync_client)),
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
+      user_settings_(this, &sync_prefs_),
       auth_manager_(std::make_unique<SyncAuthManager>(
           &sync_prefs_,
           identity_manager_,
@@ -200,7 +201,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           std::make_unique<syncer::HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
-      sync_allowed_by_platform_(true),
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -724,6 +724,14 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
   }
 }
 
+syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() {
+  return &user_settings_;
+}
+
+const syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() const {
+  return &user_settings_;
+}
+
 int ProfileSyncService::GetDisableReasons() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -732,7 +740,7 @@ int ProfileSyncService::GetDisableReasons() const {
   DCHECK(IsSyncAllowedByFlag());
 
   int result = DISABLE_REASON_NONE;
-  if (!IsSyncAllowedByPlatform()) {
+  if (!user_settings_.IsSyncAllowedByPlatform()) {
     result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
   }
   if (sync_prefs_.IsManaged() || sync_disabled_by_admin_) {
@@ -1464,13 +1472,13 @@ bool ProfileSyncService::IsCryptographerReady(
 
 void ProfileSyncService::SetSyncAllowedByPlatform(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (sync_allowed_by_platform_ == allowed) {
-    return;
-  }
+  user_settings_.SetSyncAllowedByPlatform(allowed);
+}
 
-  sync_allowed_by_platform_ = allowed;
+void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!sync_allowed_by_platform_) {
+  if (!allowed) {
     StopImpl(KEEP_DATA);
     // TODO(crbug.com/856179): Evaluate whether we can get away without a full
     // restart (i.e. just reconfigure plus whatever cleanup is necessary). See
@@ -1984,11 +1992,6 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
 bool ProfileSyncService::IsSyncAllowedByFlag() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSync);
-}
-
-bool ProfileSyncService::IsSyncAllowedByPlatform() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_allowed_by_platform_;
 }
 
 void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {

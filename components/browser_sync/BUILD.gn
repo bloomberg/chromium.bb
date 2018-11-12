@@ -16,6 +16,8 @@ static_library("browser_sync") {
     "signin_confirmation_helper.h",
     "sync_auth_manager.cc",
     "sync_auth_manager.h",
+    "sync_user_settings_impl.cc",
+    "sync_user_settings_impl.h",
   ]
 
   public_deps = [
