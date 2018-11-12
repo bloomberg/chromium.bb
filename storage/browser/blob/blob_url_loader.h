@@ -50,11 +50,9 @@ class STORAGE_EXPORT BlobURLLoader : public storage::MojoBlobReader::Delegate,
   void ResumeReadingBodyFromNet() override {}
 
   // storage::MojoBlobReader::Delegate implementation:
-  mojo::ScopedDataPipeProducerHandle PassDataPipe() override;
   RequestSideData DidCalculateSize(uint64_t total_size,
                                    uint64_t content_size) override;
   void DidReadSideData(net::IOBufferWithSize* data) override;
-  void DidRead(int num_bytes) override;
   void OnComplete(net::Error error_code, uint64_t total_written_bytes) override;
 
   void HeadersCompleted(net::HttpStatusCode status_code,

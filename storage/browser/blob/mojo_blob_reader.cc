@@ -13,18 +13,24 @@
 namespace storage {
 
 // static
-void MojoBlobReader::Create(const BlobDataHandle* handle,
-                            const net::HttpByteRange& range,
-                            std::unique_ptr<Delegate> delegate) {
-  new MojoBlobReader(handle, range, std::move(delegate));
+void MojoBlobReader::Create(
+    const BlobDataHandle* handle,
+    const net::HttpByteRange& range,
+    std::unique_ptr<Delegate> delegate,
+    mojo::ScopedDataPipeProducerHandle response_body_stream) {
+  new MojoBlobReader(handle, range, std::move(delegate),
+                     std::move(response_body_stream));
 }
 
-MojoBlobReader::MojoBlobReader(const BlobDataHandle* handle,
-                               const net::HttpByteRange& range,
-                               std::unique_ptr<Delegate> delegate)
+MojoBlobReader::MojoBlobReader(
+    const BlobDataHandle* handle,
+    const net::HttpByteRange& range,
+    std::unique_ptr<Delegate> delegate,
+    mojo::ScopedDataPipeProducerHandle response_body_stream)
     : delegate_(std::move(delegate)),
       byte_range_(range),
       blob_reader_(handle->CreateReader()),
+      response_body_stream_(std::move(response_body_stream)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()),
@@ -82,9 +88,12 @@ void MojoBlobReader::NotifyCompletedAndDeleteIfNeeded(int result) {
     notified_completed_ = true;
   }
 
-  bool has_data_pipe = pending_write_ || response_body_stream_.is_valid();
-  if (!has_data_pipe)
-    delete this;
+  // If data are being written, wait for it to complete.
+  if (writable_handle_watcher_.IsWatching() &&
+      (pending_write_ || response_body_stream_.is_valid()))
+    return;
+
+  delete this;
 }
 
 void MojoBlobReader::DidCalculateSize(int result) {
@@ -147,9 +156,7 @@ void MojoBlobReader::DidReadSideData(BlobReader::Status status) {
 
 void MojoBlobReader::StartReading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!response_body_stream_);
 
-  response_body_stream_ = delegate_->PassDataPipe();
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       MOJO_WATCH_CONDITION_SATISFIED,
