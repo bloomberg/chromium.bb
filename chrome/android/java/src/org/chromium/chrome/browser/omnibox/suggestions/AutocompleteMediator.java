@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -47,6 +48,8 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +78,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
-    private boolean mCanShowSuggestions;
+
+    @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
+            SuggestionVisibilityState.ALLOWED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SuggestionVisibilityState {
+        int DISALLOWED = 0;
+        int PENDING_ALLOW = 1;
+        int ALLOWED = 2;
+    }
+    @SuggestionVisibilityState
+    private int mSuggestionVisibilityState;
 
     // The timestamp (using SystemClock.elapsedRealtime()) at the point when the user started
     // modifying the omnibox with new input.
@@ -491,6 +504,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
     void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) {
+            mSuggestionVisibilityState = SuggestionVisibilityState.PENDING_ALLOW;
             if (mNativeInitialized) {
                 startZeroSuggest();
             } else {
@@ -501,7 +515,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                 });
             }
         } else {
-            mCanShowSuggestions = false;
+            mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
             // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
@@ -516,7 +530,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
      * org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlAnimationFinished(boolean)
      */
     void onUrlAnimationFinished(boolean hasFocus) {
-        mCanShowSuggestions = hasFocus;
+        mSuggestionVisibilityState =
+                hasFocus ? SuggestionVisibilityState.ALLOWED : SuggestionVisibilityState.DISALLOWED;
         updateOmniboxSuggestionsVisibility();
     }
 
@@ -840,7 +855,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     @Override
     public void onSuggestionsReceived(
             List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
-        if (mShouldPreventOmniboxAutocomplete || !mCanShowSuggestions) return;
+        if (mShouldPreventOmniboxAutocomplete
+                || mSuggestionVisibilityState == SuggestionVisibilityState.DISALLOWED) {
+            return;
+        }
 
         // This is a callback from a listener that is set up by onNativeLibraryReady,
         // so can only be called once the native side is set up unless we are showing
@@ -1014,7 +1032,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
      * Update whether the omnibox suggestions are visible.
      */
     private void updateOmniboxSuggestionsVisibility() {
-        boolean shouldBeVisible = mCanShowSuggestions && getSuggestionCount() > 0;
+        boolean shouldBeVisible = mSuggestionVisibilityState == SuggestionVisibilityState.ALLOWED
+                && getSuggestionCount() > 0;
         boolean wasVisible = mListPropertyModel.get(SuggestionListProperties.VISIBLE);
         mListPropertyModel.set(SuggestionListProperties.VISIBLE, shouldBeVisible);
         if (shouldBeVisible && !wasVisible) {
