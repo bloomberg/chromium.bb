@@ -331,8 +331,10 @@ HeapVector<Member<Element>> TreeScope::ElementsFromPoint(double x,
 }
 
 SVGTreeScopeResources& TreeScope::EnsureSVGTreeScopedResources() {
-  if (!svg_tree_scoped_resources_)
-    svg_tree_scoped_resources_ = new SVGTreeScopeResources(this);
+  if (!svg_tree_scoped_resources_) {
+    svg_tree_scoped_resources_ =
+        MakeGarbageCollected<SVGTreeScopeResources>(this);
+  }
   return *svg_tree_scoped_resources_;
 }
 

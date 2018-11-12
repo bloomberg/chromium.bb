@@ -109,8 +109,8 @@ void SVGAngle::Trace(blink::Visitor* visitor) {
 }
 
 SVGAngle* SVGAngle::Clone() const {
-  return new SVGAngle(unit_type_, value_in_specified_units_,
-                      orient_type_->EnumValue());
+  return MakeGarbageCollected<SVGAngle>(unit_type_, value_in_specified_units_,
+                                        orient_type_->EnumValue());
 }
 
 float SVGAngle::Value() const {

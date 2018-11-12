@@ -41,6 +41,8 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
  public:
   static SVGAnimateElement* Create(Document&);
+
+  SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;
 
   void Trace(blink::Visitor*) override;
@@ -52,8 +54,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool AnimatedPropertyTypeSupportsAddition();
 
  protected:
-  SVGAnimateElement(const QualifiedName&, Document&);
-
   bool HasValidTarget() override;
 
   void WillChangeAnimationTarget() final;

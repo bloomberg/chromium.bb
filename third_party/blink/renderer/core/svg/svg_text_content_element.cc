@@ -54,8 +54,14 @@ GetStaticStringEntries<SVGLengthAdjustType>() {
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
  public:
   static SVGAnimatedTextLength* Create(SVGTextContentElement* context_element) {
-    return new SVGAnimatedTextLength(context_element);
+    return MakeGarbageCollected<SVGAnimatedTextLength>(context_element);
   }
+
+  SVGAnimatedTextLength(SVGTextContentElement* context_element)
+      : SVGAnimatedLength(context_element,
+                          svg_names::kTextLengthAttr,
+                          SVGLengthMode::kWidth,
+                          SVGLength::Initial::kUnitlessZero) {}
 
   SVGLengthTearOff* baseVal() override {
     SVGTextContentElement* text_content_element =
@@ -67,13 +73,6 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
 
     return SVGAnimatedLength::baseVal();
   }
-
- private:
-  SVGAnimatedTextLength(SVGTextContentElement* context_element)
-      : SVGAnimatedLength(context_element,
-                          svg_names::kTextLengthAttr,
-                          SVGLengthMode::kWidth,
-                          SVGLength::Initial::kUnitlessZero) {}
 };
 
 SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,

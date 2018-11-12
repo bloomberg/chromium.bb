@@ -45,10 +45,10 @@ class SVGLengthListTearOff final
       SVGLengthList* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
-    return new SVGLengthListTearOff(target, binding, property_is_anim_val);
+    return MakeGarbageCollected<SVGLengthListTearOff>(target, binding,
+                                                      property_is_anim_val);
   }
 
- private:
   SVGLengthListTearOff(SVGLengthList* target,
                        SVGAnimatedPropertyBase* binding,
                        PropertyIsAnimValType property_is_anim_val)

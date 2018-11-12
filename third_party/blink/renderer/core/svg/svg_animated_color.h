@@ -44,8 +44,10 @@ class SVGAnimationElement;
 class SVGColorProperty final : public SVGPropertyBase {
  public:
   static SVGColorProperty* Create(const String& color_string) {
-    return new SVGColorProperty(color_string);
+    return MakeGarbageCollected<SVGColorProperty>(color_string);
   }
+
+  explicit SVGColorProperty(const String&);
 
   SVGPropertyBase* CloneForAnimation(const String&) const override;
   String ValueAsString() const override;
@@ -64,8 +66,6 @@ class SVGColorProperty final : public SVGPropertyBase {
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
-  explicit SVGColorProperty(const String&);
-
   StyleColor style_color_;
 };
 

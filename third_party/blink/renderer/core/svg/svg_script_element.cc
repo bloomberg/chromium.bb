@@ -42,7 +42,7 @@ inline SVGScriptElement::SVGScriptElement(Document& document,
 
 SVGScriptElement* SVGScriptElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  return new SVGScriptElement(document, flags);
+  return MakeGarbageCollected<SVGScriptElement>(document, flags);
 }
 
 void SVGScriptElement::ParseAttribute(

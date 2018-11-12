@@ -38,7 +38,7 @@ class SVGLength final : public SVGPropertyBase {
   typedef SVGLengthTearOff TearOffType;
 
   static SVGLength* Create(SVGLengthMode mode = SVGLengthMode::kOther) {
-    return new SVGLength(mode);
+    return MakeGarbageCollected<SVGLength>(mode);
   }
 
   // Initial values for SVGLength properties. If adding a new initial value,
@@ -56,6 +56,11 @@ class SVGLength final : public SVGPropertyBase {
   };
   static constexpr int kInitialValueBits = 3;
   static SVGLength* Create(Initial, SVGLengthMode);
+
+  explicit SVGLength(SVGLengthMode);
+  SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
+  SVGLength(const SVGLength&);
+
   void SetInitial(unsigned);
 
   void Trace(blink::Visitor*) override;
@@ -133,10 +138,6 @@ class SVGLength final : public SVGPropertyBase {
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
-  explicit SVGLength(SVGLengthMode);
-  SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
-  SVGLength(const SVGLength&);
-
   Member<const CSSPrimitiveValue> value_;
   unsigned unit_mode_ : 2;
 };

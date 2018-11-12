@@ -32,14 +32,13 @@ namespace blink {
 class SVGAnimatedViewBoxRect : public SVGAnimatedRect {
  public:
   static SVGAnimatedRect* Create(SVGElement* context_element) {
-    return new SVGAnimatedViewBoxRect(context_element);
+    return MakeGarbageCollected<SVGAnimatedViewBoxRect>(context_element);
   }
 
-  SVGParsingError AttributeChanged(const String&) override;
-
- protected:
   SVGAnimatedViewBoxRect(SVGElement* context_element)
       : SVGAnimatedRect(context_element, svg_names::kViewBoxAttr) {}
+
+  SVGParsingError AttributeChanged(const String&) override;
 };
 
 SVGParsingError SVGAnimatedViewBoxRect::AttributeChanged(const String& value) {

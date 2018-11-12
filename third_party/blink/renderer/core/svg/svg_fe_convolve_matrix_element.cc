@@ -41,17 +41,17 @@ const SVGEnumerationStringEntries& GetStaticStringEntries<EdgeModeType>() {
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
  public:
   static SVGAnimatedOrder* Create(SVGElement* context_element) {
-    return new SVGAnimatedOrder(context_element);
+    return MakeGarbageCollected<SVGAnimatedOrder>(context_element);
   }
 
-  SVGParsingError AttributeChanged(const String&) override;
-
- protected:
   SVGAnimatedOrder(SVGElement* context_element)
       : SVGAnimatedIntegerOptionalInteger(context_element,
                                           svg_names::kOrderAttr,
                                           3) {}
 
+  SVGParsingError AttributeChanged(const String&) override;
+
+ protected:
   static SVGParsingError CheckValue(SVGParsingError parse_status, int value) {
     if (parse_status != SVGParseStatus::kNoError)
       return parse_status;

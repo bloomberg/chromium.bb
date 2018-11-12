@@ -108,7 +108,8 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tag_name,
       attribute_type_(kAttributeTypeAuto) {}
 
 SVGAnimateElement* SVGAnimateElement::Create(Document& document) {
-  return new SVGAnimateElement(svg_names::kAnimateTag, document);
+  return MakeGarbageCollected<SVGAnimateElement>(svg_names::kAnimateTag,
+                                                 document);
 }
 
 SVGAnimateElement::~SVGAnimateElement() = default;

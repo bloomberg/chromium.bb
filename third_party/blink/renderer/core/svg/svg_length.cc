@@ -51,7 +51,7 @@ void SVGLength::Trace(blink::Visitor* visitor) {
 }
 
 SVGLength* SVGLength::Clone() const {
-  return new SVGLength(*this);
+  return MakeGarbageCollected<SVGLength>(*this);
 }
 
 SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
@@ -327,7 +327,7 @@ const CSSPrimitiveValue& CreateInitialCSSValue(
 }  // namespace
 
 SVGLength* SVGLength::Create(Initial initial, SVGLengthMode mode) {
-  return new SVGLength(CreateInitialCSSValue(initial), mode);
+  return MakeGarbageCollected<SVGLength>(CreateInitialCSSValue(initial), mode);
 }
 
 void SVGLength::SetInitial(unsigned initial_value) {

@@ -45,20 +45,20 @@ class SVGAnimatedBoolean final : public ScriptWrappable,
  public:
   static SVGAnimatedBoolean* Create(SVGElement* context_element,
                                     const QualifiedName& attribute_name) {
-    return new SVGAnimatedBoolean(context_element, attribute_name);
+    return MakeGarbageCollected<SVGAnimatedBoolean>(context_element,
+                                                    attribute_name);
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    SVGAnimatedProperty<SVGBoolean>::Trace(visitor);
-    ScriptWrappable::Trace(visitor);
-  }
-
- protected:
   SVGAnimatedBoolean(SVGElement* context_element,
                      const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGBoolean>(context_element,
                                         attribute_name,
                                         SVGBoolean::Create()) {}
+
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGBoolean>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
 };
 
 }  // namespace blink
