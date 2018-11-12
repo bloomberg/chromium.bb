@@ -256,15 +256,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     ASSERT_TRUE(isolate);
 
     ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-                                                   R"JS(
+    global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(
+            R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
           )JS"),
-                                               kSharableCrossOrigin);
+        SanitizeScriptErrors::kDoNotSanitize);
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
@@ -302,15 +303,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-                                                   R"JS(
+    global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(
+            R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
           )JS"),
-                                               kSharableCrossOrigin);
+        SanitizeScriptErrors::kDoNotSanitize);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
@@ -351,15 +353,16 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     ScriptState::Scope scope(script_state);
-    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-                                                   R"JS(
+    global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(
+            R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
           )JS"),
-                                               kSharableCrossOrigin);
+        SanitizeScriptErrors::kDoNotSanitize);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;

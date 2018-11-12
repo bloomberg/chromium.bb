@@ -113,23 +113,24 @@ void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
 
 bool ExecutionContext::ShouldSanitizeScriptError(
     const String& source_url,
-    AccessControlStatus cors_status) {
-  if (cors_status == kOpaqueResource)
+    SanitizeScriptErrors sanitize_script_errors) {
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize)
     return true;
   const KURL& url = CompleteURL(source_url);
   return !(GetSecurityOrigin()->CanReadContent(url) ||
-           cors_status == kSharableCrossOrigin);
+           sanitize_script_errors == SanitizeScriptErrors::kDoNotSanitize);
 }
 
-void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
-                                          AccessControlStatus cors_status) {
+void ExecutionContext::DispatchErrorEvent(
+    ErrorEvent* error_event,
+    SanitizeScriptErrors sanitize_script_errors) {
   if (in_dispatch_error_event_) {
     pending_exceptions_.push_back(error_event);
     return;
   }
 
   // First report the original exception and only then all the nested ones.
-  if (!DispatchErrorEventInternal(error_event, cors_status))
+  if (!DispatchErrorEventInternal(error_event, sanitize_script_errors))
     ExceptionThrown(error_event);
 
   if (pending_exceptions_.IsEmpty())
@@ -141,13 +142,15 @@ void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
 
 bool ExecutionContext::DispatchErrorEventInternal(
     ErrorEvent* error_event,
-    AccessControlStatus cors_status) {
+    SanitizeScriptErrors sanitize_script_errors) {
   EventTarget* target = ErrorEventTarget();
   if (!target)
     return false;
 
-  if (ShouldSanitizeScriptError(error_event->filename(), cors_status))
+  if (ShouldSanitizeScriptError(error_event->filename(),
+                                sanitize_script_errors)) {
     error_event = ErrorEvent::CreateSanitizedError(error_event->World());
+  }
 
   DCHECK(!in_dispatch_error_event_);
   in_dispatch_error_event_ = true;

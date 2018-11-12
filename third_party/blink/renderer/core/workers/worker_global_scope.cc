@@ -201,10 +201,10 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     // importScripts always uses "no-cors", so simply checking the origin is
     // enough.
     // TODO(yhirano): Remove this ad-hoc logic and use the response type.
-    const AccessControlStatus access_control_status =
+    const SanitizeScriptErrors sanitize_script_errors =
         execution_context.GetSecurityOrigin()->CanReadContent(response_url)
-            ? kSharableCrossOrigin
-            : kOpaqueResource;
+            ? SanitizeScriptErrors::kDoNotSanitize
+            : SanitizeScriptErrors::kSanitize;
 
     ErrorEvent* error_event = nullptr;
     SingleCachedMetadataHandler* handler(
@@ -215,7 +215,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
                          handler, response_url),
-        access_control_status, &error_event, v8_cache_options_);
+        sanitize_script_errors, &error_event, v8_cache_options_);
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);
@@ -484,10 +484,12 @@ void WorkerGlobalScope::EvaluateClassicScript(
   ReportingProxy().WillEvaluateClassicScript(
       source_code.length(),
       cached_meta_data.get() ? cached_meta_data->size() : 0);
-  // Cross-origin workers are disallowed, so use kSharableCrossOrigin.
+  // Cross-origin workers are disallowed, so use
+  // SanitizeScriptErrors::kDoNotSanitize.
   bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, handler, script_url), kSharableCrossOrigin,
-      nullptr /* error_event */, v8_cache_options_);
+      ScriptSourceCode(source_code, handler, script_url),
+      SanitizeScriptErrors::kDoNotSanitize, nullptr /* error_event */,
+      v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
 }
 

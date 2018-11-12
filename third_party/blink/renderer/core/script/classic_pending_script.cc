@@ -355,7 +355,8 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
                                  source_location_type_, cache_handler,
                                  document_url, StartingPosition());
     return ClassicScript::Create(source_code, base_url_for_inline_script_,
-                                 options_, kSharableCrossOrigin);
+                                 options_,
+                                 SanitizeScriptErrors::kDoNotSanitize);
   }
 
   DCHECK(GetResource()->IsLoaded());
@@ -396,7 +397,9 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   // ... the URL from which the script was obtained, ...</spec>
   const KURL& base_url = source_code.Url();
   return ClassicScript::Create(source_code, base_url, options_,
-                               resource->CalculateAccessControlStatus());
+                               resource->GetResponse().IsCORSSameOrigin()
+                                   ? SanitizeScriptErrors::kDoNotSanitize
+                                   : SanitizeScriptErrors::kSanitize);
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {

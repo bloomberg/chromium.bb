@@ -33,11 +33,11 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
@@ -169,8 +169,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return false;
   }
 
-  bool ShouldSanitizeScriptError(const String& source_url, AccessControlStatus);
-  void DispatchErrorEvent(ErrorEvent*, AccessControlStatus);
+  bool ShouldSanitizeScriptError(const String& source_url,
+                                 SanitizeScriptErrors);
+  void DispatchErrorEvent(ErrorEvent*, SanitizeScriptErrors);
 
   virtual void AddConsoleMessage(ConsoleMessage*) = 0;
   virtual void ExceptionThrown(ErrorEvent*) = 0;
@@ -259,7 +260,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   ~ExecutionContext() override;
 
  private:
-  bool DispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);
+  bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 
   unsigned circular_sequential_id_;
 

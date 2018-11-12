@@ -133,6 +133,7 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -241,7 +242,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -682,8 +682,8 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(source, KURL(),
-                                                             kOpaqueResource);
+  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+      source, KURL(), SanitizeScriptErrors::kSanitize);
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -697,7 +697,7 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   // a foreign world.
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), kSharableCrossOrigin);
+      world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
 v8::Local<v8::Value>
@@ -711,7 +711,7 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
   // Note: An error event in an isolated world will never be dispatched to
   // a foreign world.
   return GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, source_in, KURL(), kSharableCrossOrigin);
+      world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
@@ -807,7 +807,8 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
 
   return GetFrame()
       ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(), kOpaqueResource);
+      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(),
+                                              SanitizeScriptErrors::kSanitize);
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
@@ -2094,7 +2095,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
           ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
-          KURL(), kOpaqueResource);
+          KURL(), SanitizeScriptErrors::kSanitize);
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));

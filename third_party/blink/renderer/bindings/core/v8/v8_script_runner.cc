@@ -171,7 +171,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
-    AccessControlStatus access_control_status,
+    SanitizeScriptErrors sanitize_script_errors,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
     const ReferrerScriptInfo& referrer_info) {
@@ -198,9 +198,11 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, script_start_position.column_.ZeroBasedInt()),
-      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
+      v8::Boolean::New(isolate, sanitize_script_errors ==
+                                    SanitizeScriptErrors::kDoNotSanitize),
       v8::Local<v8::Integer>(), V8String(isolate, source.SourceMapUrl()),
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
+      v8::Boolean::New(
+          isolate, sanitize_script_errors == SanitizeScriptErrors::kSanitize),
       v8::False(isolate),  // is_wasm
       v8::False(isolate),  // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
@@ -312,9 +314,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
   // Use default ScriptReferrerInfo here:
   // - nonce: empty for internal script, and
   // - parser_state: always "not parser inserted" for internal scripts.
-  if (!V8ScriptRunner::CompileScript(script_state, source_code,
-                                     kSharableCrossOrigin, compile_options,
-                                     no_cache_reason, ReferrerScriptInfo())
+  if (!V8ScriptRunner::CompileScript(
+           script_state, source_code, SanitizeScriptErrors::kDoNotSanitize,
+           compile_options, no_cache_reason, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 

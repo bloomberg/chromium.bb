@@ -10,12 +10,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 using testing::DoubleNear;
@@ -56,8 +56,8 @@ class DOMTimerTest : public RenderingTest {
     return GetDocument()
         .GetFrame()
         ->GetScriptController()
-        .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(expr), KURL(),
-                                                kOpaqueResource);
+        .ExecuteScriptInMainWorldAndReturnValue(
+            ScriptSourceCode(expr), KURL(), SanitizeScriptErrors::kSanitize);
   }
 
   Vector<double> ToDoubleArray(v8::Local<v8::Value> value,
@@ -75,7 +75,7 @@ class DOMTimerTest : public RenderingTest {
   void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
     ScriptSourceCode script(script_text);
     GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-        script, KURL(), kOpaqueResource);
+        script, KURL(), SanitizeScriptErrors::kSanitize);
     platform_->RunUntilIdle();
   }
 };

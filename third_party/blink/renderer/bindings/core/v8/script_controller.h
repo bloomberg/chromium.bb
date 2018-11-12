@@ -31,13 +31,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -92,19 +92,19 @@ class CORE_EXPORT ScriptController final
   void ExecuteScriptInMainWorld(
       const ScriptSourceCode&,
       const KURL& base_url,
-      AccessControlStatus,
+      SanitizeScriptErrors,
       const ScriptFetchOptions& = ScriptFetchOptions());
   v8::Local<v8::Value> ExecuteScriptInMainWorldAndReturnValue(
       const ScriptSourceCode&,
       const KURL& base_url,
-      AccessControlStatus,
+      SanitizeScriptErrors,
       const ScriptFetchOptions& = ScriptFetchOptions(),
       ExecuteScriptPolicy = kDoNotExecuteScriptWhenScriptsDisabled);
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       v8::Local<v8::Context>,
       const ScriptSourceCode&,
       const KURL& base_url,
-      AccessControlStatus,
+      SanitizeScriptErrors,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
   // Executes JavaScript in an isolated world. The script gets its own global
@@ -117,7 +117,7 @@ class CORE_EXPORT ScriptController final
       int world_id,
       const ScriptSourceCode&,
       const KURL& base_url,
-      AccessControlStatus access_control_status);
+      SanitizeScriptErrors sanitize_script_errors);
 
   // Returns true if argument is a JavaScript URL.
   bool ExecuteScriptIfJavaScriptURL(const KURL&, Element*);
@@ -158,7 +158,7 @@ class CORE_EXPORT ScriptController final
 
   v8::Local<v8::Value> EvaluateScriptInMainWorld(const ScriptSourceCode&,
                                                  const KURL& base_url,
-                                                 AccessControlStatus,
+                                                 SanitizeScriptErrors,
                                                  const ScriptFetchOptions&,
                                                  ExecuteScriptPolicy);
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/xml/document_xml_tree_viewer.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 
 namespace blink {
 
@@ -26,7 +26,7 @@ void TransformDocumentToXMLTreeView(Document& document) {
   document.GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
       IsolatedWorldId::kDocumentXMLTreeViewerWorldId,
       ScriptSourceCode(script_string, ScriptSourceLocationType::kInternal),
-      KURL(), kOpaqueResource);
+      KURL(), SanitizeScriptErrors::kSanitize);
 
   Element* element = document.getElementById("xml-viewer-style");
   if (element) {
