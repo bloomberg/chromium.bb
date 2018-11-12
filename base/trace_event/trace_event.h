@@ -31,16 +31,15 @@
 #define TRACE_STR_COPY(str) \
     trace_event_internal::TraceStringWithCopy(str)
 
-// DEPRECATED: do not use: Consider using TRACE_ID_{GLOBAL, LOCAL} macros,
-// instead. By default, uint64_t ID argument values are not mangled with the
-// Process ID in TRACE_EVENT_ASYNC macros. Use this macro to force Process ID
-// mangling.
+// DEPRECATED: do not use: Consider using the TRACE_ID_LOCAL macro instead. By
+// default, uint64_t ID argument values are not mangled with the Process ID in
+// TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
 #define TRACE_ID_MANGLE(id) \
     trace_event_internal::TraceID::ForceMangle(id)
 
-// DEPRECATED: do not use: Consider using TRACE_ID_{GLOBAL, LOCAL} macros,
-// instead. By default, pointers are mangled with the Process ID in
-// TRACE_EVENT_ASYNC macros. Use this macro to prevent Process ID mangling.
+// DEPRECATED: do not use: Consider using the TRACE_ID_GLOBAL macro instead. By
+// default, pointers are mangled with the Process ID in TRACE_EVENT_ASYNC
+// macros. Use this macro to prevent Process ID mangling.
 #define TRACE_ID_DONT_MANGLE(id) \
     trace_event_internal::TraceID::DontMangle(id)
 
@@ -61,7 +60,12 @@
 #define TRACE_ID_WITH_SCOPE(scope, ...) \
   trace_event_internal::TraceID::WithScope(scope, ##__VA_ARGS__)
 
+// Use this for ids that are unique across processes. This allows different
+// processes to use the same id to refer to the same event.
 #define TRACE_ID_GLOBAL(id) trace_event_internal::TraceID::GlobalId(id)
+
+// Use this for ids that are unique within a single process. This allows
+// different processes to use the same id to refer to different events.
 #define TRACE_ID_LOCAL(id) trace_event_internal::TraceID::LocalId(id)
 
 #define TRACE_EVENT_API_CURRENT_THREAD_ID \
@@ -477,9 +481,7 @@ const int kZeroNumArgs = 0;
 const std::nullptr_t kGlobalScope = nullptr;
 const unsigned long long kNoId = 0;
 
-// TraceID encapsulates an ID that can either be an integer or pointer. Pointers
-// are by default mangled with the Process ID so that they are unlikely to
-// collide when the same pointer is used on different processes.
+// TraceID encapsulates an ID that can either be an integer or pointer.
 class BASE_EXPORT TraceID {
  public:
   // Can be combined with WithScope.
@@ -540,7 +542,7 @@ class BASE_EXPORT TraceID {
     unsigned int id_flags_ = TRACE_EVENT_FLAG_HAS_ID;
   };
 
-  // DEPRECATED: consider using LocalId or GlobalId, instead.
+  // DEPRECATED: consider using GlobalId, instead.
   class DontMangle {
    public:
     explicit DontMangle(const void* raw_id)
@@ -566,7 +568,7 @@ class BASE_EXPORT TraceID {
     unsigned long long raw_id_;
   };
 
-  // DEPRECATED: consider using LocalId or GlobalId, instead.
+  // DEPRECATED: consider using LocalId, instead.
   class ForceMangle {
    public:
     explicit ForceMangle(unsigned long long raw_id) : raw_id_(raw_id) {}
