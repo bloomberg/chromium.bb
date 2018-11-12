@@ -24,6 +24,9 @@ void VoiceInteractionController::BindRequest(
 
 void VoiceInteractionController::NotifyStatusChanged(
     mojom::VoiceInteractionState state) {
+  if (voice_interaction_state_ == state)
+    return;
+
   voice_interaction_state_ = state;
   observers_.ForAllPtrs([state](auto* observer) {
     observer->OnVoiceInteractionStatusChanged(state);
@@ -33,6 +36,9 @@ void VoiceInteractionController::NotifyStatusChanged(
 }
 
 void VoiceInteractionController::NotifySettingsEnabled(bool enabled) {
+  if (settings_enabled_.has_value() && settings_enabled_.value() == enabled)
+    return;
+
   settings_enabled_ = enabled;
   observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnVoiceInteractionSettingsEnabled(enabled);
@@ -42,6 +48,9 @@ void VoiceInteractionController::NotifySettingsEnabled(bool enabled) {
 }
 
 void VoiceInteractionController::NotifyContextEnabled(bool enabled) {
+  if (context_enabled_.has_value() && context_enabled_.value() == enabled)
+    return;
+
   context_enabled_ = enabled;
   observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnVoiceInteractionContextEnabled(enabled);
@@ -51,6 +60,9 @@ void VoiceInteractionController::NotifyContextEnabled(bool enabled) {
 }
 
 void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
+  if (hotword_enabled_.has_value() && hotword_enabled_.value() == enabled)
+    return;
+
   hotword_enabled_ = enabled;
   observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnVoiceInteractionHotwordEnabled(enabled);
@@ -60,6 +72,9 @@ void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
 }
 
 void VoiceInteractionController::NotifySetupCompleted(bool completed) {
+  if (setup_completed_.has_value() && setup_completed_.value() == completed)
+    return;
+
   setup_completed_ = completed;
   observers_.ForAllPtrs([completed](auto* observer) {
     observer->OnVoiceInteractionSetupCompleted(completed);
@@ -70,6 +85,9 @@ void VoiceInteractionController::NotifySetupCompleted(bool completed) {
 
 void VoiceInteractionController::NotifyFeatureAllowed(
     mojom::AssistantAllowedState state) {
+  if (allowed_state_ == state)
+    return;
+
   allowed_state_ = state;
   observers_.ForAllPtrs([state](auto* observer) {
     observer->OnAssistantFeatureAllowedChanged(state);
@@ -84,6 +102,9 @@ void VoiceInteractionController::NotifyNotificationEnabled(bool enabled) {
 
 void VoiceInteractionController::NotifyLocaleChanged(
     const std::string& locale) {
+  if (locale_ == locale)
+    return;
+
   locale_ = locale;
   observers_.ForAllPtrs(
       [locale](auto* observer) { observer->OnLocaleChanged(locale); });
