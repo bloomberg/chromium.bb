@@ -1177,17 +1177,11 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
     MockConnectJob(std::unique_ptr<StreamSocket> socket,
                    ClientSocketHandle* handle,
                    const SocketTag& socket_tag,
-                   CompletionOnceCallback callback,
-                   RequestPriority priority);
+                   CompletionOnceCallback callback);
     ~MockConnectJob();
 
     int Connect();
     bool CancelHandle(const ClientSocketHandle* handle);
-
-    ClientSocketHandle* handle() const { return handle_; }
-
-    RequestPriority priority() const { return priority_; }
-    void set_priority(RequestPriority priority) { priority_ = priority; }
 
    private:
     void OnConnect(int rv);
@@ -1196,7 +1190,6 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
     ClientSocketHandle* handle_;
     const SocketTag socket_tag_;
     CompletionOnceCallback user_callback_;
-    RequestPriority priority_;
 
     DISALLOW_COPY_AND_ASSIGN(MockConnectJob);
   };
@@ -1210,11 +1203,6 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   RequestPriority last_request_priority() const {
     return last_request_priority_;
   }
-
-  const std::vector<std::unique_ptr<MockConnectJob>>& requests() const {
-    return job_list_;
-  }
-
   int release_count() const { return release_count_; }
   int cancel_count() const { return cancel_count_; }
 
