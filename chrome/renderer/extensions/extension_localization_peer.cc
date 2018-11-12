@@ -115,6 +115,11 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnCompletedRequest(status);
 }
 
+scoped_refptr<base::TaskRunner> ExtensionLocalizationPeer::GetTaskRunner()
+    const {
+  return original_peer_->GetTaskRunner();
+}
+
 void ExtensionLocalizationPeer::ReplaceMessages() {
   if (!message_sender_ || data_.empty())
     return;
