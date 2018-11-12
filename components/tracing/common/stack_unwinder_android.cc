@@ -84,6 +84,47 @@ class ScopedEventSignaller {
   AsyncSafeWaitableEvent* event_;
 };
 
+// Unwinds from the given context using libunwind.
+size_t UnwindWithLibunwind(unw_cursor_t* cursor,
+                           const tracing::StackUnwinderAndroid* unwinder,
+                           const uintptr_t stack_segment_base,
+                           const void** out_trace,
+                           const size_t max_depth,
+                           uintptr_t* sp,
+                           uintptr_t* ip) {
+  uintptr_t previous_sp = 0;
+  uintptr_t depth = 0;
+  const uintptr_t initial_sp = *sp;
+  do {
+    unw_get_reg(cursor, UNW_REG_IP, ip);
+    unw_get_reg(cursor, UNW_REG_SP, sp);
+    DCHECK_GE(*sp, initial_sp);
+    if (stack_segment_base > 0)
+      DCHECK_LT(*sp, stack_segment_base);
+
+    // If SP and IP did not change from previous frame, then unwinding failed.
+    if (previous_sp == *sp &&
+        *ip == reinterpret_cast<uintptr_t>(out_trace[depth - 1])) {
+      break;
+    }
+    previous_sp = *sp;
+
+    // If address is in chrome library, then use CFI unwinder since chrome might
+    // not have EHABI unwind tables.
+    if (CFIBacktraceAndroid::is_chrome_address(*ip))
+      break;
+
+    // Break if pc is not from any mapped region. Something went wrong while
+    // unwinding.
+    if (!unwinder->IsAddressMapped(*ip))
+      break;
+
+    // If it is chrome address, the cfi unwinder will include it.
+    out_trace[depth++] = reinterpret_cast<void*>(*ip);
+  } while (unw_step(cursor) && depth < max_depth - 1);
+  return depth;
+}
+
 // Unwinds from given |cursor| readable by libunwind, and returns
 // the number of frames added to the output. This function can unwind through
 // android framework and then chrome functions. It cannot handle the cases when
@@ -104,35 +145,13 @@ size_t TraceStackWithContext(
   unw_word_t ip = 0, sp = 0;
   bool try_stack_search = true;
   unw_get_reg(cursor, UNW_REG_SP, &sp);
+  unw_get_reg(cursor, UNW_REG_IP, &ip);
   const uintptr_t initial_sp = sp;
-  uintptr_t previous_sp = 0;
-  do {
-    unw_get_reg(cursor, UNW_REG_IP, &ip);
-    unw_get_reg(cursor, UNW_REG_SP, &sp);
-    DCHECK_GE(sp, initial_sp);
-    if (stack_segment_base > 0)
-      DCHECK_LT(sp, stack_segment_base);
 
-    // If SP and IP did not change from previous frame, then unwinding failed.
-    if (previous_sp == sp &&
-        ip == reinterpret_cast<uintptr_t>(out_trace[depth - 1])) {
-      break;
-    }
-    previous_sp = sp;
-
-    // If address is in chrome library, then use CFI unwinder since chrome might
-    // not have EHABI unwind tables.
-    if (CFIBacktraceAndroid::is_chrome_address(ip))
-      break;
-
-    // Break if pc is not from any mapped region. Something went wrong while
-    // unwinding.
-    if (!unwinder->IsAddressMapped(ip))
-      break;
-
-    // If it is chrome address, the cfi unwinder will include it.
-    out_trace[depth++] = reinterpret_cast<void*>(ip);
-  } while (unw_step(cursor) && depth < max_depth - 1);
+  if (tracing::StackUnwinderAndroid::kUseLibunwind) {
+    depth += UnwindWithLibunwind(cursor, unwinder, stack_segment_base,
+                                 out_trace, max_depth, &sp, &ip);
+  }
 
   if (CFIBacktraceAndroid::is_chrome_address(ip)) {
     // Continue unwinding CFI unwinder if we found stack frame from chrome
@@ -360,6 +379,10 @@ __wrap_dl_unwind_find_exidx(_Unwind_Ptr pc, int* length) {
 }  // extern "C"
 
 namespace tracing {
+
+// static
+// Disable usage of libunwind till crbug/888434 if fixed.
+const bool StackUnwinderAndroid::kUseLibunwind = false;
 
 StackUnwinderAndroid::StackUnwinderAndroid() {}
 StackUnwinderAndroid::~StackUnwinderAndroid() {}
