@@ -43,8 +43,8 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_state |=
         (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
   } else if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-                 previews_data, url, is_reload, previews::PreviewsType::OFFLINE,
-                 false /* is_server_preview */)) {
+                 previews_data, url, is_reload,
+                 previews::PreviewsType::OFFLINE)) {
     previews_state |= content::OFFLINE_PAGE_ON;
   }
 
@@ -54,7 +54,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
 
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
-          previews::PreviewsType::RESOURCE_LOADING_HINTS, false)) {
+          previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
     // Initiate load of any applicable hint details.
     previews_decider->LoadResourceHints(url);
@@ -64,15 +64,13 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   // Note: this is for the beginning of navigation so we should not
   // check for https here (since an http request may redirect to https).
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT,
-          false /* is_server_preview */)) {
+          previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
   }
 
   if (previews::params::IsClientLoFiEnabled() &&
-      previews_decider->ShouldAllowClientPreviewWithFinchBlacklist(
-          previews_data, url, is_reload, previews::PreviewsType::LOFI,
-          previews::params::GetBlackListedHostsForClientLoFiFieldTrial())) {
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload, previews::PreviewsType::LOFI)) {
     previews_state |= content::CLIENT_LOFI_ON;
   }
 

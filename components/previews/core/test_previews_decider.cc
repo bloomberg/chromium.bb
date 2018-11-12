@@ -15,17 +15,7 @@ bool TestPreviewsDecider::ShouldAllowPreviewAtNavigationStart(
     PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
-    PreviewsType type,
-    bool is_server_preview) const {
-  return allow_previews_;
-}
-
-bool TestPreviewsDecider::ShouldAllowClientPreviewWithFinchBlacklist(
-    PreviewsUserData* previews_data,
-    const GURL& url,
-    bool is_reload,
-    PreviewsType type,
-    const std::vector<std::string>& host_blacklist_from_finch) const {
+    PreviewsType type) const {
   return allow_previews_;
 }
 

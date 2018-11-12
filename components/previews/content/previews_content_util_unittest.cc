@@ -25,22 +25,10 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
   PreviewEnabledPreviewsDecider() {}
   ~PreviewEnabledPreviewsDecider() override {}
 
-  bool ShouldAllowPreviewAtNavigationStart(
-      PreviewsUserData* previews_data,
-      const GURL& url,
-      bool is_reload,
-      PreviewsType type,
-      bool is_server_preview) const override {
-    return IsEnabled(type);
-  }
-
-  bool ShouldAllowClientPreviewWithFinchBlacklist(
-      PreviewsUserData* previews_data,
-      const GURL& url,
-      bool is_reload,
-      PreviewsType type,
-      const std::vector<std::string>& host_blacklist_from_finch)
-      const override {
+  bool ShouldAllowPreviewAtNavigationStart(PreviewsUserData* previews_data,
+                                           const GURL& url,
+                                           bool is_reload,
+                                           PreviewsType type) const override {
     return IsEnabled(type);
   }
 

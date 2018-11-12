@@ -5065,10 +5065,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
   } else {
     if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
             previews_data, current_navigation_url, is_reload,
-            previews::PreviewsType::LITE_PAGE, true /* is_server_preview */) &&
-        previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
-            previews_data, current_navigation_url, is_reload,
-            previews::PreviewsType::LOFI, true /* is_server_preview */)) {
+            previews::PreviewsType::LITE_PAGE)) {
       previews_state |= server_previews_enabled_state;
     }
   }
