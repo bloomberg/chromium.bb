@@ -175,6 +175,10 @@ void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
   ShellContentBrowserClient::AppendExtraCommandLineSwitches(command_line,
                                                             child_process_id);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestsInBlink)) {
+    command_line->AppendSwitch(switches::kTestsInBlink);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAlwaysUseComplexText)) {
     command_line->AppendSwitch(switches::kAlwaysUseComplexText);
   }
