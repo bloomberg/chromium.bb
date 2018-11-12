@@ -282,17 +282,8 @@ void Service::CreateAssistantManagerService() {
   // Bind to Assistant controller in ash.
   context()->connector()->BindInterface(ash::mojom::kServiceName,
                                         &assistant_controller_);
-  mojom::AssistantPtr ptr;
-  BindAssistantConnection(mojo::MakeRequest(&ptr));
-  assistant_controller_->SetAssistant(std::move(ptr));
-
-  registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
-      &Service::BindAssistantConnection, base::Unretained(this)));
-
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
-  registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
-      &Service::BindAssistantSettingsManager, base::Unretained(this)));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();
@@ -303,8 +294,20 @@ void Service::FinalizeAssistantManagerService() {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
 
-  if (!session_observer_binding_)
+  // Using session_observer_binding_ as a flag to control onetime initialization
+  if (!session_observer_binding_) {
+    mojom::AssistantPtr ptr;
+    BindAssistantConnection(mojo::MakeRequest(&ptr));
+    assistant_controller_->SetAssistant(std::move(ptr));
+
+    registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
+        &Service::BindAssistantConnection, base::Unretained(this)));
+
+    registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
+        &Service::BindAssistantSettingsManager, base::Unretained(this)));
+
     AddAshSessionObserver();
+  }
 
   client_->OnAssistantStatusChanged(true /* running */);
   UpdateListeningState();
