@@ -26,8 +26,6 @@ import org.chromium.components.offline_items_collection.OfflineItemVisuals;
  * Helper that supports all typical actions for OfflineItems.
  */
 class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton.Delegate {
-    private static final float IMAGE_VIEW_MAX_SCALE_FACTOR = 4.f;
-
     /** The {@link View} that visually represents the selected state of this list item. */
     protected final SelectionView mSelectionView;
 
@@ -91,13 +89,10 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         // Push 'thumbnail' state.
         if (mThumbnail != null) {
+            mThumbnail.setImageResizer(new BitmapResizer(mThumbnail));
             mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
                 return properties.get(ListProperties.PROVIDER_VISUALS)
                         .getVisuals(offlineItem, width, height, (id, visuals) -> {
-                            Matrix matrix = upscaleBitmapIfNecessary(mThumbnail, visuals);
-                            mThumbnail.setImageMatrix(matrix);
-                            mThumbnail.setScaleType(matrix == null ? ImageView.ScaleType.CENTER_CROP
-                                                                   : ImageView.ScaleType.MATRIX);
                             consumer.onResult(onThumbnailRetrieved(visuals));
                         });
             }, offlineItem.id);
@@ -150,33 +145,57 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                 != properties.get(ListProperties.SELECTION_MODE_ACTIVE);
     }
 
-    private Matrix upscaleBitmapIfNecessary(ImageView view, OfflineItemVisuals visuals) {
-        Bitmap bitmap = visuals == null ? null : visuals.icon;
-        if (bitmap == null) return null;
-
-        float scale = computeScaleFactor(view, bitmap);
-        if (scale <= 1.f) return null;
-
-        // Compute the required matrix to scale and center the bitmap.
-        Matrix matrix = new Matrix();
-        matrix.setScale(scale, scale);
-        matrix.postTranslate((view.getWidth() - scale * bitmap.getWidth()) * 0.5f,
-                (view.getHeight() - scale * bitmap.getHeight()) * 0.5f);
-        return matrix;
-    }
-
     /**
-     * Computes a scale factor for the bitmap if the bitmap is too small compared to the view
-     * dimensions. The scaled bitmap will be centered inside the view. No scaling if the dimensions
-     * are comparable.
+     * A class that sets the correct image matrix on the given {@link ImageView} depending on the
+     * size of the bitmap.
      */
-    private float computeScaleFactor(ImageView view, Bitmap bitmap) {
-        float widthRatio = (float) view.getWidth() / bitmap.getWidth();
-        float heightRatio = (float) view.getHeight() / bitmap.getHeight();
+    private static class BitmapResizer implements AsyncImageView.ImageResizer {
+        private static final float IMAGE_VIEW_MAX_SCALE_FACTOR = 4.f;
 
-        if (Math.max(widthRatio, heightRatio) < IMAGE_VIEW_MAX_SCALE_FACTOR) return 1.f;
+        private ImageView mImageView;
 
-        float minRequiredScale = Math.min(widthRatio, heightRatio);
-        return Math.min(minRequiredScale, IMAGE_VIEW_MAX_SCALE_FACTOR);
+        /** Constructor. */
+        public BitmapResizer(ImageView imageView) {
+            mImageView = imageView;
+        }
+
+        @Override
+        public void maybeResizeImage(Drawable drawable) {
+            if (!(drawable instanceof BitmapDrawable)) return;
+
+            Matrix matrix = upscaleBitmapIfNecessary(((BitmapDrawable) drawable).getBitmap());
+            mImageView.setImageMatrix(matrix);
+            mImageView.setScaleType(
+                    matrix == null ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.MATRIX);
+        }
+
+        private Matrix upscaleBitmapIfNecessary(Bitmap bitmap) {
+            if (bitmap == null) return null;
+
+            float scale = computeScaleFactor(bitmap);
+            if (scale <= 1.f) return null;
+
+            // Compute the required matrix to scale and center the bitmap.
+            Matrix matrix = new Matrix();
+            matrix.setScale(scale, scale);
+            matrix.postTranslate((mImageView.getWidth() - scale * bitmap.getWidth()) * 0.5f,
+                    (mImageView.getHeight() - scale * bitmap.getHeight()) * 0.5f);
+            return matrix;
+        }
+
+        /**
+         * Computes a scale factor for the bitmap if the bitmap is too small compared to the view
+         * dimensions. The scaled bitmap will be centered inside the view. No scaling if the
+         * dimensions are comparable.
+         */
+        private float computeScaleFactor(Bitmap bitmap) {
+            float widthRatio = (float) mImageView.getWidth() / bitmap.getWidth();
+            float heightRatio = (float) mImageView.getHeight() / bitmap.getHeight();
+
+            if (Math.max(widthRatio, heightRatio) < IMAGE_VIEW_MAX_SCALE_FACTOR) return 1.f;
+
+            float minRequiredScale = Math.min(widthRatio, heightRatio);
+            return Math.min(minRequiredScale, IMAGE_VIEW_MAX_SCALE_FACTOR);
+        }
     }
 }
