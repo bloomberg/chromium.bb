@@ -12,7 +12,7 @@
 namespace blink {
 
 WebGLTimerQueryEXT* WebGLTimerQueryEXT::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLTimerQueryEXT(ctx);
+  return MakeGarbageCollected<WebGLTimerQueryEXT>(ctx);
 }
 
 WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)

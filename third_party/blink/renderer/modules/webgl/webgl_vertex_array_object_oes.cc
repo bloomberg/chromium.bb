@@ -32,7 +32,7 @@ namespace blink {
 WebGLVertexArrayObjectOES* WebGLVertexArrayObjectOES::Create(
     WebGLRenderingContextBase* ctx,
     VaoType type) {
-  return new WebGLVertexArrayObjectOES(ctx, type);
+  return MakeGarbageCollected<WebGLVertexArrayObjectOES>(ctx, type);
 }
 
 WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(

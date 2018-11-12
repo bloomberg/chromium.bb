@@ -42,7 +42,7 @@ WebGLExtensionName WebGLLoseContext::GetName() const {
 }
 
 WebGLLoseContext* WebGLLoseContext::Create(WebGLRenderingContextBase* context) {
-  return new WebGLLoseContext(context);
+  return MakeGarbageCollected<WebGLLoseContext>(context);
 }
 
 void WebGLLoseContext::loseContext() {

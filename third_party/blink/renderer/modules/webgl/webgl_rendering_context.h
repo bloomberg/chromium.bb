@@ -73,6 +73,11 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
     void OnError(HTMLCanvasElement*, const String& error) override;
   };
 
+  WebGLRenderingContext(CanvasRenderingContextHost*,
+                        std::unique_ptr<WebGraphicsContext3DProvider>,
+                        bool using_gpu_compositing,
+                        const CanvasContextCreationAttributesCore&);
+
   CanvasRenderingContext::ContextType GetContextType() const override {
     return CanvasRenderingContext::kContextWebgl;
   }
@@ -85,11 +90,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  WebGLRenderingContext(CanvasRenderingContextHost*,
-                        std::unique_ptr<WebGraphicsContext3DProvider>,
-                        bool using_gpu_compositing,
-                        const CanvasContextCreationAttributesCore&);
-
   // Enabled extension objects.
   Member<ANGLEInstancedArrays> angle_instanced_arrays_;
   Member<EXTBlendMinMax> ext_blend_min_max_;

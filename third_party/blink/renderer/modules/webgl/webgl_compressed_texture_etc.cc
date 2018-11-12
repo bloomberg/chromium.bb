@@ -31,7 +31,7 @@ WebGLExtensionName WebGLCompressedTextureETC::GetName() const {
 
 WebGLCompressedTextureETC* WebGLCompressedTextureETC::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLCompressedTextureETC(context);
+  return MakeGarbageCollected<WebGLCompressedTextureETC>(context);
 }
 
 bool WebGLCompressedTextureETC::Supported(WebGLRenderingContextBase* context) {

@@ -40,14 +40,13 @@ class WebGLLoseContext final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit WebGLLoseContext(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
   void Lose(bool) override;
 
   void loseContext();
   void restoreContext();
-
- private:
-  explicit WebGLLoseContext(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

@@ -23,6 +23,7 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLQuery(WebGL2RenderingContextBase*);
   ~WebGLQuery() override;
 
   static WebGLQuery* Create(WebGL2RenderingContextBase*);
@@ -38,8 +39,6 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   GLuint GetQueryResult();
 
  protected:
-  explicit WebGLQuery(WebGL2RenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

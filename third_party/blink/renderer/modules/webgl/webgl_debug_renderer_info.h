@@ -40,13 +40,13 @@ class WebGLDebugRendererInfo final : public WebGLExtension {
   };
 
   static WebGLDebugRendererInfo* Create(WebGLRenderingContextBase*);
+
+  explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);
+
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
   WebGLExtensionName GetName() const override;
-
- private:
-  explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

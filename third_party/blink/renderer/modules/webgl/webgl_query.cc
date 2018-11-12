@@ -12,7 +12,7 @@
 namespace blink {
 
 WebGLQuery* WebGLQuery::Create(WebGL2RenderingContextBase* ctx) {
-  return new WebGLQuery(ctx);
+  return MakeGarbageCollected<WebGLQuery>(ctx);
 }
 
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)

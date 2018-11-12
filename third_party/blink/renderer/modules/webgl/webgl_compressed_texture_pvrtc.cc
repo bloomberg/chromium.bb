@@ -44,7 +44,7 @@ WebGLExtensionName WebGLCompressedTexturePVRTC::GetName() const {
 
 WebGLCompressedTexturePVRTC* WebGLCompressedTexturePVRTC::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLCompressedTexturePVRTC(context);
+  return MakeGarbageCollected<WebGLCompressedTexturePVRTC>(context);
 }
 
 bool WebGLCompressedTexturePVRTC::Supported(
