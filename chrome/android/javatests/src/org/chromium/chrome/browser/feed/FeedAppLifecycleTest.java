@@ -42,6 +42,8 @@ import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -61,8 +63,6 @@ public class FeedAppLifecycleTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Mock
-    private FeedLifecycleBridge mLifecycleBridge;
-    @Mock
     private FeedScheduler mFeedScheduler;
     @Mock
     private NetworkClient mNetworkClient;
@@ -74,6 +74,7 @@ public class FeedAppLifecycleTest {
     private Map<String, Boolean> mMockFeatureList;
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
+    private FeedLifecycleBridge mLifecycleBridge;
     private final String mHistogramAppLifecycleEvents =
             "ContentSuggestions.Feed.AppLifecycle.Events";
 
@@ -89,14 +90,15 @@ public class FeedAppLifecycleTest {
             } catch (ProcessInitException e) {
                 Assert.fail("Native initialization failed");
             }
-
+            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+            mLifecycleBridge = new FeedLifecycleBridge(profile);
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
                     mOfflineIndicator, mAppLifecycle,
                     new FeedAppLifecycleListener(
                             new com.google.android.libraries.feed.api.common.ThreadUtils()),
-                    new FeedLoggingBridge(Profile.getLastUsedProfile().getOriginalProfile()));
+                    new FeedLoggingBridge(profile));
         });
 
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -244,6 +246,18 @@ public class FeedAppLifecycleTest {
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
         verify(mFeedScheduler, times(2)).onForegrounded();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"InterestFeedContentSuggestions"})
+    public void clear_data_after_disabling_does_not_crash() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
+            PrefServiceBridge.getInstance().setBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED, false);
+            FeedLifecycleBridge.onCachedDataCleared();
+            FeedLifecycleBridge.onHistoryDeleted();
+        });
     }
 
     private void signalActivityStart(Activity activity)
