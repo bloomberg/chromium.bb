@@ -181,17 +181,6 @@ bool CanDetachFromTabStrip(TabStrip* tabstrip) {
 
 #endif  // #if defined(OS_CHROMEOS)
 
-#if defined(USE_AURA)
-gfx::NativeWindow GetModalTransient(gfx::NativeWindow window) {
-  return wm::GetModalTransient(window);
-}
-#else
-gfx::NativeWindow GetModalTransient(gfx::NativeWindow window) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif
-
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate
 // of |bounds| is adjusted by |vertical_adjustment|.
 bool DoesRectContainVerticalPointExpanded(
@@ -1028,18 +1017,19 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
 
   // Do not allow dragging into a window with a modal dialog, it causes a weird
   // behavior.  See crbug.com/336691
-  if (!GetModalTransient(local_window)) {
-    TabStrip* result = GetTabStripForWindow(local_window);
-    if (ShouldAttachOnEnd(result)) {
+  if (local_window && !ShouldDisallowDrag(local_window)) {
+    TabStrip* destination_tab_strip = GetTabStripForWindow(local_window);
+    if (ShouldAttachOnEnd(destination_tab_strip)) {
       // No need to check if the specified screen point is within the bounds of
       // the tabstrip as arriving here we know that the window is currently
       // showing in overview mode in Chrome OS and its bounds contain the
       // specified screen point, and these two conditions are enough for a
       // window to be a valid target window to attach the dragged tabs.
-      *tab_strip = result;
+      *tab_strip = destination_tab_strip;
       return Liveness::ALIVE;
-    } else if (result && DoesTabStripContain(result, point_in_screen)) {
-      *tab_strip = result;
+    } else if (destination_tab_strip &&
+               DoesTabStripContain(destination_tab_strip, point_in_screen)) {
+      *tab_strip = destination_tab_strip;
       return Liveness::ALIVE;
     }
   }
@@ -2001,6 +1991,19 @@ void TabDragController::ClearTabDraggingInfo() {
   dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
   dragged_window->ClearProperty(ash::kTabDroppedWindowStateTypeKey);
+#endif
+}
+
+bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {
+#if defined(USE_AURA)
+  return wm::GetModalTransient(window) != nullptr;
+#else
+  TabStrip* tab_strip = GetTabStripForWindow(window);
+  if (!tab_strip)
+    return true;
+  TabStripModel* model = GetModel(tab_strip);
+  DCHECK(model);
+  return model->IsTabBlocked(model->active_index());
 #endif
 }
 
