@@ -3605,6 +3605,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                       proposedCredential:(NSURLCredential*)proposedCredential
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler {
+  // Hide the NTP immediately when load an HTTP auth page from the NTP.
+  // |dialogPresenter| should only run when the webState->GetView() is visible.
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    NTPHelper->Deactivate();
+  }
+
   [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
                                      proposedCredential:proposedCredential
                                                webState:webState
