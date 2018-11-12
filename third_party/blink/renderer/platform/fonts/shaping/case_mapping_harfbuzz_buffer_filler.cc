@@ -38,10 +38,8 @@ CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
     case_mapped_text.Ensure16Bit();
 
     if (case_mapped_text.length() != text.length()) {
-      String original_text = text;
-      original_text.Ensure16Bit();
-      FillSlowCase(case_map_intend, locale, original_text.Characters16(),
-                   original_text.length(), start_index, num_characters);
+      FillSlowCase(case_map_intend, locale, text.Characters16(), text.length(),
+                   start_index, num_characters);
       return;
     }
 
