@@ -51,7 +51,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Failing new test
     self.Fail(
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
-        bug=874620)
+        ['linux', 'nvidia'], bug=874620)
 
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
@@ -76,35 +76,21 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['opengl'], bug=832238)
 
-    # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
+    # Failing on NVIDIA OpenGL, but fixed in latest driver
+    # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
-        ['nvidia'], bug=772651)
+        ['linux', 'nvidia'], bug=772651)
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
+
     # All platforms.
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
-    self.Fail('conformance2/glsl3/array-length-side-effects.html',
-        bug=2142) # angle bug ID
-
-    # Need to implement new error semantics
-    # https://github.com/KhronosGroup/WebGL/pull/2607
-    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
-        bug=849572)
 
     # All non-ANGLE platforms.
     self.Fail('conformance2/attribs/' +
         'gl-bindAttribLocation-aliasing-inactive.html',
         ['no_angle'], bug=829541)
-
-    # OffscreenCanvas.commit
-    # TODO(fserb): Tests are not up to date with proposed API
-    self.Fail('conformance2/offscreencanvas/methods-2.html', bug=838133)
-    self.Fail('conformance2/offscreencanvas/methods-2-worker.html', bug=838133)
-    self.Fail('conformance/offscreencanvas/' +
-      'context-attribute-preserve-drawing-buffer.html', bug=838133)
-    self.Fail('conformance/offscreencanvas/methods.html', bug=838133)
-    self.Fail('conformance/offscreencanvas/methods-worker.html', bug=838133)
 
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
@@ -120,8 +106,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
-    self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
-        bug=625738)
 
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
@@ -144,33 +128,25 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'incompatible-texture-type-for-sampler.html',
         bug=809237)
 
+    # Nvidia bugs fixed in latest driver
+    # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
-        ['nvidia'], bug=798117)
+        ['win', 'nvidia', 'vulkan'], bug=798117)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['linux', 'nvidia'], bug=798117)
     self.Fail('conformance/glsl/bugs/' +
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
 
     # Windows only.
-    self.Fail('conformance2/buffers/uniform-buffers.html',
-        ['win'], bug=757098)
-    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-        ['win'], bug=2103) # angle bug ID
     self.Fail('conformance2/glsl3/array-initialize-with-same-name-array.html',
         ['win'], bug=757098)
-    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
-        ['win', 'd3d11'], bug=644740)
-    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
-        ['win', 'd3d11'], bug=705865)
     self.Flaky('conformance2/textures/svg_image/' +
         'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
         ['win'], bug=736926)
-    self.Fail('conformance2/uniforms/uniform-blocks-with-arrays.html',
-        ['win'], bug=2103) # angle bug ID
     self.Fail('conformance2/rendering/' +
         'framebuffer-texture-changing-base-level.html',
         ['win'], bug=2291) # angle bug ID
-    self.Fail('conformance/glsl/bugs/if-return-and-elseif.html',
-        ['win'], bug=2325) # angle bug ID
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -348,10 +324,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Passthrough command decoder
     self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
         ['passthrough'], bug=844349)
-
-    # Passthrough command decoder / D3D11
-    self.Fail('deqp/functional/gles3/shaderstruct.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',
@@ -789,7 +761,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/rendering/canvas-alpha-bug.html',
         ['mac', ('intel', 0x0a2e)], bug=886970)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
-        ['mac', 'intel'], bug=680278)
+        ['mac', 'intel'], bug=678526)
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
         ['mac', 'no_passthrough', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
@@ -811,7 +783,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
-        ['mac', 'intel'], bug=483282)
+        ['mac', 'intel'], bug=658657)
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturelod.html',
@@ -883,7 +855,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
     self.Fail('conformance2/rendering/clipping-wide-points.html',
-        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
+        ['linux', 'amd'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
     # This test is flaky both with and without ANGLE.
@@ -893,13 +865,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_cube.html',
         ['linux', 'nvidia'], bug=618447)
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['linux', 'nvidia'], bug=672380)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['linux', 'nvidia'], bug=709351)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
-        ['linux', 'nvidia'], bug=679677)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['linux', 'nvidia', 'opengl'], bug=680278)
     self.Fail('conformance2/rendering/multisampling-fragment-evaluation.html',
@@ -912,9 +879,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'no_passthrough', 'nvidia'], bug=694354)
 
     # Linux NVIDIA Quadro P400
-    # This test causes a lost device and then the next test fails.
-    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['linux', ('nvidia', 0x1cb3)], bug=709320)
+    self.Fail('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=830046)
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
     # so mark them all flaky.
@@ -1008,6 +974,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
        ['linux', 'intel'], bug=666384)
     self.Fail('conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html',
        ['linux', 'intel'], bug=666384)
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+        ['linux', 'intel'], bug=680675)
 
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
@@ -1016,53 +984,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel', 'opengl'], bug=680276)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['linux', 'intel', 'opengl'], bug=680276)
-
-    # Linux Intel HD 530
-    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
-        ['linux', 'no_passthrough', 'intel'], bug=680720)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
-        ['linux', 'intel', 'no_angle'], bug=680720)
-    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
-        ['linux', 'intel', 'no_angle'], bug=680720)
-
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_00.html',
-        ['linux', 'intel'], bug=680720)
-    self.Fail('conformance2/glsl3/' +
-        'vector-dynamic-indexing-swizzled-lvalue.html',
-        ['linux', 'intel'], bug=709874)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.

@@ -104,29 +104,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # https://github.com/KhronosGroup/WebGL/pull/2607
     self.Fail('conformance/extensions/' +
         'angle-instanced-arrays-out-of-bounds.html', bug=849572)
-    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
-        bug=849572)
 
-    # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
+    # Nvidia bugs fixed in latest driver
+    # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
-        ['nvidia'], bug=772651)
+        ['linux', 'nvidia'], bug=772651)
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
-        ['nvidia'], bug=798117)
+        ['win', 'nvidia', 'vulkan'], bug=798117)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['linux', 'nvidia'], bug=798117)
     self.Fail('conformance/glsl/bugs/' +
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
-
-    # Timing out on multiple platforms right now.
-    self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
-        bug=757097)
-
-    # We need to add WebGL 1 check in command buffer that format/type from
-    # TexSubImage2D have to match the current texture's.
-    self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
-        bug=625738)
 
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
@@ -136,21 +128,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/canvas/*',
-        ['passthrough', 'opengl'], bug=1932) # angle bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/*',
-        ['passthrough', 'opengl'], bug=1932) # angle bug ID
-    self.Fail('conformance/textures/webgl_canvas/*',
-        ['passthrough', 'opengl'], bug=1932) # angle bug ID
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['passthrough', 'opengl'], bug=1932) # angle bug ID
-
-    # OffscreenCanvas.commit
-    # TODO(fserb): disabled due to tests not being up to date with proposed API
-    self.Fail('conformance/offscreencanvas/' +
-      'context-attribute-preserve-drawing-buffer.html', bug=838133)
-    self.Fail('conformance/offscreencanvas/methods.html', bug=838133)
-    self.Fail('conformance/offscreencanvas/methods-worker.html', bug=838133)
+    self.Fail(
+        'conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html',
+        ['passthrough', 'opengl'], bug=2952) # angle bug ID
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['passthrough', 'opengl'], bug=2952) # angle bug ID
 
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
@@ -201,15 +184,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=2103) # angle bug ID
     # Note that the following test seems to pass, but it may still be flaky.
-    self.Fail('conformance/glsl/constructors/' +
+    self.Flaky('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
-    self.Fail('conformance/glsl/bugs/if-return-and-elseif.html',
-        ['win'], bug=2325) # angle bug ID
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
@@ -608,8 +589,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac AMD failures
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['mac', 'amd', 'no_passthrough'], bug=625365)
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
     # TODO(kbr): uncomment the following exepectation after test has
@@ -651,17 +630,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image/' +
                'tex-2d-rgb-rgb-unsigned_byte.html',
                ['linux', 'nvidia'], bug=596622)
-    self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
-        ['linux', 'nvidia'], bug=672380)
 
     # NVIDIA P400 OpenGL
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['linux', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
-        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
-        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # AMD
@@ -697,15 +670,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Android failures #
     ####################
 
+    self.Fail('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
+              ['android'], bug=903903)
     self.Fail('conformance/glsl/bugs/sequence-operator-evaluation-order.html',
-        ['android'], bug=478572)
+        ['android', 'qualcomm'], bug=478572)
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
 
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
-        ['android', 'no_passthrough'], bug=679697)
+        ['android', 'no_passthrough', 'qualcomm'], bug=679697)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/' +
@@ -730,10 +705,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # These video tests appear to be flaky.
     self.Flaky('conformance/textures/video/' +
         'tex-2d-alpha-alpha-unsigned_byte.html',
-        ['android'], bug=733599)
+        ['android', 'no_passthrough'], bug=733599)
     self.Flaky('conformance/textures/video/' +
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
-        ['android'], bug=733599)
+        ['android', 'no_passthrough'], bug=733599)
     self.Flaky('conformance/textures/video/' +
         'tex-2d-luminance-luminance-unsigned_byte.html',
         ['android'], bug=733599)
@@ -914,40 +889,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', ['android', 'nvidia'],
         bug=891456)
-
-    # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
-    self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_009_to_016.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_017_to_024.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_025_to_032.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_033_to_040.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_041_to_048.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_049_to_056.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_057_to_064.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_065_to_072.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_073_to_080.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_081_to_088.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_089_to_096.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_097_to_104.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_105_to_112.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_113_to_120.html',
-              ['android', 'nvidia'], bug=740769)
-    self.Fail('conformance/ogles/GL/functions/functions_121_to_126.html',
-              ['android', 'nvidia'], bug=740769)
 
     # Flaky timeout on android_n5x_swarming_rel and
     # android-marshmallow-arm64-rel.
