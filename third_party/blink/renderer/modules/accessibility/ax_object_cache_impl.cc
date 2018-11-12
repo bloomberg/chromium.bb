@@ -390,7 +390,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (node->GetLayoutObject() && !IsHTMLAreaElement(node))
     return GetOrCreate(node->GetLayoutObject());
 
-  if (!node->parentElement())
+  if (!LayoutTreeBuilderTraversal::Parent(*node))
     return nullptr;
 
   if (IsHTMLHeadElement(node))
@@ -790,7 +790,7 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
     return;
   VectorOf<Node> old_nodes_changed_during_layout;
   nodes_changed_during_layout_.swap(old_nodes_changed_during_layout);
-  for (auto node : old_nodes_changed_during_layout) {
+  for (Node* node : old_nodes_changed_during_layout) {
     if (node->GetDocument() != document) {
       nodes_changed_during_layout_.push_back(node);
       continue;
@@ -840,9 +840,9 @@ void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
     PostPlatformNotification(obj, notification);
 
     if (notification == ax::mojom::Event::kChildrenChanged &&
-        obj->ParentObjectIfExists() &&
+        obj->CachedParentObject() &&
         obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
-      ChildrenChanged(obj->ParentObject());
+      ChildrenChanged(obj->CachedParentObject());
   }
 
   notifications_to_post_.clear();

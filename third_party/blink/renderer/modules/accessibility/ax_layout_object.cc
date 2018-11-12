@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1344,8 +1345,11 @@ AXObject* AXLayoutObject::NextOnLine() const {
         break;
     }
 
-    if (!result && ParentObject())
-      result = ParentObject()->NextOnLine();
+    if (!result) {
+      AXObject* computed_parent = ComputeParent();
+      if (computed_parent)
+        result = computed_parent->NextOnLine();
+    }
   }
 
   // For consistency between the forward and backward directions, try to always
@@ -1412,8 +1416,11 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
         break;
     }
 
-    if (!result && ParentObject())
-      result = ParentObject()->PreviousOnLine();
+    if (!result) {
+      AXObject* computed_parent = ComputeParent();
+      if (computed_parent)
+        result = computed_parent->PreviousOnLine();
+    }
   }
 
   // For consistency between the forward and backward directions, try to always
@@ -1990,6 +1997,9 @@ AXObject* AXLayoutObject::ComputeParent() const {
       return parent;
   }
 
+  if (GetNode())
+    return AXNodeObject::ComputeParent();
+
   LayoutObject* parent_layout_obj = ParentLayoutObject(layout_object_);
   if (parent_layout_obj)
     return AXObjectCache().GetOrCreate(parent_layout_obj);
@@ -2018,6 +2028,9 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
       return parent;
   }
 
+  if (GetNode())
+    return AXNodeObject::ComputeParentIfExists();
+
   LayoutObject* parent_layout_obj = ParentLayoutObject(layout_object_);
   if (parent_layout_obj)
     return AXObjectCache().Get(parent_layout_obj);
@@ -2035,9 +2048,19 @@ void AXLayoutObject::AddChildren() {
   if (IsDetached())
     return;
 
-  if (IsHTMLCanvasElement(GetNode()))
-    return AXNodeObject::AddChildren();
-
+  if (GetNode() && GetNode()->IsElementNode()) {
+    Element* element = ToElement(GetNode());
+    if (!IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
+        !IsHTMLRubyElement(*element) &&  // Special layout handling
+        !IsHTMLTableElement(*element) &&  // thead/tfoot move around
+        !element->IsPseudoElement()) {    // Not visited in layout traversal
+      AXNodeObject::AddChildren();
+      return;
+    }
+  }
+  Element* element = nullptr;
+  if (GetNode() && GetNode()->IsElementNode())
+    element = ToElement(GetNode());
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.
@@ -2056,7 +2079,6 @@ void AXLayoutObject::AddChildren() {
 
   AddHiddenChildren();
   AddPopupChildren();
-  AddImageMapChildren();
   AddRemoteSVGChildren();
   AddTableChildren();
   AddInlineTextBoxChildren(false);
@@ -3468,6 +3490,26 @@ void AXLayoutObject::AddImageMapChildren() {
         AXObjectCache().Remove(area_object->AXObjectID());
     }
   }
+}
+
+void AXLayoutObject::AddListMarker() {
+  if (!CanHaveChildren() || !GetLayoutObject() ||
+      !GetLayoutObject()->IsListItemIncludingNG()) {
+    return;
+  }
+  if (GetLayoutObject()->IsLayoutNGListItem()) {
+    LayoutNGListItem* list_item = ToLayoutNGListItem(GetLayoutObject());
+    LayoutObject* list_marker = list_item->Marker();
+    AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
+    if (list_marker_obj)
+      children_.push_back(list_marker_obj);
+    return;
+  }
+  LayoutListItem* list_item = ToLayoutListItem(GetLayoutObject());
+  LayoutObject* list_marker = list_item->Marker();
+  AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
+  if (list_marker_obj)
+    children_.push_back(list_marker_obj);
 }
 
 void AXLayoutObject::AddPopupChildren() {
