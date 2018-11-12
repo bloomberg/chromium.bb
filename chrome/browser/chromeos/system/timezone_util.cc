@@ -325,11 +325,18 @@ void UpdateSystemTimezone(Profile* profile) {
                                                 value);
   }
 
-  if (user_manager->GetPrimaryUser() == user && PerUserTimezoneEnabled() &&
-      CanSetSystemTimezone(user)) {
-    TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        base::UTF8ToUTF16(value));
-  }
+  if (user_manager->GetPrimaryUser() == user && PerUserTimezoneEnabled())
+    SetSystemTimezone(user, value);
+}
+
+bool SetSystemTimezone(const user_manager::User* user,
+                       const std::string& timezone) {
+  DCHECK(user);
+  if (!CanSetSystemTimezone(user))
+    return false;
+  TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16(timezone));
+  return true;
 }
 
 void SetSystemAndSigninScreenTimezone(const std::string& timezone) {
@@ -357,10 +364,7 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
       ProfileHelper::Get()->GetUserByProfile(profile);
 
   if (!PerUserTimezoneEnabled()) {
-    if (CanSetSystemTimezone(user)) {
-      TimezoneSettings::GetInstance()->SetTimezoneFromID(
-          base::UTF8ToUTF16(timezone_id));
-    }
+    SetSystemTimezone(user, timezone_id);
     return;
   }
 
@@ -370,10 +374,7 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
   }
 
   if (ProfileHelper::IsEphemeralUserProfile(profile)) {
-    if (CanSetSystemTimezone(user)) {
-      TimezoneSettings::GetInstance()->SetTimezoneFromID(
-          base::UTF8ToUTF16(timezone_id));
-    }
+    SetSystemTimezone(user, timezone_id);
     return;
   }
 
