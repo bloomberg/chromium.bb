@@ -131,7 +131,7 @@ const char* NumberToFixedWidthString(double d,
   return builder.Finalize();
 }
 
-namespace Internal {
+namespace internal {
 
 double ParseDoubleFromLongString(const UChar* string,
                                  size_t length,
@@ -143,6 +143,6 @@ double ParseDoubleFromLongString(const UChar* string,
   return ParseDouble(conversion_buffer.data(), length, parsed_length);
 }
 
-}  // namespace Internal
+}  // namespace internal
 
 }  // namespace WTF
