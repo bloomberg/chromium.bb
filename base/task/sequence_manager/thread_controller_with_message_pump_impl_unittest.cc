@@ -105,6 +105,8 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
 
   bool HasPendingHighResolutionTasks() override { return false; }
 
+  bool OnSystemIdle() override { return false; }
+
  private:
   TickClock* clock_;
   std::queue<PendingTask> tasks_;

@@ -59,6 +59,10 @@ class BASE_EXPORT TimeDomain {
   void AsValueInto(trace_event::TracedValue* state) const;
   bool HasPendingHighResolutionTasks() const;
 
+  // This is the signal that virtual time should step forward.  Returns true if
+  // time advanced and there is now a task to run.
+  virtual bool MaybeFastForwardToNextTask() = 0;
+
  protected:
   TimeDomain();
 

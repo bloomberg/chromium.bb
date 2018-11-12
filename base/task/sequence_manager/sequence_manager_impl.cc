@@ -515,6 +515,15 @@ bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
   return false;
 }
 
+bool SequenceManagerImpl::OnSystemIdle() {
+  bool have_work_to_do = false;
+  for (TimeDomain* time_domain : main_thread_only().time_domains) {
+    if (time_domain->MaybeFastForwardToNextTask())
+      have_work_to_do = true;
+  };
+  return have_work_to_do;
+}
+
 void SequenceManagerImpl::WillQueueTask(Task* pending_task) {
   controller_->WillQueueTask(pending_task);
 }
