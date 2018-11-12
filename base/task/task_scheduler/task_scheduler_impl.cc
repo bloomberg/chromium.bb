@@ -24,6 +24,7 @@
 #include "base/task/task_scheduler/sequence_sort_key.h"
 #include "base/task/task_scheduler/service_thread.h"
 #include "base/task/task_scheduler/task.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -113,6 +114,8 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
 void TaskSchedulerImpl::Start(
     const TaskScheduler::InitParams& init_params,
     SchedulerWorkerObserver* scheduler_worker_observer) {
+  internal::InitializeThreadPrioritiesFeature();
+
   // This is set in Start() and not in the constructor because variation params
   // are usually not ready when TaskSchedulerImpl is instantiated in a process.
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))

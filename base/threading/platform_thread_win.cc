@@ -297,7 +297,7 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 }
 
 // static
-void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   // A DCHECK is triggered on FeatureList initialization if the state of a
   // feature has been checked before. We only want to trigger that DCHECK if the
   // priority has been set to BACKGROUND before, so we are careful not to access
