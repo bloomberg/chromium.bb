@@ -27,6 +27,7 @@ class PLATFORM_EXPORT ThrottledTimeDomain
   base::TimeTicks Now() const override;
   base::Optional<base::TimeDelta> DelayTillNextTask(
       base::sequence_manager::LazyNow* lazy_now) override;
+  bool MaybeFastForwardToNextTask() override;
 
  protected:
   const char* GetName() const override;

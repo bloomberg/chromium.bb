@@ -284,9 +284,6 @@ bool ThreadControllerWithMessagePumpImpl::InTopLevelDoWork() const {
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
-  // RunLoop::Delegate knows whether we called Run() or RunUntilIdle().
-  if (ShouldQuitWhenIdle())
-    Quit();
 #if defined(OS_WIN)
   bool need_high_res_mode =
       main_thread_only().task_source->HasPendingHighResolutionTasks();
@@ -299,6 +296,14 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
     Time::ActivateHighResolutionTimer(need_high_res_mode);
   }
 #endif  // defined(OS_WIN)
+
+  if (main_thread_only().task_source->OnSystemIdle())
+    return true;  // Pretend we have done work to ensure DoWork is called.
+
+  // RunLoop::Delegate knows whether we called Run() or RunUntilIdle().
+  if (ShouldQuitWhenIdle())
+    Quit();
+
   return false;
 }
 

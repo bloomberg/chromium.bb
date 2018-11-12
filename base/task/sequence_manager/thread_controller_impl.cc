@@ -229,13 +229,17 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
     DCHECK_GE(any_sequence().do_work_running_count, 0);
     LazyNow lazy_now(time_source_);
     TimeDelta delay_till_next_task = sequence_->DelayTillNextTask(&lazy_now);
-    if (delay_till_next_task <= TimeDelta()) {
+    // The OnSystemIdle callback allows the TimeDomains to advance virtual time
+    // in which case we now have immediate word to do.
+    if (delay_till_next_task <= TimeDelta() || sequence_->OnSystemIdle()) {
       // The next task needs to run immediately, post a continuation if needed.
       if (!any_sequence().immediate_do_work_posted) {
         any_sequence().immediate_do_work_posted = true;
         task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
       }
-    } else if (delay_till_next_task < TimeDelta::Max()) {
+      return;
+    }
+    if (delay_till_next_task < TimeDelta::Max()) {
       // The next task needs to run after a delay, post a continuation if
       // needed.
       TimeTicks next_task_at = lazy_now.Now() + delay_till_next_task;
@@ -246,10 +250,10 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
             FROM_HERE, cancelable_delayed_do_work_closure_.callback(),
             delay_till_next_task);
       }
-    } else {
-      // There is no next task scheduled.
-      main_sequence_only().next_delayed_do_work = TimeTicks::Max();
+      return;
     }
+    // There is no next task scheduled.
+    main_sequence_only().next_delayed_do_work = TimeTicks::Max();
   }
 }
 

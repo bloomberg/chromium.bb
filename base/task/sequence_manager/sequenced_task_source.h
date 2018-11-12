@@ -34,6 +34,11 @@ class SequencedTaskSource {
   // Return true if there are any pending tasks in the task source which require
   // high resolution timing.
   virtual bool HasPendingHighResolutionTasks() = 0;
+
+  // Called when we have run out of immediate work.  If more immediate work
+  // becomes available as a result of any processing done by this callback,
+  // return true to schedule a future DoWork.
+  virtual bool OnSystemIdle() = 0;
 };
 
 }  // namespace internal

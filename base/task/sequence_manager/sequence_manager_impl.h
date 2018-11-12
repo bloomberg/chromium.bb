@@ -131,6 +131,7 @@ class BASE_EXPORT SequenceManagerImpl
   void DidRunTask() override;
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
   bool HasPendingHighResolutionTasks() override;
+  bool OnSystemIdle() override;
 
   // Methods needed for MessageLoopCurrent support.
   // TOOD(alexclarke): Introduce MessageLoopBase and make SequenceManagerImpl
