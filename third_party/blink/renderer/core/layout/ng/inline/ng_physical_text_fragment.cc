@@ -18,6 +18,16 @@ namespace blink {
 
 namespace {
 
+struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
+  void* pointers[2];
+  NGPhysicalOffsetRect rect;
+  unsigned offsets[2];
+};
+
+static_assert(sizeof(NGPhysicalTextFragment) ==
+                  sizeof(SameSizeAsNGPhysicalTextFragment),
+              "NGPhysicalTextFragment should stay small");
+
 inline bool IsPhysicalTextFragmentAnonymousText(
     const LayoutObject* layout_object) {
   if (!layout_object)
@@ -55,7 +65,6 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
     unsigned end_offset,
     NGPhysicalSize size,
     NGLineOrientation line_orientation,
-    NGTextEndEffect end_effect,
     scoped_refptr<const ShapeResultView> shape_result)
     : NGPhysicalFragment(layout_object,
                          style,
@@ -66,11 +75,11 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
       text_(text),
       start_offset_(start_offset),
       end_offset_(end_offset),
-      shape_result_(shape_result),
-      line_orientation_(static_cast<unsigned>(line_orientation)),
-      end_effect_(static_cast<unsigned>(end_effect)),
-      is_anonymous_text_(IsPhysicalTextFragmentAnonymousText(layout_object)) {
+      shape_result_(shape_result) {
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  line_orientation_ = static_cast<unsigned>(line_orientation);
+  is_anonymous_text_ = IsPhysicalTextFragmentAnonymousText(layout_object);
+
   self_ink_overflow_ = ComputeSelfInkOverflow();
 }
 
@@ -79,13 +88,13 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
       text_(builder->text_),
       start_offset_(builder->start_offset_),
       end_offset_(builder->end_offset_),
-      shape_result_(std::move(builder->shape_result_)),
-      line_orientation_(
-          static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()))),
-      end_effect_(static_cast<unsigned>(builder->end_effect_)),
-      is_anonymous_text_(
-          IsPhysicalTextFragmentAnonymousText(builder->layout_object_)) {
+      shape_result_(std::move(builder->shape_result_)) {
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  line_orientation_ =
+      static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
+  is_anonymous_text_ =
+      IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
+
   self_ink_overflow_ = ComputeSelfInkOverflow();
 }
 
@@ -247,8 +256,7 @@ scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
       TextType(), text_, new_start_offset, new_end_offset,
       IsHorizontal() ? NGPhysicalSize{new_inline_size, size_.height}
                      : NGPhysicalSize{size_.width, new_inline_size},
-      LineOrientation(), EndEffect(),
-      ShapeResultView::Create(new_shape_result.get())));
+      LineOrientation(), ShapeResultView::Create(new_shape_result.get())));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
@@ -299,7 +307,7 @@ UBiDiLevel NGPhysicalTextFragment::BidiLevel() const {
 TextDirection NGPhysicalTextFragment::ResolvedDirection() const {
   if (TextShapeResult())
     return TextShapeResult()->Direction();
-  return NGPhysicalFragment::ResolvedDirection();
+  return DirectionFromLevel(BidiLevel());
 }
 
 }  // namespace blink

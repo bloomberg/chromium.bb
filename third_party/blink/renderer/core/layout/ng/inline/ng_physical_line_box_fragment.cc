@@ -11,6 +11,18 @@
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGPhysicalLineBoxFragment : NGPhysicalContainerFragment {
+  NGLineHeightMetrics metrics;
+};
+
+static_assert(sizeof(NGPhysicalLineBoxFragment) ==
+                  sizeof(SameSizeAsNGPhysicalLineBoxFragment),
+              "NGPhysicalLineBoxFragment should stay small");
+
+}  // namespace
+
 scoped_refptr<const NGPhysicalLineBoxFragment>
 NGPhysicalLineBoxFragment::Create(NGLineBoxFragmentBuilder* builder) {
   // We store the children list inline in the fragment as a flexible

@@ -104,10 +104,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // properties, in local coordinates.
   NGPhysicalOffsetRect SelfInkOverflow() const { return self_ink_overflow_; }
 
-  NGTextEndEffect EndEffect() const {
-    return static_cast<NGTextEndEffect>(end_effect_);
-  }
-
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
   scoped_refptr<const NGPhysicalFragment> TrimText(unsigned start_offset,
@@ -127,8 +123,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Returns the text offset in the fragment placed closest to the given point.
   unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
 
-  UBiDiLevel BidiLevel() const override;
-  TextDirection ResolvedDirection() const override;
+  UBiDiLevel BidiLevel() const;
+  TextDirection ResolvedDirection() const;
 
   // Compute line-relative coordinates for given offsets, this is not
   // flow-relative:
@@ -148,7 +144,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          unsigned end_offset,
                          NGPhysicalSize size,
                          NGLineOrientation line_orientation,
-                         NGTextEndEffect end_effect,
                          scoped_refptr<const ShapeResultView> shape_result);
 
   LayoutUnit InlinePositionForOffset(unsigned offset,
@@ -168,10 +163,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const unsigned end_offset_;
   NGPhysicalOffsetRect self_ink_overflow_;
   const scoped_refptr<const ShapeResultView> shape_result_;
-
-  const unsigned line_orientation_ : 2;  // NGLineOrientation
-  const unsigned end_effect_ : 1;        // NGTextEndEffect
-  const unsigned is_anonymous_text_ : 1;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,

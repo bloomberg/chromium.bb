@@ -21,6 +21,17 @@
 namespace blink {
 namespace {
 
+struct SameSizeAsNGPhysicalFragment
+    : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
+  void* pointers[3];
+  NGPhysicalSize size;
+  unsigned flags;
+};
+
+static_assert(sizeof(NGPhysicalFragment) ==
+                  sizeof(SameSizeAsNGPhysicalFragment),
+              "NGPhysicalFragment should stay small");
+
 bool AppendFragmentOffsetAndSize(
     const NGPhysicalFragment* fragment,
     base::Optional<NGPhysicalOffset> fragment_offset,
@@ -434,15 +445,33 @@ TouchAction NGPhysicalFragment::EffectiveWhitelistedTouchAction() const {
 }
 
 UBiDiLevel NGPhysicalFragment::BidiLevel() const {
+  switch (Type()) {
+    case kFragmentText:
+      return ToNGPhysicalTextFragment(*this).BidiLevel();
+    case kFragmentBox:
+    case kFragmentRenderedLegend:
+      return ToNGPhysicalBoxFragment(*this).BidiLevel();
+    case kFragmentLineBox:
+      break;
+  }
   NOTREACHED();
   return 0;
 }
 
 TextDirection NGPhysicalFragment::ResolvedDirection() const {
-  DCHECK(IsInline());
-  DCHECK(IsText() || IsAtomicInline());
-  // TODO(xiaochengh): Store direction in |base_direction_| flag.
-  return DirectionFromLevel(BidiLevel());
+  switch (Type()) {
+    case kFragmentText:
+      return ToNGPhysicalTextFragment(*this).ResolvedDirection();
+    case kFragmentBox:
+    case kFragmentRenderedLegend:
+      DCHECK(IsInline() && IsAtomicInline());
+      // TODO(xiaochengh): Store direction in |base_direction_| flag.
+      return DirectionFromLevel(BidiLevel());
+    case kFragmentLineBox:
+      break;
+  }
+  NOTREACHED();
+  return TextDirection::kLtr;
 }
 
 String NGPhysicalFragment::ToString() const {
