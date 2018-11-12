@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -75,7 +76,7 @@ IndexedDBKey IndexedDBKeyBuilder::Build(blink::WebIDBKeyView key) {
         key_string.append(segment, segment_size);
         return true;
       });
-      return IndexedDBKey(key_string);
+      return IndexedDBKey(std::move(key_string));
     }
     case kWebIDBKeyTypeString:
       return IndexedDBKey(key.String().Utf16());
