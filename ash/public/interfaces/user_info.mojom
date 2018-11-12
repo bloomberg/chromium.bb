@@ -62,4 +62,6 @@ struct UserInfo {
   bool is_ephemeral;
   // True if the user is also the device owner.
   bool is_device_owner;
+  // True if the user has a gaia account.
+  bool has_gaia_account;
 };

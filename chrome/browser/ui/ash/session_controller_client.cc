@@ -100,6 +100,7 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->display_email = user.display_email();
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
+  session->user_info->has_gaia_account = user.has_gaia_account();
   const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
   session->user_info->is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();

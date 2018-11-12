@@ -241,6 +241,26 @@ bool User::is_active() const {
   return is_active_;
 }
 
+bool User::has_gaia_account() const {
+  static_assert(user_manager::NUM_USER_TYPES == 9,
+                "NUM_USER_TYPES should equal 9");
+  switch (GetType()) {
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
+      return true;
+    case user_manager::USER_TYPE_GUEST:
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    case user_manager::USER_TYPE_SUPERVISED:
+    case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+      return false;
+    default:
+      NOTREACHED();
+  }
+  return false;
+}
+
 void User::AddProfileCreatedObserver(base::OnceClosure on_profile_created) {
   DCHECK(!profile_is_created_);
   on_profile_created_observers_.push_back(std::move(on_profile_created));
@@ -457,26 +477,6 @@ PublicAccountUser::~PublicAccountUser() {
 
 UserType PublicAccountUser::GetType() const {
   return user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-}
-
-bool User::has_gaia_account() const {
-  static_assert(user_manager::NUM_USER_TYPES == 9,
-                "NUM_USER_TYPES should equal 9");
-  switch (GetType()) {
-    case user_manager::USER_TYPE_REGULAR:
-    case user_manager::USER_TYPE_CHILD:
-      return true;
-    case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    case user_manager::USER_TYPE_SUPERVISED:
-    case user_manager::USER_TYPE_KIOSK_APP:
-    case user_manager::USER_TYPE_ARC_KIOSK_APP:
-    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
-      return false;
-    default:
-      NOTREACHED();
-  }
-  return false;
 }
 
 }  // namespace user_manager
