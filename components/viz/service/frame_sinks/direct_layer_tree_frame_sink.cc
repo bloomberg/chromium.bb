@@ -227,9 +227,11 @@ void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
 
 void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    const RenderPassList& render_passes) {
-  if (support_->GetHitTestAggregator())
-    support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId());
+    RenderPassList* render_passes) {
+  if (support_->GetHitTestAggregator()) {
+    support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId(),
+                                                render_passes);
+  }
 }
 
 void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {

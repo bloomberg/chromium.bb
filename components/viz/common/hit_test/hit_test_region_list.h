@@ -36,6 +36,9 @@ enum HitTestRegionFlags : uint32_t {
 
   // Client hasn't submitted its own hit-test data yet.
   kHitTestNotActive = 0x40,
+
+  // Hit-test debugging is enabled.
+  kHitTestDebug = 0x80,
 };
 
 struct HitTestRegion {

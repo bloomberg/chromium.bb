@@ -35,8 +35,10 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
 
   // Called after surfaces have been aggregated into the DisplayFrame.
   // In this call HitTestRegionList structures received from active surfaces
-  // are aggregated into |hit_test_data_|.
-  void Aggregate(const SurfaceId& display_surface_id);
+  // are aggregated into |hit_test_data_|. If |render_passes| are given and
+  // the correct flags are set, hit-test debug quads will be inserted.
+  void Aggregate(const SurfaceId& display_surface_id,
+                 RenderPassList* render_passes = nullptr);
 
  private:
   friend class TestHitTestAggregator;
@@ -66,6 +68,9 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   base::Optional<int64_t> GetTraceIdIfUpdated(const SurfaceId& surface_id,
                                               uint64_t active_frame_index);
 
+  // Inserts debug quads based on hit-test data.
+  void InsertHitTestDebugQuads(RenderPassList* render_passes);
+
   const HitTestManager* const hit_test_manager_;
 
   HitTestAggregatorDelegate* const delegate_;
@@ -85,6 +90,9 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   uint32_t hit_test_data_capacity_ = 0;
   uint32_t hit_test_data_size_ = 0;
   std::vector<AggregatedHitTestRegion> hit_test_data_;
+
+  bool hit_test_debug_ = false;
+  uint32_t hit_test_debug_ask_regions_ = 0;
 
   // This is the set of FrameSinkIds referenced in the aggregation so far, used
   // to detect cycles.
