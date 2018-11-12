@@ -34,9 +34,6 @@ KEYBOARD_EXPORT void SetTouchKeyboardEnabled(bool enabled);
 // Gets the state of the touch onscreen keyboard.
 KEYBOARD_EXPORT bool GetTouchKeyboardEnabled();
 
-// Gets the default keyboard layout.
-KEYBOARD_EXPORT std::string GetKeyboardLayout();
-
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 

@@ -42,6 +42,9 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   void ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override {
     keyboard_enable_flags_.erase(flag);
   }
+  void GetEnableFlags(GetEnableFlagsCallback callback) override {
+    std::move(callback).Run(std::vector<keyboard::mojom::KeyboardEnableFlag>());
+  }
   void ReloadKeyboardIfNeeded() override {}
   void RebuildKeyboardIfEnabled() override {}
   void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override {

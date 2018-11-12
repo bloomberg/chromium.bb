@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace aura {
+class Window;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -61,8 +65,11 @@ class ChromeKeyboardControllerClient
   void GetKeyboardEnabled(base::OnceCallback<void(bool)> callback);
 
   // Sets/clears the privided keyboard enable state.
-  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
-  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
+  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag);
+  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag);
+
+  // Returns whether |flag| has been set.
+  bool IsEnableFlagSet(const keyboard::mojom::KeyboardEnableFlag& flag);
 
   // Calls ash.mojom.ReloadKeyboardIfNeeded.
   void ReloadKeyboardIfNeeded();
@@ -82,6 +89,9 @@ class ChromeKeyboardControllerClient
   // Returns the URL to use for the virtual keyboard.
   GURL GetVirtualKeyboardUrl();
 
+  // Returns the keyboard window, or null if the window has not been created.
+  aura::Window* GetKeyboardWindow() const;
+
   bool is_keyboard_enabled() { return is_keyboard_enabled_; }
   bool is_keyboard_visible() { return is_keyboard_visible_; }
 
@@ -100,6 +110,9 @@ class ChromeKeyboardControllerClient
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
 
+  void OnGetEnableFlags(
+      const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags);
+
   // Returns either the test profile or the active user profile.
   Profile* GetProfile();
 
@@ -109,6 +122,10 @@ class ChromeKeyboardControllerClient
 
   // Cached copy of the latest config provided by mojom::KeyboardController.
   keyboard::mojom::KeyboardConfigPtr cached_keyboard_config_;
+
+  // Cached copy of the active enabled flags provided by
+  // mojom::KeyboardController
+  std::set<keyboard::mojom::KeyboardEnableFlag> keyboard_enable_flags_;
 
   // Tracks the enabled state of the keyboard.
   bool is_keyboard_enabled_ = false;

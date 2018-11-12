@@ -113,6 +113,14 @@ void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
   UpdateEnableFlag(was_enabled);
 }
 
+void AshKeyboardController::GetEnableFlags(GetEnableFlagsCallback callback) {
+  const std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags =
+      keyboard_controller_->keyboard_enable_flags();
+  std::vector<keyboard::mojom::KeyboardEnableFlag> flags(
+      keyboard_enable_flags.begin(), keyboard_enable_flags.end());
+  std::move(callback).Run(std::move(flags));
+}
+
 void AshKeyboardController::ReloadKeyboardIfNeeded() {
   keyboard_controller_->Reload();
 }

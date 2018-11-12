@@ -138,6 +138,9 @@ class KEYBOARD_EXPORT KeyboardController
   void SetEnableFlag(mojom::KeyboardEnableFlag flag);
   void ClearEnableFlag(mojom::KeyboardEnableFlag flag);
   bool IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const;
+  const std::set<mojom::KeyboardEnableFlag>& keyboard_enable_flags() const {
+    return keyboard_enable_flags_;
+  }
 
   // Returns true if the keyboard should be enabled, i.e. the current result
   // of Set/ClearEnableFlag should cause the keyboard to be enabled.

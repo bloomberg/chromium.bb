@@ -63,12 +63,6 @@ bool GetTouchKeyboardEnabled() {
   return GetFlag(mojom::KeyboardEnableFlag::kTouchEnabled);
 }
 
-std::string GetKeyboardLayout() {
-  // TODO(bshe): layout string is currently hard coded. We should use more
-  // standard keyboard layouts.
-  return GetAccessibilityKeyboardEnabled() ? "system-qwerty" : "qwerty";
-}
-
 bool IsKeyboardEnabled() {
   return KeyboardController::Get()->IsKeyboardEnableRequested();
 }

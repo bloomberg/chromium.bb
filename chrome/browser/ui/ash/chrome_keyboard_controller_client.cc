@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,7 +24,9 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/resources/keyboard_resource_util.h"
 
@@ -66,6 +69,11 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
   // Request the initial enabled state.
   keyboard_controller_ptr_->IsKeyboardEnabled(
       base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardEnabledChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Request the initial set of enable flags.
+  keyboard_controller_ptr_->GetEnableFlags(
+      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Request the initial visible state.
@@ -117,11 +125,22 @@ void ChromeKeyboardControllerClient::GetKeyboardEnabled(
 void ChromeKeyboardControllerClient::SetEnableFlag(
     const keyboard::mojom::KeyboardEnableFlag& flag) {
   keyboard_controller_ptr_->SetEnableFlag(flag);
+  keyboard_controller_ptr_->GetEnableFlags(
+      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeKeyboardControllerClient::ClearEnableFlag(
     const keyboard::mojom::KeyboardEnableFlag& flag) {
   keyboard_controller_ptr_->ClearEnableFlag(flag);
+  keyboard_controller_ptr_->GetEnableFlags(
+      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool ChromeKeyboardControllerClient::IsEnableFlagSet(
+    const keyboard::mojom::KeyboardEnableFlag& flag) {
+  return base::ContainsKey(keyboard_enable_flags_, flag);
 }
 
 void ChromeKeyboardControllerClient::ReloadKeyboardIfNeeded() {
@@ -172,6 +191,15 @@ GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {
     return GURL(keyboard::kKeyboardURL);
 
   return input_view_url;
+}
+
+aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
+  if (::features::IsUsingWindowService()) {
+    // TODO(stevenjb): When WS support is added, return the Chrome window
+    // hosting the extension instead.
+    return nullptr;
+  }
+  return keyboard::KeyboardController::Get()->GetKeyboardWindow();
 }
 
 void ChromeKeyboardControllerClient::FlushForTesting() {
@@ -243,6 +271,12 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
       virtual_keyboard_private::OnBoundsChanged::kEventName,
       std::move(event_args), profile);
   router->BroadcastEvent(std::move(event));
+}
+
+void ChromeKeyboardControllerClient::OnGetEnableFlags(
+    const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
+  keyboard_enable_flags_ =
+      std::set<keyboard::mojom::KeyboardEnableFlag>(flags.begin(), flags.end());
 }
 
 Profile* ChromeKeyboardControllerClient::GetProfile() {
