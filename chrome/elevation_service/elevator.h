@@ -19,7 +19,12 @@ namespace elevation_service {
 class Elevator
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IElevator> {
+          IElevator,
+          IElevatorChromium,
+          IElevatorChrome,
+          IElevatorChromeBeta,
+          IElevatorChromeDev,
+          IElevatorChromeCanary> {
  public:
   Elevator() = default;
 

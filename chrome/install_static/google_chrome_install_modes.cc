@@ -4,6 +4,8 @@
 
 // Brand-specific constants and install modes for Google Chrome.
 
+#include "chrome/install_static/google_chrome_install_modes.h"
+
 #include <stdlib.h>
 
 #include "chrome/app/chrome_dll_resource.h"
@@ -49,7 +51,14 @@ const InstallConstants kInstallModes[] = {
          0xF641,
          0x4611,
          {0x88, 0x95, 0x7D, 0x86, 0x7D, 0xD3, 0x67, 0x5B}},  // Elevator CLSID.
-        L"",  // The empty string means "stable".
+
+        {0x463abecf,
+         0x410d,
+         0x407f,
+         {0x8a, 0xf5, 0xd, 0xf3, 0x5a, 0x0, 0x5c,
+          0xc8}},  // IElevator IID and TypeLib
+                   // {463ABECF-410D-407F-8AF5-0DF35A005CC8}.
+        L"",       // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
         true,  // Supports in-product set as default browser UX.
@@ -83,7 +92,14 @@ const InstallConstants kInstallModes[] = {
          0x3707,
          0x4BF8,
          {0xB9, 0xA7, 0x3, 0x86, 0x91, 0xA6, 0x8F, 0xC2}},  // Elevator CLSID.
-        L"beta",  // Forced channel name.
+
+        {0xa2721d66,
+         0x376e,
+         0x4d2f,
+         {0x9f, 0xf, 0x90, 0x70, 0xe9, 0xa4, 0x2b,
+          0x5f}},  // IElevator IID and TypeLib
+                   // {A2721D66-376E-4D2F-9F0F-9070E9A42B5F}.
+        L"beta",   // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -117,7 +133,14 @@ const InstallConstants kInstallModes[] = {
          0x2CAA,
          0x4637,
          {0xAA, 0x17, 0x7, 0x40, 0x58, 0x4D, 0xE7, 0xDA}},  // Elevator CLSID.
-        L"dev",  // Forced channel name.
+
+        {0xbb2aa26b,
+         0x343a,
+         0x4072,
+         {0x8b, 0x6f, 0x80, 0x55, 0x7b, 0x8c, 0xe5,
+          0x71}},  // IElevator IID and TypeLib
+                   // {BB2AA26B-343A-4072-8B6F-80557B8CE571}.
+        L"dev",    // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -151,6 +174,13 @@ const InstallConstants kInstallModes[] = {
          0x2049,
          0x435E,
          {0xA4, 0x69, 0xA, 0x53, 0x43, 0x13, 0xC4, 0x2B}},  // Elevator CLSID.
+
+        {0x4f7ce041,
+         0x28e9,
+         0x484f,
+         {0x9d, 0xd0, 0x61, 0xa8, 0xca, 0xce, 0xfe,
+          0xe4}},   // IElevator IID and TypeLib
+                    // {4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}.
         L"canary",  // Forced channel name.
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.

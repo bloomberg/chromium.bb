@@ -32,20 +32,16 @@ class ServiceMain {
 
   // The following methods are public for the sake of testing.
 
-  // Registers the Service COM objects so other applications can connect to
-  // them. Returns the registration status.
-  HRESULT RegisterClassObjects();
+  // Registers the Service COM class factory object so other applications can
+  // connect to it. Returns the registration status.
+  HRESULT RegisterClassObject();
 
-  // Unregisters the Service COM objects.
-  void UnregisterClassObjects();
+  // Unregisters the Service COM class factory object.
+  void UnregisterClassObject();
 
-  // Returns true when the last object is released, or if the service is asked
-  // to exit.
+  // Returns true when the last COM object is released, or if the service is
+  // asked to exit.
   bool IsExitSignaled();
-
-  // Returns the class factory for the elevator with the specified id.
-  Microsoft::WRL::ComPtr<IClassFactory> GetElevatorFactory(
-      const base::string16& id);
 
  private:
   ServiceMain();
@@ -86,10 +82,6 @@ class ServiceMain {
   // Called when the last object is released or if the service is asked to exit.
   void SignalExit();
 
-  // Registers class factories for all supported elevators.
-  void RegisterElevatorFactories();
-  void UnregisterElevatorFactories();
-
   // Registers |factory| as the factory for the elevator identified by |id|.
   void RegisterElevatorFactory(const base::string16& id,
                                IClassFactory* factory);
@@ -106,11 +98,6 @@ class ServiceMain {
   // This event is signaled when the last COM instance is released, or if the
   // service control manager asks the service to exit.
   base::WaitableEvent exit_signal_;
-
-  using FactoryMap = base::flat_map<base::string16,
-                                    Microsoft::WRL::ComPtr<IClassFactory>>;
-  // The map containing all the Elevator class factories.
-  FactoryMap factories_;
 
   friend class base::NoDestructor<ServiceMain>;
 

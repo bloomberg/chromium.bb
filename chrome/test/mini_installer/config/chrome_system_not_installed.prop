@@ -44,6 +44,12 @@
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\AppID\\$CHROME_ELEVATOR_CLSID": {
       "exists": "forbidden"
     },
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\Interface\\$CHROME_ELEVATOR_IID": {
+      "exists": "forbidden"
+    },
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID": {
+      "exists": "forbidden"
+    },
     "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\$CHROME_ELEVATION_SERVICE_NAME": {
       "exists": "forbidden"
     }

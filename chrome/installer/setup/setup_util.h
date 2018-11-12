@@ -168,6 +168,9 @@ base::string16 GetElevationServiceGuid(base::StringPiece16 prefix);
 // Return the elevation service registry paths.
 base::string16 GetElevationServiceClsidRegistryPath();
 base::string16 GetElevationServiceAppidRegistryPath();
+base::string16 GetElevationServiceIid(base::StringPiece16 prefix);
+base::string16 GetElevationServiceIidRegistryPath();
+base::string16 GetElevationServiceTypeLibRegistryPath();
 
 }  // namespace installer
 
