@@ -111,16 +111,6 @@ void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
     object->Pause();
 }
 
-bool ExecutionContext::ShouldSanitizeScriptError(
-    const String& source_url,
-    SanitizeScriptErrors sanitize_script_errors) {
-  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize)
-    return true;
-  const KURL& url = CompleteURL(source_url);
-  return !(GetSecurityOrigin()->CanReadContent(url) ||
-           sanitize_script_errors == SanitizeScriptErrors::kDoNotSanitize);
-}
-
 void ExecutionContext::DispatchErrorEvent(
     ErrorEvent* error_event,
     SanitizeScriptErrors sanitize_script_errors) {
@@ -147,10 +137,8 @@ bool ExecutionContext::DispatchErrorEventInternal(
   if (!target)
     return false;
 
-  if (ShouldSanitizeScriptError(error_event->filename(),
-                                sanitize_script_errors)) {
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize)
     error_event = ErrorEvent::CreateSanitizedError(error_event->World());
-  }
 
   DCHECK(!in_dispatch_error_event_);
   in_dispatch_error_event_ = true;

@@ -331,8 +331,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
         *error_event = state.error_event_from_imported_script_.Release();
         return false;
       }
-      if (global_scope_->ShouldSanitizeScriptError(state.location_->Url(),
-                                                   sanitize_script_errors)) {
+      if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
         *error_event = ErrorEvent::CreateSanitizedError(world_.get());
       } else {
         *error_event =
@@ -340,8 +339,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
                                state.exception, world_.get());
       }
     } else {
-      DCHECK(!global_scope_->ShouldSanitizeScriptError(state.location_->Url(),
-                                                       sanitize_script_errors));
+      DCHECK_EQ(sanitize_script_errors, SanitizeScriptErrors::kDoNotSanitize);
       ErrorEvent* event = nullptr;
       if (state.error_event_from_imported_script_) {
         event = state.error_event_from_imported_script_.Release();

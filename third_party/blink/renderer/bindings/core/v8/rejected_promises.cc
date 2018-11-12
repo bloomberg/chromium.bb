@@ -66,8 +66,8 @@ class RejectedPromises::Message final {
     DCHECK(!HasHandler());
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(
-                      resource_name_, sanitize_script_errors_)) {
+    if (target &&
+        sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
       init->setReason(ScriptValue(script_state_, reason));
@@ -106,8 +106,8 @@ class RejectedPromises::Message final {
       return;
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(
-                      resource_name_, sanitize_script_errors_)) {
+    if (target &&
+        sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
       init->setReason(ScriptValue(script_state_, reason));
@@ -162,7 +162,6 @@ class RejectedPromises::Message final {
         promise_(script_state->GetIsolate(), promise),
         exception_(script_state->GetIsolate(), exception),
         error_message_(error_message),
-        resource_name_(location->Url()),
         location_(std::move(location)),
         promise_rejection_id_(0),
         collected_(false),
@@ -182,7 +181,6 @@ class RejectedPromises::Message final {
   ScopedPersistent<v8::Promise> promise_;
   ScopedPersistent<v8::Value> exception_;
   String error_message_;
-  String resource_name_;
   std::unique_ptr<SourceLocation> location_;
   unsigned promise_rejection_id_;
   bool collected_;

@@ -169,8 +169,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return false;
   }
 
-  bool ShouldSanitizeScriptError(const String& source_url,
-                                 SanitizeScriptErrors);
   void DispatchErrorEvent(ErrorEvent*, SanitizeScriptErrors);
 
   virtual void AddConsoleMessage(ConsoleMessage*) = 0;
