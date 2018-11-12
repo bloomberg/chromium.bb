@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_MOCK_RENDERER_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_MOCK_RENDERER_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_MOCK_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_MOCK_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -16,10 +16,10 @@
 namespace blink {
 namespace scheduler {
 
-class MockRendererScheduler : public WebThreadScheduler {
+class WebMockThreadScheduler : public WebThreadScheduler {
  public:
-  MockRendererScheduler() = default;
-  ~MockRendererScheduler() override = default;
+  WebMockThreadScheduler() = default;
+  ~WebMockThreadScheduler() override = default;
 
   MOCK_METHOD0(DefaultTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
@@ -65,10 +65,10 @@ class MockRendererScheduler : public WebThreadScheduler {
   MOCK_METHOD0(OnMainFrameRequestedForInput, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockRendererScheduler);
+  DISALLOW_COPY_AND_ASSIGN(WebMockThreadScheduler);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_MOCK_RENDERER_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_MOCK_THREAD_SCHEDULER_H_
