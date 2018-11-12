@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -25,9 +26,9 @@ namespace {
 
 void OnConnectResult(base::OnceClosure closure,
                      mojom::ConnectResult* out_result,
-                     Identity* out_resolved_identity,
+                     base::Optional<Identity>* out_resolved_identity,
                      mojom::ConnectResult result,
-                     const Identity& resolved_identity) {
+                     const base::Optional<Identity>& resolved_identity) {
   std::move(closure).Run();
   *out_result = result;
   *out_resolved_identity = resolved_identity;
@@ -173,7 +174,7 @@ class ConnectTestApp : public Service,
       ConnectToClassAppWithIdentityCallback callback) override {
     context()->connector()->StartService(target);
     mojom::ConnectResult result;
-    Identity resolved_identity;
+    base::Optional<Identity> resolved_identity;
     {
       base::RunLoop loop;
       Connector::TestApi test_api(context()->connector());
@@ -182,7 +183,7 @@ class ConnectTestApp : public Service,
       base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       loop.Run();
     }
-    std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
+    std::move(callback).Run(static_cast<int32_t>(result), *resolved_identity);
   }
 
   void OnGotTitle(ConnectToAllowedAppInBlockedPackageCallback* callback,

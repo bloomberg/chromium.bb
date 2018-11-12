@@ -70,6 +70,8 @@ component("cpp_types") {
     "identity.h",
     "interface_provider_spec.cc",
     "interface_provider_spec.h",
+    "service_filter.cc",
+    "service_filter.h",
     "types_export.h",
   ]
 
@@ -79,7 +81,28 @@ component("cpp_types") {
     "//services/service_manager/public/mojom:constants",
   ]
 
-  defines = [ "SERVICE_MANAGER_PUBLIC_CPP_TYPES_IMPL" ]
+  defines = [
+    "IS_SERVICE_MANAGER_CPP_TYPES_IMPL",
+
+    # TODO: Use COMPONENT_EXPORT everywhere and remove this.
+    "SERVICE_MANAGER_PUBLIC_CPP_TYPES_IMPL",
+  ]
+}
+
+component("mojom_traits") {
+  output_name = "service_manager_mojom_traits"
+  sources = [
+    "service_filter_mojom_traits.cc",
+    "service_filter_mojom_traits.h",
+  ]
+
+  public_deps = [
+    ":cpp_types",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+    "//services/service_manager/public/mojom:mojom_shared",
+  ]
+
+  defines = [ "IS_SERVICE_MANAGER_MOJOM_TRAITS_IMPL" ]
 }
 
 static_library("service_test_support") {

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -31,9 +32,9 @@ namespace {
 
 void QuitLoop(base::RunLoop* loop,
               mojom::ConnectResult* out_result,
-              Identity* out_resolved_identity,
+              base::Optional<Identity>* out_resolved_identity,
               mojom::ConnectResult result,
-              const Identity& resolved_identity) {
+              const base::Optional<Identity>& resolved_identity) {
   loop->Quit();
   *out_result = result;
   *out_resolved_identity = resolved_identity;
@@ -134,7 +135,7 @@ class ProvidedService : public Service,
       ConnectToClassAppWithIdentityCallback callback) override {
     service_binding_.GetConnector()->StartService(target);
     mojom::ConnectResult result;
-    Identity resolved_identity;
+    base::Optional<Identity> resolved_identity;
     {
       base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
       Connector::TestApi test_api(service_binding_.GetConnector());
@@ -142,7 +143,7 @@ class ProvidedService : public Service,
           base::BindRepeating(&QuitLoop, &loop, &result, &resolved_identity));
       loop.Run();
     }
-    std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
+    std::move(callback).Run(static_cast<int32_t>(result), *resolved_identity);
   }
 
   // base::SimpleThread:

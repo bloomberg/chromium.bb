@@ -7,6 +7,7 @@ module service_manager.mojom;
 import "mojo/public/mojom/base/token.mojom";
 import "services/service_manager/public/mojom/constants.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
+import "services/service_manager/public/mojom/service_filter.mojom";
 
 // TODO(beng): Evaluate the utility of this enum. There are some inconsistencies
 //             in its use with BindInterface/StartService.
@@ -90,44 +91,39 @@ interface PIDReceiver {
 // An interface that allows the holder to start other services & bind to
 // interfaces exposed by them.
 interface Connector {
-  // Asks the service manager to route a request to bind an implementation of
-  // the interface to a named service instance.
+  // Asks the Service Manager to route an interface request to another service
+  // instance. The target instance is selected by |filter|, subject to various
+  // constraints. With some exceptions and limitations, if no existing service
+  // instance is found matching the given |filter|, a new instance is started
+  // which meets the constraints of the filter.
   //
-  // A service's ability to bind interfaces exposed by another is controlled by
-  // policy set out in each service's manifest. See
-  // //services/service_manager/README.md for more information on manifests.
-  // If policy prevents the requesting service from binding the specified
-  // interface, the request pipe will be closed.
+  // Upon success, |result| will be |SUCCEEDED| and |identity| will contain the
+  // full identity of the service instance to which the request was successfully
+  // routed. Upon failure |result| will take on a different value and |identity|
+  // will be null.
   //
-  // Parameters:
+  // If |filter| filters only by service name, the Service Manager may select
+  // any running service instance with that service name. If the named service
+  // is not a singleton or otherwise shared across all instance groups, the
+  // selection space is limited to the caller's own instance group.
   //
-  //  target
-  //    The identity of the service instance to route the request to. If no
-  //    instance exists, the service will be started.
+  // If |filter| includes an instance group ID, either that group ID must match
+  // the caller's own, or the caller must have set the
+  // |can_connect_to_instances_in_any_group| option in its own manifest.
   //
-  //  interface_name
-  //    The name of the interface to be bound. If the target service does not
-  //    expose an interface of this name, the request pipe will be closed.
+  // If |filter| includes an instance ID, the caller must have set the
+  // |can_connect_to_other_services_with_any_instance_name| option in its own
+  // manifest.
   //
-  //  interface_pipe
-  //    A message pipe endpoint encapsulating a request for an interface named
-  //    |interface_name|.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the BindInterface() operation.
-  //
-  //  identity
-  //    The fully resolved identity of the instance in the service manager,
-  //    including instance group and globally unique ID. Typically the client
-  //    passes null for the instance group in |target|, defaulting to the
-  //    caller's own instance group.
-  //
-  BindInterface(Identity target,
+  // If |filter| includes a globally unique ID, it must include a group ID and
+  // instance ID as well. Requests like this will only ever match a specific
+  // service instance that is already running. Unlike in other cases, the
+  // Service Manager will NEVER create a new service instance to fulfill this
+  // request.
+  BindInterface(ServiceFilter filter,
                 string interface_name,
-                handle<message_pipe> interface_pipe) =>
-      (ConnectResult result, Identity identity);
+                handle<message_pipe> interface_pipe)
+      => (ConnectResult result, Identity? identity);
 
   // Asks the service manager whether it knows how to manage a given service,
   // and how the service is to be sandboxed per the mainifest. No processes are
@@ -135,10 +131,7 @@ interface Connector {
   // StartProcessWithService() so the client can determine how to launch a
   // process.
   //
-  // Parameters:
-  //
-  //  target
-  //    The identity of the service to query.
+  // |filter| is interpreted similarly to |BindInterface()| above.
   //
   // Response parameters:
   //
@@ -149,30 +142,17 @@ interface Connector {
   //    A string describing the kind of sandboxing the service has declared
   //    for itself in the manifest.
   //
-  QueryService(Identity target) => (ConnectResult result, string sandbox_type);
+  QueryService(ServiceFilter filter)
+      => (ConnectResult result, string sandbox_type);
 
-  // Asks the service manager to create an instance for a service. No action is
-  // taken if an instance is already present. If the service is not yet running,
-  // it will be initialized and its OnStart() method will be called. A process
-  // may be allocated.
-  //
-  // Parameters:
-  //
-  //  target
-  //    The identity of the service to start.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the StartService() operation.
-  //
-  //  identity
-  //    The fully resolved identity of the instance in the service manager,
-  //    including instance group and globally unique ID. Typically the client
-  //    passes null for the instance group in |target|, defaulting to the
-  //    caller's own instance group.
-  //
-  StartService(Identity target) => (ConnectResult result, Identity identity);
+  // Asks the Service Manager to create a service instance which would match
+  // |filter|. This is essentially equivalent to |BindInterface()| above but
+  // no interface request given to bind. This may be used to elicit service
+  // launching if no matching service instance is already running. See comments
+  // on |BindInterface()| above for details on filtering constraints, instance
+  // creation, and response values.
+  StartService(ServiceFilter filter)
+      => (ConnectResult result, Identity? identity);
 
   // Typically, the service manager will start a process for a service the first
   // time it receives a bind interface request for it, or when StartService() is
@@ -201,7 +181,7 @@ interface Connector {
   StartServiceWithProcess(Identity target,
                           handle<message_pipe> service,
                           PIDReceiver& pid_receiver_request) =>
-      (ConnectResult result, Identity identity);
+      (ConnectResult result, Identity? identity);
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);
