@@ -384,12 +384,6 @@ const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
 // http://google.com.
 const char kHomePage[]                      = "homepage";
 
-// Causes net::URLFetchers to ignore requests for SSL client certificates,
-// causing them to attempt an unauthenticated SSL/TLS session. This is intended
-// for use when testing various service URLs (eg: kPromoServerURL, kSbURLPrefix,
-// kSyncServiceURL, etc).
-const char kIgnoreUrlFetcherCertRequests[] = "ignore-urlfetcher-cert-requests";
-
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 

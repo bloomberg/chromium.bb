@@ -342,6 +342,7 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kForceEffectiveConnectionType,
       network::switches::kHostResolverRules,
       network::switches::kIgnoreCertificateErrorsSPKIList,
+      network::switches::kIgnoreUrlFetcherCertRequests,
       network::switches::kLogNetLog,
       network::switches::kNoReferrers,
       service_manager::switches::kNoSandbox,

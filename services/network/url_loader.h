@@ -193,7 +193,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // store a raw pointer to mojom::URLLoaderFactoryParams.
   const mojom::URLLoaderFactoryParams* const factory_params_;
 
-  uint32_t render_frame_id_;
+  int render_frame_id_;
   uint32_t request_id_;
   const bool keepalive_;
   const bool do_not_prompt_for_login_;

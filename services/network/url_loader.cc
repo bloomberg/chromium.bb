@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
@@ -35,6 +36,7 @@
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -658,6 +660,14 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
                                        net::SSLCertRequestInfo* cert_info) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreUrlFetcherCertRequests) &&
+      factory_params_->process_id == 0 &&
+      render_frame_id_ == MSG_ROUTING_NONE) {
+    url_request_->ContinueWithCertificate(nullptr, nullptr);
+    return;
+  }
+
   if (!network_service_client_) {
     OnCertificateRequestedResponse(nullptr, std::string(),
                                    std::vector<uint16_t>(), nullptr,
