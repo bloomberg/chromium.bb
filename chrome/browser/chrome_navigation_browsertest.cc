@@ -940,6 +940,34 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
                          ->GetLastCommittedURL());
 }
 
+// Check that clicking on a link doesn't carry the transient user activation
+// from the original page to the navigated page (crbug.com/865243).
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       WindowOpenBlockedAfterClickNavigation) {
+  // Navigate to a test page with links.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/links.html"));
+
+  // Click to navigate to title1.html.
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(main_contents);
+  ASSERT_TRUE(ExecuteScript(main_contents,
+                            "document.getElementById('title1').click();"));
+  observer.Wait();
+
+  // Make sure popup attempt fails due to lack of transient user activation.
+  bool opened = false;
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      main_contents, "window.domAutomationController.send(!!window.open());",
+      &opened));
+  EXPECT_FALSE(opened);
+
+  EXPECT_EQ(embedded_test_server()->GetURL("/title1.html"),
+            main_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+
 // TODO(csharrison): These tests should become tentative WPT, once the feature
 // is enabled by default.
 using NavigationConsumingTest = ChromeNavigationBrowserTest;

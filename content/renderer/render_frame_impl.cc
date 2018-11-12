@@ -3238,12 +3238,6 @@ void RenderFrameImpl::CommitNavigation(
     return;
   }
 
-  // If the request was initiated in the context of a user gesture then make
-  // sure that the navigation also executes in the context of a user gesture.
-  std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
-                                     : nullptr);
-
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations with the Network Service enabled.
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
@@ -3503,12 +3497,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
   DCHECK(!FrameMsg_Navigate_Type::IsReload(common_params.navigation_type));
   DCHECK(!request_params.is_view_source);
   DCHECK(FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
-
-  // If the request was initiated in the context of a user gesture then make
-  // sure that the navigation also executes in the context of a user gesture.
-  std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
-                                     : nullptr);
 
   PrepareFrameForCommit(common_params.url, request_params);
 
