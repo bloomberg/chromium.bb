@@ -127,11 +127,11 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   // The URLJobWrapper only calls this if this loader never intercepted the
   // request. Fallback to network after interception uses |fallback_callback_|
   // instead.
-  DCHECK_EQ(status_, Status::kNotStarted);
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
-
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
+
   TransitionToStatus(Status::kCompleted);
+
   std::move(loader_callback_).Run({});
 }
 
@@ -247,6 +247,20 @@ void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
       response_head_.headers->GetStatusText());
   TransitionToStatus(Status::kSentHeader);
   url_loader_client_->OnReceiveResponse(response_head_);
+}
+
+void ServiceWorkerNavigationLoader::CommitResponseBody(
+    mojo::ScopedDataPipeConsumerHandle response_body) {
+  TransitionToStatus(Status::kSentBody);
+  url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
+}
+
+void ServiceWorkerNavigationLoader::CommitResponseBodyEmpty() {
+  TransitionToStatus(Status::kSentBody);
+  mojo::DataPipe pipe;
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(pipe.consumer_handle));
+  // pipe.producer_handle is closed here.
 }
 
 void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
@@ -414,8 +428,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
         this, std::move(version), std::move(body_as_stream->callback_request));
-    url_loader_client_->OnStartLoadingResponseBody(
-        std::move(body_as_stream->stream));
+    CommitResponseBody(std::move(body_as_stream->stream));
     // StreamWaiter will call CommitCompleted() when done.
     return;
   }
@@ -431,6 +444,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                        weak_factory_.GetWeakPtr()),
         &data_pipe);
     if (error != net::OK) {
+      CommitResponseBodyEmpty();
       CommitCompleted(error);
       return;
     }
@@ -439,7 +453,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "result", "blob response");
 
-    url_loader_client_->OnStartLoadingResponseBody(std::move(data_pipe));
+    CommitResponseBody(std::move(data_pipe));
     // We continue in OnBlobReadingComplete().
     return;
   }
@@ -449,7 +463,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "result", "no body");
 
-  // The response has no body.
+  CommitResponseBodyEmpty();
   CommitCompleted(net::OK);
 }
 
@@ -589,14 +603,17 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
     case Status::kSentHeader:
       DCHECK_EQ(status_, Status::kStarted);
       break;
+    case Status::kSentBody:
+      DCHECK_EQ(status_, Status::kSentHeader);
+      break;
     case Status::kCompleted:
-      // kNotStarted -> kCompleted happens on network fallback before
-      // interception.
-      // kStarted -> kCompleted happens on error or network fallback after
-      // interception.
-      // kSentHeader -> kCompleted happens in the success case or error
-      // while sending the body.
-      DCHECK_NE(status_, Status::kCompleted);
+      DCHECK(
+          // Network fallback before interception.
+          status_ == Status::kNotStarted ||
+          // Network fallback after interception.
+          status_ == Status::kStarted ||
+          // Success case or error while sending the response's body.
+          status_ == Status::kSentBody);
       break;
   }
 #endif  // DCHECK_IS_ON()

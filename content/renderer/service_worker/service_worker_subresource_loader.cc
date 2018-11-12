@@ -200,8 +200,7 @@ void ServiceWorkerSubresourceLoader::StartRequest(
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request.url.spec());
-  DCHECK_EQ(Status::kNotStarted, status_);
-  status_ = Status::kStarted;
+  TransitionToStatus(Status::kStarted);
 
   DCHECK(!ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
@@ -408,6 +407,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
     response_head_.was_fetched_via_service_worker = true;
     response_head_.was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();
+    CommitResponseBodyEmpty();
     CommitCompleted(net::OK);
     return;
   }
@@ -479,8 +479,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     }
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info_, response_head_);
-    // Set status to complete, but we expect to restart in FollowRedirect.
-    status_ = Status::kCompleted;
+    TransitionToStatus(Status::kSentRedirect);
     return;
   }
 
@@ -493,8 +492,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     DCHECK(url_loader_client_.is_bound());
     stream_waiter_ = std::make_unique<StreamWaiter>(
         this, std::move(body_as_stream->callback_request));
-    url_loader_client_->OnStartLoadingResponseBody(
-        std::move(body_as_stream->stream));
+    CommitResponseBody(std::move(body_as_stream->stream));
     return;
   }
 
@@ -507,13 +505,14 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     body_as_blob_size_ = response->blob->size;
 
     // If parallel reading is enabled, then start reading the body blob
-    // immediately.  This will allow the body to start buffering in the
+    // immediately. This will allow the body to start buffering in the
     // pipe while the side data is read.
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     if (base::FeatureList::IsEnabled(
             blink::features::kServiceWorkerParallelSideDataReading)) {
       int error = StartBlobReading(&data_pipe);
       if (error != net::OK) {
+        CommitResponseBodyEmpty();
         CommitCompleted(error);
         return;
       }
@@ -525,16 +524,29 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     return;
   }
 
-  // The response has no body.
+  CommitResponseBodyEmpty();
   CommitCompleted(net::OK);
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
-  DCHECK_EQ(Status::kStarted, status_);
+  TransitionToStatus(Status::kSentHeader);
   DCHECK(url_loader_client_.is_bound());
-  status_ = Status::kSentHeader;
   // TODO(kinuko): Fill the ssl_info.
   url_loader_client_->OnReceiveResponse(response_head_);
+}
+
+void ServiceWorkerSubresourceLoader::CommitResponseBody(
+    mojo::ScopedDataPipeConsumerHandle response_body) {
+  TransitionToStatus(Status::kSentBody);
+  url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
+}
+
+void ServiceWorkerSubresourceLoader::CommitResponseBodyEmpty() {
+  TransitionToStatus(Status::kSentBody);
+  mojo::DataPipe pipe;
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(pipe.consumer_handle));
+  // pipe.producer_handle is closed here.
 }
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
@@ -547,11 +559,10 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
   if (error_code == net::OK)
     RecordTimingMetrics(true /* handled */);
 
-  DCHECK_LT(status_, Status::kCompleted);
+  TransitionToStatus(Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
   body_as_blob_.reset();
   stream_waiter_.reset();
-  status_ = Status::kCompleted;
   network::URLLoaderCompletionStatus status;
   status.error_code = error_code;
   status.completion_time = base::TimeTicks::Now();
@@ -651,7 +662,7 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   resource_request_.referrer_policy = redirect_info_->new_referrer_policy;
 
   // Restart the request.
-  status_ = Status::kNotStarted;
+  TransitionToStatus(Status::kNotStarted);
   redirect_info_.reset();
   response_callback_binding_.Close();
   StartRequest(resource_request_);
@@ -726,7 +737,7 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
       "ServiceWorker.SubresourceNotifyStartLoadingResponseBodyDelay", delay);
 
   DCHECK(data_pipe.is_valid());
-  url_loader_client_->OnStartLoadingResponseBody(std::move(data_pipe));
+  CommitResponseBody(std::move(data_pipe));
 
   // If the blob reading completed before the side data reading, then we
   // must manually finalize the blob reading now.
@@ -815,6 +826,39 @@ void ServiceWorkerSubresourceLoaderFactory::OnConnectionError() {
   if (!bindings_.empty())
     return;
   delete this;
+}
+
+void ServiceWorkerSubresourceLoader::TransitionToStatus(Status new_status) {
+#if DCHECK_IS_ON()
+  switch (new_status) {
+    case Status::kNotStarted:
+      DCHECK_EQ(status_, Status::kSentRedirect);
+      break;
+    case Status::kStarted:
+      DCHECK_EQ(status_, Status::kNotStarted);
+      break;
+    case Status::kSentRedirect:
+      DCHECK_EQ(status_, Status::kStarted);
+      break;
+    case Status::kSentHeader:
+      DCHECK_EQ(status_, Status::kStarted);
+      break;
+    case Status::kSentBody:
+      DCHECK_EQ(status_, Status::kSentHeader);
+      break;
+    case Status::kCompleted:
+      DCHECK(
+          // Network fallback before interception.
+          status_ == Status::kNotStarted ||
+          // Network fallback after interception.
+          status_ == Status::kStarted ||
+          // Success case or error while sending the response's body.
+          status_ == Status::kSentBody);
+      break;
+  }
+#endif  // DCHECK_IS_ON()
+
+  status_ = new_status;
 }
 
 }  // namespace content
