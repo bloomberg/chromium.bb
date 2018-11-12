@@ -153,7 +153,7 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 }
 
 // static
-void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   // Changing the priority of the main thread causes performance regressions.
   // https://crbug.com/601270
   DCHECK(![[NSThread currentThread] isMainThread]);
