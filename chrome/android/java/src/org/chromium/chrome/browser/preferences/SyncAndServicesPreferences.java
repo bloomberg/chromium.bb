@@ -696,6 +696,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncBookmarks.setEnabled(true);
         mSyncHistory.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
         mSyncHistory.setEnabled(true);
+        mSyncPasswords.setChecked(syncTypes.contains(ModelType.PASSWORDS));
+        mSyncPasswords.setEnabled(true);
         mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
         mSyncRecentTabs.setEnabled(true);
         mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
@@ -706,11 +708,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncPaymentsIntegration.setChecked(
                 syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
         mSyncPaymentsIntegration.setEnabled(syncAutofill);
-
-        boolean passwordsConfigurable = mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isCryptographerReady();
-        mSyncPasswords.setChecked(passwordsConfigurable && syncTypes.contains(ModelType.PASSWORDS));
-        mSyncPasswords.setEnabled(passwordsConfigurable);
 
         // USER_EVENTS sync type doesn't work with custom passphrase and needs history sync
         boolean userEventsConfigurable =
