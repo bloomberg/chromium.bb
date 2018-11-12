@@ -257,9 +257,10 @@ void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
 
 void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    const RenderPassList& render_pass) {
+    RenderPassList* render_passes) {
   DCHECK(support_->GetHitTestAggregator());
-  support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId());
+  support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId(),
+                                              render_passes);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(

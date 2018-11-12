@@ -418,7 +418,7 @@ bool Display::DrawAndSwap() {
     TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
   bool should_draw = have_copy_requests || (have_damage && size_matches);
-  client_->DisplayWillDrawAndSwap(should_draw, frame.render_pass_list);
+  client_->DisplayWillDrawAndSwap(should_draw, &frame.render_pass_list);
 
   if (should_draw) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",

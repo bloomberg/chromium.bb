@@ -206,8 +206,8 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   else
     hit_test_region_list = client_->BuildHitTestData();
 
-  // TODO(zandershah): Add kHitTestDebug flag to |hit_test_region_list_| if
-  // |show_hit_test_borders| is set. https://crbug.com/895600
+  if (show_hit_test_borders)
+    hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
     last_submitted_local_surface_id_ = local_surface_id_;

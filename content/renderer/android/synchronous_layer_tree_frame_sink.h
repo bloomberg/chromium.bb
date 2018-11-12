@@ -166,9 +166,8 @@ class SynchronousLayerTreeFrameSink
 
   class StubDisplayClient : public viz::DisplayClient {
     void DisplayOutputSurfaceLost() override {}
-    void DisplayWillDrawAndSwap(
-        bool will_draw_and_swap,
-        const viz::RenderPassList& render_passes) override {}
+    void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                                viz::RenderPassList* render_passes) override {}
     void DisplayDidDrawAndSwap() override {}
     void DisplayDidReceiveCALayerParams(
         const gfx::CALayerParams& ca_layer_params) override {}

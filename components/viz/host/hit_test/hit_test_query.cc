@@ -58,6 +58,9 @@ const std::string GetFlagNames(uint32_t flag) {
       case kHitTestNotActive:
         name = "NotActive";
         break;
+      case kHitTestDebug:
+        name = "Debug";
+        break;
       case 0:
         break;
     }

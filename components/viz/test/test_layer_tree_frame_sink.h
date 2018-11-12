@@ -42,7 +42,7 @@ class TestLayerTreeFrameSinkClient {
       const LocalSurfaceId& local_surface_id) = 0;
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                                      const RenderPassList& render_passes) = 0;
+                                      RenderPassList* render_passes) = 0;
   virtual void DisplayDidDrawAndSwap() = 0;
 };
 
@@ -111,7 +111,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override;
+                              RenderPassList* render_passes) override;
   void DisplayDidDrawAndSwap() override;
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
