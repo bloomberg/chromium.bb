@@ -84,7 +84,7 @@
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
 <translation id="2339073806695260576">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge lasermarkøren og luppen.</translation>
 <translation id="2341729377289034582">Altid lodret</translation>
-<translation id="2352467521400612932">Penneindstillinger</translation>
+<translation id="2352467521400612932">Indstillinger for styluspen</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2365393535144473978">Bluetooth aktiveres, når du aktiverer mobildata.</translation>
@@ -146,7 +146,7 @@
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
-<translation id="3364721542077212959">Penneværktøjer</translation>
+<translation id="3364721542077212959">Styluspenværktøjer</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
 <translation id="3400357268283240774">Yderligere indstillinger</translation>
@@ -201,7 +201,7 @@
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
 <translation id="435527878592612277">Vælg dit billede</translation>
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
-<translation id="4379531060876907730">Dette er dine penneværktøjer</translation>
+<translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
@@ -296,7 +296,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6259254695169772643">Vælg ved hjælp af din styluspen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverer...</translation>
 <translation id="6284232397434400372">Opløsningen blev ændret</translation>
-<translation id="6297287540776456956">Brug pennen til at vælge et område</translation>
+<translation id="6297287540776456956">Brug styluspennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlejring</translation>
 <translation id="6344698853700675736">Slå Nattelys til/fra</translation>

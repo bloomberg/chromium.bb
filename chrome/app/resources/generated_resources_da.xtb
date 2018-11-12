@@ -1585,7 +1585,7 @@
 <translation id="3358935496594837302">Din telefon blev ikke fundet. Sørg for, at du bruger en kompatibel Android-telefon, der er tændt og befinder sig i nærheden. &lt;a&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="3359256513598016054">Begrænsninger for certifikatpolitik</translation>
 <translation id="3360297538363969800">Udskrivning mislykkedes. Kontrollér din printer, og prøv igen.</translation>
-<translation id="3364721542077212959">Penneværktøjer</translation>
+<translation id="3364721542077212959">Styluspenværktøjer</translation>
 <translation id="3365598184818502391">Brug enten Ctrl eller Alt</translation>
 <translation id="3367047597842238025">Konfigurer <ph name="DEVICE_TYPE" />, helt som du vil, og opdag alle de fantastiske funktioner, du har lige ved hånden.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
@@ -2428,7 +2428,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4668721319092543482">Klik for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Medlemmer af "<ph name="SOURCE_NAME" />" mister adgang, medmindre disse elementer deles med dem.</translation>
 <translation id="4672657274720418656">Destiller side</translation>
-<translation id="4673442866648850031">Åbn penneværktøjer, når pennen fjernes</translation>
+<translation id="4673442866648850031">Åbn styluspenværktøjer, når styluspennen fjernes</translation>
 <translation id="4677585247300749148"><ph name="URL" /> anmoder om at reagere på handlinger foretaget i hjælpetilstand</translation>
 <translation id="4677692029604506169">Den telefon, du har brugt til at låse din <ph name="DEVICE_TYPE" /> op, skal have en skærmlås af sikkerhedshensyn. Det er som regel en pinkode, et mønster eller en adgangskode. Har du allerede en skærmlås? Vælg Tjek igen for at bekræfte og fortsætte konfigurationen.</translation>
 <translation id="4677772697204437347">GPU-hukommelse</translation>
@@ -3259,7 +3259,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5860209693144823476">Fane 3</translation>
 <translation id="5860491529813859533">Aktivér</translation>
 <translation id="5860494867054883682">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="5862109781435984885">Vis penneværktøjer på hylden</translation>
+<translation id="5862109781435984885">Vis styluspenværktøjer på hylden</translation>
 <translation id="5863445608433396414">Aktivér fejlfindingsfunktioner</translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
 <translation id="586567932979200359">Du kører <ph name="PRODUCT_NAME" /> fra dets diskbillede. Hvis du installerer det på din computer, kan du køre det uden diskbilledet, og det vil blive opdateret løbende.</translation>
@@ -5196,7 +5196,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8782565991310229362">Start af kioskapplikationen blev annulleret.</translation>
 <translation id="8783093612333542422">&lt;Strong&gt;<ph name="SENDER" />&lt;/ Strong&gt; vil dele en printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/ Strong&gt; med dig.</translation>
 <translation id="8784626084144195648">Kasseret gennemsnit</translation>
-<translation id="8785622406424941542">Pen</translation>
+<translation id="8785622406424941542">Styluspen</translation>
 <translation id="8787254343425541995">Tillad proxyer til delte netværk</translation>
 <translation id="8791534160414513928">Send en anmodning om "Do Not Track" sammen med din browsertrafik</translation>
 <translation id="8794025342371547160">Adgangsbeskyttet IP-adresse</translation>
