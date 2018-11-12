@@ -1470,11 +1470,6 @@ bool ProfileSyncService::IsCryptographerReady(
   return engine_ && engine_->IsCryptographerReady(trans);
 }
 
-void ProfileSyncService::SetSyncAllowedByPlatform(bool allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_settings_.SetSyncAllowedByPlatform(allowed);
-}
-
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

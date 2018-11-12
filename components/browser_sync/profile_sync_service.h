@@ -443,8 +443,6 @@ class ProfileSyncService : public syncer::SyncService,
   // killed in the near future.
   void FlushDirectory() const;
 
-  // Set whether sync is currently allowed by the platform.
-  void SetSyncAllowedByPlatform(bool allowed);
   void SyncAllowedByPlatformChanged(bool allowed);
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
