@@ -896,7 +896,7 @@ function assembleDescription() {
   for (const line of getStack()) {
     const match = RE_IN_ASSERT_SELECTION.exec(line);
     if (!match) {
-      const RE_LAYOUTTESTS = new RegExp('(?:LayoutTests|web_tests).*');
+      const RE_LAYOUTTESTS = new RegExp('(?<=LayoutTests/|web_tests/).*');
       return RE_LAYOUTTESTS.exec(line);
     }
   }
