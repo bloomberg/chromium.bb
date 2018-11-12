@@ -53284,6 +53284,22 @@ Full version information for the fingerprint enum values:
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
 </enum>
 
+<enum name="WebViewUrlScheme">
+  <int value="0" label="Empty URL"/>
+  <int value="1" label="Unknown scheme"/>
+  <int value="2" label="HTTP"/>
+  <int value="3" label="HTTPS"/>
+  <int value="4" label="File"/>
+  <int value="5" label="Ftp"/>
+  <int value="6" label="Data"/>
+  <int value="7" label="Javascript"/>
+  <int value="8" label="About"/>
+  <int value="9" label="Chrome"/>
+  <int value="10" label="Blob"/>
+  <int value="11" label="Content"/>
+  <int value="12" label="Intent"/>
+</enum>
+
 <enum name="WelcomeSignInPromptOutcome">
   <int value="0" label="User navigated away from page"/>
   <int value="1" label="User clicked the No Thanks button"/>
