@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/common/bluetooth.mojom.h"
@@ -31,6 +32,7 @@ namespace {
 constexpr int16_t kTestRssi = -50;
 constexpr int16_t kTestRssi2 = -70;
 constexpr char kTestServiceUUID[] = "00001357-0000-1000-8000-00805f9b34fb";
+const std::vector<uint8_t> kEIR = {0x00, 0x01, 0x02};
 }  // namespace
 
 namespace arc {
@@ -58,6 +60,9 @@ class ArcBluetoothBridgeTest : public testing::Test {
         dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath),
         {kTestServiceUUID}, /* service_data = */ {},
         /* manufacture_data = */ {});
+    fake_bluetooth_device_client->UpdateEIR(
+        dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath),
+        kEIR);
     fake_bluetooth_gatt_service_client->ExposeHeartRateService(
         dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
     fake_bluetooth_gatt_characteristic_client->ExposeHeartRateCharacteristics(
@@ -102,7 +107,9 @@ class ArcBluetoothBridgeTest : public testing::Test {
         nullptr, arc_bridge_service_.get());
     fake_bluetooth_instance_ = std::make_unique<FakeBluetoothInstance>();
     arc_bridge_service_->bluetooth()->SetInstance(
-        fake_bluetooth_instance_.get(), 2);
+        fake_bluetooth_instance_.get(), 13);
+    base::SysInfo::SetChromeOSVersionInfoForTest(
+        "CHROMEOS_ARC_ANDROID_SDK_VERSION=28", base::Time::Now());
     WaitForInstanceReady(arc_bridge_service_->bluetooth());
 
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
@@ -252,6 +259,29 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
 // Invoke OnDiscoveryStarted to send cached device to BT instance,
 // and check correctness of the Advertising data sent via arc bridge.
 TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
+  EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
+  AddTestDevice();
+  EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
+
+  const auto& le_device_found_data =
+      fake_bluetooth_instance_->le_device_found_data().back();
+  const mojom::BluetoothAddressPtr& addr = le_device_found_data->addr();
+  const std::vector<uint8_t>& eir = le_device_found_data->eir();
+
+  EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
+            addr->To<std::string>());
+  EXPECT_EQ(kEIR, eir);
+  EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
+
+  ChangeTestDeviceRssi(kTestRssi2);
+  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(kTestRssi2,
+            fake_bluetooth_instance_->le_device_found_data().back()->rssi());
+}
+
+TEST_F(ArcBluetoothBridgeTest, LEDeviceFoundForN) {
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=27", base::Time::Now());
   EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
   EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());

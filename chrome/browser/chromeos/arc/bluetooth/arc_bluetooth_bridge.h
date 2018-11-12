@@ -94,6 +94,11 @@ class ArcBluetoothBridge
                         device::BluetoothDevice* device,
                         uint16_t mtu) override;
 
+  void DeviceAdvertisementReceived(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   int16_t rssi,
+                                   const std::vector<uint8_t>& eir) override;
+
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
