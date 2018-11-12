@@ -2613,8 +2613,6 @@ crbug.com/591500 [ Win10 ] virtual/layout_ng_experimental/printing/ellipsis-prin
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
-crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
-
 # Win7 does not support the needed DirectWrite APIs for font fallback
 crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 

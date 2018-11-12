@@ -40,7 +40,7 @@ test(function(t) {
     var axImg3 = accessibilityController.accessibleElementById("img3");
     assert_equals(axImg3.name, "img3-alt");
     assert_equals(axImg3.nameFrom, "attribute");
-}, "img element with title and alt");
+}, "img element with title and alt img3");
 </script>
 
 <div class="container">
@@ -52,7 +52,7 @@ test(function(t) {
     var axImg4 = accessibilityController.accessibleElementById("img4");
     assert_equals(axImg4.name, "img4-aria-label");
     assert_equals(axImg4.nameFrom, "attribute");
-}, "img element with title and alt");
+}, "img element with title and alt img4");
 </script>
 
 <div class="container">
@@ -65,7 +65,7 @@ test(function(t) {
     var axImg5 = accessibilityController.accessibleElementById("img5");
     assert_equals(axImg5.name, "img5-aria-labelledby");
     assert_equals(axImg5.nameFrom, "relatedElement");
-}, "img element with title and alt");
+}, "img element with title and alt img5");
 </script>
 
 <script>
