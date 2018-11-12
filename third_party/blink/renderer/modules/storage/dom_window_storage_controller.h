@@ -24,6 +24,8 @@ class MODULES_EXPORT DOMWindowStorageController final
  public:
   static const char kSupplementName[];
 
+  explicit DOMWindowStorageController(Document&);
+
   void Trace(blink::Visitor*) override;
 
   static DOMWindowStorageController& From(Document&);
@@ -32,9 +34,6 @@ class MODULES_EXPORT DOMWindowStorageController final
   void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override {}
   void DidRemoveAllEventListeners(LocalDOMWindow*) override {}
-
- private:
-  explicit DOMWindowStorageController(Document&);
 };
 
 }  // namespace blink

@@ -40,7 +40,7 @@ AXSVGRoot::~AXSVGRoot() = default;
 
 AXSVGRoot* AXSVGRoot::Create(LayoutObject* layout_object,
                              AXObjectCacheImpl& ax_object_cache) {
-  return new AXSVGRoot(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXSVGRoot>(layout_object, ax_object_cache);
 }
 
 void AXSVGRoot::SetParent(AXObject* parent) {

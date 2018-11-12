@@ -39,12 +39,11 @@ class Node;
 class AXObjectCacheImpl;
 
 class AXInlineTextBox final : public AXObject {
- private:
-  AXInlineTextBox(scoped_refptr<AbstractInlineTextBox>, AXObjectCacheImpl&);
-
  public:
   static AXInlineTextBox* Create(scoped_refptr<AbstractInlineTextBox>,
                                  AXObjectCacheImpl&);
+
+  AXInlineTextBox(scoped_refptr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
  protected:
   void Init() override;

@@ -39,11 +39,10 @@ class AXObjectCacheImpl;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXLayoutObject {
- private:
-  AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
-
  public:
   static AXListBoxOption* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
   ~AXListBoxOption() override;
 
   bool IsAXListBoxOption() const override { return true; }

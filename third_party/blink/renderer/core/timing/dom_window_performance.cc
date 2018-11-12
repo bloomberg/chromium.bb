@@ -25,7 +25,7 @@ DOMWindowPerformance& DOMWindowPerformance::From(LocalDOMWindow& window) {
   DOMWindowPerformance* supplement =
       Supplement<LocalDOMWindow>::From<DOMWindowPerformance>(window);
   if (!supplement) {
-    supplement = new DOMWindowPerformance(window);
+    supplement = MakeGarbageCollected<DOMWindowPerformance>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;

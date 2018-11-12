@@ -25,6 +25,8 @@ class CORE_EXPORT DOMPointReadOnly : public ScriptWrappable {
   static DOMPointReadOnly* Create(double x, double y, double z, double w);
   static DOMPointReadOnly* fromPoint(const DOMPointInit*);
 
+  DOMPointReadOnly(double x, double y, double z, double w);
+
   double x() const { return x_; }
   double y() const { return y_; }
   double z() const { return z_; }
@@ -34,8 +36,6 @@ class CORE_EXPORT DOMPointReadOnly : public ScriptWrappable {
   DOMPoint* matrixTransform(DOMMatrixInit*, ExceptionState&);
 
  protected:
-  DOMPointReadOnly(double x, double y, double z, double w);
-
   double x_;
   double y_;
   double z_;

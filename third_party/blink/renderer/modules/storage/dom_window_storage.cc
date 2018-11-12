@@ -37,7 +37,7 @@ DOMWindowStorage& DOMWindowStorage::From(LocalDOMWindow& window) {
   DOMWindowStorage* supplement =
       Supplement<LocalDOMWindow>::From<DOMWindowStorage>(window);
   if (!supplement) {
-    supplement = new DOMWindowStorage(window);
+    supplement = MakeGarbageCollected<DOMWindowStorage>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;

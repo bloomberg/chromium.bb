@@ -39,6 +39,29 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit*, ExceptionState&);
   static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit*, ExceptionState&);
   static DOMMatrixReadOnly* CreateForSerialization(double[], int size);
+
+  DOMMatrixReadOnly() = default;
+  DOMMatrixReadOnly(const String&, ExceptionState&);
+  DOMMatrixReadOnly(const TransformationMatrix&, bool is2d = true);
+
+  template <typename T>
+  DOMMatrixReadOnly(T sequence, int size) {
+    if (size == 6) {
+      matrix_ =
+          TransformationMatrix::Create(sequence[0], sequence[1], sequence[2],
+                                       sequence[3], sequence[4], sequence[5]);
+      is2d_ = true;
+    } else if (size == 16) {
+      matrix_ = TransformationMatrix::Create(
+          sequence[0], sequence[1], sequence[2], sequence[3], sequence[4],
+          sequence[5], sequence[6], sequence[7], sequence[8], sequence[9],
+          sequence[10], sequence[11], sequence[12], sequence[13], sequence[14],
+          sequence[15]);
+      is2d_ = false;
+    } else {
+      NOTREACHED();
+    }
+  }
   ~DOMMatrixReadOnly() override;
 
   double a() const { return matrix_->M11(); }
@@ -113,29 +136,6 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   }
 
  protected:
-  DOMMatrixReadOnly() = default;
-  DOMMatrixReadOnly(const String&, ExceptionState&);
-  DOMMatrixReadOnly(const TransformationMatrix&, bool is2d = true);
-
-  template <typename T>
-  DOMMatrixReadOnly(T sequence, int size) {
-    if (size == 6) {
-      matrix_ =
-          TransformationMatrix::Create(sequence[0], sequence[1], sequence[2],
-                                       sequence[3], sequence[4], sequence[5]);
-      is2d_ = true;
-    } else if (size == 16) {
-      matrix_ = TransformationMatrix::Create(
-          sequence[0], sequence[1], sequence[2], sequence[3], sequence[4],
-          sequence[5], sequence[6], sequence[7], sequence[8], sequence[9],
-          sequence[10], sequence[11], sequence[12], sequence[13], sequence[14],
-          sequence[15]);
-      is2d_ = false;
-    } else {
-      NOTREACHED();
-    }
-  }
-
   void SetMatrixValueFromString(const ExecutionContext*,
                                 const String&,
                                 ExceptionState&);

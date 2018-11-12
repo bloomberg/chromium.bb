@@ -221,7 +221,7 @@ void EventPath::CalculateAdjustedTargets() {
 void EventPath::BuildRelatedNodeMap(const Node& related_node,
                                     RelatedTargetMap& related_target_map) {
   EventPath* related_target_event_path =
-      new EventPath(const_cast<Node&>(related_node));
+      MakeGarbageCollected<EventPath>(const_cast<Node&>(related_node));
   for (const auto& tree_scope_event_context :
        related_target_event_path->tree_scope_event_contexts_) {
     related_target_map.insert(&tree_scope_event_context->GetTreeScope(),

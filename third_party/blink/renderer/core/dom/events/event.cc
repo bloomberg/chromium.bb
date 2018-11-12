@@ -299,7 +299,7 @@ void Event::SetUnderlyingEvent(Event* ue) {
 
 void Event::InitEventPath(Node& node) {
   if (!event_path_) {
-    event_path_ = new EventPath(node, this);
+    event_path_ = MakeGarbageCollected<EventPath>(node, this);
   } else {
     event_path_->InitializeWith(node, this);
   }

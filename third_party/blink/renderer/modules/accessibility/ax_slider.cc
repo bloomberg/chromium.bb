@@ -42,7 +42,7 @@ AXSlider::AXSlider(LayoutObject* layout_object,
 
 AXSlider* AXSlider::Create(LayoutObject* layout_object,
                            AXObjectCacheImpl& ax_object_cache) {
-  return new AXSlider(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXSlider>(layout_object, ax_object_cache);
 }
 
 ax::mojom::Role AXSlider::DetermineAccessibilityRole() {
@@ -129,7 +129,7 @@ AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache) {}
 
 AXSliderThumb* AXSliderThumb::Create(AXObjectCacheImpl& ax_object_cache) {
-  return new AXSliderThumb(ax_object_cache);
+  return MakeGarbageCollected<AXSliderThumb>(ax_object_cache);
 }
 
 LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {

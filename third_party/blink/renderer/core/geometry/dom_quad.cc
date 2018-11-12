@@ -16,18 +16,20 @@ DOMQuad* DOMQuad::Create(const DOMPointInit* p1,
                          const DOMPointInit* p2,
                          const DOMPointInit* p3,
                          const DOMPointInit* p4) {
-  return new DOMQuad(p1, p2, p3, p4);
+  return MakeGarbageCollected<DOMQuad>(p1, p2, p3, p4);
 }
 
 DOMQuad* DOMQuad::fromRect(const DOMRectInit* other) {
-  return new DOMQuad(other->x(), other->y(), other->width(), other->height());
+  return MakeGarbageCollected<DOMQuad>(other->x(), other->y(), other->width(),
+                                       other->height());
 }
 
 DOMQuad* DOMQuad::fromQuad(const DOMQuadInit* other) {
-  return new DOMQuad(other->hasP1() ? other->p1() : DOMPointInit::Create(),
-                     other->hasP2() ? other->p2() : DOMPointInit::Create(),
-                     other->hasP3() ? other->p3() : DOMPointInit::Create(),
-                     other->hasP3() ? other->p4() : DOMPointInit::Create());
+  return MakeGarbageCollected<DOMQuad>(
+      other->hasP1() ? other->p1() : DOMPointInit::Create(),
+      other->hasP2() ? other->p2() : DOMPointInit::Create(),
+      other->hasP3() ? other->p3() : DOMPointInit::Create(),
+      other->hasP3() ? other->p4() : DOMPointInit::Create());
 }
 
 DOMRect* DOMQuad::getBounds() {

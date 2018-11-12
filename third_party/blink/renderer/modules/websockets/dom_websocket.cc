@@ -276,7 +276,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  DOMWebSocket* websocket = new DOMWebSocket(context);
+  DOMWebSocket* websocket = MakeGarbageCollected<DOMWebSocket>(context);
   websocket->PauseIfNeeded();
 
   if (protocols.IsNull()) {

@@ -90,7 +90,7 @@ using namespace html_names;
 
 // static
 AXObjectCache* AXObjectCacheImpl::Create(Document& document) {
-  return new AXObjectCacheImpl(document);
+  return MakeGarbageCollected<AXObjectCacheImpl>(document);
 }
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
@@ -362,7 +362,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibleNode* accessible_node) {
   if (AXObject* obj = Get(accessible_node))
     return obj;
 
-  AXObject* new_obj = new AXVirtualObject(*this, accessible_node);
+  AXObject* new_obj =
+      MakeGarbageCollected<AXVirtualObject>(*this, accessible_node);
   const AXID ax_id = GetOrCreateAXID(new_obj);
   accessible_node_mapping_.Set(accessible_node, ax_id);
 

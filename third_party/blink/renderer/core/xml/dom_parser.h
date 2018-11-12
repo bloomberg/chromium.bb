@@ -35,8 +35,11 @@ class DOMParser final : public ScriptWrappable {
 
  public:
   static DOMParser* Create(Document& document) {
-    return new DOMParser(document);
+    return MakeGarbageCollected<DOMParser>(document);
   }
+
+  explicit DOMParser(Document&);
+
   Document* parseFromString(const StringOrTrustedHTML&,
                             const String& type,
                             ExceptionState& exception_state);
@@ -46,7 +49,6 @@ class DOMParser final : public ScriptWrappable {
 
  private:
   Document* parseFromStringInternal(const String&, const String& type);
-  explicit DOMParser(Document&);
 
   WeakMember<Document> context_document_;
 };

@@ -30,7 +30,7 @@ DOMWindowStorageController& DOMWindowStorageController::From(
   DOMWindowStorageController* controller =
       Supplement<Document>::From<DOMWindowStorageController>(document);
   if (!controller) {
-    controller = new DOMWindowStorageController(document);
+    controller = MakeGarbageCollected<DOMWindowStorageController>(document);
     ProvideTo(document, controller);
   }
   return *controller;

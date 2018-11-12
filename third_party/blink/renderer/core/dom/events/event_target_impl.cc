@@ -7,7 +7,7 @@
 namespace blink {
 
 EventTargetImpl* EventTargetImpl::Create(ScriptState* script_state) {
-  return new EventTargetImpl(script_state);
+  return MakeGarbageCollected<EventTargetImpl>(script_state);
 }
 
 const AtomicString& EventTargetImpl::InterfaceName() const {

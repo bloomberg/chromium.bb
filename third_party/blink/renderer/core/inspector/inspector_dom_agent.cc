@@ -451,7 +451,7 @@ Response InspectorDOMAgent::AssertEditableElement(int node_id,
 void InspectorDOMAgent::EnableAndReset() {
   enabled_.Set(true);
   history_ = MakeGarbageCollected<InspectorHistory>();
-  dom_editor_ = new DOMEditor(history_.Get());
+  dom_editor_ = MakeGarbageCollected<DOMEditor>(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
   instrumenting_agents_->addInspectorDOMAgent(this);
 }
