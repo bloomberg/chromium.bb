@@ -247,10 +247,12 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest,
                   .GetProfileAttributesWithPath(profile->GetPath(), &entry));
   entry->SetIsSigninRequired(true);
   size_t num_browsers = BrowserList::GetInstance()->size();
+  base::RunLoop run_loop;
+  UserManager::AddOnUserManagerShownCallbackForTesting(run_loop.QuitClosure());
   profiles::OpenBrowserWindowForProfile(
       ProfileManager::CreateCallback(), true, false, false, profile,
       Profile::CreateStatus::CREATE_STATUS_INITIALIZED);
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(num_browsers, BrowserList::GetInstance()->size());
   EXPECT_TRUE(UserManager::IsShowing());
 }
