@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -1187,7 +1188,7 @@ Status IndexedDBDatabase::GetAllOperation(
   if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
     // IndexedDBKey already supports an array of values so we can leverage  this
     // to return an array of keys - no need to create our own array of keys.
-    callbacks->OnSuccess(IndexedDBKey(found_keys));
+    callbacks->OnSuccess(IndexedDBKey(std::move(found_keys)));
   } else {
     callbacks->OnSuccessArray(&found_values);
   }

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/common/indexeddb/indexeddb_mojom_traits.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
@@ -166,22 +168,21 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::Read(
       std::vector<blink::IndexedDBKey> array;
       if (!data.ReadKeyArray(&array))
         return false;
-      *out = blink::IndexedDBKey(array);
+      *out = blink::IndexedDBKey(std::move(array));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::BINARY: {
-      std::vector<uint8_t> binary;
-      if (!data.ReadBinary(&binary))
-        return false;
-      *out = blink::IndexedDBKey(
-          std::string(binary.data(), binary.data() + binary.size()));
+      ArrayDataView<uint8_t> bytes;
+      data.GetBinaryDataView(&bytes);
+      std::string binary(bytes.data(), bytes.data() + bytes.size());
+      *out = blink::IndexedDBKey(std::move(binary));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::STRING: {
       base::string16 string;
       if (!data.ReadString(&string))
         return false;
-      *out = blink::IndexedDBKey(string);
+      *out = blink::IndexedDBKey(std::move(string));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
