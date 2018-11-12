@@ -31,7 +31,7 @@ class TextEncoderStream final : public ScriptWrappable {
 
   // From text_encoder_stream.idl
   String encoding() const;
-  ScriptValue readable(ScriptState*, ExceptionState&) const;
+  ReadableStream* readable() const;
   ScriptValue writable(ScriptState*, ExceptionState&) const;
 
   void Trace(Visitor* visitor) override;

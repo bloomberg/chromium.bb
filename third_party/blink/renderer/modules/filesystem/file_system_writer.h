@@ -14,6 +14,7 @@ namespace blink {
 class Blob;
 class ExceptionState;
 class FetchDataLoader;
+class ReadableStream;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -40,7 +41,7 @@ class FileSystemWriter final : public ScriptWrappable {
   ScriptPromise WriteBlob(ScriptState*, uint64_t position, Blob*);
   ScriptPromise WriteStream(ScriptState*,
                             uint64_t position,
-                            ScriptValue stream,
+                            ReadableStream* stream,
                             ExceptionState&);
 
   void WriteComplete(base::File::Error result, uint64_t bytes_written);

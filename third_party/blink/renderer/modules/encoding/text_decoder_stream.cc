@@ -167,9 +167,8 @@ String TextDecoderStream::encoding() const {
   return String(encoding_.GetName()).LowerASCII();
 }
 
-ScriptValue TextDecoderStream::readable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Readable(script_state, exception_state);
+ReadableStream* TextDecoderStream::readable() const {
+  return transform_->Readable();
 }
 
 ScriptValue TextDecoderStream::writable(ScriptState* script_state,

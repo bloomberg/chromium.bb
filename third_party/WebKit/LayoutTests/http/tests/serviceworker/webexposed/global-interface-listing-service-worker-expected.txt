@@ -1075,6 +1075,7 @@ interface PushSubscriptionOptions
     getter userVisibleOnly
     method constructor
 interface ReadableStream
+    attribute @@toStringTag
     getter locked
     method cancel
     method constructor
@@ -1209,6 +1210,7 @@ interface TextEncoderStream
     getter writable
     method constructor
 interface TransformStream
+    attribute @@toStringTag
     getter readable
     getter writable
     method constructor

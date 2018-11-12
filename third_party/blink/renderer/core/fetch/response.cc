@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_form_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_search_params.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"
@@ -198,17 +198,11 @@ Response* Response::Create(ScriptState* script_state,
         new FormDataBytesConsumer(execution_context, std::move(form_data)),
         nullptr /* AbortSignal */);
     content_type = "application/x-www-form-urlencoded;charset=UTF-8";
-  } else if (ReadableStreamOperations::IsReadableStream(
-                 script_state, body_value, exception_state)
-                 .value_or(true)) {
-    if (exception_state.HadException())
-      return nullptr;
+  } else if (V8ReadableStream::hasInstance(body, isolate)) {
     UseCounter::Count(execution_context,
                       WebFeature::kFetchResponseConstructionWithStream);
-    body_buffer =
-        new BodyStreamBuffer(script_state, body_value, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    body_buffer = new BodyStreamBuffer(
+        script_state, V8ReadableStream::ToImpl(body.As<v8::Object>()));
   } else {
     String string = NativeValueTraits<IDLUSVString>::NativeValue(
         isolate, body, exception_state);

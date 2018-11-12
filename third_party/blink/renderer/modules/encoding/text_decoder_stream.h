@@ -38,7 +38,7 @@ class TextDecoderStream final : public ScriptWrappable {
   String encoding() const;
   bool fatal() const { return fatal_; }
   bool ignoreBOM() const { return ignore_bom_; }
-  ScriptValue readable(ScriptState*, ExceptionState&) const;
+  ReadableStream* readable() const;
   ScriptValue writable(ScriptState*, ExceptionState&) const;
 
   void Trace(Visitor* visitor) override;

@@ -4,12 +4,24 @@
 
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
+
+class ReadableStream::NoopFunction : public ScriptFunction {
+ public:
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
+    auto* self = MakeGarbageCollected<NoopFunction>(script_state);
+    return self->BindToV8Function();
+  }
+  NoopFunction(ScriptState* script_state) : ScriptFunction(script_state) {}
+  ScriptValue Call(ScriptValue value) override { return value; }
+};
 
 ReadableStream::ReadableStream(ScriptState* script_state,
                                v8::Local<v8::Object> object)
@@ -47,14 +59,30 @@ ReadableStream* ReadableStream::Create(ScriptState* script_state,
     return nullptr;
 
   DCHECK(value.V8Value()->IsObject());
-
-  return MakeGarbageCollected<ReadableStream>(script_state,
-                                              value.V8Value().As<v8::Object>());
+  return CreateFromInternalStream(script_state, value, exception_state);
 }
 
-void ReadableStream::Trace(Visitor* visitor) {
-  visitor->Trace(object_);
-  ScriptWrappable::Trace(visitor);
+ReadableStream* ReadableStream::CreateFromInternalStream(
+    ScriptState* script_state,
+    v8::Local<v8::Object> object,
+    ExceptionState& exception_state) {
+  auto* stream = MakeGarbageCollected<ReadableStream>(script_state, object);
+
+  v8::TryCatch block(script_state->GetIsolate());
+  if (!stream->Init(script_state)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return nullptr;
+  }
+  return stream;
+}
+
+ReadableStream* ReadableStream::CreateFromInternalStream(
+    ScriptState* script_state,
+    ScriptValue object,
+    ExceptionState& exception_state) {
+  DCHECK(object.IsObject());
+  return CreateFromInternalStream(
+      script_state, object.V8Value().As<v8::Object>(), exception_state);
 }
 
 ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
@@ -74,9 +102,17 @@ ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
     return nullptr;
 
   DCHECK(value.V8Value()->IsObject());
+  v8::Local<v8::Object> object = value.V8Value().As<v8::Object>();
+  auto* stream = MakeGarbageCollected<ReadableStream>(script_state, object);
 
-  return MakeGarbageCollected<ReadableStream>(script_state,
-                                              value.V8Value().As<v8::Object>());
+  if (!stream->Init(script_state))
+    return nullptr;
+  return stream;
+}
+
+void ReadableStream::Trace(Visitor* visitor) {
+  visitor->Trace(object_);
+  ScriptWrappable::Trace(visitor);
 }
 
 ScriptPromise ReadableStream::cancel(ScriptState* script_state,
@@ -106,13 +142,13 @@ ScriptPromise ReadableStream::cancel(ScriptState* script_state,
     return ScriptPromise();
 
   return ReadableStreamOperations::Cancel(
-      script_state, AsScriptValue(script_state), reason, exception_state);
+      script_state, GetInternalStream(script_state), reason, exception_state);
 }
 
 ScriptValue ReadableStream::getReader(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   return ReadableStreamOperations::GetReader(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 ScriptValue ReadableStream::getReader(ScriptState* script_state,
@@ -150,7 +186,7 @@ ScriptValue ReadableStream::getReader(ScriptState* script_state,
     return ScriptValue();
   }
   return ReadableStreamOperations::GetReader(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
@@ -211,7 +247,15 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
   ScriptPromise promise =
       pipeTo(script_state, ScriptValue(script_state, writable), options,
              exception_state);
-
+  if (!exception_state.HadException()) {
+    // set promise.[[PromiseIsHandled]] to true.
+    // We don't have a primitive to do this, so let's attach a catch handler.
+    //
+    // ScriptPromise::Then(f, g) is a confusing interface, it is actually
+    // |promise.then(f).catch(g)|.
+    promise.Then(v8::Local<v8::Function>(),
+                 NoopFunction::CreateFunction(script_state));
+  }
   return ScriptValue(script_state, readable);
 }
 
@@ -258,22 +302,47 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
   DCHECK(!exception_state.HadException());
 
   return ReadableStreamOperations::PipeTo(
-      script_state, AsScriptValue(script_state), destination, options,
+      script_state, GetInternalStream(script_state), destination, options,
       exception_state);
 }
 
 ScriptValue ReadableStream::tee(ScriptState* script_state,
                                 ExceptionState& exception_state) {
-  if (locked(script_state, exception_state) &&
-      !exception_state.HadException()) {
-    exception_state.ThrowTypeError("The stream is already locked.");
-  }
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ReadableStream* branch1 = nullptr;
+  ReadableStream* branch2 = nullptr;
 
-  if (exception_state.HadException())
+  Tee(script_state, &branch1, &branch2, exception_state);
+
+  if (!branch1 || !branch2)
     return ScriptValue();
 
-  return ReadableStreamOperations::Tee(
-      script_state, AsScriptValue(script_state), exception_state);
+  DCHECK(!exception_state.HadException());
+
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Array> array = v8::Array::New(isolate, 2);
+  v8::Local<v8::Object> global = context->Global();
+
+  v8::Local<v8::Value> v8_branch1 = ToV8(branch1, global, isolate);
+  if (v8_branch1.IsEmpty()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
+  v8::Local<v8::Value> v8_branch2 = ToV8(branch2, global, isolate);
+  if (v8_branch1.IsEmpty()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
+  if (array->Set(context, V8String(isolate, "0"), v8_branch1).IsNothing()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
+  if (array->Set(context, V8String(isolate, "1"), v8_branch2).IsNothing()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
+  return ScriptValue(script_state, array);
 }
 
 void ReadableStream::Tee(ScriptState* script_state,
@@ -282,7 +351,16 @@ void ReadableStream::Tee(ScriptState* script_state,
                          ExceptionState& exception_state) {
   v8::Local<v8::Context> context = script_state->GetContext();
 
-  ScriptValue tee_result = tee(script_state, exception_state);
+  if (locked(script_state, exception_state) &&
+      !exception_state.HadException()) {
+    exception_state.ThrowTypeError("The stream is already locked.");
+  }
+
+  if (exception_state.HadException())
+    return;
+
+  ScriptValue tee_result = ReadableStreamOperations::Tee(
+      script_state, GetInternalStream(script_state), exception_state);
   if (tee_result.IsEmpty())
     return;
 
@@ -305,43 +383,53 @@ void ReadableStream::Tee(ScriptState* script_state,
   DCHECK(v8_branch1->IsObject());
   DCHECK(v8_branch2->IsObject());
 
-  *branch1 = new ReadableStream(script_state, v8_branch1.As<v8::Object>());
-  *branch2 = new ReadableStream(script_state, v8_branch2.As<v8::Object>());
+  ReadableStream* temp_branch1 = CreateFromInternalStream(
+      script_state, v8_branch1.As<v8::Object>(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  ReadableStream* temp_branch2 = CreateFromInternalStream(
+      script_state, v8_branch2.As<v8::Object>(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  *branch1 = temp_branch1;
+  *branch2 = temp_branch2;
 }
 
 base::Optional<bool> ReadableStream::IsLocked(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsLocked(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 base::Optional<bool> ReadableStream::IsDisturbed(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsDisturbed(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 base::Optional<bool> ReadableStream::IsReadable(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsReadable(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 base::Optional<bool> ReadableStream::IsClosed(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsClosed(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 base::Optional<bool> ReadableStream::IsErrored(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
   return ReadableStreamOperations::IsErrored(
-      script_state, AsScriptValue(script_state), exception_state);
+      script_state, GetInternalStream(script_state), exception_state);
 }
 
 void ReadableStream::LockAndDisturb(ScriptState* script_state,
@@ -360,9 +448,36 @@ void ReadableStream::LockAndDisturb(ScriptState* script_state,
   ReadableStreamOperations::DefaultReaderRead(script_state, reader);
 }
 
-ScriptValue ReadableStream::AsScriptValue(ScriptState* script_state) const {
+ScriptValue ReadableStream::GetInternalStream(ScriptState* script_state) const {
   return ScriptValue(script_state,
                      object_.NewLocal(script_state->GetIsolate()));
+}
+
+bool ReadableStream::Init(ScriptState* script_state) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Object> internal_stream = object_.NewLocal(isolate);
+  v8::Local<v8::Value> wrapper = ToV8(this, script_state);
+  if (wrapper.IsEmpty())
+    return false;
+
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Object> bindings =
+      context->GetExtrasBindingObject().As<v8::Object>();
+  v8::Local<v8::Value> symbol_value;
+  if (!bindings->Get(context, V8String(isolate, "internalReadableStreamSymbol"))
+           .ToLocal(&symbol_value)) {
+    return false;
+  }
+
+  if (wrapper.As<v8::Object>()
+          ->Set(context, symbol_value.As<v8::Symbol>(), internal_stream)
+          .IsNothing()) {
+    return false;
+  }
+
+  // This is needed because sometimes a ReadableStream can be detached from
+  // the owner object such as Response.
+  return RetainWrapperDuringConstruction(this, script_state);
 }
 
 }  // namespace blink

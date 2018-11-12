@@ -5725,6 +5725,7 @@ interface Range
     method surroundContents
     method toString
 interface ReadableStream
+    attribute @@toStringTag
     getter locked
     method cancel
     method constructor
@@ -7453,6 +7454,7 @@ interface TrackEvent : Event
     getter track
     method constructor
 interface TransformStream
+    attribute @@toStringTag
     getter readable
     getter writable
     method constructor

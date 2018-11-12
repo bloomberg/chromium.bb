@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -23,48 +24,6 @@ namespace {
 // Web platform tests test ReadableStream more thoroughly from scripts.
 class ReadableStreamTest : public testing::Test {
  public:
-  class TestUnderlyingSource final : public UnderlyingSourceBase {
-   public:
-    explicit TestUnderlyingSource(ScriptState* script_state)
-        : UnderlyingSourceBase(script_state) {}
-
-    // Just expose the controller methods for easy testing
-    void Enqueue(ScriptValue value) { Controller()->Enqueue(value); }
-    void Close() { Controller()->Close(); }
-    void SetError(ScriptValue value) { Controller()->GetError(value); }
-    double DesiredSize() { return Controller()->DesiredSize(); }
-
-    ScriptPromise Start(ScriptState* script_state) override {
-      DCHECK(!is_start_called_);
-      is_start_called_ = true;
-      return ScriptPromise::CastUndefined(script_state);
-    }
-    ScriptPromise Cancel(ScriptState* script_state,
-                         ScriptValue reason) override {
-      DCHECK(!is_cancelled_);
-      DCHECK(!is_cancelled_with_undefined_);
-      DCHECK(!is_cancelled_with_null_);
-
-      is_cancelled_ = true;
-      is_cancelled_with_undefined_ = reason.V8Value()->IsUndefined();
-      is_cancelled_with_null_ = reason.V8Value()->IsNull();
-      return ScriptPromise::CastUndefined(script_state);
-    }
-
-    bool IsStartCalled() const { return is_start_called_; }
-    bool IsCancelled() const { return is_cancelled_; }
-    bool IsCancelledWithUndefined() const {
-      return is_cancelled_with_undefined_;
-    }
-    bool IsCancelledWithNull() const { return is_cancelled_with_null_; }
-
-   private:
-    bool is_start_called_ = false;
-    bool is_cancelled_ = false;
-    bool is_cancelled_with_undefined_ = false;
-    bool is_cancelled_with_null_ = false;
-  };
-
   base::Optional<String> ReadAll(V8TestingScope& scope,
                                  ReadableStream* stream) {
     ScriptState* script_state = scope.GetScriptState();

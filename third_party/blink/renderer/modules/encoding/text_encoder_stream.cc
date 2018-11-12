@@ -170,9 +170,8 @@ String TextEncoderStream::encoding() const {
   return "utf-8";
 }
 
-ScriptValue TextEncoderStream::readable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Readable(script_state, exception_state);
+ReadableStream* TextEncoderStream::readable() const {
+  return transform_->Readable();
 }
 
 ScriptValue TextEncoderStream::writable(ScriptState* script_state,

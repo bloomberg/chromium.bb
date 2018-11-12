@@ -24,6 +24,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Use one of Create functions. This is public only for MakeGarbageCollected.
   ReadableStream(ScriptState*, v8::Local<v8::Object> object);
 
   static ReadableStream* Create(ScriptState*, ExceptionState&);
@@ -34,7 +35,12 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                 ScriptValue underlying_source,
                                 ScriptValue strategy,
                                 ExceptionState&);
-
+  static ReadableStream* CreateFromInternalStream(ScriptState*,
+                                                  v8::Local<v8::Object> object,
+                                                  ExceptionState&);
+  static ReadableStream* CreateFromInternalStream(ScriptState*,
+                                                  ScriptValue object,
+                                                  ExceptionState&);
   // This function doesn't take ExceptionState because the caller cannot have
   // one. Returns null when an error happens.
   static ReadableStream* CreateWithCountQueueingStrategy(
@@ -80,7 +86,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   // Makes this stream locked and disturbed.
   void LockAndDisturb(ScriptState*, ExceptionState&);
 
-  ScriptValue AsScriptValue(ScriptState* script_state) const;
+  ScriptValue GetInternalStream(ScriptState* script_state) const;
 
   // In some cases we are known to fail to trace the stream correctly. In such
   // cases |object_| will be silently gone. This function is for detecting the
@@ -89,6 +95,10 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   bool IsInternalStreamMissing() const { return object_.IsEmpty(); }
 
  private:
+  class NoopFunction;
+
+  bool Init(ScriptState*);
+
   TraceWrapperV8Reference<v8::Object> object_;
 };
 

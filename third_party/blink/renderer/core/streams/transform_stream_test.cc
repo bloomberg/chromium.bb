@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
@@ -30,7 +31,6 @@
 namespace blink {
 
 namespace {
-
 using ::testing::_;
 using ::testing::Mock;
 
@@ -54,15 +54,14 @@ class TransformStreamTest : public ::testing::Test {
   // and copies them onto the global object so they can be accessed by Eval().
   void CopyReadableAndWritableToGlobal(const V8TestingScope& scope) {
     auto* script_state = scope.GetScriptState();
-    ScriptValue readable =
-        Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
+    ReadableStream* readable = Stream()->Readable();
     ScriptValue writable =
         Stream()->Writable(script_state, ASSERT_NO_EXCEPTION);
     v8::Local<v8::Object> global = script_state->GetContext()->Global();
     EXPECT_TRUE(global
                     ->Set(scope.GetContext(),
                           V8String(scope.GetIsolate(), "readable"),
-                          readable.V8Value())
+                          ToV8(readable, script_state))
                     .IsJust());
     EXPECT_TRUE(global
                     ->Set(scope.GetContext(),
@@ -143,15 +142,11 @@ TEST_F(TransformStreamTest, Construct) {
 TEST_F(TransformStreamTest, Accessors) {
   V8TestingScope scope;
   Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
-  ScriptValue readable =
-      Stream()->Readable(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ReadableStream* readable = Stream()->Readable();
   ScriptValue writable =
       Stream()->Writable(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(readable.IsObject());
+  EXPECT_TRUE(readable);
   EXPECT_TRUE(writable.IsObject());
-  EXPECT_TRUE(ReadableStreamOperations::IsReadableStream(
-                  scope.GetScriptState(), readable, ASSERT_NO_EXCEPTION)
-                  .value_or(false));
   // TODO(ricea): Check writable too once we have a wrapper for
   // IsWritableStream().
 }
@@ -314,9 +309,8 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
                         "const writer = writable.getWriter();\n"
                         "writer.write('a');\n");
 
-  ScriptValue readable = Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
-  ScriptValue reader = ReadableStreamOperations::GetReader(
-      script_state, readable, ASSERT_NO_EXCEPTION);
+  ReadableStream* readable = Stream()->Readable();
+  ScriptValue reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
   bool chunk_seen = false;
   ReadableStreamOperations::DefaultReaderRead(script_state, reader)
       .Then(ExpectChunkIsString::Create(script_state, "a", &chunk_seen),
@@ -356,9 +350,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
                         "const writer = writable.getWriter();\n"
                         "writer.close();\n");
 
-  ScriptValue readable = Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
-  ScriptValue reader = ReadableStreamOperations::GetReader(
-      script_state, readable, ASSERT_NO_EXCEPTION);
+  ReadableStream* readable = Stream()->Readable();
+  ScriptValue reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
   bool chunkSeen = false;
   ReadableStreamOperations::DefaultReaderRead(script_state, reader)
       .Then(ExpectChunkIsString::Create(script_state, "a", &chunkSeen),
@@ -389,9 +382,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
                             "const writer = writable.getWriter();\n"
                             "writer.write('a');\n");
 
-  ScriptValue readable = Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
-  ScriptValue reader = ReadableStreamOperations::GetReader(
-      script_state, readable, ASSERT_NO_EXCEPTION);
+  ReadableStream* readable = Stream()->Readable();
+  ScriptValue reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
   bool readableTypeErrorThrown = false;
   bool writableTypeErrorThrown = false;
   ReadableStreamOperations::DefaultReaderRead(script_state, reader)
@@ -430,9 +422,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
                             "const writer = writable.getWriter();\n"
                             "writer.close();\n");
 
-  ScriptValue readable = Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
-  ScriptValue reader = ReadableStreamOperations::GetReader(
-      script_state, readable, ASSERT_NO_EXCEPTION);
+  ReadableStream* readable = Stream()->Readable();
+  ScriptValue reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
   bool readableTypeErrorThrown = false;
   bool writableTypeErrorThrown = false;
   ReadableStreamOperations::DefaultReaderRead(script_state, reader)
@@ -462,13 +453,9 @@ TEST_F(TransformStreamTest, SurvivesGarbageCollectionWhenTraced) {
   script_state->GetIsolate()->RequestGarbageCollectionForTesting(
       v8::Isolate::kFullGarbageCollection);
   ScriptState::Scope scope(script_state);
-  ScriptValue readable = Stream()->Readable(script_state, ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(readable.IsObject());
-  EXPECT_TRUE(ReadableStreamOperations::IsReadableStream(script_state, readable,
-                                                         ASSERT_NO_EXCEPTION)
-                  .value_or(false));
+  ScriptValue writable = Stream()->Writable(script_state, ASSERT_NO_EXCEPTION);
+  EXPECT_FALSE(writable.IsEmpty());
 }
 
 }  // namespace
-
 }  // namespace blink
