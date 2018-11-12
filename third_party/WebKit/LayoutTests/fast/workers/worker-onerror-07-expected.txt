@@ -3,7 +3,6 @@ Handling an error in the worker should suppress the page-level onerror handler.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Worker-level onerror handler triggered:
 PASS errorEvent.message is "Uncaught ReferenceError: foo is not defined"
 PASS stripURL(errorEvent.filename) is "[blob: URL]"

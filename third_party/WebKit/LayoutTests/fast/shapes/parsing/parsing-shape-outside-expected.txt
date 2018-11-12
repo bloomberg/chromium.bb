@@ -2,7 +2,6 @@ Testing parsing of the shape-outside property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS getCSSText("shape-outside", "none") is "none"
 PASS getComputedStyleValue("shape-outside", "none") is "none"
 PASS getCSSText("shape-outside", "inset(10px)") is "inset(10px)"

@@ -1,4 +1,4 @@
-Make sure that XSLT works in a subframe.  
+Make sure that XSLT works in a subframe. 
 
 --------
 Frame: '<!--framePath //<!--frame0-->-->'

@@ -2,7 +2,6 @@ Verify that the custom properties on a WebGL rendering context object are retain
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS context.customProperty is "value"
 PASS extensionObject.customProperty is "value"
 PASS context.customProperty is "value"

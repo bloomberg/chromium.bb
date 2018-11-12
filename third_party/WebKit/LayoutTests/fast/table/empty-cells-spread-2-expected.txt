@@ -1,4 +1,5 @@
-Text
+	Text
+
 crbug.com/476370: Test empty cells get appropriate width when spread across a percent width table.
 
 PASS

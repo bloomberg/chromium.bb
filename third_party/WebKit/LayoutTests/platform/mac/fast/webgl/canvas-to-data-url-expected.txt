@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Check if back buffer (toDataURL) is equal to front buffer (getImageSourceURL)
 1) when drawingBuffer is preserved.
 PASS preserve_canvas3D.toDataURL('image/png') == internals.getImageSourceURL(preserve_canvas3D) is true

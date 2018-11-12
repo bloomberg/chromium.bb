@@ -2,7 +2,6 @@ Tests the acceptable types for arguments to Geolocation methods.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS navigator.geolocation.getCurrentPosition() threw exception TypeError: Failed to execute 'getCurrentPosition' on 'Geolocation': 1 argument required, but only 0 present..
 PASS navigator.geolocation.getCurrentPosition(undefined) threw exception TypeError: Failed to execute 'getCurrentPosition' on 'Geolocation': The callback provided as parameter 1 is not a function..
 PASS navigator.geolocation.getCurrentPosition(null) threw exception TypeError: Failed to execute 'getCurrentPosition' on 'Geolocation': The callback provided as parameter 1 is not a function..

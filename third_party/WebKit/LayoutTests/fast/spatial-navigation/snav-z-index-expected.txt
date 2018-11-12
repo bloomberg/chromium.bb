@@ -1,20 +1,9 @@
-
 	
-
-
-
-
-
-
 	
-
-
-
-
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS gFocusedDocument.activeElement.getAttribute("id") is "s22"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "p11"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "s23"

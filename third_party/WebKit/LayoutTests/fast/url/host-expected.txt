@@ -2,7 +2,6 @@ Canonicalization of host names.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS canonicalize('http://GoOgLe.CoM/') is 'http://google.com/'
 PASS canonicalize('http://Goo%20 goo%7C|.com/') is 'http://goo%20%20goo%7C%7C.com/'
 PASS canonicalize('http://GOO 　goo.com/') is 'http://goo%20%20goo.com/'

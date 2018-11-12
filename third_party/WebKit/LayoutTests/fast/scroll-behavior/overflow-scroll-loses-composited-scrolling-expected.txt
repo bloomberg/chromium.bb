@@ -2,7 +2,6 @@ This test checks that a smooth scroll finishes even when composited scrolling is
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Scroll destination reached.
 PASS successfullyParsed is true
 

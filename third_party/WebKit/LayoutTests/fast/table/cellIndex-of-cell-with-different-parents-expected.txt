@@ -2,7 +2,6 @@ Testcase for bug http://webkit.org/b/93738 . The testcase checks if the cellInde
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 The cellIndex of a table cell (td/th) must be -1 if its parent is other than a table row. Otherwise the cellIndex must be a value greater than or equal to 0.
 PASS th_with_no_parent.cellIndex is -1
 PASS td_with_no_parent.cellIndex is -1

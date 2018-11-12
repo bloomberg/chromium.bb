@@ -2,7 +2,6 @@ Test resolution of relative Windows-like URLs.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS canonicalize('http://host/') is 'http://host/'
 PASS canonicalize('bar') is 'file:///C:/bar'
 PASS canonicalize('../../../bar.html') is 'file:///C:/bar.html'

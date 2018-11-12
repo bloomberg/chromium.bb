@@ -5,11 +5,13 @@ A: This table has the header and footer before the body ("normal" order).
 table A, header	rowIndex = 0
 table A, footer	rowIndex = 2
 table A, body	rowIndex = 1
+
 B: This table has the footer before the body and both before the header.
 
 table B, footer	rowIndex = 2
 table B, body	rowIndex = 1
 table B, header	rowIndex = 0
+
 C: This table has two footers before two bodies before two heads.
 
 table C, footer A row A	rowIndex = 8
@@ -24,6 +26,7 @@ table C, header A row A	rowIndex = 0
 table C, header A row B	rowIndex = 1
 table C, header B row A	rowIndex = 2
 table C, header B row B	rowIndex = 3
+
 D: This table has a head, foot, body, direct row children, and an extra foot.
 
 table D, footer row A	rowIndex = 6
@@ -36,6 +39,7 @@ table D, header A row B	rowIndex = 1
 table D, footer B row A	rowIndex = 8
 table D, footer B row B	rowIndex = 9
 table D, direct row B	rowIndex = 5
+
 E: This table only has a direct row child, added dynamically.
 
 table E, direct row A	rowIndex = 0

@@ -2,7 +2,6 @@ Canonicalization of IPv6 addresses.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS canonicalize('http://[/') is 'http://[/'
 PASS canonicalize('http://[:/') is 'http://[:/'
 PASS canonicalize('http://]/') is 'http://]/'

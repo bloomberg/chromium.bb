@@ -2,7 +2,6 @@ This test makes sure that :scope works correctly with the closest() API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS theTarget.closest(":scope") is theTarget
 PASS theTarget.closest(":not(:scope)") is body
 PASS theTarget.closest("body :scope") is theTarget

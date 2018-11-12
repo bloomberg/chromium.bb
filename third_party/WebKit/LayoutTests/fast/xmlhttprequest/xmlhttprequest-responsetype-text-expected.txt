@@ -12,6 +12,8 @@ responseText
   <d id="id3">Three</d>
 </doc>
 
+
+
 PASS responseType property exists.
 PASS response property exists.
 PASS xhr.responseType has been correctly set to 'text'.

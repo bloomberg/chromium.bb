@@ -3,7 +3,6 @@ This tests that exceptions in setTimeout triggers 'worker.onerror'.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Page-level worker.onerror handler triggered:
 PASS errorEvent.message is "Uncaught Error: Exception in setTimeout callback"
 PASS stripURL(errorEvent.filename) is "[blob: URL]"

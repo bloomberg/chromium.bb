@@ -2,7 +2,6 @@ This tests that passing an argument other than a SpeechSynthesisUtterance to spe
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS speechSynthesis.speak() threw exception TypeError: Failed to execute 'speak' on 'SpeechSynthesis': 1 argument required, but only 0 present..
 PASS speechSynthesis.speak(0) threw exception TypeError: Failed to execute 'speak' on 'SpeechSynthesis': parameter 1 is not of type 'SpeechSynthesisUtterance'..
 PASS speechSynthesis.speak('') threw exception TypeError: Failed to execute 'speak' on 'SpeechSynthesis': parameter 1 is not of type 'SpeechSynthesisUtterance'..

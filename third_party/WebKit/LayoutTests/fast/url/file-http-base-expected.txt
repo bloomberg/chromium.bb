@@ -2,7 +2,6 @@ Canonicalization of file URLs when the base URL is an http URL
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 FAIL canonicalize('file:c:\\foo\\bar.html') should be file:///C:/foo/bar.html. Was file:///c:/foo/bar.html.
 FAIL canonicalize('  File:c|////foo\\bar.html') should be file:///C:////foo/bar.html. Was file:///c%7C////foo/bar.html.
 PASS canonicalize('file:') is 'file:///'

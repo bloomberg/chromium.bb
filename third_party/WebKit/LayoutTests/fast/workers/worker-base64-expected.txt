@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: resources/worker-base64.js
 PASS [Worker] typeof atob === 'function' is true
 PASS [Worker] typeof btoa === 'function' is true

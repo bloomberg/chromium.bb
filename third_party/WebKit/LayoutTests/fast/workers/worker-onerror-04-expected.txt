@@ -4,7 +4,6 @@ This tests that unhandled exceptions in a worker's onerror handler trigger 'work
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Page-level worker.onerror handler triggered:
 PASS errorEvent.message is "Uncaught ReferenceError: foo is not defined"
 PASS stripURL(errorEvent.filename) is "[blob: URL]"

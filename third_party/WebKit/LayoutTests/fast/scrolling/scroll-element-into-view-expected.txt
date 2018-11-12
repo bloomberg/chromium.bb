@@ -2,7 +2,6 @@ Tests that scrollable areas are scrolled to the correct location when an element
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS container.scrollLeft is 10
 PASS container.scrollTop is 10
 PASS container.scrollLeft is 690

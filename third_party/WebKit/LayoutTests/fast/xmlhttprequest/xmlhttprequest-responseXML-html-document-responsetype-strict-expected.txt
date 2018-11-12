@@ -2,7 +2,6 @@ This tests the XMLHttpRequest responseXML loading an HTML document in Strict Mod
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS xhr.responseXML is non-null.
 PASS xhr.responseXML instanceof Document is true
 The two open <br> elements should be siblings of one another and not nested per HTML parser spec.
@@ -20,6 +19,7 @@ PASS xhr.responseXML.compatMode is "CSS1Compat"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 
 
 

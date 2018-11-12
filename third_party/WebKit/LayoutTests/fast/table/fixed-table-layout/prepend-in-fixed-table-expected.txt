@@ -5,7 +5,13 @@ PASSED, the test didn't crash.
 Prepending block to table-cell:
 Prepending inline to table-cell:
 Prepending table-cell to table-cell:
+	
+	
 Prepending table-row to table-cell:
+
+
+
+
 Prepending table-row-group to table-cell:
 Prepending table-column-group to table-cell:
 Prepending table-caption to table-cell:
@@ -13,6 +19,10 @@ Prepending block to table-row:
 Prepending inline to table-row:
 Prepending table-cell to table-row:
 Prepending table-row to table-row:
+
+
+
+
 Prepending table-row-group to table-row:
 Prepending table-column-group to table-row:
 Prepending table-caption to table-row:
@@ -37,4 +47,3 @@ Prepending table-row to table-caption:
 Prepending table-row-group to table-caption:
 Prepending table-column-group to table-caption:
 Prepending table-caption to table-caption:
-
