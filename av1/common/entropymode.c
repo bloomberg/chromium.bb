@@ -1086,10 +1086,8 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   // Features disabled, 0, with delta coding (Default state).
   av1_clearall_segfeatures(&cm->seg);
 
-  cm->current_frame_seg_map = cm->cur_frame->seg_map;
-
-  if (cm->current_frame_seg_map)
-    memset(cm->current_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
+  if (cm->cur_frame->seg_map)
+    memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
 
   // reset mode ref deltas
   av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
@@ -1099,7 +1097,6 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
   av1_init_mv_probs(cm);
-  av1_init_lv_map(cm);
   cm->fc->initialized = 1;
   av1_setup_frame_contexts(cm);
 

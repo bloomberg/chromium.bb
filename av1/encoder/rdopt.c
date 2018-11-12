@@ -11130,7 +11130,7 @@ static int inter_mode_search_order_independent_skip(
 
   const int comp_pred = ref_frame[1] > INTRA_FRAME;
   if (comp_pred) {
-    if (!cpi->allow_comp_inter_inter) return 1;
+    if (frame_is_intra_only(cm)) return 1;
 
     if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
 

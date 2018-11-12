@@ -288,7 +288,6 @@ typedef struct AV1EncoderConfig {
   int max_threads;
 
   aom_fixed_buf_t two_pass_stats_in;
-  struct aom_codec_pkt_list *output_pkt_list;
 
 #if CONFIG_FP_MB_STATS
   aom_fixed_buf_t firstpass_mb_stats_in;
@@ -304,15 +303,12 @@ typedef struct AV1EncoderConfig {
   int color_range;
   int render_width;
   int render_height;
-  aom_timing_info_type_t timing_info_type;
   int timing_info_present;
   aom_timing_info_t timing_info;
   int decoder_model_info_present_flag;
   int display_model_info_present_flag;
   int buffer_removal_time_present;
   aom_dec_model_info_t buffer_model;
-  aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];
-  aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
   int film_grain_test_vector;
   const char *film_grain_table_filename;
 
@@ -618,7 +614,6 @@ typedef struct AV1_COMP {
   int rate_index;
   hash_table *previous_hash_table;
   int previous_index;
-  int cur_poc;  // DebugInfo
 
   unsigned int row_mt;
   int scaled_ref_idx[INTER_REFS_PER_FRAME];
@@ -726,7 +721,6 @@ typedef struct AV1_COMP {
   unsigned int max_mv_magnitude;
   int mv_step_param;
 
-  int allow_comp_inter_inter;
   int all_one_sided_refs;
 
   uint8_t *segmentation_map;
@@ -740,7 +734,6 @@ typedef struct AV1_COMP {
   uint64_t time_receive_data;
   uint64_t time_compress_data;
   uint64_t time_pick_lpf;
-  uint64_t time_encode_sb_row;
 
 #if CONFIG_FP_MB_STATS
   int use_fp_mb_stats;
@@ -804,7 +797,6 @@ typedef struct AV1_COMP {
   int allocated_tiles;  // Keep track of memory allocated for tiles.
 
   TOKENEXTRA *tile_tok[MAX_TILE_ROWS][MAX_TILE_COLS];
-  unsigned int tok_count[MAX_TILE_ROWS][MAX_TILE_COLS];
   TOKENLIST *tplist[MAX_TILE_ROWS][MAX_TILE_COLS];
 
   TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
@@ -812,7 +804,6 @@ typedef struct AV1_COMP {
   int resize_state;
   int resize_avg_qp;
   int resize_buffer_underflow;
-  int resize_count;
 
   // Sequence parameters have been transmitted already and locked
   // or not. Once locked av1_change_config cannot change the seq
@@ -833,7 +824,6 @@ typedef struct AV1_COMP {
   int arf_pos_in_gf[MAX_EXT_ARFS + 1];
   int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
   int global_motion_search_done;
-  tran_low_t *tcoeff_buf[MAX_MB_PLANE];
   int extra_arf_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
@@ -841,11 +831,6 @@ typedef struct AV1_COMP {
   // TODO(huisu@google.com): we can update dv_joint_cost per SB.
   int dv_joint_cost[MV_JOINTS];
   int has_lossless_segment;
-
-  // For frame refs short signaling:
-  //   A mapping of each reference frame from its encoder side value to the
-  //   decoder side value obtained following the short signaling procedure.
-  int ref_conv[REF_FRAMES];
 
   // Factors to control gating of compound type selection based on best
   // approximate rd so far

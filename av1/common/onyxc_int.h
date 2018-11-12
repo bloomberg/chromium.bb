@@ -194,13 +194,6 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
-typedef struct {
-  int base_ctx_table[2 /*row*/][2 /*col*/][3 /*sig_map*/]
-                    [BASE_CONTEXT_POSITION_NUM + 1];
-} LV_MAP_CTX_TABLE;
-typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
-                          [BASE_CONTEXT_POSITION_NUM + 1];
-
 typedef struct BitstreamLevel {
   uint8_t major;
   uint8_t minor;
@@ -337,8 +330,6 @@ typedef struct AV1Common {
   int height;
   int render_width;
   int render_height;
-  int last_width;
-  int last_height;
   int timing_info_present;
   aom_timing_info_t timing_info;
   int buffer_removal_time_present;
@@ -348,7 +339,6 @@ typedef struct AV1Common {
   uint32_t frame_presentation_time;
 
   int largest_tile_id;
-  size_t largest_tile_size;
   int context_update_tile_id;
 
   // Scale of the current frame with respect to itself.
@@ -375,8 +365,6 @@ typedef struct AV1Common {
   // decoded) in the buffer pool 'cm->buffer_pool'.
   int new_fb_idx;
 
-  FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
-
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
   int show_existing_frame;
@@ -384,7 +372,6 @@ typedef struct AV1Common {
   int is_reference_frame;
   int reset_decoder_state;
 
-  uint8_t last_intra_only;
   uint8_t disable_cdf_update;
   int allow_high_precision_mv;
   int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
@@ -465,8 +452,6 @@ typedef struct AV1Common {
   int allow_ref_frame_mvs;
 
   uint8_t *last_frame_seg_map;
-  uint8_t *current_frame_seg_map;
-  int seg_map_alloc_size;
 
   InterpFilter interp_filter;
 
@@ -509,13 +494,10 @@ typedef struct AV1Common {
   int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
 
-  aom_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
-
   int error_resilient_mode;
   int force_primary_ref_none;
 
   int tile_cols, tile_rows;
-  int last_tile_cols, last_tile_rows;
 
   int max_tile_width_sb;
   int min_log2_tile_cols;
@@ -556,7 +538,6 @@ typedef struct AV1Common {
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
   int invalid_delta_frame_id_minus_1;
-  LV_MAP_CTX_TABLE coeff_ctx_table;
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.

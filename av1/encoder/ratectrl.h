@@ -94,7 +94,6 @@ typedef struct {
   int last_kf_qindex;       // Q index of the last key frame coded.
 
   int gfu_boost;
-  int last_boost;
   int kf_boost;
 
   double rate_correction_factors[RATE_FACTOR_LEVELS];

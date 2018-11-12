@@ -299,7 +299,7 @@ static void set_segment_id(AV1_COMMON *cm, int mi_offset, int x_mis, int y_mis,
 
   for (int y = 0; y < y_mis; y++)
     for (int x = 0; x < x_mis; x++)
-      cm->current_frame_seg_map[mi_offset + y * cm->mi_cols + x] = segment_id;
+      cm->cur_frame->seg_map[mi_offset + y * cm->mi_cols + x] = segment_id;
 }
 
 static int read_intra_segment_id(AV1_COMMON *const cm,
@@ -355,7 +355,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
   if (!seg->update_map) {
-    copy_segment_id(cm, cm->last_frame_seg_map, cm->current_frame_seg_map,
+    copy_segment_id(cm, cm->last_frame_seg_map, cm->cur_frame->seg_map,
                     mi_offset, x_mis, y_mis);
     return get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
   }

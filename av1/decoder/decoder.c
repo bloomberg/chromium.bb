@@ -108,7 +108,6 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   pbi->common.buffer_pool = pool;
 
   cm->seq_params.bit_depth = AOM_BITS_8;
-  cm->dequant_bit_depth = AOM_BITS_8;
 
   cm->alloc_mi = av1_dec_alloc_mi;
   cm->free_mi = dec_free_mi;
@@ -541,10 +540,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   }
 
   // Update progress in frame parallel decode.
-  cm->last_width = cm->width;
-  cm->last_height = cm->height;
-  cm->last_tile_cols = cm->tile_cols;
-  cm->last_tile_rows = cm->tile_rows;
   cm->error.setjmp = 0;
 
   return 0;

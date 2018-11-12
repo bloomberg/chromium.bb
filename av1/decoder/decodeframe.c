@@ -2238,7 +2238,6 @@ static void setup_quantization(AV1_COMMON *const cm,
     cm->v_dc_delta_q = 0;
     cm->v_ac_delta_q = 0;
   }
-  cm->dequant_bit_depth = seq_params->bit_depth;
   cm->using_qmatrix = aom_rb_read_bit(rb);
   if (cm->using_qmatrix) {
     cm->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
@@ -4794,9 +4793,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "No sequence header");
   }
 
-  cm->last_frame_type = current_frame->frame_type;
-  cm->last_intra_only = current_frame->intra_only;
-
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
 
@@ -5498,8 +5494,6 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   }
 
   cm->setup_mi(cm);
-
-  cm->current_frame_seg_map = cm->cur_frame->seg_map;
 
   av1_setup_motion_field(cm);
 

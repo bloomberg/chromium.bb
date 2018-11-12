@@ -48,16 +48,16 @@ static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
   int prev_l = -1;   // left segment_id
   int prev_u = -1;   // top segment_id
   if ((xd->up_available) && (xd->left_available)) {
-    prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                             mi_row - 1, mi_col - 1);
+    prev_ul = get_segment_id(cm, cm->cur_frame->seg_map, BLOCK_4X4, mi_row - 1,
+                             mi_col - 1);
   }
   if (xd->up_available) {
-    prev_u = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 1, mi_col - 0);
+    prev_u = get_segment_id(cm, cm->cur_frame->seg_map, BLOCK_4X4, mi_row - 1,
+                            mi_col - 0);
   }
   if (xd->left_available) {
-    prev_l = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 0, mi_col - 1);
+    prev_l = get_segment_id(cm, cm->cur_frame->seg_map, BLOCK_4X4, mi_row - 0,
+                            mi_col - 1);
   }
 
   // Pick CDF index based on number of matching/out-of-bounds segment IDs.

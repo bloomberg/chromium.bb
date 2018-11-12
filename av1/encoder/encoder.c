@@ -809,7 +809,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MB_MODE_INFO **mi_4x4_ptr = cm->mi_grid_visible;
-  uint8_t *cache_ptr = cm->current_frame_seg_map;
+  uint8_t *cache_ptr = cm->cur_frame->seg_map;
   int row, col;
 
   for (row = 0; row < cm->mi_rows; row++) {
@@ -981,7 +981,6 @@ static void init_buffer_indices(AV1_COMP *cpi) {
     cpi->remapped_ref_idx[fb_idx] = fb_idx;
   cpi->rate_index = 0;
   cpi->rate_size = 0;
-  cpi->cur_poc = -1;
 }
 
 static INLINE int does_level_match(int width, int height, double fps,
@@ -5129,9 +5128,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     *frame_flags = cpi->frame_flags & ~FRAMEFLAGS_KEY;
 
-    // Update the frame type
-    cm->last_frame_type = current_frame->frame_type;
-
     // Since we allocate a spot for the OVERLAY frame in the gf group, we need
     // to do post-encoding update accordingly.
     if (cpi->rc.is_src_frame_alt_ref) {
@@ -5241,9 +5237,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       return AOM_CODEC_ERROR;
   }
 
-  cm->last_tile_cols = cm->tile_cols;
-  cm->last_tile_rows = cm->tile_rows;
-
 #ifdef OUTPUT_YUV_SKINMAP
   if (cpi->common.current_frame.frame_number > 1) {
     av1_compute_skin_map(cpi, yuv_skinmap_file);
@@ -5332,7 +5325,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     if (cm->seg.update_map) {
       update_reference_segmentation_map(cpi);
     } else if (cm->last_frame_seg_map) {
-      memcpy(cm->current_frame_seg_map, cm->last_frame_seg_map,
+      memcpy(cm->cur_frame->seg_map, cm->last_frame_seg_map,
              cm->mi_cols * cm->mi_rows * sizeof(uint8_t));
     }
   }
@@ -5367,8 +5360,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   else
     cpi->frame_flags &= ~FRAMEFLAGS_BWDREF;
 
-  cm->last_frame_type = current_frame->frame_type;
-
   av1_rc_postencode_update(cpi, *size);
 
   if (current_frame->frame_type == KEY_FRAME) {
@@ -5397,13 +5388,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     // update not a real frame
 
     ++current_frame->frame_number;
-  }
-
-  // NOTE: Shall not refer to any frame not used as reference.
-  if (cm->is_reference_frame) {
-    // keep track of the last coded dimensions
-    cm->last_width = cm->width;
-    cm->last_height = cm->height;
   }
 
   return AOM_CODEC_OK;
@@ -6858,7 +6842,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->common.current_frame_id = -1;
   }
 
-  cpi->cur_poc++;
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools &&
       !frame_is_intra_only(cm)) {
     if (cpi->common.seq_params.force_integer_mv == 2) {

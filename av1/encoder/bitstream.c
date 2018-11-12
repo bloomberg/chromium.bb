@@ -460,7 +460,7 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
     // changing from lossless to lossy.
     assert(is_inter_block(mbmi) || !cpi->has_lossless_segment);
 
-    set_spatial_segment_id(cm, cm->current_frame_seg_map, mbmi->sb_type, mi_row,
+    set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type, mi_row,
                            mi_col, pred);
     set_spatial_segment_id(cm, cpi->segmentation_map, mbmi->sb_type, mi_row,
                            mi_col, pred);
@@ -473,7 +473,7 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
       av1_neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, MAX_SEGMENTS);
-  set_spatial_segment_id(cm, cm->current_frame_seg_map, mbmi->sb_type, mi_row,
+  set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type, mi_row,
                          mi_col, mbmi->segment_id);
 }
 
@@ -925,7 +925,7 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
         write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
       }
       if (pred_flag) {
-        set_spatial_segment_id(cm, cm->current_frame_seg_map, mbmi->sb_type,
+        set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type,
                                mi_row, mi_col, mbmi->segment_id);
       }
     } else {
@@ -3270,7 +3270,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   write_tx_mode(cm, &cm->tx_mode, wb);
 
-  if (cpi->allow_comp_inter_inter) {
+  if (!frame_is_intra_only(cm)) {
     const int use_hybrid_pred =
         current_frame->reference_mode == REFERENCE_MODE_SELECT;
 

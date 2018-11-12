@@ -589,7 +589,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   }
 
   av1_init_mv_probs(cm);
-  av1_init_lv_map(cm);
   av1_initialize_rd_consts(cpi);
 
   // Tiling is ignored in the first pass.

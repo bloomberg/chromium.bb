@@ -122,9 +122,6 @@ typedef struct {
 #endif  // USE_SYMM_MULTI_LAYER
   unsigned char brf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char bidir_pred_enabled[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char ref_fb_idx_map[MAX_STATIC_GF_GROUP_LENGTH + 1][REF_FRAMES];
-  unsigned char refresh_idx[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char refresh_flag[MAX_STATIC_GF_GROUP_LENGTH + 1];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
 } GF_GROUP;
 
