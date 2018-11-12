@@ -26,6 +26,13 @@
 
 namespace {
 
+// Note: The excess (part above 1.0) is used as a fade-out effect, so if this
+// value is 1.5, then 50% of the progress indicator animation will be used for
+// fade-out time after the loading sequence is complete.
+// Also note that the progress indicator animation is capped to the actual load
+// progress.
+constexpr double kProgressIndicatorAnimationDuration = 1.5;
+
 bool UseNewLoadingAnimation() {
   return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
 }
@@ -81,10 +88,9 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 };
 
 TabIcon::TabIcon()
-    : progress_indicator_fade_out_animation_(
-          base::TimeDelta::FromMilliseconds(200),
-          gfx::LinearAnimation::kDefaultFrameRate,
-          this),
+    : loading_progress_timer_(base::TimeDelta::FromMilliseconds(600),
+                              gfx::LinearAnimation::kDefaultFrameRate,
+                              this),
       favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(200),
                                  gfx::LinearAnimation::kDefaultFrameRate,
                                  this) {
@@ -136,7 +142,7 @@ bool TabIcon::ShowingLoadingAnimation() const {
   if (inhibit_loading_animation_)
     return false;
 
-  if (progress_indicator_fade_out_animation_.is_animating() ||
+  if (loading_progress_timer_.is_animating() ||
       favicon_fade_in_animation_.is_animating()) {
     return true;
   }
@@ -200,14 +206,12 @@ void TabIcon::OnThemeChanged() {
     themed_favicon_ = ThemeImage(favicon_);
 }
 
-void TabIcon::AnimationProgressed(const gfx::Animation* animation) {
-  SchedulePaint();
-}
-
 void TabIcon::AnimationEnded(const gfx::Animation* animation) {
   // After the last animation ends it's possible we should not paint to a layer
   // anymore.
   RefreshLayer();
+  // Make sure that the final frame of the animation gets painted.
+  SchedulePaint();
 }
 
 void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
@@ -246,16 +250,30 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
                                             gfx::RectF bounds,
                                             SkColor color) {
-  bounds.set_width(std::max(
-      bounds.height(), static_cast<float>(loading_progress_ * bounds.width())));
+  double animation_value = loading_progress_timer_.GetCurrentValue() *
+                           kProgressIndicatorAnimationDuration;
+  if (network_state_ == TabNetworkState::kLoading) {
+    // While we're loading, clamp to the loading process (which cannot go above
+    // 1.0) to make sure that we don't start the fade-out during kLoading, even
+    // if loading progress has previously been reported as 1.0.
+    animation_value = std::min(loading_progress_, animation_value);
+  }
+  const double loading_progress = std::min(animation_value, 1.0);
+
+  bounds.set_width(bounds.height() +
+                   loading_progress * (bounds.width() - bounds.height()));
 
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setAlpha(
-      SK_AlphaOPAQUE *
-      (1.0 - progress_indicator_fade_out_animation_.GetCurrentValue()));
+  if (animation_value > 1.0) {
+    // The part of kProgressIndicatorAnimationDuration above 1.0 is translated
+    // into an alpha value used as a linear fade-out effect.
+    flags.setAlpha(SK_AlphaOPAQUE *
+                   (1.0 - (animation_value - 1.0) /
+                              (kProgressIndicatorAnimationDuration - 1.0)));
+  }
 
   canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
 }
@@ -373,12 +391,14 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
     TabNetworkState old_state = network_state_;
     network_state_ = network_state;
 
-    if (network_state_ == TabNetworkState::kLoading)
+    if (network_state_ == TabNetworkState::kLoading) {
+      // When transitioning to loading, reset the progress indicatator + timer.
       loading_progress_ = 0.0;
+      loading_progress_timer_.SetCurrentValue(0);
+    }
 
     if (old_state == TabNetworkState::kLoading) {
       loading_progress_ = 1.0;
-      progress_indicator_fade_out_animation_.Start();
       // This fades in the placeholder favicon if no favicon has loaded so far.
       if (!favicon_fade_in_animation_.is_animating() &&
           favicon_fade_in_animation_.GetCurrentValue() == 0.0) {
@@ -390,8 +410,8 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
       // Reset favicon and tab-loading animations
       favicon_fade_in_animation_.Stop();
       favicon_fade_in_animation_.SetCurrentValue(0.0);
-      progress_indicator_fade_out_animation_.Stop();
-      progress_indicator_fade_out_animation_.SetCurrentValue(0.0);
+      loading_progress_timer_.Stop();
+      loading_progress_timer_.SetCurrentValue(0.0);
     }
     SchedulePaint();
   }
@@ -400,8 +420,14 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
   // sure it only increases.
   if (network_state_ == TabNetworkState::kLoading &&
       loading_progress_ < load_progress) {
+    // Clamp the loading progress timer to the currently visible value. Note
+    // that the animation plays a fade-out effect after loading_progress_ is
+    // full, so filling the bar only uses a fraction of the timer.
+    loading_progress_timer_.SetCurrentValue(
+        std::min(loading_progress_timer_.GetCurrentValue(),
+                 loading_progress_ / kProgressIndicatorAnimationDuration));
     loading_progress_ = load_progress;
-    SchedulePaint();
+    loading_progress_timer_.Start();
   }
 }
 

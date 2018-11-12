@@ -814,7 +814,7 @@ void BrowserView::UpdateDevTools() {
 }
 
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
-  if (should_animate) {
+  if (should_animate || tabstrip_->IsAnyIconAnimating()) {
     if (!loading_animation_timer_.IsRunning()) {
       // Loads are happening, and the timer isn't running, so start it.
       loading_animation_start_ = base::TimeTicks::Now();

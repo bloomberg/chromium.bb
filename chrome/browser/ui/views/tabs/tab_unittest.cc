@@ -300,8 +300,8 @@ class TabTest : public ChromeViewsTestBase {
   }
 
   static void FinishRunningLoadingAnimations(TabIcon* icon) {
-    for (auto* animation : {&icon->progress_indicator_fade_out_animation_,
-                            &icon->favicon_fade_in_animation_}) {
+    for (auto* animation :
+         {&icon->loading_progress_timer_, &icon->favicon_fade_in_animation_}) {
       if (!animation->is_animating())
         continue;
       animation->Stop();

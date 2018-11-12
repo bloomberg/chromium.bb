@@ -72,7 +72,6 @@ class TabIcon : public views::View, public gfx::AnimationDelegate {
   void OnThemeChanged() override;
 
   // gfx::AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
   // Paints the attention indicator and |favicon_| at the given location.
@@ -152,16 +151,13 @@ class TabIcon : public views::View, public gfx::AnimationDelegate {
   // it will be drawn off the bottom.
   double hiding_fraction_ = 0.0;
 
-  // Fade-out animation after a tab has loaded to not instantly remove the
-  // progress bar at 100%.
-  gfx::LinearAnimation progress_indicator_fade_out_animation_;
+  // Loading progress used for drawing the progress indicator.
+  double loading_progress_ = 1.0;
+  gfx::LinearAnimation loading_progress_timer_;
 
   // Fade-in animation for the favicon. Starts when a favicon loads or the tab
   // is no longer loading. The latter case will fade into a placeholder icon.
   gfx::LinearAnimation favicon_fade_in_animation_;
-
-  // Loading progress used for drawing the progress indicator.
-  double loading_progress_ = 1.0;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.

@@ -151,6 +151,8 @@ class Tab : public gfx::AnimationDelegate,
   // throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
+  bool ShowingLoadingAnimation() const;
+
   // Starts/Stops a pulse animation.
   void StartPulse();
   void StopPulse();
