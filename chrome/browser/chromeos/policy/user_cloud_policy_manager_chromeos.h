@@ -140,7 +140,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   bool IsInitializationComplete(PolicyDomain domain) const override;
 
   // CloudPolicyService::Observer:
-  void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnCloudPolicyServiceInitializationCompleted() override;
 
   // CloudPolicyClient::Observer:
   void OnPolicyFetched(CloudPolicyClient* client) override;
@@ -259,7 +259,8 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   std::unique_ptr<WildcardLoginChecker> wildcard_login_checker_;
 
   // The access token passed to OnAccessTokenAvailable. It is stored here so
-  // that it can be used if OnInitializationCompleted is called later.
+  // that it can be used if OnCloudPolicyServiceInitializationCompleted is
+  // called later.
   std::string access_token_;
 
   // Timestamps for collecting timing UMA stats.

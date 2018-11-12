@@ -211,7 +211,7 @@ void CloudPolicyService::CheckInitializationCompleted() {
   if (!IsInitializationComplete() && store_->is_initialized()) {
     initialization_complete_ = true;
     for (auto& observer : observers_)
-      observer.OnInitializationCompleted(this);
+      observer.OnCloudPolicyServiceInitializationCompleted();
   }
 }
 

@@ -104,11 +104,9 @@ void UserPolicySigninService::Shutdown() {
   UserPolicySigninServiceBase::Shutdown();
 }
 
-void UserPolicySigninService::OnInitializationCompleted(
-    CloudPolicyService* service) {
+void UserPolicySigninService::OnCloudPolicyServiceInitializationCompleted() {
   UserCloudPolicyManager* manager = policy_manager();
-  DCHECK_EQ(service, manager->core()->service());
-  DCHECK(service->IsInitializationComplete());
+  DCHECK(manager->core()->service()->IsInitializationComplete());
   // The service is now initialized - if the client is not yet registered, then
   // it means that there is no cached policy and so we need to initiate a new
   // client registration.

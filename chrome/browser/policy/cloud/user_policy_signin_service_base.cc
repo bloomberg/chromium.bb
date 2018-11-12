@@ -97,8 +97,8 @@ void UserPolicySigninServiceBase::Observe(
   InitializeOnProfileReady(content::Source<Profile>(source).ptr());
 }
 
-void UserPolicySigninServiceBase::OnInitializationCompleted(
-    CloudPolicyService* service) {
+void UserPolicySigninServiceBase::
+    OnCloudPolicyServiceInitializationCompleted() {
   // This is meant to be overridden by subclasses. Starting and stopping to
   // observe the CloudPolicyService from this base class avoids the need for
   // more virtuals.
@@ -213,8 +213,8 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
   // Initialize the UCPM if it is not already initialized.
   if (!manager->core()->service()) {
     // If there is no cached DMToken then we can detect this when the
-    // OnInitializationCompleted() callback is invoked and this will
-    // initiate a policy fetch.
+    // OnCloudPolicyServiceInitializationCompleted() callback is invoked and
+    // this will initiate a policy fetch.
     InitializeUserCloudPolicyManager(
         account_id,
         UserCloudPolicyManager::CreateCloudPolicyClient(
@@ -224,10 +224,10 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
   }
 
   // If the CloudPolicyService is initialized, kick off registration.
-  // Otherwise OnInitializationCompleted is invoked as soon as the service
-  // finishes its initialization.
+  // Otherwise OnCloudPolicyServiceInitializationCompleted is invoked as soon as
+  // the service finishes its initialization.
   if (manager->core()->service()->IsInitializationComplete())
-    OnInitializationCompleted(manager->core()->service());
+    OnCloudPolicyServiceInitializationCompleted();
 }
 
 void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(

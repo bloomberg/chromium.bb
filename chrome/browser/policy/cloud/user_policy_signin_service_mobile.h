@@ -72,7 +72,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void Shutdown() override;
 
   // CloudPolicyService::Observer implementation:
-  void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnCloudPolicyServiceInitializationCompleted() override;
 
   // Registers for cloud policy for an already signed-in user.
   void RegisterCloudPolicyService();

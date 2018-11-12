@@ -33,8 +33,8 @@ void UserCloudPolicyTokenForwarder::Shutdown() {
   manager_->core()->service()->RemoveObserver(this);
 }
 
-void UserCloudPolicyTokenForwarder::OnInitializationCompleted(
-    CloudPolicyService* service) {
+void UserCloudPolicyTokenForwarder::
+    OnCloudPolicyServiceInitializationCompleted() {
   Initialize();
 }
 

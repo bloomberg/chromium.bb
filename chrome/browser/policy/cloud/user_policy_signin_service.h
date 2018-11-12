@@ -66,7 +66,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
                                        bool is_valid) override;
 
   // CloudPolicyService::Observer implementation:
-  void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnCloudPolicyServiceInitializationCompleted() override;
 
  protected:
   // UserPolicySigninServiceBase implementation:

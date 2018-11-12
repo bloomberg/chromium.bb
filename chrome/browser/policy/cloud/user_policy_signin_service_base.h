@@ -94,7 +94,7 @@ class UserPolicySigninServiceBase : public KeyedService,
                const content::NotificationDetails& details) override;
 
   // CloudPolicyService::Observer implementation:
-  void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnCloudPolicyServiceInitializationCompleted() override;
 
   // CloudPolicyClient::Observer implementation:
   void OnPolicyFetched(CloudPolicyClient* client) override;
