@@ -1,3 +1,7 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef NET_THIRD_PARTY_HTTP2_TEST_TOOLS_HTTP2_RANDOM_H_
 #define NET_THIRD_PARTY_HTTP2_TEST_TOOLS_HTTP2_RANDOM_H_
 
@@ -36,7 +40,7 @@ class Http2Random {
   // Return a uniformly distrubted random number in [0, n).
   int32_t Uniform(int32_t n) { return Rand64() % n; }
   // Return a uniformly distrubted random number in [lo, hi).
-  size_t UniformInRange(size_t lo, size_t hi) {
+  int64_t UniformInRange(int64_t lo, int64_t hi) {
     return lo + Rand64() % (hi - lo);
   }
   // Return an integer of logarithmically random scale.
