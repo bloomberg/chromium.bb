@@ -74,6 +74,7 @@ class ShadowRoot;
 template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
+class StringOrTrustedScript;
 class StyleChangeReasonForTracing;
 class V8ScrollStateCallback;
 class WebPluginContainerImpl;
@@ -256,6 +257,8 @@ class CORE_EXPORT Node : public EventTarget {
 
   String textContent(bool convert_brs_to_newlines = false) const;
   void setTextContent(const String&);
+  void textContent(StringOrTrustedScript& result);
+  virtual void setTextContent(const StringOrTrustedScript&, ExceptionState&);
 
   bool SupportsAltText();
 

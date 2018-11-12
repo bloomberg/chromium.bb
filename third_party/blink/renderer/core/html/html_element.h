@@ -36,6 +36,8 @@ class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
 class KeyboardEvent;
+class StringOrTrustedScript;
+class StringTreatNullAsEmptyStringOrTrustedScript;
 
 enum TranslateAttributeMode {
   kTranslateAttributeYes,
@@ -57,6 +59,12 @@ class CORE_EXPORT HTMLElement : public Element {
   int tabIndex() const override;
 
   void setInnerText(const String&, ExceptionState&);
+  virtual void setInnerText(const StringOrTrustedScript&, ExceptionState&);
+  virtual void setInnerText(const StringTreatNullAsEmptyStringOrTrustedScript&,
+                            ExceptionState&);
+  String innerText();
+  void innerText(StringOrTrustedScript& result);
+  void innerText(StringTreatNullAsEmptyStringOrTrustedScript& result);
   void setOuterText(const String&, ExceptionState&);
 
   virtual bool HasCustomFocusLogic() const;

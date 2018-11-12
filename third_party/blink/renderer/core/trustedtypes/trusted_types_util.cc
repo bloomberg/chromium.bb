@@ -108,16 +108,30 @@ String GetStringFromTrustedScript(
     ExceptionState& exception_state) {
   DCHECK(string_or_trusted_script.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  DCHECK(!string_or_trusted_script.IsNull());
+
+  // To remain compatible with legacy behaviour, HTMLElement uses extended IDL
+  // attributes to allow for nullable union of (DOMString or TrustedScript).
+  // Thus, this method is required to handle the case where
+  // string_or_trusted_script.IsNull(), unlike the various similar methods in
+  // this file.
 
   bool require_trusted_type = doc && doc->RequireTrustedTypes();
-  if (!require_trusted_type && string_or_trusted_script.IsString()) {
-    return string_or_trusted_script.GetAsString();
+  if (!require_trusted_type) {
+    if (string_or_trusted_script.IsString()) {
+      return string_or_trusted_script.GetAsString();
+    }
+    if (string_or_trusted_script.IsNull()) {
+      return g_empty_string;
+    }
   }
 
   if (string_or_trusted_script.IsTrustedScript()) {
     return string_or_trusted_script.GetAsTrustedScript()->toString();
   }
+
+  DCHECK(require_trusted_type);
+  DCHECK(string_or_trusted_script.IsNull() ||
+         string_or_trusted_script.IsString());
 
   TrustedTypePolicy* default_policy =
       doc->ExecutingWindow()->trustedTypes()->getExposedPolicy("default");
@@ -127,8 +141,13 @@ String GetStringFromTrustedScript(
     return g_empty_string;
   }
 
+  const String& string_value_or_empty =
+      string_or_trusted_script.IsNull()
+          ? g_empty_string
+          : string_or_trusted_script.GetAsString();
   TrustedScript* result = default_policy->CreateScript(
-      ToIsolate(doc), string_or_trusted_script.GetAsString(), exception_state);
+      ToIsolate(doc), string_value_or_empty, exception_state);
+  DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
     exception_state.ClearException();
     exception_state.ThrowTypeError(

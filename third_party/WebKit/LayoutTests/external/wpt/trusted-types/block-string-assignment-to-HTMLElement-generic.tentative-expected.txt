@@ -33,5 +33,8 @@ PASS embed.src accepts string and null after default policy was created
 PASS script.src accepts string and null after default policy was created
 FAIL div.innerHTML accepts string and null after default policy was created assert_equals: expected "null" but got ""
 PASS iframe.srcdoc accepts string and null after default policy was created
+PASS script.text accepts only TrustedScript
+PASS script.innerText accepts only TrustedScript
+PASS script.textContent accepts only TrustedScript
 Harness: the test ran to completion.
 
