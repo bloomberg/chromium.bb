@@ -36,7 +36,7 @@ const SkColor kPagerSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 // it includes top 24px padding and bottom 56px padding.
 const int kHorizontalPagePreferredHeight = 623;
 
-const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kFolderTitleColor = gfx::kGoogleGrey700;
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 // Color of the folder bubble shadow.
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
