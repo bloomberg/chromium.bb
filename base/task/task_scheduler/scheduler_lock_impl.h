@@ -37,11 +37,11 @@ class BASE_EXPORT SchedulerLockImpl {
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable();
 
-  bool universal_predecessor() const { return universal_predecessor_; }
+  bool is_universal_predecessor() const { return is_universal_predecessor_; }
 
  private:
   Lock lock_;
-  const bool universal_predecessor_;
+  const bool is_universal_predecessor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerLockImpl);
 };
