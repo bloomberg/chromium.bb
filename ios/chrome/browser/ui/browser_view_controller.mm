@@ -184,12 +184,14 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
+#import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
@@ -4770,26 +4772,66 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)unfocusOmniboxAndSwitchToTabWithURL:(const GURL&)URL {
-  // TODO(crbug.com/893121): Add animations.
-
-  // Cancelling the omnibox edit makes |URL| unsafe as it is not longer
-  // retained.
-  GURL retainedURL = URL;
-  [self.dispatcher cancelOmniboxEdit];
-
-  // TODO(crbug.com/893121): This should probably live in the WebState.
+  NSInteger newWebStateIndex = 0;
   WebStateList* webStateList = self.tabModel.webStateList;
   web::WebState* currentWebState = webStateList->GetActiveWebState();
 
-  for (NSInteger index = 0; index < webStateList->count(); index++) {
-    web::WebState* webState = webStateList->GetWebStateAt(index);
+  // TODO(crbug.com/893121): This should probably live in the WebStateList.
+  while (newWebStateIndex < webStateList->count()) {
+    web::WebState* webState = webStateList->GetWebStateAt(newWebStateIndex);
 
-    if (webState != currentWebState &&
-        retainedURL == webState->GetVisibleURL()) {
-      self.tabModel.webStateList->ActivateWebStateAt(index);
-      return;
+    if (webState != currentWebState && URL == webState->GetVisibleURL()) {
+      break;
     }
+    newWebStateIndex++;
   }
+
+  if (newWebStateIndex >= webStateList->count())
+    return;
+
+  web::WebState* webStateBeingActivated =
+      webStateList->GetWebStateAt(newWebStateIndex);
+
+  UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+
+  SwipeView* swipeView = [[SwipeView alloc]
+      initWithFrame:self.contentArea.frame
+          topMargin:[self snapshotEdgeInsetsForWebState:webStateBeingActivated]
+                        .top];
+
+  [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
+                                    toolbarSideSwipeSnapshotForWebState:
+                                        webStateBeingActivated]];
+  [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
+                                       toolbarSideSwipeSnapshotForWebState:
+                                           webStateBeingActivated]];
+
+  SnapshotTabHelper::FromWebState(webStateBeingActivated)
+      ->RetrieveColorSnapshot(^(UIImage* image) {
+        if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
+                ->will_add_placeholder_for_next_navigation()) {
+          [swipeView setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
+        } else {
+          [swipeView setImage:image];
+        }
+      });
+
+  SwitchToTabAnimationView* animationView =
+      [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
+
+  [self.view addSubview:animationView];
+
+  SwitchToTabAnimationPosition position =
+      newWebStateIndex > webStateList->active_index()
+          ? SwitchToTabAnimationPositionAfter
+          : SwitchToTabAnimationPositionBefore;
+  [animationView animateFromCurrentView:snapshotView
+                              toNewView:swipeView
+                             inPosition:position];
+
+  [self.dispatcher cancelOmniboxEdit];
+
+  webStateList->ActivateWebStateAt(newWebStateIndex);
 }
 
 #pragma mark - TabModelObserver methods
