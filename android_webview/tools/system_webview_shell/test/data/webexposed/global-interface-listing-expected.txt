@@ -3556,6 +3556,7 @@ interface MediaDevices : EventTarget
     getter ondevicechange
     method constructor
     method enumerateDevices
+    method getDisplayMedia
     method getSupportedConstraints
     method getUserMedia
     setter ondevicechange
