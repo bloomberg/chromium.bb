@@ -254,7 +254,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         std::make_unique<web::TestNavigationManager>());
     id mockJsInjectionReceiver = OCMClassMock([CRWJSInjectionReceiver class]);
     web_state->SetJSInjectionReceiver(mockJsInjectionReceiver);
-    AttachTabHelpers(web_state.get(), true);
+    AttachTabHelpers(web_state.get(), false);
     return web_state;
   }
 

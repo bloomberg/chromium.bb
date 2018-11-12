@@ -9,6 +9,8 @@ source_set("tabs") {
     "background_tab_animation_view.mm",
     "foreground_tab_animation_view.h",
     "foreground_tab_animation_view.mm",
+    "switch_to_tab_animation_view.h",
+    "switch_to_tab_animation_view.mm",
     "tab_strip_controller+placeholder_view.h",
     "tab_strip_controller.h",
     "tab_strip_controller.mm",
