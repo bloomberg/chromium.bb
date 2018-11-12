@@ -261,7 +261,7 @@ Calling the `[EnforceRange]` version of `setColorEnforced()` with an out of rang
 
 Standard: [Exposed](http://heycam.github.io/webidl/#Exposed)
 
-Summary: Indicates on which global object or objects (e.g., Window, WorkerGlobalScope) the interface property is generated, i.e., in which global scope or scopes an interface exists. This is primarily of interest for the constructor, i.e., the [interface object Call method](https://heycam.github.io/webidl/#es-interface-call). Global context defaults to Window (the primary global scope) if not present, overridden by standard extended attribute `[NoInterfaceObject]` (the value of the property on the global object corresponding to the interface is called the **interface object**), which results in no interface property being generated.
+Summary: Indicates on which global object or objects (e.g., Window, WorkerGlobalScope) the interface property is generated, i.e., in which global scope or scopes an interface exists. This is primarily of interest for the constructor, i.e., the [interface object Call method](https://heycam.github.io/webidl/#es-interface-call). If `[Exposed]` is not present or overridden by a standard extended attribute `[NoInterfaceObject]` (the value of the property on the global object corresponding to the interface is called the **interface object**), which results in no interface property being generated.
 
 As with `[NoInterfaceObject]` does not affect generated code for the interface itself, only the code for the corresponding global object. A partial interface is generated at build time, containing an attribute for each interface property on that global object.
 
@@ -297,15 +297,15 @@ Exposed can also be specified with a method, attribute and constant.
 
 As a Blink-specific extension, we allow `Exposed(Arguments)` form, such as `[Exposed(Window Feature1, DedicatedWorker Feature2)]`. You can use this form to vary the exposing global scope based on runtime enabled features. For example, `[Exposed(Window Feature1, Worker Feature2)]` exposes the qualified element to Window if "Feature1" is enabled and to Worker if "Feature2" is enabled.
 
-### [Global] and [PrimaryGlobal] _(i)_
+### [Global] _(i)_
 
 Standard: [Global](http://heycam.github.io/webidl/#Global)
 
-Summary: The `[Global]` and `[PrimaryGlobal]` extended attributes can be used to give a name to one or more global interfaces, which can then be referenced by the `[Exposed]` extended attribute.
+Summary: The `[Global]` extended attribute can be used to give a name to one or more global interfaces, which can then be referenced by the `[Exposed]` extended attribute.
 
-These extended attributes must either take no arguments or take an identifier list.
+This extended attribute must either take an identifier or take an identifier list.
 
-If the `[Global]` or `[PrimaryGlobal]` extended attribute is declared with an identifier list argument, then those identifiers are the interface’s global names; otherwise, the interface has a single global name, which is the interface's identifier.
+The identifier argument or identifier list argument the `[Global]` extended attribute is declared with define the interface's global names
 
 ### [HTMLConstructor]
 

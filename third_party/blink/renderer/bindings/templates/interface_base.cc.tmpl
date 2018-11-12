@@ -514,7 +514,7 @@ static void install{{v8_class}}Template(
   {%+ if is_global %}instanceTemplate{% else %}prototypeTemplate{% endif %}->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
   {% if iterable %}
   {% if is_global %}
-#error "iterable<V> on [Global] and [PrimaryGlobal] is currently unsupported."
+#error "iterable<V> on [Global] is currently unsupported."
   {% endif %}
   // For value iterators, the properties below must originally be set to the corresponding ones in %ArrayPrototype%.
   // See https://heycam.github.io/webidl/#es-iterators.

@@ -79,7 +79,6 @@ OverrideBuiltins
 PartialInterfaceImplementedAs=*
 PermissiveDictionaryConversion
 PerWorldBindings
-PrimaryGlobal=|*
 PutForwards=*
 RaisesException=|Getter|Setter|Constructor
 Reflect=|*

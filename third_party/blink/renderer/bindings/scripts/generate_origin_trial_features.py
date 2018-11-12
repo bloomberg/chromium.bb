@@ -75,8 +75,7 @@ def read_idl_file(reader, idl_filename):
 
 
 def interface_is_global(interface):
-    return ('Global' in interface.extended_attributes or
-            'PrimaryGlobal' in interface.extended_attributes)
+    return 'Global' in interface.extended_attributes
 
 
 def origin_trial_features_info(info_provider, reader, idl_filenames, target_component):

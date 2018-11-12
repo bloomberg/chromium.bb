@@ -94,8 +94,7 @@ class InterfaceTemplateContextBuilder(object):
             attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
                           for attribute in interface.attributes]
             methods = v8_interface.methods_context(interface)['methods']
-            is_global = ('PrimaryGlobal' in interface.extended_attributes or
-                         'Global' in interface.extended_attributes)
+            is_global = 'Global' in interface.extended_attributes
 
             named_property_getter = v8_interface.property_getter(
                 interface.named_property_getter, ['name'])
