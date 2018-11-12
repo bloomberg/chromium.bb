@@ -261,6 +261,9 @@ class NET_EXPORT Backend {
   // that affect correctness (especially security).
   virtual uint8_t GetEntryInMemoryData(const std::string& key);
   virtual void SetEntryInMemoryData(const std::string& key, uint8_t data);
+
+  // Returns the maximum length an individual stream can have.
+  virtual int64_t MaxFileSize() const = 0;
 };
 
 // This interface represents an entry in the disk cache.

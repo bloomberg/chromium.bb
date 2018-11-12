@@ -161,6 +161,8 @@ class DelayableBackend : public disk_cache::Backend {
     return 0u;
   }
 
+  int64_t MaxFileSize() const override { return backend_->MaxFileSize(); }
+
   // Call to continue a delayed call to OpenEntry.
   bool OpenEntryContinue() {
     if (open_entry_callback_.is_null())

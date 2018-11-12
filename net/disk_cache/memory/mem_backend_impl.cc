@@ -121,7 +121,7 @@ bool MemBackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
-int MemBackendImpl::MaxFileSize() const {
+int64_t MemBackendImpl::MaxFileSize() const {
   return max_size_ / 8;
 }
 

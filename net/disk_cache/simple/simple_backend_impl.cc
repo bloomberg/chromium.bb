@@ -62,7 +62,7 @@ namespace {
 const int kMaxFileRatio = 8;
 
 // Overrides the above.
-const int kMinFileSizeLimit = 5 * 1024 * 1024;
+const int64_t kMinFileSizeLimit = 5 * 1024 * 1024;
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
@@ -302,9 +302,10 @@ bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
-int SimpleBackendImpl::GetMaxFileSize() const {
-  return std::max(base::saturated_cast<int>(index_->max_size() / kMaxFileRatio),
-                  kMinFileSizeLimit);
+int64_t SimpleBackendImpl::MaxFileSize() const {
+  return std::max(
+      base::saturated_cast<int64_t>(index_->max_size() / kMaxFileRatio),
+      kMinFileSizeLimit);
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64_t entry_hash) {

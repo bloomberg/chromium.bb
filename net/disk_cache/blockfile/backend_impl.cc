@@ -941,7 +941,7 @@ int32_t BackendImpl::GetCurrentEntryId() const {
   return data_->header.this_id;
 }
 
-int BackendImpl::MaxFileSize() const {
+int64_t BackendImpl::MaxFileSize() const {
   return cache_type() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
 }
 
