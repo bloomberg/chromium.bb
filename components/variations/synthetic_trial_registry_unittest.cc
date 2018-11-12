@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
@@ -47,7 +47,7 @@ class SyntheticTrialRegistryTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   base::FieldTrialList field_trial_list_;
 
