@@ -265,15 +265,15 @@ void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (UseNewLoadingAnimation()) {
     const gfx::RectF throbber_bounds = GetThrobberBounds(bounds);
+    // Note that this tab-loading animation intentionally uses
+    // COLOR_TAB_THROBBER_SPINNING for both the waiting and loading states.
+    const SkColor loading_color =
+        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
     if (network_state_ == TabNetworkState::kWaiting) {
-      gfx::PaintNewThrobberWaiting(
-          canvas, throbber_bounds,
-          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
-          waiting_state_.elapsed_time);
+      gfx::PaintNewThrobberWaiting(canvas, throbber_bounds, loading_color,
+                                   waiting_state_.elapsed_time);
     } else {
-      PaintLoadingProgressIndicator(
-          canvas, throbber_bounds,
-          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING));
+      PaintLoadingProgressIndicator(canvas, throbber_bounds, loading_color);
     }
   } else {
     if (network_state_ == TabNetworkState::kWaiting) {
