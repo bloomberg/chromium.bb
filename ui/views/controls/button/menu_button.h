@@ -52,15 +52,8 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   // Create a Button.
   MenuButton(const base::string16& text,
-             MenuButtonListener* menu_button_listener,
-             bool show_menu_marker);
+             MenuButtonListener* menu_button_listener);
   ~MenuButton() override;
-
-  bool show_menu_marker() const { return show_menu_marker_; }
-  void set_menu_marker(const gfx::ImageSkia* menu_marker) {
-    menu_marker_ = menu_marker;
-  }
-  const gfx::ImageSkia* menu_marker() const { return menu_marker_; }
 
   const gfx::Point& menu_offset() const { return menu_offset_; }
   void set_menu_offset(int x, int y) { menu_offset_.SetPoint(x, y); }
@@ -76,7 +69,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   virtual bool IsTriggerableEventType(const ui::Event& event);
 
   // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -89,18 +81,12 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
-  // Paint the menu marker image.
-  void PaintMenuMarker(gfx::Canvas* canvas);
-
-  // Overridden from LabelButton:
-  gfx::Rect GetChildAreaBounds() override;
 
   // Overridden from Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void StateChanged(ButtonState old_state) override;
   void NotifyClick(const ui::Event& event) override;
-  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Offset of the associated menu position.
   gfx::Point menu_offset_;
@@ -131,12 +117,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   // Our listener. Not owned.
   MenuButtonListener* listener_;
-
-  // Whether or not we're showing a drop marker.
-  bool show_menu_marker_;
-
-  // The down arrow used to differentiate the menu button from normal buttons.
-  const gfx::ImageSkia* menu_marker_;
 
   // The current number of "pressed" locks this button has.
   int pressed_lock_count_ = 0;
