@@ -25,13 +25,15 @@ namespace internal {
 //     Default constructor, no predecessor lock.
 //     DCHECKs
 //         On Acquisition if any scheduler lock is acquired on this thread.
+//             Okay if a universal predecessor is acquired.
 //
 // SchedulerLock(const SchedulerLock* predecessor)
 //     Constructor that specifies an allowed predecessor for that lock.
 //     DCHECKs
 //         On Construction if |predecessor| forms a predecessor lock cycle.
 //         On Acquisition if the previous lock acquired on the thread is not
-//             |predecessor|. Okay if there was no previous lock acquired.
+//             either |predecessor| or a universal predecessor. Okay if there
+//             was no previous lock acquired.
 //
 // SchedulerLock(UniversalPredecessor universal_predecessor)
 //     Constructor for a lock that will allow the acquisition of any lock after
