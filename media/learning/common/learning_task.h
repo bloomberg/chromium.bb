@@ -7,9 +7,10 @@
 
 #include <initializer_list>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
-#include "media/learning/common/instance.h"
+#include "media/learning/common/value.h"
 
 namespace media {
 namespace learning {
