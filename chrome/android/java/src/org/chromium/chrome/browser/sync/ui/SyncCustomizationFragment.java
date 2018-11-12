@@ -554,13 +554,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private void updateDataTypeState() {
         boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
         boolean syncEverything = mSyncEverything.isChecked();
-        boolean passwordSyncConfigurable = mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isCryptographerReady();
         Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
         for (CheckBoxPreference pref : mAllTypes) {
             boolean canSyncType = true;
-            if (pref == mSyncPasswords) canSyncType = passwordSyncConfigurable;
             if (pref == mPaymentsIntegration) {
                 canSyncType = syncAutofill || syncEverything;
             }
@@ -577,8 +574,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             mSyncAutofill.setChecked(syncAutofill);
             mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
             mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
-            mSyncPasswords.setChecked(passwordSyncConfigurable
-                    && syncTypes.contains(ModelType.PASSWORDS));
+            mSyncPasswords.setChecked(syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
             mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
             mPaymentsIntegration.setChecked(
