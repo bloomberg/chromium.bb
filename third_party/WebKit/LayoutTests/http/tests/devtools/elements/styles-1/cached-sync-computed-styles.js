@@ -27,7 +27,7 @@
   var backendCallCount = 0;
   var nodeId;
 
-  function onBackendCall(domain, method, params) {
+  function onBackendCall(sessionId, domain, method, params) {
     if (method === 'CSS.getComputedStyleForNode' && params.nodeId === nodeId)
       ++backendCallCount;
   }
@@ -35,7 +35,7 @@
   function step1(node) {
     var callsLeft = 2;
     nodeId = node.id;
-    TestRunner.addSniffer(Protocol.TargetBase.prototype, '_wrapCallbackAndSendMessageObject', onBackendCall, true);
+    TestRunner.addSniffer(Protocol.SessionRouter.prototype, 'sendMessage', onBackendCall, true);
     TestRunner.cssModel.computedStylePromise(nodeId).then(styleCallback);
     TestRunner.cssModel.computedStylePromise(nodeId).then(styleCallback);
     function styleCallback() {

@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(`Tests correctness of promisified protocol commands.\n`);
 
-  Protocol.InspectorBackend.Options.suppressRequestErrors = false;
+  Protocol.test.suppressRequestErrors = false;
   function dumpArgument(name, value) {
     TestRunner.addResult(name + ' result: ' + (typeof value === 'string' ? value : JSON.stringify(value)));
   }

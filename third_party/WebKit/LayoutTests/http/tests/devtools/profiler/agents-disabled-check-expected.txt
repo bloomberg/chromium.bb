@@ -7,7 +7,7 @@ frontend: {"id":<number>,"method":"Overlay.setPausedInDebuggerMessage"}
 frontend: {"id":<number>,"method":"DOM.disable"}
 frontend: {"id":<number>,"method":"CSS.disable"}
 frontend: {"id":<number>,"method":"Overlay.setSuspended","params":{"suspended":true}}
-frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false}}
+frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true}}
 
 --> SDK.targetManager.resumeAllTargets();
 frontend: {"id":<number>,"method":"Debugger.enable"}
@@ -16,7 +16,7 @@ frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"m
 frontend: {"id":<number>,"method":"DOM.enable"}
 frontend: {"id":<number>,"method":"CSS.enable"}
 frontend: {"id":<number>,"method":"Overlay.setSuspended","params":{"suspended":false}}
-frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":true}}
+frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":true,"flatten":true}}
 
 --> done
 
