@@ -63,8 +63,13 @@ class HTMLParserScriptRunner final
   static HTMLParserScriptRunner* Create(HTMLParserReentryPermit* reentry_permit,
                                         Document* document,
                                         HTMLParserScriptRunnerHost* host) {
-    return new HTMLParserScriptRunner(reentry_permit, document, host);
+    return MakeGarbageCollected<HTMLParserScriptRunner>(reentry_permit,
+                                                        document, host);
   }
+
+  HTMLParserScriptRunner(HTMLParserReentryPermit*,
+                         Document*,
+                         HTMLParserScriptRunnerHost*);
   ~HTMLParserScriptRunner() override;
 
   // Invoked when the parser is detached.
@@ -102,10 +107,6 @@ class HTMLParserScriptRunner final
   }
 
  private:
-  HTMLParserScriptRunner(HTMLParserReentryPermit*,
-                         Document*,
-                         HTMLParserScriptRunnerHost*);
-
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 

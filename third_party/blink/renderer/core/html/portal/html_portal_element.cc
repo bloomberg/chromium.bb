@@ -29,7 +29,7 @@ HTMLPortalElement::~HTMLPortalElement() {}
 
 HTMLElement* HTMLPortalElement::Create(Document& document) {
   if (RuntimeEnabledFeatures::PortalsEnabled())
-    return new HTMLPortalElement(document);
+    return MakeGarbageCollected<HTMLPortalElement>(document);
   return HTMLUnknownElement::Create(html_names::kPortalTag, document);
 }
 

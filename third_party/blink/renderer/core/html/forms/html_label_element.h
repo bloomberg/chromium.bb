@@ -36,13 +36,15 @@ class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
 
  public:
   static HTMLLabelElement* Create(Document&);
+
+  explicit HTMLLabelElement(Document&);
+
   LabelableElement* control() const;
   HTMLFormElement* form() const;
 
   bool WillRespondToMouseClickEvents() override;
 
  private:
-  explicit HTMLLabelElement(Document&);
   bool IsInInteractiveContent(Node*) const;
 
   bool IsInteractiveContent() const override;

@@ -73,8 +73,11 @@ class HTMLImageElement::ViewportChangeListener final
     : public MediaQueryListListener {
  public:
   static ViewportChangeListener* Create(HTMLImageElement* element) {
-    return new ViewportChangeListener(element);
+    return MakeGarbageCollected<ViewportChangeListener>(element);
   }
+
+  explicit ViewportChangeListener(HTMLImageElement* element)
+      : element_(element) {}
 
   void NotifyMediaQueryChanged() override {
     if (element_)
@@ -87,8 +90,6 @@ class HTMLImageElement::ViewportChangeListener final
   }
 
  private:
-  explicit ViewportChangeListener(HTMLImageElement* element)
-      : element_(element) {}
   Member<HTMLImageElement> element_;
 };
 
@@ -114,12 +115,13 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
 }
 
 HTMLImageElement* HTMLImageElement::Create(Document& document) {
-  return new HTMLImageElement(document);
+  return MakeGarbageCollected<HTMLImageElement>(document);
 }
 
 HTMLImageElement* HTMLImageElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  return new HTMLImageElement(document, flags.IsCreatedByParser());
+  return MakeGarbageCollected<HTMLImageElement>(document,
+                                                flags.IsCreatedByParser());
 }
 
 HTMLImageElement::~HTMLImageElement() = default;
@@ -146,14 +148,14 @@ void HTMLImageElement::NotifyViewportChanged() {
 }
 
 HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document) {
-  HTMLImageElement* image = new HTMLImageElement(document);
+  HTMLImageElement* image = MakeGarbageCollected<HTMLImageElement>(document);
   image->element_created_by_parser_ = false;
   return image;
 }
 
 HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document,
                                                            unsigned width) {
-  HTMLImageElement* image = new HTMLImageElement(document);
+  HTMLImageElement* image = MakeGarbageCollected<HTMLImageElement>(document);
   image->setWidth(width);
   image->element_created_by_parser_ = false;
   return image;
@@ -162,7 +164,7 @@ HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document,
 HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document,
                                                            unsigned width,
                                                            unsigned height) {
-  HTMLImageElement* image = new HTMLImageElement(document);
+  HTMLImageElement* image = MakeGarbageCollected<HTMLImageElement>(document);
   image->setWidth(width);
   image->setHeight(height);
   image->element_created_by_parser_ = false;

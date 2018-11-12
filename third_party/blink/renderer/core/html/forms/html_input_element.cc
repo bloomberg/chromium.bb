@@ -125,7 +125,7 @@ HTMLInputElement::HTMLInputElement(Document& document,
 
 HTMLInputElement* HTMLInputElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  auto* input_element = new HTMLInputElement(document, flags);
+  auto* input_element = MakeGarbageCollected<HTMLInputElement>(document, flags);
   if (!flags.IsCreatedByParser()) {
     DCHECK(input_element->input_type_view_->NeedsShadowSubtree());
     input_element->CreateUserAgentShadowRoot();

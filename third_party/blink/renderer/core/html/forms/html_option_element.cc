@@ -57,7 +57,7 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 HTMLOptionElement::~HTMLOptionElement() = default;
 
 HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
-  HTMLOptionElement* option = new HTMLOptionElement(document);
+  HTMLOptionElement* option = MakeGarbageCollected<HTMLOptionElement>(document);
   option->EnsureUserAgentShadowRoot();
   return option;
 }
@@ -69,7 +69,8 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
     bool default_selected,
     bool selected,
     ExceptionState& exception_state) {
-  HTMLOptionElement* element = new HTMLOptionElement(document);
+  HTMLOptionElement* element =
+      MakeGarbageCollected<HTMLOptionElement>(document);
   element->EnsureUserAgentShadowRoot();
   if (!data.IsEmpty()) {
     element->AppendChild(Text::Create(document, data), exception_state);

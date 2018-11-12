@@ -99,7 +99,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
 }
 
 HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
-  HTMLSelectElement* select = new HTMLSelectElement(document);
+  HTMLSelectElement* select = MakeGarbageCollected<HTMLSelectElement>(document);
   select->EnsureUserAgentShadowRoot();
   return select;
 }
@@ -2072,7 +2072,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
 void HTMLSelectElement::ObserveTreeMutation() {
   DCHECK(!popup_updater_);
-  popup_updater_ = new PopupUpdater(*this);
+  popup_updater_ = MakeGarbageCollected<PopupUpdater>(*this);
 }
 
 void HTMLSelectElement::UnobserveTreeMutation() {

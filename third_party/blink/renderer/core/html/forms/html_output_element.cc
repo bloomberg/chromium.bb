@@ -44,7 +44,7 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document)
 HTMLOutputElement::~HTMLOutputElement() = default;
 
 HTMLOutputElement* HTMLOutputElement::Create(Document& document) {
-  return new HTMLOutputElement(document);
+  return MakeGarbageCollected<HTMLOutputElement>(document);
 }
 
 const AtomicString& HTMLOutputElement::FormControlType() const {

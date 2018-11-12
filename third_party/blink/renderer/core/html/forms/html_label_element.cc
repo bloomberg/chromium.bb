@@ -47,7 +47,7 @@ inline HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(kLabelTag, document), processing_click_(false) {}
 
 HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
-  return new HTMLLabelElement(document);
+  return MakeGarbageCollected<HTMLLabelElement>(document);
 }
 
 LabelableElement* HTMLLabelElement::control() const {

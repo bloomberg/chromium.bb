@@ -49,14 +49,13 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
 
   static HTMLMediaElementEncryptedMedia& From(HTMLMediaElement&);
 
+  HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
   ~HTMLMediaElementEncryptedMedia();
 
   void Trace(blink::Visitor*) override;
 
  private:
   friend class SetMediaKeysHandler;
-
-  HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
 
   // EventTarget
   bool SetAttributeEventListener(const AtomicString& event_type,

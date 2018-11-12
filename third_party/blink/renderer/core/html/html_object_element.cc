@@ -59,7 +59,7 @@ inline HTMLObjectElement::~HTMLObjectElement() = default;
 
 HTMLObjectElement* HTMLObjectElement::Create(Document& document,
                                              const CreateElementFlags flags) {
-  auto* element = new HTMLObjectElement(document, flags);
+  auto* element = MakeGarbageCollected<HTMLObjectElement>(document, flags);
   element->EnsureUserAgentShadowRoot();
   return element;
 }

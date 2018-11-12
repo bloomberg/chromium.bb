@@ -4179,7 +4179,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::SetClient(
   MutexLocker locker(provide_input_lock);
 
   if (client)
-    client_ = new HTMLMediaElement::AudioClientImpl(client);
+    client_ = MakeGarbageCollected<HTMLMediaElement::AudioClientImpl>(client);
   else
     client_.Clear();
 

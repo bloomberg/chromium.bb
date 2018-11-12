@@ -49,6 +49,8 @@ class HTMLElementStack {
 
   class ElementRecord final : public GarbageCollected<ElementRecord> {
    public:
+    ElementRecord(HTMLStackItem*, ElementRecord*);
+
     Element* GetElement() const { return item_->GetElement(); }
     ContainerNode* GetNode() const { return item_->GetNode(); }
     const AtomicString& NamespaceURI() const { return item_->NamespaceURI(); }
@@ -63,8 +65,6 @@ class HTMLElementStack {
 
    private:
     friend class HTMLElementStack;
-
-    ElementRecord(HTMLStackItem*, ElementRecord*);
 
     ElementRecord* ReleaseNext() { return next_.Release(); }
     void SetNext(ElementRecord* next) { next_ = next; }

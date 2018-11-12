@@ -76,6 +76,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   static DocumentTimeline* Create(ExecutionContext*,
                                   const DocumentTimelineOptions*);
 
+  DocumentTimeline(Document*, TimeDelta origin_time, PlatformTiming*);
   ~DocumentTimeline() override = default;
 
   bool IsDocumentTimeline() const final { return true; }
@@ -125,8 +126,6 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void Trace(blink::Visitor*) override;
 
  private:
-  DocumentTimeline(Document*, TimeDelta origin_time, PlatformTiming*);
-
   Member<Document> document_;
   // Origin time for the timeline relative to the time origin of the document.
   // Provided when the timeline is constructed. See

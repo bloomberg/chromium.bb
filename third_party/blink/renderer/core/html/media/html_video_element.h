@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
  public:
   static HTMLVideoElement* Create(Document&);
+
+  HTMLVideoElement(Document&);
   void Trace(blink::Visitor*) override;
 
   bool HasPendingActivity() const final;
@@ -206,8 +208,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElementPersistentTest;
-
-  HTMLVideoElement(Document&);
 
   // PausableObject functions.
   void ContextDestroyed(ExecutionContext*) final;

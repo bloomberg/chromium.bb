@@ -42,7 +42,7 @@ HTMLMeterElement::HTMLMeterElement(Document& document)
 HTMLMeterElement::~HTMLMeterElement() = default;
 
 HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
-  HTMLMeterElement* meter = new HTMLMeterElement(document);
+  HTMLMeterElement* meter = MakeGarbageCollected<HTMLMeterElement>(document);
   meter->EnsureUserAgentShadowRoot();
   return meter;
 }

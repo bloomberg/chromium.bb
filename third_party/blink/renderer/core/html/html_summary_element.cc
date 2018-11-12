@@ -37,7 +37,8 @@ namespace blink {
 using namespace html_names;
 
 HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
-  HTMLSummaryElement* summary = new HTMLSummaryElement(document);
+  HTMLSummaryElement* summary =
+      MakeGarbageCollected<HTMLSummaryElement>(document);
   summary->EnsureUserAgentShadowRoot();
   return summary;
 }

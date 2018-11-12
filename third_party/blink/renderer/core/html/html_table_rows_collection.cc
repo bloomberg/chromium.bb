@@ -149,7 +149,7 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
 HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,
                                                          CollectionType type) {
   DCHECK_EQ(type, kTableRows);
-  return new HTMLTableRowsCollection(table);
+  return MakeGarbageCollected<HTMLTableRowsCollection>(table);
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {

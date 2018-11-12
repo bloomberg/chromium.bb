@@ -66,7 +66,7 @@ void HTMLOptionsCollection::SupportedPropertyNames(Vector<String>& names) {
 
 HTMLOptionsCollection* HTMLOptionsCollection::Create(ContainerNode& select,
                                                      CollectionType) {
-  return new HTMLOptionsCollection(select);
+  return MakeGarbageCollected<HTMLOptionsCollection>(select);
 }
 
 void HTMLOptionsCollection::add(

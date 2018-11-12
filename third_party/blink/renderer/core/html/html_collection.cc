@@ -193,7 +193,8 @@ HTMLCollection::HTMLCollection(ContainerNode& owner_node,
 
 HTMLCollection* HTMLCollection::Create(ContainerNode& base,
                                        CollectionType type) {
-  return new HTMLCollection(base, type, kDoesNotOverrideItemAfter);
+  return MakeGarbageCollected<HTMLCollection>(base, type,
+                                              kDoesNotOverrideItemAfter);
 }
 
 HTMLCollection::~HTMLCollection() = default;

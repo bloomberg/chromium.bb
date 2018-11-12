@@ -35,7 +35,8 @@ DocumentFragment::DocumentFragment(Document* document,
     : ContainerNode(document, construction_type) {}
 
 DocumentFragment* DocumentFragment::Create(Document& document) {
-  return new DocumentFragment(&document, Node::kCreateDocumentFragment);
+  return MakeGarbageCollected<DocumentFragment>(&document,
+                                                Node::kCreateDocumentFragment);
 }
 
 String DocumentFragment::nodeName() const {

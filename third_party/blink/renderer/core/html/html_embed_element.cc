@@ -50,7 +50,7 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
 
 HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  auto* element = new HTMLEmbedElement(document, flags);
+  auto* element = MakeGarbageCollected<HTMLEmbedElement>(document, flags);
   element->EnsureUserAgentShadowRoot();
   return element;
 }

@@ -40,16 +40,16 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
   static HTMLViewSourceDocument* Create(const DocumentInit& initializer,
                                         const String& mime_type) {
-    return new HTMLViewSourceDocument(initializer, mime_type);
+    return MakeGarbageCollected<HTMLViewSourceDocument>(initializer, mime_type);
   }
+
+  HTMLViewSourceDocument(const DocumentInit&, const String& mime_type);
 
   void AddSource(const String&, HTMLToken&, SourceAnnotation);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLViewSourceDocument(const DocumentInit&, const String& mime_type);
-
   DocumentParser* CreateParser() override;
 
   void ProcessDoctypeToken(const String& source, HTMLToken&);

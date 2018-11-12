@@ -171,8 +171,15 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
   static HTMLElementEquivalent* Create(CSSPropertyID property_id,
                                        CSSValueID primitive_value,
                                        const HTMLQualifiedName& tag_name) {
-    return new HTMLElementEquivalent(property_id, primitive_value, tag_name);
+    return MakeGarbageCollected<HTMLElementEquivalent>(
+        property_id, primitive_value, tag_name);
   }
+
+  HTMLElementEquivalent(CSSPropertyID);
+  HTMLElementEquivalent(CSSPropertyID, const HTMLQualifiedName& tag_name);
+  HTMLElementEquivalent(CSSPropertyID,
+                        CSSValueID primitive_value,
+                        const HTMLQualifiedName& tag_name);
 
   virtual bool Matches(const Element* element) const {
     return !tag_name_ || element->HasTagName(*tag_name_);
@@ -189,11 +196,6 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
   }
 
  protected:
-  HTMLElementEquivalent(CSSPropertyID);
-  HTMLElementEquivalent(CSSPropertyID, const HTMLQualifiedName& tag_name);
-  HTMLElementEquivalent(CSSPropertyID,
-                        CSSValueID primitive_value,
-                        const HTMLQualifiedName& tag_name);
   const CSSPropertyID property_id_;
   const Member<CSSIdentifierValue> identifier_value_;
   // We can store a pointer because HTML tag names are const global.
@@ -251,18 +253,19 @@ class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
  public:
   static HTMLElementEquivalent* Create(CSSValueID primitive_value,
                                        const HTMLQualifiedName& tag_name) {
-    return new HTMLTextDecorationEquivalent(primitive_value, tag_name);
+    return MakeGarbageCollected<HTMLTextDecorationEquivalent>(primitive_value,
+                                                              tag_name);
   }
+
+  HTMLTextDecorationEquivalent(CSSValueID primitive_value,
+                               const HTMLQualifiedName& tag_name);
+
   bool PropertyExistsInStyle(const CSSPropertyValueSet*) const override;
   bool ValueIsPresentInStyle(HTMLElement*, CSSPropertyValueSet*) const override;
 
   void Trace(blink::Visitor* visitor) override {
     HTMLElementEquivalent::Trace(visitor);
   }
-
- private:
-  HTMLTextDecorationEquivalent(CSSValueID primitive_value,
-                               const HTMLQualifiedName& tag_name);
 };
 
 HTMLTextDecorationEquivalent::HTMLTextDecorationEquivalent(
@@ -296,12 +299,19 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
   static HTMLAttributeEquivalent* Create(CSSPropertyID property_id,
                                          const HTMLQualifiedName& tag_name,
                                          const QualifiedName& attr_name) {
-    return new HTMLAttributeEquivalent(property_id, tag_name, attr_name);
+    return MakeGarbageCollected<HTMLAttributeEquivalent>(property_id, tag_name,
+                                                         attr_name);
   }
   static HTMLAttributeEquivalent* Create(CSSPropertyID property_id,
                                          const QualifiedName& attr_name) {
-    return new HTMLAttributeEquivalent(property_id, attr_name);
+    return MakeGarbageCollected<HTMLAttributeEquivalent>(property_id,
+                                                         attr_name);
   }
+
+  HTMLAttributeEquivalent(CSSPropertyID,
+                          const HTMLQualifiedName& tag_name,
+                          const QualifiedName& attr_name);
+  HTMLAttributeEquivalent(CSSPropertyID, const QualifiedName& attr_name);
 
   bool Matches(const Element* element) const override {
     return HTMLElementEquivalent::Matches(element) &&
@@ -318,10 +328,6 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
   }
 
  protected:
-  HTMLAttributeEquivalent(CSSPropertyID,
-                          const HTMLQualifiedName& tag_name,
-                          const QualifiedName& attr_name);
-  HTMLAttributeEquivalent(CSSPropertyID, const QualifiedName& attr_name);
   // We can store a reference because HTML attribute names are const global.
   const QualifiedName& attr_name_;
 };
@@ -370,16 +376,16 @@ const CSSValue* HTMLAttributeEquivalent::AttributeValueAsCSSValue(
 class HTMLFontSizeEquivalent final : public HTMLAttributeEquivalent {
  public:
   static HTMLFontSizeEquivalent* Create() {
-    return new HTMLFontSizeEquivalent();
+    return MakeGarbageCollected<HTMLFontSizeEquivalent>();
   }
+
+  HTMLFontSizeEquivalent();
+
   const CSSValue* AttributeValueAsCSSValue(Element*) const override;
 
   void Trace(blink::Visitor* visitor) override {
     HTMLAttributeEquivalent::Trace(visitor);
   }
-
- private:
-  HTMLFontSizeEquivalent();
 };
 
 HTMLFontSizeEquivalent::HTMLFontSizeEquivalent()

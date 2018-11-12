@@ -14,7 +14,7 @@ HTMLTimeElement::HTMLTimeElement(Document& document)
 }
 
 HTMLTimeElement* HTMLTimeElement::Create(Document& document) {
-  return new HTMLTimeElement(document);
+  return MakeGarbageCollected<HTMLTimeElement>(document);
 }
 
 }  // namespace blink

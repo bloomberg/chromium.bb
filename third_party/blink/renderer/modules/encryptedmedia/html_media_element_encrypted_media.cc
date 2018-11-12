@@ -343,7 +343,7 @@ HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::From(
       Supplement<HTMLMediaElement>::From<HTMLMediaElementEncryptedMedia>(
           element);
   if (!supplement) {
-    supplement = new HTMLMediaElementEncryptedMedia(element);
+    supplement = MakeGarbageCollected<HTMLMediaElementEncryptedMedia>(element);
     ProvideTo(element, supplement);
   }
   return *supplement;

@@ -78,7 +78,8 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
       is_placeholder_visible_(false) {}
 
 HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
-  HTMLTextAreaElement* text_area = new HTMLTextAreaElement(document);
+  HTMLTextAreaElement* text_area =
+      MakeGarbageCollected<HTMLTextAreaElement>(document);
   text_area->EnsureUserAgentShadowRoot();
   return text_area;
 }

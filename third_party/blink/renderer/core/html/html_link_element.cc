@@ -60,7 +60,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
 
 HTMLLinkElement* HTMLLinkElement::Create(Document& document,
                                          const CreateElementFlags flags) {
-  return new HTMLLinkElement(document, flags);
+  return MakeGarbageCollected<HTMLLinkElement>(document, flags);
 }
 
 HTMLLinkElement::~HTMLLinkElement() = default;

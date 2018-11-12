@@ -127,10 +127,10 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
 
-  return new DocumentLoader(frame, request, substitute_data,
-                            client_redirect_policy, devtools_navigation_token,
-                            load_type, navigation_type,
-                            std::move(navigation_params));
+  return MakeGarbageCollected<DocumentLoader>(
+      frame, request, substitute_data, client_redirect_policy,
+      devtools_navigation_token, load_type, navigation_type,
+      std::move(navigation_params));
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,

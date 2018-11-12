@@ -41,6 +41,8 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
 
  public:
   static HTMLOutputElement* Create(Document&);
+
+  explicit HTMLOutputElement(Document&);
   ~HTMLOutputElement() override;
 
   bool willValidate() const override { return false; }
@@ -58,8 +60,6 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLOutputElement(Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   const AtomicString& FormControlType() const override;
   bool IsDisabledFormControl() const override;

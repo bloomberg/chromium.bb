@@ -12,13 +12,14 @@ namespace blink {
 ModulatorImplBase* DocumentModulatorImpl::Create(
     ScriptState* script_state,
     ResourceFetcher* resource_fetcher) {
-  return new DocumentModulatorImpl(script_state, resource_fetcher);
+  return MakeGarbageCollected<DocumentModulatorImpl>(script_state,
+                                                     resource_fetcher);
 }
 
 ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher(
     ModuleScriptCustomFetchType custom_fetch_type) {
   DCHECK_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-  return new DocumentModuleScriptFetcher(fetcher_);
+  return MakeGarbageCollected<DocumentModuleScriptFetcher>(fetcher_);
 }
 
 void DocumentModulatorImpl::Trace(blink::Visitor* visitor) {

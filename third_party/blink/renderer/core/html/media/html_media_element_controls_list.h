@@ -16,8 +16,10 @@ class HTMLMediaElement;
 class HTMLMediaElementControlsList final : public DOMTokenList {
  public:
   static HTMLMediaElementControlsList* Create(HTMLMediaElement* element) {
-    return new HTMLMediaElementControlsList(element);
+    return MakeGarbageCollected<HTMLMediaElementControlsList>(element);
   }
+
+  explicit HTMLMediaElementControlsList(HTMLMediaElement*);
 
   // Whether the list dictates to hide a certain control.
   CORE_EXPORT bool ShouldHideDownload() const;
@@ -25,7 +27,6 @@ class HTMLMediaElementControlsList final : public DOMTokenList {
   CORE_EXPORT bool ShouldHideRemotePlayback() const;
 
  private:
-  explicit HTMLMediaElementControlsList(HTMLMediaElement*);
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 };
 

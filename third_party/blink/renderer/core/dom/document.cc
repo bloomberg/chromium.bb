@@ -581,11 +581,11 @@ class Document::NetworkStateObserver final
 };
 
 Document* Document::CreateForTest() {
-  return new Document(DocumentInit::Create());
+  return MakeGarbageCollected<Document>(DocumentInit::Create());
 }
 
 Document* Document::Create(Document& document) {
-  Document* new_document = new Document(
+  Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create().WithContextDocument(&document).WithURL(
           BlankURL()));
   new_document->SetSecurityOrigin(document.GetMutableSecurityOrigin());
@@ -631,7 +631,7 @@ Document::Document(const DocumentInit& initializer,
       ignore_destructive_write_count_(0),
       throw_on_dynamic_markup_insertion_count_(0),
       ignore_opens_during_unload_count_(0),
-      markers_(new DocumentMarkerController(*this)),
+      markers_(MakeGarbageCollected<DocumentMarkerController>(*this)),
       update_focus_appearance_timer_(
           GetTaskRunner(TaskType::kInternalUserInteraction),
           this,
@@ -2765,7 +2765,7 @@ void Document::Initialize() {
   // Observer(s) should not be initialized until the document is initialized /
   // attached to a frame. Otherwise ContextLifecycleObserver::contextDestroyed
   // wouldn't be fired.
-  network_state_observer_ = new NetworkStateObserver(*this);
+  network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
 }
 
 void Document::Shutdown() {
@@ -7499,7 +7499,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
 
 Policy* Document::policy() {
   if (!policy_)
-    policy_ = new DocumentPolicy(this);
+    policy_ = MakeGarbageCollected<DocumentPolicy>(this);
   return policy_.Get();
 }
 

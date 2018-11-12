@@ -239,7 +239,7 @@ void PaintWorkletGlobalScope::registerPaint(
         pending_generator_registry_->NotifyGeneratorReady(name);
     } else {
       DocumentPaintDefinition* document_definition =
-          new DocumentPaintDefinition(definition);
+          MakeGarbageCollected<DocumentPaintDefinition>(definition);
       document_definition_map.Set(name, document_definition);
     }
   }

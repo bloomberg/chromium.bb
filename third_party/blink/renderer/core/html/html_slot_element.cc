@@ -56,19 +56,19 @@ constexpr size_t kLCSTableSizeLimit = 16;
 }
 
 HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
-  return new HTMLSlotElement(document);
+  return MakeGarbageCollected<HTMLSlotElement>(document);
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
-  HTMLSlotElement* slot = new HTMLSlotElement(document);
+  HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
   slot->setAttribute(kNameAttr, UserAgentDefaultSlotName());
   return slot;
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
     Document& document) {
-  HTMLSlotElement* slot = new HTMLSlotElement(document);
+  HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
   slot->setAttribute(kNameAttr, UserAgentCustomAssignSlotName());
   return slot;
 }

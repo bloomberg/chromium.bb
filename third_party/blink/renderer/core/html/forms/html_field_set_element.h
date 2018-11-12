@@ -36,6 +36,9 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
 
  public:
   static HTMLFieldSetElement* Create(Document&);
+
+  explicit HTMLFieldSetElement(Document&);
+
   HTMLLegendElement* Legend() const;
   HTMLCollection* elements();
 
@@ -43,8 +46,6 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   void DisabledAttributeChanged() override;
 
  private:
-  explicit HTMLFieldSetElement(Document&);
-
   bool IsEnumeratable() const override { return true; }
   bool SupportsFocus() const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;

@@ -56,6 +56,8 @@ class CORE_EXPORT HTMLInputElement
 
  public:
   static HTMLInputElement* Create(Document&, const CreateElementFlags);
+
+  HTMLInputElement(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -307,8 +309,6 @@ class CORE_EXPORT HTMLInputElement
   void ChildrenChanged(const ChildrenChange&) override;
 
  protected:
-  HTMLInputElement(Document&, const CreateElementFlags);
-
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();
 

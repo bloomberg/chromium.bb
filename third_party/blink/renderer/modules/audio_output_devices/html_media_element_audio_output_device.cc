@@ -140,7 +140,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
       Supplement<HTMLMediaElement>::From<HTMLMediaElementAudioOutputDevice>(
           element);
   if (!supplement) {
-    supplement = new HTMLMediaElementAudioOutputDevice();
+    supplement = MakeGarbageCollected<HTMLMediaElementAudioOutputDevice>();
     ProvideTo(element, supplement);
   }
   return *supplement;

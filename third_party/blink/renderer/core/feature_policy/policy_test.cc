@@ -42,7 +42,7 @@ class DocumentPolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = new DocumentPolicy(document_);
+    policy_ = MakeGarbageCollected<DocumentPolicy>(document_);
   }
 };
 

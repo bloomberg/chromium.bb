@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLSelectElement final
 
  public:
   static HTMLSelectElement* Create(Document&);
+
+  explicit HTMLSelectElement(Document&);
   ~HTMLSelectElement() override;
 
   int selectedIndex() const;
@@ -175,9 +177,6 @@ class CORE_EXPORT HTMLSelectElement final
   void Trace(blink::Visitor*) override;
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
-
- protected:
-  explicit HTMLSelectElement(Document&);
 
  private:
   const AtomicString& FormControlType() const override;

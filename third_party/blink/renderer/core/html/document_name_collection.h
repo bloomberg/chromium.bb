@@ -16,17 +16,16 @@ class DocumentNameCollection final : public HTMLNameCollection {
                                         CollectionType type,
                                         const AtomicString& name) {
     DCHECK_EQ(type, kDocumentNamedItems);
-    return new DocumentNameCollection(document, name);
+    return MakeGarbageCollected<DocumentNameCollection>(document, name);
   }
+
+  DocumentNameCollection(ContainerNode& document, const AtomicString& name);
 
   HTMLElement* Item(unsigned offset) const {
     return ToHTMLElement(HTMLNameCollection::item(offset));
   }
 
   bool ElementMatches(const HTMLElement&) const;
-
- private:
-  DocumentNameCollection(ContainerNode& document, const AtomicString& name);
 };
 
 DEFINE_TYPE_CASTS(DocumentNameCollection,

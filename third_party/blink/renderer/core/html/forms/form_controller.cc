@@ -401,7 +401,7 @@ void FormKeyGenerator::WillDeleteForm(HTMLFormElement* form) {
 // ----------------------------------------------------------------------------
 
 DocumentState* DocumentState::Create() {
-  return new DocumentState;
+  return MakeGarbageCollected<DocumentState>();
 }
 
 void DocumentState::Trace(blink::Visitor* visitor) {

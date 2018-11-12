@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
  public:
   static HTMLLinkElement* Create(Document&, const CreateElementFlags);
+
+  HTMLLinkElement(Document&, const CreateElementFlags);
   ~HTMLLinkElement() override;
 
   // Returns attributes that should be checked against Trusted Types
@@ -121,8 +123,6 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLLinkElement(Document&, const CreateElementFlags);
-
   LinkStyle* GetLinkStyle() const;
   LinkImport* GetLinkImport() const;
   LinkResource* LinkResourceToProcess();
