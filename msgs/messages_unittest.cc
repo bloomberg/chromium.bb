@@ -94,6 +94,49 @@ TEST(PresentationMessagesTest, DecodeInvalidUtf8) {
   ASSERT_GT(0, bytes_read);
 }
 
+TEST(PresentationMessagesTest, InitiationRequest) {
+  uint8_t buffer[256];
+  const std::string kPresentationId = "lksdjfloiqwerlkjasdlfq";
+  const std::string kPresentationUrl = "https://example.com/receiver.html";
+  ssize_t bytes_out = EncodePresentationInitiationRequest(
+      PresentationInitiationRequest{13, kPresentationId, kPresentationUrl, "",
+                                    true, 27},
+      buffer, sizeof(buffer));
+  ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
+  ASSERT_GT(bytes_out, 0);
+
+  PresentationInitiationRequest decoded_request;
+  ssize_t bytes_read =
+      DecodePresentationInitiationRequest(buffer, bytes_out, &decoded_request);
+  ASSERT_EQ(bytes_read, bytes_out);
+  EXPECT_EQ(13u, decoded_request.request_id);
+  EXPECT_EQ(kPresentationId, decoded_request.presentation_id);
+  EXPECT_EQ(kPresentationUrl, decoded_request.url);
+  EXPECT_TRUE(decoded_request.has_connection_id);
+  EXPECT_EQ(27u, decoded_request.connection_id);
+}
+
+TEST(PresentationMessagesTest, InitiationRequestWithoutOptional) {
+  uint8_t buffer[256];
+  const std::string kPresentationId = "lksdjfloiqwerlkjasdlfq";
+  const std::string kPresentationUrl = "https://example.com/receiver.html";
+  ssize_t bytes_out = EncodePresentationInitiationRequest(
+      PresentationInitiationRequest{13, kPresentationId, kPresentationUrl, "",
+                                    false, 0},
+      buffer, sizeof(buffer));
+  ASSERT_LE(bytes_out, static_cast<ssize_t>(sizeof(buffer)));
+  ASSERT_GT(bytes_out, 0);
+
+  PresentationInitiationRequest decoded_request;
+  ssize_t bytes_read =
+      DecodePresentationInitiationRequest(buffer, bytes_out, &decoded_request);
+  ASSERT_EQ(bytes_read, bytes_out);
+  EXPECT_EQ(13u, decoded_request.request_id);
+  EXPECT_EQ(kPresentationId, decoded_request.presentation_id);
+  EXPECT_EQ(kPresentationUrl, decoded_request.url);
+  EXPECT_FALSE(decoded_request.has_connection_id);
+}
+
 TEST(PresentationMessagesTest, EncodeConnectionMessageString) {
   uint8_t buffer[256];
   PresentationConnectionMessage message;
