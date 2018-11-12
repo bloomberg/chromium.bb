@@ -197,7 +197,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void AddRAILModeObserver(WebRAILModeObserver* observer) override;
-  void SetRendererProcessType(RendererProcessType type) override;
+  void SetRendererProcessType(WebRendererProcessType type) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
@@ -866,7 +866,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         rail_mode_observers;                                      // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.
     MainThreadMetricsHelper metrics_helper;
-    TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
+    TraceableState<WebRendererProcessType, kTracingCategoryNameTopLevel>
         process_type;
     TraceableState<base::Optional<TaskDescriptionForTracing>,
                    kTracingCategoryNameInfo>

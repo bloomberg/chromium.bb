@@ -94,7 +94,8 @@ void WebFakeThreadScheduler::SetTopLevelBlameContext(
 void WebFakeThreadScheduler::AddRAILModeObserver(
     WebRAILModeObserver* observer) {}
 
-void WebFakeThreadScheduler::SetRendererProcessType(RendererProcessType type) {}
+void WebFakeThreadScheduler::SetRendererProcessType(
+    WebRendererProcessType type) {}
 
 void WebFakeThreadScheduler::OnMainFrameRequestedForInput() {}
 

@@ -1499,7 +1499,7 @@ bool RenderThreadImpl::IsOnline() {
 }
 
 void RenderThreadImpl::SetRendererProcessType(
-    blink::scheduler::RendererProcessType type) {
+    blink::scheduler::WebRendererProcessType type) {
   main_thread_scheduler_->SetRendererProcessType(type);
 }
 
