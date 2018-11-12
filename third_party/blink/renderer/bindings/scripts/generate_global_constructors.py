@@ -175,8 +175,7 @@ def main():
     if not exposed_global_names.issubset(known_global_names):
         unknown_global_names = exposed_global_names.difference(known_global_names)
         raise ValueError('The following global names were used in '
-                         '[Exposed=xxx] but do not match any [Global] / '
-                         '[PrimaryGlobal] interface: %s'
+                         '[Exposed=xxx] but do not match any global names: %s'
                          % list(unknown_global_names))
 
     # Write partial interfaces containing constructor attributes for each

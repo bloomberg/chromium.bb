@@ -248,9 +248,8 @@ def interface_context(interface, interfaces):
         includes.add('bindings/core/v8/binding_security.h')
         includes.add('core/frame/local_dom_window.h')
 
-    # [PrimaryGlobal] and [Global]
-    is_global = ('PrimaryGlobal' in extended_attributes or
-                 'Global' in extended_attributes)
+    # [Global]
+    is_global = 'Global' in extended_attributes
 
     # [ImmutablePrototype]
     # TODO(littledan): Is it possible to deduce this based on inheritance,

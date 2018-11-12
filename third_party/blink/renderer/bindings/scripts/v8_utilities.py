@@ -466,14 +466,14 @@ def is_legacy_interface_type_checking(interface, member):
             'LegacyInterfaceTypeChecking' in member.extended_attributes)
 
 
-# [Unforgeable], [Global], [PrimaryGlobal]
+# [Unforgeable], [Global]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every
     instance object.
 
     The following members must be defined on an instance object.
     - [Unforgeable] members
-    - regular members of [Global] or [PrimaryGlobal] interfaces
+    - regular members of [Global] interfaces
     """
     if member.is_static:
         return False
@@ -488,8 +488,7 @@ def on_instance(interface, member):
     if is_constructor_attribute(member):
         return True
 
-    if ('PrimaryGlobal' in interface.extended_attributes or
-            'Global' in interface.extended_attributes or
+    if ('Global' in interface.extended_attributes or
             'Unforgeable' in member.extended_attributes):
         return True
     return False
@@ -503,8 +502,8 @@ def on_prototype(interface, member):
     follows.
     - static members (optional)
     - [Unforgeable] members
-    - members of [Global] or [PrimaryGlobal] interfaces
-    - named properties of [Global] or [PrimaryGlobal] interfaces
+    - members of [Global] interfaces
+    - named properties of [Global] interfaces
     """
     if member.is_static:
         return False
@@ -519,8 +518,7 @@ def on_prototype(interface, member):
     if is_constructor_attribute(member):
         return False
 
-    if ('PrimaryGlobal' in interface.extended_attributes or
-            'Global' in interface.extended_attributes or
+    if ('Global' in interface.extended_attributes or
             'Unforgeable' in member.extended_attributes):
         return False
     return True
