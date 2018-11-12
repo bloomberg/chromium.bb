@@ -40,7 +40,7 @@ WebGLExtensionName WebGLDrawBuffers::GetName() const {
 }
 
 WebGLDrawBuffers* WebGLDrawBuffers::Create(WebGLRenderingContextBase* context) {
-  return new WebGLDrawBuffers(context);
+  return MakeGarbageCollected<WebGLDrawBuffers>(context);
 }
 
 // static

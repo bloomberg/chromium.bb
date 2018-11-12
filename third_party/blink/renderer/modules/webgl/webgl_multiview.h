@@ -17,6 +17,8 @@ class WebGLMultiview final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit WebGLMultiview(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   void framebufferTextureMultiviewWEBGL(GLenum target,
@@ -27,8 +29,6 @@ class WebGLMultiview final : public WebGLExtension {
                                         GLsizei numViews);
 
  private:
-  explicit WebGLMultiview(WebGLRenderingContextBase*);
-
   GLsizei max_views_ovr_;
 };
 

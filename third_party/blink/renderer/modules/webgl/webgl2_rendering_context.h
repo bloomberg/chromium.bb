@@ -40,6 +40,12 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
     void OnError(HTMLCanvasElement*, const String& error) override;
   };
 
+  WebGL2RenderingContext(
+      CanvasRenderingContextHost*,
+      std::unique_ptr<WebGraphicsContext3DProvider>,
+      bool using_gpu_compositing,
+      const CanvasContextCreationAttributesCore& requested_attributes);
+
   CanvasRenderingContext::ContextType GetContextType() const override {
     return CanvasRenderingContext::kContextWebgl2;
   }
@@ -52,12 +58,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   void Trace(blink::Visitor*) override;
 
  protected:
-  WebGL2RenderingContext(
-      CanvasRenderingContextHost*,
-      std::unique_ptr<WebGraphicsContext3DProvider>,
-      bool using_gpu_compositing,
-      const CanvasContextCreationAttributesCore& requested_attributes);
-
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;

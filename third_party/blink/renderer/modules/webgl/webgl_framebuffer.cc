@@ -200,12 +200,12 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() = default;
 
 WebGLFramebuffer* WebGLFramebuffer::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLFramebuffer(ctx, false);
+  return MakeGarbageCollected<WebGLFramebuffer>(ctx, false);
 }
 
 WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(
     WebGLRenderingContextBase* ctx) {
-  return new WebGLFramebuffer(ctx, true);
+  return MakeGarbageCollected<WebGLFramebuffer>(ctx, true);
 }
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx, bool opaque)

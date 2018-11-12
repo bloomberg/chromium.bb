@@ -31,7 +31,7 @@
 namespace blink {
 
 WebGLTexture* WebGLTexture::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLTexture(ctx);
+  return MakeGarbageCollected<WebGLTexture>(ctx);
 }
 
 WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)

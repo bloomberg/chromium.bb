@@ -34,6 +34,7 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLBuffer(WebGLRenderingContextBase*);
   ~WebGLBuffer() override;
 
   static WebGLBuffer* Create(WebGLRenderingContextBase*);
@@ -47,8 +48,6 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
   long long GetSize() const { return size_; }
 
  protected:
-  explicit WebGLBuffer(WebGLRenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

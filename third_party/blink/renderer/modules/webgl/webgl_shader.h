@@ -39,14 +39,14 @@ class WebGLShader final : public WebGLSharedPlatform3DObject {
 
   static WebGLShader* Create(WebGLRenderingContextBase*, GLenum);
 
+  WebGLShader(WebGLRenderingContextBase*, GLenum);
+
   GLenum GetType() const { return type_; }
   const String& Source() const { return source_; }
 
   void SetSource(const String& source) { source_ = source; }
 
  private:
-  WebGLShader(WebGLRenderingContextBase*, GLenum);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
   bool IsShader() const override { return true; }

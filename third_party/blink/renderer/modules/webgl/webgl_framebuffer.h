@@ -65,6 +65,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
     WebGLAttachment();
   };
 
+  explicit WebGLFramebuffer(WebGLRenderingContextBase*, bool opaque);
   ~WebGLFramebuffer() override;
 
   static WebGLFramebuffer* Create(WebGLRenderingContextBase*);
@@ -123,8 +124,6 @@ class WebGLFramebuffer final : public WebGLContextObject {
   const char* NameInHeapSnapshot() const override { return "WebGLFramebuffer"; }
 
  protected:
-  explicit WebGLFramebuffer(WebGLRenderingContextBase*, bool opaque);
-
   bool HasObject() const override { return object_ != 0; }
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 

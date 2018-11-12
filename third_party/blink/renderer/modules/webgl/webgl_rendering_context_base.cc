@@ -1009,7 +1009,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     const CanvasContextCreationAttributesCore& requested_attributes,
     Platform::ContextType context_type)
     : CanvasRenderingContext(host, requested_attributes),
-      context_group_(new WebGLContextGroup()),
+      context_group_(MakeGarbageCollected<WebGLContextGroup>()),
       dispatch_context_lost_event_timer_(
           task_runner,
           this,

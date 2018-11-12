@@ -35,6 +35,7 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
   ~WebGLRenderbuffer() override;
 
   static WebGLRenderbuffer* Create(WebGLRenderingContextBase*);
@@ -58,8 +59,6 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

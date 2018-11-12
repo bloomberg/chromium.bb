@@ -15,13 +15,12 @@ class WebGLSampler : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLSampler(WebGL2RenderingContextBase*);
   ~WebGLSampler() override;
 
   static WebGLSampler* Create(WebGL2RenderingContextBase*);
 
  protected:
-  explicit WebGLSampler(WebGL2RenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

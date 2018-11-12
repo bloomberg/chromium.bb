@@ -34,7 +34,8 @@ WebGPUDevice* WebGPUDevice::Create(ExecutionContext* execution_context,
     return nullptr;
   }
 
-  return new WebGPUDevice(adapter, std::move(context_provider));
+  return MakeGarbageCollected<WebGPUDevice>(adapter,
+                                            std::move(context_provider));
 }
 
 WebGPUAdapter* WebGPUDevice::adapter() const {
