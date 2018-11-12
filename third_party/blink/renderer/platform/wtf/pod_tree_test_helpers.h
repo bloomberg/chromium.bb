@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 namespace WTF {
-namespace TreeTestHelpers {
+namespace tree_test_helpers {
 
 // Initializes the pseudo-random number generator with a specific seed.
 void InitRandom(const int32_t seed);
@@ -44,7 +44,7 @@ void InitRandom(const int32_t seed);
 // produce undefined results.
 int32_t NextRandom(const int32_t maximum_value);
 
-}  // namespace TreeTestHelpers
+}  // namespace tree_test_helpers
 }  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_TREE_TEST_HELPERS_H_
