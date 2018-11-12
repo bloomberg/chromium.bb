@@ -350,7 +350,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::StackSamplingProfiler;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
-  friend class content::ScopedAllowWaitForDebugURL;
   friend class content::ServiceWorkerSubresourceLoader;
   friend class content::SessionStorageDatabase;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
@@ -398,6 +397,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class ::KeyStorageLinux;
   friend class Thread;
   friend class base::MessageLoopImpl;
+  friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;
