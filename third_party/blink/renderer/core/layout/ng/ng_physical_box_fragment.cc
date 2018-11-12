@@ -17,6 +17,19 @@
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
+  NGBaselineList baselines;
+  NGPhysicalBoxStrut box_struts[2];
+};
+
+static_assert(sizeof(NGPhysicalBoxFragment) ==
+                  sizeof(SameSizeAsNGPhysicalBoxFragment),
+              "NGPhysicalBoxFragment should stay small");
+
+}  // namespace
+
 scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
     NGBoxFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode) {

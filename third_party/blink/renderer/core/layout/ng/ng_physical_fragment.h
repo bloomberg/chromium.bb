@@ -199,11 +199,11 @@ class CORE_EXPORT NGPhysicalFragment
   TouchAction EffectiveWhitelistedTouchAction() const;
 
   // Returns the bidi level of a text or atomic inline fragment.
-  virtual UBiDiLevel BidiLevel() const;
+  UBiDiLevel BidiLevel() const;
 
   // Returns the resolved direction of a text or atomic inline fragment. Not to
   // be confused with the CSS 'direction' property.
-  virtual TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const;
 
   String ToString() const;
 
@@ -256,11 +256,19 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_old_layout_root_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   const unsigned style_variant_ : 2;  // NGStyleVariant
-  unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment
+
+  // The following bitfield is only to be used by NGPhysicalLineBoxFragment
+  // (it's defined here to save memory, since that class has no bitfields).
+  unsigned base_direction_ : 1;  // TextDirection
 
   // The following bitfield is only to be used by NGPhysicalBoxFragment (it's
   // defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+
+  // The following bitfield is only to be used by NGPhysicalTextFragment (it's
+  // defined here to save memory, since that class has no bitfields).
+  unsigned line_orientation_ : 2;  // NGLineOrientation
+  unsigned is_anonymous_text_ : 1;
 
  private:
   friend struct NGPhysicalFragmentTraits;

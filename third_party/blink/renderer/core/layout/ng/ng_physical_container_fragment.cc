@@ -14,6 +14,19 @@
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
+  wtf_size_t size;
+  void* pointer;
+};
+
+static_assert(sizeof(NGPhysicalContainerFragment) ==
+                  sizeof(SameSizeAsNGPhysicalContainerFragment),
+              "NGPhysicalContainerFragment should stay small");
+
+}  // namespace
+
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGContainerFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode,

@@ -82,7 +82,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                            const LayoutPoint& additional_offset,
                            NGOutlineType include_block_overflows) const;
 
-  UBiDiLevel BidiLevel() const override;
+  UBiDiLevel BidiLevel() const;
 
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
