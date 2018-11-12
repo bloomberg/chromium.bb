@@ -98,7 +98,8 @@ EventSource* EventSource::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  EventSource* source = new EventSource(context, full_url, event_source_init);
+  EventSource* source =
+      MakeGarbageCollected<EventSource>(context, full_url, event_source_init);
 
   source->ScheduleInitialConnect();
   return source;
@@ -268,7 +269,7 @@ void EventSource::DidReceiveResponse(
       // The new parser takes over the event ID.
       last_event_id = parser_->LastEventId();
     }
-    parser_ = new EventSourceParser(last_event_id, this);
+    parser_ = MakeGarbageCollected<EventSourceParser>(last_event_id, this);
     DispatchEvent(*Event::Create(event_type_names::kOpen));
   } else {
     loader_->Cancel();

@@ -126,7 +126,7 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
 
 AXLayoutObject* AXLayoutObject::Create(LayoutObject* layout_object,
                                        AXObjectCacheImpl& ax_object_cache) {
-  return new AXLayoutObject(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXLayoutObject>(layout_object, ax_object_cache);
 }
 
 AXLayoutObject::~AXLayoutObject() {

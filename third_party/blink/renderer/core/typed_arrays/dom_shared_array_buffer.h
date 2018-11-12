@@ -17,7 +17,7 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
  public:
   static DOMSharedArrayBuffer* Create(scoped_refptr<WTF::ArrayBuffer> buffer) {
     DCHECK(buffer->IsShared());
-    return new DOMSharedArrayBuffer(std::move(buffer));
+    return MakeGarbageCollected<DOMSharedArrayBuffer>(std::move(buffer));
   }
   static DOMSharedArrayBuffer* Create(unsigned num_elements,
                                       unsigned element_byte_size) {
@@ -33,16 +33,15 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
     return Create(WTF::ArrayBuffer::Create(contents));
   }
 
+  explicit DOMSharedArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
+      : DOMArrayBufferBase(std::move(buffer)) {}
+
   bool ShareContentsWith(WTF::ArrayBufferContents& result) {
     return Buffer()->ShareContentsWith(result);
   }
 
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
-
- private:
-  explicit DOMSharedArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
-      : DOMArrayBufferBase(std::move(buffer)) {}
 };
 
 }  // namespace blink

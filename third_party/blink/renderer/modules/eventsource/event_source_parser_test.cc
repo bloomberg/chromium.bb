@@ -92,7 +92,8 @@ class EventSourceParserTest : public testing::Test {
   using Type = EventOrReconnectionTimeSetting::Type;
   EventSourceParserTest()
       : client_(new Client),
-        parser_(new EventSourceParser(AtomicString(), client_)) {}
+        parser_(
+            MakeGarbageCollected<EventSourceParser>(AtomicString(), client_)) {}
   ~EventSourceParserTest() override = default;
 
   void Enqueue(const char* data) {
@@ -133,7 +134,7 @@ TEST_F(EventSourceParserTest, DispatchSimpleMessageEvent) {
 }
 
 TEST_F(EventSourceParserTest, ConstructWithLastEventId) {
-  parser_ = new EventSourceParser("hoge", client_);
+  parser_ = MakeGarbageCollected<EventSourceParser>("hoge", client_);
   EXPECT_EQ("hoge", Parser()->LastEventId());
 
   Enqueue("data:hello\n\n");
@@ -376,7 +377,8 @@ TEST_F(EventSourceParserTest, InvalidUTF8Sequence) {
 
 TEST(EventSourceParserStoppingTest, StopWhileParsing) {
   StoppingClient* client = new StoppingClient();
-  EventSourceParser* parser = new EventSourceParser(AtomicString(), client);
+  EventSourceParser* parser =
+      MakeGarbageCollected<EventSourceParser>(AtomicString(), client);
   client->SetParser(parser);
 
   const char kInput[] = "data:hello\nid:99\n\nid:44\ndata:bye\n\n";

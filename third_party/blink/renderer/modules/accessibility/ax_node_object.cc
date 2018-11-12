@@ -94,7 +94,7 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
 
 AXNodeObject* AXNodeObject::Create(Node* node,
                                    AXObjectCacheImpl& ax_object_cache) {
-  return new AXNodeObject(node, ax_object_cache);
+  return MakeGarbageCollected<AXNodeObject>(node, ax_object_cache);
 }
 
 AXNodeObject::~AXNodeObject() {

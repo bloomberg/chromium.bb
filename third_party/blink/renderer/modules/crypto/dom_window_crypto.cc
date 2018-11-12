@@ -44,7 +44,7 @@ DOMWindowCrypto& DOMWindowCrypto::From(LocalDOMWindow& window) {
   DOMWindowCrypto* supplement =
       Supplement<LocalDOMWindow>::From<DOMWindowCrypto>(window);
   if (!supplement) {
-    supplement = new DOMWindowCrypto(window);
+    supplement = MakeGarbageCollected<DOMWindowCrypto>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;

@@ -102,7 +102,7 @@ bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit* other,
 DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  return new DOMMatrixReadOnly(TransformationMatrix());
+  return MakeGarbageCollected<DOMMatrixReadOnly>(TransformationMatrix());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
@@ -116,7 +116,8 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
       return nullptr;
     }
 
-    DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
+    DOMMatrixReadOnly* matrix =
+        MakeGarbageCollected<DOMMatrixReadOnly>(TransformationMatrix());
     matrix->SetMatrixValueFromString(execution_context, init.GetAsString(),
                                      exception_state);
     return matrix;
@@ -130,7 +131,7 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
           "for a 3D matrix.");
       return nullptr;
     }
-    return new DOMMatrixReadOnly(sequence, sequence.size());
+    return MakeGarbageCollected<DOMMatrixReadOnly>(sequence, sequence.size());
   }
 
   NOTREACHED();
@@ -139,7 +140,7 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::CreateForSerialization(double sequence[],
                                                              int size) {
-  return new DOMMatrixReadOnly(sequence, size);
+  return MakeGarbageCollected<DOMMatrixReadOnly>(sequence, size);
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat32Array(
@@ -152,8 +153,8 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat32Array(
         "for 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float32_array.View()->Data(),
-                               float32_array.View()->length());
+  return MakeGarbageCollected<DOMMatrixReadOnly>(
+      float32_array.View()->Data(), float32_array.View()->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
@@ -166,8 +167,8 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
         "for a 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float64_array.View()->Data(),
-                               float64_array.View()->length());
+  return MakeGarbageCollected<DOMMatrixReadOnly>(
+      float64_array.View()->Data(), float64_array.View()->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix2D(
@@ -180,7 +181,7 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix2D(
   }
   double args[] = {other->m11(), other->m12(), other->m21(),
                    other->m22(), other->m41(), other->m42()};
-  return new DOMMatrixReadOnly(args, 6);
+  return MakeGarbageCollected<DOMMatrixReadOnly>(args, 6);
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
@@ -193,14 +194,14 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
   if (other->is2D()) {
     double args[] = {other->m11(), other->m12(), other->m21(),
                      other->m22(), other->m41(), other->m42()};
-    return new DOMMatrixReadOnly(args, 6);
+    return MakeGarbageCollected<DOMMatrixReadOnly>(args, 6);
   }
 
   double args[] = {other->m11(), other->m12(), other->m13(), other->m14(),
                    other->m21(), other->m22(), other->m23(), other->m24(),
                    other->m31(), other->m32(), other->m33(), other->m34(),
                    other->m41(), other->m42(), other->m43(), other->m44()};
-  return new DOMMatrixReadOnly(args, 16);
+  return MakeGarbageCollected<DOMMatrixReadOnly>(args, 16);
 }
 
 DOMMatrixReadOnly::~DOMMatrixReadOnly() = default;

@@ -309,7 +309,8 @@ AXMediaControlsContainer::AXMediaControlsContainer(
 
 AXObject* AXMediaControlsContainer::Create(LayoutObject* layout_object,
                                            AXObjectCacheImpl& ax_object_cache) {
-  return new AXMediaControlsContainer(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXMediaControlsContainer>(layout_object,
+                                                        ax_object_cache);
 }
 
 String AXMediaControlsContainer::TextAlternative(

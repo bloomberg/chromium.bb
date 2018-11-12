@@ -50,8 +50,9 @@ namespace blink {
 class FileWriterBase;
 
 DOMFileSystemSync* DOMFileSystemSync::Create(DOMFileSystemBase* file_system) {
-  return new DOMFileSystemSync(file_system->context_, file_system->name(),
-                               file_system->GetType(), file_system->RootURL());
+  return MakeGarbageCollected<DOMFileSystemSync>(
+      file_system->context_, file_system->name(), file_system->GetType(),
+      file_system->RootURL());
 }
 
 DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,

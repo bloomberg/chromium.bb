@@ -34,6 +34,10 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   static DOMMatrix* fromMatrix(DOMMatrixInit*, ExceptionState&);
   static DOMMatrix* CreateForSerialization(double[], int size);
 
+  DOMMatrix(const TransformationMatrix&, bool is2d = true);
+  template <typename T>
+  DOMMatrix(T sequence, int size);
+
   void setA(double value) { matrix_->SetM11(value); }
   void setB(double value) { matrix_->SetM12(value); }
   void setC(double value) { matrix_->SetM21(value); }
@@ -121,10 +125,6 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                             ExceptionState&);
 
  private:
-  DOMMatrix(const TransformationMatrix&, bool is2d = true);
-  template <typename T>
-  DOMMatrix(T sequence, int size);
-
   void SetIs2D(bool value);
   void SetNAN();
 };

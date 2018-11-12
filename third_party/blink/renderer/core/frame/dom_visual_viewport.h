@@ -48,9 +48,10 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
 
  public:
   static DOMVisualViewport* Create(LocalDOMWindow* window) {
-    return new DOMVisualViewport(window);
+    return MakeGarbageCollected<DOMVisualViewport>(window);
   }
 
+  explicit DOMVisualViewport(LocalDOMWindow*);
   ~DOMVisualViewport() override;
 
   void Trace(blink::Visitor*) override;
@@ -71,8 +72,6 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll);
 
  private:
-  explicit DOMVisualViewport(LocalDOMWindow*);
-
   Member<LocalDOMWindow> window_;
 };
 

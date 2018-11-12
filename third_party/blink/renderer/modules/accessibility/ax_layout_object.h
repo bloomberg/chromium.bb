@@ -45,11 +45,10 @@ class LocalFrameView;
 class Node;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
- protected:
-  AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
-
  public:
   static AXLayoutObject* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
 
   // Public, overridden from AXObject.

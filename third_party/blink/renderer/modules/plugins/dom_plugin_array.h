@@ -42,8 +42,11 @@ class DOMPluginArray final : public ScriptWrappable,
 
  public:
   static DOMPluginArray* Create(LocalFrame* frame) {
-    return new DOMPluginArray(frame);
+    return MakeGarbageCollected<DOMPluginArray>(frame);
   }
+
+  explicit DOMPluginArray(LocalFrame*);
+
   void UpdatePluginData();
 
   unsigned length() const;
@@ -60,7 +63,6 @@ class DOMPluginArray final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMPluginArray(LocalFrame*);
   PluginData* GetPluginData() const;
   void ContextDestroyed(ExecutionContext*) override;
 

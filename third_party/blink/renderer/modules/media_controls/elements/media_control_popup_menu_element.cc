@@ -134,7 +134,7 @@ void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
     SelectFirstItem();
 
     if (!event_listener_)
-      event_listener_ = new EventListener(this);
+      event_listener_ = MakeGarbageCollected<EventListener>(this);
     event_listener_->StartListening();
   } else {
     if (event_listener_)

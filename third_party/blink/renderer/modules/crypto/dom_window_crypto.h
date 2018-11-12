@@ -48,13 +48,14 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
 
   static DOMWindowCrypto& From(LocalDOMWindow&);
   static Crypto* crypto(LocalDOMWindow&);
+
+  explicit DOMWindowCrypto(LocalDOMWindow&);
+
   Crypto* crypto() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMWindowCrypto(LocalDOMWindow&);
-
   mutable Member<Crypto> crypto_;
 };
 

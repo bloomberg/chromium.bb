@@ -16,6 +16,8 @@ class HTMLInputElement;
 class AXRadioInput final : public AXLayoutObject {
  public:
   static AXRadioInput* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
   ~AXRadioInput() override = default;
 
   bool IsAXRadioInput() const override { return true; }
@@ -28,7 +30,6 @@ class AXRadioInput final : public AXLayoutObject {
   int SetSize() const final;
 
  private:
-  AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
   bool CalculatePosInSet();
   int CountFromFirstElement() const;
   HTMLInputElement* GetInputElement() const;

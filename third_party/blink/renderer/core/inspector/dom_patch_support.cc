@@ -434,7 +434,7 @@ bool DOMPatchSupport::InnerPatchChildren(
 DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
     Node* node,
     UnusedNodesMap* unused_nodes_map) {
-  Digest* digest = new Digest(node);
+  Digest* digest = MakeGarbageCollected<Digest>(node);
 
   std::unique_ptr<WebCryptoDigestor> digestor =
       CreateDigestor(kHashAlgorithmSha1);

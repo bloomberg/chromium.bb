@@ -50,11 +50,16 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
                                    const String& name,
                                    mojom::blink::FileSystemType type,
                                    const KURL& root_url) {
-    return new DOMFileSystemSync(context, name, type, root_url);
+    return MakeGarbageCollected<DOMFileSystemSync>(context, name, type,
+                                                   root_url);
   }
 
   static DOMFileSystemSync* Create(DOMFileSystemBase*);
 
+  DOMFileSystemSync(ExecutionContext*,
+                    const String& name,
+                    mojom::blink::FileSystemType,
+                    const KURL& root_url);
   ~DOMFileSystemSync() override;
 
   void ReportError(ErrorCallbackBase*, base::File::Error error) override;
@@ -67,10 +72,6 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  DOMFileSystemSync(ExecutionContext*,
-                    const String& name,
-                    mojom::blink::FileSystemType,
-                    const KURL& root_url);
   Member<DirectoryEntrySync> root_entry_;
 };
 

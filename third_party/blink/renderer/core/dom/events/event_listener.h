@@ -47,6 +47,7 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
     kConditionEventListenerType,
   };
 
+  explicit EventListener(ListenerType type) : type_(type) {}
   ~EventListener() override = default;
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
@@ -68,9 +69,6 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   bool IsNativeBased() const { return !IsJSBased(); }
 
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
-
- protected:
-  explicit EventListener(ListenerType type) : type_(type) {}
 
  private:
   ListenerType type_;

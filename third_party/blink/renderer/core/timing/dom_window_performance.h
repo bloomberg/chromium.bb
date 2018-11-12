@@ -26,11 +26,11 @@ class CORE_EXPORT DOMWindowPerformance final
   static DOMWindowPerformance& From(LocalDOMWindow&);
   static WindowPerformance* performance(LocalDOMWindow&);
 
+  explicit DOMWindowPerformance(LocalDOMWindow&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMWindowPerformance(LocalDOMWindow&);
-
   WindowPerformance* performance();
 
   TraceWrapperMember<WindowPerformance> performance_;

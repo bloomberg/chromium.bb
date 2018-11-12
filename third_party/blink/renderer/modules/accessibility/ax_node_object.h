@@ -41,11 +41,9 @@ class HTMLLabelElement;
 class Node;
 
 class MODULES_EXPORT AXNodeObject : public AXObject {
- protected:
-  AXNodeObject(Node*, AXObjectCacheImpl&);
-
  public:
   static AXNodeObject* Create(Node*, AXObjectCacheImpl&);
+  AXNodeObject(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
   void Trace(blink::Visitor*) override;
 

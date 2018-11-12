@@ -43,7 +43,7 @@ AXList::~AXList() = default;
 
 AXList* AXList::Create(LayoutObject* layout_object,
                        AXObjectCacheImpl& ax_object_cache) {
-  return new AXList(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXList>(layout_object, ax_object_cache);
 }
 
 bool AXList::ComputeAccessibilityIsIgnored(

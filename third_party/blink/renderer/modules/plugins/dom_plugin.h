@@ -37,8 +37,10 @@ class DOMPlugin final : public ScriptWrappable, public ContextClient {
 
  public:
   static DOMPlugin* Create(LocalFrame* frame, const PluginInfo& plugin_info) {
-    return new DOMPlugin(frame, plugin_info);
+    return MakeGarbageCollected<DOMPlugin>(frame, plugin_info);
   }
+
+  DOMPlugin(LocalFrame*, const PluginInfo&);
 
   String name() const;
   String filename() const;
@@ -54,8 +56,6 @@ class DOMPlugin final : public ScriptWrappable, public ContextClient {
   void Trace(blink::Visitor*) override;
 
  private:
-  DOMPlugin(LocalFrame*, const PluginInfo&);
-
   Member<const PluginInfo> plugin_info_;
 };
 
