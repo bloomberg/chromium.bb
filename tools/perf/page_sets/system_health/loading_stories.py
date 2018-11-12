@@ -363,6 +363,15 @@ class LoadFacebookPhotosDesktopStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
 
 
+class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:2018'
+  URL = (
+    'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater')
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 ################################################################################
 # Online tools (documents, emails, storage, ...).
 ################################################################################
