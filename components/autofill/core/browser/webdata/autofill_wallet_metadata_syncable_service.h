@@ -154,6 +154,11 @@ class AutofillWalletMetadataSyncableService
   // data entry.
   bool track_wallet_data_;
 
+  // Indicates that we should ignore multiple changed notification. This is used
+  // to block reflection and not to act on notification that we've triggered
+  // ourselves.
+  bool ignore_multiple_changed_notification_;
+
   base::WeakPtrFactory<AutofillWalletMetadataSyncableService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletMetadataSyncableService);

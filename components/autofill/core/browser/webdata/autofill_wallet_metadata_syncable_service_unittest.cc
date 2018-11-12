@@ -1301,5 +1301,37 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest, NewLocalCard) {
   MergeMetadata(&local_, &remote_);
 }
 
+// Tests that processing remote changes does not trigger a merge. This is a
+// specific test for reflection blocking in notifications.
+TEST_F(AutofillWalletMetadataSyncableServiceTest,
+       RemoteChangesDoNotTriggerMerge) {
+  // Make the backend broadcast back the notifications it receives
+  ON_CALL(backend_, NotifyOfMultipleAutofillChanges())
+      .WillByDefault(
+          DoAll(Invoke(&local_, &MockService::AutofillMultipleChanged),
+                Invoke(&remote_, &MockService::AutofillMultipleChanged)));
+
+  // Get initial data from |remote_| into |local_|.
+  local_.UpdateAddressStats(BuildAddress(kAddr1, 2, 2, true));
+  local_.UpdateCardStats(BuildCard(kCard1, 5, 6, kAddr1));
+  remote_.UpdateAddressStats(BuildAddress(kAddr1, 2, 2, true));
+  remote_.UpdateCardStats(BuildCard(kCard1, 5, 6, kAddr1));
+  MergeMetadata(&local_, &remote_);
+
+  // Silently update local card in the DB.
+  local_.UpdateCardStats(BuildCard(kCard1, 7, 8, kAddr1));
+
+  // Receive a remote update of the address.
+  syncer::SyncChangeList changes;
+  changes.push_back(BuildAddressChange(
+      syncer::SyncChange::ACTION_UPDATE, kAddr1SyncTag,
+      sync_pb::WalletMetadataSpecifics::ADDRESS, kAddr1Utf8, 10, 20, true));
+
+  // Processing remote change should not trigger a commit of the local change.
+  EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
+
+  local_.ProcessSyncChanges(FROM_HERE, changes);
+}
+
 }  // namespace
 }  // namespace autofill
