@@ -50,26 +50,19 @@ jboolean PreviewsAndroidBridge::ShouldShowPreviewUI(
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-PreviewsAndroidBridge::GetOriginalHost(
+PreviewsAndroidBridge::GetLitePageRedirectOriginalURL(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& j_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(j_web_contents);
-  if (!web_contents)
-    return base::android::ScopedJavaLocalRef<jstring>();
-
-  GURL visible_url = web_contents->GetVisibleURL();
-
+    const base::android::JavaParamRef<jstring>& j_visible_url) {
+  GURL visible_url(base::android::ConvertJavaStringToUTF16(env, j_visible_url));
   std::string original_url;
   if (PreviewsLitePageNavigationThrottle::GetOriginalURL(visible_url,
                                                          &original_url)) {
     return base::android::ScopedJavaLocalRef<jstring>(
-        base::android::ConvertUTF8ToJavaString(env, GURL(original_url).host()));
+        base::android::ConvertUTF8ToJavaString(env, original_url));
   }
 
-  return base::android::ScopedJavaLocalRef<jstring>(
-      base::android::ConvertUTF8ToJavaString(env, visible_url.host()));
+  return nullptr;
 }
 
 base::android::ScopedJavaLocalRef<jstring>
