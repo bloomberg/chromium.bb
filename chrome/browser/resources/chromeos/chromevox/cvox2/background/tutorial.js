@@ -25,6 +25,9 @@ Tutorial = function() {
   this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
       sessionStorage['tutorial_page_pos'] :
       0;
+
+  /** @private {boolean} */
+  this.incognito_ = !!chrome.runtime.getManifest()['incognito'];
 };
 
 /**
@@ -237,12 +240,18 @@ Tutorial.prototype = {
       } else if (pageElement.link) {
         element = document.createElement('a');
         element.href = pageElement.link;
-        element.setAttribute('tabindex', 0);
+        if (!this.incognito_)
+          element.setAttribute('tabindex', 0);
+        else
+          element.disabled = true;
         element.addEventListener('click', function(evt) {
+          if (this.incognito_)
+            return;
+
           Panel.closeMenusAndRestoreFocus();
           chrome.windows.create({url: evt.target.href});
           return false;
-        }, false);
+        }.bind(this), false);
       } else if (pageElement.custom) {
         element = document.createElement('div');
         pageElement.custom(element);
