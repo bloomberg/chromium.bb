@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_piece.h"
+#include "base/system/system_monitor.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -406,6 +407,12 @@ void CameraHalDelegate::CameraDeviceStatusChange(
       break;
     default:
       NOTREACHED() << "Unexpected new status " << new_status;
+  }
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  // |monitor| might be nullptr in unittest.
+  if (monitor) {
+    monitor->ProcessDevicesChanged(
+        base::SystemMonitor::DeviceType::DEVTYPE_VIDEO_CAPTURE);
   }
 }
 
