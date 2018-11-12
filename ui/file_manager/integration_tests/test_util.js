@@ -682,6 +682,17 @@ var ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  zipArchiveMacOs: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive_macos.zip',
+    targetPath: 'archive_macos.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Dec 21, 2018, 12:21 PM',
+    nameText: 'archive_macos.zip',
+    sizeText: '190 bytes',
+    typeText: 'Zip archive'
+  }),
+
   zipArchiveWithAbsolutePaths: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'absolute_paths.zip',
