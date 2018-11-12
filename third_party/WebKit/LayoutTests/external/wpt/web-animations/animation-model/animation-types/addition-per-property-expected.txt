@@ -533,7 +533,7 @@ FAIL rotate with different rotation axes assert_approx_equals: expected 0.57735 
 PASS translate (type: translateList) has testAddition function
 PASS translate
 PASS translate with underlying transform
-FAIL translate with underlying percentage value assert_equals: The value should be -150px at 0ms expected "-150px" but got "calc(-200px + 50%)"
+FAIL translate with underlying percentage value assert_equals: The value should be calc(50% - 200px) at 0ms expected "calc(50% - 200px)" but got "calc(-200px + 50%)"
 PASS scale (type: scaleList) has testAddition function
 FAIL scale with two unspecified values assert_equals: The value should be -6 at 0ms expected "-6" but got "-6 2"
 FAIL scale with one unspecified value assert_equals: The value should be -6 at 0ms expected "-6" but got "-6 -6"

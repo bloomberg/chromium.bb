@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1877 tests; 701 PASS, 1176 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1899 tests; 711 PASS, 1188 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS text/html;charset=gbk (Blob/File)
 PASS text/html;charset=gbk (Request/Response)
@@ -23,6 +23,14 @@ FAIL text/html;charset= gbk (Blob/File) assert_equals: Blob expected "text/html;
 FAIL text/html;charset= gbk (Request/Response) assert_equals: expected "text/html;charset=\" gbk\"" but got "text/html;charset= gbk"
 FAIL text/html;charset= "gbk" (Blob/File) assert_equals: Blob expected "text/html;charset=\" \\\"gbk\\"\"" but got "text/html;charset= \"gbk\""
 FAIL text/html;charset= "gbk" (Request/Response) assert_equals: expected "text/html;charset=\" \\\"gbk\\"\"" but got "text/html;charset= \"gbk\""
+FAIL text/html;charset=gbk (Blob/File) assert_equals: Blob expected "text/html" but got ""
+FAIL text/html;charset=gbk (Request/Response) assert_equals: expected "text/html" but got ""
+FAIL text/html;charset=gbk (Blob/File) assert_equals: Blob expected "text/html" but got ""
+FAIL text/html;charset=gbk (Request/Response) assert_equals: expected "text/html" but got ""
+FAIL text/html;charset=gbk (Blob/File) assert_equals: Blob expected "text/html" but got ""
+FAIL text/html;charset=gbk (Request/Response) assert_equals: expected "text/html" but got ""
+FAIL text/html;charset=gbk (Blob/File) assert_equals: Blob expected "text/html" but got ""
+FAIL text/html;charset=gbk (Request/Response) assert_equals: expected "text/html" but got ""
 PASS text/html;charset='gbk' (Blob/File)
 PASS text/html;charset='gbk' (Request/Response)
 PASS text/html;charset='gbk (Blob/File)
@@ -85,10 +93,34 @@ FAIL x/x;x=  (Blob/File) assert_equals: Blob expected "x/x" but got "x/x;x= "
 FAIL x/x;x=  (Request/Response) assert_equals: expected "x/x" but got "x/x;x="
 FAIL x/x;x=	 (Blob/File) assert_equals: Blob expected "x/x" but got ""
 FAIL x/x;x=	 (Request/Response) assert_equals: expected "x/x" but got "x/x;x="
+FAIL x/x
+\r	 ;x=x (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
+PASS x/x
+\r	 ;x=x (Request/Response)
+FAIL 
+\r	 x/x;x=x
+\r	  (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
+FAIL 
+\r	 x/x;x=x
+\r	  (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+FAIL x/x;
+\r	 x=x
+\r	 ;x=y (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
+PASS x/x;
+\r	 x=x
+\r	 ;x=y (Request/Response)
 FAIL text/html;test=ÿ;charset=gbk (Blob/File) assert_equals: Blob expected "text/html;test=\"ÿ\";charset=gbk" but got ""
 FAIL text/html;test=ÿ;charset=gbk (Request/Response) assert_equals: expected "text/html;test=\"ÿ\";charset=gbk" but got ""
 FAIL x/x;test=�;x=x (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
 PASS x/x;test=�;x=x (Request/Response)
+PASS x/x (Blob/File)
+PASS x/x (Request/Response)
+PASS x/x (Blob/File)
+PASS x/x (Request/Response)
+PASS x/x (Blob/File)
+PASS x/x (Request/Response)
+PASS x/x (Blob/File)
+PASS x/x (Request/Response)
 PASS  (Blob/File)
 PASS  (Request/Response)
 PASS 	 (Blob/File)
