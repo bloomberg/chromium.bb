@@ -626,8 +626,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, ShowsAddCustomLinkButton) {
   EXPECT_TRUE(has_add_button);
 }
 
+// Flaky on Windows, https://crbug.com/903265
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
-                       DontShowAddCustomLinkButtonWhenMaxLinks) {
+                       DISABLED_DontShowAddCustomLinkButtonWhenMaxLinks) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -668,7 +669,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest,
   EXPECT_TRUE(no_add_button);
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, Reorder) {
+// Flaky on Windows, https://crbug.com/903265
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomLinksTest, DISABLED_Reorder) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
