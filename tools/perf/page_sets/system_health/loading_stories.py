@@ -519,6 +519,14 @@ class LoadMiniclipStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
 
 
+class LoadMiniclipStory2018(_LoadingStory):
+  NAME = 'load:games:miniclip:2018'
+  # Using "https://" causes "404 Not Found" during WPR recording.
+  URL = 'http://www.miniclip.com/games/en/'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
+
+
 class LoadAlphabettyStory(_LoadingStory):
   NAME = 'load:games:alphabetty'
   URL = 'https://king.com/play/alphabetty'

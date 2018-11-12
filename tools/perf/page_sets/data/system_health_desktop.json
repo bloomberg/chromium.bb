@@ -126,6 +126,9 @@
         "load:games:miniclip": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
+        "load:games:miniclip:2018": {
+            "DEFAULT": "system_health_desktop_da7af79086.wprgo"
+        },
         "load:games:spychase": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
