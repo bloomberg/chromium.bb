@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,11 +19,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-
-namespace net {
-class IOBuffer;
-class ZLibStreamWrapper;
-}  // namespace net
 
 namespace network {
 struct URLLoaderCompletionStatus;
@@ -39,13 +34,10 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
     : public base::RefCounted<URLResponseBodyConsumer>,
       public base::SupportsWeakPtr<URLResponseBodyConsumer> {
  public:
-  // If |inflate_response| is true then the response body will be inflated
-  // using zlib.
   URLResponseBodyConsumer(
       int request_id,
       ResourceDispatcher* resource_dispatcher,
       mojo::ScopedDataPipeConsumerHandle handle,
-      bool inflate_response,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sets the completion status. The completion status is dispatched to the
@@ -79,13 +71,9 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   ~URLResponseBodyConsumer();
 
   class ReceivedData;
-  class ReclaimAccountant;
-
   void Reclaim(uint32_t size);
 
   void NotifyCompletionIfAppropriate();
-
-  void ReleaseZlibWrapper();
 
   const int request_id_;
   ResourceDispatcher* resource_dispatcher_;
@@ -93,10 +81,6 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   mojo::SimpleWatcher handle_watcher_;
   network::URLLoaderCompletionStatus status_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  // zlib_wrapper_ and inflate_buffer_ will only be non-null when inflating
-  // the response body.
-  std::unique_ptr<net::ZLibStreamWrapper> zlib_wrapper_;
-  scoped_refptr<net::IOBuffer> inflate_buffer_;
 
   bool has_received_completion_ = false;
   bool has_been_cancelled_ = false;
