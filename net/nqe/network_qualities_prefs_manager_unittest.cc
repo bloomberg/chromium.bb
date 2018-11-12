@@ -93,11 +93,11 @@ TEST_F(NetworkQualitiesPrefManager, Write) {
   base::RunLoop().RunUntilIdle();
 
   // Prefs must be read at when NetworkQualitiesPrefsManager is constructed.
-  EXPECT_EQ(1u, prefs_delegate_ptr->read_count());
+  EXPECT_EQ(2u, prefs_delegate_ptr->read_count());
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
-  EXPECT_EQ(1u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
   // Network quality generated from the default observation must be written.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
@@ -117,7 +117,7 @@ TEST_F(NetworkQualitiesPrefManager, Write) {
   EXPECT_EQ(5u, prefs_delegate_ptr->write_count());
 
   // Prefs should not be read again.
-  EXPECT_EQ(1u, prefs_delegate_ptr->read_count());
+  EXPECT_EQ(2u, prefs_delegate_ptr->read_count());
 
   manager.ShutdownOnPrefSequence();
 }
@@ -138,13 +138,13 @@ TEST_F(NetworkQualitiesPrefManager, WriteWhenMatchingExpectedECT) {
   base::RunLoop().RunUntilIdle();
 
   // Prefs must be read at when NetworkQualitiesPrefsManager is constructed.
-  EXPECT_EQ(1u, prefs_delegate_ptr->read_count());
+  EXPECT_EQ(2u, prefs_delegate_ptr->read_count());
 
   const nqe::internal::NetworkID network_id(
       NetworkChangeNotifier::ConnectionType::CONNECTION_4G, "test", INT32_MIN);
 
   estimator.SimulateNetworkChange(network_id.type, network_id.id);
-  EXPECT_EQ(1u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
   // Network quality generated from the default observation must be written.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
@@ -164,7 +164,7 @@ TEST_F(NetworkQualitiesPrefManager, WriteWhenMatchingExpectedECT) {
   EXPECT_EQ(5u, prefs_delegate_ptr->write_count());
 
   // Prefs should not be read again.
-  EXPECT_EQ(1u, prefs_delegate_ptr->read_count());
+  EXPECT_EQ(2u, prefs_delegate_ptr->read_count());
 
   EXPECT_EQ(2u, manager.ForceReadPrefsForTesting().size());
   EXPECT_EQ(EFFECTIVE_CONNECTION_TYPE_3G,
@@ -204,7 +204,7 @@ TEST_F(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
 
-  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(2u, manager.ForceReadPrefsForTesting().size());
 
   estimator.set_recent_effective_connection_type(
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
@@ -279,7 +279,7 @@ TEST_F(NetworkQualitiesPrefManager, ClearPrefs) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
 
-  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(2u, manager.ForceReadPrefsForTesting().size());
 
   estimator.set_recent_effective_connection_type(
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
