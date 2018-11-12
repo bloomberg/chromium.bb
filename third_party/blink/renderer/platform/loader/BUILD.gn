@@ -18,7 +18,6 @@ blink_platform_sources("loader") {
     "cors/cors.h",
     "cors/cors_error_string.cc",
     "cors/cors_error_string.h",
-    "fetch/access_control_status.h",
     "fetch/buffering_data_pipe_writer.cc",
     "fetch/buffering_data_pipe_writer.h",
     "fetch/cached_metadata.cc",

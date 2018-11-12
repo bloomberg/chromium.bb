@@ -80,6 +80,7 @@ bindings_core_v8_files =
                     "core/v8/script_iterator.h",
                     "core/v8/script_module.cc",
                     "core/v8/script_module.h",
+                    "core/v8/sanitize_script_errors.h",
                     "core/v8/script_promise.cc",
                     "core/v8/script_promise.h",
                     "core/v8/script_promise_property.h",

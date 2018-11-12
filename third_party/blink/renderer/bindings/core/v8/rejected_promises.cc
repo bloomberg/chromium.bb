@@ -33,10 +33,10 @@ class RejectedPromises::Message final {
       v8::Local<v8::Value> exception,
       const String& error_message,
       std::unique_ptr<SourceLocation> location,
-      AccessControlStatus cors_status) {
+      SanitizeScriptErrors sanitize_script_errors) {
     return base::WrapUnique(new Message(script_state, promise, exception,
                                         error_message, std::move(location),
-                                        cors_status));
+                                        sanitize_script_errors));
   }
 
   bool IsCollected() { return collected_ || !script_state_->ContextIsValid(); }
@@ -66,8 +66,8 @@ class RejectedPromises::Message final {
     DCHECK(!HasHandler());
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
-                                                                cors_status_)) {
+    if (target && !execution_context->ShouldSanitizeScriptError(
+                      resource_name_, sanitize_script_errors_)) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
       init->setReason(ScriptValue(script_state_, reason));
@@ -106,8 +106,8 @@ class RejectedPromises::Message final {
       return;
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
-                                                                cors_status_)) {
+    if (target && !execution_context->ShouldSanitizeScriptError(
+                      resource_name_, sanitize_script_errors_)) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
       init->setReason(ScriptValue(script_state_, reason));
@@ -157,7 +157,7 @@ class RejectedPromises::Message final {
           v8::Local<v8::Value> exception,
           const String& error_message,
           std::unique_ptr<SourceLocation> location,
-          AccessControlStatus cors_status)
+          SanitizeScriptErrors sanitize_script_errors)
       : script_state_(script_state),
         promise_(script_state->GetIsolate(), promise),
         exception_(script_state->GetIsolate(), exception),
@@ -167,7 +167,7 @@ class RejectedPromises::Message final {
         promise_rejection_id_(0),
         collected_(false),
         should_log_to_console_(true),
-        cors_status_(cors_status) {}
+        sanitize_script_errors_(sanitize_script_errors) {}
 
   static void DidCollectPromise(const v8::WeakCallbackInfo<Message>& data) {
     data.GetParameter()->collected_ = true;
@@ -187,7 +187,7 @@ class RejectedPromises::Message final {
   unsigned promise_rejection_id_;
   bool collected_;
   bool should_log_to_console_;
-  AccessControlStatus cors_status_;
+  SanitizeScriptErrors sanitize_script_errors_;
 };
 
 RejectedPromises::RejectedPromises() = default;
@@ -199,10 +199,10 @@ void RejectedPromises::RejectedWithNoHandler(
     v8::PromiseRejectMessage data,
     const String& error_message,
     std::unique_ptr<SourceLocation> location,
-    AccessControlStatus cors_status) {
-  queue_.push_back(Message::Create(script_state, data.GetPromise(),
-                                   data.GetValue(), error_message,
-                                   std::move(location), cors_status));
+    SanitizeScriptErrors sanitize_script_errors) {
+  queue_.push_back(Message::Create(
+      script_state, data.GetPromise(), data.GetValue(), error_message,
+      std::move(location), sanitize_script_errors));
 }
 
 void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {

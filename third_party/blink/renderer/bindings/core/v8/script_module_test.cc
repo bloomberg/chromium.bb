@@ -276,11 +276,11 @@ TEST(ScriptModuleTest, Evaluate) {
   ASSERT_TRUE(exception.IsEmpty());
 
   EXPECT_TRUE(module.Evaluate(scope.GetScriptState()).IsEmpty());
-  v8::Local<v8::Value> value =
-      scope.GetFrame()
-          .GetScriptController()
-          .ExecuteScriptInMainWorldAndReturnValue(
-              ScriptSourceCode("window.foo"), KURL(), kOpaqueResource);
+  v8::Local<v8::Value> value = scope.GetFrame()
+                                   .GetScriptController()
+                                   .ExecuteScriptInMainWorldAndReturnValue(
+                                       ScriptSourceCode("window.foo"), KURL(),
+                                       SanitizeScriptErrors::kSanitize);
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 

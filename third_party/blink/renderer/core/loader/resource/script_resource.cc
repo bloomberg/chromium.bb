@@ -138,12 +138,6 @@ void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
   SetDecodedSize(0);
 }
 
-AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
-  DCHECK_NE(GetResponse().GetType(), network::mojom::FetchResponseType::kError);
-  return GetResponse().IsCORSSameOrigin() ? kSharableCrossOrigin
-                                          : kOpaqueResource;
-}
-
 bool ScriptResource::CanUseCacheValidator() const {
   // Do not revalidate until ClassicPendingScript is removed, i.e. the script
   // content is retrieved in ScriptLoader::ExecuteScriptBlock().

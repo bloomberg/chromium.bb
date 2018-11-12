@@ -63,8 +63,8 @@ class V8ScriptRunnerTest : public testing::Test {
     std::tie(compile_options, produce_cache_options, no_cache_reason) =
         V8CodeCache::GetCompileOptions(cache_options, source_code);
     v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
-        script_state, source_code, kOpaqueResource, compile_options,
-        no_cache_reason, ReferrerScriptInfo());
+        script_state, source_code, SanitizeScriptErrors::kSanitize,
+        compile_options, no_cache_reason, ReferrerScriptInfo());
     if (compiled_script.IsEmpty()) {
       return false;
     }
@@ -81,8 +81,8 @@ class V8ScriptRunnerTest : public testing::Test {
                      v8::ScriptCompiler::NoCacheReason no_cache_reason,
                      V8CodeCache::ProduceCacheOptions produce_cache_options) {
     v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
-        script_state, source_code, kOpaqueResource, compile_options,
-        no_cache_reason, ReferrerScriptInfo());
+        script_state, source_code, SanitizeScriptErrors::kSanitize,
+        compile_options, no_cache_reason, ReferrerScriptInfo());
     if (compiled_script.IsEmpty()) {
       return false;
     }

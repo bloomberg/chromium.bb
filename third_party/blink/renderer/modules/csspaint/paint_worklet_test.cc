@@ -112,7 +112,7 @@ TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
   PaintWorkletGlobalScope* global_scope = GetProxy()->global_scope();
   global_scope->ScriptController()->Evaluate(
       ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-      kSharableCrossOrigin);
+      SanitizeScriptErrors::kDoNotSanitize);
 
   CSSPaintDefinition* definition = global_scope->FindDefinition("foo");
   ASSERT_TRUE(definition);
@@ -134,7 +134,7 @@ TEST_F(PaintWorkletTest, SinglyRegisteredDocumentDefinitionNotUsed) {
   PaintWorkletGlobalScope* global_scope = GetProxy()->global_scope();
   global_scope->ScriptController()->Evaluate(
       ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-      kSharableCrossOrigin);
+      SanitizeScriptErrors::kDoNotSanitize);
 
   CSSPaintImageGeneratorImpl* generator =
       static_cast<CSSPaintImageGeneratorImpl*>(

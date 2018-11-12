@@ -873,7 +873,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
     frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world_id, source, KURL(), kOpaqueResource);
+        world_id, source, KURL(), SanitizeScriptErrors::kSanitize);
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
