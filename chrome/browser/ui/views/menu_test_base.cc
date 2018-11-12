@@ -46,7 +46,7 @@ int MenuTestBase::GetMenuRunnerFlags() {
 void MenuTestBase::SetUp() {
   views::test::DisableMenuClosureAnimations();
 
-  button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Test"), this, true);
+  button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Test"), this);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);
   menu_runner_.reset(new views::MenuRunner(menu_, GetMenuRunnerFlags()));

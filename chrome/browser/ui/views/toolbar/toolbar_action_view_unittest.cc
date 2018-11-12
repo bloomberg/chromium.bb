@@ -272,7 +272,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   EXPECT_FALSE(view.wants_to_run_for_testing());
 
   // Create an overflow button.
-  views::MenuButton overflow_button(base::string16(), nullptr, false);
+  views::MenuButton overflow_button(base::string16(), nullptr);
   overflow_button.set_owned_by_client();
   action_view_delegate.set_overflow_reference_view(&overflow_button);
 
