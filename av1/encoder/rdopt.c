@@ -7934,22 +7934,18 @@ static int64_t build_and_cost_compound_type(
       av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
                                                preds1, strides);
     }
-    rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
-                             &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
-    if (rd != INT64_MAX)
-      rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
-    best_rd_cur = rd;
 
   } else {
+    *out_rate_mv = rate_mv;
     av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
                                              preds1, strides);
-    rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
-                             &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
-    if (rd != INT64_MAX)
-      rd = RDCOST(x->rdmult, *rs2 + rate_mv + rate_sum, dist_sum);
-    best_rd_cur = rd;
   }
-  return best_rd_cur;
+  rd = estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
+                           &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
+  if (rd != INT64_MAX)
+    rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
+
+  return rd;
 }
 
 typedef struct {
