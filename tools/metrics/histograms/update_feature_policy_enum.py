@@ -25,4 +25,5 @@ if __name__ == '__main__':
   UpdateHistogramEnum(histogram_enum_name='FeaturePolicyFeature',
                       source_enum_path=source_file,
                       start_marker='^enum FeaturePolicyFeature {',
-                      end_marker='^};')
+                      end_marker='^};',
+                      strip_k_prefix=True)
