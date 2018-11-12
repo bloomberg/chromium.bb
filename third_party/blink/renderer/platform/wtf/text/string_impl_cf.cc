@@ -32,7 +32,7 @@
 
 namespace WTF {
 
-namespace StringWrapperCFAllocator {
+namespace string_wrapper_cf_allocator {
 
 static StringImpl* g_current_string;
 
@@ -118,7 +118,7 @@ static CFAllocatorRef Allocator() {
   return allocator;
 }
 
-}  // namespace StringWrapperCFAllocator
+}  // namespace string_wrapper_cf_allocator
 
 RetainPtr<CFStringRef> StringImpl::CreateCFString() {
   // Since garbage collection isn't compatible with custom allocators, we
@@ -131,12 +131,12 @@ RetainPtr<CFStringRef> StringImpl::CreateCFString() {
     return AdoptCF(CFStringCreateWithCharacters(
         0, reinterpret_cast<const UniChar*>(Characters16()), length_));
   }
-  CFAllocatorRef allocator = StringWrapperCFAllocator::Allocator();
+  CFAllocatorRef allocator = string_wrapper_cf_allocator::Allocator();
 
   // Put pointer to the StringImpl in a global so the allocator can store it
   // with the CFString.
-  DCHECK(!StringWrapperCFAllocator::g_current_string);
-  StringWrapperCFAllocator::g_current_string = this;
+  DCHECK(!string_wrapper_cf_allocator::g_current_string);
+  string_wrapper_cf_allocator::g_current_string = this;
 
   CFStringRef string;
   if (Is8Bit())
@@ -149,13 +149,13 @@ RetainPtr<CFStringRef> StringImpl::CreateCFString() {
         kCFAllocatorNull);
   // CoreFoundation might not have to allocate anything, we clear currentString
   // in case we did not execute allocate().
-  StringWrapperCFAllocator::g_current_string = 0;
+  string_wrapper_cf_allocator::g_current_string = 0;
 
   return AdoptCF(string);
 }
 
 // On StringImpl creation we could check if the allocator is the
-// StringWrapperCFAllocator.  If it is, then we could find the original
+// string_wrapper_cf_allocator.  If it is, then we could find the original
 // StringImpl and just return that.  But to do that we'd have to compute the
 // offset from CFStringRef to the allocated block; the CFStringRef is *not* at
 // the start of an allocated block. Testing shows 1000x more calls to
