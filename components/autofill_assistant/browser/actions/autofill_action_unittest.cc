@@ -167,7 +167,8 @@ class AutofillActionTest : public testing::Test {
 
   void ExpectActionToStopScript(const ActionProto& action_proto,
                                 const std::string& expected_message) {
-    EXPECT_CALL(mock_action_delegate_, StopCurrentScript(expected_message));
+    EXPECT_CALL(mock_action_delegate_,
+                StopCurrentScriptAndShutdown(expected_message));
 
     // The AutofillAction should finish successfully even when stopping the
     // current script.
