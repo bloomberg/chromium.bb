@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_cors.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_cors.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
@@ -22,8 +20,7 @@ class CORSExposedHeadersTest : public testing::Test {
     ResourceResponse response;
     response.AddHTTPHeaderField("access-control-expose-headers", header);
 
-    return WebCORS::ExtractCorsExposedHeaderNamesList(
-        credentials_mode, WrappedResourceResponse(response));
+    return cors::ExtractCorsExposedHeaderNamesList(credentials_mode, response);
   }
 };
 
@@ -81,13 +78,12 @@ TEST_F(CORSExposedHeadersTest, Wildcard) {
   response.AddHTTPHeaderField("*", "-");
 
   EXPECT_EQ(
-      WebCORS::ExtractCorsExposedHeaderNamesList(
-          CredentialsMode::kOmit, WrappedResourceResponse(response)),
+      cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kOmit, response),
       WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
 
   EXPECT_EQ(
-      WebCORS::ExtractCorsExposedHeaderNamesList(
-          CredentialsMode::kSameOrigin, WrappedResourceResponse(response)),
+      cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kSameOrigin,
+                                              response),
       WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
 }
 
@@ -99,8 +95,8 @@ TEST_F(CORSExposedHeadersTest, Asterisk) {
   response.AddHTTPHeaderField("d", "-");
   response.AddHTTPHeaderField("*", "-");
 
-  EXPECT_EQ(WebCORS::ExtractCorsExposedHeaderNamesList(
-                CredentialsMode::kInclude, WrappedResourceResponse(response)),
+  EXPECT_EQ(cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kInclude,
+                                                    response),
             WebHTTPHeaderSet({"a", "b", "*"}));
 }
 

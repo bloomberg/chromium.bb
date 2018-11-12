@@ -8,10 +8,12 @@
 #include <string>
 #include <utility>
 
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -74,6 +76,81 @@ url::Origin AsUrlOrigin(const SecurityOrigin& origin) {
   // "null".
   return origin.ToString() == "null" ? url::Origin() : origin.ToUrlOrigin();
 }
+
+// A parser for the value of the Access-Control-Expose-Headers header.
+class HTTPHeaderNameListParser {
+  STACK_ALLOCATED();
+
+ public:
+  explicit HTTPHeaderNameListParser(const String& value)
+      : value_(value), pos_(0) {}
+
+  // Tries parsing |value_| expecting it to be conforming to the #field-name
+  // ABNF rule defined in RFC 7230. Returns with the field-name entries stored
+  // in |output| when successful. Otherwise, returns with |output| kept empty.
+  //
+  // |output| must be empty.
+  void Parse(WebHTTPHeaderSet& output) {
+    DCHECK(output.empty());
+
+    while (true) {
+      ConsumeSpaces();
+
+      size_t token_start = pos_;
+      ConsumeTokenChars();
+      size_t token_size = pos_ - token_start;
+      if (token_size == 0) {
+        output.clear();
+        return;
+      }
+
+      const CString& name = value_.Substring(token_start, token_size).Ascii();
+      output.emplace(name.data(), name.length());
+
+      ConsumeSpaces();
+
+      if (pos_ == value_.length())
+        return;
+
+      if (value_[pos_] == ',') {
+        ++pos_;
+      } else {
+        output.clear();
+        return;
+      }
+    }
+  }
+
+ private:
+  // Consumes zero or more spaces (SP and HTAB) from value_.
+  void ConsumeSpaces() {
+    while (true) {
+      if (pos_ == value_.length())
+        return;
+
+      UChar c = value_[pos_];
+      if (c != ' ' && c != '\t')
+        return;
+      ++pos_;
+    }
+  }
+
+  // Consumes zero or more tchars from value_.
+  void ConsumeTokenChars() {
+    while (true) {
+      if (pos_ == value_.length())
+        return;
+
+      UChar c = value_[pos_];
+      if (c > 0x7F || !net::HttpUtil::IsTokenChar(c))
+        return;
+      ++pos_;
+    }
+  }
+
+  const String value_;
+  size_t pos_;
+};
 
 }  // namespace
 
@@ -301,6 +378,69 @@ bool CalculateCORSFlag(const KURL& url,
   // request doesn't have one, CORS should not work.
   DCHECK(origin);
   return !origin->CanReadContent(url);
+}
+
+WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
+    network::mojom::FetchCredentialsMode credentials_mode,
+    const ResourceResponse& response) {
+  // If a response was fetched via a service worker, it will always have
+  // CorsExposedHeaderNames set from the Access-Control-Expose-Headers header.
+  // For requests that didn't come from a service worker, just parse the CORS
+  // header.
+  if (response.WasFetchedViaServiceWorker()) {
+    WebHTTPHeaderSet header_set;
+    for (const auto& header : response.CorsExposedHeaderNames())
+      header_set.emplace(header.Ascii().data(), header.Ascii().length());
+    return header_set;
+  }
+
+  WebHTTPHeaderSet header_set;
+  HTTPHeaderNameListParser parser(response.HttpHeaderField(
+      WebString(http_names::kAccessControlExposeHeaders)));
+  parser.Parse(header_set);
+
+  if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&
+      header_set.find("*") != header_set.end()) {
+    header_set.clear();
+    for (const auto& header : response.HttpHeaderFields()) {
+      CString name = header.key.Ascii();
+      header_set.emplace(name.data(), name.length());
+    }
+  }
+  return header_set;
+}
+
+bool IsOnAccessControlResponseHeaderWhitelist(const String& name) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      WebHTTPHeaderSet, allowed_cross_origin_response_headers,
+      ({
+          "cache-control", "content-language", "content-type", "expires",
+          "last-modified", "pragma",
+      }));
+  return allowed_cross_origin_response_headers.find(name.Ascii().data()) !=
+         allowed_cross_origin_response_headers.end();
+}
+
+// In the spec, https://fetch.spec.whatwg.org/#ref-for-concept-request-mode,
+// No-CORS mode is highly discouraged from using it for new features. Only
+// legacy usages for backward compatibility are allowed except for well-designed
+// usages over the fetch API.
+bool IsNoCORSAllowedContext(mojom::RequestContextType context) {
+  switch (context) {
+    case mojom::RequestContextType::AUDIO:
+    case mojom::RequestContextType::FAVICON:
+    case mojom::RequestContextType::FETCH:
+    case mojom::RequestContextType::IMAGE:
+    case mojom::RequestContextType::OBJECT:
+    case mojom::RequestContextType::PLUGIN:
+    case mojom::RequestContextType::SCRIPT:
+    case mojom::RequestContextType::SHARED_WORKER:
+    case mojom::RequestContextType::VIDEO:
+    case mojom::RequestContextType::WORKER:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace cors

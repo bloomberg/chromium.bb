@@ -28,7 +28,6 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_document_or_string_or_form_data_or_url_search_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
@@ -69,7 +68,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
-#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
@@ -1447,10 +1445,10 @@ String XMLHttpRequest::getAllResponseHeaders() const {
   StringBuilder string_builder;
 
   WebHTTPHeaderSet access_control_expose_header_set =
-      WebCORS::ExtractCorsExposedHeaderNamesList(
+      cors::ExtractCorsExposedHeaderNamesList(
           with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
                             : network::mojom::FetchCredentialsMode::kSameOrigin,
-          WrappedResourceResponse(response_));
+          response_);
 
   HTTPHeaderMap::const_iterator end = response_.HttpHeaderFields().end();
   for (HTTPHeaderMap::const_iterator it = response_.HttpHeaderFields().begin();
@@ -1465,7 +1463,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
       continue;
 
     if (!same_origin_request_ &&
-        !WebCORS::IsOnAccessControlResponseHeaderWhitelist(it->key) &&
+        !cors::IsOnAccessControlResponseHeaderWhitelist(it->key) &&
         access_control_expose_header_set.find(it->key.Ascii().data()) ==
             access_control_expose_header_set.end())
       continue;
@@ -1495,13 +1493,13 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
   }
 
   WebHTTPHeaderSet access_control_expose_header_set =
-      WebCORS::ExtractCorsExposedHeaderNamesList(
+      cors::ExtractCorsExposedHeaderNamesList(
           with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
                             : network::mojom::FetchCredentialsMode::kSameOrigin,
-          WrappedResourceResponse(response_));
+          response_);
 
   if (!same_origin_request_ &&
-      !WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) &&
+      !cors::IsOnAccessControlResponseHeaderWhitelist(name) &&
       access_control_expose_header_set.find(name.Ascii().data()) ==
           access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),

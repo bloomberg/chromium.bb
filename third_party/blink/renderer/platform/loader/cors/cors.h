@@ -9,6 +9,8 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -17,6 +19,7 @@ namespace blink {
 
 class HTTPHeaderMap;
 class KURL;
+class ResourceResponse;
 class SecurityOrigin;
 
 enum class CORSFlag : uint8_t {
@@ -114,6 +117,15 @@ PLATFORM_EXPORT bool CalculateCORSFlag(
     const KURL& url,
     const SecurityOrigin* origin,
     network::mojom::FetchRequestMode request_mode);
+
+PLATFORM_EXPORT WebHTTPHeaderSet
+ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
+                                  const ResourceResponse&);
+
+PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(const String&);
+
+// Checks whether request mode 'no-cors' is allowed for a certain context.
+PLATFORM_EXPORT bool IsNoCORSAllowedContext(mojom::RequestContextType);
 
 }  // namespace cors
 
