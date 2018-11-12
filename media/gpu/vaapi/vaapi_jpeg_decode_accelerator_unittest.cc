@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -44,14 +45,6 @@ void LogOnError() {
   LOG(FATAL) << "Oh noes! Decoder failed";
 }
 
-// Find the location of the specified test file. If a file with specified path
-// is not found, treat the path as being relative to the standard test file
-// directory.
-base::FilePath FindTestDataFilePath(const std::string& file_name) {
-  base::FilePath file_path = base::FilePath(file_name);
-  return PathExists(file_path) ? file_path : GetTestDataFilePath(file_name);
-}
-
 uint32_t GetVASurfaceFormat() {
   if (VaapiWrapper::IsImageFormatSupported(kImageFormatI420))
     return VA_RT_FORMAT_YUV420;
@@ -76,7 +69,12 @@ VAImageFormat GetVAImageFormat() {
 
 class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
-  VaapiJpegDecodeAcceleratorTest() {}
+  VaapiJpegDecodeAcceleratorTest() {
+    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    if (cmd_line && cmd_line->HasSwitch("test_data_path")) {
+      test_data_path_ = cmd_line->GetSwitchValueASCII("test_data_path");
+    }
+  }
 
   void SetUp() override {
     base::RepeatingClosure report_error_cb = base::BindRepeating(&LogOnError);
@@ -84,13 +82,17 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
                                     VAProfileJPEGBaseline, report_error_cb);
     ASSERT_TRUE(wrapper_);
 
-    base::FilePath input_file = FindTestDataFilePath(kTestFilename);
-
-    ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data_))
-        << "failed to read input data from " << input_file.value();
+    // Load the test data, if not loaded yet.
+    if (jpeg_data_.size() == 0) {
+      base::FilePath input_file = FindTestDataFilePath(kTestFilename);
+      ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data_))
+          << "failed to read input data from " << input_file.value();
+    }
   }
 
   void TearDown() override { wrapper_ = nullptr; }
+
+  base::FilePath FindTestDataFilePath(const std::string& file_name);
 
   bool VerifyDecode(const JpegParseResult& parse_result) const;
   bool Decode(VaapiWrapper* vaapi_wrapper,
@@ -103,7 +105,22 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
   scoped_refptr<VaapiWrapper> wrapper_;
   std::string jpeg_data_;
+  std::string test_data_path_;
 };
+
+// Find the location of the specified test file. If a file with specified path
+// is not found, treat the file as being relative to the test file directory.
+// This is either a custom test data path provided by --test_data_path, or the
+// default test data path (//media/test/data).
+base::FilePath VaapiJpegDecodeAcceleratorTest::FindTestDataFilePath(
+    const std::string& file_name) {
+  const base::FilePath file_path = base::FilePath(file_name);
+  if (base::PathExists(file_path))
+    return file_path;
+  if (!test_data_path_.empty())
+    return base::FilePath(test_data_path_).Append(file_path);
+  return GetTestDataFilePath(file_name);
+}
 
 bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
     const JpegParseResult& parse_result) const {

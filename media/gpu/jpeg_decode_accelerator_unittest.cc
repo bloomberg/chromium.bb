@@ -151,15 +151,20 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
  public:
   JpegDecodeAcceleratorTestEnvironment(
       const base::FilePath::CharType* jpeg_filenames,
+      const base::FilePath::CharType* test_data_path,
       int perf_decode_times)
       : perf_decode_times_(perf_decode_times ? perf_decode_times
                                              : kDefaultPerfDecodeTimes),
         user_jpeg_filenames_(jpeg_filenames ? jpeg_filenames
-                                            : kDefaultJpegFilename) {}
+                                            : kDefaultJpegFilename),
+        test_data_path_(test_data_path) {}
+
   void SetUp() override;
 
   // Creates and returns a FilePath for the pathless |name|. The current folder
-  // is used if |name| exists in it, otherwise //media/test/data is used.
+  // is used if |name| exists in it. If not the file will be treated as relative
+  // to the test data path. This is either a custom test data path provided by
+  // --test_data_path, or the default test data path (//media/test/data).
   base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
     LOG_ASSERT(std::find_if(name.begin(), name.end(),
                             base::FilePath::IsSeparator) == name.end())
@@ -167,6 +172,8 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     const base::FilePath original_file_path = base::FilePath(name);
     if (base::PathExists(original_file_path))
       return original_file_path;
+    if (test_data_path_)
+      return base::FilePath(test_data_path_).Append(original_file_path);
     return GetTestDataFilePath(name);
   }
 
@@ -193,6 +200,7 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
  private:
   const base::FilePath::CharType* user_jpeg_filenames_;
+  const base::FilePath::CharType* test_data_path_;
 };
 
 void JpegDecodeAcceleratorTestEnvironment::SetUp() {
@@ -853,6 +861,7 @@ int main(int argc, char** argv) {
   DCHECK(cmd_line);
 
   const base::FilePath::CharType* jpeg_filenames = nullptr;
+  const base::FilePath::CharType* test_data_path = nullptr;
   int perf_decode_times = 0;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
@@ -860,6 +869,10 @@ int main(int argc, char** argv) {
     // jpeg_filenames can include one or many files and use ';' as delimiter.
     if (it->first == "jpeg_filenames") {
       jpeg_filenames = it->second.c_str();
+      continue;
+    }
+    if (it->first == "test_data_path") {
+      test_data_path = it->second.c_str();
       continue;
     }
     if (it->first == "perf_decode_times") {
@@ -883,8 +896,8 @@ int main(int argc, char** argv) {
 
   media::g_env = reinterpret_cast<media::JpegDecodeAcceleratorTestEnvironment*>(
       testing::AddGlobalTestEnvironment(
-          new media::JpegDecodeAcceleratorTestEnvironment(jpeg_filenames,
-                                                          perf_decode_times)));
+          new media::JpegDecodeAcceleratorTestEnvironment(
+              jpeg_filenames, test_data_path, perf_decode_times)));
 
   return RUN_ALL_TESTS();
 }
