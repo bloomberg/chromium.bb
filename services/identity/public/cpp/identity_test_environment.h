@@ -132,37 +132,27 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // already occurred and has not been matched by a previous call to this or
   // other WaitFor... method, or (b) will occur in the future. In the latter
   // case, waits until the access token request occurs.
+  // |id_token| is an uncommonly-needed parameter that contains extra
+  // information regarding the user's currently-registered services; if this
+  // means nothing to you, you don't need to concern yourself with it.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled
   // synchronously or asynchronously in the production code.
   // NOTE: This version is suitable for use in the common context where access
   // token requests are only being made for one account. If you need to
   // disambiguate requests coming for different accounts, see the version below.
-  void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      const std::string& token,
-      const base::Time& expiration);
-
-  // Issues |token| in response to any access token request that either has (a)
-  // already occurred and has not been matched by a previous call to this or
-  // other WaitFor... method, or (b) will occur in the future. In the latter
-  // case, waits until the access token request occurs.
-  // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
-  // agnostic with respect to whether access token requests are handled
-  // synchronously or asynchronously in the production code.
-  // NOTE: This version is suitable for use in the common context where access
-  // token requests are only being made for one account. If you need to
-  // disambiguate requests coming for different accounts, see the version below.
-  // NOTE: This version allows passing the uncommon id_token parameter which is
-  // needed to test some cases where checking for that extra info is required.
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       const std::string& token,
       const base::Time& expiration,
-      const std::string& id_token);
+      const std::string& id_token = std::string());
 
   // Issues |token| in response to an access token request for |account_id| that
   // either already occurred and has not been matched by a previous call to this
   // or other WaitFor... method , or (b) will occur in the future. In the latter
   // case, waits until the access token request occurs.
+  // |id_token| is an uncommonly-needed parameter that contains extra
+  // information regarding the user's currently-registered services; if this
+  // means nothing to you, you don't need to concern yourself with it.
   // NOTE: This method behaves this way to allow
   // IdentityTestEnvironment to be agnostic with respect to whether access token
   // requests are handled synchronously or asynchronously in the production
@@ -175,7 +165,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Issues |error| in response to any access token request that either has (a)
   // already occurred and has not been matched by a previous call to this or
-  // other WaitFor... method, or (b) will occur in the future via  In the latter
+  // other WaitFor... method, or (b) will occur in the future. In the latter
   // case, waits until the access token request occurs.
   // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
   // agnostic with respect to whether access token requests are handled

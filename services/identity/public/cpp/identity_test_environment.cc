@@ -275,14 +275,6 @@ void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {
 void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         const std::string& token,
-        const base::Time& expiration) {
-  WaitForAccessTokenRequestIfNecessary(base::nullopt);
-  token_service_->IssueTokenForAllPendingRequests(token, expiration);
-}
-
-void IdentityTestEnvironment::
-    WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        const std::string& token,
         const base::Time& expiration,
         const std::string& id_token) {
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
