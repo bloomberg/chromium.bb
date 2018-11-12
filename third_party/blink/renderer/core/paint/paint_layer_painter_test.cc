@@ -409,7 +409,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   ToHTMLElement(outline_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_outline);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantOutlines());
+  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantOutlines());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
@@ -464,7 +464,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
   ToHTMLElement(float_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_float);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseFloat());
+  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
@@ -572,43 +572,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   ToHTMLElement(background_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_background);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-}
-
-TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='layer' style='position: relative'>
-      <div style='height: 100px'>
-        <div style='height: 20px; outline: 1px solid red;
-            background-color: green'>outline and background</div>
-        <div style='float: left'>float</div>
-      </div>
-    </div>
-  )HTML");
-
-  LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
-      GetDocument().getElementById("layer")->GetLayoutObject());
-  PaintLayer& layer = *layer_div.Layer();
-  ASSERT_TRUE(layer.IsSelfPaintingLayer());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(layer.NeedsPaintPhaseFloat());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-
-  PaintLayer& html_layer =
-      *ToLayoutBoxModelObject(
-           GetDocument().documentElement()->GetLayoutObject())
-           ->Layer();
-  EXPECT_FALSE(html_layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_FALSE(html_layer.NeedsPaintPhaseFloat());
-  EXPECT_FALSE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-
-  ToHTMLElement(layer_div.GetNode())->setAttribute(HTMLNames::styleAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  EXPECT_FALSE(layer_div.HasLayer());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseFloat());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
+  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {

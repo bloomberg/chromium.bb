@@ -261,9 +261,6 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
     return;
 
   paint_layer.SetNeedsRepaint();
-  paint_layer.SetPreviousPaintPhaseDescendantOutlinesEmpty(false);
-  paint_layer.SetPreviousPaintPhaseFloatEmpty(false);
-  paint_layer.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
 }
 
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
