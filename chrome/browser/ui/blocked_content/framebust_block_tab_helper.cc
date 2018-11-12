@@ -70,7 +70,6 @@ void FramebustBlockTabHelper::DidFinishNavigation(
   }
   blocked_urls_.clear();
   callbacks_.clear();
-  animation_has_run_ = false;
 
   UpdateLocationBarUI(web_contents());
 }

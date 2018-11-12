@@ -192,7 +192,7 @@ class TabSpecificContentSettings
   void FlashDownloadBlocked();
 
   // Changes the |content_blocked_| entry for popups.
-  void SetPopupsBlocked(bool blocked);
+  void ClearPopupsBlocked();
 
   // Called when audio has been blocked on the page.
   void OnAudioBlocked();
@@ -200,11 +200,6 @@ class TabSpecificContentSettings
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
-
-  // Returns true if content blockage was indicated to the user.
-  bool IsBlockageIndicated(ContentSettingsType content_type) const;
-
-  void SetBlockageHasBeenIndicated(ContentSettingsType content_type);
 
   // Returns whether a particular kind of content has been allowed. Currently
   // only tracks cookies.
@@ -429,7 +424,6 @@ class TabSpecificContentSettings
 
   struct ContentSettingsStatus {
     bool blocked;
-    bool blockage_indicated_to_user;
     bool allowed;
   };
   // Stores which content setting types actually have blocked content.

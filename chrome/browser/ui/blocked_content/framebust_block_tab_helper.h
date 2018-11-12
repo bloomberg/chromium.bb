@@ -58,10 +58,6 @@ class FramebustBlockTabHelper
   // Returns all of the currently blocked URLs.
   const std::vector<GURL>& blocked_urls() const { return blocked_urls_; }
 
-  // Remembers if the animation has run.
-  void set_animation_has_run() { animation_has_run_ = true; }
-  bool animation_has_run() const { return animation_has_run_; }
-
  private:
   friend class content::WebContentsUserData<FramebustBlockTabHelper>;
 
@@ -78,9 +74,6 @@ class FramebustBlockTabHelper
   // Callbacks associated with |blocked_urls_|. Separate vector to allow easy
   // distribution of the URLs in blocked_urls().
   std::vector<ClickCallback> callbacks_;
-
-  // Remembers if the animation has run.
-  bool animation_has_run_ = false;
 
   base::ObserverList<Observer>::Unchecked observers_;
 
