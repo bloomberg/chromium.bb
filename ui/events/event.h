@@ -70,6 +70,7 @@ class EVENTS_EXPORT Event {
     void set_result(int result) {
       event_->result_ = static_cast<EventResult>(result);
     }
+    void set_time_stamp(base::TimeTicks time) { event_->time_stamp_ = time; }
 
    private:
     Event* event_;
