@@ -22,7 +22,7 @@
 
 namespace {
 // Constants derived from the spec, https://github.com/WICG/origin-policy
-static const char* kDefaultPolicy = "1";
+static const char* kDefaultPolicy = "0";
 static const char* kDeletePolicy = "0";
 static const char* kWellKnown = "/.well-known/origin-policy/";
 
