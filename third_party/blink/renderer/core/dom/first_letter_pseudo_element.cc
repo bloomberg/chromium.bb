@@ -343,31 +343,6 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   first_letter_text->Destroy();
 }
 
-void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
-  LayoutObject* layout_object = GetLayoutObject();
-  if (!layout_object)
-    return;
-
-  // The layout objects inside pseudo elements are anonymous so they don't get
-  // notified of RecalcStyle and must have the style propagated downward
-  // manually similar to LayoutObject::PropagateStyleToAnonymousChildren.
-  for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
-       child; child = child->NextInPreOrder(layout_object)) {
-    // We need to re-calculate the correct style for the first letter element
-    // and then apply that to the container and the text fragment inside.
-    if (child->Style()->StyleType() == kPseudoIdFirstLetter) {
-      child->SetPseudoStyle(layout_object->MutableStyle());
-      continue;
-    }
-
-    // We only manage the style for the generated content items.
-    if (!child->IsText() && !child->IsQuote() && !child->IsImage())
-      continue;
-
-    child->SetPseudoStyle(layout_object->MutableStyle());
-  }
-}
-
 Node* FirstLetterPseudoElement::InnerNodeForHitTesting() const {
   // When we hit a first letter during hit testing, hover state and events
   // should be triggered on the parent of the real text node where the first
