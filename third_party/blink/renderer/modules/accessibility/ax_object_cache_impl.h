@@ -296,7 +296,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
 
-  HeapVector<Member<Node>> nodes_changed_during_layout_;
+  VectorOf<Node> nodes_changed_during_layout_;
+  typedef VectorOfPairs<QualifiedName, Element> AttributesChangedVector;
+  AttributesChangedVector attributes_changed_during_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };
