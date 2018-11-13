@@ -512,6 +512,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
                         atIndex:(NSUInteger)index
                    inBackground:(BOOL)inBackground {
   DCHECK(_browserState);
+  DCHECK(index == TabModelConstants::kTabPositionAutomatically ||
+         index <= self.count);
 
   int insertionIndex = WebStateList::kInvalidIndex;
   int insertionFlags = WebStateList::INSERT_NO_FLAGS;

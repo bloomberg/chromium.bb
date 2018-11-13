@@ -256,7 +256,7 @@ TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
       startupInformation:controller];
 
   EXPECT_EQ(GURL("http://www.google.com/"), [bvc_mock tabURL]);
-  EXPECT_EQ(NSNotFound, static_cast<NSInteger>([bvc_mock position]));
+  EXPECT_EQ(0, static_cast<NSInteger>([bvc_mock position]));
   EXPECT_TRUE(PageTransitionCoreTypeIs([bvc_mock transition],
                                        ui::PAGE_TRANSITION_LINK));
 

@@ -2082,7 +2082,7 @@ enum class ShowTabSwitcherSnapshotResult {
 
   [_tabSwitcher dismissWithNewTabAnimationToModel:self.mainTabModel
                                           withURL:GURL(kChromeUINewTabURL)
-                                          atIndex:NSNotFound
+                                          atIndex:self.mainTabModel.count
                                        transition:ui::PAGE_TRANSITION_TYPED];
   return YES;
 }
@@ -2263,7 +2263,7 @@ enum class ShowTabSwitcherSnapshotResult {
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     return [targetBVC addSelectedTabWithURL:URL
-                                    atIndex:NSNotFound
+                                    atIndex:targetBVC.tabModel.count
                                  transition:transition];
   }
 
