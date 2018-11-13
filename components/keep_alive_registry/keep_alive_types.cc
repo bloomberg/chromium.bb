@@ -47,6 +47,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "PROFILE_LOADER";
     case KeepAliveOrigin::USER_MANAGER_VIEW:
       return out << "USER_MANAGER_VIEW";
+    case KeepAliveOrigin::CREDENTIAL_PROVIDER_SIGNIN_DIALOG:
+      return out << "CREDENTIAL_PROVIDER_SIGNIN_DIALOG";
   }
 
   NOTREACHED();

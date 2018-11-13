@@ -15,17 +15,17 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 # This static library is shared with the setup program.
-
 source_set("common") {
   sources = [
-    "gcp_strings.cc",
-    "gcp_strings.h",
     "gcp_utils.cc",
     "gcp_utils.h",
     "logging.cc",
     "logging.h",
   ]
   public_configs = [ ":common_config" ]
+  public_deps = [
+    "//chrome/credential_provider/common:common_constants",
+  ]
   deps = [
     "//base:base",
     "//components/version_info",

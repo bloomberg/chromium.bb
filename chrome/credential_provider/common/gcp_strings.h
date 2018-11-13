@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_STRINGS_H_
-#define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_STRINGS_H_
+#ifndef CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_
+#define CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_
 
 namespace credential_provider {
 
@@ -15,6 +15,7 @@ extern const char kKeyMdmUrl[];
 extern const char kKeyMdmIdToken[];
 extern const char kKeyPassword[];
 extern const char kKeyRefreshToken[];
+extern const char kKeyAccessToken[];
 extern const char kKeySID[];
 extern const char kKeyTokenHandle[];
 extern const char kKeyUsername[];
@@ -38,6 +39,8 @@ extern const wchar_t kDesktopFullName[];
 extern const wchar_t kRegUpdaterClientStateAppPath[];
 extern const wchar_t kRegUpdaterClientsAppPath[];
 
+extern const char kGcpwSigninSwitch[];
+
 }  // namespace credential_provider
 
-#endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_STRINGS_H_
+#endif  // CHROME_CREDENTIAL_PROVIDER_COMMON_GCP_STRINGS_H_

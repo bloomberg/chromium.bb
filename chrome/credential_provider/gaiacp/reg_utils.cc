@@ -8,7 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/win/registry.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 
 namespace credential_provider {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 
 namespace credential_provider {
 
@@ -14,6 +14,7 @@ const char kKeyMdmUrl[] = "mdm_url";
 const char kKeyMdmIdToken[] = "mdm_id_token";
 const char kKeyPassword[] = "password";
 const char kKeyRefreshToken[] = "refresh_token";
+const char kKeyAccessToken[] = "access_token";
 const char kKeySID[] = "sid";
 const char kKeyTokenHandle[] = "token_handle";
 const char kKeyUsername[] = "user_name";
@@ -40,5 +41,9 @@ const wchar_t kRegUpdaterClientStateAppPath[] =
 const wchar_t kRegUpdaterClientsAppPath[] =
     L"SOFTWARE\\Google\\Update\\Clients\\"
     L"{32987697-A14E-4B89-84D6-630D5431E831}";
+
+// Chrome is being opened to show the credential provider logon page.  This
+// page is always shown in incognito mode.
+const char kGcpwSigninSwitch[] = "gcpw-signin";
 
 }  // namespace credential_provider

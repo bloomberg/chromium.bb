@@ -93,6 +93,7 @@
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -328,6 +329,12 @@ bool StartupBrowserCreator::LaunchBrowser(
     LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
                  << "browser session.";
   }
+
+#if defined(OS_WIN)
+  // Continue with the incognito profile if this is a credential provider logon.
+  if (command_line.HasSwitch(credential_provider::kGcpwSigninSwitch))
+    profile = profile->GetOffTheRecordProfile();
+#endif
 
   // Note: This check should have been done in ProcessCmdLineImpl()
   // before calling this function. However chromeos/login/login_utils.cc

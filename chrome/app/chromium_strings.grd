@@ -1263,7 +1263,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           </else>
         </if>
       </if>
-      <!-- Chroium launch blocking dialog. -->
+      <!-- Chromium launch blocking dialog. -->
       <if expr="not is_android and not chromeos">
          <message name="IDS_ENTERPRISE_STARTUP_CLOUD_POLICY_ENROLLMENT_TOOLTIP" desc="The information message of Chromium launch blocking dialog for machine level user cloud policy enrollment.">
           Launching Chromium...

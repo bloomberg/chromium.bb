@@ -28382,6 +28382,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="19" label="LM_SHORTCUT_START_MENU">
     Launched from a Start Menu shortcut (Windows).
   </int>
+  <int value="20" label="LM_GCPW_LOGON">
+    Launched as a logon stub for the Google Credential Provider for Windows
+    (Windows).
+  </int>
 </enum>
 
 <enum name="LaunchType">

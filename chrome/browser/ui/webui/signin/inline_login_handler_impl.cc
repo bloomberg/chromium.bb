@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,6 +74,12 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN)
+
+#include "chrome/credential_provider/common/gcp_strings.h"
+
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -218,6 +225,33 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     browser = handler_->GetDesktopBrowser();
   }
 
+  signin_metrics::AccessPoint access_point =
+      signin::GetAccessPointForPromoURL(current_url_);
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url_);
+  if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
+// Constants are only available on Windows for the Google Credential
+// Provider for Windows. Other platforms will just close the dialog here.
+#if defined(OS_WIN)
+    std::string json_retval;
+    base::Value args(base::Value::Type::DICTIONARY);
+    args.SetKey(credential_provider::kKeyEmail, base::Value(email_));
+    args.SetKey(credential_provider::kKeyPassword, base::Value(password_));
+    args.SetKey(credential_provider::kKeyId, base::Value(gaia_id_));
+    args.SetKey(credential_provider::kKeyRefreshToken,
+                base::Value(result.refresh_token));
+    args.SetKey(credential_provider::kKeyAccessToken,
+                base::Value(result.access_token));
+
+    handler_->SendLSTFetchResultsMessage(args);
+#else
+    if (handler_)
+      handler_->CloseDialogFromJavascript();
+#endif  // defined(OS_WIN)
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    return;
+  }
+
   AboutSigninInternals* about_signin_internals =
       AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Successful");
@@ -226,11 +260,6 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   std::string account_id =
       AccountTrackerServiceFactory::GetForProfile(profile_)
           ->SeedAccountInfo(gaia_id_, email_);
-
-  signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForPromoURL(current_url_);
-  signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url_);
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   std::string primary_email =
@@ -399,9 +428,13 @@ void InlineSigninHelper::OnClientOAuthFailure(
   if (handler_)
     handler_->HandleLoginError(error.ToString(), base::string16());
 
-  AboutSigninInternals* about_signin_internals =
-    AboutSigninInternalsFactory::GetForProfile(profile_);
-  about_signin_internals->OnRefreshTokenReceived("Failure");
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url_);
+  if (reason != signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
+    AboutSigninInternals* about_signin_internals =
+        AboutSigninInternalsFactory::GetForProfile(profile_);
+    about_signin_internals->OnRefreshTokenReceived("Failure");
+  }
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
@@ -518,16 +551,18 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   // the current profile is the system profile.  In this case, use the email to
   // find the right profile to reauthenticate.  Otherwise the profile can be
   // taken from web_ui().
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url);
+
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (IsSystemProfile(profile)) {
+  if (reason != signin_metrics::Reason::REASON_FETCH_LST_ONLY &&
+      IsSystemProfile(profile)) {
     ProfileManager* manager = g_browser_process->profile_manager();
     base::FilePath path = profiles::GetPathOfProfileWithEmail(manager, email);
     if (path.empty()) {
       path = UserManager::GetSigninProfilePath();
     }
     if (!path.empty()) {
-      signin_metrics::Reason reason =
-          signin::GetSigninReasonForPromoURL(current_url);
       // If we are only reauthenticating a profile in the user manager (and not
       // unlocking it), load the profile and finish the login.
       if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
@@ -659,7 +694,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   }
 
   std::string error_msg;
-  bool can_offer = CanOfferSignin(profile, can_offer_for, params.gaia_id,
+  bool can_offer = reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY ||
+                   CanOfferSignin(profile, can_offer_for, params.gaia_id,
                                   params.email, &error_msg);
   if (!can_offer) {
     if (params.handler) {
@@ -671,7 +707,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   AboutSigninInternals* about_signin_internals =
       AboutSigninInternalsFactory::GetForProfile(profile);
-  about_signin_internals->OnAuthenticationResultReceived("Successful");
+  if (about_signin_internals)
+    about_signin_internals->OnAuthenticationResultReceived("Successful");
 
   std::string signin_scoped_device_id =
       GetSigninScopedDeviceIdForProfile(profile);
@@ -690,13 +727,23 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   // If opened from user manager to unlock a profile, make sure the user manager
   // is closed and that the profile is marked as unlocked.
-  if (!params.is_force_sign_in_with_usermanager) {
+  if (reason != signin_metrics::Reason::REASON_FETCH_LST_ONLY &&
+      !params.is_force_sign_in_with_usermanager) {
     UnlockProfileAndHideLoginUI(params.profile_path, params.handler);
   }
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
                                               const base::string16& email) {
+  content::WebContents* contents = web_ui()->GetWebContents();
+  const GURL& current_url = contents->GetURL();
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url);
+
+  if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
+    SendLSTFetchResultsMessage(base::Value(base::Value::Type::DICTIONARY));
+    return;
+  }
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
   Browser* browser = GetDesktopBrowser();
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -709,6 +756,12 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
     LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
         browser, base::UTF8ToUTF16(error_msg), email);
   }
+}
+
+void InlineLoginHandlerImpl::SendLSTFetchResultsMessage(
+    const base::Value& arg) {
+  if (IsJavascriptAllowed())
+    CallJavascriptFunction("inline.login.sendLSTFetchResults", arg);
 }
 
 Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {

@@ -396,6 +396,19 @@ static_library("browser_tests_runner") {
   }
 }
 
+if (is_win) {
+  source_set("credential_provider_test_utils") {
+    testonly = true
+    sources = [
+      "../browser/ui/startup/credential_provider_signin_dialog_win_test_data.cc",
+      "../browser/ui/startup/credential_provider_signin_dialog_win_test_data.h",
+    ]
+    deps = [
+      "//base",
+    ]
+  }
+}
+
 test("browser_tests") {
   sources = [
     # TODO(jbudorick): Move tests here from other lists as Android support is
@@ -1980,6 +1993,7 @@ test("browser_tests") {
       sources += [
         "../browser/browser_switcher/browser_switcher_service_browsertest.cc",
         "../browser/printing/pdf_to_emf_converter_browsertest.cc",
+        "../browser/ui/startup/credential_provider_signin_dialog_win_browsertest.cc",
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
@@ -2002,6 +2016,7 @@ test("browser_tests") {
       deps += [
         "//chrome:other_version",
         "//chrome/app:command_ids",
+        "//chrome/test:credential_provider_test_utils",
         "//device/vr",
         "//third_party/wtl",
         "//ui/resources",
@@ -2931,6 +2946,12 @@ test("unit_tests") {
 
   if (is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
+  }
+
+  if (is_win) {
+    assert(toolkit_views)
+    sources += [ "../browser/ui/startup/credential_provider_signin_info_fetcher_win_unittest.cc" ]
+    deps += [ "//chrome/test:credential_provider_test_utils" ]
   }
 
   if (enable_dice_support) {
