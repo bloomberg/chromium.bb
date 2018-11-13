@@ -332,6 +332,9 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <!-- Search strings are only used in webui, so no mobile. -->
       <if expr="not is_android">
+        <message name="IDS_SEARCH_CLEARED" desc="Message announced to screenreader users when search is cleared.">
+          Search cleared
+        </message>
         <message name="IDS_SEARCH_RESULTS" desc="Message announced to screenreader users when searching completes and results are showing.">
           Search results for '<ph name="SEARCH_TEXT">$1<ex>cookies</ex></ph>'
         </message>

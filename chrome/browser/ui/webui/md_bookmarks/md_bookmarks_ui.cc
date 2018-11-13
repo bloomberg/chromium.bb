@@ -127,6 +127,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL);
   AddLocalizedString(source, "sidebarNodeExpandAxLabel",
                      IDS_MD_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL);
+  AddLocalizedString(source, "searchCleared", IDS_SEARCH_CLEARED);
   AddLocalizedString(source, "searchResults", IDS_SEARCH_RESULTS);
   AddLocalizedString(source, "saveEdit", IDS_SAVE);
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
