@@ -1143,9 +1143,9 @@ void av1_loop_restoration_copy_planes(AV1LrStruct *loop_rest_ctxt,
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src_ybc,
                            YV12_BUFFER_CONFIG *dst_ybc, int hstart, int hend,
                            int vstart, int vend);
-  static const copy_fun copy_funs[3] = {
-    aom_yv12_partial_copy_y, aom_yv12_partial_copy_u, aom_yv12_partial_copy_v
-  };
+  static const copy_fun copy_funs[3] = { aom_yv12_partial_coloc_copy_y,
+                                         aom_yv12_partial_coloc_copy_u,
+                                         aom_yv12_partial_coloc_copy_v };
 
   for (int plane = 0; plane < num_planes; ++plane) {
     if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;

@@ -52,9 +52,44 @@ void usage_exit(void) {
   exit(EXIT_FAILURE);
 }
 
+// Output frame size
+const int output_frame_width = 512;
+const int output_frame_height = 512;
+
+static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
+                              int dst_row_offset, int dst_col_offset) {
+  const int shift = (src->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 1 : 0;
+  int plane;
+
+  for (plane = 0; plane < 3; ++plane) {
+    const unsigned char *src_buf = src->planes[plane];
+    const int src_stride = src->stride[plane];
+    unsigned char *dst_buf = dst->planes[plane];
+    const int dst_stride = dst->stride[plane];
+    const int roffset =
+        (plane > 0) ? dst_row_offset >> dst->y_chroma_shift : dst_row_offset;
+    const int coffset =
+        (plane > 0) ? dst_col_offset >> dst->x_chroma_shift : dst_col_offset;
+
+    // col offset needs to be adjusted for HBD.
+    dst_buf += roffset * dst_stride + (coffset << shift);
+
+    const int w = (aom_img_plane_width(src, plane) << shift);
+    const int h = aom_img_plane_height(src, plane);
+    int y;
+
+    for (y = 0; y < h; ++y) {
+      memcpy(dst_buf, src_buf, w);
+      src_buf += src_stride;
+      dst_buf += dst_stride;
+    }
+  }
+}
+
 void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
                  size_t frame_size, int tr, int tc, int ref_idx,
-                 aom_image_t *reference_images, FILE *outfile) {
+                 aom_image_t *reference_images, aom_image_t *output,
+                 int *tile_idx) {
   aom_codec_control_(codec, AV1_SET_TILE_MODE, 1);
   aom_codec_control_(codec, AV1D_EXT_TILE_DEBUG, 1);
   aom_codec_control_(codec, AV1_SET_DECODE_TILE_ROW, tr);
@@ -73,7 +108,23 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
 
   aom_codec_iter_t iter = NULL;
   aom_image_t *img = aom_codec_get_frame(codec, &iter);
-  aom_img_write(img, outfile);
+  if (!img) die_codec(codec, "Failed to get frame.");
+
+  // read out the tile size.
+  unsigned int tile_size = 0;
+  if (aom_codec_control(codec, AV1D_GET_TILE_SIZE, &tile_size))
+    die_codec(codec, "Failed to get the tile size");
+  const unsigned int tile_width = tile_size >> 16;
+  const unsigned int tile_height = tile_size & 65535;
+  const uint8_t output_frame_width_in_tiles = output_frame_width / tile_width;
+
+  // Copy the tile to the output frame.
+  const int row_offset =
+      (*tile_idx / output_frame_width_in_tiles) * tile_height;
+  const int col_offset = (*tile_idx % output_frame_width_in_tiles) * tile_width;
+
+  aom_img_copy_tile(img, output, row_offset, col_offset);
+  (*tile_idx)++;
 }
 
 int main(int argc, char **argv) {
@@ -83,7 +134,9 @@ int main(int argc, char **argv) {
   const AvxInterface *decoder = NULL;
   const AvxVideoInfo *info = NULL;
   int num_references;
+  aom_img_fmt_t ref_fmt = 0;
   aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
+  aom_image_t output;
   size_t frame_size = 0;
   const unsigned char *frame = NULL;
   int i, j;
@@ -123,7 +176,6 @@ int main(int argc, char **argv) {
       die_codec(&codec, "Failed to decode frame.");
 
     if (i == 0) {
-      aom_img_fmt_t ref_fmt = 0;
       if (aom_codec_control(&codec, AV1D_GET_IMG_FORMAT, &ref_fmt))
         die_codec(&codec, "Failed to get the image format");
 
@@ -187,11 +239,31 @@ int main(int argc, char **argv) {
   }
   printf("Read %d frames.\n", num_frames);
 
+  // Allocate the output frame.
+  aom_img_fmt_t out_fmt = ref_fmt;
+  if (!CONFIG_LOWBITDEPTH) out_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+  if (!aom_img_alloc(&output, out_fmt, output_frame_width, output_frame_height,
+                     32))
+    die("Failed to allocate output image.");
+
   printf("Decoding tile list from file.\n");
   char line[1024];
   FILE *tile_list_fptr = fopen(tile_list_file, "r");
+  int tile_list_cnt = 0;
+  int tile_list_writes = 0;
+  int tile_idx = 0;
   while ((fgets(line, 1024, tile_list_fptr)) != NULL) {
     if (line[0] == 'F') {
+      // Write out the tile list.
+      if (tile_list_cnt) {
+        aom_img_write(&output, outfile);
+        tile_list_writes++;
+      }
+
+      tile_list_cnt++;
+      tile_idx = 0;
+      // Then memset the frame.
+      memset(output.img_data, 0, output.sz);
       continue;
     }
 
@@ -212,9 +284,13 @@ int main(int argc, char **argv) {
     frame = frames[image_idx];
     frame_size = frame_sizes[image_idx];
     decode_tile(&codec, frame, frame_size, tr, tc, ref_idx, reference_images,
-                outfile);
+                &output, &tile_idx);
   }
 
+  // Write out the last tile list.
+  if (tile_list_writes < tile_list_cnt) aom_img_write(&output, outfile);
+
+  aom_img_free(&output);
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);
   for (int f = 0; f < num_frames; ++f) {
     free(frames[f]);

@@ -72,6 +72,7 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->img_data = yv12->buffer_alloc;
   img->img_data_owner = 0;
   img->self_allocd = 0;
+  img->sz = yv12->frame_size;
 }
 
 static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
