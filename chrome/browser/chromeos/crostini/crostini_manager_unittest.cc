@@ -24,6 +24,7 @@ namespace crostini {
 namespace {
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
+constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 }  // namespace
 
 class CrostiniManagerTest : public testing::Test {
@@ -177,7 +178,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
   crostini_manager()->CreateDiskImage(
-      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT, kDiskSizeBytes,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -189,6 +190,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
   crostini_manager()->CreateDiskImage(
       disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
+      kDiskSizeBytes,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -199,6 +201,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
 
   crostini_manager()->CreateDiskImage(
       disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
+      kDiskSizeBytes,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
