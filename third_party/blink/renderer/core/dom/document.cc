@@ -3791,6 +3791,7 @@ void Document::DispatchFreezeEvent() {
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
                       ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
   freeze_histogram.CountMicroseconds(freeze_event_end - freeze_event_start);
+  UseCounter::Count(*this, WebFeature::kPageLifeCycleFreeze);
 }
 
 Document::PageDismissalType Document::PageDismissalEventBeingDispatched()
