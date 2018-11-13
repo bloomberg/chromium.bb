@@ -53,6 +53,9 @@ void RecordContentSuggestionsUsage() {
   base::UmaHistogramExactLinear(histogram_name, bucket, kNumBuckets);
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramArticlesUsageTimeLocal, bucket,
                              kNumBuckets);
+
+  base::RecordAction(
+      base::UserMetricsAction("NewTabPage_ContentSuggestions_ArticlesUsage"));
 }
 
 int ToUMAScore(float score) {
@@ -62,6 +65,14 @@ int ToUMAScore(float score) {
   // close to 1. For instance, the discrete value 1 represents score values
   // within (0.0, 0.1].
   return ceil(score * 10);
+}
+
+void RecordSuggestionPageVisited(bool return_to_ntp) {
+  if (return_to_ntp) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileNTP.Snippets.VisitEndBackInNTP"));
+  }
+  base::RecordAction(base::UserMetricsAction("MobileNTP.Snippets.VisitEnd"));
 }
 
 }  // namespace
@@ -125,6 +136,8 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
       ToUMAScore(score), 11);
 
   RecordContentSuggestionsUsage();
+
+  base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
 }
 
 void FeedLoggingMetrics::OnSuggestionWindowOpened(
@@ -135,6 +148,10 @@ void FeedLoggingMetrics::OnSuggestionWindowOpened(
       "NewTabPage.ContentSuggestions.OpenDisposition.Articles",
       static_cast<int>(disposition),
       static_cast<int>(WindowOpenDisposition::MAX_VALUE) + 1);
+
+  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+    base::RecordAction(base::UserMetricsAction("Suggestions.Card.Tapped"));
+  }
 }
 
 void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
@@ -157,18 +174,23 @@ void FeedLoggingMetrics::OnSuggestionDismissed(int position, const GURL& url) {
   history_url_check_callback_.Run(
       url, base::BindOnce(&FeedLoggingMetrics::CheckURLVisitedDone,
                           weak_ptr_factory_.GetWeakPtr(), position));
+
+  base::RecordAction(base::UserMetricsAction("Suggestions.Content.Dismissed"));
 }
 
-void FeedLoggingMetrics::OnSuggestionArticleVisited(
-    base::TimeDelta visit_time) {
+void FeedLoggingMetrics::OnSuggestionArticleVisited(base::TimeDelta visit_time,
+                                                    bool return_to_ntp) {
   base::UmaHistogramLongTimes(
       "NewTabPage.ContentSuggestions.VisitDuration.Articles", visit_time);
+  RecordSuggestionPageVisited(return_to_ntp);
 }
 
 void FeedLoggingMetrics::OnSuggestionOfflinePageVisited(
-    base::TimeDelta visit_time) {
+    base::TimeDelta visit_time,
+    bool return_to_ntp) {
   base::UmaHistogramLongTimes(
       "NewTabPage.ContentSuggestions.VisitDuration.Downloads", visit_time);
+  RecordSuggestionPageVisited(return_to_ntp);
 }
 
 void FeedLoggingMetrics::OnMoreButtonShown(int position) {
