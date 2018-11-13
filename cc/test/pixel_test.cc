@@ -317,16 +317,13 @@ void PixelTest::SetUpSkiaRendererDDL() {
   renderer_->SetVisible(true);
 
   // Set up the client side context provider, etc
-  auto* gpu_channel_manager = gpu_service_->gpu_channel_manager();
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::InProcessGpuMemoryBufferManager>(
-          gpu_channel_manager);
-  gpu::ImageFactory* image_factory = nullptr;
-  if (gpu_channel_manager->gpu_memory_buffer_factory()) {
-    image_factory =
-        gpu_channel_manager->gpu_memory_buffer_factory()->AsImageFactory();
-  }
-  auto* gpu_channel_manager_delegate = gpu_channel_manager->delegate();
+          gpu_service_->gpu_memory_buffer_factory(),
+          gpu_service_->sync_point_manager());
+  gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
+  auto* gpu_channel_manager_delegate =
+      gpu_service_->gpu_channel_manager()->delegate();
   child_context_provider_ =
       base::MakeRefCounted<viz::VizProcessContextProvider>(
           task_executor_, gpu::kNullSurfaceHandle,

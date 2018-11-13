@@ -24,8 +24,6 @@ class Thread;
 
 namespace gpu {
 class CommandBufferTaskExecutor;
-class GpuChannelManager;
-class ImageFactory;
 }  // namespace gpu
 
 namespace ui_devtools {
@@ -86,9 +84,7 @@ class VizCompositorThreadRunner {
   void CreateFrameSinkManagerOnCompositorThread(
       mojom::FrameSinkManagerParamsPtr params,
       scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
-      GpuServiceImpl* gpu_service,
-      gpu::ImageFactory* image_factory,
-      gpu::GpuChannelManager* gpu_channel_manager);
+      GpuServiceImpl* gpu_service);
 #if defined(USE_VIZ_DEVTOOLS)
   void CreateVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
   void InitVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
