@@ -69,7 +69,6 @@ class InterfaceProvider;
 namespace content {
 
 class BrowserContext;
-class BrowserPluginGuest;
 class BrowserPluginGuestDelegate;
 class InterstitialPage;
 class RenderFrameHost;
@@ -930,10 +929,6 @@ class WebContents : public PageNavigator,
 
   // Sets a flag that causes the WebContents to ignore input events.
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
-
-  // Returns guest browser plugin object, or NULL if this WebContents is not a
-  // guest.
-  virtual BrowserPluginGuest* GetBrowserPluginGuest() const = 0;
 
  private:
   // This interface should only be implemented inside content.
