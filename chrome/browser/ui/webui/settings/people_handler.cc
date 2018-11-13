@@ -50,7 +50,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
@@ -498,8 +497,8 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
     return;
   }
 
-  service->OnUserChoseDatatypes(configuration.sync_everything,
-                                configuration.data_types);
+  service->GetUserSettings()->SetChosenDataTypes(configuration.sync_everything,
+                                                 configuration.data_types);
 
   // Choosing data types to sync never fails.
   ResolveJavascriptCallback(*callback_id, base::Value(kConfigurePageStatus));
@@ -609,7 +608,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   // Don't allow "encrypt all" if the ProfileSyncService doesn't allow it.
   // The UI is hidden, but the user may have enabled it e.g. by fiddling with
   // the web inspector.
-  if (!service->IsEncryptEverythingAllowed())
+  if (!service->GetUserSettings()->IsEncryptEverythingAllowed())
     configuration.encrypt_all = false;
 
   // Note: Data encryption will not occur until configuration is complete
@@ -617,33 +616,35 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   // engine), so the user still has a chance to cancel out of the operation
   // if (for example) some kind of passphrase error is encountered.
   if (configuration.encrypt_all)
-    service->EnableEncryptEverything();
+    service->GetUserSettings()->EnableEncryptEverything();
 
   bool passphrase_failed = false;
   if (!configuration.passphrase.empty()) {
     // We call IsPassphraseRequired() here (instead of
     // IsPassphraseRequiredForDecryption()) because the user may try to enter
     // a passphrase even though no encrypted data types are enabled.
-    if (service->IsPassphraseRequired()) {
+    if (service->GetUserSettings()->IsPassphraseRequired()) {
       // If we have pending keys, try to decrypt them with the provided
       // passphrase. We track if this succeeds or fails because a failed
       // decryption should result in an error even if there aren't any encrypted
       // data types.
-      passphrase_failed =
-          !service->SetDecryptionPassphrase(configuration.passphrase);
+      passphrase_failed = !service->GetUserSettings()->SetDecryptionPassphrase(
+          configuration.passphrase);
     } else {
       // OK, the user sent us a passphrase, but we don't have pending keys. So
       // it either means that the pending keys were resolved somehow since the
       // time the UI was displayed (re-encryption, pending passphrase change,
       // etc) or the user wants to re-encrypt.
       if (configuration.set_new_passphrase &&
-          !service->IsUsingSecondaryPassphrase()) {
-        service->SetEncryptionPassphrase(configuration.passphrase);
+          !service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+        service->GetUserSettings()->SetEncryptionPassphrase(
+            configuration.passphrase);
       }
     }
   }
 
-  if (passphrase_failed || service->IsPassphraseRequiredForDecryption()) {
+  if (passphrase_failed ||
+      service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
     // If the user doesn't enter any passphrase, we won't call
     // SetDecryptionPassphrase() (passphrase_failed == false), but we still
     // want to display an error message to let the user know that their blank
@@ -671,6 +672,9 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
+
+    // TODO(treib): Should we also call SetSyncRequested(true) here? That's what
+    // happens in the non-Unity code path.
 
     GetLoginUIService()->SetLoginUI(this);
 
@@ -709,14 +713,13 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
 
   if (!service->IsEngineInitialized() ||
-      service->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
+      !service->GetUserSettings()->IsSyncRequested()) {
     // Requesting the sync service to start may trigger call to PushSyncPrefs.
     // Setting up the startup tracker beforehand correctly signals the
     // re-entrant call to early exit.
     sync_startup_tracker_ =
         std::make_unique<SyncStartupTracker>(profile_, this);
-    // RequestStart() does two things:
+    // SetSyncRequested(true) does two things:
     // 1) If DISABLE_REASON_USER_CHOICE is set (meaning that Sync was reset via
     //    the dashboard), clears it.
     // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
@@ -727,7 +730,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     // already running in standalone transport mode and so the engine is already
     // initialized. In that case, this will trigger the service to switch to
     // full Sync-the-feature mode.
-    service->RequestStart();
+    service->GetUserSettings()->SetSyncRequested(true);
 
     // See if it's even possible to bring up the sync engine - if not
     // (unrecoverable error?), don't bother displaying a spinner that will be
@@ -863,9 +866,10 @@ void PeopleHandler::CloseSyncSetup() {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
     if ((service->current_login_ui() == this) &&
-        (!sync_service || (!sync_service->IsFirstSetupComplete() &&
-                           sync_service->GetAuthError().state() ==
-                               GoogleServiceAuthError::NONE))) {
+        (!sync_service ||
+         (!sync_service->GetUserSettings()->IsFirstSetupComplete() &&
+          sync_service->GetAuthError().state() ==
+              GoogleServiceAuthError::NONE))) {
       if (configuring_sync_) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_CONFIGURE);
@@ -1000,10 +1004,8 @@ PeopleHandler::GetSyncStatusDictionary() {
 
   sync_status->SetBoolean("managed", disallowed_by_policy);
   sync_status->SetBoolean(
-      "disabled",
-      !service || disallowed_by_policy ||
-          service->HasDisableReason(
-              syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE));
+      "disabled", !service || disallowed_by_policy ||
+                      !service->GetUserSettings()->IsSyncAllowedByPlatform());
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetString("signedInUsername",
                          signin_ui_util::GetAuthenticatedUsername(signin));
@@ -1058,28 +1060,32 @@ void PeopleHandler::PushSyncPrefs() {
     // TODO(treib): How do we want to handle pref groups, i.e. when only some of
     // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
-  PrefService* pref_service = profile_->GetPrefs();
-  syncer::SyncPrefs sync_prefs(pref_service);
-  args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
-  args.SetBoolean("paymentsIntegrationEnabled",
-                  autofill::prefs::IsPaymentsIntegrationEnabled(pref_service));
-  args.SetBoolean("encryptAllData", service->IsEncryptEverythingEnabled());
+  args.SetBoolean("syncAllDataTypes",
+                  service->GetUserSettings()->IsSyncEverythingEnabled());
+  args.SetBoolean(
+      "paymentsIntegrationEnabled",
+      autofill::prefs::IsPaymentsIntegrationEnabled(profile_->GetPrefs()));
+  args.SetBoolean("encryptAllData",
+                  service->GetUserSettings()->IsEncryptEverythingEnabled());
   args.SetBoolean("encryptAllDataAllowed",
-                  service->IsEncryptEverythingAllowed());
+                  service->GetUserSettings()->IsEncryptEverythingAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
   // UI even if no encrypted data types are enabled.
-  args.SetBoolean("passphraseRequired", service->IsPassphraseRequired());
+  args.SetBoolean("passphraseRequired",
+                  service->GetUserSettings()->IsPassphraseRequired());
 
   // To distinguish between PassphraseType::FROZEN_IMPLICIT_PASSPHRASE and
   // PassphraseType::CUSTOM_PASSPHRASE
   // we only set passphraseTypeIsCustom for PassphraseType::CUSTOM_PASSPHRASE.
   args.SetBoolean("passphraseTypeIsCustom",
-                  service->GetPassphraseType() ==
+                  service->GetUserSettings()->GetPassphraseType() ==
                       syncer::PassphraseType::CUSTOM_PASSPHRASE);
-  base::Time passphrase_time = service->GetExplicitPassphraseTime();
-  syncer::PassphraseType passphrase_type = service->GetPassphraseType();
+  base::Time passphrase_time =
+      service->GetUserSettings()->GetExplicitPassphraseTime();
+  syncer::PassphraseType passphrase_type =
+      service->GetUserSettings()->GetPassphraseType();
   if (!passphrase_time.is_null()) {
     base::string16 passphrase_time_str =
         base::TimeFormatShortDate(passphrase_time);
@@ -1131,7 +1137,7 @@ void PeopleHandler::MarkFirstSetupComplete() {
 
   ProfileSyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
-  if (!service || service->IsFirstSetupComplete())
+  if (!service || service->GetUserSettings()->IsFirstSetupComplete())
     return;
 
   // This is the first time configuring sync, so log it.
@@ -1141,7 +1147,7 @@ void PeopleHandler::MarkFirstSetupComplete() {
   // We're done configuring, so notify ProfileSyncService that it is OK to
   // start syncing.
   sync_blocker_.reset();
-  service->SetFirstSetupComplete();
+  service->GetUserSettings()->SetFirstSetupComplete();
   FireWebUIListener("sync-settings-saved");
 }
 
