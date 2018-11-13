@@ -8,13 +8,13 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonData;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
- * All of the state for the bottom toolbar, updated by the {@link BottomToolbarCoordinator}.
+ * All of the state for the bottom toolbar, updated by the {@link
+ * BrowsingModeBottomToolbarCoordinator}.
  */
-public class BottomToolbarModel extends PropertyModel {
+public class BrowsingModeBottomToolbarModel extends PropertyModel {
     /** The Y offset of the view in px. */
     public static final WritableIntPropertyKey Y_OFFSET = new WritableIntPropertyKey();
 
@@ -42,21 +42,16 @@ public class BottomToolbarModel extends PropertyModel {
     public static final WritableObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
             new WritableObjectPropertyKey<>();
 
-    /** Data used to show the first button. */
-    public static final WritableObjectPropertyKey<ToolbarButtonData> FIRST_BUTTON_DATA =
-            new WritableObjectPropertyKey<>();
-
-    /** Data used to show the second button. */
-    public static final WritableObjectPropertyKey<ToolbarButtonData> SECOND_BUTTON_DATA =
-            new WritableObjectPropertyKey<>();
-
     /** Primary color of bottom toolbar. */
     public static final WritableIntPropertyKey PRIMARY_COLOR = new WritableIntPropertyKey();
 
+    /** Whether the browsing mode bottom toolbar is visible */
+    public static final WritableBooleanPropertyKey IS_VISIBLE = new WritableBooleanPropertyKey();
+
     /** Default constructor. */
-    public BottomToolbarModel() {
+    public BrowsingModeBottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE, LAYOUT_MANAGER,
-                TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER, FIRST_BUTTON_DATA,
-                SECOND_BUTTON_DATA, PRIMARY_COLOR);
+                TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER, IS_VISIBLE,
+                PRIMARY_COLOR);
     }
 }

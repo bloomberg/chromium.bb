@@ -220,7 +220,6 @@
     <!-- Full Screen Dimensions -->
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
-    <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="fullscreen_activity_control_container_height">0dp</dimen>
 
@@ -266,6 +265,15 @@
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
     <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
+
+    <!-- Bottom toolbar dimensions -->
+    <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
+    <dimen name="bottom_toolbar_height_with_shadow">56dp</dimen>
+    <dimen name="bottom_toolbar_start_padding">12dp</dimen>
+    <dimen name="bottom_toolbar_end_padding">8dp</dimen>
+    <dimen name="search_accelerator_width">64dp</dimen>
+    <dimen name="search_accelerator_height">36dp</dimen>
+    <dimen name="search_accelerator_height_padding">6dp</dimen>
 
     <!-- Modern toolbar dimensions -->
     <dimen name="modern_toolbar_background_size">40dp</dimen>

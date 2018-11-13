@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -45,8 +46,8 @@ import java.util.Collection;
  * The Toolbar object for Tablet screens.
  */
 @SuppressLint("Instantiatable")
-public class ToolbarTablet
-        extends ToolbarLayout implements OnClickListener, View.OnLongClickListener {
+public class ToolbarTablet extends ToolbarLayout
+        implements OnClickListener, View.OnLongClickListener, TabCountObserver {
     // The number of toolbar buttons that can be hidden at small widths (reload, back, forward).
     public static final int HIDEABLE_BUTTON_COUNT = 3;
 
@@ -530,13 +531,18 @@ public class ToolbarTablet
     }
 
     @Override
-    protected void updateTabCountVisuals(int numberOfTabs) {
+    public void onTabCountChanged(int numberOfTabs, boolean isIncognito) {
         mAccessibilitySwitcherButton.setContentDescription(
                 getResources().getQuantityString(
                         R.plurals.accessibility_toolbar_btn_tabswitcher_toggle,
                         numberOfTabs, numberOfTabs));
-        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
-        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
+        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
+        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito);
+    }
+
+    @Override
+    protected void setTabCountProvider(TabCountProvider tabCountProvider) {
+        tabCountProvider.addObserver(this);
     }
 
     @Override

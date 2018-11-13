@@ -18,18 +18,20 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Button for creating new tabs.
  */
-public class NewTabButton extends Button implements Drawable.Callback {
-
+public class NewTabButton extends Button implements Drawable.Callback, IncognitoStateObserver {
     private final ColorStateList mLightModeTint;
     private final ColorStateList mDarkModeTint;
     private VectorDrawableCompat mModernDrawable;
     private boolean mIsIncognito;
     private boolean mIsNativeReady;
+    private IncognitoStateProvider mIncognitoStateProvider;
 
     /**
      * Constructor for inflating from XML.
@@ -135,5 +137,25 @@ public class NewTabButton extends Button implements Drawable.Callback {
                                                  ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
                            && mIsIncognito);
         mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
+    }
+
+    public void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
+        mIncognitoStateProvider = incognitoStateProvider;
+        mIncognitoStateProvider.addObserver(this);
+    }
+
+    @Override
+    public void onIncognitoStateChanged(boolean isIncognito) {
+        setIsIncognito(isIncognito);
+    }
+
+    /**
+     * Clean up any state when the new tab button is destroyed.
+     */
+    public void destroy() {
+        if (mIncognitoStateProvider != null) {
+            mIncognitoStateProvider.removeObserver(this);
+            mIncognitoStateProvider = null;
+        }
     }
 }

@@ -614,11 +614,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void onTabSwitcherTransitionFinished() { }
 
     /**
-     * Gives inheriting classes the chance to update themselves based on the
-     * number of tabs in the current TabModel.
-     * @param numberOfTabs The number of tabs in the current model.
+     * Gives inheriting classes the chance to observe tab count changes.
+     * @param tabCountProvider The {@link TabCountProvider} subclasses can observe.
      */
-    protected void updateTabCountVisuals(int numberOfTabs) { }
+    protected void setTabCountProvider(TabCountProvider tabCountProvider) {}
 
     /**
      * Gives inheriting classes the chance to update themselves based on default search engine

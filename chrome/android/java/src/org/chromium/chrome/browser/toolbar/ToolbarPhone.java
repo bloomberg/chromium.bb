@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -96,10 +97,9 @@ import java.util.Set;
 /**
  * Phone specific toolbar implementation.
  */
-public class ToolbarPhone extends ToolbarLayout
-        implements Invalidator.Client, OnClickListener, OnLongClickListener,
-                NewTabPage.OnSearchBoxScrollListener {
-
+public class ToolbarPhone
+        extends ToolbarLayout implements Invalidator.Client, OnClickListener, OnLongClickListener,
+                                         NewTabPage.OnSearchBoxScrollListener, TabCountObserver {
     /** The amount of time transitioning from one theme color to another should take in ms. */
     public static final long THEME_COLOR_TRANSITION_DURATION = 250;
 
@@ -141,6 +141,7 @@ public class ToolbarPhone extends ToolbarLayout
             new FastOutSlowInInterpolator();
 
     private TabModelSelector mTabModelSelector;
+    private TabCountProvider mTabCountProvider;
 
     protected LocationBarPhone mLocationBar;
 
@@ -1841,8 +1842,10 @@ public class ToolbarPhone extends ToolbarLayout
             mIncognitoToggleTabLayout =
                     (IncognitoToggleTabLayout) incognitoToggleTabsStub.inflate();
             mIncognitoToggleTabLayout.setTabModelSelector(mTabModelSelector);
+            mIncognitoToggleTabLayout.setTabCountProvider(mTabCountProvider);
+            mIncognitoToggleTabLayout.onTabCountChanged(
+                    mTabModelSelector.getModel(false).getCount(), false);
             mTabSwitcherModeViews.add(mIncognitoToggleTabLayout);
-            mIncognitoToggleTabLayout.updateTabCount(mTabModelSelector.getModel(false).getCount());
 
             mBrowsingModeViews.add(mToggleTabStackButton);
         }
@@ -2249,7 +2252,13 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onUrlFocusChangeAnimationFinished() {}
 
     @Override
-    protected void updateTabCountVisuals(int numberOfTabs) {
+    protected void setTabCountProvider(TabCountProvider tabCountProvider) {
+        mTabCountProvider = tabCountProvider;
+        mTabCountProvider.addObserver(this);
+    }
+
+    @Override
+    public void onTabCountChanged(int numberOfTabs, boolean isIncognito) {
         if (mHomeButton != null) mHomeButton.setEnabled(true);
 
         if (mToggleTabStackButton == null) return;
@@ -2259,15 +2268,11 @@ public class ToolbarPhone extends ToolbarLayout
                 getResources().getQuantityString(
                         R.plurals.accessibility_toolbar_btn_tabswitcher_toggle,
                         numberOfTabs, numberOfTabs));
-        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
-        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
+        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito);
+        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
 
-        if (!isIncognito() && mIncognitoToggleTabLayout != null) {
-            mIncognitoToggleTabLayout.updateTabCount(numberOfTabs);
-        }
-
-        boolean useTabStackDrawableLight = isIncognito()
-                || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
+        boolean useTabStackDrawableLight =
+                isIncognito || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
         if (mTabSwitcherAnimationTabStackDrawable == null
                 || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
             mTabSwitcherAnimationTabStackDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(
@@ -2280,8 +2285,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         if (mTabSwitcherAnimationTabStackDrawable != null) {
-            mTabSwitcherAnimationTabStackDrawable.updateForTabCount(
-                    numberOfTabs, isIncognito());
+            mTabSwitcherAnimationTabStackDrawable.updateForTabCount(numberOfTabs, isIncognito);
         }
     }
 

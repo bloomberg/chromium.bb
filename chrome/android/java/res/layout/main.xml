@@ -81,7 +81,7 @@
             android:visibility="gone" />
 
         <ViewStub
-            android:id="@+id/bottom_toolbar"
+            android:id="@+id/bottom_toolbar_stub"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start|bottom"

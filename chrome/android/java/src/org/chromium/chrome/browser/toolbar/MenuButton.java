@@ -16,17 +16,22 @@ import android.widget.ImageView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
  * The overflow menu button.
  */
-class MenuButton extends FrameLayout {
+class MenuButton extends FrameLayout implements ThemeColorObserver {
     /** The {@link android.support.v7.widget.AppCompatImageButton} for the menu button. */
     private AppCompatImageButton mMenuImageButton;
 
     /** The view for the update badge. */
     private ImageView mUpdateBadgeView;
     private boolean mUseLightDrawables;
+
+    /** A provider that notifies components when the theme color changes.*/
+    private ThemeColorProvider mThemeColorProvider;
 
     public MenuButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -144,11 +149,21 @@ class MenuButton extends FrameLayout {
         return mMenuImageButton;
     }
 
-    /**
-     * @param tintList The {@link ColorStateList} that will tint the menu button (the badge is not
-     *                 tinted).
-     */
-    void setTint(ColorStateList tintList) {
+    void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
+        mThemeColorProvider = themeColorProvider;
+        mThemeColorProvider.addObserver(this);
+    }
+
+    @Override
+    public void onThemeColorChanged(ColorStateList tintList, int primaryColor) {
         ApiCompatibilityUtils.setImageTintList(mMenuImageButton, tintList);
+        setUseLightDrawables(ColorUtils.shouldUseLightForegroundOnBackground(primaryColor));
+    }
+
+    void destroy() {
+        if (mThemeColorProvider != null) {
+            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider = null;
+        }
     }
 }

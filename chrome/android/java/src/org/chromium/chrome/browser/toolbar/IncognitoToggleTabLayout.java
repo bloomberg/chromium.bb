@@ -17,11 +17,13 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 
 /**
  * TabLayout shown in the Horizontal Tab Switcher.
  */
-public class IncognitoToggleTabLayout extends TabLayout {
+public class IncognitoToggleTabLayout extends TabLayout implements TabCountObserver {
     private TabLayout.Tab mStandardButton;
     private TabLayout.Tab mIncognitoButton;
     private AppCompatImageView mStandardButtonIcon;
@@ -34,6 +36,8 @@ public class IncognitoToggleTabLayout extends TabLayout {
     private ColorStateList mTabIconSelectedLightColor;
 
     private TabModelSelector mTabModelSelector;
+    private TabCountProvider mTabCountProvider;
+    private TabModelSelectorObserver mTabModelSelectorObserver;
 
     /**
      * Constructor for inflating from XML.
@@ -87,21 +91,33 @@ public class IncognitoToggleTabLayout extends TabLayout {
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
         if (mTabModelSelector == null) return;
-        mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 setStateBasedOnModel();
             }
-        });
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
         setStateBasedOnModel();
+    }
+
+    public void setTabCountProvider(TabCountProvider tabCountProvider) {
+        mTabCountProvider = tabCountProvider;
+        mTabCountProvider.addObserver(this);
     }
 
     /**
      * Update the visual state based on number of normal (non-incognito) tabs present.
      * @param tabCount The number of normal tabs.
      */
-    public void updateTabCount(int tabCount) {
-        mTabSwitcherDrawable.updateForTabCount(tabCount, false);
+    @Override
+    public void onTabCountChanged(int tabCount, boolean isIncognito) {
+        if (!isIncognito) mTabSwitcherDrawable.updateForTabCount(tabCount, isIncognito);
+    }
+
+    public void destroy() {
+        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        if (mTabCountProvider != null) mTabCountProvider.removeObserver(this);
     }
 
     private void setStateBasedOnModel() {
