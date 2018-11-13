@@ -16,7 +16,6 @@
 #include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
-#include "media/formats/mp4/box_definitions.h"
 #include "media/media_buildflags.h"
 
 namespace media {
@@ -480,27 +479,12 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   // actually handle capabilities requests correctly. http://crbug.com/784610
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   switch (codec) {
-    case kCodecH264: {
-      profile = ProfileIDToVideoCodecProfile(codec_context->profile);
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-      // if the profile is still unknown, try to extract it from
-      // the extradata using the internal parser
-      if (profile == VIDEO_CODEC_PROFILE_UNKNOWN && codec_context->extradata &&
-          codec_context->extradata_size) {
-        mp4::AVCDecoderConfigurationRecord avc_config;
-        if (avc_config.Parse(codec_context->extradata,
-                             codec_context->extradata_size)) {
-          profile = ProfileIDToVideoCodecProfile(avc_config.profile_indication);
-        }
-      }
-#endif
-      // All the heuristics failed, let's assign a default profile
-      if (profile == VIDEO_CODEC_PROFILE_UNKNOWN)
-        profile = H264PROFILE_BASELINE;
-
+#if !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+    case kCodecH264:
       format = PIXEL_FORMAT_I420;
+      profile = H264PROFILE_BASELINE;
       break;
-    }
+#endif
     case kCodecVP8:
 #if !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
       format = PIXEL_FORMAT_I420;
