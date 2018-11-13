@@ -177,7 +177,7 @@ bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
   // Because we cache the filter contents and do not invalidate on paint
   // invalidation rect changes, we need to paint the entire filter region
   // so elements outside the initial paint (due to scrolling, etc) paint.
-  filter_paint_info_->cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
+  filter_paint_info_->ApplyInfiniteCullRect();
   return true;
 }
 

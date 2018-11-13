@@ -24,7 +24,7 @@ bool SVGModelObjectPainter::CullRectSkipsPainting(const PaintInfo& paint_info) {
   if (layout_svg_model_object_.IsSVGHiddenContainer())
     return false;
 
-  return !paint_info.GetCullRect().IntersectsCullRect(
+  return !paint_info.GetCullRect().IntersectsTransformed(
       layout_svg_model_object_.LocalToSVGParentTransform(),
       layout_svg_model_object_.VisualRectInLocalSVGCoordinates());
 }

@@ -32,9 +32,7 @@ void ScopedPaintState::AdjustForPaintOffsetTranslation(
   }
 
   adjusted_paint_info_.emplace(input_paint_info_);
-  DCHECK(paint_offset_translation->Matrix().IsAffine());
-  adjusted_paint_info_->UpdateCullRect(
-      paint_offset_translation->Matrix().ToAffineTransform());
+  adjusted_paint_info_->TransformCullRect(paint_offset_translation);
 }
 
 void ScopedPaintState::FinishPaintOffsetTranslationAsDrawing() {
@@ -72,15 +70,7 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   paint_offset_ += box.ScrollOrigin();
 
   adjusted_paint_info_.emplace(input_paint_info_);
-  DCHECK(scroll_translation->Matrix().IsAffine());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    adjusted_paint_info_->UpdateCullRectForScrollingContents(
-        EnclosingIntRect(box.OverflowClipRect(paint_offset_)),
-        scroll_translation->Matrix().ToAffineTransform());
-  } else {
-    adjusted_paint_info_->UpdateCullRect(
-        scroll_translation->Matrix().ToAffineTransform());
-  }
+  adjusted_paint_info_->TransformCullRect(scroll_translation);
 }
 
 }  // namespace blink

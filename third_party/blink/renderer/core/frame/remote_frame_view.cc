@@ -258,7 +258,7 @@ void RemoteFrameView::Paint(GraphicsContext& context,
   if (!context.Printing())
     return;
 
-  if (!rect.IntersectsCullRect(FrameRect()))
+  if (!rect.Intersects(FrameRect()))
     return;
 
   DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
