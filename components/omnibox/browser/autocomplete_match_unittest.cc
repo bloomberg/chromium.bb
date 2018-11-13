@@ -374,6 +374,9 @@ TEST(AutocompleteMatchTest, Duplicates) {
                           "https://xn--1lq90ic7f1rc.cn/", false },
     { L"http://\x89c6 x", "http://xn--1lq90ic7f1rc.cn/",
                           "https://xn--1lq90ic7f1rc.cn/", true  },
+
+    // URLs with hosts containing only `www.` should produce valid stripped urls
+    { L"http://www./", "http://www./", "http://google.com/", false },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -392,5 +395,7 @@ TEST(AutocompleteMatchTest, Duplicates) {
     m2.ComputeStrippedDestinationURL(input, nullptr);
     EXPECT_EQ(cases[i].expected_duplicate,
               m1.stripped_destination_url == m2.stripped_destination_url);
+    EXPECT_TRUE(m1.stripped_destination_url.is_valid());
+    EXPECT_TRUE(m2.stripped_destination_url.is_valid());
   }
 }
