@@ -20,9 +20,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
@@ -36,11 +34,11 @@
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 
@@ -235,12 +233,9 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
   if (browser_state->GetStatePath().DirName() != cache->GetUserDataDir())
     return;
 
-  SigninManagerBase* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state);
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state);
-  AccountInfo account_info = account_tracker->GetAccountInfo(
-      signin_manager->GetAuthenticatedAccountId());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser_state);
+  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   size_t browser_state_index =
