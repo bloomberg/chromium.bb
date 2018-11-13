@@ -94,7 +94,7 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnClick) {
   base::HistogramTester histogram_tester;
 
   auto metrics =
-      CreateMetricsPtr("http://example.com", "https://google.com", 0.1);
+      CreateMetricsPtr("https://example.com", "https://google.com", 0.1);
   predictor_service()->ReportAnchorElementMetricsOnClick(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
@@ -107,7 +107,7 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnLoad) {
   base::HistogramTester histogram_tester;
 
   auto metrics =
-      CreateMetricsPtr("https://example.com", "http://google.com", 0.1);
+      CreateMetricsPtr("https://example.com", "https://google.com", 0.1);
   std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
   metrics_vector.push_back(std::move(metrics));
   predictor_service()->ReportAnchorElementMetricsOnLoad(
@@ -120,7 +120,8 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnLoad) {
 
 // Test that if source/target url is not http or https, no score will be
 // calculated.
-TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnClick) {
+TEST_F(NavigationPredictorTest,
+       BadUrlReportAnchorElementMetricsOnClick_ftp_src) {
   base::HistogramTester histogram_tester;
 
   auto metrics =
@@ -134,11 +135,48 @@ TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnClick) {
 
 // Test that if source/target url is not http or https, no navigation score will
 // be calculated.
-TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnLoad) {
+TEST_F(NavigationPredictorTest,
+       BadUrlReportAnchorElementMetricsOnLoad_ftp_target) {
   base::HistogramTester histogram_tester;
 
   auto metrics =
       CreateMetricsPtr("https://example.com", "ftp://google.com", 0.1);
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
+  metrics_vector.push_back(std::move(metrics));
+  predictor_service()->ReportAnchorElementMetricsOnLoad(
+      std::move(metrics_vector));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+}
+
+// Test that if the target url is not https, no navigation score will
+// be calculated.
+TEST_F(NavigationPredictorTest,
+       BadUrlReportAnchorElementMetricsOnLoad_http_target) {
+  base::HistogramTester histogram_tester;
+
+  auto metrics =
+      CreateMetricsPtr("https://example.com", "http://google.com", 0.1);
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
+  metrics_vector.push_back(std::move(metrics));
+  predictor_service()->ReportAnchorElementMetricsOnLoad(
+      std::move(metrics_vector));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+}
+
+// Test that if the source url is not https, no navigation score will
+// be calculated.
+TEST_F(NavigationPredictorTest,
+       BadUrlReportAnchorElementMetricsOnLoad_http_src) {
+  base::HistogramTester histogram_tester;
+
+  auto metrics =
+      CreateMetricsPtr("http://example.com", "https://google.com", 0.1);
   std::vector<blink::mojom::AnchorElementMetricsPtr> metrics_vector;
   metrics_vector.push_back(std::move(metrics));
   predictor_service()->ReportAnchorElementMetricsOnLoad(
@@ -155,32 +193,36 @@ TEST_F(NavigationPredictorTest, BadUrlReportAnchorElementMetricsOnLoad) {
 TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   base::HistogramTester histogram_tester;
 
-  const std::string source = "http://example.com";
-  const std::string href_xlarge = "http://example.com/xlarge";
-  const std::string href_large = "http://google.com/large";
-  const std::string href_medium = "http://google.com/medium";
-  const std::string href_small = "http://google.com/small";
-  const std::string href_xsmall = "http://google.com/xsmall";
+  const std::string source = "https://example.com";
+  const std::string href_xlarge = "https://example.com/xlarge";
+  const std::string href_large = "https://google.com/large";
+  const std::string href_medium = "https://google.com/medium";
+  const std::string href_small = "https://google.com/small";
+  const std::string href_xsmall = "https://google.com/xsmall";
+  const std::string http_href_xsmall = "http://google.com/xsmall";
 
   std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
   metrics.push_back(CreateMetricsPtr(source, href_xsmall, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, http_href_xsmall, 0.01));
   metrics.push_back(CreateMetricsPtr(source, href_large, 0.08));
   metrics.push_back(CreateMetricsPtr(source, href_xlarge, 0.1));
   metrics.push_back(CreateMetricsPtr(source, href_small, 0.02));
   metrics.push_back(CreateMetricsPtr(source, href_medium, 0.05));
 
-  int number_of_mertics_sent = metrics.size();
+  int number_of_metrics_sent = metrics.size();
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
   const std::map<GURL, int>& area_rank_map =
       predictor_service_helper()->GetAreaRankMap();
-  EXPECT_EQ(number_of_mertics_sent, static_cast<int>(area_rank_map.size()));
+  // Exclude the http anchor element from |number_of_metrics_sent|.
+  EXPECT_EQ(number_of_metrics_sent - 1, static_cast<int>(area_rank_map.size()));
   EXPECT_EQ(0, area_rank_map.find(GURL(href_xlarge))->second);
   EXPECT_EQ(1, area_rank_map.find(GURL(href_large))->second);
   EXPECT_EQ(2, area_rank_map.find(GURL(href_medium))->second);
   EXPECT_EQ(3, area_rank_map.find(GURL(href_small))->second);
   EXPECT_EQ(4, area_rank_map.find(GURL(href_xsmall))->second);
+  EXPECT_EQ(area_rank_map.end(), area_rank_map.find(GURL(http_href_xsmall)));
 
   // The highest score is 100 (scale factor) * 0.1 (largest area) = 10.
   // After scaling the navigation score across all anchor elements, the score

@@ -165,6 +165,10 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
       GetTemplateURLService() &&
       GetTemplateURLService()->IsSearchResultsPageFromDefaultSearchProvider(
           metrics->source_url);
+  if (!metrics->source_url.SchemeIsCryptographic() ||
+      !metrics->target_url.SchemeIsCryptographic()) {
+    return;
+  }
 
   RecordTimingOnClick();
 
@@ -273,6 +277,9 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
     if (metric->target_url == metric->source_url)
       continue;
 
+    if (!metric->target_url.SchemeIsCryptographic())
+      continue;
+
     // Currently, all predictions are made based on elements that are within the
     // main frame since it is unclear if we can pre* the target of the elements
     // within iframes.
@@ -361,6 +368,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
       return;
     }
   }
+
+  if (!metrics[0]->source_url.SchemeIsCryptographic())
+    return;
 
   document_loaded_timing_ = base::TimeTicks::Now();
 
