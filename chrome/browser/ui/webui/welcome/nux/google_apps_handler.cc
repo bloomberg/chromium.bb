@@ -45,10 +45,10 @@ const BookmarkItem kGoogleApps[] = {
      "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
     {static_cast<int>(GoogleApps::kMaps), "Maps", "maps",
      "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X},
-    {static_cast<int>(GoogleApps::kTranslate), "Translate", "translate",
-     "https://translate.google.com", IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
     {static_cast<int>(GoogleApps::kNews), "News", "news",
      "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X},
+    {static_cast<int>(GoogleApps::kTranslate), "Translate", "translate",
+     "https://translate.google.com", IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
     {static_cast<int>(GoogleApps::kChromeWebStore), "Web Store", "web-store",
      "https://chrome.google.com/webstore", IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
 };
