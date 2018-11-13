@@ -35,6 +35,7 @@
 
 using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::OmniboxContainingText;
 using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
@@ -338,11 +339,15 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
   [ChromeEarlGrey waitForWebViewContainingText:"Link"];
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // Due to the link click, URL of the first page now has an extra '#'. This
-    // is consistent with all other browsers.
-    const GURL newURL = web::test::HttpServer::MakeUrl("http://origin#");
-    [[EarlGrey selectElementWithMatcher:OmniboxText(newURL.GetContent())]
-        assertWithMatcher:grey_notNil()];
+    // Using partial match for Omnibox text because the displayed URL is now
+    // "http://origin/#" due to the link click. This is consistent with all
+    // other browsers.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        assertWithMatcher:chrome_test_util::OmniboxContainingText(
+                              URL.GetContent())];
+    GREYAssertEqual(web::test::HttpServer::MakeUrl("http://origin/#"),
+                    chrome_test_util::GetCurrentWebState()->GetVisibleURL(),
+                    @"Unexpected URL after going back");
   } else {
     [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
         assertWithMatcher:grey_notNil()];
