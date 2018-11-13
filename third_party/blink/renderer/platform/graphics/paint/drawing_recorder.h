@@ -27,8 +27,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   static bool UseCachedDrawingIfPossible(GraphicsContext& context,
                                          const DisplayItemClient& client,
                                          DisplayItem::Type type) {
-    return context.GetPaintController().UseCachedDrawingIfPossible(client,
-                                                                   type);
+    return context.GetPaintController().UseCachedItemIfPossible(client, type);
   }
 
   static bool UseCachedDrawingIfPossible(GraphicsContext& context,

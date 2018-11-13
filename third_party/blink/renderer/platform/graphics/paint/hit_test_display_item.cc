@@ -18,8 +18,7 @@ void HitTestDisplayItem::Record(GraphicsContext& context,
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
 
-  if (paint_controller.UseCachedDrawingIfPossible(client,
-                                                  DisplayItem::kHitTest))
+  if (paint_controller.UseCachedItemIfPossible(client, DisplayItem::kHitTest))
     return;
 
   paint_controller.CreateAndAppend<HitTestDisplayItem>(client, hit_test_rect);

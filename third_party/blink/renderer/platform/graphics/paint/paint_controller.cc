@@ -29,11 +29,8 @@ PaintController::~PaintController() {
   DCHECK(new_display_item_list_.IsEmpty());
 }
 
-bool PaintController::UseCachedDrawingIfPossible(
-    const DisplayItemClient& client,
-    DisplayItem::Type type) {
-  DCHECK(DisplayItem::IsDrawingType(type));
-
+bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
+                                              DisplayItem::Type type) {
   if (usage_ == kTransient)
     return false;
 

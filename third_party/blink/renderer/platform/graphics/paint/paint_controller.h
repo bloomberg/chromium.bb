@@ -129,10 +129,10 @@ class PLATFORM_EXPORT PaintController {
     ProcessNewItem(display_item);
   }
 
-  // Tries to find the cached drawing display item corresponding to the given
+  // Tries to find the cached display item corresponding to the given
   // parameters. If found, appends the cached display item to the new display
   // list and returns true. Otherwise returns false.
-  bool UseCachedDrawingIfPossible(const DisplayItemClient&, DisplayItem::Type);
+  bool UseCachedItemIfPossible(const DisplayItemClient&, DisplayItem::Type);
 
   // Tries to find the cached subsequence corresponding to the given parameters.
   // If found, copies the cache subsequence to the new display list and returns
@@ -255,7 +255,7 @@ class PLATFORM_EXPORT PaintController {
   // However, the current algorithm allows the following situations even if
   // ClientCacheIsValid() is true for a client during painting:
   // 1. The client paints a new display item that is not cached:
-  //    UseCachedDrawingIfPossible() returns false for the display item and the
+  //    UseCachedItemIfPossible() returns false for the display item and the
   //    newly painted display item will be added into the cache. This situation
   //    has slight performance hit (see FindOutOfOrderCachedItemForward()) so we
   //    print a warning in the situation and should keep it rare.
@@ -367,7 +367,7 @@ class PLATFORM_EXPORT PaintController {
 
   // Stores indices to valid cacheable display items in
   // current_paint_artifact_.GetDisplayItemList() that have not been matched by
-  // requests of cached display items (using UseCachedDrawingIfPossible() and
+  // requests of cached display items (using UseCachedItemIfPossible() and
   // UseCachedSubsequenceIfPossible()) during sequential matching. The indexed
   // items will be matched by later out-of-order requests of cached display
   // items. This ensures that when out-of-order cached display items are
@@ -394,7 +394,7 @@ class PLATFORM_EXPORT PaintController {
   IndicesByClientMap new_paint_chunk_indices_by_client_;
 #endif
 
-  // These are set in UseCachedDrawingIfPossible() and
+  // These are set in UseCachedItemIfPossible() and
   // UseCachedSubsequenceIfPossible() when we could use cached drawing or
   // subsequence and under-invalidation checking is on, indicating the begin and
   // end of the cached drawing or subsequence in the current list. The functions

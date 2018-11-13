@@ -325,12 +325,10 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 
   if (paint_info.phase == PaintPhase::kMask) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, box_fragment_,
-            DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+            paint_info.context, box_fragment_, paint_info.phase))
       return;
-    DrawingRecorder recorder(
-        paint_info.context, box_fragment_,
-        DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+    DrawingRecorder recorder(paint_info.context, box_fragment_,
+                             paint_info.phase);
     PaintMask(paint_info, paint_offset);
     return;
   }
@@ -803,11 +801,9 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
   base::Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, text_fragment,
-            DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+            paint_info.context, text_fragment, paint_info.phase))
       return;
-    recorder.emplace(paint_info.context, text_fragment,
-                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+    recorder.emplace(paint_info.context, text_fragment, paint_info.phase);
   }
 
   const NGPhysicalTextFragment& physical_text_fragment =
