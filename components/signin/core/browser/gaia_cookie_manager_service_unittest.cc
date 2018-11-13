@@ -94,7 +94,6 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
       OAuth2TokenService* token_service,
       SigninClient* signin_client)
       : GaiaCookieManagerService(token_service,
-                                 GaiaConstants::kChromeSource,
                                  signin_client) {
     total++;
   }

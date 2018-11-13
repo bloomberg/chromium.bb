@@ -28,7 +28,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +81,6 @@ class SigninManagerTest : public testing::Test {
       : test_signin_client_(&user_prefs_),
         token_service_(&user_prefs_),
         cookie_manager_service_(&token_service_,
-                                GaiaConstants::kChromeSource,
                                 &test_signin_client_),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());

@@ -126,11 +126,10 @@ GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
     : request_type_(request_type), account_ids_(account_ids), source_(source) {}
 
 GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& other) {
-  request_type_ = other.request_type();
-  account_ids_ = other.account_ids();
-  source_ = other.source();
-}
+    const GaiaCookieManagerService::GaiaCookieRequest& other)
+    : request_type_(other.request_type()),
+      account_ids_(other.account_ids()),
+      source_(other.source()) {}
 
 GaiaCookieManagerService::GaiaCookieRequest::~GaiaCookieRequest() {
 }
@@ -202,8 +201,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   CleanupTransientState();
   results_.clear();
   helper_->gaia_auth_fetcher_ = helper_->signin_client_->CreateGaiaAuthFetcher(
-      this, helper_->GetDefaultSourceForRequest(),
-      helper_->GetURLLoaderFactory());
+      this, GaiaConstants::kChromeSource, helper_->GetURLLoaderFactory());
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
@@ -397,7 +395,6 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 
 GaiaCookieManagerService::GaiaCookieManagerService(
     OAuth2TokenService* token_service,
-    const std::string& source,
     SigninClient* signin_client)
     : OAuth2TokenService::Consumer("gaia_cookie_manager"),
       token_service_(token_service),
@@ -406,11 +403,9 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
       cookie_listener_binding_(this),
-      source_(source),
       external_cc_result_fetched_(false),
       list_accounts_stale_(true),
       weak_ptr_factory_(this) {
-  DCHECK(!source_.empty());
 }
 
 GaiaCookieManagerService::~GaiaCookieManagerService() {
@@ -637,12 +632,8 @@ GaiaCookieManagerService::GetURLLoaderFactory() {
 
 std::string GaiaCookieManagerService::GetSourceForRequest(
     const GaiaCookieManagerService::GaiaCookieRequest& request) {
-  return request.source().empty() ? GetDefaultSourceForRequest()
+  return request.source().empty() ? GaiaConstants::kChromeSource
                                   : request.source();
-}
-
-std::string GaiaCookieManagerService::GetDefaultSourceForRequest() {
-  return source_;
 }
 
 void GaiaCookieManagerService::OnCookieChange(
@@ -666,7 +657,7 @@ void GaiaCookieManagerService::OnCookieChange(
   // cause an endless loop (see crbug.com/516070).
   if (requests_.empty()) {
     // Build gaia "source" based on cause to help track down channel id issues.
-    std::string source(GetDefaultSourceForRequest());
+    std::string source(GaiaConstants::kChromeSource);
     switch (cause) {
       case network::mojom::CookieChangeCause::INSERTED:
         source += "INSERTED";
@@ -1010,9 +1001,15 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().GetAccountID();
   uber_token_fetcher_ = std::make_unique<UbertokenFetcher>(
-      token_service_, this, GetDefaultSourceForRequest(), GetURLLoaderFactory(),
-      base::Bind(&SigninClient::CreateGaiaAuthFetcher,
-                 base::Unretained(signin_client_)));
+      token_service_, this, GetURLLoaderFactory(),
+      base::BindRepeating(
+          [](SigninClient* client, GaiaAuthConsumer* consumer,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader)
+              -> std::unique_ptr<GaiaAuthFetcher> {
+            return client->CreateGaiaAuthFetcher(
+                consumer, GaiaConstants::kChromeSource, url_loader);
+          },
+          base::Unretained(signin_client_)));
   if (access_token_.empty()) {
     uber_token_fetcher_->StartFetchingToken(account_id);
   } else {

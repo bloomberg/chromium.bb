@@ -10,7 +10,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 
 GaiaCookieManagerServiceFactory::GaiaCookieManagerServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -40,7 +39,6 @@ KeyedService* GaiaCookieManagerServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   GaiaCookieManagerService* cookie_service = new GaiaCookieManagerService(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      GaiaConstants::kChromeSource,
       ChromeSigninClientFactory::GetForProfile(profile));
   return cookie_service;
 }

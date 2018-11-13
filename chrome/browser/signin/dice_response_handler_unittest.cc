@@ -33,7 +33,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -130,7 +129,6 @@ class DiceResponseHandlerTest : public testing::Test,
                         nullptr,
                         &signin_error_controller_),
         cookie_service_(&token_service_,
-                        GaiaConstants::kChromeSource,
                         &signin_client_,
                         /*use_fake_url_fetcher=*/false),
         identity_test_env_(&account_tracker_service_,
