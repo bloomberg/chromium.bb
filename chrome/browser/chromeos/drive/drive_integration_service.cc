@@ -758,7 +758,7 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
   // want to run the check for the first SetEnabled() called in the constructor,
   // which may be a change from false to false.
   if (!enabled)
-    AvoidDriveAsDownloadDirecotryPreference();
+    AvoidDriveAsDownloadDirectoryPreference();
 
   // Do nothing if not changed.
   if (enabled_ == enabled)
@@ -1138,7 +1138,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     LOG(WARNING) << "Failed to initialize: " << FileErrorToString(error);
 
     // Cannot used Drive. Set the download destination preference out of Drive.
-    AvoidDriveAsDownloadDirecotryPreference();
+    AvoidDriveAsDownloadDirectoryPreference();
 
     // Back to NOT_INITIALIZED state. Then, re-running Initialize() should
     // work if the error is recoverable manually (such as out of disk space).
@@ -1195,14 +1195,24 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     AddDriveMountPoint();
 }
 
-void DriveIntegrationService::AvoidDriveAsDownloadDirecotryPreference() {
-  PrefService* pref_service = profile_->GetPrefs();
-  if (util::IsUnderDriveMountPoint(
-          pref_service->GetFilePath(::prefs::kDownloadDefaultDirectory))) {
-    pref_service->SetFilePath(
+void DriveIntegrationService::AvoidDriveAsDownloadDirectoryPreference() {
+  if (DownloadDirectoryPreferenceIsInDrive()) {
+    profile_->GetPrefs()->SetFilePath(
         ::prefs::kDownloadDefaultDirectory,
         file_manager::util::GetDownloadsFolderForProfile(profile_));
   }
+}
+
+bool DriveIntegrationService::DownloadDirectoryPreferenceIsInDrive() {
+  const auto downloads_path =
+      profile_->GetPrefs()->GetFilePath(::prefs::kDownloadDefaultDirectory);
+
+  if (!drivefs_holder_) {
+    return util::IsUnderDriveMountPoint(downloads_path);
+  }
+  const auto* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  return user && user->GetAccountId().HasAccountIdKey() &&
+         GetMountPointPath().IsParent(downloads_path);
 }
 
 void DriveIntegrationService::Observe(

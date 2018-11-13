@@ -409,6 +409,9 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
   std::string result(path);
   auto* drive_integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
+  if (drive_integration_service && !drive_integration_service->is_enabled()) {
+    drive_integration_service = nullptr;
+  }
   if (ReplacePrefix(&result, "/home/chronos/user/Downloads",
                     kFolderNameDownloads)) {
   } else if (ReplacePrefix(&result,

@@ -233,7 +233,9 @@ class DriveIntegrationService : public KeyedService,
 
   // Change the download directory to the local "Downloads" if the download
   // destination is set under Drive. This must be called when disabling Drive.
-  void AvoidDriveAsDownloadDirecotryPreference();
+  void AvoidDriveAsDownloadDirectoryPreference();
+
+  bool DownloadDirectoryPreferenceIsInDrive();
 
   // content::NotificationObserver overrides.
   void Observe(int type,

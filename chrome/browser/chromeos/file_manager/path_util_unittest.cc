@@ -138,7 +138,8 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   {
     base::test::ScopedFeatureList features;
     features.InitAndDisableFeature(chromeos::features::kDriveFs);
-    drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile)->SetEnabled(
+        true);
     EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
               GetPathDisplayTextForSettings(
                   &profile, "/special/drive-0123456789abcdef/root/foo"));
@@ -166,7 +167,8 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
     PrefService* prefs = profile2.GetPrefs();
     prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
 
-    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
+        true);
     EXPECT_EQ(
         "Google Drive \u203a My Drive \u203a foo",
         GetPathDisplayTextForSettings(
@@ -183,6 +185,18 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
             &profile2,
             "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
             "Computers/My Other Computer/bar"));
+
+    TestingProfile guest_profile(base::FilePath("/home/chronos/guest"));
+    guest_profile.SetGuestSession(true);
+    guest_profile.set_profile_name("$guest");
+    ASSERT_TRUE(
+        drive::DriveIntegrationServiceFactory::GetForProfile(&guest_profile));
+
+    EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
+                               &guest_profile, "/home/chronos/user/Downloads"));
+    // Test that a passthrough path doesn't crash on requesting the Drive mount
+    // path for a guest profile.
+    EXPECT_EQ("foo", GetPathDisplayTextForSettings(&guest_profile, "foo"));
   }
   chromeos::disks::DiskMountManager::Shutdown();
 }
