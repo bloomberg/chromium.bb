@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
@@ -78,7 +77,8 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
 
     @Override
     public void onTabCreated(ViewGroup view) {
-        PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, createAdapter(mModel));
+        PasswordAccessorySheetViewBinder.initializeView(
+                view.findViewById(R.id.password_items), createAdapter(mModel));
     }
 
     @Override
