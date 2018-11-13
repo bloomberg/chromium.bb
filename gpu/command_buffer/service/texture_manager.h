@@ -37,7 +37,7 @@ class DecoderContext;
 class ServiceDiscardableManager;
 class SharedImageBackingGLTexture;
 class SharedImageBackingFactoryGLTexture;
-class SharedImageBackingAHardwareBuffer;
+class SharedImageBackingAHB;
 class SharedImageRepresentationGLTexture;
 
 namespace gles2 {
@@ -355,7 +355,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class MailboxManagerTest;
   friend class gpu::SharedImageBackingGLTexture;
   friend class gpu::SharedImageBackingFactoryGLTexture;
-  friend class gpu::SharedImageBackingAHardwareBuffer;
+  friend class gpu::SharedImageBackingAHB;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;

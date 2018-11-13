@@ -97,7 +97,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
   // TODO(piman): depending on handle.type, choose platform-specific backing
-  // factory, e.g. SharedImageBackingFactoryAHardwareBuffer.
+  // factory, e.g. SharedImageBackingFactoryAHB.
   std::unique_ptr<SharedImageBacking> backing =
       backing_factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
                                           format, surface_handle, size,
