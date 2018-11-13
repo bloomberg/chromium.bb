@@ -306,7 +306,7 @@ bool ShouldStopEventPath(EventTarget& adjusted_target,
 void EventPath::ShrinkForRelatedTarget(const Node& event_target_node,
                                        const Node& event_related_target_node) {
   for (wtf_size_t i = 0; i < size(); ++i) {
-    if (ShouldStopEventPath(*at(i).Target(), *at(i).RelatedTarget(),
+    if (ShouldStopEventPath(*(*this)[i].Target(), *(*this)[i].RelatedTarget(),
                             event_target_node, event_related_target_node)) {
       Shrink(i);
       break;
