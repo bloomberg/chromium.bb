@@ -36,7 +36,7 @@ TEST_F(ViewTreeValidatorTest, CorrectnessTest) {
   NSWindow* window = test_window();
   int width = NSWidth(window.contentView.frame);
   int height = NSHeight(window.contentView.frame);
-  NSView* view_1 = AutoreleasedButtonWithFrame(0, 0, width / 2, height);
+  NSView* view_1 = AutoreleasedViewWithFrame(0, 0, width / 2, height);
   NSView* view_2 = AutoreleasedButtonWithFrame(width / 2, 0, width / 2, height);
   NSView* view_3 = AutoreleasedButtonWithFrame(0, 0, width / 2, height / 2);
   NSView* view_4 = AutoreleasedViewWithFrame(0, 0, width / 2, height / 2);
