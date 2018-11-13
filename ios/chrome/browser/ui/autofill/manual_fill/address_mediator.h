@@ -30,6 +30,9 @@ extern NSString* const ManageAddressAccessibilityIdentifier;
 // The delegate in charge of using the content selected by the user.
 @property(nonatomic, weak) id<ManualFillContentDelegate> contentDelegate;
 
+// The delegate in charge of navigation.
+@property(nonatomic, weak) id<AddressListDelegate> navigationDelegate;
+
 // The designated initializer.
 - (instancetype)initWithProfiles:
     (std::vector<autofill::AutofillProfile*>)profiles NS_DESIGNATED_INITIALIZER;

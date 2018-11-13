@@ -885,6 +885,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS" desc="The title for the button in the manual fallback passwords UI that is used to open a list of all the user credentials where they can select one to fill a form. This button is showed at the same time as a different button with  IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS as title. [30em]">
         Use Other Password...
       </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_CREDIT_CARDS" desc="The title for the button in the manual fallback UI that takes the user to the payments settings. In this screen they see all the credit cards and can erase them. [30em]">
+        Manage Credit Cards...
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_ADDRESSES" desc="The title for the button in the manual fallback UI that takes the user to the addresses settings. In this screen they see all the addresses and can erase them. [30em]">
+        Manage Addresses...
+      </message>
       <message name="IDS_IOS_MICROPHONE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's microphone while the app is in use [Length: unlimited] [iOS only].">
         This lets you search faster using your voice.
       </message>
