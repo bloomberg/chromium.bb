@@ -1392,7 +1392,7 @@
       "../../android_webview/tools/run_cts.py",
       "--skip-expected-failures",
       "--additional-apk",
-      "apks/SystemWebView.apk"
+      "apks/SystemWebView.apk",
       "-v",
     ],
   },
