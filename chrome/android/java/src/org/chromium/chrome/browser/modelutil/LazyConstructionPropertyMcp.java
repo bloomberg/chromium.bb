@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.modelutil;
 
 import android.support.annotation.Nullable;
-import android.view.View;
 
 import org.chromium.ui.ViewProvider;
 
@@ -20,7 +19,7 @@ import java.util.Set;
  * @param <V> The view type
  * @param <P> The property type for the model
  */
-public class LazyConstructionPropertyMcp<M extends PropertyObservable<P>, V extends View, P>
+public class LazyConstructionPropertyMcp<M extends PropertyObservable<P>, V, P>
         implements PropertyObservable.PropertyObserver<P> {
     /**
      * Functional interface to determine whether the model is visible.
@@ -62,19 +61,25 @@ public class LazyConstructionPropertyMcp<M extends PropertyObservable<P>, V exte
         mModel.addObserver(this);
     }
 
-    public static <M extends PropertyModel, V extends View>
-            LazyConstructionPropertyMcp<M, V, PropertyKey> create(M model,
-                    PropertyModel.WritableBooleanPropertyKey visibilityProperty,
-                    ViewProvider<V> viewFactory,
-                    PropertyModelChangeProcessor.ViewBinder<M, V, PropertyKey> viewBinder) {
+    public static <M extends PropertyModel, V> LazyConstructionPropertyMcp<M, V, PropertyKey>
+    create(M model, PropertyModel.WritableBooleanPropertyKey visibilityProperty,
+            ViewProvider<V> viewFactory,
+            PropertyModelChangeProcessor.ViewBinder<M, V, PropertyKey> viewBinder) {
         return new LazyConstructionPropertyMcp<>(model, visibilityProperty,
                 item -> item.get(visibilityProperty), viewFactory, viewBinder);
     }
 
     private void flushPendingUpdates() {
+        boolean pendingVisibilityUpdate = false;
         for (P property : mPendingProperties) {
+            if (property == mVisibilityProperty) {
+                pendingVisibilityUpdate = true;
+                continue;
+            }
             mViewBinder.bind(mModel, mView, property);
         }
+        // Defer sending the visibility update until all prior set properties are dispatched.
+        if (pendingVisibilityUpdate) mViewBinder.bind(mModel, mView, mVisibilityProperty);
         mPendingProperties.clear();
     }
 

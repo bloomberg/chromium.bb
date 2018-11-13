@@ -12,7 +12,7 @@ import org.chromium.base.Callback;
  * Interface to support asynchronous inflation of views.
  * @param <T> The view type.
  */
-public interface ViewProvider<T extends View> {
+public interface ViewProvider<T> {
     /**
      * Starts inflating the view.
      */

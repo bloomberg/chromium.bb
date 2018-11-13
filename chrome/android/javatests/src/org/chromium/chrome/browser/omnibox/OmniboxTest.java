@@ -19,6 +19,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -44,7 +45,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -882,7 +882,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                OmniboxSuggestionsList suggestionsList =
+                ListView suggestionsList =
                         locationBar.getAutocompleteCoordinator().getSuggestionList();
                 Assert.assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
                 for (int i = 0; i < suggestionsList.getChildCount(); i++) {
