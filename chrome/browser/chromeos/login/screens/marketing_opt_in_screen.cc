@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen_view.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -36,7 +37,7 @@ void MarketingOptInScreen::Show() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableMarketingOptInScreen) ||
       prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
-      IsPublicSessionOrEphemeralLogin()) {
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     Finish(ScreenExitCode::MARKETING_OPT_IN_FINISHED);
     return;
   }
