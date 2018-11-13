@@ -1161,7 +1161,6 @@ void cdef_filter_block_c(uint8_t* dst8,
                          int pri_damping,
                          int sec_damping,
                          int bsize,
-                         int max,
                          int coeff_shift);
 void cdef_filter_block_neon(uint8_t* dst8,
                             uint16_t* dst16,
@@ -1173,7 +1172,6 @@ void cdef_filter_block_neon(uint8_t* dst8,
                             int pri_damping,
                             int sec_damping,
                             int bsize,
-                            int max,
                             int coeff_shift);
 RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       uint16_t* dst16,
@@ -1185,7 +1183,6 @@ RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       int pri_damping,
                                       int sec_damping,
                                       int bsize,
-                                      int max,
                                       int coeff_shift);
 
 int cdef_find_dir_c(const uint16_t* img,
