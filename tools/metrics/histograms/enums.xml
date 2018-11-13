@@ -1561,6 +1561,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="Search Key"/>
   <int value="1" label="Shelf Button"/>
   <int value="2" label="Swipe Up From Shelf"/>
+  <int value="3" label="Shown Via Tablet Mode Transition"/>
 </enum>
 
 <enum name="AppListStateTransitionSource">
