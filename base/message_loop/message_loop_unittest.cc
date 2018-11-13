@@ -937,58 +937,12 @@ TEST_P(MessageLoopTypedTest, RecursiveDenial1) {
 
 namespace {
 
-void RecursiveSlowFunc(TaskList* order,
-                       int cookie,
-                       int depth,
-                       bool is_reentrant) {
-  RecursiveFunc(order, cookie, depth, is_reentrant);
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
-}
-
 void OrderedFunc(TaskList* order, int cookie) {
   order->RecordStart(ORDERED, cookie);
   order->RecordEnd(ORDERED, cookie);
 }
 
 }  // namespace
-
-TEST_P(MessageLoopTypedTest, RecursiveDenial3) {
-  MessageLoop loop(GetParam());
-
-  EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
-  TaskList order;
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveSlowFunc, &order, 1, 2, false));
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveSlowFunc, &order, 2, 2, false));
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindOnce(&OrderedFunc, &order, 3),
-      TimeDelta::FromMilliseconds(5));
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, BindOnce(&QuitFunc, &order, 4),
-      TimeDelta::FromMilliseconds(5));
-
-  RunLoop().Run();
-
-  // FIFO order.
-  ASSERT_EQ(16U, order.Size());
-  EXPECT_EQ(order.Get(0), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(1), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(2), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(3), TaskItem(RECURSIVE, 2, false));
-  EXPECT_EQ(order.Get(4), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(5), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(6), TaskItem(ORDERED, 3, true));
-  EXPECT_EQ(order.Get(7), TaskItem(ORDERED, 3, false));
-  EXPECT_EQ(order.Get(8), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(9), TaskItem(RECURSIVE, 2, false));
-  EXPECT_EQ(order.Get(10), TaskItem(QUITMESSAGELOOP, 4, true));
-  EXPECT_EQ(order.Get(11), TaskItem(QUITMESSAGELOOP, 4, false));
-  EXPECT_EQ(order.Get(12), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(13), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(14), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(15), TaskItem(RECURSIVE, 2, false));
-}
 
 TEST_P(MessageLoopTypedTest, RecursiveSupport1) {
   MessageLoop loop(GetParam());
