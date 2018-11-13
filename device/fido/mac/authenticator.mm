@@ -136,7 +136,8 @@ base::string16 TouchIdAuthenticator::GetDisplayName() const {
   return base::string16();
 }
 
-FidoTransportProtocol TouchIdAuthenticator::AuthenticatorTransport() const {
+base::Optional<FidoTransportProtocol>
+TouchIdAuthenticator::AuthenticatorTransport() const {
   return FidoTransportProtocol::kInternal;
 }
 

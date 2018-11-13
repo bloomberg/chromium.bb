@@ -43,11 +43,7 @@ ToAuthenticatorMakeCredentialResponse(
   }
 
   return AuthenticatorMakeCredentialResponse(
-      // TODO(martinkr): Ultimately, we cannot be sure that the transport is
-      // really USB. We exclude platform by forcing authenticatorAttachment to
-      // "cross-platform"; but that still leaves NFC vs USB. Perhaps we should
-      // wrap this field in a base::Optional?
-      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      base::nullopt /* transport_used */,
       AttestationObject(
           std::move(*authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(

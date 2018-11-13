@@ -130,7 +130,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   void OnRegisterResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-      device::FidoTransportProtocol transport_used);
+      base::Optional<device::FidoTransportProtocol> transport_used);
 
   // Callback to complete the registration process once a decision about
   // whether or not to return attestation data has been made.
@@ -142,7 +142,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   void OnSignResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
-      device::FidoTransportProtocol transport_used);
+      base::Optional<device::FidoTransportProtocol> transport_used);
 
   void FailWithNotAllowedErrorAndCleanup();
 

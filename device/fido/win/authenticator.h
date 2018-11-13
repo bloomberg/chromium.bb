@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinNativeCrossPlatformAuthenticator
   base::string16 GetDisplayName() const override;
   bool IsInPairingMode() const override;
   const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
-  FidoTransportProtocol AuthenticatorTransport() const override;
+  base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
  private:
