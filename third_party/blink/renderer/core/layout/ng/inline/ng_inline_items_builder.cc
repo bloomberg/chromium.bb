@@ -22,11 +22,6 @@ NGInlineItemsBuilderTemplate<
 
 template <typename OffsetMappingBuilder>
 String NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ToString() {
-  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
-  // but it will be removed in Phase II[2]. We prefer not to add trailing new
-  // lines and collapsible spaces in Phase I.
-  RemoveTrailingCollapsibleSpaceIfExists();
-
   return text_.ToString();
 }
 
@@ -952,6 +947,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitBlock() {
   Exit(nullptr);
+
+  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
+  // but it will be removed in Phase II[2]. We prefer not to add trailing new
+  // lines and collapsible spaces in Phase I.
+  RemoveTrailingCollapsibleSpaceIfExists();
 }
 
 template <typename OffsetMappingBuilder>

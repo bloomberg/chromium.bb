@@ -308,14 +308,12 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   const bool update_layout = false;
   CollectInlinesInternal(layout_block_flow, &builder, nullptr, update_layout);
 
-  // TODO(kojii): We need to call ToString() regardless the |text| is needed or
-  // not, because it includes finalizing steps. It should be separated, because
-  // it's not intuitive to require a call of ToString().
-  String text = builder.ToString();
+  // We need the text for non-NG object. Otherwise |data| already has the text
+  // from the pre-layout phase, check they match.
   if (data->text_content.IsNull())
-    data->text_content = text;
+    data->text_content = builder.ToString();
   else
-    DCHECK_EQ(data->text_content, text);
+    DCHECK_EQ(data->text_content, builder.ToString());
 
   // TODO(xiaochengh): This doesn't compute offset mapping correctly when
   // text-transform CSS property changes text length.
