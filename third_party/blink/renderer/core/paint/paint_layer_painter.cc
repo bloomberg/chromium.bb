@@ -381,8 +381,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
                                   respect_overflow_clip) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
-                                                            paint_layer_))
-      return result;
+                                                            paint_layer_)) {
+      return paint_layer_.PreviousPaintResult();
+    }
     DCHECK(paint_layer_.SupportsSubsequenceCaching());
     subsequence_recorder.emplace(context, paint_layer_);
   }
