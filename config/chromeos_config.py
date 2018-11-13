@@ -200,6 +200,20 @@ def GeneralTemplates(site_config, ge_build_config):
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
+  site_config.AddTemplate(
+      'unittest_only_paladin',
+      chroot_replace=False,
+      display_label=config_lib.DISPLAY_LABEL_CQ,
+      build_type=constants.PALADIN_TYPE,
+      overlays=constants.PUBLIC_OVERLAYS,
+      prebuilts=False,
+      manifest_version=True,
+      unittests=True,
+      compilecheck=True,
+      build_packages=False,
+      upload_standalone_images=False,
+  )
+
   # Incremental builders are intended to test the developer workflow.
   # For that reason, they don't uprev.
   site_config.AddTemplate(
@@ -1835,6 +1849,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
   ])
 
+  _paladin_separate_unittest_phase = frozenset([
+      'grunt',
+  ])
+
   ### Master paladin (CQ builder).
   master_config = site_config.Add(
       'master-paladin',
@@ -2083,6 +2101,15 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'unittest-only-paladin',
+          list(_paladin_separate_unittest_phase),
+          board_configs,
+          site_config.templates.unittest_only_paladin,
+          site_config.templates.cq_luci_slave,
+      )
+  )
   site_config.Add(
       'amd64-generic-asan-paladin',
       site_config.templates.paladin,
