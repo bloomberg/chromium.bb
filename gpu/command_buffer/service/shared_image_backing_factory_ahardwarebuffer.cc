@@ -17,23 +17,26 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 
-// Representation of a SharedImageBackingAHardwareBuffer as a GL Texture.
-class SharedImageRepresentationGLTextureAHardwareBuffer
+// Representation of a SharedImageBackingAHB as a GL Texture.
+class SharedImageRepresentationGLTextureAHB
     : public SharedImageRepresentationGLTexture {
  public:
-  SharedImageRepresentationGLTextureAHardwareBuffer(SharedImageManager* manager,
-                                                    SharedImageBacking* backing,
-                                                    MemoryTypeTracker* tracker,
-                                                    gles2::Texture* texture)
+  SharedImageRepresentationGLTextureAHB(SharedImageManager* manager,
+                                        SharedImageBacking* backing,
+                                        MemoryTypeTracker* tracker,
+                                        gles2::Texture* texture)
       : SharedImageRepresentationGLTexture(manager, backing, tracker),
         texture_(texture) {}
 
@@ -42,22 +45,93 @@ class SharedImageRepresentationGLTextureAHardwareBuffer
  private:
   gles2::Texture* texture_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureAHardwareBuffer);
+  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureAHB);
+};
+
+// GL backed Skia representation of SharedImageBackingAHB.
+// TODO(vikassoni): Add follow up patch to add a vulkan backed skia
+// representation.
+class SharedImageRepresentationSkiaGLAHB
+    : public SharedImageRepresentationSkia {
+ public:
+  SharedImageRepresentationSkiaGLAHB(SharedImageManager* manager,
+                                     SharedImageBacking* backing,
+                                     MemoryTypeTracker* tracker,
+                                     GLenum target,
+                                     GLenum internal_format,
+                                     GLenum driver_internal_format,
+                                     GLuint service_id)
+      : SharedImageRepresentationSkia(manager, backing, tracker),
+        target_(target),
+        internal_format_(internal_format),
+        driver_internal_format_(driver_internal_format),
+        service_id_(service_id) {}
+
+  ~SharedImageRepresentationSkiaGLAHB() override { DCHECK(!write_surface_); }
+
+  sk_sp<SkSurface> BeginWriteAccess(
+      GrContext* gr_context,
+      int final_msaa_count,
+      SkColorType color_type,
+      const SkSurfaceProps& surface_props) override {
+    if (write_surface_)
+      return nullptr;
+
+    GrBackendTexture backend_texture;
+    if (!GetGrBackendTexture(target_, size(), internal_format_,
+                             driver_internal_format_, service_id_, color_type,
+                             &backend_texture)) {
+      return nullptr;
+    }
+    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+        gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
+        color_type, nullptr, &surface_props);
+    write_surface_ = surface.get();
+    return surface;
+  }
+
+  void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    DCHECK_EQ(surface.get(), write_surface_);
+    DCHECK(surface->unique());
+    // TODO(ericrk): Keep the surface around for re-use.
+    write_surface_ = nullptr;
+  }
+
+  bool BeginReadAccess(SkColorType color_type,
+                       GrBackendTexture* backend_texture) override {
+    if (!GetGrBackendTexture(target_, size(), internal_format_,
+                             driver_internal_format_, service_id_, color_type,
+                             backend_texture)) {
+      return false;
+    }
+    return true;
+  }
+
+  void EndReadAccess() override {
+    // TODO(ericrk): Handle begin/end correctness checks.
+  }
+
+ private:
+  GLenum target_;
+  GLenum internal_format_ = 0;
+  GLenum driver_internal_format_ = 0;
+  GLuint service_id_;
+
+  SkSurface* write_surface_ = nullptr;
 };
 
 // Implementation of SharedImageBacking that holds an AHardwareBuffer. This
 // can be used to create a GL texture or a VK Image from the AHardwareBuffer
 // backing.
-class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
+class SharedImageBackingAHB : public SharedImageBacking {
  public:
-  SharedImageBackingAHardwareBuffer(
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      base::android::ScopedHardwareBufferHandle handle,
-      size_t estimated_size)
+  SharedImageBackingAHB(const Mailbox& mailbox,
+                        viz::ResourceFormat format,
+                        const gfx::Size& size,
+                        const gfx::ColorSpace& color_space,
+                        uint32_t usage,
+                        base::android::ScopedHardwareBufferHandle handle,
+                        size_t estimated_size)
       : SharedImageBacking(mailbox,
                            format,
                            size,
@@ -68,7 +142,7 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
     DCHECK(hardware_buffer_handle_.is_valid());
   }
 
-  ~SharedImageBackingAHardwareBuffer() override {
+  ~SharedImageBackingAHB() override {
     // Check to make sure buffer is explicitly destroyed using Destroy() api
     // before this destructor is called.
     DCHECK(!hardware_buffer_handle_.is_valid());
@@ -117,8 +191,23 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
       return nullptr;
 
     DCHECK(texture_);
-    return std::make_unique<SharedImageRepresentationGLTextureAHardwareBuffer>(
+    return std::make_unique<SharedImageRepresentationGLTextureAHB>(
         manager, this, tracker, texture_);
+  }
+
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
+    // TODO(vikassoni): Currently we only have a GL backed skia representation.
+    // Follow up patch will add support to check whether we are in Vulkan mode
+    // OR  GL mode and accordingly create Skia representation.
+    if (!GenGLTexture())
+      return nullptr;
+
+    DCHECK(texture_);
+    return std::make_unique<SharedImageRepresentationSkiaGLAHB>(
+        manager, this, tracker, texture_->target(), internal_format_,
+        driver_internal_format_, texture_->service_id());
   }
 
  private:
@@ -127,11 +216,14 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
       return true;
 
     DCHECK(hardware_buffer_handle_.is_valid());
-    DCHECK(usage() & SHARED_IMAGE_USAGE_GLES2);
 
     // Target for AHB backed egl images.
-    GLenum target = GL_TEXTURE_EXTERNAL_OES;
-    GLenum get_target = GL_TEXTURE_BINDING_EXTERNAL_OES;
+    // Note that we are not using GL_TEXTURE_EXTERNAL_OES target since sksurface
+    // doesnt supports it. As per the egl documentation -
+    // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
+    // if GL_OES_EGL_image is supported then <target> may also be TEXTURE_2D.
+    GLenum target = GL_TEXTURE_2D;
+    GLenum get_target = GL_TEXTURE_BINDING_2D;
 
     // Create a gles2 texture using the AhardwareBuffer.
     gl::GLApi* api = gl::g_current_gl_context;
@@ -182,6 +274,9 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
     texture_->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
     texture_->SetImmutable(true);
     api->glBindTextureFn(target, old_texture_binding);
+    internal_format_ = egl_image->GetInternalFormat();
+    driver_internal_format_ = gl::GetInternalFormat(
+        gl::GLContext::GetCurrent()->GetVersionInfo(), internal_format_);
     return true;
   }
 
@@ -190,6 +285,8 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
   // This texture will be lazily initialised/created when ProduceGLTexture is
   // called.
   gles2::Texture* texture_ = nullptr;
+  GLenum internal_format_ = 0;
+  GLenum driver_internal_format_ = 0;
 
   // TODO(vikassoni): In future when we add begin/end write support, we will
   // need to properly use this flag to pass the is_cleared_ information to
@@ -199,20 +296,19 @@ class SharedImageBackingAHardwareBuffer : public SharedImageBacking {
   // texture representation.
   bool is_cleared_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHardwareBuffer);
+  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
 };
 
-SharedImageBackingFactoryAHardwareBuffer::
-    SharedImageBackingFactoryAHardwareBuffer(
-        const GpuDriverBugWorkarounds& workarounds,
-        const GpuFeatureInfo& gpu_feature_info) {
+SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
+    const GpuDriverBugWorkarounds& workarounds,
+    const GpuFeatureInfo& gpu_feature_info) {
   scoped_refptr<gles2::FeatureInfo> feature_info =
       new gles2::FeatureInfo(workarounds, gpu_feature_info);
   feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2, false,
                            gles2::DisallowedFeatures());
   const gles2::Validators* validators = feature_info->validators();
-  const bool is_egl_image_external_supported =
-      feature_info->feature_flags().oes_egl_image_external;
+  const bool is_egl_image_supported =
+      gl::g_current_gl_driver->ext.b_GL_OES_EGL_image;
 
   // Build the feature info for all the resource formats.
   for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
@@ -223,12 +319,13 @@ SharedImageBackingFactoryAHardwareBuffer::
     // backing.
     if (!AHardwareBufferSupportedFormat(format))
       continue;
+
     info.ahb_supported = true;
     info.ahb_format = AHardwareBufferFormat(format);
 
-    // Check if GL_TEXTURE_EXTERNAL_OES texture target is supported. This
-    // texture target is required to use AHB backed EGLImage as a texture.
-    if (!is_egl_image_external_supported)
+    // TODO(vikassoni): In future when we use GL_TEXTURE_EXTERNAL_OES target
+    // with AHB, we need to check if oes_egl_image_external is supported or not.
+    if (!is_egl_image_supported)
       continue;
 
     // Check if AHB backed GL texture can be created using this format and
@@ -273,11 +370,10 @@ SharedImageBackingFactoryAHardwareBuffer::
   }
 }
 
-SharedImageBackingFactoryAHardwareBuffer::
-    ~SharedImageBackingFactoryAHardwareBuffer() = default;
+SharedImageBackingFactoryAHB::~SharedImageBackingFactoryAHB() = default;
 
 std::unique_ptr<SharedImageBacking>
-SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
+SharedImageBackingFactoryAHB::CreateSharedImage(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
@@ -294,9 +390,14 @@ SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
     return nullptr;
   }
 
-  // TODO(vikassoni): Also check for !gpu_preferences.enable_vulkan and maybe
-  // some other usage flags.
-  const bool use_gles2 = usage & SHARED_IMAGE_USAGE_GLES2;
+  // SHARED_IMAGE_USAGE_RASTER is set when we want to write on Skia
+  // representation and SHARED_IMAGE_USAGE_DISPLAY is used for cases we want to
+  // read from skia representation.
+  // TODO(vikassoni): Also check gpu_preferences.enable_vulkan to figure out if
+  // skia is using vulkan backing or GL backing.
+  const bool use_gles2 =
+      (usage & (SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_RASTER |
+                SHARED_IMAGE_USAGE_DISPLAY));
 
   // If usage flags indicated this backing can be used as a GL texture, then do
   // below gl related checks.
@@ -356,17 +457,17 @@ SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
     return nullptr;
   }
 
-  auto backing = std::make_unique<SharedImageBackingAHardwareBuffer>(
+  auto backing = std::make_unique<SharedImageBackingAHB>(
       mailbox, format, size, color_space, usage,
       base::android::ScopedHardwareBufferHandle::Adopt(buffer), estimated_size);
   return backing;
 }
 
-SharedImageBackingFactoryAHardwareBuffer::FormatInfo::FormatInfo() = default;
-SharedImageBackingFactoryAHardwareBuffer::FormatInfo::~FormatInfo() = default;
+SharedImageBackingFactoryAHB::FormatInfo::FormatInfo() = default;
+SharedImageBackingFactoryAHB::FormatInfo::~FormatInfo() = default;
 
 std::unique_ptr<SharedImageBacking>
-SharedImageBackingFactoryAHardwareBuffer::CreateSharedImage(
+SharedImageBackingFactoryAHB::CreateSharedImage(
     const Mailbox& mailbox,
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
