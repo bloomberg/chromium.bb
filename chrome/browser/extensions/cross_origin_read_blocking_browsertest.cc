@@ -665,6 +665,122 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   }
 }
 
+class ReadyToCommitWaiter : public content::WebContentsObserver {
+ public:
+  explicit ReadyToCommitWaiter(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+
+  ~ReadyToCommitWaiter() override {}
+
+  void Wait() { run_loop_.Run(); }
+
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadyToCommitWaiter);
+};
+
+IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
+                       ProgrammaticContentScriptVsWebUI) {
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Try to inject a content script just as we are about to commit a WebUI page.
+  // This will cause ExecuteCodeInTabFunction::CanExecuteScriptOnPage to execute
+  // while RenderFrameHost::GetLastCommittedOrigin() still corresponds to the
+  // old page.
+  {
+    // Initiate navigating a new, blank tab (this avoids process swaps which
+    // would otherwise occur when navigating to a WebUI pages from either the
+    // NTP or from a web page).  This simulates choosing "Settings" from the
+    // main menu.
+    GURL web_ui_url("chrome://settings");
+    NavigateParams nav_params(
+        browser(), web_ui_url,
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED));
+    nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    content::WebContentsAddedObserver new_web_contents_observer;
+    Navigate(&nav_params);
+
+    // Capture the new WebContents.
+    content::WebContents* new_web_contents =
+        new_web_contents_observer.GetWebContents();
+    ReadyToCommitWaiter ready_to_commit_waiter(new_web_contents);
+    content::TestNavigationObserver navigation_observer(new_web_contents, 1);
+
+    // Repro of https://crbug.com/894766 requires that no cross-process swap
+    // takes place - this is what happens when navigating an initial/blank tab.
+
+    // Wait until ReadyToCommit happens.
+    //
+    // For the repro to happen, content script injection needs to run
+    // 1) after RenderFrameHostImpl::CommitNavigation
+    //    (which runs in the same revolution of the message pump as
+    //    WebContentsObserver::ReadyToCommitNavigation)
+    // 2) before RenderFrameHostImpl::DidCommitProvisionalLoad
+    //    (task posted from ReadyToCommitNavigation above should execute
+    //     before any IPC responses that come after PostTask call).
+    ready_to_commit_waiter.Wait();
+    DCHECK_NE(web_ui_url,
+              active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+
+    // Inject the content script (simulating chrome.tabs.executeScript, but
+    // using TabsExecuteScriptFunction directly to ensure the right timing).
+    int tab_id = ExtensionTabUtil::GetTabId(active_web_contents());
+    const char kArgsTemplate[] = R"(
+        [%d, {"code": "
+            var p = document.createElement('p');
+            p.innerText = 'content script injection succeeded unexpectedly';
+            p.id = 'content-script-injection-result';
+            document.body.appendChild(p);
+        "}] )";
+    std::string args = base::StringPrintf(kArgsTemplate, tab_id);
+    auto function = base::MakeRefCounted<TabsExecuteScriptFunction>();
+    function->set_extension(extension());
+    std::string actual_error =
+        extension_function_test_utils::RunFunctionAndReturnError(
+            function.get(), args, browser());
+    std::string expected_error =
+        "Cannot access contents of url \"chrome://settings/\". "
+        "Extension manifest must request permission to access this host.";
+    EXPECT_EQ(expected_error, actual_error);
+
+    // Wait until the navigation completes.
+    navigation_observer.Wait();
+    EXPECT_EQ(web_ui_url,
+              active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  }
+
+  // Check if the injection above succeeded (it shouldn't have, because of
+  // renderer-side checks).
+  const char kInjectionVerificationScript[] = R"(
+      domAutomationController.send(
+          !!document.getElementById('content-script-injection-result')); )";
+  bool has_content_script_run = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(active_web_contents(),
+                                                   kInjectionVerificationScript,
+                                                   &has_content_script_run));
+  EXPECT_FALSE(has_content_script_run);
+
+  // Try to fetch a WebUI resource (i.e. verify that the unsucessful content
+  // script injection above didn't clobber the WebUI-specific URLLoaderFactory).
+  const char kScript[] = R"(
+      var img = document.createElement('img');
+      img.src = 'chrome://resources/images/arrow_down.svg';
+      img.onload = () => domAutomationController.send('LOADED');
+      img.onerror = e => domAutomationController.send('ERROR: ' + e);
+  )";
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(active_web_contents(),
+                                                     kScript, &result));
+  EXPECT_EQ("LOADED", result);
+}
+
 IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
                        ProgrammaticContentScriptVsAppCache) {
   // Load the test extension.
