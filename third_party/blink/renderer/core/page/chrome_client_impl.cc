@@ -245,7 +245,7 @@ void ChromeClientImpl::StartDragging(LocalFrame* frame,
                                      const WebDragData& drag_data,
                                      WebDragOperationsMask mask,
                                      const SkBitmap& drag_image,
-                                     const WebPoint& drag_image_offset) {
+                                     const gfx::Point& drag_image_offset) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   network::mojom::ReferrerPolicy policy =
       web_frame->GetDocument().GetReferrerPolicy();

@@ -40,7 +40,7 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& image_offset) override;
+                     const gfx::Point& image_offset) override;
 
   // WebWidgetClient overrides that are not used.
   bool AllowsBrokenNullLayerTreeView() const override;

@@ -208,11 +208,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
-  void PerformPluginAction(const WebPluginAction&, const WebPoint&) override;
+  void PerformPluginAction(const WebPluginAction&, const gfx::Point&) override;
   void AudioStateChanged(bool is_audio_playing) override;
   void PausePageScheduledTasks(bool paused) override;
-  WebHitTestResult HitTestResultAt(const WebPoint&) override;
-  WebHitTestResult HitTestResultForTap(const WebPoint&,
+  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
   unsigned long CreateUniqueIdentifierForRequest() override;
   void EnableDeviceEmulation(const WebDeviceEmulationParams&) override;
@@ -242,7 +242,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float ClampPageScaleFactorToLimits(float) const;
   void ResetScaleStateImmediately();
 
-  HitTestResult CoreHitTestResultAt(const WebPoint&);
+  HitTestResult CoreHitTestResultAt(const gfx::Point&);
   void InvalidateRect(const IntRect&);
 
   void SetBaseBackgroundColor(SkColor);
@@ -352,12 +352,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void FullFramePluginZoomLevelChanged(double zoom_level);
 
   void ComputeScaleAndScrollForBlockRect(
-      const WebPoint& hit_point,
+      const gfx::Point& hit_point,
       const WebRect& block_rect,
       float padding,
       float default_scale_when_already_legible,
       float& scale,
-      WebPoint& scroll);
+      IntPoint& scroll);
   Node* BestTapNode(const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlightAtPoint(
       const GestureEventWithHitTestResults& targeted_tap_event);

@@ -64,7 +64,7 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const blink::WebDragData& data,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
-                                       const blink::WebPoint& image_offset) {
+                                       const gfx::Point& image_offset) {
   widget_test_client()->StartDragging(policy, data, mask, drag_image,
                                       image_offset);
   // Don't forward this call to RenderWidget because we don't want to do a

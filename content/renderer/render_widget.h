@@ -83,7 +83,6 @@ class WebGestureEvent;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
-struct WebPoint;
 }  // namespace blink
 
 namespace cc {
@@ -344,7 +343,7 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& image_offset) override;
+                     const gfx::Point& image_offset) override;
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
   void HasPointerRawMoveEventHandlers(bool has_handlers) override;

@@ -35,7 +35,7 @@ namespace {
 class ScrollbarsTest : public SimTest {
  public:
   HitTestResult HitTest(int x, int y) {
-    return WebView().CoreHitTestResultAt(WebPoint(x, y));
+    return WebView().CoreHitTestResultAt(gfx::Point(x, y));
   }
 
   EventHandler& GetEventHandler() {

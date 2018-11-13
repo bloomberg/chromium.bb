@@ -91,7 +91,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ThemeChanged() override;
-  WebHitTestResult HitTestResultAt(const WebPoint&) override;
+  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
@@ -144,7 +144,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
-  HitTestResult CoreHitTestResultAt(const WebPoint&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
 
   // Exposed for the purpose of overriding device metrics.
   void SendResizeEventAndRepaint();

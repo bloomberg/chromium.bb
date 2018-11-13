@@ -46,8 +46,11 @@
 
 class SkBitmap;
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class WebDragData;
 class WebGestureEvent;
 class WebString;
@@ -175,7 +178,7 @@ class WebWidgetClient {
                              const WebDragData&,
                              WebDragOperationsMask,
                              const SkBitmap& drag_image,
-                             const WebPoint& drag_image_offset) {}
+                             const gfx::Point& drag_image_offset) {}
 };
 
 }  // namespace blink

@@ -305,14 +305,14 @@ class WebViewTest : public testing::Test {
 };
 
 static bool HitTestIsContentEditable(WebView* view, int x, int y) {
-  WebPoint hit_point(x, y);
+  gfx::Point hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.IsContentEditable();
 }
 
 static std::string HitTestElementId(WebView* view, int x, int y) {
-  WebPoint hit_point(x, y);
+  gfx::Point hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.GetNode().To<WebElement>().GetAttribute("id").Utf8();
@@ -363,14 +363,14 @@ TEST_F(WebViewTest, HitTestContentEditableImageMaps) {
 }
 
 static std::string HitTestAbsoluteUrl(WebView* view, int x, int y) {
-  WebPoint hit_point(x, y);
+  gfx::Point hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.AbsoluteImageURL().GetString().Utf8();
 }
 
 static WebElement HitTestUrlElement(WebView* view, int x, int y) {
-  WebPoint hit_point(x, y);
+  gfx::Point hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.UrlElement();
@@ -642,7 +642,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale) {
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  WebPoint hit_point(75, 75);
+  gfx::Point hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result =
@@ -666,7 +666,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
-  WebPoint hit_point(75, 75);
+  gfx::Point hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);
@@ -692,7 +692,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea) {
   std::string url = RegisterMockedHttpURLLoad("hit_test.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  WebPoint hit_point(55, 55);
+  gfx::Point hit_point(55, 55);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result =
@@ -709,7 +709,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea) {
   positive_result.Reset();
 
   // Move the hit point the image is just outside the tapped area now.
-  hit_point = WebPoint(61, 61);
+  hit_point = gfx::Point(61, 61);
   WebHitTestResult negative_result2 =
       web_view->HitTestResultForTap(hit_point, tap_area);
   EXPECT_FALSE(
@@ -722,7 +722,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
-  WebPoint hit_point(55, 55);
+  gfx::Point hit_point(55, 55);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);

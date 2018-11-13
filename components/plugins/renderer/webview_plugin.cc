@@ -36,7 +36,6 @@ using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
-using blink::WebPoint;
 using blink::WebRect;
 using blink::WebString;
 using blink::WebURLError;
@@ -309,7 +308,7 @@ void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
                                                  const WebDragData&,
                                                  WebDragOperationsMask,
                                                  const SkBitmap&,
-                                                 const WebPoint&) {
+                                                 const gfx::Point&) {
   // Immediately stop dragging.
   main_frame()->FrameWidget()->DragSourceSystemDragEnded();
 }

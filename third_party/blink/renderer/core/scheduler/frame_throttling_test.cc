@@ -289,7 +289,7 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
             frame_document->Lifecycle().GetState());
 
   // A hit test will not force a complete lifecycle update.
-  WebView().HitTestResultAt(WebPoint(0, 0));
+  WebView().HitTestResultAt(gfx::Point());
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             frame_document->Lifecycle().GetState());
 }

@@ -39,8 +39,11 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class PageScheduler;
 class WebFrame;
 class WebHitTestResult;
@@ -57,7 +60,6 @@ struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebFloatSize;
 struct WebPluginAction;
-struct WebPoint;
 struct WebSize;
 struct WebWindowFeatures;
 
@@ -285,7 +287,7 @@ class WebView {
 
   // Performs the specified plugin action on the node at the given location.
   virtual void PerformPluginAction(const WebPluginAction&,
-                                   const WebPoint& location) = 0;
+                                   const gfx::Point& location) = 0;
 
   // Notifies WebView when audio is started or stopped.
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
@@ -294,7 +296,7 @@ class WebView {
 
   // Do a hit test equivalent to what would be done for a GestureTap event
   // that has width/height corresponding to the supplied |tapArea|.
-  virtual WebHitTestResult HitTestResultForTap(const WebPoint& tap_point,
+  virtual WebHitTestResult HitTestResultForTap(const gfx::Point& tap_point,
                                                const WebSize& tap_area) = 0;
 
   // Support for resource loading initiated by plugins -------------------

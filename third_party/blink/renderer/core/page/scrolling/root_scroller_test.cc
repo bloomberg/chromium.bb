@@ -2701,7 +2701,7 @@ class RootScrollerHitTest : public RootScrollerSimTest {
     // the root scroller's LayoutBox since inert top controls won't resize the
     // ICB but, since we expaned the clip, we should still be able to hit the
     // target.
-    WebPoint point(200, 445);
+    gfx::Point point(200, 445);
     WebSize tap_area(20, 20);
     WebHitTestResult result = WebView().HitTestResultForTap(point, tap_area);
 

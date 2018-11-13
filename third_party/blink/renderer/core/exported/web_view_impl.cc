@@ -663,7 +663,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
                                           float new_scale,
                                           double duration_in_seconds) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  WebPoint clamped_point = target_position;
+  gfx::Point clamped_point = target_position;
   if (!use_anchor) {
     clamped_point =
         visual_viewport.ClampDocumentOffsetAtScale(target_position, new_scale);
@@ -673,7 +673,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
       LocalFrameView* view = MainFrameImpl()->GetFrameView();
       if (view && view->GetScrollableArea()) {
         view->GetScrollableArea()->SetScrollOffset(
-            ScrollOffset(clamped_point.x, clamped_point.y),
+            ScrollOffset(clamped_point.x(), clamped_point.y()),
             kProgrammaticScroll);
       }
 
@@ -933,14 +933,14 @@ float WebViewImpl::MaximumLegiblePageScale() const {
 }
 
 void WebViewImpl::ComputeScaleAndScrollForBlockRect(
-    const WebPoint& hit_point_in_root_frame,
+    const gfx::Point& hit_point_in_root_frame,
     const WebRect& block_rect_in_root_frame,
     float padding,
     float default_scale_when_already_legible,
     float& scale,
-    WebPoint& scroll) {
+    IntPoint& scroll) {
   scale = PageScaleFactor();
-  scroll.x = scroll.y = 0;
+  scroll = IntPoint();
 
   WebRect rect = block_rect_in_root_frame;
 
@@ -982,7 +982,7 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
     // Ensure position we're zooming to (+ padding) isn't off the bottom of
     // the screen.
     rect.y = std::max<float>(
-        rect.y, hit_point_in_root_frame.y + padding - screen_height);
+        rect.y, hit_point_in_root_frame.y() + padding - screen_height);
   }  // Otherwise top align the block.
 
   // Do the same thing for horizontal alignment.
@@ -990,10 +990,10 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
     rect.x -= 0.5 * (screen_width - rect.width);
   } else {
     rect.x = std::max<float>(
-        rect.x, hit_point_in_root_frame.x + padding - screen_width);
+        rect.x, hit_point_in_root_frame.x() + padding - screen_width);
   }
-  scroll.x = rect.x;
-  scroll.y = rect.y;
+  scroll.SetX(rect.x);
+  scroll.SetY(rect.y);
 
   scale = ClampPageScaleFactorToLimits(scale);
   scroll = MainFrameImpl()->GetFrameView()->RootFrameToDocument(scroll);
@@ -1096,7 +1096,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
   DCHECK(MainFrameImpl());
 
   float scale;
-  WebPoint scroll;
+  IntPoint scroll;
 
   ComputeScaleAndScrollForBlockRect(
       point_in_root_frame, block_bounds, touchPointPadding,
@@ -1142,8 +1142,8 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
     return;
 
   WebRect block_bounds = MainFrameImpl()->FrameWidgetImpl()->ComputeBlockBound(
-      WebPoint(rect_in_root_frame.x + rect_in_root_frame.width / 2,
-               rect_in_root_frame.y + rect_in_root_frame.height / 2),
+      gfx::Point(rect_in_root_frame.x + rect_in_root_frame.width / 2,
+                 rect_in_root_frame.y + rect_in_root_frame.height / 2),
       true);
 
   if (block_bounds.IsEmpty()) {
@@ -1153,10 +1153,10 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
   }
 
   float scale;
-  WebPoint scroll;
+  IntPoint scroll;
 
   ComputeScaleAndScrollForBlockRect(
-      WebPoint(rect_in_root_frame.x, rect_in_root_frame.y), block_bounds,
+      gfx::Point(rect_in_root_frame.x, rect_in_root_frame.y), block_bounds,
       nonUserInitiatedPointPadding, MinimumPageScaleFactor(), scale, scroll);
 
   StartPageScaleAnimation(scroll, false, scale,
@@ -2684,9 +2684,10 @@ void WebViewImpl::ResetScrollAndScaleState() {
 }
 
 void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
-                                      const WebPoint& location) {
+                                      const gfx::Point& location) {
   // FIXME: Location is probably in viewport coordinates
-  HitTestResult result = HitTestResultForRootFramePos(LayoutPoint(location));
+  HitTestResult result =
+      HitTestResultForRootFramePos(LayoutPoint(IntPoint(location)));
   Node* node = result.InnerNode();
   if (!IsHTMLObjectElement(*node) && !IsHTMLEmbedElement(*node))
     return;
@@ -2716,12 +2717,12 @@ void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
   GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
 }
 
-WebHitTestResult WebViewImpl::HitTestResultAt(const WebPoint& point) {
+WebHitTestResult WebViewImpl::HitTestResultAt(const gfx::Point& point) {
   return CoreHitTestResultAt(point);
 }
 
 HitTestResult WebViewImpl::CoreHitTestResultAt(
-    const WebPoint& point_in_viewport) {
+    const gfx::Point& point_in_viewport) {
   // TODO(crbug.com/843128): When we do async hit-testing, we might try to do
   // hit-testing when the local main frame is not valid anymore. Look into if we
   // can avoid getting here earlier in the pipeline.
@@ -2732,7 +2733,7 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = MainFrameImpl()->GetFrameView();
   LayoutPoint point_in_root_frame =
-      view->ViewportToFrame(LayoutPoint(point_in_viewport));
+      view->ViewportToFrame(LayoutPoint(IntPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -3069,7 +3070,7 @@ HitTestResult WebViewImpl::HitTestResultForRootFramePos(
 }
 
 WebHitTestResult WebViewImpl::HitTestResultForTap(
-    const WebPoint& tap_point_window_pos,
+    const gfx::Point& tap_point_window_pos,
     const WebSize& tap_area) {
   if (!page_->MainFrame()->IsLocalFrame())
     return HitTestResult();
@@ -3078,7 +3079,7 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
       WTF::CurrentTimeTicks(), kWebGestureDeviceTouchscreen);
   // GestureTap is only ever from a touchscreen.
-  tap_event.SetPositionInWidget(FloatPoint(tap_point_window_pos));
+  tap_event.SetPositionInWidget(FloatPoint(IntPoint(tap_point_window_pos)));
   tap_event.data.tap.tap_count = 1;
   tap_event.data.tap.width = tap_area.width;
   tap_event.data.tap.height = tap_area.height;
