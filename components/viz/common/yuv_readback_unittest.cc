@@ -482,7 +482,7 @@ TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
     // This test uses the gpu.service/gpu_decoder tracing events to detect how
     // many scaling passes are actually performed by the YUV readback pipeline.
     StartTracing(TRACE_DISABLED_BY_DEFAULT(
-        "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
+        "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu.decoder"));
 
     // Run a test with no size scaling, just planerization.
     TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, use_mrt == 1,

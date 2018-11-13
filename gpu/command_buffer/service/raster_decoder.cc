@@ -931,7 +931,7 @@ RasterDecoderImpl::RasterDecoderImpl(
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
-          TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
+          TRACE_DISABLED_BY_DEFAULT("gpu.decoder"))),
       font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
       weak_ptr_factory_(this) {
   DCHECK(raster_decoder_context_state_);
@@ -1585,7 +1585,7 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
         if (DebugImpl && gpu_trace_commands_) {
           if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
             doing_gpu_trace = true;
-            gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"),
+            gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu.decoder"),
                                GetCommandName(command), gles2::kTraceDecoder);
           }
         }
