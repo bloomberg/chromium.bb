@@ -128,7 +128,7 @@ void ProxyWebWidgetClient::StartDragging(network::mojom::ReferrerPolicy policy,
                                          const blink::WebDragData& data,
                                          blink::WebDragOperationsMask mask,
                                          const SkBitmap& drag_image,
-                                         const blink::WebPoint& image_offset) {
+                                         const gfx::Point& image_offset) {
   widget_test_client_->StartDragging(policy, data, mask, drag_image,
                                      image_offset);
   // Don't forward this call to |base_class_widget_client_| because we don't

@@ -54,12 +54,14 @@ namespace cc {
 struct ApplyViewportChangesArgs;
 }
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class WebCoalescedInputEvent;
 class WebLayerTreeView;
 class WebPagePopup;
-struct WebPoint;
 
 class WebWidget {
  public:
@@ -152,7 +154,7 @@ class WebWidget {
   virtual void ThemeChanged() {}
 
   // Do a hit test at given point and return the WebHitTestResult.
-  virtual WebHitTestResult HitTestResultAt(const WebPoint&) = 0;
+  virtual WebHitTestResult HitTestResultAt(const gfx::Point&) = 0;
 
   // Called to inform the WebWidget of an input event.
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) {

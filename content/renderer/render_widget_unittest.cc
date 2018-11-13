@@ -133,7 +133,7 @@ class StubWebWidget : public blink::WebWidget {
  public:
   void SetLayerTreeView(blink::WebLayerTreeView*) override {}
   blink::WebURL GetURLForDebugTrace() override { return {}; }
-  blink::WebHitTestResult HitTestResultAt(const blink::WebPoint&) override {
+  blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     return {};
   }
 };

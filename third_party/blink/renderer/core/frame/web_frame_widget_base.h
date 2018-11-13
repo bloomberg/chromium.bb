@@ -21,8 +21,11 @@ namespace cc {
 class Layer;
 }
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
 class CompositorAnimationHost;
 class GraphicsLayer;
@@ -45,7 +48,7 @@ class CORE_EXPORT WebFrameWidgetBase
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
 
   // Returns the bounding box of the block type node touched by the WebPoint.
-  WebRect ComputeBlockBound(const WebPoint& point_in_root_frame,
+  WebRect ComputeBlockBound(const gfx::Point& point_in_root_frame,
                             bool ignore_clipping) const;
 
   void BindLocalRoot(WebLocalFrame&);
@@ -70,7 +73,7 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual WebLayerTreeView* GetLayerTreeView() const = 0;
   virtual CompositorAnimationHost* AnimationHost() const = 0;
 
-  virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
+  virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
 
   // WebFrameWidget implementation.
   void Close() override;
@@ -103,7 +106,7 @@ class CORE_EXPORT WebFrameWidgetBase
                      const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const WebPoint& drag_image_offset);
+                     const gfx::Point& drag_image_offset);
 
   bool DoingDragAndDrop() { return doing_drag_and_drop_; }
   static void SetIgnoreInputEvents(bool value) { ignore_input_events_ = value; }

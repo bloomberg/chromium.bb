@@ -35,7 +35,6 @@ class WebLocalFrame;
 class WebString;
 class WebView;
 class WebWidget;
-struct WebPoint;
 struct WebWindowFeatures;
 }
 
@@ -99,7 +98,7 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
                      const blink::WebDragData&,
                      blink::WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& drag_image_offset) override;
+                     const gfx::Point& drag_image_offset) override;
 
  private:
   blink::WebWidgetClient* base_class_widget_client_;

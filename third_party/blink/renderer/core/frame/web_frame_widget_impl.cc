@@ -404,7 +404,7 @@ void WebFrameWidgetImpl::ThemeChanged() {
   view->InvalidateRect(damaged_rect);
 }
 
-WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const WebPoint& point) {
+WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const gfx::Point& point) {
   return CoreHitTestResultAt(point);
 }
 
@@ -1142,11 +1142,12 @@ CompositorAnimationHost* WebFrameWidgetImpl::AnimationHost() const {
 }
 
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
-    const WebPoint& point_in_viewport) {
+    const gfx::Point& point_in_viewport) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  IntPoint point_in_root_frame = view->ViewportToFrame(point_in_viewport);
+  IntPoint point_in_root_frame =
+      view->ViewportToFrame(IntPoint(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 

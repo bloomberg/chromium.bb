@@ -91,7 +91,6 @@ struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
 struct WebCursorInfo;
-struct WebPoint;
 struct WebScreenInfo;
 struct WebWindowFeatures;
 
@@ -142,7 +141,7 @@ class CORE_EXPORT ChromeClient
                              const WebDragData&,
                              WebDragOperationsMask,
                              const SkBitmap& drag_image,
-                             const WebPoint& drag_image_offset) = 0;
+                             const gfx::Point& drag_image_offset) = 0;
   virtual bool AcceptsLoadDrops() const = 0;
 
   // The LocalFrame pointer provides the ChromeClient with context about which

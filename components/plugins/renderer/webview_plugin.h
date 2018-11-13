@@ -172,7 +172,7 @@ class WebViewPlugin : public blink::WebPlugin,
                        const blink::WebDragData&,
                        blink::WebDragOperationsMask,
                        const SkBitmap&,
-                       const blink::WebPoint&) override;
+                       const gfx::Point&) override;
     // TODO(ojan): Remove this override and have this class give a
     // LayerTreeView to the WebWidget. Or stop making this a WebView?
     bool AllowsBrokenNullLayerTreeView() const override;

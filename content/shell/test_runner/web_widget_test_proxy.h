@@ -115,7 +115,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& image_offset) override;
+                     const gfx::Point& image_offset) override;
 
  private:
   // RenderWidet does not have a public destructor.

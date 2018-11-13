@@ -156,7 +156,6 @@ using blink::WebMouseWheelEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNode;
 using blink::WebPagePopup;
-using blink::WebPoint;
 using blink::WebRange;
 using blink::WebRect;
 using blink::WebSize;
@@ -3026,8 +3025,9 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                  const WebDragData& data,
                                  WebDragOperationsMask mask,
                                  const SkBitmap& drag_image,
-                                 const WebPoint& web_image_offset) {
-  blink::WebRect offset_in_window(web_image_offset.x, web_image_offset.y, 0, 0);
+                                 const gfx::Point& web_image_offset) {
+  blink::WebRect offset_in_window(web_image_offset.x(), web_image_offset.y(), 0,
+                                  0);
   ConvertViewportToWindow(&offset_in_window);
   DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = policy;

@@ -72,10 +72,10 @@ WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
 }
 
 WebRect WebFrameWidgetBase::ComputeBlockBound(
-    const WebPoint& point_in_root_frame,
+    const gfx::Point& point_in_root_frame,
     bool ignore_clipping) const {
   HitTestLocation location(local_root_->GetFrameView()->ConvertFromRootFrame(
-      LayoutPoint(point_in_root_frame)));
+      LayoutPoint(IntPoint(point_in_root_frame))));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
       (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
@@ -244,7 +244,7 @@ void WebFrameWidgetBase::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const WebDragData& data,
                                        WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
-                                       const WebPoint& drag_image_offset) {
+                                       const gfx::Point& drag_image_offset) {
   doing_drag_and_drop_ = true;
   Client()->StartDragging(policy, data, mask, drag_image, drag_image_offset);
 }

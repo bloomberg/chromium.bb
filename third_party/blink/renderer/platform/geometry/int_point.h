@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
+#include "ui/gfx/geometry/point.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGPoint CGPoint;
@@ -44,7 +45,6 @@ typedef struct CGPoint CGPoint;
 #endif
 
 namespace gfx {
-class Point;
 class Vector2d;
 }
 
@@ -58,6 +58,7 @@ class PLATFORM_EXPORT IntPoint {
   constexpr IntPoint(int x, int y) : x_(x), y_(y) {}
   explicit IntPoint(const IntSize& size)
       : x_(size.Width()), y_(size.Height()) {}
+  explicit IntPoint(const gfx::Point& point) : x_(point.x()), y_(point.y()) {}
 
   static IntPoint Zero() { return IntPoint(); }
 

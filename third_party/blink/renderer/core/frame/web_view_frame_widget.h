@@ -81,6 +81,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetBaseBackgroundColor(SkColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
+  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
   void Initialize() override;
@@ -95,8 +96,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
-  WebHitTestResult HitTestResultAt(const WebPoint&) override;
-  HitTestResult CoreHitTestResultAt(const WebPoint&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
 
   void Trace(blink::Visitor*) override;
 

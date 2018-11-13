@@ -160,7 +160,7 @@ class PepperWidget : public WebWidget {
 
   void ThemeChanged() override { NOTIMPLEMENTED(); }
 
-  blink::WebHitTestResult HitTestResultAt(const blink::WebPoint&) override {
+  blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     NOTIMPLEMENTED();
     return {};
   }

@@ -32,13 +32,13 @@ class DragMockChromeClient : public EmptyChromeClient {
                      const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const WebPoint& drag_image_offset) override {
+                     const gfx::Point& drag_image_offset) override {
     last_drag_image_size = WebSize(drag_image.width(), drag_image.height());
     last_drag_image_offset = drag_image_offset;
   }
 
   WebSize last_drag_image_size;
-  WebPoint last_drag_image_offset;
+  gfx::Point last_drag_image_offset;
 };
 
 class DragControllerTest : public RenderingTest {
@@ -479,9 +479,9 @@ TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
   // The offset is mapped using integers which can introduce rounding errors
   // (see TODO in DragController::DoSystemDrag) so we accept values near our
   // expectation until more precise offset mapping is available.
-  EXPECT_NEAR(expected_offset.X(), GetChromeClient().last_drag_image_offset.x,
+  EXPECT_NEAR(expected_offset.X(), GetChromeClient().last_drag_image_offset.x(),
               1);
-  EXPECT_NEAR(expected_offset.Y(), GetChromeClient().last_drag_image_offset.y,
+  EXPECT_NEAR(expected_offset.Y(), GetChromeClient().last_drag_image_offset.y(),
               1);
 }
 

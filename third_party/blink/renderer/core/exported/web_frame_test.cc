@@ -3431,7 +3431,7 @@ void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
 }
 
 WebRect ComputeBlockBoundHelper(WebViewImpl* web_view_impl,
-                                WebPoint point,
+                                const gfx::Point& point,
                                 bool ignore_clipping) {
   DCHECK(web_view_impl->MainFrameImpl());
   WebFrameWidgetBase* widget =
@@ -3441,10 +3441,10 @@ WebRect ComputeBlockBoundHelper(WebViewImpl* web_view_impl,
 }
 
 void SimulateDoubleTap(WebViewImpl* web_view_impl,
-                       WebPoint& point,
+                       gfx::Point& point,
                        float& scale) {
   web_view_impl->AnimateDoubleTapZoom(
-      point, ComputeBlockBoundHelper(web_view_impl, point, false));
+      IntPoint(point), ComputeBlockBoundHelper(web_view_impl, point, false));
   EXPECT_TRUE(web_view_impl->FakeDoubleTapAnimationPendingForTesting());
   SimulatePageScale(web_view_impl, scale);
 }
@@ -3467,10 +3467,10 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
 
   WebRect wide_div(200, 100, 400, 150);
   WebRect tall_div(200, 300, 400, 800);
-  WebPoint double_tap_point_wide(wide_div.x + 50, wide_div.y + 50);
-  WebPoint double_tap_point_tall(tall_div.x + 50, tall_div.y + 50);
+  gfx::Point double_tap_point_wide(wide_div.x + 50, wide_div.y + 50);
+  gfx::Point double_tap_point_tall(tall_div.x + 50, tall_div.y + 50);
   float scale;
-  WebPoint scroll;
+  IntPoint scroll;
 
   float double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
@@ -3480,14 +3480,13 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   WebRect wide_block_bound = ComputeBlockBoundHelper(
       web_view_helper.GetWebView(), double_tap_point_wide, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
-      WebPoint(double_tap_point_wide.x, double_tap_point_wide.y),
-      wide_block_bound, kTouchPointPadding,
+      double_tap_point_wide, wide_block_bound, kTouchPointPadding,
       double_tap_zoom_already_legible_scale, scale, scroll);
   // The div should horizontally fill the screen (modulo margins), and
   // vertically centered (modulo integer rounding).
   EXPECT_NEAR(viewport_width / (float)wide_div.width, scale, 0.1);
-  EXPECT_NEAR(wide_div.x, scroll.x, 20);
-  EXPECT_EQ(0, scroll.y);
+  EXPECT_NEAR(wide_div.x, scroll.X(), 20);
+  EXPECT_EQ(0, scroll.Y());
 
   SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), scroll, scale);
 
@@ -3495,8 +3494,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   wide_block_bound = ComputeBlockBoundHelper(web_view_helper.GetWebView(),
                                              double_tap_point_wide, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
-      WebPoint(double_tap_point_wide.x, double_tap_point_wide.y),
-      wide_block_bound, kTouchPointPadding,
+      double_tap_point_wide, wide_block_bound, kTouchPointPadding,
       double_tap_zoom_already_legible_scale, scale, scroll);
   // FIXME: Looks like we are missing EXPECTs here.
 
@@ -3508,13 +3506,12 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   WebRect tall_block_bound = ComputeBlockBoundHelper(
       web_view_helper.GetWebView(), double_tap_point_tall, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
-      WebPoint(double_tap_point_tall.x, double_tap_point_tall.y),
-      tall_block_bound, kTouchPointPadding,
+      double_tap_point_tall, tall_block_bound, kTouchPointPadding,
       double_tap_zoom_already_legible_scale, scale, scroll);
   // The div should start at the top left of the viewport.
   EXPECT_NEAR(viewport_width / (float)tall_div.width, scale, 0.1);
-  EXPECT_NEAR(tall_div.x, scroll.x, 20);
-  EXPECT_NEAR(tall_div.y, scroll.y, 20);
+  EXPECT_NEAR(tall_div.x, scroll.X(), 20);
+  EXPECT_NEAR(tall_div.y, scroll.Y(), 20);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomWideDivTest) {
@@ -3540,7 +3537,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest) {
       double_tap_zoom_already_legible_ratio;
 
   WebRect div(0, 100, viewport_width, 150);
-  WebPoint point(div.x + 50, div.y + 50);
+  gfx::Point point(div.x + 50, div.y + 50);
   float scale;
   SetScaleAndScrollAndLayout(
       web_view_helper.GetWebView(), WebPoint(0, 0),
@@ -3572,16 +3569,16 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest) {
   web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
 
   WebRect div(200, 300, 400, 5000);
-  WebPoint point(div.x + 50, div.y + 3000);
+  gfx::Point point(div.x + 50, div.y + 3000);
   float scale;
-  WebPoint scroll;
+  IntPoint scroll;
 
   WebRect block_bound =
       ComputeBlockBoundHelper(web_view_helper.GetWebView(), point, true);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
       point, block_bound, 0, 1.0f, scale, scroll);
   EXPECT_EQ(scale, 1.0f);
-  EXPECT_EQ(scroll.y, 2660);
+  EXPECT_EQ(scroll.Y(), 2660);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
@@ -3606,8 +3603,8 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
 
   WebRect top_div(200, 100, 200, 150);
   WebRect bottom_div(200, 300, 200, 150);
-  WebPoint top_point(top_div.x + 50, top_div.y + 50);
-  WebPoint bottom_point(bottom_div.x + 50, bottom_div.y + 50);
+  gfx::Point top_point(top_div.x + 50, top_div.y + 50);
+  gfx::Point bottom_point(bottom_div.x + 50, bottom_div.y + 50);
   float scale;
   SetScaleAndScrollAndLayout(
       web_view_helper.GetWebView(), WebPoint(0, 0),
@@ -3643,7 +3640,8 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
 
   WebRect block_bounds =
       ComputeBlockBoundHelper(web_view_helper.GetWebView(), top_point, false);
-  web_view_helper.GetWebView()->AnimateDoubleTapZoom(top_point, block_bounds);
+  web_view_helper.GetWebView()->AnimateDoubleTapZoom(IntPoint(top_point),
+                                                     block_bounds);
   EXPECT_TRUE(
       web_view_helper.GetWebView()->FakeDoubleTapAnimationPendingForTesting());
   SimulateDoubleTap(web_view_helper.GetWebView(), bottom_point, scale);
@@ -3669,7 +3667,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
   WebRect div(200, 100, 200, 150);
-  WebPoint double_tap_point(div.x + 50, div.y + 50);
+  gfx::Point double_tap_point(div.x + 50, div.y + 50);
   float scale;
 
   // Test double tap scale bounds.
@@ -3759,7 +3757,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
       .SetTextAutosizingEnabled(true);
 
   WebRect div(200, 100, 200, 150);
-  WebPoint double_tap_point(div.x + 50, div.y + 50);
+  gfx::Point double_tap_point(div.x + 50, div.y + 50);
   float scale;
 
   // Test double tap scale bounds.
@@ -3879,7 +3877,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       .SetAccessibilityFontScaleFactor(accessibility_font_scale_factor);
 
   WebRect div(200, 100, 200, 150);
-  WebPoint double_tap_point(div.x + 50, div.y + 50);
+  gfx::Point double_tap_point(div.x + 50, div.y + 50);
   float scale;
 
   // Test double tap scale bounds.
@@ -3987,31 +3985,31 @@ TEST_F(WebFrameTest, BlockBoundTest) {
   IntRect block_bound;
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(9, 9), true));
+                                                gfx::Point(9, 9), true));
   EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(10, 10), true));
+                                                gfx::Point(10, 10), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(50, 50), true));
+                                                gfx::Point(50, 50), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(89, 89), true));
+                                                gfx::Point(89, 89), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(90, 90), true));
+                                                gfx::Point(90, 90), true));
   EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(109, 109), true));
+                                                gfx::Point(109, 109), true));
   EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
-                                                WebPoint(110, 110), true));
+                                                gfx::Point(110, 110), true));
   EXPECT_EQ(rect_right_bottom, block_bound);
 }
 
@@ -11290,7 +11288,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   Element* div1_tag = document->getElementById("div1");
 
   HitTestResult hit_test_result = web_view->CoreHitTestResultAt(
-      WebPoint(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5));
+      gfx::Point(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5));
 
   EXPECT_TRUE(hit_test_result.InnerElement());
 
@@ -11838,9 +11836,9 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   // Double-tap on the target. Expect that we zoom in and the target is
   // contained in the visual viewport.
   {
-    WebPoint point(445, 455);
+    gfx::Point point(445, 455);
     WebRect block_bounds = ComputeBlockBoundHelper(&WebView(), point, false);
-    WebView().AnimateDoubleTapZoom(point, block_bounds);
+    WebView().AnimateDoubleTapZoom(IntPoint(point), block_bounds);
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
     ScrollOffset new_offset = ToScrollOffset(
         FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
@@ -11860,9 +11858,9 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   // Double-tap on the target again. We should zoom out and the target should
   // remain on screen.
   {
-    WebPoint point(445, 455);
+    gfx::Point point(445, 455);
     WebRect block_bounds = ComputeBlockBoundHelper(&WebView(), point, false);
-    WebView().AnimateDoubleTapZoom(point, block_bounds);
+    WebView().AnimateDoubleTapZoom(IntPoint(point), block_bounds);
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
     FloatPoint target_offset(
         WebView().FakePageScaleAnimationTargetPositionForTesting());
