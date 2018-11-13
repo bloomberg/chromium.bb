@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/test/android/url_utils.h"
 #include "base/test/test_support_android.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
@@ -117,7 +118,7 @@ void RedirectStream(
       FROM_HERE, {BrowserThread::IO},
       base::Bind(&CreateAndConnectSocket, port,
                  base::Bind(finish_redirection, &redirected)));
-  ScopedAllowWaitForAndroidLayoutTests allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
   while (!redirected.IsSignaled())
     redirected.Wait();
 }
