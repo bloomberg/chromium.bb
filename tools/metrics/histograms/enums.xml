@@ -29062,6 +29062,8 @@ from previous Chrome versions.
   <int value="-2030217301" label="password-export:disabled"/>
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2028232016" label="spurious-power-button-lid-angle-change"/>
+  <int value="-2026156288"
+      label="LookalikeUrlNavigationSuggestionsUI:disabled"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
   <int value="-2021954068" label="TapVisualizerApp:disabled"/>
   <int value="-2020721975" label="smart-virtual-keyboard"/>
@@ -29246,6 +29248,7 @@ from previous Chrome versions.
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
+  <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
   <int value="-1725507605" label="enable-web-midi"/>
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>

@@ -2518,7 +2518,7 @@
             ]
         }
     ],
-    "LookalikeUrlNavigationSuggestions": [
+    "LookalikeUrlNavigationSuggestionsUI": [
         {
             "platforms": [
                 "linux",
@@ -2529,12 +2529,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_V2",
-                    "params": {
-                        "metrics_only": "true"
-                    },
+                    "name": "Enabled",
                     "enable_features": [
-                        "LookalikeUrlNavigationSuggestions"
+                        "LookalikeUrlNavigationSuggestionsUI"
                     ]
                 }
             ]

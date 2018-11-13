@@ -514,16 +514,6 @@ const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
-const FeatureEntry::FeatureParam
-    kLookalikeUrlNavigationSuggestionsMetricsOnly[] = {
-        {"metrics_only", "true"},
-};
-
-const FeatureEntry::FeatureVariation
-    kLookalikeUrlNavigationSuggestionsVariants[] = {
-        {"With Metrics Only", kLookalikeUrlNavigationSuggestionsMetricsOnly,
-         base::size(kLookalikeUrlNavigationSuggestionsMetricsOnly)}};
-
 const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kExtensionContentVerificationBootstrap,
@@ -4317,10 +4307,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLookalikeUrlNavigationSuggestionsName,
      flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription,
      kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         features::kLookalikeUrlNavigationSuggestions,
-         kLookalikeUrlNavigationSuggestionsVariants,
-         "LookalikeUrlNavigationSuggestions")},
+     FEATURE_VALUE_TYPE(features::kLookalikeUrlNavigationSuggestionsUI)},
 
     {"sync-standalone-transport",
      flag_descriptions::kSyncStandaloneTransportName,
