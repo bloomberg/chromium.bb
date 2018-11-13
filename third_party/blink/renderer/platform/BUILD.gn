@@ -120,8 +120,8 @@ action("instrumentation_probes") {
 
 executable("character_data_generator") {
   sources = [
+    "text/character_property_data.h",
     "text/character_property_data_generator.cc",
-    "text/character_property_data_generator.h",
   ]
   configs += [ "//third_party/blink/renderer:config" ]
   deps = [
@@ -1272,6 +1272,7 @@ jumbo_component("platform") {
     "text/character.h",
     "text/character_emoji.cc",
     "text/character_property.h",
+    "text/character_property_data.h",
     "text/date_time_format.cc",
     "text/date_time_format.h",
     "text/decode_escape_sequences.h",

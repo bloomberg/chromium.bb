@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_PROPERTY_DATA_GENERATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_PROPERTY_DATA_GENERATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_PROPERTY_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_CHARACTER_PROPERTY_DATA_H_
 
 #include <unicode/uobject.h>
 
@@ -248,6 +248,12 @@ static const UChar32 kIsHangulRanges[] = {
 };
 
 static const UChar32 kIsHangulArray[] = {};
+
+#if !defined(USING_SYSTEM_ICU)
+// Freezed trie tree, see character_property_data_generator.cc.
+extern const int32_t kSerializedCharacterDataSize;
+extern const uint8_t kSerializedCharacterData[];
+#endif
 
 }  // namespace blink
 

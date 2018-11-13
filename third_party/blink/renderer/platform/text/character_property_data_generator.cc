@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/text/character_property_data_generator.h"
+#include "third_party/blink/renderer/platform/text/character_property_data.h"
 
 #include <stdio.h>
 #include <cassert>
@@ -15,9 +15,10 @@
 #endif
 
 namespace blink {
+namespace {
 
 #if defined(USING_SYSTEM_ICU)
-static void Generate(FILE*) {}
+static void GenerateCharacterPropertyData(FILE*) {}
 #else
 
 const UChar32 kMaxCodepoint = 0x10FFFF;
@@ -66,7 +67,7 @@ static void GenerateUTrieSerialized(FILE* fp, int32_t size, uint8_t* array) {
           "} // namespace blink\n");
 }
 
-static void Generate(FILE* fp) {
+static void GenerateCharacterPropertyData(FILE* fp) {
   // Create a value array of all possible code points.
   const UChar32 kSize = kMaxCodepoint + 1;
   std::unique_ptr<CharacterProperty[]> values(new CharacterProperty[kSize]);
@@ -120,15 +121,16 @@ static void Generate(FILE* fp) {
 }
 #endif
 
+}  // namespace
 }  // namespace blink
 
 int main(int argc, char** argv) {
   // Write the serialized array to the source file.
   if (argc <= 1) {
-    blink::Generate(stdout);
+    blink::GenerateCharacterPropertyData(stdout);
   } else {
     FILE* fp = fopen(argv[1], "wb");
-    blink::Generate(fp);
+    blink::GenerateCharacterPropertyData(fp);
     fclose(fp);
   }
 

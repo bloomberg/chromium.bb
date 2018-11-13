@@ -33,13 +33,13 @@
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
 #include <algorithm>
+#include "third_party/blink/renderer/platform/text/character_property_data.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #if defined(USING_SYSTEM_ICU)
 #include <unicode/uniset.h>
-#include "third_party/blink/renderer/platform/text/character_property_data_generator.h"
 #else
 #define MUTEX_H  // Prevent compile failure of utrie2.h on Windows
 #include <utrie2.h>
@@ -71,10 +71,6 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
     unicodeSet = CREATE_UNICODE_SET(name);      \
   return unicodeSet->contains(c);
 #else
-// Freezed trie tree, see CharacterDataGenerator.cpp.
-extern const int32_t kSerializedCharacterDataSize;
-extern const uint8_t kSerializedCharacterData[];
-
 static UTrie2* CreateTrie() {
   // Create a Trie from the value array.
   ICUError error;
