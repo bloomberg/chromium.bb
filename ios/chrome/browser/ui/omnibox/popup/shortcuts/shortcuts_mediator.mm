@@ -122,12 +122,6 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  if (self.mostVisitedItems.count) {
-    // If some content is already displayed to the user, do not update without a
-    // user action.
-    return;
-  }
-
   NSMutableArray* newMostVisited = [NSMutableArray array];
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
     ShortcutsMostVisitedItem* item =
