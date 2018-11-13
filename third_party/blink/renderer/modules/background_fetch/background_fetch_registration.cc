@@ -181,7 +181,8 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
     bool match_all) {
   // TODO(crbug.com/875201): Update this check once we support access to active
   // fetches.
-  if (result_ == mojom::BackgroundFetchResult::UNSET) {
+  if (result_ == mojom::BackgroundFetchResult::UNSET &&
+      !RuntimeEnabledFeatures::BackgroundFetchAccessActiveFetchesEnabled()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
