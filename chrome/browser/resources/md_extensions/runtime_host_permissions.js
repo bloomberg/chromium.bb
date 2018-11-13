@@ -173,6 +173,7 @@ cr.define('extensions', function() {
       cr.ui.focusWithoutInk(
           assert(this.hostDialogAnchorElement_, 'Host Anchor'));
       this.hostDialogAnchorElement_ = null;
+      this.oldHostAccess_ = null;
     },
 
     /** @private */
