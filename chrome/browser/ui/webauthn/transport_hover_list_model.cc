@@ -51,3 +51,7 @@ void TransportHoverListModel::OnListItemSelected(int item_tag) {
   if (delegate_)
     delegate_->OnItemSelected(static_cast<AuthenticatorTransport>(item_tag));
 }
+
+size_t TransportHoverListModel::GetPreferredItemCount() const {
+  return transport_list_.size();
+}

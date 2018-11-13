@@ -42,6 +42,7 @@ class HoverListModel {
   virtual base::string16 GetItemText(int item_tag) const = 0;
   virtual const gfx::VectorIcon& GetItemIcon(int item_tag) const = 0;
   virtual void OnListItemSelected(int item_tag) = 0;
+  virtual size_t GetPreferredItemCount() const = 0;
 
   void SetObserver(Observer* observer) {
     DCHECK(!observer_);

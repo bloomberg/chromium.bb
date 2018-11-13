@@ -44,6 +44,7 @@ class BleDeviceHoverListModel : public HoverListModel,
   const gfx::VectorIcon& GetItemIcon(int item_tag) const override;
   std::vector<int> GetItemTags() const override;
   void OnListItemSelected(int item_tag) override;
+  size_t GetPreferredItemCount() const override;
 
   // AuthenticatorListObserver:
   void OnAuthenticatorAdded(
