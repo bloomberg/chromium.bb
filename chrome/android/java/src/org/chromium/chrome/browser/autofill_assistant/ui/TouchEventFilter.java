@@ -162,14 +162,20 @@ public class TouchEventFilter
      * @param rectangles rectangles defining the area that can be used, may be empty
      */
     public void updateTouchableArea(boolean enabled, List<RectF> rectangles) {
-        if (mEnabled == enabled && mScrolling || mTouchableArea.equals(rectangles)) {
-            return;
+        if (mEnabled != enabled) {
+            mEnabled = enabled;
+            setAlpha(mEnabled ? 1.0f : 0.0f);
+            clearTouchableArea();
         }
-        mEnabled = enabled;
-        setAlpha(mEnabled ? 1.0f : 0.0f);
 
+        if (!mScrolling && !mTouchableArea.equals(rectangles)) {
+            clearTouchableArea();
+            mTouchableArea.addAll(rectangles);
+        }
+    }
+
+    private void clearTouchableArea() {
         mTouchableArea.clear();
-        mTouchableArea.addAll(rectangles);
         mOffsetY = 0;
         invalidate();
     }
