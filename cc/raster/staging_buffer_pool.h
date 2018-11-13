@@ -22,6 +22,8 @@
 #include "cc/cc_export.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/gl2_types.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -32,6 +34,7 @@ namespace gpu {
 namespace raster {
 class RasterInterface;
 }
+class SharedImageInterface;
 }  // namespace gpu
 
 namespace viz {
@@ -44,7 +47,8 @@ struct StagingBuffer {
   StagingBuffer(const gfx::Size& size, viz::ResourceFormat format);
   ~StagingBuffer();
 
-  void DestroyGLResources(gpu::raster::RasterInterface* gl);
+  void DestroyGLResources(gpu::raster::RasterInterface* gl,
+                          gpu::SharedImageInterface* sii);
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     viz::ResourceFormat format,
                     bool is_free) const;
@@ -58,11 +62,11 @@ struct StagingBuffer {
   // GpuMemoryBuffer.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
 
-  // Id for image used to import the GpuMemoryBuffer to command buffer.
-  GLuint image_id = 0;
+  // Mailbox for the shared image bound to the GpuMemoryBuffer.
+  gpu::Mailbox mailbox;
 
-  // Id for texture that's bound to the GpuMemoryBuffer image.
-  GLuint texture_id = 0;
+  // Sync token for the last RasterInterface operations using the shared image.
+  gpu::SyncToken sync_token;
 
   // Id of command buffer query that tracks use of this staging buffer by the
   // GPU.  In general, GPU synchronization is necessary for native

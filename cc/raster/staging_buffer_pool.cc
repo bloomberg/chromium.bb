@@ -13,6 +13,7 @@
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -68,23 +69,19 @@ StagingBuffer::StagingBuffer(const gfx::Size& size, viz::ResourceFormat format)
     : size(size), format(format) {}
 
 StagingBuffer::~StagingBuffer() {
-  DCHECK_EQ(texture_id, 0u);
-  DCHECK_EQ(image_id, 0u);
+  DCHECK(mailbox.IsZero());
   DCHECK_EQ(query_id, 0u);
 }
 
-void StagingBuffer::DestroyGLResources(gpu::raster::RasterInterface* ri) {
+void StagingBuffer::DestroyGLResources(gpu::raster::RasterInterface* ri,
+                                       gpu::SharedImageInterface* sii) {
   if (query_id) {
     ri->DeleteQueriesEXT(1, &query_id);
     query_id = 0;
   }
-  if (image_id) {
-    ri->DestroyImageCHROMIUM(image_id);
-    image_id = 0;
-  }
-  if (texture_id) {
-    ri->DeleteTextures(1, &texture_id);
-    texture_id = 0;
+  if (!mailbox.IsZero()) {
+    sii->DestroySharedImage(sync_token, mailbox);
+    mailbox.SetZero();
   }
 }
 
@@ -248,6 +245,8 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
       worker_context_provider_);
 
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
+  gpu::SharedImageInterface* sii =
+      worker_context_provider_->SharedImageInterface();
   DCHECK(ri);
 
   // Check if any busy buffers have become available.
@@ -324,7 +323,7 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
     if (free_buffers_.empty())
       break;
 
-    free_buffers_.front()->DestroyGLResources(ri);
+    free_buffers_.front()->DestroyGLResources(ri, sii);
     MarkStagingBufferAsBusy(free_buffers_.front().get());
     RemoveStagingBuffer(free_buffers_.front().get());
     free_buffers_.pop_front();
@@ -395,6 +394,9 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
 
     gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
     DCHECK(ri);
+    gpu::SharedImageInterface* sii =
+        worker_context_provider_->SharedImageInterface();
+    DCHECK(sii);
 
     // Note: Front buffer is guaranteed to be LRU so we can stop releasing
     // buffers as soon as we find a buffer that has been used since |time|.
@@ -402,7 +404,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
       if (free_buffers_.front()->last_usage > time)
         return;
 
-      free_buffers_.front()->DestroyGLResources(ri);
+      free_buffers_.front()->DestroyGLResources(ri, sii);
       MarkStagingBufferAsBusy(free_buffers_.front().get());
       RemoveStagingBuffer(free_buffers_.front().get());
       free_buffers_.pop_front();
@@ -412,7 +414,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
       if (busy_buffers_.front()->last_usage > time)
         return;
 
-      busy_buffers_.front()->DestroyGLResources(ri);
+      busy_buffers_.front()->DestroyGLResources(ri, sii);
       RemoveStagingBuffer(busy_buffers_.front().get());
       busy_buffers_.pop_front();
     }
