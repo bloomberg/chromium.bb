@@ -53,6 +53,7 @@
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
@@ -432,6 +433,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
+    {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
+     flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
 };
 
 // Add all switches from experimental flags to |command_line|.

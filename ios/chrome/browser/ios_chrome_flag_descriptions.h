@@ -190,6 +190,10 @@ extern const char kMemexTabSwitcherDescription[];
 extern const char kNewPasswordFormParsingName[];
 extern const char kNewPasswordFormParsingDescription[];
 
+// Title and description for the flag to enable non-modal JavaScript dialogs.
+extern const char kNonModalDialogsName[];
+extern const char kNonModalDialogsDescription[];
+
 // Title and description for the flag to show most visited sites and collection
 // shortcuts in the omnibox popup instead of ZeroSuggest.
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
