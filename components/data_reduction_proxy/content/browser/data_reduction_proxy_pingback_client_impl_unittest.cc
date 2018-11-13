@@ -58,6 +58,7 @@ static const int kCrashProcessId = 1;
 static const int64_t kRendererMemory = 1024;
 static const int64_t kTouchCount = 10;
 static const int64_t kScrollCount = 20;
+static const int64_t kRedirectCount = 1;
 
 }  // namespace
 
@@ -164,13 +165,15 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(5000)) /* page_end_time */,
+        base::TimeDelta::FromMilliseconds(
+            100) /* navigation_start_to_main_frame_fetch_start */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
         kTotalPageSizeBytes /* total_page_size_bytes */,
         kCachedFraction /* cached_fraction */, app_background_occurred,
         opt_out_occurred, kRendererMemory,
         crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID,
         PageloadMetrics_PageEndReason_END_NONE, kTouchCount /* touch_count */,
-        kScrollCount /* scroll_count */);
+        kScrollCount /* scroll_count */, kRedirectCount /* redirect_count */);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -299,6 +302,9 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(
       timing().page_end_time.value(),
       protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+  EXPECT_EQ(timing().navigation_start_to_main_frame_fetch_start,
+            protobuf_parser::DurationToTimeDelta(
+                pageload_metrics.navigation_start_to_main_frame_fetch_start()));
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kChannel, pageload_metrics.channel());
@@ -309,6 +315,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
   EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
   EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
+  EXPECT_EQ(kRedirectCount, pageload_metrics.redirect_count());
   EXPECT_EQ(data_page_id, pageload_metrics.page_id());
 
   EXPECT_EQ(PageloadMetrics_PreviewsType_NONE,
@@ -440,6 +447,10 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(
         timing().page_end_time.value(),
         protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+    EXPECT_EQ(
+        timing().navigation_start_to_main_frame_fetch_start,
+        protobuf_parser::DurationToTimeDelta(
+            pageload_metrics.navigation_start_to_main_frame_fetch_start()));
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
     EXPECT_EQ(kChannel, pageload_metrics.channel());
@@ -449,6 +460,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
     EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
     EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
+    EXPECT_EQ(kRedirectCount, pageload_metrics.redirect_count());
     EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
 
     EXPECT_EQ(page_ids.front(), pageload_metrics.page_id());

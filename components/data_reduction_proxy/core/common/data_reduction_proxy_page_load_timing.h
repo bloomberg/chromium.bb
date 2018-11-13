@@ -28,6 +28,7 @@ struct DataReductionProxyPageLoadTiming {
           parse_blocked_on_script_load_duration,
       const base::Optional<base::TimeDelta>& parse_stop,
       const base::Optional<base::TimeDelta>& page_end_time,
+      const base::TimeDelta& navigation_start_to_main_frame_fetch_start,
       int64_t network_bytes,
       int64_t original_network_bytes,
       int64_t total_page_size_bytes,
@@ -38,7 +39,8 @@ struct DataReductionProxyPageLoadTiming {
       int host_id,
       PageloadMetrics_PageEndReason page_end_reason,
       uint32_t touch_count,
-      uint32_t scroll_count);
+      uint32_t scroll_count,
+      uint32_t redirect_count);
 
   DataReductionProxyPageLoadTiming(
       const DataReductionProxyPageLoadTiming& other);
@@ -66,6 +68,9 @@ struct DataReductionProxyPageLoadTiming {
   const base::Optional<base::TimeDelta> parse_stop;
   // Time when the page was ended (navigated away, Chrome backgrounded, etc).
   const base::Optional<base::TimeDelta> page_end_time;
+  // The duration between the navigation start as reported by the navigation
+  // handle, and when the fetchStart of the main page HTML.
+  const base::TimeDelta navigation_start_to_main_frame_fetch_start;
 
   // The number of bytes served over the network, not including headers.
   const int64_t network_bytes;
@@ -91,6 +96,8 @@ struct DataReductionProxyPageLoadTiming {
   const uint32_t touch_count;
   // The number of scroll events that happened on the page.
   const uint32_t scroll_count;
+  // The number of redirects that were encountered during the main frame load.
+  const uint32_t redirect_count;
 };
 
 }  // namespace data_reduction_proxy

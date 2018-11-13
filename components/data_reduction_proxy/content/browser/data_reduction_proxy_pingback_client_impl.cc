@@ -131,6 +131,10 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.page_end_time.value())
             .release());
   }
+  request->set_allocated_navigation_start_to_main_frame_fetch_start(
+      protobuf_parser::CreateDurationFromTimeDelta(
+          timing.navigation_start_to_main_frame_fetch_start)
+          .release());
 
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
@@ -146,6 +150,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_renderer_memory_usage_kb(timing.renderer_memory_usage_kb);
   request->set_touch_count(timing.touch_count);
   request->set_scroll_count(timing.scroll_count);
+  request->set_redirect_count(timing.redirect_count);
 
   request->set_renderer_crash_type(crash_type);
 

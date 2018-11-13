@@ -145,9 +145,17 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
       touch_count_(0),
       scroll_count_(0),
+      redirect_count_(0),
       weak_ptr_factory_(this) {}
 
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataReductionProxyMetricsObserver::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  redirect_count_++;
+  return CONTINUE_OBSERVING;
+}
 
 // Check if the NavigationData indicates anything about the DataReductionProxy.
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -202,6 +210,8 @@ DataReductionProxyMetricsObserver::OnCommit(
                                 ->GetMainFrame()
                                 ->GetProcess()
                                 ->GetID();
+
+  navigation_start_ = navigation_handle->NavigationStart();
 
   // DataReductionProxy page loads should only occur on HTTP navigations.
   DCHECK(!navigation_handle->GetURL().SchemeIsCryptographic());
@@ -440,11 +450,11 @@ void DataReductionProxyMetricsObserver::SendPingback(
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint, first_input_delay,
       parse_blocked_on_script_load_duration, parse_stop, page_end_time,
-      network_bytes, original_network_bytes, total_page_size_bytes,
-      cached_fraction, app_background_occurred, opted_out_,
-      renderer_memory_usage_kb_, host_id,
+      navigation_start_to_main_frame_fetch_start_, network_bytes,
+      original_network_bytes, total_page_size_bytes, cached_fraction,
+      app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id,
       ConvertPLMPageEndReasonToProto(info.page_end_reason), touch_count_,
-      scroll_count_);
+      scroll_count_, redirect_count_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
@@ -560,6 +570,13 @@ void DataReductionProxyMetricsObserver::OnLoadedResource(
   if (extra_request_complete_info.data_reduction_proxy_data &&
       extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
     data_->set_lofi_received(true);
+  }
+
+  if (extra_request_complete_info.resource_type ==
+      content::RESOURCE_TYPE_MAIN_FRAME) {
+    navigation_start_to_main_frame_fetch_start_ =
+        extra_request_complete_info.load_timing_info->request_start -
+        navigation_start_;
   }
 }
 
