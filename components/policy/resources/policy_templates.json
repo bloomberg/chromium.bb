@@ -13377,6 +13377,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
+      'future': True,
       'caption': '''Report OS and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Version Information''',
       'example_value': False,
       'desc': '''This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> channel.
@@ -13397,6 +13398,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
+      'future': True,
       'caption': '''Report <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Policy Information''',
       'example_value': False,
       'desc': '''This policy controls whether to report policy data and time of policy fetch.
@@ -13417,6 +13419,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
+      'future': True,
       'caption': '''Report Machine Identification information''',
       'example_value': False,
       'desc': '''This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
@@ -13437,6 +13440,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:70-'],
+      'future': True,
       'caption': '''Report User Identification information''',
       'example_value': False,
       'desc': '''This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile name, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile path and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> executable path.
@@ -13457,6 +13461,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:72-'],
+      'future': True,
       'caption': '''Report Extensions and Plugins information''',
       'example_value': False,
       'desc': '''This policy controls whether to report extensions and plugins information.
@@ -13477,6 +13482,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:72-'],
+      'future': True,
       'caption': '''Report Safe Browsing information''',
       'example_value': False,
       'desc': '''This policy controls whether to report Safe Browsing information including the number of Safe Browsing warning and the number of safe browsering warning click through.
