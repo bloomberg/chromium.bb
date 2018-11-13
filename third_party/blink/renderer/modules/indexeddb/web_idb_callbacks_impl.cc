@@ -31,8 +31,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
@@ -43,6 +41,8 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 

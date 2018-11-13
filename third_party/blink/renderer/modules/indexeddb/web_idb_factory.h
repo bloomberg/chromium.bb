@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -43,7 +43,7 @@ class WebIDBDatabaseCallbacks;
 class WebSecurityOrigin;
 class WebString;
 
-class WebIDBFactory {
+class MODULES_EXPORT WebIDBFactory {
  public:
   virtual ~WebIDBFactory() = default;
 
@@ -70,4 +70,4 @@ class WebIDBFactory {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_

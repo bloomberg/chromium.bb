@@ -30,7 +30,6 @@
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -558,8 +558,8 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 
-  WebVector<WebIDBIndexKeys> index_keys;
-  index_keys.reserve(Metadata().indexes.size());
+  Vector<WebIDBIndexKeys> index_keys;
+  index_keys.ReserveInitialCapacity(Metadata().indexes.size());
   for (const auto& it : Metadata().indexes) {
     if (clone.IsEmpty())
       value_wrapper.Clone(script_state, &clone);
@@ -754,8 +754,8 @@ class IndexPopulator final : public EventListener {
       const IDBKey* primary_key = cursor->IdbPrimaryKey();
       ScriptValue value = cursor->value(script_state_);
 
-      WebVector<WebIDBIndexKeys> index_keys;
-      index_keys.reserve(1);
+      Vector<WebIDBIndexKeys> index_keys;
+      index_keys.ReserveInitialCapacity(1);
       index_keys.emplace_back(
           IndexMetadata().id,
           GenerateIndexKeysForValue(script_state_->GetIsolate(),

@@ -31,9 +31,10 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -53,6 +54,8 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -186,8 +189,13 @@ static bool IsContextValid(ExecutionContext* context) {
 }
 
 WebIDBFactory* IDBFactory::GetFactory() {
-  if (!web_idb_factory_)
-    web_idb_factory_ = Platform::Current()->CreateIdbFactory();
+  if (!web_idb_factory_) {
+    mojom::blink::IDBFactoryPtrInfo web_idb_factory_host_info;
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&web_idb_factory_host_info));
+    web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
+        std::move(web_idb_factory_host_info));
+  }
   return web_idb_factory_.get();
 }
 

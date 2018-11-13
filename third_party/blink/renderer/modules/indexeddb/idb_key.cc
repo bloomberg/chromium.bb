@@ -34,6 +34,40 @@
 
 namespace blink {
 
+namespace {
+
+size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
+  size_t size(0);
+  for (const auto& key : keys)
+    size += key.get()->SizeEstimate();
+  return size;
+}
+
+}  // namespace
+
+IDBKey::IDBKey() : type_(kInvalidType), size_estimate_(kIDBKeyOverheadSize) {}
+
+IDBKey::IDBKey(Type type, double number)
+    : type_(type),
+      number_(number),
+      size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {}
+
+IDBKey::IDBKey(const String& value)
+    : type_(kStringType),
+      string_(value),
+      size_estimate_(kIDBKeyOverheadSize + (string_.length() * sizeof(UChar))) {
+}
+
+IDBKey::IDBKey(scoped_refptr<SharedBuffer> value)
+    : type_(kBinaryType),
+      binary_(std::move(value)),
+      size_estimate_(kIDBKeyOverheadSize + binary_.get()->size()) {}
+
+IDBKey::IDBKey(KeyArray key_array)
+    : type_(kArrayType),
+      array_(std::move(key_array)),
+      size_estimate_(kIDBKeyOverheadSize + CalculateIDBKeyArraySize(array_)) {}
+
 IDBKey::~IDBKey() = default;
 
 bool IDBKey::IsValid() const {
