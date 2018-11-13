@@ -2640,8 +2640,9 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);
 };
 
+// TODO: fix, test is flaky. https://crbug.com/904841.
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
-                       ConfigurationIsLoaded) {
+                       DISABLED_ConfigurationIsLoaded) {
   WaitForConfigurationLoaded();
   EXPECT_CALL(*mock_welcome_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_,
