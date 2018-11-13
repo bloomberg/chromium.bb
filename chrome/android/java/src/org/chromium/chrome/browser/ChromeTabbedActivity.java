@@ -121,6 +121,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -2203,7 +2204,7 @@ public class ChromeTabbedActivity
     public void onOverviewModeFinishedHiding() {
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         if (getActivityTab() != null) {
-            setStatusBarColor(getActivityTab(), getActivityTab().getThemeColor());
+            setStatusBarColor(getActivityTab(), TabThemeColorHelper.getColor(getActivityTab()));
         }
     }
 

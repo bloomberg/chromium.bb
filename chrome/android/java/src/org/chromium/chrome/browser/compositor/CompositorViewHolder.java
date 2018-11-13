@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -875,7 +876,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public int getBrowserControlsBackgroundColor() {
-        return mTabVisible == null ? Color.WHITE : mTabVisible.getThemeColor();
+        return mTabVisible == null ? Color.WHITE : TabThemeColorHelper.getColor(mTabVisible);
     }
 
     @Override
