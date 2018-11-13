@@ -30,9 +30,10 @@ const char kFooUrl2[] = "https://foo.example/bar";
 const char kFooTitle[] = "Foo Title";
 const char kBarUrl[] = "https://bar.example";
 
-constexpr int kIconSizesToGenerate[] = {icon_size::k24,  icon_size::k32,
-                                        icon_size::k48,  icon_size::k128,
-                                        icon_size::k256, icon_size::k512};
+constexpr int kIconSizesToGenerate[] = {
+    icon_size::k32, icon_size::k64,  icon_size::k48,
+    icon_size::k96, icon_size::k128, icon_size::k256,
+};
 
 }  // namespace
 
