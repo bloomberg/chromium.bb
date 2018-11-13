@@ -187,7 +187,7 @@ const SelectionInDOMTree AXSelection::AsSelection(
 
 void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
-    NOTREACHED();
+    NOTREACHED() << "Trying to select an invalid accessibility selection.";
     return;
   }
 

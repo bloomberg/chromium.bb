@@ -22,6 +22,11 @@ namespace blink {
 // accessibility tree but not in the DOM tree, determines whether setting the
 // selection will shrink or extend the |AXSelection| to encompass endpoints that
 // are in the DOM.
+// Conversely, if a DOM selection is converted to an |AXSelection| via the
+// |AsSelection| method, but the endpoints of the DOM selection are not present
+// in the accessibility tree, e.g. they are aria-hidden, determines whether the
+// conversion will shrink or extend the DOM selection to encompass endpoints
+// that are in the accessibility tree.
 enum class AXSelectionBehavior {
   kShrinkToValidDOMRange,
   kExtendToValidDOMRange

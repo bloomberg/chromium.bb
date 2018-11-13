@@ -356,7 +356,7 @@ std::string AccessibilitySelectionTest::GetSelectionText(
   return AXSelectionSerializer(selection).Serialize(subtree);
 }
 
-const AXSelection AccessibilitySelectionTest::SetSelectionText(
+AXSelection AccessibilitySelectionTest::SetSelectionText(
     const std::string& selection_text) const {
   HTMLElement* body = GetDocument().body();
   if (!body)
@@ -369,7 +369,7 @@ const AXSelection AccessibilitySelectionTest::SetSelectionText(
   return ax_selections.front();
 }
 
-const AXSelection AccessibilitySelectionTest::SetSelectionText(
+AXSelection AccessibilitySelectionTest::SetSelectionText(
     const std::string& selection_text,
     HTMLElement& element) const {
   const Vector<AXSelection> ax_selections =
