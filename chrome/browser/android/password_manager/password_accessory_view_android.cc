@@ -21,6 +21,9 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
+using autofill::AccessorySheetData;
+using autofill::FooterCommand;
+using autofill::UserInfo;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
@@ -41,7 +44,7 @@ ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
       Java_PasswordAccessoryBridge_addFieldToUserInfo(
           env, j_user_info, ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
-          field.is_password(), field.selectable());
+          field.is_obfuscated(), field.selectable());
     }
   }
 

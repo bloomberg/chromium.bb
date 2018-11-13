@@ -27,7 +27,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   ~PasswordAccessoryViewAndroid() override;
 
   // PasswordAccessoryViewInterface:
-  void OnItemsAvailable(const AccessorySheetData& data) override;
+  void OnItemsAvailable(const autofill::AccessorySheetData& data) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void CloseAccessorySheet() override;
   void SwapSheetWithKeyboard() override;

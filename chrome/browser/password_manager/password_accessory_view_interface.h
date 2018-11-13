@@ -12,8 +12,11 @@
 #include "build/build_config.h"
 #include "url/gurl.h"
 
-class AccessorySheetData;
 class PasswordAccessoryController;
+
+namespace autofill {
+class AccessorySheetData;
+}  // namespace autofill
 
 // The interface for creating and controlling a view for the password accessory.
 // The view gets data from a given |PasswordAccessoryController| and forwards
@@ -51,7 +54,7 @@ class PasswordAccessoryViewInterface {
 
   // Called with data that should replace the data currently shown on the
   // accessory sheet.
-  virtual void OnItemsAvailable(const AccessorySheetData& data) = 0;
+  virtual void OnItemsAvailable(const autofill::AccessorySheetData& data) = 0;
 
   // Called when the generation action should be offered or rescinded
   // in the keyboard accessory.

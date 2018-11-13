@@ -177,7 +177,7 @@ class PasswordAccessoryController
 
   // Creates the view items based on the given |suggestions|.
   // If |is_password_field| is false, password suggestions won't be interactive.
-  static AccessorySheetData CreateAccessorySheetData(
+  static autofill::AccessorySheetData CreateAccessorySheetData(
       const url::Origin& origin,
       const std::vector<SuggestionElementData>& suggestions,
       bool is_password_field);

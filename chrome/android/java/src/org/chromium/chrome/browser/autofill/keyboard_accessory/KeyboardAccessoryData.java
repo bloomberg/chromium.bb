@@ -186,7 +186,7 @@ public class KeyboardAccessoryData {
         private final int mType;
         private final String mCaption;
         private final String mContentDescription;
-        private final boolean mIsPassword;
+        private final boolean mIsObfuscated;
         private final @Nullable Callback<Item> mItemSelectedCallback;
         private final @Nullable FaviconProvider mFaviconProvider;
 
@@ -219,19 +219,20 @@ public class KeyboardAccessoryData {
          * Creates a new Item of type {@link ItemType#SUGGESTION} if has a callback, otherwise, it
          * will be {@link ItemType#NON_INTERACTIVE_SUGGESTION}. It usually is part of a list of
          * suggestions and can have a callback that is triggered on selection.
-         * @param caption The text of the displayed item. Only plain text if |isPassword| is false.
+         * @param caption The text of the displayed item. Only plain text if |isObfuscated| is
+         * false.
          * @param contentDescription The description of this item (i.e. used for accessibility).
-         * @param isPassword If true, the displayed caption is transformed into stars.
+         * @param isObfuscated If true, the displayed caption is transformed into stars.
          * @param itemSelectedCallback A click on this item will invoke this callback. Optional.
          */
         public static Item createSuggestion(String caption, String contentDescription,
-                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback,
+                boolean isObfuscated, @Nullable Callback<Item> itemSelectedCallback,
                 @Nullable FaviconProvider faviconProvider) {
             if (itemSelectedCallback == null) {
                 return new Item(ItemType.NON_INTERACTIVE_SUGGESTION, caption, contentDescription,
-                        isPassword, null, faviconProvider);
+                        isObfuscated, null, faviconProvider);
             }
-            return new Item(ItemType.SUGGESTION, caption, contentDescription, isPassword,
+            return new Item(ItemType.SUGGESTION, caption, contentDescription, isObfuscated,
                     itemSelectedCallback, faviconProvider);
         }
 
@@ -265,19 +266,20 @@ public class KeyboardAccessoryData {
         /**
          * Creates a new item.
          * @param type Type of the item (e.g. non-clickable LABEL or clickable SUGGESTION).
-         * @param caption The text of the displayed item. Only plain text if |isPassword| is false.
+         * @param caption The text of the displayed item. Only plain text if |isObfuscated| is
+         * false.
          * @param contentDescription The description of this item (i.e. used for accessibility).
-         * @param isPassword If true, the displayed caption is transformed into stars.
+         * @param isObfuscated If true, the displayed caption is transformed into stars.
          * @param itemSelectedCallback If the Item is interactive, a click on it will trigger this.
          * @param faviconProvider
          */
         private Item(@ItemType int type, String caption, String contentDescription,
-                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback,
+                boolean isObfuscated, @Nullable Callback<Item> itemSelectedCallback,
                 @Nullable FaviconProvider faviconProvider) {
             mType = type;
             mCaption = caption;
             mContentDescription = contentDescription;
-            mIsPassword = isPassword;
+            mIsObfuscated = isObfuscated;
             mItemSelectedCallback = itemSelectedCallback;
             mFaviconProvider = faviconProvider;
         }
@@ -307,12 +309,12 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * Returns whether the item (i.e. its caption) contains a password. Can be used to determine
-         * when to apply text transformations to hide passwords.
-         * @return Returns true if the caption is a password. False otherwise.
+         * Returns whether obfuscation should be applied to the item's caption, for example to hide
+         * passwords.
+         * @return Returns true if obfuscation should be applied to the caption.
          */
-        public boolean isPassword() {
-            return mIsPassword;
+        public boolean isObfuscated() {
+            return mIsObfuscated;
         }
 
         /**
@@ -347,23 +349,23 @@ public class KeyboardAccessoryData {
         public final static class Field {
             private final String mDisplayText;
             private final String mA11yDescription;
-            private final boolean mIsPassword;
+            private final boolean mIsObfuscated;
             // TODO(crbug.com/902425): Once the selection callback is added to this class, replace
             //                         this with a check if the callback is not null.
             private final boolean mSelectable;
 
             /**
              * Creates a new Field.
-             * @param displayText The text to display. Plain text if |isPassword| is false.
+             * @param displayText The text to display. Plain text if |isObfuscated| is false.
              * @param a11yDescription The description used for accessibility.
-             * @param isPassword If true, the displayed caption is transformed into stars.
+             * @param isObfuscated If true, the displayed caption is transformed into stars.
              * @param selectable If true, user can interact with the suggested field.
              */
-            public Field(String displayText, String a11yDescription, boolean isPassword,
+            public Field(String displayText, String a11yDescription, boolean isObfuscated,
                     boolean selectable) {
                 mDisplayText = displayText;
                 mA11yDescription = a11yDescription;
-                mIsPassword = isPassword;
+                mIsObfuscated = isObfuscated;
                 mSelectable = selectable;
             }
 
@@ -390,11 +392,11 @@ public class KeyboardAccessoryData {
             }
 
             /**
-             * Returns whether the item (i.e. its caption) contains a password. Can be used to
-             * determine when to apply text transformations to hide passwords.
+             * Returns true if obfuscation should be applied to the item's caption, for example to
+             * hide passwords.
              */
-            public boolean isPassword() {
-                return mIsPassword;
+            public boolean isObfuscated() {
+                return mIsObfuscated;
             }
         }
 
