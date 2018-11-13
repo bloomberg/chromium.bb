@@ -31,6 +31,11 @@ class IdentityTestEnvironmentProfileAdaptor {
       const TestingProfile::TestingFactories& input_factories,
       std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs = nullptr);
 
+  // Creates and returns a TestingProfile that has been configured with the
+  // given |builder|.
+  static std::unique_ptr<TestingProfile>
+  CreateProfileForIdentityTestEnvironment(TestingProfile::Builder& builder);
+
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
   // factories supplied to TestingProfile (via one of the various mechanisms for
