@@ -17,17 +17,20 @@ extern const CGFloat kMinHeaderHeight;
 // initial frame to its final full bleed frame.
 extern const CGFloat kAnimationDistance;
 
-CGFloat ToolbarHeight();
+extern const CGFloat kFakeLocationBarTopConstraint;
 
 extern const CGFloat kScrolledToTopOmniboxBottomMargin;
 
 extern const CGFloat kHintLabelSidePadding;
 
-// The margin of the subviews of the fake omnibox when it is pinned to top.
-extern const CGFloat kMaxHorizontalMarginDiff;
+extern const CGFloat kHintLabelHeightMargin;
 
 // The margin added to the fake omnibox to have at the right position.
 extern const CGFloat kMaxTopMarginDiff;
+
+// The margin to add to the fake omnibox to have it correctly positioned when
+// the NTP is scrolled to the top.
+extern const CGFloat kFakeOmniboxScrolledToTopMargin;
 
 }  // namespace ntp_header
 

@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -321,6 +322,12 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    [self.collectionViewLayout invalidateLayout];
+    [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
+    [self.headerSynchronizer updateConstraints];
+  }
   [self correctMissingSafeArea];
   [self updateOverscrollActionsState];
 }
@@ -600,14 +607,15 @@ const CGFloat kCardBorderRadius = 11;
 #pragma mark - UIAccessibilityAction
 
 - (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction {
+  CGFloat toolbarHeight =
+      ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory);
   // The collection displays the fake omnibox on the top of the other elements.
   // The default scrolling action scrolls for the full height of the collection,
   // hiding elements behing the fake omnibox. This reduces the scrolling by the
   // height of the fake omnibox.
   if (direction == UIAccessibilityScrollDirectionDown) {
     CGFloat newYOffset = self.collectionView.contentOffset.y +
-                         self.collectionView.bounds.size.height -
-                         ntp_header::ToolbarHeight();
+                         self.collectionView.bounds.size.height - toolbarHeight;
     newYOffset = MIN(self.collectionView.contentSize.height -
                          self.collectionView.bounds.size.height,
                      newYOffset);
@@ -615,8 +623,7 @@ const CGFloat kCardBorderRadius = 11;
         CGPointMake(self.collectionView.contentOffset.x, newYOffset);
   } else if (direction == UIAccessibilityScrollDirectionUp) {
     CGFloat newYOffset = self.collectionView.contentOffset.y -
-                         self.collectionView.bounds.size.height +
-                         ntp_header::ToolbarHeight();
+                         self.collectionView.bounds.size.height + toolbarHeight;
     newYOffset = MAX(0, newYOffset);
     self.collectionView.contentOffset =
         CGPointMake(self.collectionView.contentOffset.x, newYOffset);
@@ -716,11 +723,12 @@ const CGFloat kCardBorderRadius = 11;
     // Don't set the offset such as the content of the collection is smaller
     // than the part of the collection which should be displayed with that
     // offset, taking into account the size of the toolbar.
-    CGFloat offset =
-        MAX(0, MIN(_initialContentOffset, collection.contentSize.height -
-                                              collection.bounds.size.height -
-                                              ntp_header::ToolbarHeight() +
-                                              collection.contentInset.bottom));
+    CGFloat offset = MAX(
+        0, MIN(_initialContentOffset,
+               collection.contentSize.height - collection.bounds.size.height -
+                   ToolbarExpandedHeight(
+                       self.traitCollection.preferredContentSizeCategory) +
+                   collection.contentInset.bottom));
     if (collection.contentOffset.y != offset) {
       collection.contentOffset = CGPointMake(0, offset);
       // Update the constraints in case the omnibox needs to be moved.

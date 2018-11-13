@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -191,7 +192,9 @@ using base::UserMetricsAction;
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsRegularXRegularSizeClass(self)) {
-    offsetY -= ntp_header::ToolbarHeight() + [self topInset];
+    offsetY -= ToolbarExpandedHeight(
+                   self.traitCollection.preferredContentSizeCategory) +
+               [self topInset];
   }
 
   return offsetY;
@@ -378,7 +381,9 @@ using base::UserMetricsAction;
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoIsShowing)];
   self.fakeOmniboxHeightConstraint = [fakeOmnibox.heightAnchor
-      constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
+      constraintEqualToConstant:ToolbarExpandedHeight(
+                                    self.traitCollection
+                                        .preferredContentSizeCategory)];
   self.fakeOmniboxTopMarginConstraint = [logoView.bottomAnchor
       constraintEqualToAnchor:fakeOmnibox.topAnchor
                      constant:-content_suggestions::searchFieldTopMargin()];

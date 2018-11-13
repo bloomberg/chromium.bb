@@ -9,8 +9,6 @@
 
 namespace content_suggestions {
 
-extern const CGFloat kSearchFieldHeight;
-
 extern const int kSearchFieldBackgroundColor;
 
 extern const CGFloat kHintTextScale;

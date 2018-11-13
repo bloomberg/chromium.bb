@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
@@ -32,8 +33,10 @@
     topSafeArea = StatusBarHeight();
   }
   if (!IsRegularXRegularSizeClass(self.collectionView))
-    minimumHeight -= ntp_header::ToolbarHeight() + topSafeArea +
-                     self.collectionView.contentInset.bottom;
+    minimumHeight -=
+        ToolbarExpandedHeight(
+            [UIApplication sharedApplication].preferredContentSizeCategory) +
+        topSafeArea + self.collectionView.contentInset.bottom;
 
   CGSize contentSize = [super collectionViewContentSize];
   if (contentSize.height < minimumHeight) {
@@ -105,7 +108,11 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
     } else {
       topSafeArea = StatusBarHeight();
     }
-    CGFloat minY = headerHeight - ntp_header::kMinHeaderHeight - topSafeArea;
+    CGFloat minY =
+        headerHeight - ntp_header::kFakeOmniboxScrolledToTopMargin -
+        ToolbarExpandedHeight(
+            [UIApplication sharedApplication].preferredContentSizeCategory) -
+        topSafeArea;
     if (contentOffset.y > minY)
       origin.y = contentOffset.y - minY;
     attributes.frame = {origin, attributes.frame.size};
