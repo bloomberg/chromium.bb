@@ -20,6 +20,8 @@ enum RTCQuicStreamState {
     readonly attribute RTCQuicStreamState state;
     readonly attribute unsigned long readBufferedAmount;
     readonly attribute unsigned long writeBufferedAmount;
+    readonly attribute unsigned long maxWriteBufferedAmount;
+    [RaisesException] void write(Uint8Array data);
     void finish();
     void reset();
     attribute EventHandler onstatechange;
