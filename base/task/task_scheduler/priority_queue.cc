@@ -37,6 +37,7 @@ class PriorityQueue::SequenceAndSortKey {
   // call.
   scoped_refptr<Sequence> take_sequence() {
     DCHECK(sequence_);
+    sequence_->ClearHeapHandle();
     return std::move(sequence_);
   }
 
@@ -47,10 +48,21 @@ class PriorityQueue::SequenceAndSortKey {
   }
 
   // Required by IntrusiveHeap.
-  void SetHeapHandle(const HeapHandle& handle) {}
+  void SetHeapHandle(const HeapHandle& handle) {
+    DCHECK(sequence_);
+    sequence_->SetHeapHandle(handle);
+  }
 
   // Required by IntrusiveHeap.
-  void ClearHeapHandle() {}
+  void ClearHeapHandle() {
+    // Ensure |sequence_| is not nullptr, which may be the case if
+    // take_sequence() was called before this.
+    if (sequence_) {
+      sequence_->ClearHeapHandle();
+    }
+  }
+
+  const Sequence* sequence() const { return sequence_.get(); }
 
   const SequenceSortKey& sort_key() const { return sort_key_; }
 
@@ -90,6 +102,39 @@ scoped_refptr<Sequence> PriorityQueue::Transaction::PopSequence() {
           .take_sequence();
   outer_queue_->container_.Pop();
   return sequence;
+}
+
+bool PriorityQueue::Transaction::RemoveSequence(
+    scoped_refptr<Sequence> sequence) {
+  DCHECK(sequence);
+
+  if (IsEmpty())
+    return false;
+
+  const HeapHandle heap_handle = sequence->heap_handle();
+  if (!heap_handle.IsValid())
+    return false;
+
+  DCHECK_EQ(outer_queue_->container_.at(heap_handle).sequence(),
+            sequence.get());
+  outer_queue_->container_.erase(heap_handle);
+  return true;
+}
+
+void PriorityQueue::Transaction::UpdateSortKey(
+    scoped_refptr<Sequence> sequence,
+    const SequenceSortKey& sequence_sort_key) {
+  DCHECK(sequence);
+
+  if (IsEmpty())
+    return;
+
+  const HeapHandle heap_handle = sequence->heap_handle();
+  if (!heap_handle.IsValid())
+    return;
+
+  outer_queue_->container_.ChangeKey(
+      heap_handle, SequenceAndSortKey(std::move(sequence), sequence_sort_key));
 }
 
 bool PriorityQueue::Transaction::IsEmpty() const {

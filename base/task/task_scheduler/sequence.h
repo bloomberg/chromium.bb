@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequence_token.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
@@ -75,6 +76,8 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
     // Cannot be called on an empty Sequence.
     SequenceSortKey GetSortKey() const;
 
+    scoped_refptr<Sequence> sequence() { return sequence_; }
+
    private:
     friend class Sequence;
 
@@ -95,6 +98,11 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active Sequence::Transaction.
   std::unique_ptr<Transaction> BeginTransaction();
+
+  // Support for IntrusiveHeap.
+  void SetHeapHandle(const HeapHandle& handle);
+  void ClearHeapHandle();
+  HeapHandle heap_handle() const { return heap_handle_; }
 
   // Returns a token that uniquely identifies this Sequence.
   const SequenceToken& token() const { return token_; }
@@ -129,6 +137,10 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   // references when Sequence is deleted.
   const scoped_refptr<SchedulerParallelTaskRunner>
       scheduler_parallel_task_runner_;
+
+  // The Sequence's position in its current PriorityQueue. Access is protected
+  // by the PriorityQueue's lock.
+  HeapHandle heap_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Sequence);
 };
