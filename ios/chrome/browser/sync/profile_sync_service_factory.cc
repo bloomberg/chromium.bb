@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
@@ -149,6 +150,14 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
+
+  auto* deprecated_invalidation_provider =
+      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state);
+  if (deprecated_invalidation_provider) {
+    init_params.invalidations_identity_providers.push_back(
+        deprecated_invalidation_provider->GetIdentityProvider());
+  }
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();
