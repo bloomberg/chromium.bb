@@ -68,6 +68,10 @@ const char kDeviceRequisition[] = "deviceRequisition";
 
 // == Enrollment screen
 
+// Boolean value, indicates that device is actually enrolled, so we only need
+// to perform specific enrollment-time actions (e.g. create robot accounts).
+const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
+
 // String value indicating which license type should automatically be used if
 // license selection is done on a client side.
 const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
@@ -100,6 +104,8 @@ constexpr struct {
     {kUpdateSkipUpdate, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
     {kWizardAutoEnroll, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kRestoreAfterRollback, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},

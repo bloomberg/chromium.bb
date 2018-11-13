@@ -50,6 +50,10 @@ struct EnrollmentConfig {
 
     // Enrollment for offline demo mode with locally stored policy data.
     MODE_OFFLINE_DEMO,
+    // Flow that happens when already enrolled device undergoes version
+    // rollback. Enrollment information is preserved during rollback, but
+    // some steps have to be repeated as stateful partition was wiped.
+    MODE_ENROLLED_ROLLBACK,
   };
 
   // An enumeration of authentication mechanisms that can be used for
