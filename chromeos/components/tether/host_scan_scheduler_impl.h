@@ -71,7 +71,6 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   void SetTestDoubles(
       std::unique_ptr<base::OneShotTimer> test_host_scan_batch_timer,
-      std::unique_ptr<base::OneShotTimer> test_delay_scan_after_unlock_timer,
       base::Clock* test_clock,
       scoped_refptr<base::TaskRunner> test_task_runner);
 
@@ -80,7 +79,6 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   session_manager::SessionManager* session_manager_;
 
   std::unique_ptr<base::OneShotTimer> host_scan_batch_timer_;
-  std::unique_ptr<base::OneShotTimer> delay_scan_after_unlock_timer_;
   base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
