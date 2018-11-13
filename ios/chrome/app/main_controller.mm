@@ -2159,26 +2159,42 @@ enum class ShowTabSwitcherSnapshotResult {
       !browserState->IsOffTheRecord() &&
       IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
 
-  if (disableWebUsageDuringRemoval) {
-    // Disables browsing and purges web views.
-    // Must be called only on the main thread.
-    DCHECK([NSThread isMainThread]);
-    [self.mainBVC setActive:NO];
-    [self.otrBVC setActive:NO];
+  ProceduralBlock removeBrowsingDataBlock = ^{
+    if (disableWebUsageDuringRemoval) {
+      // Disables browsing and purges web views.
+      // Must be called only on the main thread.
+      DCHECK([NSThread isMainThread]);
+      [self.mainBVC setActive:NO];
+      [self.otrBVC setActive:NO];
+    }
+
+    BrowsingDataRemoverFactory::GetForBrowserState(browserState)
+        ->Remove(timePeriod, removeMask, base::BindOnce(^{
+                   // Activates browsing and enables web views.
+                   // Must be called only on the main thread.
+                   DCHECK([NSThread isMainThread]);
+                   [self.mainBVC setActive:YES];
+                   [self.otrBVC setActive:YES];
+                   [self.currentBVC setPrimary:YES];
+
+                   if (completionBlock)
+                     completionBlock();
+                 }));
+  };
+
+  // Removing browsing data triggers session restore in navigation manager. If
+  // there is an in-progress session restore, wait for it to finish before
+  // attempting to clear browsing data again.
+  web::WebState* webState = [[[self.currentBVC tabModel] currentTab] webState];
+  if (webState && webState->GetNavigationManager()) {
+    webState->GetNavigationManager()->AddRestoreCompletionCallback(
+        base::BindOnce(^{
+          removeBrowsingDataBlock();
+        }));
+    return;
   }
 
-  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-      ->Remove(timePeriod, removeMask, base::BindOnce(^{
-                 // Activates browsing and enables web views.
-                 // Must be called only on the main thread.
-                 DCHECK([NSThread isMainThread]);
-                 [self.mainBVC setActive:YES];
-                 [self.otrBVC setActive:YES];
-                 [self.currentBVC setPrimary:YES];
-
-                 if (completionBlock)
-                   completionBlock();
-               }));
+  removeBrowsingDataBlock();
 }
 
 #pragma mark - Navigation Controllers

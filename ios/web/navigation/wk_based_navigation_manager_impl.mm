@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
@@ -99,6 +100,11 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
 
     UMA_HISTOGRAM_TIMES(kRestoreNavigationTime, restoration_timer_->Elapsed());
     restoration_timer_.reset();
+
+    for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
+      std::move(callback).Run();
+    }
+    restore_session_completion_callbacks_.clear();
   }
 
   details.previous_item_index = GetPreviousItemIndex();
@@ -504,6 +510,15 @@ void WKBasedNavigationManagerImpl::Restore(
     restored_visible_item_ = std::move(items[last_committed_item_index]);
 
   LoadURLWithParams(params);
+}
+
+void WKBasedNavigationManagerImpl::AddRestoreCompletionCallback(
+    base::OnceClosure callback) {
+  if (!is_restore_session_in_progress_) {
+    std::move(callback).Run();
+    return;
+  }
+  restore_session_completion_callbacks_.push_back(std::move(callback));
 }
 
 void WKBasedNavigationManagerImpl::LoadIfNecessary() {
