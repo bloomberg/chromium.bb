@@ -22,14 +22,17 @@ def GetParser():
   parser_update = subparsers.add_parser('update')
   parser_update.add_argument(
       '--regenerate-timing-data', '-r', action='store_true',
-      help=('Whether to regenerate timing data for all builders in '
-            'chromium.perf'), default=False)
+      help=('Whether to regenerate timing data for builders in '
+            'chromium.perf & chromium.perf.fyi waterfall'), default=False)
   parser_update.add_argument(
       '--builders', '-b', action='store', nargs='*',
-      help=('The builder names to reshard. If not specified, use all '
-            'perf builders'),
-      choices=bot_platforms.ALL_PLATFORM_NAMES,
-      default=bot_platforms.ALL_PLATFORM_NAMES)
+      help=('The builder names to reshard.'),
+      default=[],
+      choices=bot_platforms.ALL_PLATFORM_NAMES)
+  parser_update.add_argument(
+      '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
+      help=('The name of waterfall whose builders to be resharded. If not '
+            'specified, use all perf builders by default'))
   parser.add_argument(
       '--debug', action='store_true',
       help=('Whether to include detailed debug info of the sharding map in the'
@@ -115,7 +118,16 @@ def _GenerateShardMap(
 
 
 def _UpdateShardsForBuilders(args):
-  builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in args.builders}
+  if args.builders:
+    builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in
+                args.builders}
+  elif args.waterfall == 'perf':
+    builders = bot_platforms.ALL_PERF_PLATFORMS
+  elif args.waterfall == 'perf-fyi':
+    builders = bot_platforms.ALL_PERF_FYI_PLATFORMS
+  else:
+    builders = bot_platforms.ALL_PLATFORMS
+
   if args.regenerate_timing_data:
     print 'Update shards timing data. May take a while...'
     load_timing_args = []
@@ -153,6 +165,10 @@ def _CreateShardMapForBenchmark(args):
 def main():
   parser = GetParser()
   options = parser.parse_args()
+  if options.builders and options.waterfall:
+    parser.error('Cannot specify both --builders and --waterfall '
+                 'at the same time')
+
   options.func(options)
 
 if __name__ == '__main__':
