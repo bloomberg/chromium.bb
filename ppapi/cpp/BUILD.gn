@@ -91,6 +91,7 @@ source_set("objects") {
     "image_data.h",
     "input_event.cc",
     "input_event.h",
+    "input_event_interface_name.h",
     "instance.cc",
     "instance.h",
     "instance_handle.cc",

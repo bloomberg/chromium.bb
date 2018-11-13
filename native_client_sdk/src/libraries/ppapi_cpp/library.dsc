@@ -109,6 +109,7 @@
         'host_resolver.h',
         'image_data.h',
         'input_event.h',
+        'input_event_interface_name.h',
         'instance.h',
         'instance_handle.h',
         'logging.h',

@@ -17,9 +17,8 @@ namespace {
 
 // Specialize this function to return the interface string corresponding to the
 // PP?_XXX structure.
-template <typename T> const char* interface_name() {
-  return NULL;
-}
+template <typename T>
+const char* interface_name();
 
 template <typename T> inline T const* get_interface() {
   static T const* funcs = reinterpret_cast<T const*>(

@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/input_event.h"
 
+#include "ppapi/cpp/input_event_interface_name.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -14,10 +15,6 @@
 namespace pp {
 
 namespace {
-
-template <> const char* interface_name<PPB_InputEvent_1_0>() {
-  return PPB_INPUT_EVENT_INTERFACE_1_0;
-}
 
 template <> const char* interface_name<PPB_KeyboardInputEvent_1_2>() {
   return PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_2;
