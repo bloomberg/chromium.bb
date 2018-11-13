@@ -29,7 +29,7 @@
  * @type {number}
  * @const
  */
-var REPEAT_BACKSPACE_DELAY_MS = 150;
+const REPEAT_BACKSPACE_DELAY_MS = 150;
 
 /**
  * How long the backspace button must be held down before auto backspace
@@ -37,7 +37,7 @@ var REPEAT_BACKSPACE_DELAY_MS = 150;
  * @type {number}
  * @const
  */
-var INITIAL_BACKSPACE_DELAY_MS = 500;
+const INITIAL_BACKSPACE_DELAY_MS = 500;
 
 /**
  * The key codes of the keys allowed to be used on the pin input, in addition to
@@ -45,7 +45,7 @@ var INITIAL_BACKSPACE_DELAY_MS = 500;
  * @type {Array<number>}
  * @const
  */
-var PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = [8, 9, 37, 39];
+const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = [8, 9, 37, 39];
 
 Polymer({
   is: 'pin-keyboard',
@@ -116,6 +116,15 @@ Polymer({
      * Enables pin placeholder.
      */
     enablePlaceholder: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
+     * fixed).
+     */
+    isIncognitoUi: {
       type: Boolean,
       value: false,
     },
@@ -211,11 +220,11 @@ Polymer({
    * @private
    */
   onNumberTap_: function(event) {
-    var numberValue = event.target.getAttribute('value');
+    let numberValue = event.target.getAttribute('value');
 
     // Add the number where the caret is, then update the selection range of the
     // input element.
-    var selectionStart = this.selectionStart_;
+    let selectionStart = this.selectionStart_;
     this.value = this.value.substring(0, this.selectionStart_) + numberValue +
         this.value.substring(this.selectionEnd_);
 
@@ -254,8 +263,8 @@ Polymer({
     // If the input is shown, clear the text based on the caret location or
     // selected region of the input element. If it is just a caret, remove the
     // character in front of the caret.
-    var selectionStart = this.selectionStart_;
-    var selectionEnd = this.selectionEnd_;
+    let selectionStart = this.selectionStart_;
+    let selectionEnd = this.selectionEnd_;
     if (selectionStart == selectionEnd && selectionStart)
       selectionStart--;
 

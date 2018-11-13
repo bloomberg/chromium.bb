@@ -135,6 +135,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
+     * fixed).
+     */
+    isIncognitoUi: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus: function() {
