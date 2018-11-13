@@ -560,8 +560,8 @@ void WebRuntimeFeatures::EnableMediaControlsExpandGesture(bool enable) {
   RuntimeEnabledFeatures::SetMediaControlsExpandGestureEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableHrefTranslate(bool enable) {
-  RuntimeEnabledFeatures::SetHrefTranslateEnabled(enable);
+void WebRuntimeFeatures::EnableTranslateService(bool enable) {
+  RuntimeEnabledFeatures::SetTranslateServiceEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {

@@ -30,6 +30,11 @@ bool OriginTrials::{{feature.name}}Enabled(const ExecutionContext* executionCont
 {%- endfor %}
 {% endif %}
 
+{%- for depends_on in feature.depends_on %}
+  if (!RuntimeEnabledFeatures::{{depends_on}}Enabled())
+    return false;
+{%- endfor %}
+
   const OriginTrialContext* context = OriginTrialContext::From(executionContext);
   if (!context) return false;
   if (context->IsTrialEnabled(k{{feature.name}}TrialName))
