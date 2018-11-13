@@ -204,6 +204,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   int connection_filter_id_;
 
+  // The GPU process reported failure to initialize.
+  bool did_fail_initialize_ = false;
+
   // The total number of GPU process crashes.
   static base::subtle::Atomic32 gpu_crash_count_;
   static bool crashed_before_;
