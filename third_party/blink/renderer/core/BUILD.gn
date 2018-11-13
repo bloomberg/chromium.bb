@@ -828,6 +828,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/text_decoration_color.h",
     "$blink_core_output_dir/css/properties/longhands/text_decoration_color.cc",
     "$blink_core_output_dir/css/properties/longhands/text_decoration_line.h",
+    "$blink_core_output_dir/css/properties/longhands/text_decoration_skip_ink.h",
     "$blink_core_output_dir/css/properties/longhands/text_decoration_style.h",
     "$blink_core_output_dir/css/properties/longhands/text_indent.h",
     "$blink_core_output_dir/css/properties/longhands/text_justify.h",
