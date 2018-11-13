@@ -83,11 +83,9 @@ const char* GetStringFromStringTable(
     const std::unordered_map<int, std::string>& string_table,
     int index) {
   auto it = string_table.find(index);
-  if (it != string_table.end()) {
-    return it->second.c_str();
-  }
+  DCHECK(it != string_table.end());
 
-  return "UNKNOWN";
+  return it->second.c_str();
 }
 
 void OutputJSONFromTraceEventProto(
