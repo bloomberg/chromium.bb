@@ -174,7 +174,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
-  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 #endif

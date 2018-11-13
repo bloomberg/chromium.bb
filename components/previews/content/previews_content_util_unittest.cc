@@ -226,6 +226,34 @@ TEST_F(PreviewsContentUtilTest,
                 is_data_saver_user, enabled_previews_decider()));
 }
 
+TEST_F(PreviewsContentUtilTest,
+       DetermineAllowedClientPreviewsStateLitePageRedirect) {
+  // Enable both Client LoFi and NoScript.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("Previews,LitePageServerPreviews",
+                                          std::string());
+
+  PreviewsUserData user_data(1);
+  bool is_reload = false;
+  bool is_redirect = false;
+  bool is_data_saver_user = true;
+  // Verify preview is enabled on HTTP and HTTPS.
+  EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
+              previews::DetermineAllowedClientPreviewsState(
+                  &user_data, GURL("https://www.google.com"), is_reload,
+                  is_redirect, is_data_saver_user, enabled_previews_decider()));
+  EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
+              previews::DetermineAllowedClientPreviewsState(
+                  &user_data, GURL("http://www.google.com"), is_reload,
+                  is_redirect, is_data_saver_user, enabled_previews_decider()));
+
+  // Verify non-HTTP[S] URL has no previews enabled.
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::DetermineAllowedClientPreviewsState(
+                &user_data, GURL("data://someblob"), is_reload, is_redirect,
+                is_data_saver_user, enabled_previews_decider()));
+}
+
 TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
@@ -240,6 +268,25 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                     content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
                 enabled_previews_decider()));
+
+  content::PreviewsState lite_page_redirect_enabled =
+      content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
+      content::RESOURCE_LOADING_HINTS_ON | content::LITE_PAGE_REDIRECT_ON;
+
+  // LITE_PAGE_REDIRECT takes precedence over NoScript, Resource Loading Hints,
+  // and Client LoFi when the committed URL is for the lite page previews
+  // server.
+  EXPECT_EQ(
+      content::LITE_PAGE_REDIRECT_ON,
+      previews::DetermineCommittedClientPreviewsState(
+          &user_data, GURL("https://litepages.googlezip.net/?u=google.com"),
+          lite_page_redirect_enabled, enabled_previews_decider()));
+
+  // Verify LITE_PAGE_REDIRECT_ON not committed for non-lite-page-sever URL.
+  EXPECT_NE(content::LITE_PAGE_REDIRECT_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("https://www.google.com"),
+                lite_page_redirect_enabled, enabled_previews_decider()));
 
   // NoScript has precedence over Client LoFi - kept for committed HTTPS:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -305,6 +352,8 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
       previews::GetMainFramePreviewsType(content::RESOURCE_LOADING_HINTS_ON));
   EXPECT_EQ(previews::PreviewsType::LOFI,
             previews::GetMainFramePreviewsType(content::CLIENT_LOFI_ON));
+  EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
+            previews::GetMainFramePreviewsType(content::LITE_PAGE_REDIRECT_ON));
 
   // NONE cases:
   EXPECT_EQ(previews::PreviewsType::NONE,
@@ -331,6 +380,11 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
             previews::GetMainFramePreviewsType(
                 content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
                 content::RESOURCE_LOADING_HINTS_ON));
+  EXPECT_EQ(
+      previews::PreviewsType::LITE_PAGE_REDIRECT,
+      previews::GetMainFramePreviewsType(
+          content::NOSCRIPT_ON | content::CLIENT_LOFI_ON |
+          content::RESOURCE_LOADING_HINTS_ON | content::LITE_PAGE_REDIRECT_ON));
 }
 
 }  // namespace

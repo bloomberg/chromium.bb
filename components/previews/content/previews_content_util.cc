@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_lite_page_url_handler.h"
 
 namespace previews {
 
@@ -52,6 +53,15 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
+  // Check for client-side previews in precedence order.
+  // Note: this is for the beginning of navigation so we should not
+  // check for https here (since an http request may redirect to https).
+  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload,
+          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
+    previews_state |= content::LITE_PAGE_REDIRECT_ON;
+  }
+
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
@@ -60,9 +70,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_decider->LoadResourceHints(url);
   }
 
-  // Check for client-side previews in precedence order.
-  // Note: this is for the beginning of navigation so we should not
-  // check for https here (since an http request may redirect to https).
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
@@ -115,6 +122,14 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     return content::PREVIEWS_OFF;
   }
 
+  // Check if a LITE_PAGE_REDIRECT preview was actually served.
+  if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
+    if (IsLitePageRedirectPreviewURL(url))
+      return content::LITE_PAGE_REDIRECT_ON;
+    previews_state &= ~content::LITE_PAGE_REDIRECT_ON;
+  }
+  DCHECK(!IsLitePageRedirectPreviewURL(url));
+
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
@@ -159,6 +174,8 @@ previews::PreviewsType GetMainFramePreviewsType(
   // The order is important here.
   if (previews_state & content::OFFLINE_PAGE_ON)
     return previews::PreviewsType::OFFLINE;
+  if (previews_state & content::LITE_PAGE_REDIRECT_ON)
+    return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
   if (previews_state & content::SERVER_LOFI_ON)
