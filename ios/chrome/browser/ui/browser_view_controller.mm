@@ -3111,19 +3111,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (BOOL)isTabScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
   DCHECK(bubblePresenter == self.bubblePresenter);
-  CRWWebViewScrollViewProxy* scrollProxy =
-      self.currentWebState->GetWebViewProxy().scrollViewProxy;
-  CGPoint scrollOffset = scrollProxy.contentOffset;
-  UIEdgeInsets contentInset = scrollProxy.contentInset;
 
   // If there is a native controller, use the native controller's scroll offset.
   id nativeController =
       [self nativeControllerForTab:[self.tabModel currentTab]];
   if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)] &&
       [nativeController respondsToSelector:@selector(scrollOffset)]) {
-    scrollOffset = [nativeController scrollOffset];
+    return [nativeController scrollOffset].y == 0;
   }
 
+  CRWWebViewScrollViewProxy* scrollProxy =
+      self.currentWebState->GetWebViewProxy().scrollViewProxy;
+  CGPoint scrollOffset = scrollProxy.contentOffset;
+  UIEdgeInsets contentInset = scrollProxy.contentInset;
   return AreCGFloatsEqual(scrollOffset.y, -contentInset.top);
 }
 
