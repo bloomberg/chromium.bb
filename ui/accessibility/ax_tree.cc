@@ -488,6 +488,7 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
         // If Update() returned false, this is no longer a valid table.
         // Remove it from the map.
         delete table_info;
+        table_info = nullptr;
         table_info_map_.erase(table_node->id());
       }
       // See note about const_cast, above.

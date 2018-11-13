@@ -820,4 +820,32 @@ TEST_F(AXTableInfoTest, AriaIndicesinferred) {
   EXPECT_EQ(5, cell_2_2->GetTableCellAriaColIndex());
 }
 
+TEST_F(AXTableInfoTest, TableChanges) {
+  // Simple 2 col x 1 row table
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  MakeTable(&initial_state.nodes[0], 1, 0, 0);
+  initial_state.nodes[0].child_ids = {2};
+  MakeRow(&initial_state.nodes[1], 2, 0);
+  initial_state.nodes[1].child_ids = {3, 4};
+  MakeCell(&initial_state.nodes[2], 3, 0, 0);
+  MakeCell(&initial_state.nodes[3], 4, 0, 1);
+  AXTree tree(initial_state);
+
+  AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
+  EXPECT_TRUE(table_info);
+
+  EXPECT_EQ(1, table_info->row_count);
+  EXPECT_EQ(2, table_info->col_count);
+
+  // Update the tree to remove the table role.
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].role = ax::mojom::Role::kGroup;
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  table_info = GetTableInfo(&tree, tree.root());
+  EXPECT_FALSE(table_info);
+}
+
 }  // namespace ui
