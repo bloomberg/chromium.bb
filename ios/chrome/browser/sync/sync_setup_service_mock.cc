@@ -7,10 +7,6 @@
 SyncSetupServiceMock::SyncSetupServiceMock(syncer::SyncService* sync_service)
     : SyncSetupService(sync_service) {}
 
-SyncSetupServiceMock::SyncSetupServiceMock(syncer::SyncService* sync_service,
-                                           PrefService* prefs)
-    : SyncSetupService(sync_service) {}
-
 SyncSetupServiceMock::~SyncSetupServiceMock() {
 }
 
