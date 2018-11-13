@@ -78,7 +78,8 @@ inline bool IdentMatches(CSSValueID id);
 template <CSSValueID... allowedIdents>
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 
-CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange&);
+CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange&,
+                                        const CSSParserContext&);
 CSSStringValue* ConsumeString(CSSParserTokenRange&);
 StringView ConsumeUrlAsStringView(CSSParserTokenRange&);
 CSSURIValue* ConsumeUrl(CSSParserTokenRange&, const CSSParserContext*);

@@ -137,7 +137,7 @@ CSSValue* ConsumeColumnWidth(CSSParserTokenRange&);
 bool ConsumeColumnWidthOrCount(CSSParserTokenRange&, CSSValue*&, CSSValue*&);
 CSSValue* ConsumeGapLength(CSSParserTokenRange&, const CSSParserContext&);
 
-CSSValue* ConsumeCounter(CSSParserTokenRange&, int);
+CSSValue* ConsumeCounter(CSSParserTokenRange&, const CSSParserContext&, int);
 
 CSSValue* ConsumeFontSize(
     CSSParserTokenRange&,
@@ -159,8 +159,9 @@ CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
 cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange&);
 
-CSSValue* ConsumeGridLine(CSSParserTokenRange&);
+CSSValue* ConsumeGridLine(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeGridTrackList(CSSParserTokenRange&,
+                               const CSSParserContext&,
                                CSSParserMode,
                                TrackListType);
 bool ParseGridTemplateAreasRow(const WTF::String& grid_row_names,
@@ -168,9 +169,11 @@ bool ParseGridTemplateAreasRow(const WTF::String& grid_row_names,
                                const size_t row_count,
                                size_t& column_count);
 CSSValue* ConsumeGridTemplatesRowsOrColumns(CSSParserTokenRange&,
+                                            const CSSParserContext&,
                                             CSSParserMode);
 bool ConsumeGridItemPositionShorthand(bool important,
                                       CSSParserTokenRange&,
+                                      const CSSParserContext&,
                                       CSSValue*& start_value,
                                       CSSValue*& end_value);
 bool ConsumeGridTemplateShorthand(bool important,
@@ -221,7 +224,8 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange&,
 CSSValue* ConsumeTransformList(CSSParserTokenRange&,
                                const CSSParserContext&,
                                const CSSParserLocalContext&);
-CSSValue* ConsumeTransitionProperty(CSSParserTokenRange&);
+CSSValue* ConsumeTransitionProperty(CSSParserTokenRange&,
+                                    const CSSParserContext&);
 bool IsValidPropertyList(const CSSValueList&);
 
 CSSValue* ConsumeBorderColorSide(CSSParserTokenRange&,

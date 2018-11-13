@@ -18,7 +18,7 @@ namespace {
 
 CSSValue* ConsumeTransitionValue(CSSPropertyID property,
                                  CSSParserTokenRange& range,
-                                 const CSSParserContext&,
+                                 const CSSParserContext& context,
                                  bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyTransitionDelay:
@@ -27,7 +27,7 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
       return css_property_parser_helpers::ConsumeTime(range,
                                                       kValueRangeNonNegative);
     case CSSPropertyTransitionProperty:
-      return css_parsing_utils::ConsumeTransitionProperty(range);
+      return css_parsing_utils::ConsumeTransitionProperty(range, context);
     case CSSPropertyTransitionTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:

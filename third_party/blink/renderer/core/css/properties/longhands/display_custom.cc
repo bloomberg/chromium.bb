@@ -32,7 +32,7 @@ const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range_copy);
   CSSCustomIdentValue* name =
-      css_property_parser_helpers::ConsumeCustomIdent(args);
+      css_property_parser_helpers::ConsumeCustomIdent(args, context);
 
   // If we didn't get a custom-ident or didn't exhaust the function arguments
   // return nothing.

@@ -13,9 +13,9 @@ namespace CSSLonghand {
 
 const CSSValue* GridColumnEnd::ParseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeGridLine(range);
+  return css_parsing_utils::ConsumeGridLine(range, context);
 }
 
 const CSSValue* GridColumnEnd::CSSValueFromComputedStyleInternal(

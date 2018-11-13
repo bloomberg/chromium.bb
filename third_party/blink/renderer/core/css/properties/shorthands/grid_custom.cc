@@ -117,7 +117,8 @@ bool Grid::ParseShorthand(bool important,
       auto_rows_value = CSSInitialValue::Create();
     } else {
       auto_rows_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context.Mode(), css_parsing_utils::TrackListType::kGridAuto);
+          range, context, context.Mode(),
+          css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
@@ -125,14 +126,14 @@ bool Grid::ParseShorthand(bool important,
     }
     if (!(template_columns =
               css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-                  range, context.Mode())))
+                  range, context, context.Mode())))
       return false;
     template_rows = CSSInitialValue::Create();
     auto_columns_value = CSSInitialValue::Create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
     template_rows = css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-        range, context.Mode());
+        range, context, context.Mode());
     if (!template_rows)
       return false;
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
@@ -145,7 +146,8 @@ bool Grid::ParseShorthand(bool important,
       auto_columns_value = CSSInitialValue::Create();
     } else {
       auto_columns_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context.Mode(), css_parsing_utils::TrackListType::kGridAuto);
+          range, context, context.Mode(),
+          css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }
