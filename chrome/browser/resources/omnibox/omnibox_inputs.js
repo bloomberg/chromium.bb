@@ -43,6 +43,8 @@ class OmniboxInputs extends OmniboxElement {
     const onDisplayInputsChanged = this.onDisplayInputsChanged_.bind(this);
 
     this.$$('input-text').addEventListener('input', onQueryInputsChanged);
+    this.$$('lock-cursor-position')
+        .addEventListener('change', onQueryInputsChanged);
     [
       this.$$('prevent-inline-autocomplete'),
       this.$$('prefer-keyword'),
@@ -60,7 +62,7 @@ class OmniboxInputs extends OmniboxElement {
     /** @type {QueryInputs} */
     const queryInputs = {
       inputText: this.$$('input-text').value,
-      cursorPosition: this.$$('input-text').selectionEnd,
+      cursorPosition: this.cursorPosition_,
       preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
       preferKeyword: this.$$('prefer-keyword').checked,
       pageClassification: this.$$('page-classification').value,
@@ -79,6 +81,16 @@ class OmniboxInputs extends OmniboxElement {
     };
     this.dispatchEvent(
         new CustomEvent('display-inputs-changed', {detail: displayInputs}));
+  }
+
+  /**
+   * @private
+   * @return {number}
+   */
+  get cursorPosition_() {
+    return this.$$('lock-cursor-position').checked ?
+        this.$$('input-text').value.length :
+        this.$$('input-text').selectionEnd;
   }
 }
 
