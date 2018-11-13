@@ -988,6 +988,7 @@ static bool NeedsFilter(const LayoutObject& object) {
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
   return (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
           (object.StyleRef().HasFilter() || object.HasReflection() ||
+           object.HasBackdropFilter() ||
            CompositingReasonFinder::RequiresCompositingForFilterAnimation(
                object.StyleRef())));
 }
@@ -1008,6 +1009,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
           state.filter = properties_->Filter()->Filter();
 
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
+        layer->UpdateCompositorFilterOperationsForBackdropFilter(
+            state.backdrop_filter);
         layer->ClearFilterOnEffectNodeDirty();
       }
 

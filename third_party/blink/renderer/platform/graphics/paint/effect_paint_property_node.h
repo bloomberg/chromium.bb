@@ -43,6 +43,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     ColorFilter color_filter = kColorFilterNone;
     CompositorFilterOperations filter;
     float opacity = 1;
+    CompositorFilterOperations backdrop_filter;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -54,6 +55,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       return local_transform_space == o.local_transform_space &&
              output_clip == o.output_clip && color_filter == o.color_filter &&
              filter == o.filter && opacity == o.opacity &&
+             backdrop_filter == o.backdrop_filter &&
              blend_mode == o.blend_mode &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
              compositor_element_id == o.compositor_element_id &&
@@ -122,6 +124,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   ColorFilter GetColorFilter() const {
     DCHECK(!Parent() || !IsParentAlias());
     return state_.color_filter;
+  }
+
+  const CompositorFilterOperations& BackdropFilter() const {
+    return state_.backdrop_filter;
   }
 
   bool HasFilterThatMovesPixels() const {

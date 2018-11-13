@@ -710,6 +710,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   // decision until later phase of the pipeline. Remove premature optimization
   // here once the work is ready.
   if (!next_effect->Filter().IsEmpty() ||
+      !next_effect->BackdropFilter().IsEmpty() ||
       used_blend_mode != SkBlendMode::kSrcOver)
     effect_node.has_render_surface = true;
 
@@ -725,6 +726,8 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
                                            nullptr)));
   } else {
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
+    effect_node.backdrop_filters =
+        next_effect->BackdropFilter().AsCcFilterOperations();
     effect_node.filters_origin = next_effect->FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(next_effect->LocalTransformSpace());

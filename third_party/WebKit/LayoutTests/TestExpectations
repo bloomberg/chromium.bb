@@ -5424,3 +5424,11 @@ crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins
 
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
+
+# These are known failures, being implemented
+crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]

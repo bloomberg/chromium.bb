@@ -618,6 +618,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
   void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
 
+  void UpdateCompositorFilterOperationsForBackdropFilter(
+      CompositorFilterOperations&) const;
+
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
   }
