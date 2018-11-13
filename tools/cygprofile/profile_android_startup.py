@@ -299,6 +299,10 @@ class AndroidProfileTool(object):
     Raises:
       NoProfileDataError: No data was found on the device.
     """
+    if self._pregenerated_profiles:
+      logging.info('Using pregenerated profiles instead of running profile')
+      logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
+      return self._pregenerated_profiles
     self._SetUpDeviceFolders()
     self._RunCommand(['tools/perf/run_benchmark',
                       '--device={}'.format(self._device.serial),
