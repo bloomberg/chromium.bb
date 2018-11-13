@@ -230,6 +230,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetShowDebugBorders(bool);
   void SetShowFPSCounter(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
+  void SetShowHitTestBorders(bool);
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   WebWidget* MainFrameWidget() override;

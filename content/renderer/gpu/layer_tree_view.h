@@ -168,6 +168,7 @@ class CONTENT_EXPORT LayerTreeView
   void SetShowPaintRects(bool show) override;
   void SetShowDebugBorders(bool show) override;
   void SetShowScrollBottleneckRects(bool show) override;
+  void SetShowHitTestBorders(bool show) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
 
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
