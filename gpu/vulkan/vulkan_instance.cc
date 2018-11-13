@@ -163,6 +163,7 @@ bool VulkanInstance::Initialize(
     result = vkCreateDebugReportCallbackEXT(vk_instance_, &cb_create_info,
                                             nullptr, &error_callback_);
     if (VK_SUCCESS != result) {
+      error_callback_ = VK_NULL_HANDLE;
       DLOG(ERROR) << "vkCreateDebugReportCallbackEXT(ERROR) failed: " << result;
       return false;
     }
@@ -173,6 +174,7 @@ bool VulkanInstance::Initialize(
     result = vkCreateDebugReportCallbackEXT(vk_instance_, &cb_create_info,
                                             nullptr, &warning_callback_);
     if (VK_SUCCESS != result) {
+      warning_callback_ = VK_NULL_HANDLE;
       DLOG(ERROR) << "vkCreateDebugReportCallbackEXT(WARN) failed: " << result;
       return false;
     }
@@ -219,14 +221,17 @@ bool VulkanInstance::Initialize(
 
 void VulkanInstance::Destroy() {
 #if DCHECK_IS_ON()
-  if (debug_report_enabled_) {
+  if (debug_report_enabled_ && (error_callback_ != VK_NULL_HANDLE ||
+                                warning_callback_ != VK_NULL_HANDLE)) {
     PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
         reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
             vkGetInstanceProcAddr(vk_instance_,
                                   "vkDestroyDebugReportCallbackEXT"));
     DCHECK(vkDestroyDebugReportCallbackEXT);
-    vkDestroyDebugReportCallbackEXT(vk_instance_, error_callback_, nullptr);
-    vkDestroyDebugReportCallbackEXT(vk_instance_, warning_callback_, nullptr);
+    if (error_callback_ != VK_NULL_HANDLE)
+      vkDestroyDebugReportCallbackEXT(vk_instance_, error_callback_, nullptr);
+    if (warning_callback_ != VK_NULL_HANDLE)
+      vkDestroyDebugReportCallbackEXT(vk_instance_, warning_callback_, nullptr);
   }
 #endif
   if (vk_instance_ != VK_NULL_HANDLE) {
