@@ -5,6 +5,7 @@
   "tests": [
     {
       "app": "ios_chrome_bookmarks_egtests",
+      "shard size": 2,
       "xctest": true
     },
     {
