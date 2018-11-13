@@ -112,7 +112,7 @@ class CORE_EXPORT EventPath final
                        HeapVector<Member<TouchList>> adjusted_touch_list,
                        const HeapVector<Member<TreeScope>>& tree_scopes);
 
-  TreeScopeEventContext* GetTreeScopeEventContext(TreeScope*);
+  TreeScopeEventContext* GetTreeScopeEventContext(TreeScope&);
   TreeScopeEventContext* EnsureTreeScopeEventContext(Node* current_target,
                                                      TreeScope*);
 

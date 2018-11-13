@@ -62,7 +62,7 @@ class CORE_EXPORT TreeScopeEventContext final
   TouchEventContext* GetTouchEventContext() const {
     return touch_event_context_.Get();
   }
-  TouchEventContext* EnsureTouchEventContext();
+  TouchEventContext& EnsureTouchEventContext();
 
   HeapVector<Member<EventTarget>>& EnsureEventPath(EventPath&);
 

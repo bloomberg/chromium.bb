@@ -184,9 +184,9 @@ DispatchEventResult EventDispatcher::Dispatch() {
   if (is_activation_event && !activation_target && event_->bubbles()) {
     wtf_size_t size = event_->GetEventPath().size();
     for (wtf_size_t i = 1; i < size; ++i) {
-      Node* target = event_->GetEventPath()[i].GetNode();
-      if (target->HasActivationBehavior()) {
-        activation_target = target;
+      Node& target = event_->GetEventPath()[i].GetNode();
+      if (target.HasActivationBehavior()) {
+        activation_target = &target;
         break;
       }
     }
@@ -370,9 +370,9 @@ inline void EventDispatcher::DispatchEventPostProcess(
     if (!event_->DefaultHandled() && event_->bubbles()) {
       wtf_size_t size = event_->GetEventPath().size();
       for (wtf_size_t i = 1; i < size; ++i) {
-        event_->GetEventPath()[i].GetNode()->WillCallDefaultEventHandler(
+        event_->GetEventPath()[i].GetNode().WillCallDefaultEventHandler(
             *event_);
-        event_->GetEventPath()[i].GetNode()->DefaultEventHandler(*event_);
+        event_->GetEventPath()[i].GetNode().DefaultEventHandler(*event_);
         DCHECK(!event_->defaultPrevented());
         if (event_->DefaultHandled())
           break;
