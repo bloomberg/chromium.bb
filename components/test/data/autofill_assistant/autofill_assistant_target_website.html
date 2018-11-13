@@ -21,6 +21,16 @@ found in the LICENSE file.
         var touch_area = document.getElementById("touch_area");
         touch_area.parentNode.removeChild(touch_area);
       }
+
+      var moveTouchArea = function() {
+        var touch_area = document.getElementById("touch_area");
+        setTimeout(function(){touch_area.style.left = "100px";}, 100);
+        setTimeout(function(){touch_area.style.left = "200px";}, 200);
+        setTimeout(function(){touch_area.style.left = "300px";}, 300);
+        setTimeout(function(){touch_area.style.left = "100px";}, 400);
+        setTimeout(function(){touch_area.style.left = "200px";}, 500);
+        setTimeout(function(){touch_area.style.left = "300px";}, 600);
+      }
     </script>
 
     <style>
@@ -30,7 +40,7 @@ found in the LICENSE file.
     </style>
   </head>
 
-  <body>
+  <body onload="moveTouchArea()">
     <!--
     Intentionally make this section has the full height of the window
     to force scroll when operating on the elements below not in this
