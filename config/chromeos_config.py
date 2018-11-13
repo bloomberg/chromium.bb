@@ -1967,6 +1967,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.cq_luci_slave,
       )
 
+    if board in _paladin_separate_unittest_phase:
+      customizations.update(unittests=False)
+
     if board in chromeos_boards.lakitu_boards:
       customizations.update(
           site_config.templates.lakitu_paladin_test_customizations)
