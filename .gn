@@ -499,7 +499,6 @@ check_targets = [
   "//third_party/markdown/*",
   "//third_party/markupsafe/*",
   "//third_party/material_design_icons/*",
-  "//third_party/mesa/*",
   "//third_party/mesa_headers/*",
   "//third_party/metrics_proto/*",
   "//third_party/minigbm/*",
