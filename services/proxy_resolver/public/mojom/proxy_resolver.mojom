@@ -7,8 +7,8 @@
 // TODO(amistry): Resolve the conflict between these two sets of definitions.
 module proxy_resolver.mojom;
 
-import "net/interfaces/address_family.mojom";
-import "net/interfaces/address_list.mojom";
+import "services/network/public/mojom/address_family.mojom";
+import "services/network/public/mojom/address_list.mojom";
 import "url/mojom/url.mojom";
 
 const string kProxyResolverServiceName = "proxy_resolver";
@@ -18,7 +18,7 @@ const string kProxyResolverServiceName = "proxy_resolver";
 struct HostResolverRequestInfo {
   string host;
   uint16 port;
-  net.interfaces.AddressFamily address_family;
+  network.mojom.AddressFamily address_family;
   bool is_my_ip_address;
 };
 
@@ -26,7 +26,7 @@ struct HostResolverRequestInfo {
 // TODO(mmenke): Remove this struct, in favor of callbacks.
 interface HostResolverRequestClient {
   // |error| is a value in net::Error.
-  ReportResult(int32 error, net.interfaces.AddressList result);
+  ReportResult(int32 error, network.mojom.AddressList result);
 };
 
 // Mirror of net::ProxyServer::Scheme.

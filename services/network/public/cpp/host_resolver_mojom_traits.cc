@@ -5,8 +5,8 @@
 #include "services/network/public/cpp/host_resolver_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "net/interfaces/ip_address_struct_traits.h"
-#include "net/interfaces/ip_endpoint_struct_traits.h"
+#include "services/network/public/cpp/ip_address_mojom_traits.h"
+#include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
 
 namespace mojo {
 

@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "net/interfaces/ip_address.mojom";
+import "services/network/public/mojom/ip_address.mojom";
 
 // An mDNS responder is created for each Mojo binding and it manages the
 // name-address maps created through the interface. The name-address maps are
@@ -31,7 +31,7 @@ interface MdnsResponder {
   // rate limiting, and false otherwise. The responder will also start to
   // respond to queries for the created name until its reference count is
   // decremented to zero.
-  CreateNameForAddress(net.interfaces.IPAddress address)
+  CreateNameForAddress(IPAddress address)
       => (string name, bool announcement_scheduled);
   // Decrements the reference count of the mapped name of the given address, if
   // there is a map created previously via CreateNameForAddress; removes the
@@ -45,6 +45,6 @@ interface MdnsResponder {
   // limiting, and false otherwise. The responder will also stop responding to
   // queries for the removed name. Note that this does not impact separated
   // names mapped to the same address by other responders.
-  RemoveNameForAddress(net.interfaces.IPAddress address)
+  RemoveNameForAddress(IPAddress address)
       => (bool removed, bool goodbye_scheduled);
 };

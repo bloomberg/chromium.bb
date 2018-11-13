@@ -5,16 +5,16 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "net/interfaces/address_list.mojom";
-import "net/interfaces/ip_address.mojom";
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/address_list.mojom";
+import "services/network/public/mojom/ip_address.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 
 // A single entry from a HOSTS file.
 struct DnsHost {
   string hostname;
-  net.interfaces.IPAddress address;
+  IPAddress address;
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
@@ -41,7 +41,7 @@ struct DnsConfigOverrides {
   };
 
   // List of nameserver addresses.
-  array<net.interfaces.IPEndPoint>? nameservers;
+  array<IPEndPoint>? nameservers;
 
   // Suffix search list, used on first lookup when number of dots in given name
   // is less than |ndots|.
@@ -102,7 +102,7 @@ interface ResolveHostHandle {
 interface ResolveHostClient {
   // Called on completion of a resolve host request. Results are a network error
   // code, and on success (network error code OK), an AddressList.
-  OnComplete(int32 result, net.interfaces.AddressList? resolved_addresses);
+  OnComplete(int32 result, AddressList? resolved_addresses);
 };
 
 // Parameter-grouping struct for additional optional parameters for

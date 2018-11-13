@@ -11,7 +11,6 @@
 #include "net/socket/client_socket_pool_base.h"
 #include "net/test/net_test_suite.h"
 #include "url/url_features.h"
-#include "mojo/core/embedder/embedder.h"  // nogncheck
 
 using net::internal::ClientSocketPoolBaseHelper;
 
@@ -53,8 +52,6 @@ int main(int argc, char** argv) {
 
   NetTestSuite test_suite(argc, argv);
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-
-  mojo::core::Init();
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&NetTestSuite::Run,

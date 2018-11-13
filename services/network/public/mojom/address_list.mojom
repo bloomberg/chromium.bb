@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module net.interfaces;
+module network.mojom;
 
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
 
 // Mirror of net::AddressList.
 struct AddressList {

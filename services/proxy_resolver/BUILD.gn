@@ -29,6 +29,7 @@ source_set("lib") {
   ]
 
   public_deps = [
+    "//services/network/public/mojom:mojom_ip_address",
     "//services/proxy_resolver/public/mojom",
     "//services/service_manager/public/cpp",
   ]

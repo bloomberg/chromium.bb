@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_INTERFACES_ADDRESS_LIST_MOJOM_TRAITS_H_
-#define NET_INTERFACES_ADDRESS_LIST_MOJOM_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_ADDRESS_LIST_MOJOM_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_ADDRESS_LIST_MOJOM_TRAITS_H_
 
 #include <string>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "net/interfaces/address_list.mojom.h"
+#include "services/network/public/mojom/address_list.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<net::interfaces::AddressListDataView, net::AddressList> {
+struct StructTraits<network::mojom::AddressListDataView, net::AddressList> {
   static const std::vector<net::IPEndPoint>& addresses(
       const net::AddressList& obj) {
     return obj.endpoints();
@@ -24,10 +24,10 @@ struct StructTraits<net::interfaces::AddressListDataView, net::AddressList> {
     return obj.canonical_name();
   }
 
-  static bool Read(net::interfaces::AddressListDataView data,
+  static bool Read(network::mojom::AddressListDataView data,
                    net::AddressList* out);
 };
 
 }  // namespace mojo
 
-#endif  // NET_INTERFACES_ADDRESS_LIST_MOJOM_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_ADDRESS_LIST_MOJOM_TRAITS_H_

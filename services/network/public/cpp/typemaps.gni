@@ -5,11 +5,15 @@
 import("//services/network/public/cpp/features.gni")
 
 typemaps = [
+  "//services/network/public/cpp/address_family.typemap",
+  "//services/network/public/cpp/address_list.typemap",
   "//services/network/public/cpp/cookie_manager.typemap",
   "//services/network/public/cpp/cors_error_status.typemap",
   "//services/network/public/cpp/digitally_signed.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
   "//services/network/public/cpp/host_resolver.typemap",
+  "//services/network/public/cpp/ip_address.typemap",
+  "//services/network/public/cpp/ip_endpoint.typemap",
   "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/network_param.typemap",
