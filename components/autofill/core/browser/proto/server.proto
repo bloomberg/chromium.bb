@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Data models to interface with legacy Autofill API.
+
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -10,8 +12,8 @@ package autofill;
 
 import "password_requirements.proto";
 
-// The message is sent when a client needs to autofill forms on web pages and
-// asks the server about known field types.
+// Request to query field suggestions for forms in a page from legacy Autofill
+// API.
 // Next available id: 11
 message AutofillQueryContents {
   required string client_version = 1;
@@ -25,8 +27,9 @@ message AutofillQueryContents {
   }
 }
 
-// This message is the result of an Autofill query. It holds the field type
-// information.
+// Response from Autofill query on the legacy API that gives field suggestions
+// for forms of a page in a flattened representation. The fields are returned in
+// the exact same order as filled in the request.
 // Next available id: 10
 message AutofillQueryResponseContents {
   optional bool upload_required = 1 [deprecated = true];
