@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/dns/host_resolver.h"
-#include "net/interfaces/address_family.mojom.h"
+#include "services/network/public/mojom/address_family.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace mojo {

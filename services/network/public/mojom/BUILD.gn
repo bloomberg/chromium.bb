@@ -6,6 +6,22 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/network/public/cpp/features.gni")
 
 # These interfaces are put in their own target to avoid a circular dependency,
+# which comes from the fact that proxy_resolver service uses these interfaces,
+# and the network service uses the proxy_resolver service.
+mojom("mojom_ip_address") {
+  sources = [
+    "address_family.mojom",
+    "address_list.mojom",
+    "ip_address.mojom",
+    "ip_endpoint.mojom",
+  ]
+
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+# These interfaces are put in their own target to avoid a circular dependency,
 # which comes from the fact that the typemap for url_loader.mojom
 # (ResourceRequestBody) uses these interfaces.
 mojom("data_pipe_interfaces") {
@@ -42,9 +58,9 @@ mojom("udp_socket_interface") {
   ]
 
   public_deps = [
+    ":mojom_ip_address",
     ":mutable_network_traffic_annotation_interface",
     "//mojo/public/mojom/base:read_only_buffer",
-    "//net/interfaces:interfaces",
   ]
 }
 
@@ -108,13 +124,13 @@ mojom("mojom") {
 
   public_deps = [
     ":data_pipe_interfaces",
+    ":mojom_ip_address",
     ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
     "//mojo/public/mojom/base:read_only_buffer",
-    "//net/interfaces",
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

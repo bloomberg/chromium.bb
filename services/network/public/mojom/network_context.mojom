@@ -8,12 +8,12 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
-import "net/interfaces/address_list.mojom";
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
@@ -548,11 +548,11 @@ interface NetworkContext {
   //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateTCPServerSocket(net.interfaces.IPEndPoint local_addr,
+  CreateTCPServerSocket(IPEndPoint local_addr,
                         uint32 backlog,
                         MutableNetworkTrafficAnnotationTag traffic_annotation,
                         TCPServerSocket& socket)
-      => (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+      => (int32 result, IPEndPoint? local_addr_out);
 
   // Creates a TCP socket connected to |remote_addr|. |observer| if non-null
   // will be used to listen for any network connection error on the newly
@@ -570,15 +570,15 @@ interface NetworkContext {
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
   CreateTCPConnectedSocket(
-      net.interfaces.IPEndPoint? local_addr,
-      net.interfaces.AddressList remote_addr_list,
+      IPEndPoint? local_addr,
+      AddressList remote_addr_list,
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
       SocketObserver? observer)
       => (int32 result,
-          net.interfaces.IPEndPoint? local_addr,
-          net.interfaces.IPEndPoint? peer_addr,
+          IPEndPoint? local_addr,
+          IPEndPoint? peer_addr,
           handle<data_pipe_consumer>? receive_stream,
           handle<data_pipe_producer>? send_stream);
 
@@ -593,11 +593,10 @@ interface NetworkContext {
   // It's recommended consumers use CreateTCPServerSocket() or
   // CreateTCPConnectedSocket(). This method is just provided so legacy
   // consumers can mimic Berkeley sockets semantics.
-  CreateTCPBoundSocket(net.interfaces.IPEndPoint local_addr,
+  CreateTCPBoundSocket(IPEndPoint local_addr,
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
                        TCPBoundSocket& socket)
-      => (int32 result,
-          net.interfaces.IPEndPoint? local_addr);
+      => (int32 result, IPEndPoint? local_addr);
 
   // Creates a ProxyResolvingSocketFactory that shares some configuration params
   // with this NetworkContext, but uses separate socket pools.

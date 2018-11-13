@@ -19,7 +19,7 @@ mojom("common") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//net/interfaces",
+    "//services/network/public/mojom:mojom_ip_address",
   ]
 }
 

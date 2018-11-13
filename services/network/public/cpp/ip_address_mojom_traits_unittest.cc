@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/interfaces/ip_address_struct_traits.h"
+#include "services/network/public/cpp/ip_address_mojom_traits.h"
 
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +14,7 @@ TEST(IPAddressStructTraitsTest, Ipv4) {
   IPAddress original(1, 2, 3, 4);
 
   IPAddress deserialized;
-  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<interfaces::IPAddress>(
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<network::mojom::IPAddress>(
       &original, &deserialized));
 
   EXPECT_EQ(original, deserialized);
@@ -24,7 +24,7 @@ TEST(IPAddressStructTraitsTest, Ipv6) {
   IPAddress original(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 
   IPAddress deserialized;
-  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<interfaces::IPAddress>(
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<network::mojom::IPAddress>(
       &original, &deserialized));
 
   EXPECT_EQ(original, deserialized);
@@ -38,7 +38,7 @@ TEST(IPAddressStructTraitsTest, InvalidAddress) {
   ASSERT_FALSE(original.IsValid());
 
   IPAddress deserialized;
-  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<interfaces::IPAddress>(
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<network::mojom::IPAddress>(
       &original, &deserialized));
 }
 

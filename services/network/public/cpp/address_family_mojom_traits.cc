@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/interfaces/address_family_mojom_traits.h"
+#include "services/network/public/cpp/address_family_mojom_traits.h"
 
 namespace mojo {
 
 // static
-bool EnumTraits<net::interfaces::AddressFamily, net::AddressFamily>::FromMojom(
-    net::interfaces::AddressFamily address_family,
+bool EnumTraits<network::mojom::AddressFamily, net::AddressFamily>::FromMojom(
+    network::mojom::AddressFamily address_family,
     net::AddressFamily* out) {
-  using net::interfaces::AddressFamily;
+  using network::mojom::AddressFamily;
   switch (address_family) {
     case AddressFamily::UNSPECIFIED:
       *out = net::ADDRESS_FAMILY_UNSPECIFIED;
@@ -26,10 +26,10 @@ bool EnumTraits<net::interfaces::AddressFamily, net::AddressFamily>::FromMojom(
 }
 
 // static
-net::interfaces::AddressFamily
-EnumTraits<net::interfaces::AddressFamily, net::AddressFamily>::ToMojom(
+network::mojom::AddressFamily
+EnumTraits<network::mojom::AddressFamily, net::AddressFamily>::ToMojom(
     net::AddressFamily address_family) {
-  using net::interfaces::AddressFamily;
+  using network::mojom::AddressFamily;
   switch (address_family) {
     case net::ADDRESS_FAMILY_UNSPECIFIED:
       return AddressFamily::UNSPECIFIED;

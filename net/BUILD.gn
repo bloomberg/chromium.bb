@@ -5292,7 +5292,6 @@ test("net_unittests") {
     "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
-    "//net/interfaces:tests",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
@@ -5537,9 +5536,6 @@ test("net_unittests") {
       "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
       "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
-  }
-  if (enable_net_mojo) {
-    deps += [ "//mojo/core/embedder" ]
   }
 
   if (is_ios) {

@@ -16,9 +16,9 @@
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
-#include "net/interfaces/address_family.mojom.h"
-#include "net/interfaces/ip_endpoint.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/address_family.mojom.h"
+#include "services/network/public/mojom/ip_endpoint.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace net {
