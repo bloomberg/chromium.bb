@@ -911,9 +911,17 @@ function handlePostMessage(event) {
     let height = args.height || null;
     let duration = args.duration || '0s';
     let iframe = $(IDS.LOGO_DOODLE_IFRAME);
+
+    var transitionCallback = function() {
+      iframe.removeEventListener('webkitTransitionEnd', transitionCallback);
+      iframe.contentWindow.postMessage(
+          {cmd: 'resizeComplete'}, 'https://www.google.com');
+    };
+    iframe.addEventListener('webkitTransitionEnd', transitionCallback, false);
+
+    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
     document.body.style.setProperty('--logo-iframe-height', height);
     document.body.style.setProperty('--logo-iframe-width', width);
-    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
         .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
