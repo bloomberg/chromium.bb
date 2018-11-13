@@ -24,8 +24,8 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
+#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
@@ -85,7 +85,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           payments_client_.get(),
           personal_data_manager_,
           GetApplicationContext()->GetApplicationLocale())),
-      strike_database_(StrikeDatabaseFactory::GetForBrowserState(
+      legacy_strike_database_(LegacyStrikeDatabaseFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
@@ -129,8 +129,8 @@ payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
   return payments_client_.get();
 }
 
-StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
-  return strike_database_;
+LegacyStrikeDatabase* ChromeAutofillClientIOS::GetLegacyStrikeDatabase() {
+  return legacy_strike_database_;
 }
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {
@@ -199,7 +199,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/false, /*should_request_name_from_user=*/false, card,
-          std::make_unique<base::DictionaryValue>(), GetStrikeDatabase(),
+          std::make_unique<base::DictionaryValue>(), GetLegacyStrikeDatabase(),
           /*upload_save_card_callback=*/UserAcceptedUploadCallback(),
           /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 }
@@ -233,7 +233,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
   auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/true, /*should_request_name_from_user=*/false, card,
-          std::move(legal_message), GetStrikeDatabase(),
+          std::move(legal_message), GetLegacyStrikeDatabase(),
           /*upload_save_card_callback=*/std::move(callback),
           /*local_save_card_callback=*/base::Closure(), GetPrefs());
   // Allow user to save card only if legal messages are successfully parsed.

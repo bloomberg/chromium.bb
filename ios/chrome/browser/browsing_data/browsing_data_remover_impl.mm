@@ -22,8 +22,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -37,8 +37,8 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
@@ -479,11 +479,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin,
                                                           delete_end);
 
-      // Clear out the Autofill StrikeDatabase in its entirety.
-      autofill::StrikeDatabase* strike_database =
-          autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
-      if (strike_database)
-        strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
+      // Clear out the Autofill LegacyStrikeDatabase in its entirety.
+      autofill::LegacyStrikeDatabase* legacy_strike_database =
+          autofill::LegacyStrikeDatabaseFactory::GetForBrowserState(
+              browser_state_);
+      if (legacy_strike_database)
+        legacy_strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
             IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
 
       // Ask for a call back when the above calls are finished.

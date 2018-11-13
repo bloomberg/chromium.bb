@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
+#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
-#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -168,15 +168,16 @@ FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
   return form_data_importer_.get();
 }
 
-StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {
+LegacyStrikeDatabase* ChromeAutofillClient::GetLegacyStrikeDatabase() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  // No need to return a StrikeDatabase in incognito mode. It is primarily used
-  // to determine whether or not to offer save of Autofill data. However, we
-  // don't allow saving of Autofill data while in incognito anyway, so an
-  // incognito code path should never get far enough to query StrikeDatabase.
+  // No need to return a LegacyStrikeDatabase in incognito mode. It is primarily
+  // used to determine whether or not to offer save of Autofill data. However,
+  // we don't allow saving of Autofill data while in incognito anyway, so an
+  // incognito code path should never get far enough to query
+  // LegacyStrikeDatabase.
   DCHECK(!profile->IsOffTheRecord());
-  return StrikeDatabaseFactory::GetForProfile(profile);
+  return LegacyStrikeDatabaseFactory::GetForProfile(profile);
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
@@ -308,7 +309,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/false, /*should_request_name_from_user=*/false, card,
-              std::make_unique<base::DictionaryValue>(), GetStrikeDatabase(),
+              std::make_unique<base::DictionaryValue>(),
+              GetLegacyStrikeDatabase(),
               /*upload_save_card_callback=*/
               UserAcceptedUploadCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs())));
@@ -352,7 +354,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/true, should_request_name_from_user, card,
-              std::move(legal_message), GetStrikeDatabase(),
+              std::move(legal_message), GetLegacyStrikeDatabase(),
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/base::Closure(), GetPrefs());
   if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {

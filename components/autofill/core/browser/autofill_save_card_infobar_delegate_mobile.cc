@@ -11,8 +11,8 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/legal_message_line.h"
-#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -32,7 +32,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool should_request_name_from_user,
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    StrikeDatabase* strike_database,
+    LegacyStrikeDatabase* strike_database,
     AutofillClient::UserAcceptedUploadCallback upload_save_card_callback,
     base::OnceClosure local_save_card_callback,
     PrefService* pref_service)
@@ -42,7 +42,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       upload_save_card_callback_(std::move(upload_save_card_callback)),
       local_save_card_callback_(std::move(local_save_card_callback)),
       pref_service_(pref_service),
-      strike_database_(strike_database),
+      legacy_strike_database_(strike_database),
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
       card_label_(card.NetworkAndLastFourDigits()),
@@ -81,8 +81,8 @@ AutofillSaveCardInfoBarDelegateMobile::
             features::kAutofillSaveCreditCardUsesStrikeSystem)) {
       // If the infobar was ignored, count that as a strike against offering
       // save in the future.
-      strike_database_->AddStrike(
-          strike_database_->GetKeyForCreditCardSave(
+      legacy_strike_database_->AddStrike(
+          legacy_strike_database_->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(card_last_four_digits_)),
           base::DoNothing());
     }
@@ -154,9 +154,10 @@ void AutofillSaveCardInfoBarDelegateMobile::InfoBarDismissed() {
           features::kAutofillSaveCreditCardUsesStrikeSystem)) {
     // If the infobar was explicitly denied, count that as a strike against
     // offering save in the future.
-    strike_database_->AddStrike(strike_database_->GetKeyForCreditCardSave(
-                                    base::UTF16ToUTF8(card_last_four_digits_)),
-                                base::DoNothing());
+    legacy_strike_database_->AddStrike(
+        legacy_strike_database_->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(card_last_four_digits_)),
+        base::DoNothing());
   }
 }
 

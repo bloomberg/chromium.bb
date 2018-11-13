@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 
 #include <string>
 #include <utility>
@@ -22,7 +22,7 @@ const char kKeyDeliminator[] = "__";
 const char kKeyPrefixForCreditCardSave[] = "creditCardSave";
 }  // namespace
 
-StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
+LegacyStrikeDatabase::LegacyStrikeDatabase(const base::FilePath& database_dir)
     : db_(std::make_unique<leveldb_proto::ProtoDatabaseImpl<StrikeData>>(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -30,37 +30,37 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseClientName, database_dir,
             leveldb_proto::CreateSimpleOptions(),
-            base::BindRepeating(&StrikeDatabase::OnDatabaseInit,
+            base::BindRepeating(&LegacyStrikeDatabase::OnDatabaseInit,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-StrikeDatabase::~StrikeDatabase() {}
+LegacyStrikeDatabase::~LegacyStrikeDatabase() {}
 
-void StrikeDatabase::GetStrikes(const std::string key,
-                                const StrikesCallback& outer_callback) {
-  GetStrikeData(key, base::BindRepeating(&StrikeDatabase::OnGetStrikes,
+void LegacyStrikeDatabase::GetStrikes(const std::string key,
+                                      const StrikesCallback& outer_callback) {
+  GetStrikeData(key, base::BindRepeating(&LegacyStrikeDatabase::OnGetStrikes,
                                          base::Unretained(this),
                                          std::move(outer_callback)));
 }
 
-void StrikeDatabase::AddStrike(const std::string key,
-                               const StrikesCallback& outer_callback) {
-  GetStrikeData(key, base::BindRepeating(&StrikeDatabase::OnAddStrike,
+void LegacyStrikeDatabase::AddStrike(const std::string key,
+                                     const StrikesCallback& outer_callback) {
+  GetStrikeData(key, base::BindRepeating(&LegacyStrikeDatabase::OnAddStrike,
                                          base::Unretained(this),
                                          std::move(outer_callback), key));
 }
 
-void StrikeDatabase::ClearAllStrikes(
+void LegacyStrikeDatabase::ClearAllStrikes(
     const ClearStrikesCallback& outer_callback) {
   // For deleting all, filter method always returns true.
   db_->UpdateEntriesWithRemoveFilter(
       std::make_unique<StrikeDataProto::KeyEntryVector>(),
       base::BindRepeating([](const std::string& key) { return true; }),
-      base::BindRepeating(&StrikeDatabase::OnClearAllStrikes,
+      base::BindRepeating(&LegacyStrikeDatabase::OnClearAllStrikes,
                           base::Unretained(this), outer_callback));
 }
 
-void StrikeDatabase::ClearAllStrikesForKey(
+void LegacyStrikeDatabase::ClearAllStrikesForKey(
     const std::string& key,
     const ClearStrikesCallback& outer_callback) {
   std::unique_ptr<std::vector<std::string>> keys_to_remove(
@@ -70,27 +70,28 @@ void StrikeDatabase::ClearAllStrikesForKey(
       /*entries_to_save=*/std::make_unique<
           leveldb_proto::ProtoDatabase<StrikeData>::KeyEntryVector>(),
       /*keys_to_remove=*/std::move(keys_to_remove),
-      base::BindRepeating(&StrikeDatabase::OnClearAllStrikesForKey,
+      base::BindRepeating(&LegacyStrikeDatabase::OnClearAllStrikesForKey,
                           base::Unretained(this), outer_callback));
 }
 
-std::string StrikeDatabase::GetKeyForCreditCardSave(
+std::string LegacyStrikeDatabase::GetKeyForCreditCardSave(
     const std::string& card_last_four_digits) {
   return CreateKey(GetKeyPrefixForCreditCardSave(), card_last_four_digits);
 }
 
-StrikeDatabase::StrikeDatabase() : db_(nullptr), weak_ptr_factory_(this) {}
+LegacyStrikeDatabase::LegacyStrikeDatabase()
+    : db_(nullptr), weak_ptr_factory_(this) {}
 
-void StrikeDatabase::OnDatabaseInit(bool success) {}
+void LegacyStrikeDatabase::OnDatabaseInit(bool success) {}
 
-void StrikeDatabase::GetStrikeData(const std::string key,
-                                   const GetValueCallback& callback) {
+void LegacyStrikeDatabase::GetStrikeData(const std::string key,
+                                         const GetValueCallback& callback) {
   db_->GetEntry(key, callback);
 }
 
-void StrikeDatabase::SetStrikeData(const std::string& key,
-                                   const StrikeData& data,
-                                   const SetValueCallback& callback) {
+void LegacyStrikeDatabase::SetStrikeData(const std::string& key,
+                                         const StrikeData& data,
+                                         const SetValueCallback& callback) {
   std::unique_ptr<StrikeDataProto::KeyEntryVector> entries(
       new StrikeDataProto::KeyEntryVector());
   entries->push_back(std::make_pair(key, data));
@@ -100,19 +101,21 @@ void StrikeDatabase::SetStrikeData(const std::string& key,
       callback);
 }
 
-void StrikeDatabase::OnGetStrikes(StrikesCallback callback,
-                                  bool success,
-                                  std::unique_ptr<StrikeData> strike_data) {
+void LegacyStrikeDatabase::OnGetStrikes(
+    StrikesCallback callback,
+    bool success,
+    std::unique_ptr<StrikeData> strike_data) {
   if (success && strike_data)
     callback.Run(strike_data->num_strikes());
   else
     callback.Run(0);
 }
 
-void StrikeDatabase::OnAddStrike(StrikesCallback callback,
-                                 std::string key,
-                                 bool success,
-                                 std::unique_ptr<StrikeData> strike_data) {
+void LegacyStrikeDatabase::OnAddStrike(
+    StrikesCallback callback,
+    std::string key,
+    bool success,
+    std::unique_ptr<StrikeData> strike_data) {
   if (!success) {
     // Failed to get strike data; abort adding strike.
     callback.Run(0);
@@ -125,14 +128,14 @@ void StrikeDatabase::OnAddStrike(StrikesCallback callback,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   SetStrikeData(
       key, data,
-      base::BindRepeating(&StrikeDatabase::OnAddStrikeComplete,
+      base::BindRepeating(&LegacyStrikeDatabase::OnAddStrikeComplete,
                           base::Unretained(this), callback, num_strikes, key));
 }
 
-void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
-                                         int num_strikes,
-                                         std::string key,
-                                         bool success) {
+void LegacyStrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
+                                               int num_strikes,
+                                               std::string key,
+                                               bool success) {
   if (success) {
     if (GetPrefixFromKey(key) == kKeyPrefixForCreditCardSave) {
       base::UmaHistogramCounts1000(
@@ -144,30 +147,32 @@ void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
   }
 }
 
-void StrikeDatabase::OnClearAllStrikes(ClearStrikesCallback callback,
-                                       bool success) {
-  callback.Run(success);
-}
-
-void StrikeDatabase::OnClearAllStrikesForKey(ClearStrikesCallback callback,
+void LegacyStrikeDatabase::OnClearAllStrikes(ClearStrikesCallback callback,
                                              bool success) {
   callback.Run(success);
 }
 
-void StrikeDatabase::LoadKeys(const LoadKeysCallback& callback) {
+void LegacyStrikeDatabase::OnClearAllStrikesForKey(
+    ClearStrikesCallback callback,
+    bool success) {
+  callback.Run(success);
+}
+
+void LegacyStrikeDatabase::LoadKeys(const LoadKeysCallback& callback) {
   db_->LoadKeys(callback);
 }
 
-std::string StrikeDatabase::CreateKey(const std::string& type_prefix,
-                                      const std::string& identifier_suffix) {
+std::string LegacyStrikeDatabase::CreateKey(
+    const std::string& type_prefix,
+    const std::string& identifier_suffix) {
   return type_prefix + kKeyDeliminator + identifier_suffix;
 }
 
-std::string StrikeDatabase::GetKeyPrefixForCreditCardSave() {
+std::string LegacyStrikeDatabase::GetKeyPrefixForCreditCardSave() {
   return kKeyPrefixForCreditCardSave;
 }
 
-std::string StrikeDatabase::GetPrefixFromKey(const std::string& key) {
+std::string LegacyStrikeDatabase::GetPrefixFromKey(const std::string& key) {
   return key.substr(0, key.find(kKeyDeliminator));
 }
 

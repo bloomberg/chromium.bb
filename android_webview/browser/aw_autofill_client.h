@@ -21,9 +21,9 @@ class AutofillPopupDelegate;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
+class LegacyStrikeDatabase;
 class MigratableCreditCard;
 class PersonalDataManager;
-class StrikeDatabase;
 }
 
 namespace content {
@@ -66,7 +66,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   identity::IdentityManager* GetIdentityManager() override;
   autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
-  autofill::StrikeDatabase* GetStrikeDatabase() override;
+  autofill::LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;

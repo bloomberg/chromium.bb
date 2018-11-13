@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_STRIKE_DATABASE_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_STRIKE_DATABASE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_LEGACY_STRIKE_DATABASE_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_LEGACY_STRIKE_DATABASE_H_
 
 #include <memory>
 #include <string>
@@ -11,17 +11,17 @@
 #include <utility>
 #include <vector>
 
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 
 namespace autofill {
 
-// An in-memory-only test version of StrikeDatabase.
-class TestStrikeDatabase : public StrikeDatabase {
+// An in-memory-only test version of LegacyStrikeDatabase.
+class TestLegacyStrikeDatabase : public LegacyStrikeDatabase {
  public:
-  TestStrikeDatabase();
-  ~TestStrikeDatabase() override;
+  TestLegacyStrikeDatabase();
+  ~TestLegacyStrikeDatabase() override;
 
-  // StrikeDatabase:
+  // LegacyStrikeDatabase:
   void GetStrikes(const std::string key,
                   const StrikesCallback& outer_callback) override;
   void AddStrike(const std::string key,
@@ -31,7 +31,7 @@ class TestStrikeDatabase : public StrikeDatabase {
       const std::string& key,
       const ClearStrikesCallback& outer_callback) override;
 
-  // TestStrikeDatabase:
+  // TestLegacyStrikeDatabase:
   void AddEntryWithNumStrikes(const std::string& key, int num_strikes);
   int GetStrikesForTesting(const std::string& key);
 
@@ -42,4 +42,4 @@ class TestStrikeDatabase : public StrikeDatabase {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_STRIKE_DATABASE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_LEGACY_STRIKE_DATABASE_H_

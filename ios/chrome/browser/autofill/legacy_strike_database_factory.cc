@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/autofill/strike_database_factory.h"
+#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 
 #include <utility>
 
 #include "base/memory/singleton.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -15,29 +15,30 @@
 namespace autofill {
 
 // static
-StrikeDatabase* StrikeDatabaseFactory::GetForBrowserState(
+LegacyStrikeDatabase* LegacyStrikeDatabaseFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<StrikeDatabase*>(
+  return static_cast<LegacyStrikeDatabase*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-StrikeDatabaseFactory* StrikeDatabaseFactory::GetInstance() {
-  return base::Singleton<StrikeDatabaseFactory>::get();
+LegacyStrikeDatabaseFactory* LegacyStrikeDatabaseFactory::GetInstance() {
+  return base::Singleton<LegacyStrikeDatabaseFactory>::get();
 }
 
-StrikeDatabaseFactory::StrikeDatabaseFactory()
+LegacyStrikeDatabaseFactory::LegacyStrikeDatabaseFactory()
     : BrowserStateKeyedServiceFactory(
-          "AutofillStrikeDatabase",
+          "AutofillLegacyStrikeDatabase",
           BrowserStateDependencyManager::GetInstance()) {}
 
-StrikeDatabaseFactory::~StrikeDatabaseFactory() {}
+LegacyStrikeDatabaseFactory::~LegacyStrikeDatabaseFactory() {}
 
-std::unique_ptr<KeyedService> StrikeDatabaseFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+LegacyStrikeDatabaseFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<autofill::StrikeDatabase>(
+  return std::make_unique<autofill::LegacyStrikeDatabase>(
       chrome_browser_state->GetStatePath().Append(
           FILE_PATH_LITERAL("AutofillStrikeDatabase")));
 }

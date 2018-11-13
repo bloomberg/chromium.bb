@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
-#include "components/autofill/core/browser/test_strike_database.h"
+#include "components/autofill/core/browser/test_legacy_strike_database.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -39,7 +39,7 @@ class TestAutofillClient : public AutofillClient {
   identity::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
-  StrikeDatabase* GetStrikeDatabase() override;
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -116,8 +116,8 @@ class TestAutofillClient : public AutofillClient {
   }
 
   void set_test_strike_database(
-      std::unique_ptr<TestStrikeDatabase> test_strike_database) {
-    test_strike_database_ = std::move(test_strike_database);
+      std::unique_ptr<TestLegacyStrikeDatabase> test_strike_database) {
+    test_legacy_strike_database_ = std::move(test_strike_database);
   }
 
   void set_test_payments_client(
@@ -166,7 +166,7 @@ class TestAutofillClient : public AutofillClient {
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
-  std::unique_ptr<TestStrikeDatabase> test_strike_database_;
+  std::unique_ptr<TestLegacyStrikeDatabase> test_legacy_strike_database_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   GURL form_origin_;

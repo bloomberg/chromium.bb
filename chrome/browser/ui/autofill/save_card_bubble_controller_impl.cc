@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -28,7 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -398,7 +398,7 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
             features::kAutofillSaveCreditCardUsesStrikeSystem)) {
       // If save was cancelled and the bubble was actually shown (NOT just the
       // icon), count that as a strike against offering save in the future.
-      StrikeDatabase* strike_database = GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database = GetLegacyStrikeDatabase();
       strike_database->AddStrike(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(card_.LastFourDigits())),
@@ -521,7 +521,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
       // If the save offer was ignored and the bubble was actually shown (NOT
       // just the icon), count that as a strike against offering save in the
       // future.
-      StrikeDatabase* strike_database = GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database = GetLegacyStrikeDatabase();
       strike_database->AddStrike(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(card_.LastFourDigits())),
@@ -556,13 +556,13 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
       signin_manager->GetAuthenticatedAccountId());
 }
 
-StrikeDatabase* SaveCardBubbleControllerImpl::GetStrikeDatabase() {
+LegacyStrikeDatabase* SaveCardBubbleControllerImpl::GetLegacyStrikeDatabase() {
   Profile* profile = GetProfile();
-  // No need to return a StrikeDatabase in incognito mode. We don't allow saving
-  // of Autofill data while in incognito, so an incognito code path should never
-  // get this far.
+  // No need to return a LegacyStrikeDatabase in incognito mode. We don't allow
+  // saving of Autofill data while in incognito, so an incognito code path
+  // should never get this far.
   DCHECK(profile && !profile->IsOffTheRecord());
-  return StrikeDatabaseFactory::GetForProfile(profile);
+  return LegacyStrikeDatabaseFactory::GetForProfile(profile);
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {

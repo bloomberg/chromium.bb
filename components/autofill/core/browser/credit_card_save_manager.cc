@@ -31,10 +31,10 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -90,18 +90,19 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
   local_card_save_candidate_ = card;
   show_save_prompt_ = base::nullopt;
 
-  // Query the Autofill StrikeDatabase on if we should pop up the offer-to-save
-  // prompt for this card.
+  // Query the Autofill LegacyStrikeDatabase on if we should pop up the
+  // offer-to-save prompt for this card.
   if (base::FeatureList::IsEnabled(
           features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    LegacyStrikeDatabase* strike_database = client_->GetLegacyStrikeDatabase();
     strike_database->GetStrikes(
         strike_database->GetKeyForCreditCardSave(
             base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
         base::BindRepeating(&CreditCardSaveManager::OnDidGetStrikesForLocalSave,
                             weak_ptr_factory_.GetWeakPtr()));
   } else {
-    // Skip retrieving data from the Autofill StrikeDatabase; assume 0 strikes.
+    // Skip retrieving data from the Autofill LegacyStrikeDatabase; assume 0
+    // strikes.
     OnDidGetStrikesForLocalSave(0);
   }
 }
@@ -229,11 +230,11 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
       payments::kUploadCardBillableServiceNumber);
-  // Query the Autofill StrikeDatabase on if we should pop up the offer-to-save
-  // prompt for this card.
+  // Query the Autofill LegacyStrikeDatabase on if we should pop up the
+  // offer-to-save prompt for this card.
   if (base::FeatureList::IsEnabled(
           features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    LegacyStrikeDatabase* strike_database = client_->GetLegacyStrikeDatabase();
     strike_database->GetStrikes(
         strike_database->GetKeyForCreditCardSave(
             base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
@@ -241,7 +242,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
             &CreditCardSaveManager::OnDidGetStrikesForUploadSave,
             weak_ptr_factory_.GetWeakPtr()));
   } else {
-    // Skip retrieving data from the Autofill StrikeDatabase; assume 0 strikes.
+    // Skip retrieving data from the Autofill LegacyStrikeDatabase; assume 0
+    // strikes.
     OnDidGetStrikesForUploadSave(0);
   }
 }
@@ -294,7 +296,8 @@ void CreditCardSaveManager::OnDidUploadCard(
     }
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-      StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database =
+          client_->GetLegacyStrikeDatabase();
       // Log how many strikes the card had when it was saved.
       strike_database->GetStrikes(
           strike_database->GetKeyForCreditCardSave(
@@ -315,7 +318,8 @@ void CreditCardSaveManager::OnDidUploadCard(
         show_save_prompt_.value()) {
       // If the upload failed and the bubble was actually shown (NOT just the
       // icon), count that as a strike against offering upload in the future.
-      StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database =
+          client_->GetLegacyStrikeDatabase();
       strike_database->AddStrike(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
@@ -337,9 +341,10 @@ void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
   show_save_prompt_ =
       num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
 
-  // Only offer upload once both Payments and the Autofill StrikeDatabase have
-  // returned their decisions. Use population of |upload_request_.context_token|
-  // as an indicator of the Payments call returning successfully.
+  // Only offer upload once both Payments and the Autofill LegacyStrikeDatabase
+  // have returned their decisions. Use population of
+  // |upload_request_.context_token| as an indicator of the Payments call
+  // returning successfully.
   if (!upload_request_.context_token.empty())
     OfferCardUploadSave();
 }
@@ -356,9 +361,10 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     upload_request_.context_token = context_token;
     legal_message_ = std::move(legal_message);
 
-    // Only offer upload once both Payments and the Autofill StrikeDatabase have
-    // returned their decisions. Use presence of |show_save_prompt_| as an
-    // indicator of StrikeDatabase retrieving its data.
+    // Only offer upload once both Payments and the Autofill
+    // LegacyStrikeDatabase have returned their decisions. Use presence of
+    // |show_save_prompt_| as an indicator of LegacyStrikeDatabase retrieving
+    // its data.
     if (show_save_prompt_ != base::nullopt)
       OfferCardUploadSave();
   } else {
@@ -374,10 +380,11 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // be rare.)
     //
     // Note that calling AttemptToOfferCardLocalSave(~) pings the Autofill
-    // StrikeDatabase again, but A) the result should be cached so this
+    // LegacyStrikeDatabase again, but A) the result should be cached so this
     // shouldn't hit the disk, and B) the alternative would require hooking into
-    // the StrikeDatabase's GetStrikes() call already in progress, which would
-    // be hacky at worst and require additional class state variables at best.
+    // the LegacyStrikeDatabase's GetStrikes() call already in progress, which
+    // would be hacky at worst and require additional class state variables at
+    // best.
     bool found_name_and_postal_code_and_cvc =
         (upload_request_.detected_values & DetectedValue::CARDHOLDER_NAME ||
          upload_request_.detected_values & DetectedValue::ADDRESS_NAME) &&
@@ -466,7 +473,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
     // Set that upload was offered.
     upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
   } else {
-    // Set that upload was abandoned due to the Autofill StrikeDatabase
+    // Set that upload was abandoned due to the Autofill LegacyStrikeDatabase
     // returning too many strikes for a mobile infobar to be displayed.
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE;
@@ -484,7 +491,7 @@ void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
 
   if (base::FeatureList::IsEnabled(
           features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    LegacyStrikeDatabase* strike_database = client_->GetLegacyStrikeDatabase();
     // Log how many strikes the card had when it was saved.
     strike_database->GetStrikes(
         strike_database->GetKeyForCreditCardSave(
