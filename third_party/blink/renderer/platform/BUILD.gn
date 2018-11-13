@@ -2103,6 +2103,7 @@ jumbo_source_set("unit_tests") {
     "graphics/canvas_2d_layer_bridge_test.cc",
     "graphics/canvas_color_params_test.cc",
     "graphics/canvas_resource_dispatcher_test.cc",
+    "graphics/canvas_resource_provider_test.cc",
     "graphics/canvas_resource_test.cc",
     "graphics/color_correction_test_utils.cc",
     "graphics/deferred_image_decoder_test.cc",
