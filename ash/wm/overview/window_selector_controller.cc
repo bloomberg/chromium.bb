@@ -49,7 +49,7 @@ constexpr int kOcclusionPauseDurationForStartMs = 50;
 
 // Wait longer when exiting overview mode in case when a user
 // may re-enter overview mode immediately, contents are ready.
-constexpr int kOcclusionPauseDurationForEndMs = 5000;
+constexpr int kOcclusionPauseDurationForEndMs = 500;
 
 // Returns true if |window| should be hidden when entering overview.
 bool ShouldHideWindowInOverview(const aura::Window* window) {
