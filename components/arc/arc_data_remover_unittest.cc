@@ -9,9 +9,10 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/testing_pref_service.h"
@@ -20,13 +21,33 @@
 namespace arc {
 namespace {
 
+class TestUpstartClient : public chromeos::FakeUpstartClient {
+ public:
+  TestUpstartClient() = default;
+  ~TestUpstartClient() override = default;
+
+  void StartJob(const std::string& job,
+                const std::vector<std::string>& upstart_env,
+                chromeos::VoidDBusMethodCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), arc_available_));
+  }
+
+  void set_arc_available(bool arc_available) { arc_available_ = arc_available; }
+
+ private:
+  bool arc_available_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestUpstartClient);
+};
+
 class ArcDataRemoverTest : public testing::Test {
  public:
   ArcDataRemoverTest() = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::make_unique<chromeos::FakeSessionManagerClient>());
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpstartClient(
+        std::make_unique<TestUpstartClient>());
     chromeos::DBusThreadManager::Initialize();
 
     prefs::RegisterProfilePrefs(prefs_.registry());
@@ -40,9 +61,9 @@ class ArcDataRemoverTest : public testing::Test {
     return cryptohome_id_;
   }
 
-  chromeos::FakeSessionManagerClient* session_manager_client() {
-    return static_cast<chromeos::FakeSessionManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
+  TestUpstartClient* upstart_client() {
+    return static_cast<TestUpstartClient*>(
+        chromeos::DBusThreadManager::Get()->GetUpstartClient());
   }
 
  private:
@@ -68,7 +89,7 @@ TEST_F(ArcDataRemoverTest, NotScheduled) {
 }
 
 TEST_F(ArcDataRemoverTest, Success) {
-  session_manager_client()->set_arc_available(true);
+  upstart_client()->set_arc_available(true);
 
   ArcDataRemover data_remover(prefs(), cryptohome_id());
   data_remover.Schedule();
