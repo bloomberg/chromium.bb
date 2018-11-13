@@ -87,9 +87,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsGranted) {
   AddPattern(&explicit_hosts, "http://*.c.com/*");
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
-  prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
-                               PermissionSet(apis, manifest_permissions,
-                                             explicit_hosts, URLPatternSet()));
+  prefs->AddRuntimeGrantedPermissions(
+      "kjmkgkdkpedkejedfhmfcenooemhbpbo",
+      PermissionSet(apis, manifest_permissions, explicit_hosts,
+                    URLPatternSet()));
 
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -114,9 +115,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsDeny) {
   apis.insert(APIPermission::kManagement);
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
-  prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
-                               PermissionSet(apis, ManifestPermissionSet(),
-                                             URLPatternSet(), URLPatternSet()));
+  prefs->AddRuntimeGrantedPermissions(
+      "kjmkgkdkpedkejedfhmfcenooemhbpbo",
+      PermissionSet(apis, ManifestPermissionSet(), URLPatternSet(),
+                    URLPatternSet()));
 
   PermissionsRequestFunction::SetAutoConfirmForTests(false);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
