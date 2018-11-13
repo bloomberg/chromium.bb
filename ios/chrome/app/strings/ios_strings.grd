@@ -1391,6 +1391,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTING_ON" desc="Generic status label displayed in Settings to show that a setting is currently turned on. [Length: 5em] [iOS only]">
         On
       </message>
+      <message name="IDS_IOS_SETTINGS_TOOLBAR_DELETE" desc="Label of the button displayed on the bottom toolbar of the settings' collections when they are in edit mode. Pressing this button deletes the currently selected items.">
+        Delete
+      </message>
       <message name="IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT" desc="Action hint for any switch in settings. This is spoken by VoiceOver. [iOS only]">
         Double tap to toggle setting
       </message>

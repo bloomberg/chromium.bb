@@ -74,3 +74,50 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateEditButton) {
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
               controller.navigationItem.rightBarButtonItem.title);
 }
+
+// Tests that the delete button in the bottom toolbar is displayed only when the
+// collection is being edited.
+TEST_F(SettingsRootTableViewControllerTest, TestDeleteToolbar) {
+  SettingsRootTableViewController* controller = Controller();
+
+  id mockController = OCMPartialMock(controller);
+  id mockTableView = OCMPartialMock(controller.tableView);
+  SettingsNavigationController* navigationController = NavigationController();
+  OCMStub([mockController navigationController])
+      .andReturn(navigationController);
+
+  NSIndexPath* testIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+  NSMutableArray* testSelectedItems = [NSMutableArray array];
+  [testSelectedItems addObject:testIndexPath];
+  ASSERT_TRUE(navigationController.toolbarHidden);
+
+  // Test that if the table view isn't being edited, the toolbar is still
+  // hidden.
+  controller.tableView.editing = NO;
+  [controller tableView:controller.tableView
+      didSelectRowAtIndexPath:testIndexPath];
+  EXPECT_TRUE(navigationController.toolbarHidden);
+
+  // Test that if the table view is being edited, the toolbar is displayed when
+  // the element is selected.
+  controller.tableView.editing = YES;
+  EXPECT_TRUE(navigationController.toolbarHidden);
+  [controller tableView:controller.tableView
+      didSelectRowAtIndexPath:testIndexPath];
+  EXPECT_FALSE(navigationController.toolbarHidden);
+
+  // Test that if the table view is being edited, the toolbar is not hidden when
+  // an element is deselected but some elements are still selected.
+  OCMStub([mockTableView indexPathsForSelectedRows])
+      .andReturn(testSelectedItems);
+  [controller tableView:controller.tableView
+      didDeselectRowAtIndexPath:testIndexPath];
+  EXPECT_FALSE(navigationController.toolbarHidden);
+
+  // Test that if the table view is being edited, the toolbar is hidden when the
+  // last selected element is deselected.
+  [testSelectedItems removeAllObjects];
+  [controller tableView:controller.tableView
+      didDeselectRowAtIndexPath:testIndexPath];
+  EXPECT_TRUE(navigationController.toolbarHidden);
+}

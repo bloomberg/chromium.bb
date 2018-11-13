@@ -19,8 +19,16 @@
 #error "This file requires ARC support."
 #endif
 
+@interface SettingsRootTableViewController ()
+
+// Delete button for the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* deleteButton;
+
+@end
+
 @implementation SettingsRootTableViewController
 
+@synthesize deleteButton = _deleteButton;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark - Public
@@ -35,7 +43,29 @@
   }
 }
 
+#pragma mark - Property
+
+- (UIBarButtonItem*)deleteButton {
+  if (!_deleteButton) {
+    _deleteButton = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_SETTINGS_TOOLBAR_DELETE)
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(deleteButtonCallback)];
+    _deleteButton.tintColor = [UIColor redColor];
+  }
+  return _deleteButton;
+}
+
 #pragma mark - UIViewController
+
+- (NSArray<UIBarButtonItem*>*)toolbarItems {
+  UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  return @[ flexibleSpace, self.deleteButton, flexibleSpace ];
+}
 
 - (void)viewDidLoad {
   self.styler.tableViewBackgroundColor =
@@ -57,6 +87,31 @@
   }
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [self.navigationController setToolbarHidden:YES animated:YES];
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (!self.tableView.editing)
+    return;
+
+  if (self.navigationController.toolbarHidden)
+    [self.navigationController setToolbarHidden:NO animated:YES];
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (!self.tableView.editing)
+    return;
+
+  if (self.tableView.indexPathsForSelectedRows.count == 0)
+    [self.navigationController setToolbarHidden:YES animated:YES];
+}
+
 #pragma mark - TableViewLinkHeaderFooterItemDelegate
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
@@ -67,6 +122,10 @@
 }
 
 #pragma mark - Private
+
+- (void)deleteButtonCallback {
+  [self deleteItems:self.tableView.indexPathsForSelectedRows];
+}
 
 - (UIBarButtonItem*)doneButtonIfNeeded {
   if (self.shouldHideDoneButton) {
@@ -113,6 +172,15 @@
 - (void)editButtonPressed {
   self.tableView.editing = !self.tableView.editing;
   [self updateEditButton];
+}
+
+- (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
+  [self.tableView performBatchUpdates:^{
+    [self removeFromModelItemAtIndexPaths:indexPaths];
+    [self.tableView deleteRowsAtIndexPaths:indexPaths
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+  }
+                           completion:nil];
 }
 
 @end
