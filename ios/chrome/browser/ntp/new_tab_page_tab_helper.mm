@@ -81,6 +81,8 @@ void NewTabPageTabHelper::DidStartNavigation(
     web::NavigationContext* navigation_context) {
   if (IsNTPURL(navigation_context->GetUrl())) {
     UpdatePendingItem();
+  } else {
+    SetActive(false);
   }
 }
 

@@ -3645,13 +3645,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                       proposedCredential:(NSURLCredential*)proposedCredential
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler {
-  // Hide the NTP immediately when load an HTTP auth page from the NTP.
-  // |dialogPresenter| should only run when the webState->GetView() is visible.
-  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
-  if (NTPHelper && NTPHelper->IsActive()) {
-    NTPHelper->Deactivate();
-  }
-
   [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
                                      proposedCredential:proposedCredential
                                                webState:webState
@@ -4362,7 +4355,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(currentTab);
   currentTab.navigationManager->LoadURLWithParams(params);
 
-  // Deactive the NTP immediately on a load to hide the NTP quickly, but after
+  // Deactivate the NTP immediately on a load to hide the NTP quickly, but after
   // calling -LoadURLWithParams.  Otherwise, if the webState has never been
   // visible (such as during startup with an NTP), it's possible the webView can
   // trigger a unnecessary load for chrome://newtab.
