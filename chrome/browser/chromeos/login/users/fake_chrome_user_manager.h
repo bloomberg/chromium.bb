@@ -192,6 +192,9 @@ class FakeChromeUserManager : public ChromeUserManager {
   void set_current_user_ephemeral(bool user_ephemeral) {
     current_user_ephemeral_ = user_ephemeral;
   }
+  void set_current_user_child(bool child_user) {
+    current_user_child_ = child_user;
+  }
 
   void set_is_enterprise_managed(bool is_enterprise_managed) {
     is_enterprise_managed_ = is_enterprise_managed;
@@ -208,6 +211,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool fake_ephemeral_users_enabled_ = false;
   bool current_user_new_ = false;
   bool current_user_ephemeral_ = false;
+  bool current_user_child_ = false;
 
   MultiProfileUserController* multi_profile_user_controller_ = nullptr;
 

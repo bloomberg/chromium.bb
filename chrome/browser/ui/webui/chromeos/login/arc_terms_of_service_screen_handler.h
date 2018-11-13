@@ -120,6 +120,9 @@ class ArcTermsOfServiceScreenHandler
   bool backup_restore_managed_ = false;
   bool location_services_managed_ = false;
 
+  // To track if a child account is being set up.
+  bool is_child_account_;
+
   std::unique_ptr<arc::ArcOptInPreferenceHandler> pref_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTermsOfServiceScreenHandler);

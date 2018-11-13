@@ -220,7 +220,10 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     super.onPreferenceChanged(isEnabled, isManaged);
 
     // Hide the checkbox if it is not allowed to (re-)enable.
-    var canEnable = !isEnabled && !isManaged;
+    // TODO(jhorwich) Remove checkbox functionality from the metrics notice as
+    // we've removed the ability for a device owner to enable it during ARC
+    // setup.
+    var canEnable = false;
     this.checkbox_.hidden = !canEnable;
     this.textLabel_.hidden = canEnable;
     var label = canEnable ? this.label_ : this.textLabel_;

@@ -546,8 +546,7 @@ bool FakeChromeUserManager::IsLoggedInAsUserWithGaiaAccount() const {
 }
 
 bool FakeChromeUserManager::IsLoggedInAsChildUser() const {
-  NOTREACHED();
-  return false;
+  return current_user_child_;
 }
 
 bool FakeChromeUserManager::IsLoggedInAsPublicAccount() const {
