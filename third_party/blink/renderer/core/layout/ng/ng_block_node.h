@@ -87,7 +87,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
-  void UseOldOutOfFlowPositioning();
+  void UseOldOutOfFlowPositioning() const;
 
   // Save static position for legacy AbsPos layout.
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&,
