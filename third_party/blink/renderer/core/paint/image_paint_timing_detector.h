@@ -21,7 +21,6 @@ class IntRect;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
-class ImageResourceContent;
 
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
@@ -88,8 +87,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void OnLargestImagePaintDetected(const ImageRecord&);
   void OnLastImagePaintDetected(const ImageRecord&);
 
-  bool IsJustLoaded(const ImageResourceContent* cachedImg,
-                    const ImageRecord&) const;
   void Analyze();
 
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
