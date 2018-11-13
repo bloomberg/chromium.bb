@@ -180,9 +180,10 @@ ServiceManagerContext::ServiceManagerContext() {
   auto* browser_connection = ServiceManagerConnection::Get();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;
-  packaged_services_connection_->GetConnector()->StartService(
+  packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::kSystemInstanceGroup),
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 

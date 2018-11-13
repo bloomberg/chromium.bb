@@ -115,7 +115,10 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
                        base::Unretained(this), run_loop.QuitClosure());
     ServiceTest::SetUp();
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
-    connector()->StartService("prefs_unittest_helper");
+
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    connector()->WarmService(
+        service_manager::ServiceFilter::ByName("prefs_unittest_helper"));
     run_loop.Run();
   }
 

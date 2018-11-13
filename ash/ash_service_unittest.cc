@@ -105,8 +105,6 @@ TEST_F(AshServiceTest, OpenWindow) {
 
   WindowTreeClientDelegate window_tree_delegate;
 
-  connector()->StartService(mojom::kServiceName);
-
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.
   std::unique_ptr<aura::WindowTreeClient> client =

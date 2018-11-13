@@ -23,7 +23,7 @@ mojo::ScopedMessagePipeHandle BindInterface(
   params->set_target(target);
   mojo::MessagePipe pipe;
   params->set_interface_request_info(interface_name, std::move(pipe.handle1));
-  params->set_start_service_callback(base::DoNothing());
+  params->set_connection_callback(base::DoNothing());
   service_manager->Connect(std::move(params));
   return std::move(pipe.handle0);
 }

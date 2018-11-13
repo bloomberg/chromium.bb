@@ -135,12 +135,13 @@ class ChromeService::ExtraParts : public ChromeBrowserMainExtraParts {
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override {
     // Initializing the connector asynchronously configures the Connector on the
-    // IO thread. This needs to be done before StartService() is called or
+    // IO thread. This needs to be done before WarmService() is called or
     // ChromeService::BindConnector() can race with ChromeService::OnStart().
     ChromeService::GetInstance()->InitConnector();
 
-    connection->GetConnector()->StartService(
-        service_manager::Identity(chrome::mojom::kServiceName));
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ExtraParts);

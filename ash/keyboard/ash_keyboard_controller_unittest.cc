@@ -182,7 +182,8 @@ class AshKeyboardControllerTest : public AshTestBase {
 
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
-        service_manager::Identity("test"), mojom::KeyboardController::Name_,
+        service_manager::ServiceFilter::ByName("test"),
+        mojom::KeyboardController::Name_,
         base::BindRepeating(
             &AshKeyboardControllerTest::AddKeyboardControllerBinding,
             base::Unretained(this)));

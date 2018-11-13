@@ -21,9 +21,9 @@ class Identity;
 namespace test {
 
 // Starts the process @ |target_exe_name| and connects to it as |target| using
-// |connector|, returning a ConnectResult for the StartService() call.
-// This blocks until the connection is established/rejected by the service
-// manager.
+// |connector|, returning a ConnectResult for the RegisterServiceInstance()
+// call. This runs a nested loop until the connection is established or rejected
+// by the Service Manager.
 service_manager::mojom::ConnectResult LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity& target,

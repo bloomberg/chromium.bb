@@ -311,19 +311,20 @@ class MediaDevicesManager::AudioServiceDeviceListener
   void TryConnectToService(service_manager::Connector* connector) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Check if the service manager is managing the audio service.
+    //
+    // TODO: Is this necessary? We should know at build how this will respond.
     connector->QueryService(
-        service_manager::Identity(audio::mojom::kServiceName),
+        audio::mojom::kServiceName,
         base::BindOnce(&AudioServiceDeviceListener::ServiceQueried,
                        weak_factory_.GetWeakPtr(), connector));
   }
 
   void ServiceQueried(service_manager::Connector* connector,
-                      service_manager::mojom::ConnectResult connect_result,
-                      const std::string& ignore) {
+                      service_manager::mojom::ServiceInfoPtr info) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Do not connect if the service manager is not managing the audio service.
-    if (connect_result != service_manager::mojom::ConnectResult::SUCCEEDED) {
-      LOG(WARNING) << "Audio service not available: " << connect_result;
+    if (!info) {
+      LOG(WARNING) << "Audio service not available.";
       return;
     }
     DoConnectToService(connector);

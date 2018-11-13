@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -21,6 +22,10 @@ namespace service_manager {
 // application.
 class ConnectParams {
  public:
+  using ConnectionCallback =
+      base::OnceCallback<void(mojom::ConnectResult result,
+                              const base::Optional<Identity>& identity)>;
+
   ConnectParams();
   ~ConnectParams();
 
@@ -61,13 +66,12 @@ class ConnectParams {
     return std::move(interface_pipe_);
   }
 
-  void set_start_service_callback(
-      mojom::Connector::StartServiceCallback callback) {
-    start_service_callback_ = std::move(callback);
+  void set_connection_callback(ConnectionCallback callback) {
+    connection_callback_ = std::move(callback);
   }
 
   void set_response_data(mojom::ConnectResult result,
-                         const Identity& resolved_identity) {
+                         const base::Optional<Identity>& resolved_identity) {
     result_ = result;
     resolved_identity_ = resolved_identity;
   }
@@ -83,12 +87,12 @@ class ConnectParams {
   mojom::PIDReceiverRequest pid_receiver_request_;
   std::string interface_name_;
   mojo::ScopedMessagePipeHandle interface_pipe_;
-  mojom::Connector::StartServiceCallback start_service_callback_;
+  ConnectionCallback connection_callback_;
 
-  // These values are supplied to the response callback for StartService()/
+  // These values are supplied to the response callback for WarmService()/
   // BindInterface() etc. when the connection is completed.
   mojom::ConnectResult result_ = mojom::ConnectResult::INVALID_ARGUMENT;
-  Identity resolved_identity_;
+  base::Optional<Identity> resolved_identity_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };

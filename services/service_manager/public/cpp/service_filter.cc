@@ -61,6 +61,13 @@ ServiceFilter ServiceFilter::ForExactIdentity(const Identity& identity) {
                        identity.instance_id(), identity.globally_unique_id());
 }
 
+bool ServiceFilter::operator<(const ServiceFilter& other) const {
+  return std::tie(service_name_, instance_group_, instance_id_,
+                  globally_unique_id_) <
+         std::tie(other.service_name_, other.instance_group_,
+                  other.instance_id_, other.globally_unique_id_);
+}
+
 ServiceFilter::ServiceFilter(
     const std::string& service_name,
     const base::Optional<base::Token>& instance_group,

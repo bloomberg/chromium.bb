@@ -1021,12 +1021,9 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   void BindSpellCheckHostRequest(
       spellcheck::mojom::SpellCheckHostRequest request,
       const service_manager::BindSourceInfo& source_info) {
-    service_manager::Identity renderer_identity(
-        content::mojom::kRendererServiceName,
-        source_info.identity.instance_group(),
-        source_info.identity.instance_id());
     content::RenderProcessHost* host =
-        content::RenderProcessHost::FromRendererIdentity(renderer_identity);
+        content::RenderProcessHost::FromRendererInstanceId(
+            *source_info.identity.instance_id());
     auto spell_check_host = std::make_unique<MockSpellCheckHost>(host);
     spell_check_host->SpellCheckHostRequest(std::move(request));
     spell_check_hosts_.push_back(std::move(spell_check_host));

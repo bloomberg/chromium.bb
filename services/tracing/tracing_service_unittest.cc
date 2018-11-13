@@ -22,11 +22,6 @@ class TracingServiceTest : public service_manager::test::ServiceTest {
   ~TracingServiceTest() override {}
 
  protected:
-  void SetUp() override {
-    service_manager::test::ServiceTest::SetUp();
-    connector()->StartService(mojom::kServiceName);
-  }
-
   void SetRunLoopToQuit(base::RunLoop* loop) { loop_ = loop; }
 
  private:

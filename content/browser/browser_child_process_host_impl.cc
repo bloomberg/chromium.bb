@@ -52,6 +52,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/public/cpp/constants.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
@@ -169,13 +170,12 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_manager::Identity child_identity(service_name,
-                                             base::nullopt /* instance_group */,
-                                             base::Token::CreateRandom());
-    child_connection_.reset(
-        new ChildConnection(child_identity, &mojo_invitation_,
-                            ServiceManagerContext::GetConnectorForIOThread(),
-                            base::ThreadTaskRunnerHandle::Get()));
+    child_connection_ = std::make_unique<ChildConnection>(
+        service_manager::Identity(
+            service_name, service_manager::kSystemInstanceGroup,
+            base::Token::CreateRandom(), base::Token::CreateRandom()),
+        &mojo_invitation_, ServiceManagerContext::GetConnectorForIOThread(),
+        base::ThreadTaskRunnerHandle::Get());
     data_.metrics_name = service_name;
   }
 

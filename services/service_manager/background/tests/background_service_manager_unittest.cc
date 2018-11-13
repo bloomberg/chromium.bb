@@ -54,10 +54,13 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   ServiceContext service_context(std::make_unique<ServiceImpl>(),
                                  mojo::MakeRequest(&service));
   background_service_manager.RegisterService(
-      Identity(kTestName, kSystemInstanceGroup), std::move(service), nullptr);
+      Identity(kTestName, kSystemInstanceGroup, base::Token{},
+               base::Token::CreateRandom()),
+      std::move(service), nullptr);
 
   mojom::TestServicePtr test_service;
-  service_context.connector()->BindInterface(kAppName, &test_service);
+  service_context.connector()->BindInterface(ServiceFilter::ByName(kAppName),
+                                             &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test(

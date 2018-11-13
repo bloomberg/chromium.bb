@@ -63,7 +63,9 @@ class IMEAppTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.
-    connector()->StartService(test_ime_driver::mojom::kServiceName);
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    connector()->WarmService(service_manager::ServiceFilter::ByName(
+        test_ime_driver::mojom::kServiceName));
     connector()->BindInterface(ws::mojom::kServiceName, &ime_driver_);
   }
 

@@ -136,7 +136,7 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
         std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
-        service_manager::Identity(
+        service_manager::ServiceFilter::ByNameInGroup(
             chromeos::multidevice_setup::mojom::kServiceName,
             kTestServiceInstanceGroup),
         chromeos::multidevice_setup::mojom::MultiDeviceSetup::Name_,

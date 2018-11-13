@@ -36,6 +36,7 @@ class GURL;
 namespace base {
 class SharedPersistentMemoryAllocator;
 class TimeDelta;
+class Token;
 }
 
 namespace service_manager {
@@ -516,11 +517,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // not correspond to a live RenderProcessHost.
   static RenderProcessHost* FromID(int render_process_id);
 
-  // Returns the RenderProcessHost given its renderer's service Identity.
-  // Returns nullptr if the Identity does not correspond to a live
-  // RenderProcessHost.
-  static RenderProcessHost* FromRendererIdentity(
-      const service_manager::Identity& identity);
+  // Returns the RenderProcessHost given its renderer's service instance ID,
+  // generated randomly when launching the renderer. Returns nullptr if the
+  // instance does not correspond to a live RenderProcessHost.
+  static RenderProcessHost* FromRendererInstanceId(
+      const base::Token& instance_id);
 
   // Returns whether the process-per-site model is in use (globally or just for
   // the current site), in which case we should ensure there is only one

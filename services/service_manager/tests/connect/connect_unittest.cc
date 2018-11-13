@@ -65,13 +65,10 @@ void ReceiveTwoStrings(std::string* out_string_1,
   loop->Quit();
 }
 
-void ReceiveQueryResult(mojom::ConnectResult* out_result,
-                        std::string* out_string,
+void ReceiveQueryResult(mojom::ServiceInfoPtr* out_info,
                         base::RunLoop* loop,
-                        mojom::ConnectResult in_result,
-                        const std::string& in_string) {
-  *out_result = in_result;
-  *out_string = in_string;
+                        mojom::ServiceInfoPtr info) {
+  *out_info = std::move(info);
   loop->Quit();
 }
 
@@ -79,7 +76,7 @@ void ReceiveConnectionResult(mojom::ConnectResult* out_result,
                              Identity* out_target,
                              base::RunLoop* loop,
                              int32_t in_result,
-                             const service_manager::Identity& in_identity) {
+                             const Identity& in_identity) {
   *out_result = static_cast<mojom::ConnectResult>(in_result);
   *out_target = in_identity;
   loop->Quit();
@@ -332,29 +329,24 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
 }
 
 TEST_F(ConnectTest, QueryService) {
-  mojom::ConnectResult result;
-  std::string sandbox_type;
+  mojom::ServiceInfoPtr service_info;
   base::RunLoop run_loop;
   connector()->QueryService(
-      Identity(kTestSandboxedAppName, base::nullopt /* instance_group */,
-               base::Token{1, 2}),
-      base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
+      kTestSandboxedAppName,
+      base::BindOnce(&ReceiveQueryResult, &service_info, &run_loop));
   run_loop.Run();
-  EXPECT_EQ(mojom::ConnectResult::SUCCEEDED, result);
-  EXPECT_EQ("superduper", sandbox_type);
+  ASSERT_TRUE(service_info);
+  EXPECT_EQ("superduper", service_info->sandbox_type);
 }
 
 TEST_F(ConnectTest, QueryNonexistentService) {
-  mojom::ConnectResult result;
-  std::string sandbox_type;
+  mojom::ServiceInfoPtr service_info;
   base::RunLoop run_loop;
   connector()->QueryService(
-      Identity(kTestNonexistentAppName, base::nullopt /* instance_group */,
-               base::Token{1, 2}),
-      base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
+      kTestNonexistentAppName,
+      base::BindOnce(&ReceiveQueryResult, &service_info, &run_loop));
   run_loop.Run();
-  EXPECT_EQ(mojom::ConnectResult::INVALID_ARGUMENT, result);
-  EXPECT_EQ("", sandbox_type);
+  EXPECT_FALSE(service_info);
 }
 
 #if DCHECK_IS_ON()
@@ -379,13 +371,13 @@ TEST_F(ConnectTest, MAYBE_BlockedInterface) {
 
 // Connects to an app provided by a package.
 TEST_F(ConnectTest, PackagedApp) {
-  test::mojom::ConnectTestServicePtr service_a;
-  connector()->BindInterface(kTestAppAName, &service_a);
-  Connector::TestApi test_api(connector());
   base::Optional<Identity> resolved_identity;
-  test_api.SetStartServiceCallback(base::BindRepeating(
-      &StartServiceResponse, nullptr, nullptr, &resolved_identity));
   base::RunLoop run_loop;
+  test::mojom::ConnectTestServicePtr service_a;
+  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
+                             mojo::MakeRequest(&service_a),
+                             base::BindOnce(&StartServiceResponse, nullptr,
+                                            nullptr, &resolved_identity));
   std::string a_name;
   service_a->GetTitle(base::Bind(&ReceiveOneString, &a_name, &run_loop));
   run_loop.Run();
@@ -444,13 +436,12 @@ TEST_F(ConnectTest, MAYBE_PackagedApp_BlockedInterface) {
 // Connection to another application provided by the same package, blocked
 // because it's not in the capability filter whitelist.
 TEST_F(ConnectTest, MAYBE_BlockedPackagedApplication) {
-  test::mojom::ConnectTestServicePtr service_b;
-  connector()->BindInterface(kTestAppBName, &service_b);
-  Connector::TestApi test_api(connector());
   mojom::ConnectResult result;
-  test_api.SetStartServiceCallback(
-      base::Bind(&StartServiceResponse, nullptr, &result, nullptr));
   base::RunLoop run_loop;
+  test::mojom::ConnectTestServicePtr service_b;
+  connector()->BindInterface(
+      ServiceFilter::ByName(kTestAppBName), mojo::MakeRequest(&service_b),
+      base::BindOnce(&StartServiceResponse, nullptr, &result, nullptr));
   service_b.set_connection_error_handler(run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
@@ -556,8 +547,8 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
 #else
           "connect_test_exe",
 #endif
-          service_manager::Identity("connect_test_exe",
-                                    base::nullopt /* instance_group */),
+          service_manager::Identity("connect_test_exe", kSystemInstanceGroup,
+                                    base::Token{}, base::Token::CreateRandom()),
           connector(), &process);
   EXPECT_EQ(result, mojom::ConnectResult::ACCESS_DENIED);
 }
@@ -566,37 +557,36 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
 // "instance_sharing" option can receive connections from clients run as other
 // users.
 TEST_F(ConnectTest, AllUsersSingleton) {
-  // Connect to an instance with an explicitly different user_id. This supplied
-  // user id should be ignored by the service manager (which will generate its
-  // own synthetic user id for all-user singleton instances).
-  const base::Token singleton_instance_group = base::Token::CreateRandom();
-  Identity singleton_id(kTestSingletonAppName, singleton_instance_group);
-  connector()->StartService(singleton_id);
   base::Optional<Identity> first_resolved_identity;
   {
     base::RunLoop loop;
-    Connector::TestApi test_api(connector());
-    test_api.SetStartServiceCallback(base::BindRepeating(
-        &StartServiceResponse, &loop, nullptr, &first_resolved_identity));
+    const base::Token singleton_instance_group = base::Token::CreateRandom();
+    // Connect to an instance with an explicit different instance group. This
+    // supplied group should be ignored by the Service Manager because the
+    // target service is a singleton, and the Service Manager always generates a
+    // random instance group to host singleton service instances.
+    connector()->WarmService(
+        service_manager::ServiceFilter::ByNameInGroup(kTestSingletonAppName,
+                                                      singleton_instance_group),
+        base::BindOnce(&StartServiceResponse, &loop, nullptr,
+                       &first_resolved_identity));
     loop.Run();
     ASSERT_TRUE(first_resolved_identity);
     EXPECT_NE(*first_resolved_identity->instance_group(),
               singleton_instance_group);
   }
-  // This connects using the current client's user_id. It should be bound to the
-  // same service started above, with the same service manager-generated user
-  // id.
-  connector()->StartService(kTestSingletonAppName);
   {
     base::RunLoop loop;
-    Connector::TestApi test_api(connector());
     base::Optional<Identity> resolved_identity;
-    test_api.SetStartServiceCallback(base::BindRepeating(
-        &StartServiceResponse, &loop, nullptr, &resolved_identity));
+    // This connects using the current client's instance group. It should be
+    // get routed to the same service instance started above.
+    connector()->WarmService(
+        service_manager::ServiceFilter::ByName(kTestSingletonAppName),
+        base::BindOnce(&StartServiceResponse, &loop, nullptr,
+                       &resolved_identity));
     loop.Run();
     ASSERT_TRUE(resolved_identity);
-    EXPECT_EQ(resolved_identity->instance_group(),
-              first_resolved_identity->instance_group());
+    EXPECT_EQ(*resolved_identity, *first_resolved_identity);
   }
 }
 

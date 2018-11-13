@@ -273,10 +273,11 @@ class ServiceManagerTest : public test::ServiceTest,
         service_manager::PassServiceRequestOnCommandLine(&invitation,
                                                          &child_command_line);
     service_manager::mojom::PIDReceiverPtr receiver;
-
-    service_manager::Identity target("service_manager_unittest_target");
-    connector()->StartService(target, std::move(client),
-                              MakeRequest(&receiver));
+    connector()->RegisterServiceInstance(
+        service_manager::Identity("service_manager_unittest_target",
+                                  kSystemInstanceGroup, base::Token{},
+                                  base::Token::CreateRandom()),
+        std::move(client), mojo::MakeRequest(&receiver));
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
@@ -297,7 +298,8 @@ class ServiceManagerTest : public test::ServiceTest,
     set_service_failed_to_start_callback(base::BindRepeating(
         &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
 
-    connector()->StartService("service_manager_unittest_embedder");
+    connector()->WarmService(service_manager::ServiceFilter::ByName(
+        "service_manager_unittest_embedder"));
     loop.Run();
     EXPECT_FALSE(failed_to_start);
     EXPECT_EQ(1, start_count);
@@ -315,7 +317,7 @@ class ServiceManagerTest : public test::ServiceTest,
     set_service_failed_to_start_callback(base::BindRepeating(
         &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
 
-    connector()->StartService(identity);
+    connector()->WarmService(service_manager::ServiceFilter(identity));
     if (!expect_service_started) {
       // Wait briefly and test no new service was created.
       base::MessageLoopCurrent::Get()->task_runner()->PostDelayedTask(
@@ -527,7 +529,8 @@ TEST_F(ServiceManagerTest, PIDReceivedCallback) {
     set_service_failed_to_start_callback(base::BindRepeating(
         &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
 
-    connector()->StartService("service_manager_unittest_embedder");
+    connector()->WarmService(
+        ServiceFilter::ByName("service_manager_unittest_embedder"));
     loop.Run();
     EXPECT_FALSE(failed_to_start);
     EXPECT_EQ("service_manager_unittest_embedder", service_name);
@@ -540,16 +543,19 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
 
   const std::string kTestService = "service_manager_unittest_target";
   const Identity kInstance1Id(kTestService, kSystemInstanceGroup,
-                              base::Token{1, 2});
-  const Identity kInstance2Id(kTestService, kSystemInstanceGroup);
+                              base::Token{1, 2}, base::Token::CreateRandom());
+  const Identity kInstance2Id(kTestService, kSystemInstanceGroup,
+                              base::Token{3, 4}, base::Token::CreateRandom());
 
   // Introduce a new service instance for service_manager_unittest_target,
-  // using the client_process capability.
+  // which should be allowed because the test service has
+  // |can_create_other_service_instances| set to |true| in its manifest.
   mojom::ServicePtr test_service_proxy1;
   SimpleService test_service1(mojo::MakeRequest(&test_service_proxy1));
   mojom::PIDReceiverPtr pid_receiver1;
-  connector()->StartService(kInstance1Id, std::move(test_service_proxy1),
-                            mojo::MakeRequest(&pid_receiver1));
+  connector()->RegisterServiceInstance(kInstance1Id,
+                                       std::move(test_service_proxy1),
+                                       mojo::MakeRequest(&pid_receiver1));
   pid_receiver1->SetPID(42);
   WaitForInstanceToStart(kInstance1Id);
   EXPECT_EQ(1u, instances().size());
@@ -560,9 +566,9 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   mojom::ServicePtr test_service_proxy2;
   SimpleService test_service2(mojo::MakeRequest(&test_service_proxy2));
   mojom::PIDReceiverPtr pid_receiver2;
-  test_service1.connector()->StartService(kInstance2Id,
-                                          std::move(test_service_proxy2),
-                                          mojo::MakeRequest(&pid_receiver2));
+  test_service1.connector()->RegisterServiceInstance(
+      kInstance2Id, std::move(test_service_proxy2),
+      mojo::MakeRequest(&pid_receiver2));
   pid_receiver2->SetPID(43);
 
   // The new service should be disconnected immediately.

@@ -1254,9 +1254,11 @@ void Shell::Init(
   // |connector_| is null in unit tests.
   if (connector_ &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
-    // The show taps feature is a separate mojo app.
+    // The show taps feature is a separate service.
     // TODO(jamescook): Make this work in ash_shell_with_content.
-    connector_->StartService(tap_visualizer::mojom::kServiceName);
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    connector_->WarmService(service_manager::ServiceFilter::ByName(
+        tap_visualizer::mojom::kServiceName));
   }
 
   if (!::features::IsMultiProcessMash()) {
