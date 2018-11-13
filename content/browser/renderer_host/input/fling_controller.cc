@@ -153,25 +153,6 @@ bool FlingController::FilterGestureEvent(
          FilterGestureEventForFlingBoosting(gesture_event);
 }
 
-void FlingController::OnGestureEventAck(
-    const GestureEventWithLatencyInfo& acked_event,
-    InputEventAckState ack_result) {
-  bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  switch (acked_event.event.GetType()) {
-    case WebInputEvent::kGestureScrollUpdate:
-      if (acked_event.event.data.scroll_update.inertial_phase ==
-              WebGestureEvent::kMomentumPhase &&
-          fling_curve_ && !processed &&
-          current_fling_parameters_.source_device !=
-              blink::kWebGestureDeviceSyntheticAutoscroll) {
-        CancelCurrentFling();
-      }
-      break;
-    default:
-      break;
-  }
-}
-
 void FlingController::ProcessGestureFlingStart(
     const GestureEventWithLatencyInfo& gesture_event) {
   const float vx = gesture_event.event.data.fling_start.velocity_x;

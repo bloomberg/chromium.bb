@@ -88,9 +88,6 @@ class CONTENT_EXPORT FlingController {
 
   bool FilterGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
 
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& acked_event,
-                         InputEventAckState ack_result);
-
   void ProcessGestureFlingStart(
       const GestureEventWithLatencyInfo& gesture_event);
 

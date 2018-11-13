@@ -298,9 +298,6 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == last_fling_start_target_)
     last_fling_start_target_ = nullptr;
 
-  if (view == last_fling_start_bubbled_target_)
-    last_fling_start_bubbled_target_ = nullptr;
-
   event_targeter_->ViewWillBeDestroyed(view);
 }
 
@@ -1010,14 +1007,13 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   DCHECK(target_view);
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingStart ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingCancel);
+         event.GetType() == blink::WebInputEvent::kGestureScrollEnd);
 
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+    forced_last_fling_start_target_to_stop_flinging_for_test_ = false;
     // If target_view has unrelated gesture events in progress, do
     // not proceed. This could cause confusion between independent
     // scrolls.
@@ -1042,26 +1038,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
 
     bubbling_gesture_scroll_target_.target = target_view;
     bubbling_gesture_scroll_source_device_ = event.SourceDevice();
-  } else if (event.GetType() == blink::WebInputEvent::kGestureFlingCancel) {
-    // TODO(828422): Remove once this issue no longer occurs.
-    if (resending_view == last_fling_start_bubbled_target_) {
-      ReportBubblingScrollToSameView(event, resending_view);
-      last_fling_start_bubbled_target_ = nullptr;
-      return;
-    }
-    // GFC event must get bubbled to the same target view that the last GFS has
-    // been bubbled.
-    if (last_fling_start_bubbled_target_) {
-      last_fling_start_bubbled_target_->ProcessGestureEvent(
-          GestureEventInTarget(event, last_fling_start_bubbled_target_),
-          latency_info);
-      last_fling_start_bubbled_target_ = nullptr;
-    }
-    return;
   } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
-            // && !(event.GetType() ==
-            // blink::WebInputEvent::kGestureFlingCancel)
-
     if (!bubbling_gesture_scroll_target_.target) {
       // The GestureScrollBegin event is not bubbled, don't bubble the rest of
       // the scroll events.
@@ -1096,13 +1073,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
       GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
       latency_info);
 
-  // The GFC should be sent to the view that handles the GFS.
-  if (event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-    last_fling_start_bubbled_target_ = bubbling_gesture_scroll_target_.target;
-  }
-
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
     first_bubbling_scroll_target_.target = nullptr;
     bubbling_gesture_scroll_target_.target = nullptr;
     bubbling_gesture_scroll_source_device_ =
@@ -1182,6 +1153,18 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
   }
 }
 
+void RenderWidgetHostInputEventRouter::StopFling() {
+  if (!bubbling_gesture_scroll_target_.target)
+    return;
+
+  if (!last_fling_start_target_ || !last_fling_start_target_->host())
+    return;
+
+  // The last_fling_start_target_'s fling controller must stop flinging when its
+  // generated GSUs are not consumed by the bubbling target view.
+  last_fling_start_target_->host()->StopFling();
+  forced_last_fling_start_target_to_stop_flinging_for_test_ = true;
+}
 void RenderWidgetHostInputEventRouter::AddFrameSinkIdOwner(
     const viz::FrameSinkId& id,
     RenderWidgetHostViewBase* owner) {
