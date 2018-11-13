@@ -107,7 +107,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       referrer_policy_(kReferrerPolicyDefault) {
   SetHasCustomStyleCallbacks();
   if (media_element_parser_helpers::IsMediaElement(this) &&
-      !media_element_parser_helpers::IsUnsizedMediaEnabled(document)) {
+      !document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kUnsizedMedia)) {
     is_default_overridden_intrinsic_size_ = true;
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);

@@ -10,7 +10,6 @@
 namespace blink {
 
 class Element;
-class Document;
 class LayoutObject;
 
 namespace media_element_parser_helpers {
@@ -27,10 +26,6 @@ bool ParseIntrinsicSizeAttribute(const String& value,
 // Returns true for elements that are either <img>, <svg:image> or <video> that
 // are not in an image or media document; returns false otherwise.
 bool IsMediaElement(const Element* element);
-
-// Returns if the document is allowed to use
-// FeaturePolicyFeature::kUnsizedMedia.
-bool IsUnsizedMediaEnabled(const Document& document);
 
 void ReportUnsizedMediaViolation(const LayoutObject* layout_object);
 

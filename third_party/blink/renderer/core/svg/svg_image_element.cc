@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -68,7 +69,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
   AddToPropertyMap(preserve_aspect_ratio_);
 
   if (media_element_parser_helpers::IsMediaElement(this) &&
-      !media_element_parser_helpers::IsUnsizedMediaEnabled(document)) {
+      !document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kUnsizedMedia)) {
     is_default_overridden_intrinsic_size_ = true;
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
