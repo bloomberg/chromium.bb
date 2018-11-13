@@ -245,6 +245,7 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
       migration_request_, migratable_credit_cards_,
       base::BindOnce(&LocalCardMigrationManager::OnDidMigrateLocalCards,
                      weak_ptr_factory_.GetWeakPtr()));
+  user_accepted_main_migration_dialog_ = false;
 }
 
 // Pops up a larger, modal dialog showing the local cards to be uploaded. Pass
@@ -252,7 +253,6 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
 // OnUserAcceptedMainMigrationDialog(). Can be called when user agrees to
 // migration on the intermediate dialog or directly from settings page.
 void LocalCardMigrationManager::ShowMainMigrationDialog() {
-  user_accepted_main_migration_dialog_ = false;
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_SHOWN);
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
