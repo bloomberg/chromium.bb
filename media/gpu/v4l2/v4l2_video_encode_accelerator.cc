@@ -252,6 +252,19 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   if (!CreateOutputBuffers())
     return false;
 
+  if (!image_processor_) {
+    switch (config.storage_type.value_or(Config::StorageType::kShmem)) {
+      case Config::StorageType::kShmem:
+        input_memory_type_ = V4L2_MEMORY_USERPTR;
+        break;
+      case Config::StorageType::kDmabuf:
+        input_memory_type_ = V4L2_MEMORY_DMABUF;
+        break;
+    }
+  } else {
+    input_memory_type_ = V4L2_MEMORY_DMABUF;
+  }
+
   if (!encoder_thread_.Start()) {
     VLOGF(1) << "encoder thread failed to start";
     return false;
@@ -816,19 +829,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   qbuf.timestamp.tv_usec =
       frame->timestamp().InMicroseconds() -
       frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
-
   DCHECK_EQ(device_input_format_, frame->format());
-
-  std::vector<int> fds;
-  if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
-    auto& scoped_fds = frame->DmabufFds();
-    if (scoped_fds.size() != input_planes_count_) {
-      VLOGF(1) << "Invalid number of planes in the frame";
-      return false;
-    }
-    for (auto& fd : scoped_fds)
-      fds.push_back(fd.get());
-  }
 
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
@@ -843,11 +844,24 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         DCHECK(qbuf.m.planes[i].m.userptr);
         break;
 
-      case V4L2_MEMORY_DMABUF:
-        qbuf.m.planes[i].m.fd = fds[i];
+      case V4L2_MEMORY_DMABUF: {
+        const auto& fds = frame->DmabufFds();
+        const auto& planes = frame->layout().planes();
+        DCHECK_EQ(input_planes_count_, planes.size());
+        qbuf.m.planes[i].m.fd =
+            (i < fds.size()) ? fds[i].get() : fds.back().get();
+        // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf is
+        // not defined in V4L2 specification, so we abuse data_offset for now.
+        // Fix it when we have the right interface, including any necessary
+        // validation and potential alignment
+        qbuf.m.planes[i].data_offset = planes[i].offset;
+        qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
+        // Workaround: filling length should not be needed. This is a bug of
+        // videobuf2 library.
+        qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
         DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
         break;
-
+      }
       default:
         NOTREACHED();
         return false;
@@ -1342,14 +1356,6 @@ bool V4L2VideoEncodeAccelerator::CreateInputBuffers() {
   // Driver will modify to the appropriate number of buffers.
   reqbufs.count = kInputBufferCount;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  // TODO(posciak): Once we start doing zero-copy, we should decide based on
-  // the current pipeline setup which memory type to use. This should probably
-  // be decided based on an argument to Initialize().
-  if (image_processor_.get())
-    input_memory_type_ = V4L2_MEMORY_DMABUF;
-  else
-    input_memory_type_ = V4L2_MEMORY_USERPTR;
-
   reqbufs.memory = input_memory_type_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
