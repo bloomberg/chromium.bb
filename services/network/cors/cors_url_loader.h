@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -47,7 +48,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
       const base::RepeatingCallback<void(int)>& request_finalizer,
-      const OriginAccessList* origin_access_list);
+      const OriginAccessList* origin_access_list,
+      PreflightController* preflight_controller);
 
   ~CORSURLLoader() override;
 
@@ -159,6 +161,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // Outlives |this|.
   const OriginAccessList* const origin_access_list_;
+  PreflightController* preflight_controller_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CORSURLLoader> weak_factory_;

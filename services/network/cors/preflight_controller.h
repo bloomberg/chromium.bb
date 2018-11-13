@@ -44,10 +44,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const ResourceRequest& request,
       bool tainted = false);
 
-  // Obtains the shared default controller instance.
-  // TODO(toyoshim): Find a right owner rather than a single design.
-  static PreflightController* GetDefaultController();
-
   PreflightController();
   ~PreflightController();
 

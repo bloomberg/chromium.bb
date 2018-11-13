@@ -374,12 +374,6 @@ PreflightController::CreatePreflightRequestForTesting(
   return CreatePreflightRequest(request, tainted);
 }
 
-// static
-PreflightController* PreflightController::GetDefaultController() {
-  static base::NoDestructor<PreflightController> controller;
-  return &*controller;
-}
-
 PreflightController::PreflightController() = default;
 
 PreflightController::~PreflightController() = default;
