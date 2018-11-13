@@ -283,7 +283,7 @@
     "location": "policy"
   },
   "enterprise.hardwarePlatform": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"],
     "location": "policy"
   },
