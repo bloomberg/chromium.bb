@@ -36,6 +36,7 @@ import android.widget.TextView;
 
 import org.json.JSONObject;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -291,8 +292,9 @@ class AutofillAssistantUiDelegate {
         mChipsViewContainer = mCarouselScroll.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
         mProgressBar = new AnimatedProgressBar(mBottomBar.findViewById(R.id.progress_bar),
-                mActivity.getColor(R.color.modern_blue_600),
-                mActivity.getColor(R.color.modern_blue_600_alpha_38_opaque));
+                ApiCompatibilityUtils.getColor(mActivity.getResources(), R.color.modern_blue_600),
+                ApiCompatibilityUtils.getColor(
+                        mActivity.getResources(), R.color.modern_blue_600_alpha_38_opaque));
 
         mDetailsViewContainer = (ViewGroup) mBottomBar.findViewById(R.id.details);
         mDetailsImage = mDetailsViewContainer.findViewById(R.id.details_image);
@@ -562,9 +564,11 @@ class AutofillAssistantUiDelegate {
             return;
         } else {
             @ColorInt
-            int startColor = mActivity.getColor(R.color.modern_grey_100);
+            int startColor = ApiCompatibilityUtils.getColor(
+                    mActivity.getResources(), R.color.modern_grey_100);
             @ColorInt
-            int endColor = mActivity.getColor(R.color.modern_grey_50);
+            int endColor = ApiCompatibilityUtils.getColor(
+                    mActivity.getResources(), R.color.modern_grey_50);
 
             mDetailsPulseAnimation = ValueAnimator.ofInt(startColor, endColor);
             mDetailsPulseAnimation.setDuration(DETAILS_PULSING_DURATION_MS);
