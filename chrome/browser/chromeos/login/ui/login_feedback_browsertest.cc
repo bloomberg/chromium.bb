@@ -22,7 +22,9 @@ namespace chromeos {
 
 class LoginFeedbackTest : public LoginManagerTest {
  public:
-  LoginFeedbackTest() : LoginManagerTest(true, true) {}
+  LoginFeedbackTest() : LoginManagerTest(true, true) {
+    LoginFeedback::EnableForTesting();
+  }
   ~LoginFeedbackTest() override {}
 
  private:
