@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.fail;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
@@ -37,6 +38,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSession;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageBackend;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -108,8 +110,10 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -141,6 +145,7 @@ public class CustomTabActivityTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
     private static final int TIMEOUT_PAGE_LOAD_SECONDS = 10;
+    public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
     private static final int MAX_MENU_CUSTOM_ITEMS = 5;
     private static final int NUM_CHROME_MENU_ITEMS = 5;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
@@ -190,6 +195,7 @@ public class CustomTabActivityTest {
             + "        }"
             + "   </script>"
             + "</body></html>";
+    private static final Uri FAKE_ORIGIN_URI = Uri.parse("android-app://com.google.test");
 
     private static int sIdToIncrement = 1;
 
@@ -1627,13 +1633,7 @@ public class CustomTabActivityTest {
         });
         Assert.assertTrue(connection.postMessage(token, "New title", null)
                 == CustomTabsService.RESULT_SUCCESS);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return "New title".equals(currentTab.getTitle());
-            }
-        });
+        waitForTitle("New title");
     }
 
     /**
@@ -1842,13 +1842,148 @@ public class CustomTabActivityTest {
         titleString += newMessage;
 
         final String title = titleString;
-        CriteriaHelper.pollUiThread(new Criteria() {
+        waitForTitle(title);
+    }
+
+    /**
+     * Tests the sent postMessage requests not only return success, but is also received by page.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+    public void testPostMessageFromDynamicModuleReceivedInPage() throws Exception {
+        final String url =
+                mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+
+        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
             @Override
-            public boolean isSatisfied() {
-                final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return title.equals(currentTab.getTitle());
+            public boolean onPostMessage(String message, Bundle extras) {
+                return true;
             }
+
+            @Override
+            public boolean onNotifyMessageChannelReady(Bundle extras) {
+                // Now attempt to post a message.
+                Assert.assertTrue(
+                        getActivity().postMessage("New title") == CustomTabsService.RESULT_SUCCESS);
+                return true;
+            }
+
+            @Override
+            public void onDisconnectChannel(Context appContext) {}
         });
+
+        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        // The callback registered above will post a message once the requested channel is ready.
+
+        waitForTitle("New title");
+    }
+
+    /**
+     * Tests the postMessage requests sent from the page is received on the client side.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+    public void testPostMessageReceivedFromPageByDynamicModule() throws Exception {
+        final CallbackHelper messageChannelHelper = new CallbackHelper();
+        final CallbackHelper onPostMessageHelper = new CallbackHelper();
+        final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+
+        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
+            @Override
+            public boolean onPostMessage(String message, Bundle extras) {
+                onPostMessageHelper.notifyCalled();
+                return true;
+            }
+
+            @Override
+            public boolean onNotifyMessageChannelReady(Bundle extras) {
+                messageChannelHelper.notifyCalled();
+                return true;
+            }
+
+            @Override
+            public void onDisconnectChannel(Context appContext) {}
+        });
+
+        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        messageChannelHelper.waitForCallback();
+        onPostMessageHelper.waitForCallback();
+    }
+
+    /**
+     * Tests the postMessage requests sent from the page is received on the client side.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+    public void testPostMessageFromDynamicModuleDisallowedBeforeModuleLoaded() throws Exception {
+        final CallbackHelper messageChannelHelper = new CallbackHelper();
+        final CallbackHelper onPostMessageHelper = new CallbackHelper();
+        final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+
+        // We shouldn't be able to open a channel or post messages yet.
+        Assert.assertFalse(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(getActivity().postMessage("Message")
+                == CustomTabsService.RESULT_FAILURE_DISALLOWED);
+
+        // Now fake initialisation of the dynamic module.
+        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
+            @Override
+            public boolean onPostMessage(String message, Bundle extras) {
+                onPostMessageHelper.notifyCalled();
+                return true;
+            }
+
+            @Override
+            public boolean onNotifyMessageChannelReady(Bundle extras) {
+                messageChannelHelper.notifyCalled();
+                return true;
+            }
+
+            @Override
+            public void onDisconnectChannel(Context appContext) {}
+        });
+
+        // We can now request a postMessage channel.
+        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+    public void testPostMessageFromDynamicModuleDisallowedWhenFeatureDisabled() throws Exception {
+        final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+
+        // We shouldn't be able to open a channel or post messages yet.
+        Assert.assertFalse(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(getActivity().postMessage("Message")
+                == CustomTabsService.RESULT_FAILURE_DISALLOWED);
     }
 
     /**
@@ -2808,5 +2943,15 @@ public class CustomTabActivityTest {
         });
         historyObserver.getQueryCallback().waitForCallback(0);
         return historyObserver.getHistoryQueryResults();
+    }
+
+    private void waitForTitle(String newTitle) throws InterruptedException {
+        Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        TabTitleObserver titleObserver = new TabTitleObserver(currentTab, newTitle);
+        try {
+            titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_MS);
+        } catch (TimeoutException e) {
+            fail("Tab title didn't update in time");
+        }
     }
 }

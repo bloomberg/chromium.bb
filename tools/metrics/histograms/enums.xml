@@ -29584,6 +29584,7 @@ from previous Chrome versions.
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
   <int value="-1174267639" label="ClientLoFi:disabled"/>
+  <int value="-1173361620" label="CCTModulePostMessage:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
@@ -31049,6 +31050,7 @@ from previous Chrome versions.
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1590278995"
       label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
+  <int value="1590300329" label="CCTModulePostMessage:enabled"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
   <int value="1593917165" label="SimplifiedNTP:disabled"/>

@@ -163,6 +163,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_MODULE = "CCTModule";
     public static final String CCT_MODULE_CACHE = "CCTModuleCache";
+    public static final String CCT_MODULE_POST_MESSAGE = "CCTModulePostMessage";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
     public static final String CCT_PARALLEL_REQUEST = "CCTParallelRequest";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";

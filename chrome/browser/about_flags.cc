@@ -4191,6 +4191,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCCTModuleCache,
                                     kCCTModuleCacheVariations,
                                     "CCTModule")},
+    {"cct-module-post-message", flag_descriptions::kCCTModulePostMessageName,
+     flag_descriptions::kCCTModulePostMessageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTModulePostMessage)},
 #endif
 
     {"enable-css-fragment-identifiers",

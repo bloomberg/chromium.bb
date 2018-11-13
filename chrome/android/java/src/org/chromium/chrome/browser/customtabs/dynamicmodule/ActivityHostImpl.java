@@ -48,4 +48,14 @@ public class ActivityHostImpl extends BaseActivityHost {
     public void setTopBarView(IObjectWrapper topBarView) {
         mActivity.setTopBarContentView(ObjectWrapper.unwrap(topBarView, View.class));
     }
+
+    @Override
+    public boolean requestPostMessageChannel(Uri postMessageOrigin) {
+        return mActivity.requestPostMessageChannel(postMessageOrigin);
+    }
+
+    @Override
+    public int postMessage(String message) {
+        return mActivity.postMessage(message);
+    }
 }
