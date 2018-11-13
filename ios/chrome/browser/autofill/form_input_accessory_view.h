@@ -10,18 +10,19 @@
 @protocol FormInputAccessoryViewDelegate;
 
 // Subview of the accessory view for web forms. Shows a custom view with form
-// navigation controls above the keyboard. Subclassed to enable input clicks by
-// way of the playInputClick method.
+// navigation controls above the keyboard. Enables input clicks by way of the
+// playInputClick method.
 @interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
 
-// Sets up the view with the given |customView|. Navigation controls are shown
-// and use |delegate| for actions.
-- (void)setUpWithNavigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate
-                         customView:(UIView*)customView;
+// Sets up the view with the given |leadingView|. Navigation controls are shown
+// on the trailing side and use |delegate| for actions.
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          navigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate;
 
-// Sets up the view with the given |customView|. Navigation controls are not
-// shown.
-- (void)setUpWithCustomView:(UIView*)customView;
+// Sets up the view with the given |leadingView|. Navigation controls are
+// replaced with |customTrailingView|.
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          customTrailingView:(UIView*)customTrailingView;
 
 @end
 

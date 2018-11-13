@@ -86,43 +86,82 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 
 @implementation FormInputAccessoryView
 
-- (void)setUpWithCustomView:(UIView*)customView {
-  [self addSubview:customView];
-  customView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self, customView);
+#pragma mark - Public
 
-  [[self class] addBackgroundImageInView:self
-                           withImageName:@"autofill_keyboard_background"];
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          customTrailingView:(UIView*)customTrailingView {
+  [self setUpWithLeadingView:leadingView
+          customTrailingView:customTrailingView
+          navigationDelegate:nil];
 }
 
-- (void)setUpWithNavigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate
-                         customView:(UIView*)customView {
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          navigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
+  [self setUpWithLeadingView:leadingView
+          customTrailingView:nil
+          navigationDelegate:delegate];
+}
+
+#pragma mark - UIInputViewAudioFeedback
+
+- (BOOL)enableInputClicksWhenVisible {
+  return YES;
+}
+
+#pragma mark - Private Methods
+
+// Sets up the view with the given |leadingView|. If |delegate| is not nil,
+// navigation controls are shown on the right and use |delegate| for actions.
+// Else navigation controls are replaced with |customTrailingView|. If none of
+// |delegate| and |customTrailingView| is set, leadingView will take all the
+// space.
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          customTrailingView:(UIView*)customTrailingView
+          navigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
+  DCHECK(leadingView);
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    [[self class] addBackgroundImageInView:self
+                             withImageName:@"autofill_keyboard_background"];
+  }
+  leadingView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UIView* trailingView;
+  if (delegate) {
+    trailingView = [self viewForNavigationButtonsUsingDelegate:delegate];
+  } else {
+    trailingView = customTrailingView;
+  }
+
+  // If there is no trailing view, set the leading view as the only view and
+  // return early.
+  if (!trailingView) {
+    [self addSubview:leadingView];
+    AddSameConstraints(self, leadingView);
+    return;
+  }
+
   self.translatesAutoresizingMaskIntoConstraints = NO;
-  UIView* customViewContainer = [[UIView alloc] init];
-  customViewContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:customViewContainer];
+  UIView* leadingViewContainer = [[UIView alloc] init];
+  leadingViewContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:leadingViewContainer];
+  [leadingViewContainer addSubview:leadingView];
+  AddSameConstraints(leadingViewContainer, leadingView);
 
-  [customViewContainer addSubview:customView];
-  customView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(customViewContainer, customView);
-
-  UIView* navigationView =
-      [self viewForNavigationButtonsUsingDelegate:delegate];
-  navigationView.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:navigationView];
+  trailingView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:trailingView];
 
   id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
   [NSLayoutConstraint activateConstraints:@[
-    [customViewContainer.topAnchor
+    [leadingViewContainer.topAnchor
         constraintEqualToAnchor:layoutGuide.topAnchor],
-    [customViewContainer.bottomAnchor
+    [leadingViewContainer.bottomAnchor
         constraintEqualToAnchor:layoutGuide.bottomAnchor],
-    [customViewContainer.leadingAnchor
+    [leadingViewContainer.leadingAnchor
         constraintEqualToAnchor:layoutGuide.leadingAnchor],
-    [navigationView.trailingAnchor
+    [trailingView.trailingAnchor
         constraintEqualToAnchor:layoutGuide.trailingAnchor],
-    [navigationView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
-    [navigationView.bottomAnchor
+    [trailingView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
+    [trailingView.bottomAnchor
         constraintEqualToAnchor:layoutGuide.bottomAnchor],
   ]];
 
@@ -135,7 +174,7 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     UIImageView* gradientView =
         [[UIImageView alloc] initWithImage:gradientImage];
     gradientView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self insertSubview:gradientView belowSubview:navigationView];
+    [self insertSubview:gradientView belowSubview:trailingView];
 
     UIView* topGrayLine = [[UIView alloc] init];
     topGrayLine.backgroundColor = UIColor.cr_manualFillSeparatorColor;
@@ -161,37 +200,25 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
       [bottomGrayLine.heightAnchor
           constraintEqualToConstant:ManualFillSeparatorHeight],
 
-      [gradientView.topAnchor constraintEqualToAnchor:navigationView.topAnchor],
+      [gradientView.topAnchor constraintEqualToAnchor:trailingView.topAnchor],
       [gradientView.bottomAnchor
-          constraintEqualToAnchor:navigationView.bottomAnchor],
+          constraintEqualToAnchor:trailingView.bottomAnchor],
       [gradientView.widthAnchor
           constraintEqualToConstant:ManualFillGradientWidth],
       [gradientView.trailingAnchor
-          constraintEqualToAnchor:navigationView.leadingAnchor
+          constraintEqualToAnchor:trailingView.leadingAnchor
                          constant:ManualFillGradientMargin],
 
-      [customViewContainer.trailingAnchor
-          constraintEqualToAnchor:navigationView.leadingAnchor],
+      [leadingViewContainer.trailingAnchor
+          constraintEqualToAnchor:trailingView.leadingAnchor],
     ]];
   } else {
-    [[self class] addBackgroundImageInView:self
-                             withImageName:@"autofill_keyboard_background"];
-    [customViewContainer.trailingAnchor
-        constraintEqualToAnchor:navigationView.leadingAnchor
+    [leadingViewContainer.trailingAnchor
+        constraintEqualToAnchor:trailingView.leadingAnchor
                        constant:kNavigationAreaSeparatorShadowWidth]
         .active = YES;
   }
 }
-
-#pragma mark -
-#pragma mark UIInputViewAudioFeedback
-
-- (BOOL)enableInputClicksWhenVisible {
-  return YES;
-}
-
-#pragma mark -
-#pragma mark Private Methods
 
 UIImage* ButtonImage(NSString* name) {
   UIImage* rawImage = [UIImage imageNamed:name];

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
@@ -50,14 +51,6 @@
 
 @implementation FormInputAccessoryCoordinator
 
-@synthesize formInputAccessoryMediator = _formInputAccessoryMediator;
-@synthesize formInputAccessoryViewController =
-    _formInputAccessoryViewController;
-@synthesize manualFillAccessoryViewController =
-    _manualFillAccessoryViewController;
-@synthesize webStateList = _webStateList;
-@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
-
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
@@ -75,11 +68,12 @@
     _formInputAccessoryViewController =
         [[FormInputAccessoryViewController alloc] init];
 
-    _manualFillAccessoryViewController =
-        [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
-
-    _formInputAccessoryViewController.manualFillAccessoryViewController =
-        _manualFillAccessoryViewController;
+    if (autofill::features::IsPasswordManualFallbackEnabled()) {
+      _manualFillAccessoryViewController =
+          [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
+      _formInputAccessoryViewController.manualFillAccessoryViewController =
+          _manualFillAccessoryViewController;
+    }
 
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
         initWithConsumer:self.formInputAccessoryViewController

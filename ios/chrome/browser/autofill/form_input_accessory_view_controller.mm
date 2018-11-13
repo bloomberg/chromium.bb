@@ -116,12 +116,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
                                          client:suggestionClient
                                     suggestions:suggestions];
 
-  // If Manual Fallback is enabled, add its view after the suggestions.
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
-    formSuggestionView.trailingView =
-        self.manualFillAccessoryViewController.view;
-  }
-
   if (IsIPadIdiom()) {
     // On iPad, there's no inputAccessoryView available, so we attach the custom
     // view directly to the keyboard view instead.
@@ -137,6 +131,8 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     }
 
     if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+      // Check that |manualFillAccessoryViewController| was not instantiated.
+      DCHECK(!self.manualFillAccessoryViewController);
       // If this is a form suggestion view and no suggestions have been
       // triggered yet, don't show the custom view.
       if (formSuggestionView) {
@@ -149,15 +145,19 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       _suggestionsHaveBeenShown = YES;
     }
     self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithCustomView:formSuggestionView];
+    [self.customAccessoryView
+        setUpWithLeadingView:formSuggestionView
+          customTrailingView:self.manualFillAccessoryViewController.view];
     [self addCustomAccessoryViewIfNeeded];
   } else {
     // On iPhone, the custom view replaces the default UI of the
     // inputAccessoryView.
     [self restoreOriginalInputAccessoryView];
+    formSuggestionView.trailingView =
+        self.manualFillAccessoryViewController.view;
     self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithNavigationDelegate:navigationDelegate
-                                               customView:formSuggestionView];
+    [self.customAccessoryView setUpWithLeadingView:formSuggestionView
+                                navigationDelegate:navigationDelegate];
     [self addCustomAccessoryViewIfNeeded];
   }
 }
