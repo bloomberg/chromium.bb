@@ -34,6 +34,8 @@ source_set("wayland") {
     "server.cc",
     "server.h",
     "server_util.h",
+    "zcr_notification_shell.cc",
+    "zcr_notification_shell.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
