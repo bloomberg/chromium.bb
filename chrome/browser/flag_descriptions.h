@@ -194,10 +194,10 @@ extern const char kDatasaverPromptName[];
 extern const char kDatasaverPromptDescription[];
 extern const char kDatasaverPromptDemoMode[];
 
-#if defined(DHECK_IS_CONFIGURABLE)
+#if defined(DCHECK_IS_CONFIGURABLE)
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
-#endif  // defined(DHECK_IS_CONFIGURABLE)
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 extern const char kDebugPackedAppName[];
 extern const char kDebugPackedAppDescription[];
