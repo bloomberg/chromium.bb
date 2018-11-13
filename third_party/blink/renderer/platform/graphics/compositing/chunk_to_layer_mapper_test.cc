@@ -37,7 +37,7 @@ class ChunkToLayerMapperTest : public testing::Test {
           e0(), EffectPaintPropertyNode::State{
                     layer_transform_.get(), layer_clip_.get(),
                     kColorFilterLuminanceToAlpha, CompositorFilterOperations(),
-                    0.789f, SkBlendMode::kSrcIn});
+                    0.789f, CompositorFilterOperations(), SkBlendMode::kSrcIn});
     }
     return PropertyTreeState(layer_transform_.get(), layer_clip_.get(),
                              layer_effect_.get());

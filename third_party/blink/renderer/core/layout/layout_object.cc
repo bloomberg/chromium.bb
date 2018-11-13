@@ -1450,7 +1450,7 @@ bool LayoutObject::HasDistortingVisualEffects() const {
   // No filters, no blends, no opacity < 100%.
   for (const auto* effect = SafeUnalias(paint_properties.Effect()); effect;
        effect = SafeUnalias(effect->Parent())) {
-    if (!effect->Filter().IsEmpty() ||
+    if (!effect->Filter().IsEmpty() || !effect->BackdropFilter().IsEmpty() ||
         effect->GetColorFilter() != kColorFilterNone ||
         effect->BlendMode() != SkBlendMode::kSrcOver ||
         effect->Opacity() != 1.0) {

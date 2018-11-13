@@ -3235,9 +3235,19 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
   if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
       reference_box == operations.ReferenceBox())
     return;
-
   operations =
       FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
+}
+
+void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
+    CompositorFilterOperations& operations) const {
+  const auto& style = GetLayoutObject().StyleRef();
+  float zoom = style.EffectiveZoom();
+  auto filter = FilterOperationsIncludingReflection();
+  FloatRect reference_box = FilterReferenceBox(filter, zoom);
+  if (!operations.IsEmpty() && reference_box == operations.ReferenceBox())
+    return;
+  operations = CreateCompositorFilterOperationsForBackdropFilter();
 }
 
 CompositorFilterOperations
