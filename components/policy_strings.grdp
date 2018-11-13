@@ -214,7 +214,7 @@
   </message>
   <if expr="chromeos">
     <message name="IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy failed to parse.">
-      Network configuration failed to be parsed.
+      Network configuration failed to be parsed (invalid JSON).
     </message>
     <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL" desc="The text displayed in the status column when the corresponding network configuration policy is not standard conform and was imported partially. DEBUG_INFO contains non-localized detailed information about existing warnings.">
       The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.
