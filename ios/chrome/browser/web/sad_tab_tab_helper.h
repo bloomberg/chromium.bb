@@ -37,6 +37,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Sets the SadTabHelper delegate.
   void SetDelegate(id<SadTabTabHelperDelegate> delegate);
 
+  // true if Sad Tab has currently being shown.
+  bool is_showing_sad_tab() const { return showing_sad_tab_; }
+
   ~SadTabTabHelper() override;
 
  private:

@@ -64,6 +64,9 @@ extern NSString* const kSideSwipeDidStopNotification;
 - (BOOL)canBeginToolbarSwipe;
 // Returns the top toolbar's view.
 - (UIView*)topToolbarView;
+// Called after removing |sideSwipeContentView|.
+- (void)didRemoveSideSwipeContentView;
+
 @end
 
 // Controls how an edge gesture is processed, either as tab change or a page
