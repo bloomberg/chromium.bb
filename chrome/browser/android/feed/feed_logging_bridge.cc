@@ -124,13 +124,14 @@ void FeedLoggingBridge::OnContentTargetVisited(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
     const jlong visit_time_ms,
-    const jboolean is_offline) {
+    const jboolean is_offline,
+    const jboolean return_to_ntp) {
   if (is_offline) {
     feed_logging_metrics_->OnSuggestionOfflinePageVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms));
+        base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
   } else {
     feed_logging_metrics_->OnSuggestionArticleVisited(
-        base::TimeDelta::FromMilliseconds(visit_time_ms));
+        base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
   }
 }
 

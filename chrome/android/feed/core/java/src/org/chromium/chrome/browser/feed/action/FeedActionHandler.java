@@ -12,6 +12,7 @@ import com.google.android.libraries.feed.host.action.ActionApi;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.NavigationRecorder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
@@ -167,10 +168,12 @@ public class FeedActionHandler implements ActionApi {
     private void openAndRecord(int disposition, LoadUrlParams loadUrlParams, boolean isOffline) {
         Tab loadingTab = mDelegate.openUrl(disposition, loadUrlParams);
         if (loadingTab != null) {
-            // Records how long the user spending on the suggested page.
+            // Records how long the user spending on the suggested page, and whether the user got
+            // back to the NTP.
             NavigationRecorder.record(loadingTab,
                     visitData
-                    -> mLoggingBridge.onContentTargetVisited(visitData.duration, isOffline));
+                    -> mLoggingBridge.onContentTargetVisited(
+                            visitData.duration, isOffline, NewTabPage.isNTPUrl(visitData.endUrl)));
         }
         mSuggestionConsumedObserver.run();
     }

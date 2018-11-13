@@ -56,9 +56,11 @@ class FeedLoggingMetrics {
 
   void OnSuggestionDismissed(int position, const GURL& url);
 
-  void OnSuggestionArticleVisited(base::TimeDelta visit_time);
+  void OnSuggestionArticleVisited(base::TimeDelta visit_time,
+                                  bool return_to_ntp);
 
-  void OnSuggestionOfflinePageVisited(base::TimeDelta visit_time);
+  void OnSuggestionOfflinePageVisited(base::TimeDelta visit_time,
+                                      bool return_to_ntp);
 
   // Should only be called once per NTP for each "more" button.
   void OnMoreButtonShown(int position);

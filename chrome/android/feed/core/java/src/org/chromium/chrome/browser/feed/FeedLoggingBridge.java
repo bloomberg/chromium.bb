@@ -9,6 +9,7 @@ import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -64,6 +65,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     @Override
     public void onClientAction(ContentLoggingData data, @ActionType int actionType) {
         assert mNativeFeedLoggingBridge != 0;
+        recordUserAction(actionType);
         nativeOnClientAction(
                 mNativeFeedLoggingBridge, feedActionToWindowOpenDisposition(actionType));
     }
@@ -110,13 +112,15 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      *
      * @param visitTimeMs Time spent reading the page.
      * @param isOffline If the page is viewed in offline mode or not.
+     * @param returnToNtp User backed to NTP after visit the page.
      */
-    public void onContentTargetVisited(long visitTimeMs, boolean isOffline) {
+    public void onContentTargetVisited(long visitTimeMs, boolean isOffline, boolean returnToNtp) {
         // We cannot assume that the|mNativeFeedLoggingBridge| is always available like other
         // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
         // may have already been called if Feed is disabled by policy.
         if (mNativeFeedLoggingBridge != 0) {
-            nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs, isOffline);
+            nativeOnContentTargetVisited(
+                    mNativeFeedLoggingBridge, visitTimeMs, isOffline, returnToNtp);
         }
     }
 
@@ -139,6 +143,24 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         }
     }
 
+    private void recordUserAction(@ActionType int actionType) {
+        switch (actionType) {
+            case ActionType.OPEN_URL:
+            case ActionType.OPEN_URL_INCOGNITO:
+            case ActionType.OPEN_URL_NEW_TAB:
+            case ActionType.OPEN_URL_NEW_WINDOW:
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
+                break;
+            case ActionType.LEARN_MORE:
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
+                break;
+            case ActionType.DOWNLOAD:
+            case ActionType.UNKNOWN:
+            default:
+                break;
+        }
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedLoggingBridge);
     private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
@@ -158,5 +180,5 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
     private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
     private native void nativeOnContentTargetVisited(
-            long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline);
+            long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline, boolean returnToNtp);
 }
