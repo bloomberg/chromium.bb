@@ -449,7 +449,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 
 css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
-  in_files = [ "css/computed_style_extra_fields.json5" ]
+  in_files = [ "style/computed_style_extra_fields.json5" ]
   other_inputs = [ "../build/scripts/core/style/templates/computed_style_initial_values.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/style/computed_style_initial_values.h",
@@ -457,15 +457,18 @@ css_properties("make_core_generated_computed_style_initial_values") {
 }
 
 css_properties("make_core_generated_computed_style_base") {
-  script = "../build/scripts/make_computed_style_base.py"
+  script = "../build/scripts/core/style/make_computed_style_base.py"
   in_files = [
-    "css/computed_style_extra_fields.json5",
-    "css/computed_style_diff_functions.json5",
+    "style/computed_style_extra_fields.json5",
+    "style/computed_style_diff_functions.json5",
     "css/css_value_keywords.json5",
     "css/css_properties_ranking.json5",
     "css/css_group_config.json5",
   ]
   other_inputs = [
+    "../build/scripts/core/style/templates/computed_style_base.cc.tmpl",
+    "../build/scripts/core/style/templates/computed_style_base.h.tmpl",
+    "../build/scripts/core/style/templates/computed_style_base_constants.h.tmpl",
     "../build/scripts/templates/fields/field.tmpl",
     "../build/scripts/templates/fields/group.tmpl",
     "../build/scripts/templates/fields/base.tmpl",
@@ -474,15 +477,12 @@ css_properties("make_core_generated_computed_style_base") {
     "../build/scripts/templates/fields/primitive.tmpl",
     "../build/scripts/templates/fields/monotonic_flag.tmpl",
     "../build/scripts/templates/fields/external.tmpl",
-    "../build/scripts/templates/computed_style_base.h.tmpl",
-    "../build/scripts/templates/computed_style_base.cc.tmpl",
-    "../build/scripts/templates/computed_style_base_constants.h.tmpl",
     "../build/scripts/keyword_utils.py",
   ]
   outputs = [
-    "$blink_core_output_dir/computed_style_base.h",
-    "$blink_core_output_dir/computed_style_base.cc",
-    "$blink_core_output_dir/computed_style_base_constants.h",
+    "$blink_core_output_dir/style/computed_style_base.cc",
+    "$blink_core_output_dir/style/computed_style_base.h",
+    "$blink_core_output_dir/style/computed_style_base_constants.h",
   ]
 }
 

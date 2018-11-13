@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
 import math
 
 import json5_generator
@@ -556,7 +560,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'templates/computed_style_base.h.tmpl', tests={'in': lambda a, b: a in b})
+        'core/style/templates/computed_style_base.h.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_h(self):
         return {
             'input_files': self._input_files,
@@ -568,7 +572,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'templates/computed_style_base.cc.tmpl',
+        'core/style/templates/computed_style_base.cc.tmpl',
         tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_cpp(self):
         return {
@@ -580,7 +584,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
             'diff_functions_map': self._diff_functions_map,
         }
 
-    @template_expander.use_jinja('templates/computed_style_base_constants.h.tmpl')
+    @template_expander.use_jinja('core/style/templates/computed_style_base_constants.h.tmpl')
     def generate_base_computed_style_constants(self):
         return {
             'input_files': self._input_files,

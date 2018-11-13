@@ -29,7 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_
 
 #include <cstddef>
-#include "third_party/blink/renderer/core/computed_style_base_constants.h"
+#include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 
 namespace blink {
 
