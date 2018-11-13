@@ -255,6 +255,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kCamera,
         FeaturePolicy::FeatureDefault::EnableForSelf},
+       {mojom::FeaturePolicyFeature::kDocumentDomain,
+        FeaturePolicy::FeatureDefault::EnableForAll},
        {mojom::FeaturePolicyFeature::kDocumentWrite,
         FeaturePolicy::FeatureDefault::EnableForAll},
        {mojom::FeaturePolicyFeature::kEncryptedMedia,

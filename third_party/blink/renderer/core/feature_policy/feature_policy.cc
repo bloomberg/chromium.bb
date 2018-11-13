@@ -253,6 +253,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("document-write",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
+          "document-domain", mojom::FeaturePolicyFeature::kDocumentDomain);
+      default_feature_name_map.Set(
           "unoptimized-images",
           mojom::FeaturePolicyFeature::kUnoptimizedImages);
       default_feature_name_map.Set("lazyload",
