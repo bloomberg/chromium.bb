@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -61,6 +62,8 @@ class DataReductionProxyMetricsObserver
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnRedirect(
+      content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
@@ -187,6 +190,17 @@ class DataReductionProxyMetricsObserver
 
   // The number of scroll events on the page.
   uint32_t scroll_count_;
+
+  // The number of main frame redirects that occurred before commit.
+  uint32_t redirect_count_;
+
+  // The time when the navigation started. Used to estimate
+  // |navigation_start_to_main_frame_fetch_start_|.
+  base::TimeTicks navigation_start_;
+
+  // The duration between the navigation start as reported by the navigation
+  // handle, and when the fetchStart of the main page HTML.
+  base::TimeDelta navigation_start_to_main_frame_fetch_start_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
