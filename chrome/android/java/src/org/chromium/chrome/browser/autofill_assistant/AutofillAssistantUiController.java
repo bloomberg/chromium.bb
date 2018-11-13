@@ -165,8 +165,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void onDismiss() {
-        mUiDelegateHolder.dismiss(R.string.autofill_assistant_stopped,
-                AutofillAssistantUiDelegate.SNACKBAR_DELAY_MS / 1_000);
+        mUiDelegateHolder.dismiss(R.string.autofill_assistant_stopped);
     }
 
     @Override
