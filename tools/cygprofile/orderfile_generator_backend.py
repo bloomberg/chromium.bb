@@ -707,7 +707,11 @@ class OrderfileGenerator(object):
             self._options.max_load, self._options.use_goma,
             self._options.goma_dir, self._options.system_health_orderfile,
             self._options.monochrome)
-        self._compiler.CompileChromeApk(True)
+        if not self._options.pregenerated_profiles:
+          # If there are pregenerated profiles, the instrumented build should
+          # not be changed to avoid invalidating the pregenerated profile
+          # offsets.
+          self._compiler.CompileChromeApk(True)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
         profile_uploaded = True
