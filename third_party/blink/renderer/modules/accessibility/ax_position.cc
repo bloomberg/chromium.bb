@@ -248,8 +248,12 @@ const AXPosition AXPosition::FromPosition(
                 *document, *node_after_position,
                 ToContainerNodeOrNull(container_node), adjustment_behavior);
             if (previous_child) {
-              return CreatePositionAfterObject(*previous_child,
-                                               adjustment_behavior);
+              // |CreatePositionAfterObject| cannot be used here because it will
+              // try to create a position before the object that comes after
+              // |previous_child|, which in this case is the ignored object
+              // itself.
+              return CreateLastPositionInObject(*previous_child,
+                                                adjustment_behavior);
             }
 
             return CreateFirstPositionInObject(*container, adjustment_behavior);
@@ -473,10 +477,10 @@ const AXPosition AXPosition::AsUnignoredPosition(
   // container's unignored parent.
   //
   // 3. The container object is ignored and this is an "after children"
-  // position. Find the next object in the tree and recurse.
+  // position. Find the previous or the next object in the tree and recurse.
   //
   // 4. The child after a tree position is ignored, but the container object is
-  // not. Return an "after children" position.
+  // not. Return a "before children" or an "after children" position.
 
   const AXObject* container = container_object_;
   const AXObject* child = ChildAfterTreePosition();
@@ -522,8 +526,14 @@ const AXPosition AXPosition::AsUnignoredPosition(
   }
 
   // Case 4.
-  if (child && child->AccessibilityIsIgnored())
-    return CreateLastPositionInObject(*container);
+  if (child && child->AccessibilityIsIgnored()) {
+    switch (adjustment_behavior) {
+      case AXPositionAdjustmentBehavior::kMoveRight:
+        return CreateLastPositionInObject(*container);
+      case AXPositionAdjustmentBehavior::kMoveLeft:
+        return CreateFirstPositionInObject(*container);
+    }
+  }
 
   // The position is not ignored.
   return *this;
@@ -584,8 +594,8 @@ const AXPosition AXPosition::AsValidDOMPosition(
          "node should have an associated layout object.";
   const Node* container_node =
       ToAXLayoutObject(container)->GetNodeOrContainingBlockNode();
-  DCHECK(container_node)
-      << "All anonymous layout objects should have a containing block element.";
+  DCHECK(container_node) << "All anonymous layout objects and list markers "
+                            "should have a containing block element.";
   DCHECK(!container->IsDetached());
   auto& ax_object_cache_impl = container->AXObjectCache();
   const AXObject* new_container =
@@ -595,7 +605,14 @@ const AXPosition AXPosition::AsValidDOMPosition(
   if (new_container == container->ParentObjectUnignored()) {
     position.text_offset_or_child_index_ = container->IndexInParent();
   } else {
-    position.text_offset_or_child_index_ = 0;
+    switch (adjustment_behavior) {
+      case AXPositionAdjustmentBehavior::kMoveRight:
+        position.text_offset_or_child_index_ = new_container->ChildCount();
+        break;
+      case AXPositionAdjustmentBehavior::kMoveLeft:
+        position.text_offset_or_child_index_ = 0;
+        break;
+    }
   }
   DCHECK(position.IsValid());
   return position.AsValidDOMPosition(adjustment_behavior);
@@ -608,7 +625,8 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
     return {};
 
   const Node* container_node = adjusted_position.container_object_->GetNode();
-  DCHECK(container_node);
+  DCHECK(container_node) << "AX positions that are valid DOM positions should "
+                            "always be connected to their DOM nodes.";
   if (!adjusted_position.IsTextPosition()) {
     // AX positions that are unumbiguously at the start or end of a container,
     // should convert to the corresponding DOM positions at the start or end of

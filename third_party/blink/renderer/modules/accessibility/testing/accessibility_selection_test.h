@@ -43,13 +43,15 @@ class AccessibilitySelectionTest : public AccessibilityTest {
                                const AXObject& subtree) const;
 
   // Sets |selection_text| as inner HTML of the document body and returns the
-  // root of the accessibility tree at body.
-  const AXSelection SetSelectionText(const std::string& selection_text) const;
+  // resulting |AXSelection|. If there are multiple selection markers, returns
+  // only the first selection.
+  AXSelection SetSelectionText(const std::string& selection_text) const;
 
-  // Sets |selection_text| as inner HTML of |element| and returns the root of
-  // the accessibility subtree at |element|.
-  const AXSelection SetSelectionText(const std::string& selection_text,
-                                     HTMLElement& element) const;
+  // Sets |selection_text| as inner HTML of |element| and returns the resulting
+  // |AXSelection|. If there are multiple selection markers, returns only the
+  // first selection.
+  AXSelection SetSelectionText(const std::string& selection_text,
+                               HTMLElement& element) const;
 
   // Compares two HTML files containing a DOM selection and the equivalent
   // accessibility selection.
