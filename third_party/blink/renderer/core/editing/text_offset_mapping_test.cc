@@ -369,4 +369,20 @@ TEST_P(ParameterizedTextOffsetMappingTest, GetPositionAfter) {
   // We hit DCHECK for offset 8, because we walk on "012 456".
 }
 
+// https://crbug.com/903723
+TEST_P(ParameterizedTextOffsetMappingTest, InlineContentsWithDocumentBoundary) {
+  InsertStyleElement("*{position:fixed}");
+  SetBodyContent("");
+  const PositionInFlatTree position =
+      PositionInFlatTree::FirstPositionInNode(*GetDocument().body());
+  const TextOffsetMapping::InlineContents inline_contents =
+      TextOffsetMapping::FindForwardInlineContents(position);
+  EXPECT_TRUE(inline_contents.IsNotNull());
+  // Should not crash when previous/next iteration reaches document boundary.
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::PreviousOf(inline_contents).IsNull());
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::NextOf(inline_contents).IsNull());
+}
+
 }  // namespace blink

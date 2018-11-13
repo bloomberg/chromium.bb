@@ -328,35 +328,53 @@ EphemeralRangeInFlatTree TextOffsetMapping::InlineContents::GetRange() const {
 PositionInFlatTree
 TextOffsetMapping::InlineContents::LastPositionBeforeBlockFlow() const {
   DCHECK(block_flow_);
-  if (const Node* node = block_flow_->NonPseudoNode())
+  if (const Node* node = block_flow_->NonPseudoNode()) {
+    if (!FlatTreeTraversal::Parent(*node)) {
+      // Reached start of document.
+      return PositionInFlatTree();
+    }
     return PositionInFlatTree::BeforeNode(*node);
+  }
   DCHECK(first_);
   DCHECK(first_->NonPseudoNode());
+  DCHECK(FlatTreeTraversal::Parent(*first_->NonPseudoNode()));
   return PositionInFlatTree::BeforeNode(*first_->NonPseudoNode());
 }
 
 PositionInFlatTree
 TextOffsetMapping::InlineContents::FirstPositionAfterBlockFlow() const {
   DCHECK(block_flow_);
-  if (const Node* node = block_flow_->NonPseudoNode())
+  if (const Node* node = block_flow_->NonPseudoNode()) {
+    if (!FlatTreeTraversal::Parent(*node)) {
+      // Reached end of document.
+      return PositionInFlatTree();
+    }
     return PositionInFlatTree::AfterNode(*node);
+  }
   DCHECK(last_);
   DCHECK(last_->NonPseudoNode());
+  DCHECK(FlatTreeTraversal::Parent(*last_->NonPseudoNode()));
   return PositionInFlatTree::AfterNode(*last_->NonPseudoNode());
 }
 
 // static
 TextOffsetMapping::InlineContents TextOffsetMapping::InlineContents::NextOf(
     const InlineContents& inline_contents) {
-  return TextOffsetMapping::FindForwardInlineContents(
-      inline_contents.FirstPositionAfterBlockFlow());
+  const PositionInFlatTree position_after =
+      inline_contents.FirstPositionAfterBlockFlow();
+  if (position_after.IsNull())
+    return InlineContents();
+  return TextOffsetMapping::FindForwardInlineContents(position_after);
 }
 
 // static
 TextOffsetMapping::InlineContents TextOffsetMapping::InlineContents::PreviousOf(
     const InlineContents& inline_contents) {
-  return TextOffsetMapping::FindBackwardInlineContents(
-      inline_contents.LastPositionBeforeBlockFlow());
+  const PositionInFlatTree position_before =
+      inline_contents.LastPositionBeforeBlockFlow();
+  if (position_before.IsNull())
+    return InlineContents();
+  return TextOffsetMapping::FindBackwardInlineContents(position_before);
 }
 
 std::ostream& operator<<(
