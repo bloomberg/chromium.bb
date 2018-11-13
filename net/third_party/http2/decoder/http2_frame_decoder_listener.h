@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <type_traits>
 
 #include "net/third_party/http2/http2_constants.h"

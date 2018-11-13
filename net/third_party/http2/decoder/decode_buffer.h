@@ -13,9 +13,9 @@
 // caller.
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <algorithm>
+#include <cstdint>
 
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_export.h"

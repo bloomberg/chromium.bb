@@ -13,7 +13,7 @@ namespace http2 {
 Http2String HpackEntryTypeDecoder::DebugString() const {
   return Http2StrCat(
       "HpackEntryTypeDecoder(varint_decoder=", varint_decoder_.DebugString(),
-      ", entry_type = ", entry_type_, ") ");
+      ", entry_type=", entry_type_, ")");
 }
 
 std::ostream& operator<<(std::ostream& out, const HpackEntryTypeDecoder& v) {

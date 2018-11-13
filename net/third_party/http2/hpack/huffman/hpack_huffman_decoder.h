@@ -14,6 +14,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <iosfwd>
 
 #include "net/third_party/http2/platform/api/http2_export.h"

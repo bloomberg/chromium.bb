@@ -18,6 +18,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <vector>
 
 #include "base/containers/circular_deque.h"

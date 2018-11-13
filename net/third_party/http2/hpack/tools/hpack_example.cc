@@ -29,7 +29,7 @@ void HpackExampleToStringOrDie(Http2StringPiece example, Http2String* output) {
       example.remove_prefix(1);
       continue;
     }
-    if (example.starts_with("|")) {
+    if (!example.empty() && example[0] == '|') {
       // Start of a comment. Skip to end of line or of input.
       auto pos = example.find('\n');
       if (pos == Http2StringPiece::npos) {
