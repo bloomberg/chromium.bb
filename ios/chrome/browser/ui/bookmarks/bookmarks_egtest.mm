@@ -1694,10 +1694,10 @@ id<GREYMatcher> SearchIconButton() {
 @end
 
 // Bookmark entries integration tests for Chrome.
-@interface BookmarksTestCaseEntries : ChromeTestCase
+@interface BookmarksEntriesTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksTestCaseEntries
+@implementation BookmarksEntriesTestCase
 
 - (void)setUp {
   [super setUp];
@@ -1720,7 +1720,7 @@ id<GREYMatcher> SearchIconButton() {
       clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
-#pragma mark - BookmarksTestCaseEntries Tests
+#pragma mark - BookmarksEntriesTestCase Tests
 
 - (void)testUndoDeleteBookmarkFromSwipe {
   // TODO(crbug.com/851227): On Compact Width on iOS11, the
@@ -2705,10 +2705,10 @@ id<GREYMatcher> SearchIconButton() {
 @end
 
 // Bookmark promo integration tests for Chrome.
-@interface BookmarksTestCasePromo : ChromeTestCase
+@interface BookmarksPromoTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksTestCasePromo
+@implementation BookmarksPromoTestCase
 
 - (void)setUp {
   [super setUp];
@@ -2731,7 +2731,7 @@ id<GREYMatcher> SearchIconButton() {
       clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
-#pragma mark - BookmarksTestCasePromo Tests
+#pragma mark - BookmarksPromoTestCase Tests
 
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
@@ -2919,10 +2919,10 @@ id<GREYMatcher> SearchIconButton() {
 @end
 
 // Bookmark accessibility tests for Chrome.
-@interface BookmarksTestCaseAccessibility : ChromeTestCase
+@interface BookmarksAccessibilityTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksTestCaseAccessibility
+@implementation BookmarksAccessibilityTestCase
 
 - (void)setUp {
   [super setUp];
@@ -2945,7 +2945,7 @@ id<GREYMatcher> SearchIconButton() {
       clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
-#pragma mark - BookmarksTestCaseAccessibility Tests
+#pragma mark - BookmarksAccessibilityTestCase Tests
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
@@ -3095,10 +3095,10 @@ id<GREYMatcher> SearchIconButton() {
 @end
 
 // Bookmark folders integration tests for Chrome.
-@interface BookmarksTestCaseFolders : ChromeTestCase
+@interface BookmarksFoldersTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksTestCaseFolders
+@implementation BookmarksFoldersTestCase
 
 - (void)setUp {
   [super setUp];
@@ -4036,10 +4036,10 @@ id<GREYMatcher> SearchIconButton() {
 @end
 
 // Bookmark search integration tests for Chrome.
-@interface BookmarksTestCaseSearch : ChromeTestCase
+@interface BookmarksSearchTestCase : ChromeTestCase
 @end
 
-@implementation BookmarksTestCaseSearch
+@implementation BookmarksSearchTestCase
 
 - (void)setUp {
   [super setUp];
@@ -4062,7 +4062,7 @@ id<GREYMatcher> SearchIconButton() {
       clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
-#pragma mark - BookmarksTestCaseSearch Tests
+#pragma mark - BookmarksSearchTestCase Tests
 
 // Tests that the search bar is shown on root.
 - (void)testSearchBarShownOnRoot {
