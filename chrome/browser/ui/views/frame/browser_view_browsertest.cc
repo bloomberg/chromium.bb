@@ -133,14 +133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
 
 // Verifies that page and devtools WebViews are being correctly layed out
 // when DevTools is opened/closed/updated/undocked.
-
-// Flaky on Chrome OS.  http://crbug.com/693000
-#if defined(OS_CHROMEOS)
-#define MAYBE_DevToolsUpdatesBrowserWindow DISABLED_DevToolsUpdatesBrowserWindow
-#else
-#define MAYBE_DevToolsUpdatesBrowserWindow DevToolsUpdatesBrowserWindow
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_DevToolsUpdatesBrowserWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DevToolsUpdatesBrowserWindow) {
   gfx::Rect full_bounds =
       browser_view()->GetContentsContainerForTest()->GetLocalBounds();
   gfx::Rect small_bounds(10, 20, 30, 40);
