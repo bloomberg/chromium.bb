@@ -33,13 +33,6 @@ namespace {
 // seconds apart.
 const int64_t kMaxNumSecondsBetweenBatchScans = 60;
 
-// If Tether and Smart Lock use their own BLE channel logic, instead of the
-// shared SecureChannel API (i.e. |chromeos::features::kMultiDeviceApi| is
-// disabled), scanning immediately after the device is unlocked may cause
-// unwanted interactions with Smart Lock BLE channels. The scan is delayed
-// slightly in order to circumvent this issue.
-const int64_t kNumSecondsToDelayScanAfterUnlock = 3;
-
 // Minimum value for the scan length metric.
 const int64_t kMinScanMetricSeconds = 1;
 
@@ -59,7 +52,6 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
       host_scanner_(host_scanner),
       session_manager_(session_manager),
       host_scan_batch_timer_(std::make_unique<base::OneShotTimer>()),
-      delay_scan_after_unlock_timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ignore_wired_networks_(false),
@@ -144,8 +136,6 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
   if (is_screen_locked_) {
     // If the screen is now locked, stop any ongoing scan.
     host_scanner_->StopScan();
-    if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-      delay_scan_after_unlock_timer_->Stop();
     return;
   }
 
@@ -154,25 +144,14 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
 
   // If the device was just unlocked, start a scan if not already connected to
   // a network.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    AttemptScanIfOffline();
-  } else {
-    delay_scan_after_unlock_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
-        base::BindRepeating(&HostScanSchedulerImpl::AttemptScanIfOffline,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
+  AttemptScanIfOffline();
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
     std::unique_ptr<base::OneShotTimer> test_host_scan_batch_timer,
-    std::unique_ptr<base::OneShotTimer> test_delay_scan_after_unlock_timer,
     base::Clock* test_clock,
     scoped_refptr<base::TaskRunner> test_task_runner) {
   host_scan_batch_timer_ = std::move(test_host_scan_batch_timer);
-  delay_scan_after_unlock_timer_ =
-      std::move(test_delay_scan_after_unlock_timer);
   clock_ = test_clock;
   task_runner_ = test_task_runner;
 }
@@ -196,9 +175,6 @@ void HostScanSchedulerImpl::AttemptScan() {
     host_scan_batch_timer_->Stop();
   else
     last_scan_batch_start_timestamp_ = clock_->Now();
-
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    delay_scan_after_unlock_timer_->Stop();
 
   host_scanner_->StartScan();
   network_state_handler_->SetTetherScanState(true);
