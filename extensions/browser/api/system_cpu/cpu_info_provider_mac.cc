@@ -7,7 +7,7 @@
 #include <mach/mach_host.h>
 
 #include "base/mac/scoped_mach_port.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace extensions {
 

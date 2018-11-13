@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/version_info/version_info.h"

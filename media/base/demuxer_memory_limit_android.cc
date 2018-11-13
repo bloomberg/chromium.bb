@@ -5,7 +5,7 @@
 #include "media/base/demuxer_memory_limit.h"
 
 #include "base/android/build_info.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace media {
 

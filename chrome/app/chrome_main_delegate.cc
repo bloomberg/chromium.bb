@@ -106,7 +106,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"

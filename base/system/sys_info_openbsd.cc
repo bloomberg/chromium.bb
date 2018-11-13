@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -31,7 +31,7 @@ namespace base {
 
 // static
 int SysInfo::NumberOfProcessors() {
-  int mib[] = { CTL_HW, HW_NCPU };
+  int mib[] = {CTL_HW, HW_NCPU};
   int ncpu;
   size_t size = sizeof(ncpu);
   if (sysctl(mib, arraysize(mib), &ncpu, &size, NULL, 0) < 0) {
@@ -55,7 +55,7 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemoryImpl() {
 
 // static
 uint64_t SysInfo::MaxSharedMemorySize() {
-  int mib[] = { CTL_KERN, KERN_SHMINFO, KERN_SHMINFO_SHMMAX };
+  int mib[] = {CTL_KERN, KERN_SHMINFO, KERN_SHMINFO_SHMMAX};
   size_t limit;
   size_t size = sizeof(limit);
   if (sysctl(mib, arraysize(mib), &limit, &size, NULL, 0) < 0) {
@@ -67,7 +67,7 @@ uint64_t SysInfo::MaxSharedMemorySize() {
 
 // static
 std::string SysInfo::CPUModelName() {
-  int mib[] = { CTL_HW, HW_MODEL };
+  int mib[] = {CTL_HW, HW_MODEL};
   char name[256];
   size_t len = arraysize(name);
   if (sysctl(mib, arraysize(mib), name, &len, NULL, 0) < 0) {

@@ -6,7 +6,7 @@
 
 #include "base/linux_util.h"
 #include "base/no_destructor.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"

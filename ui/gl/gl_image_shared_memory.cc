@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"

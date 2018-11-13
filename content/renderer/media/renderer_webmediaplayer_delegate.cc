@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"

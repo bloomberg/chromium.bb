@@ -36,7 +36,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

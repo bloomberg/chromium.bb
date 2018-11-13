@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/memory.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"

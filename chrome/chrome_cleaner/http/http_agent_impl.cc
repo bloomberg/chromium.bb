@@ -20,7 +20,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/http/error_utils.h"

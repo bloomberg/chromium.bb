@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SYS_INFO_H_
-#define BASE_SYS_INFO_H_
+#ifndef BASE_SYSTEM_SYS_INFO_H_
+#define BASE_SYSTEM_SYS_INFO_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -186,4 +186,4 @@ class BASE_EXPORT SysInfo {
 
 }  // namespace base
 
-#endif  // BASE_SYS_INFO_H_
+#endif  // BASE_SYSTEM_SYS_INFO_H_

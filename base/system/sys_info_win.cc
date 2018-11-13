@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
-#include <windows.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <windows.h>
 
 #include <limits>
 
@@ -112,8 +112,7 @@ std::string SysInfo::OperatingSystemVersion() {
   win::OSInfo* os_info = win::OSInfo::GetInstance();
   win::OSInfo::VersionNumber version_number = os_info->version_number();
   std::string version(StringPrintf("%d.%d.%d", version_number.major,
-                                   version_number.minor,
-                                   version_number.build));
+                                   version_number.minor, version_number.build));
   win::OSInfo::ServicePack service_pack = os_info->service_pack();
   if (service_pack.major != 0) {
     version += StringPrintf(" SP%d", service_pack.major);

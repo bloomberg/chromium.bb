@@ -22,7 +22,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"

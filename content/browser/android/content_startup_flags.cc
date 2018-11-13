@@ -8,7 +8,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/content_switches.h"

@@ -21,7 +21,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"

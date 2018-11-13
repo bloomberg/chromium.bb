@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "components/crx_file/id_util.h"

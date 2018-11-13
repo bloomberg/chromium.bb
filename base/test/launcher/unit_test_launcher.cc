@@ -25,7 +25,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"

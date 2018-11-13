@@ -26,7 +26,7 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"

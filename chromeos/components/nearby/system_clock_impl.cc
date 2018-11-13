@@ -4,7 +4,7 @@
 
 #include "chromeos/components/nearby/system_clock_impl.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace chromeos {
 

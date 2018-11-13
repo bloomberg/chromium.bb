@@ -5,7 +5,7 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 
 #include "base/memory/singleton.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 

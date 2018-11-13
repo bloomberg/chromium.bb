@@ -4,7 +4,7 @@
 
 #include "remoting/base/platform_details.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

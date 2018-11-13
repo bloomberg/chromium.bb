@@ -26,7 +26,7 @@
 
 #if defined(OS_LINUX)
 #include "base/rand_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #endif
 

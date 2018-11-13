@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_journal_mutation.h"

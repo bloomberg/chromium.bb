@@ -62,7 +62,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 

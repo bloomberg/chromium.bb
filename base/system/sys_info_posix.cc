@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -16,7 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info_internal.h"
+#include "base/system/sys_info_internal.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
@@ -62,9 +62,8 @@ int NumberOfProcessors() {
   return static_cast<int>(res);
 }
 
-base::LazyInstance<
-    base::internal::LazySysInfoValue<int, NumberOfProcessors> >::Leaky
-    g_lazy_number_of_processors = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::internal::LazySysInfoValue<int, NumberOfProcessors>>::
+    Leaky g_lazy_number_of_processors = LAZY_INSTANCE_INITIALIZER;
 #endif  // !defined(OS_OPENBSD) && !defined(OS_FUCHSIA)
 
 #if !defined(OS_FUCHSIA)

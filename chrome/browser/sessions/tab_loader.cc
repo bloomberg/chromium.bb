@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/no_destructor.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"

@@ -6,7 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_scheduler/initialization_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"

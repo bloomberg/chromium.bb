@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/web/blink.h"

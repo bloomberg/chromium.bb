@@ -5,7 +5,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/common/url_constants.h"
 
 namespace chromeos {

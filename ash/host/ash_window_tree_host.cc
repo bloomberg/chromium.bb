@@ -12,7 +12,7 @@
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"

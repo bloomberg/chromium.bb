@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"

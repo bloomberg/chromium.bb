@@ -10,7 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"

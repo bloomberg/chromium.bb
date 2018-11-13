@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 #include <algorithm>
 
@@ -15,7 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/sys_info_internal.h"
+#include "base/system/sys_info_internal.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -39,7 +39,7 @@ int GetLowMemoryDeviceThresholdMB() {
   // If the feature is disabled then |Get| will return the default value.
   return kLowEndDeviceMemoryThresholdMB.Get();
 }
-}
+}  // namespace
 
 // static
 int64_t SysInfo::AmountOfPhysicalMemory() {
@@ -89,9 +89,8 @@ bool DetectLowEndDevice() {
   return (ram_size_mb > 0 && ram_size_mb <= GetLowMemoryDeviceThresholdMB());
 }
 
-static LazyInstance<
-  internal::LazySysInfoValue<bool, DetectLowEndDevice> >::Leaky
-  g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<internal::LazySysInfoValue<bool, DetectLowEndDevice>>::Leaky
+    g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
 
 // static
 bool SysInfo::IsLowEndDeviceImpl() {

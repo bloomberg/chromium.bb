@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 #include <dlfcn.h>
 #include <stddef.h>
@@ -17,13 +17,13 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info_internal.h"
+#include "base/system/sys_info_internal.h"
 
 #if (__ANDROID_API__ >= 21 /* 5.0 - Lollipop */)
 
 namespace {
 
-typedef int (SystemPropertyGetFunction)(const char*, char*);
+typedef int(SystemPropertyGetFunction)(const char*, char*);
 
 SystemPropertyGetFunction* DynamicallyLoadRealSystemPropertyGet() {
   // libc.so should already be open, get a handle to it.
@@ -41,7 +41,8 @@ SystemPropertyGetFunction* DynamicallyLoadRealSystemPropertyGet() {
 }
 
 static base::LazyInstance<base::internal::LazySysInfoValue<
-    SystemPropertyGetFunction*, DynamicallyLoadRealSystemPropertyGet> >::Leaky
+    SystemPropertyGetFunction*,
+    DynamicallyLoadRealSystemPropertyGet>>::Leaky
     g_lazy_real_system_property_get = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -141,9 +142,9 @@ int GetDalvikHeapSizeMB() {
   const int64_t MB = 1024 * 1024;
   int64_t result = ParseSystemPropertyBytes(heap_size_str);
   if (result == -1) {
-     // We should consider not exposing these values if they are not reliable.
-     LOG(ERROR) << "Can't parse dalvik.vm.heapsize: " << heap_size_str;
-     result = base::SysInfo::AmountOfPhysicalMemoryMB() / 3;
+    // We should consider not exposing these values if they are not reliable.
+    LOG(ERROR) << "Can't parse dalvik.vm.heapsize: " << heap_size_str;
+    result = base::SysInfo::AmountOfPhysicalMemoryMB() / 3;
   }
   result =
       std::min<int64_t>(std::max<int64_t>(32 * MB, result), 1024 * MB) / MB;
@@ -159,9 +160,9 @@ int GetDalvikHeapGrowthLimitMB() {
   const int64_t MB = 1024 * 1024;
   int64_t result = ParseSystemPropertyBytes(heap_size_str);
   if (result == -1) {
-     // We should consider not exposing these values if they are not reliable.
-     LOG(ERROR) << "Can't parse dalvik.vm.heapgrowthlimit: " << heap_size_str;
-     result = base::SysInfo::AmountOfPhysicalMemoryMB() / 6;
+    // We should consider not exposing these values if they are not reliable.
+    LOG(ERROR) << "Can't parse dalvik.vm.heapgrowthlimit: " << heap_size_str;
+    result = base::SysInfo::AmountOfPhysicalMemoryMB() / 6;
   }
   result = std::min<int64_t>(std::max<int64_t>(16 * MB, result), 512 * MB) / MB;
   return static_cast<int>(result);
@@ -224,10 +225,10 @@ int SysInfo::DalvikHeapGrowthLimitMB() {
   return heap_growth_limit;
 }
 
-static base::LazyInstance<
-    base::internal::LazySysInfoValue<bool,
-        android::SysUtils::IsLowEndDeviceFromJni> >::Leaky
-    g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::internal::LazySysInfoValue<
+    bool,
+    android::SysUtils::IsLowEndDeviceFromJni>>::Leaky g_lazy_low_end_device =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool SysInfo::IsLowEndDeviceImpl() {
   // This code might be used in some environments

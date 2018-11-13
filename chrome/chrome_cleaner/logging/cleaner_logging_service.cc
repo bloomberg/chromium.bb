@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/chrome_utils/chrome_util.h"

@@ -4,7 +4,7 @@
 
 #include "content/browser/dom_storage/session_storage_data_map.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/dom_storage/dom_storage_types.h"

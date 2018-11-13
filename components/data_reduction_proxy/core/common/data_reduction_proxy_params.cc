@@ -26,7 +26,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace {

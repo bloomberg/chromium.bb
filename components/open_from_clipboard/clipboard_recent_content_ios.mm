@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"

@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"

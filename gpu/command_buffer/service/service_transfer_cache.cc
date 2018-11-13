@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/paint/image_transfer_cache_entry.h"

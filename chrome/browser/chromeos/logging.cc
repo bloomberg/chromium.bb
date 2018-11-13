@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"

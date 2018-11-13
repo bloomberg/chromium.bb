@@ -25,7 +25,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
 #include "content/common/task_scheduler.h"

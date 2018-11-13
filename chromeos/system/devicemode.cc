@@ -5,7 +5,7 @@
 #include "chromeos/system/devicemode.h"
 
 #include "base/command_line.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace chromeos {

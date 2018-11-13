@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -106,8 +106,7 @@ TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32_t os_major_version = -1;
   int32_t os_minor_version = -1;
   int32_t os_bugfix_version = -1;
-  SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                         &os_minor_version,
+  SysInfo::OperatingSystemVersionNumbers(&os_major_version, &os_minor_version,
                                          &os_bugfix_version);
   EXPECT_GT(os_major_version, -1);
   EXPECT_GT(os_minor_version, -1);
@@ -174,8 +173,7 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
       "FOO=1234123.34.5\n"
       "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
   SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, Time());
-  SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                         &os_minor_version,
+  SysInfo::OperatingSystemVersionNumbers(&os_major_version, &os_minor_version,
                                          &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
@@ -190,8 +188,7 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbersFirst) {
       "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
       "FOO=1234123.34.5\n";
   SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, Time());
-  SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                         &os_minor_version,
+  SysInfo::OperatingSystemVersionNumbers(&os_major_version, &os_minor_version,
                                          &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
@@ -204,8 +201,7 @@ TEST_F(SysInfoTest, GoogleChromeOSNoVersionNumbers) {
   int32_t os_bugfix_version = -1;
   const char kLsbRelease[] = "FOO=1234123.34.5\n";
   SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, Time());
-  SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                         &os_minor_version,
+  SysInfo::OperatingSystemVersionNumbers(&os_major_version, &os_minor_version,
                                          &os_bugfix_version);
   EXPECT_EQ(0, os_major_version);
   EXPECT_EQ(0, os_minor_version);
@@ -238,8 +234,7 @@ TEST_F(SysInfoTest, IsRunningOnChromeOS) {
   SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, Time());
   EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
 
-  const char kLsbRelease3[] =
-      "CHROMEOS_RELEASE_NAME=Chromium OS\n";
+  const char kLsbRelease3[] = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
   SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease3, Time());
   EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
 }

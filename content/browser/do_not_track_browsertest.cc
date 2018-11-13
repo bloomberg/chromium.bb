@@ -16,7 +16,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 
 #if defined(OS_ANDROID)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace content {

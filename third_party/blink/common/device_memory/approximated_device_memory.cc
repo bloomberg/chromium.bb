@@ -5,7 +5,7 @@
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace blink {
 

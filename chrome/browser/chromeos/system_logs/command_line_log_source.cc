@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
