@@ -17,6 +17,7 @@ class ExceptionState;
 class ScriptPromise;
 class ScriptState;
 class UnderlyingSourceBase;
+class MessagePort;
 
 // This is an implementation of the corresponding IDL interface.
 // Use TraceWrapperMember to hold a reference to an instance of this class.
@@ -85,6 +86,17 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
 
   // Makes this stream locked and disturbed.
   void LockAndDisturb(ScriptState*, ExceptionState&);
+
+  // Serialize this stream to |port|. The stream will be locked by this
+  // operation.
+  void Serialize(ScriptState*, MessagePort* port, ExceptionState&);
+
+  // Given a |port| which is entangled with a MessagePort that was previously
+  // passed to Serialize(), returns a new ReadableStream which behaves like it
+  // was the original.
+  static ReadableStream* Deserialize(ScriptState*,
+                                     MessagePort* port,
+                                     ExceptionState&);
 
   ScriptValue GetInternalStream(ScriptState* script_state) const;
 

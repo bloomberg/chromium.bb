@@ -132,19 +132,18 @@ class CORE_EXPORT ReadableStreamOperations {
   // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
   static ScriptValue Tee(ScriptState*, ScriptValue stream, ExceptionState&);
 
-  // ReadableStreamSerialize. Returns a MessagePort which can be passed to
-  // ReadableStreamDeserialize to produce an equivalent ReadableStream in a
-  // different context.
-  static MessagePort* ReadableStreamSerialize(ScriptState*,
-                                              ScriptValue stream,
-                                              ExceptionState&);
+  // ReadableStreamSerialize. The MessagePort passed in must be one half of a
+  // MessageChannel. The other half can later be passed to Deserialize to
+  // produce an equivalent ReadableStream in a different context.
+  static void Serialize(ScriptState*,
+                        ScriptValue stream,
+                        MessagePort* port,
+                        ExceptionState&);
 
   // ReadableStreamDeserialize returns a new ReadableStream in the current
-  // context given a MessagePort which has possibly be transferred from another
-  // context.
-  static ScriptValue ReadableStreamDeserialize(ScriptState*,
-                                               MessagePort*,
-                                               ExceptionState&);
+  // context given a MessagePort which is bound to one which was previously
+  // passed to Serialize().
+  static ScriptValue Deserialize(ScriptState*, MessagePort*, ExceptionState&);
 
   // ReadableStreamCancel
   // This function assumes |IsReadableStream(stream)|

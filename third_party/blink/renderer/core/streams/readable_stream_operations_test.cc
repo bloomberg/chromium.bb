@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
@@ -588,13 +589,13 @@ TEST(ReadableStreamOperationsTest, Serialize) {
                               V8String(scope.GetIsolate(), "hello")));
   ScriptValue internal_stream =
       stream->GetInternalStream(scope.GetScriptState());
-  MessagePort* port = ReadableStreamOperations::ReadableStreamSerialize(
-      scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(port);
+  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+  ReadableStreamOperations::Serialize(scope.GetScriptState(), internal_stream,
+                                      channel->port1(), ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(ReadableStreamOperations::IsLocked(
       scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION));
-  ScriptValue transferred = ReadableStreamOperations::ReadableStreamDeserialize(
-      scope.GetScriptState(), port, ASSERT_NO_EXCEPTION);
+  ScriptValue transferred = ReadableStreamOperations::Deserialize(
+      scope.GetScriptState(), channel->port2(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(transferred.IsEmpty());
   ScriptValue reader = ReadableStreamOperations::GetReader(
       scope.GetScriptState(), transferred, ASSERT_NO_EXCEPTION);
