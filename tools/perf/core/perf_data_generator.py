@@ -66,39 +66,17 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
 #     will run on all shards.
 # telemetry: boolean indicating if this is a telemetry test.  If omitted
 #     assumed to be true.
+
+# TODO(crbug.com/902089): automatically generate --test-shard-map-filename
+# arguments once we track all the perf FYI builders to core/bot_platforms.py
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
-    'One Buildbot Step Test Builder': {
-      'tests': [
-        {
-          'isolate': 'telemetry_perf_tests_without_chrome',
-          'extra_args': [
-            '--xvfb',
-            '--run-ref-build',
-            '--test-shard-map-filename=benchmark_bot_map.json'
-          ],
-          'num_shards': 3
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'linux',
-      'dimension': {
-        'gpu': 'none',
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Linux',
-      },
-      'testing': True,
-    },
     'android-pixel2_webview-perf': {
       'tests': [
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-            '--test-shard-map-filename=android_pixel2_webview_shard_map.json',
+            '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
           ],
           'num_shards': 7
         }
@@ -118,7 +96,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_pixel2_shard_map.json',
+            '--test-shard-map-filename=android-pixel2-perf_map.json',
           ],
           'num_shards': 7
         }
@@ -137,7 +115,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-              '--test-shard-map-filename=android_go_webview_shard_map.json',
+              '--test-shard-map-filename=android-go_webview-perf_map.json',
           ],
           'num_shards': 25
         }
