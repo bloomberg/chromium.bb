@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -57,7 +58,10 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   LayoutBlock& div_block =
       *ToLayoutBlock(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
-  InlineTextBox& first_text_box = *text.FirstTextBox();
+  DisplayItemClient& first_text_box =
+      text.FirstInlineFragment()
+          ? (DisplayItemClient&)*text.FirstInlineFragment()
+          : (DisplayItemClient&)*text.FirstTextBox();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
@@ -68,9 +72,17 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   UpdateAllLifecyclePhasesForTest();
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
-  InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
-  InlineTextBox& second_text_box =
-      *new_text.FirstTextBox()->NextForSameLayoutObject();
+  DisplayItemClient& new_first_text_box =
+      new_text.FirstInlineFragment()
+          ? (DisplayItemClient&)*new_text.FirstInlineFragment()
+          : (DisplayItemClient&)*text.FirstTextBox();
+  DisplayItemClient& second_text_box =
+      new_text.FirstInlineFragment()
+          ? (DisplayItemClient&)*NGPaintFragment::
+                TraverseNextForSameLayoutObject::Next(
+                    new_text.FirstInlineFragment())
+          : (DisplayItemClient&)*new_text.FirstTextBox()
+                ->NextForSameLayoutObject();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
