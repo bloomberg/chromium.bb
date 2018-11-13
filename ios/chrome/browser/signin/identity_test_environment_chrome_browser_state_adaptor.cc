@@ -45,6 +45,14 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
     builder.AddTestingFactory(input_factory.first, input_factory.second);
   }
 
+  return CreateChromeBrowserStateForIdentityTestEnvironment(builder);
+}
+
+// static
+std::unique_ptr<TestChromeBrowserState>
+IdentityTestEnvironmentChromeBrowserStateAdaptor::
+    CreateChromeBrowserStateForIdentityTestEnvironment(
+        TestChromeBrowserState::Builder& builder) {
   for (auto& identity_factory : GetIdentityTestEnvironmentFactories()) {
     builder.AddTestingFactory(identity_factory.first, identity_factory.second);
   }

@@ -29,6 +29,12 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor {
   CreateChromeBrowserStateForIdentityTestEnvironment(
       const TestChromeBrowserState::TestingFactories& input_factories);
 
+  // Creates and returns a TestChromeBrowserState that has been configured with
+  // the given |builder|.
+  static std::unique_ptr<TestChromeBrowserState>
+  CreateChromeBrowserStateForIdentityTestEnvironment(
+      TestChromeBrowserState::Builder& builder);
+
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
   // factories supplied to TestChromeBrowserState (via one of the various

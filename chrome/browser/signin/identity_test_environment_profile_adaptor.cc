@@ -44,12 +44,19 @@ IdentityTestEnvironmentProfileAdaptor::CreateProfileForIdentityTestEnvironment(
     builder.AddTestingFactory(input_factory.first, input_factory.second);
   }
 
+  if (prefs)
+    builder.SetPrefService(std::move(prefs));
+
+  return CreateProfileForIdentityTestEnvironment(builder);
+}
+
+// static
+std::unique_ptr<TestingProfile>
+IdentityTestEnvironmentProfileAdaptor::CreateProfileForIdentityTestEnvironment(
+    TestingProfile::Builder& builder) {
   for (auto& identity_factory : GetIdentityTestEnvironmentFactories()) {
     builder.AddTestingFactory(identity_factory.first, identity_factory.second);
   }
-
-  if (prefs)
-    builder.SetPrefService(std::move(prefs));
 
   return builder.Build();
 }
