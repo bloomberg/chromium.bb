@@ -94,7 +94,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
   void SetLegalMessage(const std::string& message_json,
                        bool should_request_name_from_user = false,
-                       bool should_request_expiration_date_from_user = false) {
+                       bool should_request_expiration_date_from_user = false,
+                       bool show_bubble = true) {
     std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
@@ -103,28 +104,29 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
         dictionary->CreateDeepCopy();
     controller()->OfferUploadSave(
         CreditCard(), std::move(legal_message), should_request_name_from_user,
-        should_request_expiration_date_from_user,
-        /*show_bubble=*/true, base::BindOnce(&UploadSaveCardCallback));
+        should_request_expiration_date_from_user, show_bubble,
+        base::BindOnce(&UploadSaveCardCallback));
   }
 
-  void ShowLocalBubble(CreditCard* card = nullptr) {
+  void ShowLocalBubble(CreditCard* card = nullptr, bool show_bubble = true) {
     // TODO(crbug.com/852562): Migrate this to BindOnce/OnceClosure.
     controller()->OfferLocalSave(
         card ? CreditCard(*card)
              : autofill::test::GetCreditCard(),  // Visa by default
-        /*show_bubble=*/true, base::BindOnce(&LocalSaveCardCallback));
+        show_bubble, base::BindOnce(&LocalSaveCardCallback));
   }
 
   void ShowUploadBubble(bool should_request_name_from_user = false,
-                        bool should_request_expiration_date_from_user = false) {
+                        bool should_request_expiration_date_from_user = false,
+                        bool show_bubble = true) {
     SetLegalMessage(
         "{"
         "  \"line\" : [ {"
         "     \"template\": \"This is the entire message.\""
         "  } ]"
         "}",
-        should_request_name_from_user,
-        should_request_expiration_date_from_user);
+        should_request_name_from_user, should_request_expiration_date_from_user,
+        show_bubble);
   }
 
   void CloseAndReshowBubble() {
@@ -296,6 +298,26 @@ TEST_F(SaveCardBubbleControllerImplTest,
                                      "Reshows.RequestingExpirationDate"),
       ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
                   Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_ShowBubbleFalse) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble(/*card=*/nullptr, /*show_bubble=*/false);
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_ShowBubbleFalse) {
+  base::HistogramTester histogram_tester;
+  ShowUploadBubble(/*should_request_name_from_user=*/false,
+                   /*should_request_expiration_date_from_user=*/false,
+                   /*show_bubble=*/false);
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_SaveButton) {
