@@ -56,7 +56,6 @@ bool IsLinkLocalIP(const GURL& url) {
     return false;
   }
 
-  base::StringPiece host(url.host());
   IPAddress ip_address;
   if (!ip_address.AssignFromIPLiteral(url.HostNoBracketsPiece()))
     return false;
