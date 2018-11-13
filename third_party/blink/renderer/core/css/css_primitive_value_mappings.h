@@ -1491,31 +1491,31 @@ inline TouchAction CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline ScrollCustomization::ScrollDirection CSSIdentifierValue::ConvertTo()
+inline scroll_customization::ScrollDirection CSSIdentifierValue::ConvertTo()
     const {
   switch (value_id_) {
     case CSSValueNone:
-      return ScrollCustomization::kScrollDirectionNone;
+      return scroll_customization::kScrollDirectionNone;
     case CSSValueAuto:
-      return ScrollCustomization::kScrollDirectionAuto;
+      return scroll_customization::kScrollDirectionAuto;
     case CSSValuePanLeft:
-      return ScrollCustomization::kScrollDirectionPanLeft;
+      return scroll_customization::kScrollDirectionPanLeft;
     case CSSValuePanRight:
-      return ScrollCustomization::kScrollDirectionPanRight;
+      return scroll_customization::kScrollDirectionPanRight;
     case CSSValuePanX:
-      return ScrollCustomization::kScrollDirectionPanX;
+      return scroll_customization::kScrollDirectionPanX;
     case CSSValuePanUp:
-      return ScrollCustomization::kScrollDirectionPanUp;
+      return scroll_customization::kScrollDirectionPanUp;
     case CSSValuePanDown:
-      return ScrollCustomization::kScrollDirectionPanDown;
+      return scroll_customization::kScrollDirectionPanDown;
     case CSSValuePanY:
-      return ScrollCustomization::kScrollDirectionPanY;
+      return scroll_customization::kScrollDirectionPanY;
     default:
       break;
   }
 
   NOTREACHED();
-  return ScrollCustomization::kScrollDirectionNone;
+  return scroll_customization::kScrollDirectionNone;
 }
 
 template <>

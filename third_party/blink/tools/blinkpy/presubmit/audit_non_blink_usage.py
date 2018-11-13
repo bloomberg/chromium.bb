@@ -239,6 +239,7 @@ _CONFIG = [
             'paint_filter_builder::.+',
             'root_scroller_util::.+',
             'scheduler::.+',
+            'scroll_customization::.+',
             'style_change_extra_data::.+',
             'style_change_reason::.+',
             'svg_path_parser::.+',
