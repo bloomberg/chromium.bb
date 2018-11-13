@@ -34,10 +34,6 @@
 #include "content/shell/common/layout_test.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_ANDROID)
-#include "base/threading/thread_restrictions.h"
-#endif
-
 class SkBitmap;
 
 namespace content {
@@ -49,17 +45,6 @@ class RenderFrameHost;
 class RenderProcessHost;
 class Shell;
 struct TestInfo;
-
-#if defined(OS_ANDROID)
-// Android uses a nested run loop for running layout tests because the
-// default message loop, provided by the system, does not offer a blocking
-// Run() method. The loop itself, implemented as NestedMessagePumpAndroid,
-// uses a base::WaitableEvent allowing it to sleep until more events arrive.
-class ScopedAllowWaitForAndroidLayoutTests {
- private:
-  base::ThreadRestrictions::ScopedAllowWait wait;
-};
-#endif
 
 class BlinkTestResultPrinter {
  public:
@@ -346,11 +331,6 @@ class BlinkTestController : public WebContentsObserver,
   // Map from one frame to one mojo pipe.
   std::map<GlobalFrameRoutingId, mojom::LayoutTestControlAssociatedPtr>
       layout_test_control_map_;
-#if defined(OS_ANDROID)
-  // Because of the nested message pump implementation, Android needs to allow
-  // waiting on the UI thread while layout tests are being ran.
-  ScopedAllowWaitForAndroidLayoutTests reduced_restrictions_;
-#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

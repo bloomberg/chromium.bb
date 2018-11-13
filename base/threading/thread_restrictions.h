@@ -132,7 +132,6 @@ class BrowserTestBase;
 class CategorizedWorkerPool;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
-class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
 class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
@@ -526,7 +525,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserTestBase;
   friend class content::NestedMessagePumpAndroid;
-  friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class ::HistogramSynchronizer;
   friend class internal::TaskTracker;
