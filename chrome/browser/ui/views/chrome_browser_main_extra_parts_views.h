@@ -43,7 +43,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   std::unique_ptr<views::LayoutProvider> layout_provider_;
 
 #if defined(USE_AURA)
-  // Only used when running in --enable-ui-devtools.
+  // Only used when running in --enable-ui-devtools; not used on Chrome OS.
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
 
   std::unique_ptr<wm::WMState> wm_state_;

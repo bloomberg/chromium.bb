@@ -34,8 +34,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   // server instance has already been created.
   static std::unique_ptr<UiDevToolsServer> CreateForViews(
       network::mojom::NetworkContext* network_context,
-      const char* enable_devtools_flag,
-      int default_port);
+      int port);
 
   // Assumes that the devtools flag is enabled, and was checked when the socket
   // was created.
@@ -55,10 +54,8 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   using NameUrlPair = std::pair<std::string, std::string>;
   static std::vector<NameUrlPair> GetClientNamesAndUrls();
 
-  // Returns the port number specified by a command line flag. If a number is
-  // not specified as a command line argument, returns the |default_port|.
-  static int GetUiDevToolsPort(const char* enable_devtools_flag,
-                               int default_port);
+  // Returns true if UI Devtools is enabled by its commandline switch.
+  static bool IsUiDevToolsEnabled();
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
   void SendOverWebSocket(int connection_id, const String& message);

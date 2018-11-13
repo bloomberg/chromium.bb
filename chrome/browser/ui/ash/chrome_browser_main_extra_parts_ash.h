@@ -27,6 +27,10 @@ namespace ui {
 class UserActivityDetector;
 }
 
+namespace ui_devtools {
+class UiDevToolsServer;
+}
+
 namespace views {
 class MusClient;
 }
@@ -108,6 +112,8 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // elim chromeos:: namespace. https://crbug.com/798569.
   std::unique_ptr<chromeos::NetworkPortalNotificationController>
       network_portal_notification_controller_;
+  // Only used when running in --enable-ui-devtools.
+  std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
 
   std::unique_ptr<internal::ChromeLauncherControllerInitializer>
       chrome_launcher_controller_initializer_;
