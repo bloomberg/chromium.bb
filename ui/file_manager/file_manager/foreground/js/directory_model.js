@@ -1199,9 +1199,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // When the volume where we are is unmounted, fallback to the default volume's
   // root. If current directory path is empty, stop the fallback
   // since the current directory is initializing now.
-  const entry = this.getCurrentDirEntry();
-  if (entry && util.isNativeEntry(entry) &&
-      !this.volumeManager_.getVolumeInfo(entry)) {
+  if (this.hasCurrentDirEntryBeenUnmounted_(event.removed)) {
     this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
       if (displayRoot)
         this.changeDirectoryEntry(displayRoot);
@@ -1250,6 +1248,32 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
       this.changeDirectoryEntry(event.added[0].displayRoot);
     });
   }
+};
+
+/**
+ * Returns whether the current directory entry has been unmounted.
+ *
+ * @param {!Array<!VolumeInfo>} removedVolumes The removed volumes.
+ * @private
+ */
+DirectoryModel.prototype.hasCurrentDirEntryBeenUnmounted_ = function(
+    removedVolumes) {
+  const entry = this.getCurrentDirEntry();
+  if (!entry) {
+    return false;
+  }
+
+  if (util.isNativeEntry(entry)) {
+    return !this.volumeManager_.getVolumeInfo(entry);
+  }
+
+  const rootType = this.getCurrentRootType();
+  for (let volume of removedVolumes) {
+    if (volume.fakeEntries[rootType]) {
+      return true;
+    }
+  }
+  return false;
 };
 
 /**

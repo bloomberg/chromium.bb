@@ -795,3 +795,56 @@ testcase.fileDisplayMountWithFakeItemSelected = function() {
     },
   ]);
 };
+
+/**
+ * Tests Files app switching away from Drive virtual folders when Drive is
+ * unmounted.
+ */
+testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = function() {
+  let appId = null;
+
+  StepsRunner.run([
+    // Open Files app on Drive with the given test files.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [ENTRIES.newlyAdded],
+          [ENTRIES.testSharedDocument, ENTRIES.hello]);
+    },
+    // Navigate to Shared with me.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId,
+          ['[volume-type-icon=\'drive_shared_with_me\']'], this.next);
+    },
+    // Wait for the navigation to complete.
+    function() {
+      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me')
+          .then(this.next);
+    },
+    // Check that the file is visible.
+    function() {
+      remoteCall
+          .waitForFiles(appId, [ENTRIES.testSharedDocument.getExpectedRow()])
+          .then(this.next);
+    },
+    // Unmount drive.
+    function() {
+      sendTestMessage({name: 'unmountDrive'}).then(this.next);
+    },
+    // We should navigate to Downloads.
+    function() {
+      remoteCall
+          .waitUntilCurrentDirectoryIsChanged(appId, '/My files/Downloads')
+          .then(this.next);
+    },
+    // Which should contain a file.
+    function() {
+      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
