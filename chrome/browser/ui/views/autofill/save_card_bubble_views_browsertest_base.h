@@ -94,6 +94,7 @@ class SaveCardBubbleViewsBrowserTestBase
   void FillAndSubmitFormWithInvalidCvc();
   void FillAndSubmitFormWithoutName();
   void FillAndSubmitFormWithConflictingName();
+  void FillAndSubmitFormWithoutExpirationDate();
   void FillAndSubmitFormWithoutAddress();
   void FillAndSubmitFormWithConflictingStreetAddress();
   void FillAndSubmitFormWithConflictingPostalCode();

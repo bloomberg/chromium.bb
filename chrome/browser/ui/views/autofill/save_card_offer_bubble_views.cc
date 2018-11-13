@@ -230,17 +230,20 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  expiration_date_view->set_id(DialogViewId::EXPIRATION_DATE_VIEW);
 
   // Set up the month and year comboboxes.
   month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
   month_input_dropdown_->set_listener(this);
   month_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
+  month_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
 
   year_input_dropdown_ = new views::Combobox(&year_combobox_model_);
   year_input_dropdown_->set_listener(this);
   year_input_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
+  year_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
 
   auto input_row = std::make_unique<views::View>();
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
