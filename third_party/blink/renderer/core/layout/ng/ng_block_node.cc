@@ -977,7 +977,7 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
       percentage_resolution_inline_size);
 }
 
-void NGBlockNode::UseOldOutOfFlowPositioning() {
+void NGBlockNode::UseOldOutOfFlowPositioning() const {
   DCHECK(box_->IsOutOfFlowPositioned());
   box_->ContainingBlock()->InsertPositionedObject(box_);
 }

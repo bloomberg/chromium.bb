@@ -65,7 +65,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   scoped_refptr<NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
-  for (NGOutOfFlowPositionedDescendant descendant :
+  for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
