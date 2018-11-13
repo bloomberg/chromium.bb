@@ -202,6 +202,10 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedServerCardExpirationStatus_EmptyExpirationYear);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear);
+
   DISALLOW_COPY_AND_ASSIGN(FormDataImporter);
 };
 

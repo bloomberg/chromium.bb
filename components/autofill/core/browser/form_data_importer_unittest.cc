@@ -2992,6 +2992,55 @@ TEST_F(FormDataImporterTest,
   EXPECT_FALSE(imported_credit_card);
 }
 
+// Ensure that we still offer to save if we have different cards stored as a
+// server card and user submitted an invalid expiration date year.
+TEST_F(
+    FormDataImporterTest,
+    Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "4111111111111111" /* Visa */, "04", "2111", "1");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_manager_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_manager_->GetCreditCards().size());
+
+  // A user fills/enters the card's information on a checkout form with an empty
+  // expiration date.
+  FormData form;
+  form.origin = GURL("https://wwww.foo.com");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4444333322221111",
+                            "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "08", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure,
+      /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/false, &imported_credit_card));
+  EXPECT_TRUE(imported_credit_card);
+}
+
 TEST_F(FormDataImporterTest,
        Metrics_SubmittedServerCardExpirationStatus_FullServerCardMismatch) {
   EnableWalletCardImport();
