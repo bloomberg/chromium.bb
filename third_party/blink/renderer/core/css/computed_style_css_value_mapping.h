@@ -17,12 +17,14 @@ class ComputedStyleCSSValueMapping {
   STATIC_ONLY(ComputedStyleCSSValueMapping);
 
  public:
-  static const CSSValue* Get(const AtomicString custom_property_name,
-                             const ComputedStyle&,
-                             const PropertyRegistry*);
   static HeapHashMap<AtomicString, Member<const CSSValue>> GetVariables(
       const ComputedStyle& style,
       const PropertyRegistry*);
+
+ private:
+  static const CSSValue* Get(const AtomicString custom_property_name,
+                             const ComputedStyle&,
+                             const PropertyRegistry*);
 };
 
 }  // namespace blink

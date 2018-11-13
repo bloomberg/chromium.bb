@@ -15,6 +15,11 @@ CustomProperty::CustomProperty(const AtomicString& name,
                                const Document& document)
     : name_(name), registration_(PropertyRegistration::From(&document, name)) {}
 
+CustomProperty::CustomProperty(const AtomicString& name,
+                               const PropertyRegistry* registry)
+    : name_(name),
+      registration_(registry ? registry->Registration(name) : nullptr) {}
+
 bool CustomProperty::IsInherited() const {
   return !registration_ || registration_->Inherits();
 }
@@ -73,6 +78,29 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
                                            is_inherited_property);
     }
   }
+}
+
+const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  if (registration_) {
+    const CSSValue* value = style.GetRegisteredVariable(name_, IsInherited());
+    if (value)
+      return value;
+    // If we don't have CSSValue for this registered property, it means that
+    // that the property was not registered at the time |style| was calculated,
+    // hence we proceed with unregistered behavior.
+  }
+
+  CSSVariableData* data = style.GetVariable(name_, IsInherited());
+
+  if (!data)
+    return nullptr;
+
+  return CSSCustomPropertyDeclaration::Create(name_, data);
 }
 
 }  // namespace blink

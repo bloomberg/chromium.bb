@@ -634,7 +634,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Whether or not a selection can be started in this object
   virtual bool CanStartSelection() const;
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Integration with layout tree
 
   // As layoutObject() includes a branch you should avoid calling it repeatedly
@@ -688,20 +688,26 @@ class CORE_EXPORT Node : public EventTarget {
   // such a method (on Document and Element).
   bool ShouldCallRecalcStyle(StyleRecalcChange);
 
+  // ---------------------------------------------------------------------------
+  // Inline ComputedStyle accessors
+  //
+  // Note that the following 'inline' functions are not defined in this header,
+  // but in node_computed_style.h. Please include that file if you want to use
+  // these functions.
+
   // Wrapper for nodes that don't have a layoutObject, but still cache the style
   // (like HTMLOptionElement).
-  ComputedStyle* MutableComputedStyle() const;
-  const ComputedStyle* GetComputedStyle() const;
-  const ComputedStyle* ParentComputedStyle() const;
-
-  const ComputedStyle& ComputedStyleRef() const;
+  inline ComputedStyle* MutableComputedStyle() const;
+  inline const ComputedStyle* GetComputedStyle() const;
+  inline const ComputedStyle* ParentComputedStyle() const;
+  inline const ComputedStyle& ComputedStyleRef() const;
 
   const ComputedStyle* EnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) {
     return VirtualEnsureComputedStyle(pseudo_element_specifier);
   }
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Notification of document structure changes (see container_node.h for more
   // notification methods)
   //
