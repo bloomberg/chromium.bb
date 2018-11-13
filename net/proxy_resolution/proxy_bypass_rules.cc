@@ -29,8 +29,12 @@ namespace {
 // ProxyResolverRules::MatchesImplicitRules().
 const char kSubtractImplicitBypasses[] = "<-loopback>";
 
-// TODO(eroman): Fix - this should be renamed to kBypassSimpleHostnames.
-const char kWinLocal[] = "<local>";
+// The <local> rule bypasses any hostname that has no dots (and is not
+// an IP literal). The name is misleading as it has nothing to do with
+// localhost/loopback addresses, and would have better been called
+// something like "simple hostnames". However this is the name used on
+// Windows so is matched here.
+const char kBypassSimpleHostnames[] = "<local>";
 
 bool IsIPv4LinkLocal(const IPAddress& addr) {
   // 169.254.0.0/16
@@ -100,23 +104,21 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
   DISALLOW_COPY_AND_ASSIGN(HostnamePatternRule);
 };
 
-// TODO(https://crbug.com/902579): Fix.
-class WinLocalRule : public ProxyBypassRules::Rule {
+class BypassSimpleHostnamesRule : public ProxyBypassRules::Rule {
  public:
-  WinLocalRule() = default;
+  BypassSimpleHostnamesRule() = default;
 
   Result Evaluate(const GURL& url) const override {
-    const std::string& host = url.host();
-    if (host == "127.0.0.1" || host == "[::1]")
-      return Result::kBypass;
-    return (host.find('.') == std::string::npos) ? Result::kBypass
-                                                 : Result::kNoMatch;
+    return ((url.host_piece().find('.') == std::string::npos) &&
+            !url.HostIsIPAddress())
+               ? Result::kBypass
+               : Result::kNoMatch;
   }
 
-  std::string ToString() const override { return kWinLocal; }
+  std::string ToString() const override { return kBypassSimpleHostnames; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WinLocalRule);
+  DISALLOW_COPY_AND_ASSIGN(BypassSimpleHostnamesRule);
 };
 
 class SubtractImplicitBypassesRule : public ProxyBypassRules::Rule {
@@ -199,8 +201,8 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
 
   // <local> and <-loopback> are special syntax used by WinInet's bypass list
   // -- we allow it on all platforms and interpret it the same way.
-  if (base::LowerCaseEqualsASCII(raw, kWinLocal))
-    return std::make_unique<WinLocalRule>();
+  if (base::LowerCaseEqualsASCII(raw, kBypassSimpleHostnames))
+    return std::make_unique<BypassSimpleHostnamesRule>();
   if (base::LowerCaseEqualsASCII(raw, kSubtractImplicitBypasses))
     return std::make_unique<SubtractImplicitBypassesRule>();
 
@@ -382,8 +384,8 @@ bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
   return true;
 }
 
-void ProxyBypassRules::PrependRuleToBypassLocal() {
-  rules_.insert(rules_.begin(), std::make_unique<WinLocalRule>());
+void ProxyBypassRules::PrependRuleToBypassSimpleHostnames() {
+  rules_.insert(rules_.begin(), std::make_unique<BypassSimpleHostnamesRule>());
 }
 
 bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed,

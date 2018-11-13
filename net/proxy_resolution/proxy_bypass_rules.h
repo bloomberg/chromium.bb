@@ -122,14 +122,14 @@ class NET_EXPORT ProxyBypassRules {
                           const std::string& hostname_pattern,
                           int optional_port);
 
-  // Adds a rule to the front of the list that bypasses all "local" hostnames.
-  // This matches IE's interpretation of the
-  // "Bypass proxy server for local addresses" settings checkbox. Fully
-  // qualified domain names or IP addresses are considered non-local,
-  // regardless of what they map to (except for the loopback addresses).
+  // Adds a rule to the front of thelist that bypasses hostnames without a dot
+  // in them (and is not an IP literal), which can be indicative of intranet
+  // websites.
   //
-  // TODO(https://crbug.com/902579): Fix.
-  void PrependRuleToBypassLocal();
+  // On Windows this corresponds to the "Bypass proxy server for local
+  // addresses" settings checkbox, and on macOS the "Exclude simple hostnames"
+  // checkbox.
+  void PrependRuleToBypassSimpleHostnames();
 
   // Adds a rule given by the string |raw|. The format of |raw| can be any of
   // the following:
@@ -184,11 +184,10 @@ class NET_EXPORT ProxyBypassRules {
   //
   // (6)  "<local>"
   //
-  //   Matches the bypass rule in Windows of the same name, which essentially
-  //   means hostnames without a period in them, as well as "127.0.0.1",
-  //   "[::1]" and "localhost" (but not other localhost names).
+  //   Matches hostnames without a period in them (and are not IP
+  //   literals).
   //
-  // TODO(https://crbug.com/902579): Fix.
+  //   This is equivalent to the same named bypass rule on Windows.
   //
   // (7) "<-loopback>"
   //
