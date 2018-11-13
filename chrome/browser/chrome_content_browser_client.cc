@@ -5134,13 +5134,6 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
       data_reduction_proxy::ContentLoFiDecider::
           DetermineCommittedServerPreviewsState(drp_data, initial_state);
 
-  // Check if the current URL indicates that we redirected to HTTPS server
-  // previews.
-  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(
-          url, nullptr /* original_url */)) {
-    return previews_state & content::LITE_PAGE_REDIRECT_ON;
-  }
-
   // Check the various other client previews types.
   return previews::DetermineCommittedClientPreviewsState(
       previews_user_data, url, previews_state, previews_decider);

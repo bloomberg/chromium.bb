@@ -123,6 +123,7 @@ void PreviewsUITabHelper::ShowUIElement(
 
 #if defined(OS_ANDROID)
   if (previews::params::IsPreviewsOmniboxUiEnabled()) {
+    displayed_preview_ui_ = true;
     should_display_android_omnibox_badge_ = true;
     return;
   }
