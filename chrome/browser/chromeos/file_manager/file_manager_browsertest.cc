@@ -213,6 +213,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("fileDisplayWithoutDrive"),
         TestCase("fileDisplayWithoutDriveThenDisable"),
         TestCase("fileDisplayMountWithFakeItemSelected"),
+        TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound")));
 

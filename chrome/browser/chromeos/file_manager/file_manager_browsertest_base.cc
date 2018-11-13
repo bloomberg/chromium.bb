@@ -1474,6 +1474,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "unmountDrive") {
+    drive_volume_->Unmount();
+    return;
+  }
+
   if (name == "mountDownloads") {
     ASSERT_TRUE(local_volume_->Mount(profile()));
     return;
