@@ -62,9 +62,18 @@ class NavigationPredictorBrowserTest
   }
 
   void SetUp() override {
-    test_server_.ServeFilesFromSourceDirectory(
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory(
         "chrome/test/data/navigation_predictor");
-    ASSERT_TRUE(test_server_.Start());
+    ASSERT_TRUE(https_server_->Start());
+
+    http_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
+    http_server_->ServeFilesFromSourceDirectory(
+        "chrome/test/data/navigation_predictor");
+    ASSERT_TRUE(http_server_->Start());
+
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
 
@@ -74,11 +83,16 @@ class NavigationPredictorBrowserTest
   }
 
   const GURL GetTestURL(const char* file) const {
-    return test_server_.GetURL(file);
+    return https_server_->GetURL(file);
+  }
+
+  const GURL GetHttpTestURL(const char* file) const {
+    return http_server_->GetURL(file);
   }
 
  private:
-  net::EmbeddedTestServer test_server_;
+  std::unique_ptr<net::EmbeddedTestServer> http_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorBrowserTest);
@@ -119,6 +133,21 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineOffTheRecord) {
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   Browser* incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
+}
+
+// Test that the browser does not process anchor element metrics from an http
+// web page on page load.
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, PipelineHttp) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetHttpTestURL("/simple_page_with_anchors.html");
+  ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
