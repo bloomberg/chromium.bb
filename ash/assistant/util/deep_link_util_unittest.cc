@@ -176,7 +176,6 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
     ASSERT_EQ(test_case.second, GetDeepLinkType(GURL(test_case.first)));
 }
 
-// TODO(dmblack): Implement.
 TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep link types.
@@ -294,59 +293,81 @@ TEST_F(DeepLinkUnitTest, GetChromeSettingsUrl) {
     ASSERT_EQ(test_case.second, GetChromeSettingsUrl(test_case.first));
 }
 
-// TODO(dmblack): Assert actual web URLs when available.
 TEST_F(DeepLinkUnitTest, GetWebUrl) {
-  const std::map<std::string, bool> test_cases = {
+  const std::map<std::string, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep links.
-      {"googleassistant://reminders", true},
-      {"googleassistant://settings", true},
+      {"googleassistant://reminders",
+       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+      {"googleassistant://settings",
+       GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // OK: Parameterized deep links.
-      {"googleassistant://reminders?param=true", true},
-      {"googleassistant://settings?param=true", true},
+      {"googleassistant://reminders?param=true",
+       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+      {"googleassistant://settings?param=true",
+       GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // FAIL: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://REMINDERS", false},
-      {"GOOGLEASSISTANT://SETTINGS", false},
+      {"GOOGLEASSISTANT://REMINDERS", base::nullopt},
+      {"GOOGLEASSISTANT://SETTINGS", base::nullopt},
 
       // FAIL: Non-web deep links.
-      {"googleassistant://chrome-settings", false},
-      {"googleassistant://onboarding", false},
-      {"googleassistant://send-feedback", false},
-      {"googleassistant://send-query", false},
-      {"googleassistant://take-screenshot", false},
-      {"googleassistant://task-manager", false},
-      {"googleassistant://whats-on-my-screen", false},
+      {"googleassistant://chrome-settings", base::nullopt},
+      {"googleassistant://onboarding", base::nullopt},
+      {"googleassistant://send-feedback", base::nullopt},
+      {"googleassistant://send-query", base::nullopt},
+      {"googleassistant://take-screenshot", base::nullopt},
+      {"googleassistant://task-manager", base::nullopt},
+      {"googleassistant://whats-on-my-screen", base::nullopt},
 
       // FAIL: Non-deep link URLs.
-      {std::string(), false},
-      {"https://www.google.com/", false}};
+      {std::string(), base::nullopt},
+      {"https://www.google.com/", base::nullopt}};
 
-  for (const auto& test_case : test_cases)
-    ASSERT_EQ(test_case.second, GetWebUrl(GURL(test_case.first)).has_value());
+  for (const auto& test_case : test_cases) {
+    const base::Optional<GURL>& expected = test_case.second;
+    const base::Optional<GURL> actual = GetWebUrl(GURL(test_case.first));
+
+    // Assert |has_value| equivalence.
+    ASSERT_EQ(expected, actual);
+
+    // Assert |value| equivalence.
+    if (expected)
+      ASSERT_EQ(expected.value(), actual.value());
+  }
 }
 
-// TODO(dmblack): Assert actual web URLs when available.
 TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
-  const std::map<DeepLinkType, bool> test_cases = {
+  const std::map<DeepLinkType, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep link types.
-      {DeepLinkType::kReminders, true},
-      {DeepLinkType::kSettings, true},
+      {DeepLinkType::kReminders,
+       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+      {DeepLinkType::kSettings,
+       GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // FAIL: Non-web deep link types.
-      {DeepLinkType::kChromeSettings, false},
-      {DeepLinkType::kFeedback, false},
-      {DeepLinkType::kOnboarding, false},
-      {DeepLinkType::kQuery, false},
-      {DeepLinkType::kScreenshot, false},
-      {DeepLinkType::kTaskManager, false},
-      {DeepLinkType::kWhatsOnMyScreen, false},
+      {DeepLinkType::kChromeSettings, base::nullopt},
+      {DeepLinkType::kFeedback, base::nullopt},
+      {DeepLinkType::kOnboarding, base::nullopt},
+      {DeepLinkType::kQuery, base::nullopt},
+      {DeepLinkType::kScreenshot, base::nullopt},
+      {DeepLinkType::kTaskManager, base::nullopt},
+      {DeepLinkType::kWhatsOnMyScreen, base::nullopt},
 
       // FAIL: Unsupported deep link types.
-      {DeepLinkType::kUnsupported, false}};
+      {DeepLinkType::kUnsupported, base::nullopt}};
 
-  for (const auto& test_case : test_cases)
-    ASSERT_EQ(test_case.second, GetWebUrl(test_case.first).has_value());
+  for (const auto& test_case : test_cases) {
+    const base::Optional<GURL>& expected = test_case.second;
+    const base::Optional<GURL> actual = GetWebUrl(test_case.first);
+
+    // Assert |has_value| equivalence.
+    ASSERT_EQ(expected, actual);
+
+    // Assert |value| equivalence.
+    if (expected)
+      ASSERT_EQ(expected.value(), actual.value());
+  }
 }
 
 TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
