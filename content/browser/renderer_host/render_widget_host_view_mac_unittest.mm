@@ -461,9 +461,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   RenderWidgetHostViewMacTest() : rwhv_mac_(nullptr) {
     mock_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
     ui::SetEventTickClockForTesting(&mock_clock_);
-
-    vsync_feature_list_.InitAndEnableFeature(
-        features::kVsyncAlignedInputEvents);
   }
 
   void SetUp() override {
@@ -527,8 +524,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  private:
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
-
-  base::test::ScopedFeatureList vsync_feature_list_;
 
   base::SimpleTestTickClock mock_clock_;
 

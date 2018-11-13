@@ -31,9 +31,6 @@ GestureEventQueue::GestureEventQueue(
     const Config& config)
     : client_(client),
       scrolling_in_progress_(false),
-      ignore_next_ack_(false),
-      allow_multiple_inflight_events_(
-          base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)),
       debounce_interval_(config.debounce_interval),
       fling_controller_(fling_event_sender_client,
                         fling_scheduler_client,
@@ -152,62 +149,19 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
 
 void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (allow_multiple_inflight_events_) {
-    // GFS and GFC should have been filtered in FlingControllerFilterEvent to
-    // get handled by fling controller.
-    DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
-    DCHECK_NE(gesture_event.event.GetType(),
-              WebInputEvent::kGestureFlingCancel);
-    coalesced_gesture_events_.push_back(gesture_event);
-    if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollBegin) {
-      fling_controller_.RegisterFlingSchedulerObserver();
-    } else if (gesture_event.event.GetType() ==
-               WebInputEvent::kGestureScrollEnd) {
-      fling_controller_.UnregisterFlingSchedulerObserver();
-    }
-    client_->SendGestureEventImmediately(gesture_event);
-    return;
-  }
-
-  switch (gesture_event.event.GetType()) {
-    case WebInputEvent::kGesturePinchUpdate:
-    case WebInputEvent::kGestureScrollUpdate:
-      QueueScrollOrPinchAndForwardIfNecessary(gesture_event);
-      return;
-    case WebInputEvent::kGestureScrollBegin:
-      if (OnScrollBegin(gesture_event))
-        return;
-      fling_controller_.RegisterFlingSchedulerObserver();
-      break;
-    case WebGestureEvent::kGestureScrollEnd:
-      fling_controller_.UnregisterFlingSchedulerObserver();
-      break;
-    default:
-      break;
-  }
-
+  // GFS and GFC should have been filtered in FlingControllerFilterEvent to
+  // get handled by fling controller.
+  DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
+  DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingCancel);
   coalesced_gesture_events_.push_back(gesture_event);
-  if (coalesced_gesture_events_.size() == 1)
-    client_->SendGestureEventImmediately(gesture_event);
-}
-
-bool GestureEventQueue::OnScrollBegin(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  // If a synthetic scroll begin is encountered, it can cancel out a previous
-  // synthetic scroll end. This allows a later gesture scroll update to coalesce
-  // with the previous one. crbug.com/607340.
-  bool synthetic = gesture_event.event.data.scroll_begin.synthetic;
-  bool have_unsent_events =
-      EventsInFlightCount() < coalesced_gesture_events_.size();
-  if (synthetic && have_unsent_events) {
-    GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
-    if (last_event->event.GetType() == WebInputEvent::kGestureScrollEnd &&
-        last_event->event.data.scroll_end.synthetic) {
-      coalesced_gesture_events_.pop_back();
-      return true;
-    }
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollBegin) {
+    fling_controller_.RegisterFlingSchedulerObserver();
+  } else if (gesture_event.event.GetType() ==
+             WebInputEvent::kGestureScrollEnd) {
+    fling_controller_.UnregisterFlingSchedulerObserver();
   }
-  return false;
+  client_->SendGestureEventImmediately(gesture_event);
+  return;
 }
 
 void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
@@ -218,11 +172,6 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
 
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
-    return;
-  }
-
-  if (!allow_multiple_inflight_events_) {
-    LegacyProcessGestureAck(ack_source, ack_result, type, latency);
     return;
   }
 
@@ -261,72 +210,10 @@ void GestureEventQueue::AckGestureEventToClient(
     const GestureEventWithLatencyInfo& event_with_latency,
     InputEventAckSource ack_source,
     InputEventAckState ack_result) {
-  DCHECK(allow_multiple_inflight_events_);
-
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
-}
-
-void GestureEventQueue::LegacyProcessGestureAck(
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result,
-    WebInputEvent::Type type,
-    const ui::LatencyInfo& latency) {
-  DCHECK(!allow_multiple_inflight_events_);
-
-  // Events are forwarded one-by-one.
-  // It's possible that the ack for the second event in an in-flight,
-  // coalesced Gesture{Scroll,Pinch}Update pair is received prior to the first
-  // event ack.
-  size_t event_index = 0;
-  if (ignore_next_ack_ && coalesced_gesture_events_.size() > 1 &&
-      coalesced_gesture_events_[0].event.GetType() != type &&
-      coalesced_gesture_events_[1].event.GetType() == type) {
-    event_index = 1;
-  }
-
-  GestureEventWithLatencyInfo event_with_latency =
-      coalesced_gesture_events_[event_index];
-  DCHECK_EQ(event_with_latency.event.GetType(), type);
-  event_with_latency.latency.AddNewLatencyFrom(latency);
-
-  // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
-  // event before the forwarding of queued events below, such additional events
-  // can be coalesced with existing queued events prior to dispatch.
-  client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
-
-  DCHECK_LT(event_index, coalesced_gesture_events_.size());
-  coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
-                                  event_index);
-
-  if (ignore_next_ack_) {
-    ignore_next_ack_ = false;
-    return;
-  }
-
-  if (coalesced_gesture_events_.empty())
-    return;
-
-  const GestureEventWithLatencyInfo& first_gesture_event =
-      coalesced_gesture_events_.front();
-
-  // Check for the coupled GesturePinchUpdate before sending either event,
-  // handling the case where the first GestureScrollUpdate ack is synchronous.
-  GestureEventWithLatencyInfo second_gesture_event;
-  if (first_gesture_event.event.GetType() ==
-          WebInputEvent::kGestureScrollUpdate &&
-      coalesced_gesture_events_.size() > 1 &&
-      coalesced_gesture_events_[1].event.GetType() ==
-          WebInputEvent::kGesturePinchUpdate) {
-    second_gesture_event = coalesced_gesture_events_[1];
-    ignore_next_ack_ = true;
-  }
-
-  client_->SendGestureEventImmediately(first_gesture_event);
-  if (second_gesture_event.event.GetType() != WebInputEvent::kUndefined)
-    client_->SendGestureEventImmediately(second_gesture_event);
 }
 
 TouchpadTapSuppressionController*
@@ -351,103 +238,6 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
       QueueAndForwardIfNecessary(*it);
     }
   }
-}
-
-void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  DCHECK_GE(coalesced_gesture_events_.size(), EventsInFlightCount());
-  const size_t unsent_events_count =
-      coalesced_gesture_events_.size() - EventsInFlightCount();
-  if (!unsent_events_count) {
-    coalesced_gesture_events_.push_back(gesture_event);
-    if (coalesced_gesture_events_.size() == 1) {
-      client_->SendGestureEventImmediately(gesture_event);
-    } else if (coalesced_gesture_events_.size() == 2) {
-      DCHECK(!ignore_next_ack_);
-      // If there is an in-flight scroll, the new pinch can be forwarded
-      // immediately, avoiding a potential frame delay between the two
-      // (similarly for an in-flight pinch with a new scroll).
-      const GestureEventWithLatencyInfo& first_event =
-          coalesced_gesture_events_.front();
-      if (gesture_event.event.GetType() != first_event.event.GetType() &&
-          ui::IsCompatibleScrollorPinch(gesture_event.event,
-                                        first_event.event)) {
-        ignore_next_ack_ = true;
-        client_->SendGestureEventImmediately(gesture_event);
-      }
-    }
-    return;
-  }
-
-  GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
-  if (last_event->CanCoalesceWith(gesture_event)) {
-    last_event->CoalesceWith(gesture_event);
-    return;
-  }
-
-  if (!ui::IsCompatibleScrollorPinch(gesture_event.event, last_event->event)) {
-    coalesced_gesture_events_.push_back(gesture_event);
-    return;
-  }
-
-  // Extract the last event in queue.
-  blink::WebGestureEvent last_gesture_event =
-      coalesced_gesture_events_.back().event;
-  DCHECK_LE(coalesced_gesture_events_.back().latency.trace_id(),
-            gesture_event.latency.trace_id());
-  ui::LatencyInfo oldest_latency = coalesced_gesture_events_.back().latency;
-  oldest_latency.set_coalesced();
-  coalesced_gesture_events_.pop_back();
-
-  // Extract the second last event in queue.
-  ui::WebScopedInputEvent second_last_gesture_event = nullptr;
-  if (unsent_events_count > 1 &&
-      ui::IsCompatibleScrollorPinch(gesture_event.event,
-                                    coalesced_gesture_events_.back().event)) {
-    second_last_gesture_event =
-        ui::WebInputEventTraits::Clone(coalesced_gesture_events_.back().event);
-    DCHECK_LE(coalesced_gesture_events_.back().latency.trace_id(),
-              oldest_latency.trace_id());
-    oldest_latency = coalesced_gesture_events_.back().latency;
-    oldest_latency.set_coalesced();
-    coalesced_gesture_events_.pop_back();
-  }
-
-  std::pair<blink::WebGestureEvent, blink::WebGestureEvent> coalesced_events =
-      ui::CoalesceScrollAndPinch(
-          second_last_gesture_event
-              ? &ui::ToWebGestureEvent(*second_last_gesture_event)
-              : nullptr,
-          last_gesture_event, gesture_event.event);
-
-  GestureEventWithLatencyInfo scroll_event;
-  scroll_event.event = coalesced_events.first;
-  scroll_event.latency = oldest_latency;
-
-  GestureEventWithLatencyInfo pinch_event;
-  pinch_event.event = coalesced_events.second;
-  pinch_event.latency = oldest_latency;
-
-  coalesced_gesture_events_.push_back(scroll_event);
-  coalesced_gesture_events_.push_back(pinch_event);
-}
-
-size_t GestureEventQueue::EventsInFlightCount() const {
-  if (allow_multiple_inflight_events_) {
-    // Currently unused, can be removed if compositor event queue was enabled by
-    // default.
-    NOTREACHED();
-    return coalesced_gesture_events_.size();
-  }
-
-  if (coalesced_gesture_events_.empty())
-    return 0;
-
-  if (!ignore_next_ack_)
-    return 1;
-
-  DCHECK_GT(coalesced_gesture_events_.size(), 1U);
-  return 2;
 }
 
 }  // namespace content

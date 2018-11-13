@@ -143,8 +143,6 @@ class CONTENT_EXPORT GestureEventQueue {
     InputEventAckState ack_state_ = INPUT_EVENT_ACK_STATE_UNKNOWN;
   };
 
-  bool OnScrollBegin(const GestureEventWithLatencyInfo& gesture_event);
-
   // Inovked on the expiration of the debounce interval to release
   // deferred events.
   void SendScrollEndingEventsNow();
@@ -159,28 +157,12 @@ class CONTENT_EXPORT GestureEventQueue {
   void QueueAndForwardIfNecessary(
       const GestureEventWithLatencyInfo& gesture_event);
 
-  // Merge or append a GestureScrollUpdate or GesturePinchUpdate into
-  // the coalescing queue, forwarding immediately if appropriate.
-  void QueueScrollOrPinchAndForwardIfNecessary(
-      const GestureEventWithLatencyInfo& gesture_event);
-
   // ACK completed events in order until we have reached an incomplete event.
   // Will preserve the FIFO order as events originally arrived.
   void AckCompletedEvents();
   void AckGestureEventToClient(const GestureEventWithLatencyInfo&,
                                InputEventAckSource,
                                InputEventAckState);
-
-  // Used when |allow_multiple_inflight_events_| is false. Will only send next
-  // event after receiving ACK for the previous one.
-  void LegacyProcessGestureAck(InputEventAckSource,
-                               InputEventAckState,
-                               blink::WebInputEvent::Type,
-                               const ui::LatencyInfo&);
-
-  // The number of sent events for which we're awaiting an ack.  These events
-  // remain at the head of the queue until ack'ed.
-  size_t EventsInFlightCount() const;
 
   bool FlingInProgressForTest() const;
 
@@ -190,29 +172,13 @@ class CONTENT_EXPORT GestureEventQueue {
   // True if a GestureScrollUpdate sequence is in progress.
   bool scrolling_in_progress_;
 
-  // True if two related gesture events were sent before without waiting
-  // for an ACK, so the next gesture ACK should be ignored.
-  bool ignore_next_ack_;
-
-  // True if compositor event queue is enabled. GestureEventQueue won't coalesce
-  // events and will forward events immediately (instead of waiting for previous
-  // ack).
-  bool allow_multiple_inflight_events_;
-
   bool processing_acks_ = false;
 
   using GestureQueueWithAckState =
       base::circular_deque<GestureEventWithLatencyInfoAndAckState>;
 
-  // If |allow_multiple_inflight_events_|, |coalesced_gesture_events_| stores
-  // outstanding events that have been sent to the renderer but not yet been
-  // ACKed.
-  // Otherwise it stores coalesced gesture events not yet sent to the renderer.
-  // If |ignore_next_ack_| is false, then the event at the front of the queue
-  // has been sent and is awaiting an ACK, and all other events have yet to be
-  // sent. If |ignore_next_ack_| is true, then the two events at the front of
-  // the queue have been sent, and the second is awaiting an ACK. All other
-  // events have yet to be sent.
+  // Stores outstanding events that have been sent to the renderer but not yet
+  // been ACKed.
   GestureQueueWithAckState coalesced_gesture_events_;
 
   // Timer to release a previously deferred gesture event.

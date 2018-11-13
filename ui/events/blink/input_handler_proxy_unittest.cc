@@ -406,9 +406,7 @@ class InputHandlerProxyTest
 
 class InputHandlerProxyEventQueueTest : public testing::Test {
  public:
-  InputHandlerProxyEventQueueTest() : weak_ptr_factory_(this) {
-    feature_list_.InitAndEnableFeature(features::kVsyncAlignedInputEvents);
-  }
+  InputHandlerProxyEventQueueTest() : weak_ptr_factory_(this) {}
 
   ~InputHandlerProxyEventQueueTest() { input_handler_proxy_.reset(); }
 
@@ -472,7 +470,6 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   testing::StrictMock<MockInputHandler> mock_input_handler_;
   std::unique_ptr<TestInputHandlerProxy> input_handler_proxy_;
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;

@@ -601,7 +601,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   void SetUp() override {
-    SetFeatureList();
     SetUpEnvironment();
   }
 
@@ -633,11 +632,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
-
-  void SetFeatureList() {
-    vsync_feature_list_.InitAndEnableFeature(
-        features::kVsyncAlignedInputEvents);
-  }
 
  protected:
   BrowserContext* browser_context() { return browser_context_.get(); }
@@ -702,7 +696,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   IPC::TestSink* sink_;
   base::test::ScopedFeatureList mojo_feature_list_;
-  base::test::ScopedFeatureList vsync_feature_list_;
   base::test::ScopedFeatureList feature_list_;
 
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
@@ -820,7 +813,6 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SetUpOverscrollEnvironment() { SetUpOverscrollEnvironmentImpl(0); }
 
   void SetUpOverscrollEnvironmentImpl(int debounce_interval_in_ms) {
-    SetFeatureList();
     scoped_feature_list_.InitAndEnableFeature(
         features::kTouchpadOverscrollHistoryNavigation);
 

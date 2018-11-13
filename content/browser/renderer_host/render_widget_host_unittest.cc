@@ -661,12 +661,7 @@ class RenderWidgetHostTest : public testing::Test {
         handle_key_press_event_(false),
         handle_mouse_event_(false),
         last_simulated_event_time_(ui::EventTimeForNow()) {
-    std::vector<base::StringPiece> features;
-    std::vector<base::StringPiece> disabled_features;
-    features.push_back(features::kVsyncAlignedInputEvents.name);
-
-    feature_list_.InitFromCommandLine(base::JoinString(features, ","),
-                                      base::JoinString(disabled_features, ","));
+    feature_list_.Init();
   }
   ~RenderWidgetHostTest() override {}
 
