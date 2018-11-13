@@ -122,6 +122,7 @@ source_set("browser_state_impl") {
     "//ios/web/net/cookies",
     "//net",
     "//net:extras",
+    "//services/identity/public/cpp",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser",
