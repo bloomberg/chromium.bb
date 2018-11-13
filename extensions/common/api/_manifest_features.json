@@ -118,7 +118,7 @@
     "extension_types": "all"
   },
   "declarative_net_request": {
-    "channel": "dev",
+    "channel": "beta",
     "extension_types": ["extension"],
     "min_manifest_version": 2
   },
