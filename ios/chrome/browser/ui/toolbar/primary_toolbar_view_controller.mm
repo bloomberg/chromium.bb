@@ -77,6 +77,7 @@
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
+
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:1] * progress;
   self.view.locationBarContainer.alpha = progress;
@@ -246,25 +247,16 @@
 
 #pragma mark - Private
 
-// Returns the multiplier for the font size associated with the current content
-// size category, clamped to have it not too big or not too small.
 - (CGFloat)clampedFontSizeMultiplier {
-  return SystemSuggestedFontSizeMultiplier(
-      self.traitCollection.preferredContentSizeCategory,
-      UIContentSizeCategoryLarge, UIContentSizeCategoryAccessibilityExtraLarge);
+  return ToolbarClampedFontSizeMultiplier(
+      self.traitCollection.preferredContentSizeCategory);
 }
 
 // Returns the desired height of the location bar, based on the fullscreen
 // |progress|.
 - (CGFloat)locationBarHeightForFullscreenProgress:(CGFloat)progress {
-  CGFloat verticalMargin = 2 * kAdaptiveLocationBarVerticalMargin;
-  CGFloat dynamicTypeVerticalAdjustment =
-      ([self clampedFontSizeMultiplier] - 1) *
-      (kLocationBarVerticalMarginDynamicType +
-       kAdaptiveLocationBarVerticalMargin);
-  verticalMargin = verticalMargin + dynamicTypeVerticalAdjustment;
   CGFloat expandedHeight =
-      self.view.intrinsicContentSize.height - verticalMargin;
+      LocationBarHeight(self.traitCollection.preferredContentSizeCategory);
   CGFloat collapsedHeight =
       ToolbarCollapsedHeight(self.traitCollection.preferredContentSizeCategory);
   CGFloat expandedCollapsedDelta = expandedHeight - collapsedHeight;
