@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "components/domain_reliability/config.h"
-#include "content/public/common/origin_util.h"
 
 namespace {
 
@@ -169,7 +168,7 @@ bool ParseReportUri(const std::vector<base::StringPiece> in,
     if (!Unquote(in_token.as_string(), &unquoted))
       return false;
     GURL url(unquoted);
-    if (!url.is_valid() || !content::IsOriginSecure(url))
+    if (!url.is_valid() || !url.SchemeIsCryptographic())
       return false;
     out->push_back(std::make_unique<GURL>(url));
   }
