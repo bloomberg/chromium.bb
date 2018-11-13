@@ -89,6 +89,7 @@ TEST(ProxyBypassRulesTest, ParseAndMatchBasicHost) {
   ProxyBypassRules rules;
   rules.ParseFromString("wWw.gOogle.com");
   ASSERT_EQ(1u, rules.rules().size());
+  // Hostname rules are normalized to lower-case.
   EXPECT_EQ("www.google.com", rules.rules()[0]->ToString());
 
   // All of these match; port, scheme, and non-hostname components don't
@@ -108,6 +109,7 @@ TEST(ProxyBypassRulesTest, ParseAndMatchBasicDomain) {
   ProxyBypassRules rules;
   rules.ParseFromString(".gOOgle.com");
   ASSERT_EQ(1u, rules.rules().size());
+  // Hostname rules are normalized to lower-case.
   // Note that we inferred this was an "ends with" test.
   EXPECT_EQ("*.google.com", rules.rules()[0]->ToString());
 
@@ -128,6 +130,7 @@ TEST(ProxyBypassRulesTest, ParseAndMatchBasicDomainWithPort) {
   ProxyBypassRules rules;
   rules.ParseFromString("*.GOOGLE.com:80");
   ASSERT_EQ(1u, rules.rules().size());
+  // Hostname rules are normalized to lower-case.
   EXPECT_EQ("*.google.com:80", rules.rules()[0]->ToString());
 
   // All of these match; scheme, and non-hostname components don't matter.
@@ -498,6 +501,19 @@ TEST(ProxyBypassRulesTest, AddRulesToSubtractImplicit) {
 
 TEST(ProxyBypassRulesTest, GetRulesToSubtractImplicit) {
   EXPECT_EQ("<-loopback>;", ProxyBypassRules::GetRulesToSubtractImplicit());
+}
+
+// Verifies that the <local> and <-loopback> rules can be specified in any
+// case. This matches how WinInet's parses them.
+TEST(ProxyBypassRulesTest, LoopbackAndLocalCaseInsensitive) {
+  ProxyBypassRules rules;
+
+  rules.ParseFromString("<Local>; <-LoopBacK>; <LoCaL>; <-LoOpBack>");
+  ASSERT_EQ(4u, rules.rules().size());
+  EXPECT_EQ("<local>", rules.rules()[0]->ToString());
+  EXPECT_EQ("<-loopback>", rules.rules()[1]->ToString());
+  EXPECT_EQ("<local>", rules.rules()[2]->ToString());
+  EXPECT_EQ("<-loopback>", rules.rules()[3]->ToString());
 }
 
 }  // namespace
