@@ -109,14 +109,14 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     return discardable_shared_memory_manager_.get();
   }
 
+  // Cleanly exits the process.
+  void ExitProcess();
+
  private:
   // Initializes GPU's UkmRecorder if GPU is running in it's own process.
   void CreateUkmRecorderIfNeeded(service_manager::Connector* connector);
 
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);
-
-  // Cleanly exits the process.
-  void ExitProcess();
 
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;

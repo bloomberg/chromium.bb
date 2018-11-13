@@ -95,6 +95,12 @@ class GpuChildThread : public ChildThreadImpl,
   void BindServiceFactoryRequest(
       service_manager::mojom::ServiceFactoryRequest request);
 
+  // Returns a closure which calls into the VizMainImpl to perform shutdown
+  // before quitting the main message loop. Must be called on the main thread.
+  static base::RepeatingClosure MakeQuitSafelyClosure();
+  static void QuitSafelyHelper(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
 #if defined(OS_ANDROID)
   static std::unique_ptr<media::AndroidOverlay> CreateAndroidOverlay(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -115,6 +121,9 @@ class GpuChildThread : public ChildThreadImpl,
 
   // Holds a closure that releases pending interface requests on the IO thread.
   base::Closure release_pending_requests_closure_;
+
+  // A closure which quits the main message loop.
+  base::RepeatingClosure quit_closure_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

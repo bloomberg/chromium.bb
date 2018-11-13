@@ -179,10 +179,11 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
 GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
                                const ChildThreadImpl::Options& options,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
-    : ChildThreadImpl(std::move(quit_closure), options),
+    : ChildThreadImpl(MakeQuitSafelyClosure(), options),
       viz_main_(this,
                 CreateVizMainDependencies(GetConnector()),
                 std::move(gpu_init)),
+      quit_closure_(std::move(quit_closure)),
       weak_factory_(this) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -297,7 +298,7 @@ void GpuChildThread::PostCompositorThreadCreated(
 }
 
 void GpuChildThread::QuitMainMessageLoop() {
-  ProcessShutdown();
+  quit_closure_.Run();
 }
 
 void GpuChildThread::BindServiceFactoryRequest(
@@ -323,6 +324,28 @@ void GpuChildThread::OnPurgeMemory() {
   if (viz_main_.discardable_shared_memory_manager())
     viz_main_.discardable_shared_memory_manager()->ReleaseFreeMemory();
   SkGraphics::PurgeAllCaches();
+}
+
+void GpuChildThread::QuitSafelyHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // Post a new task (even if we're called on the |task_runner|'s thread) to
+  // ensure that we are post-init.
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        ChildThreadImpl* current_child_thread = ChildThreadImpl::current();
+        if (!current_child_thread)
+          return;
+        GpuChildThread* gpu_child_thread =
+            static_cast<GpuChildThread*>(current_child_thread);
+        gpu_child_thread->viz_main_.ExitProcess();
+      }));
+}
+
+// Returns a closure which calls into the VizMainImpl to perform shutdown
+// before quitting the main message loop. Must be called on the main thread.
+base::RepeatingClosure GpuChildThread::MakeQuitSafelyClosure() {
+  return base::BindRepeating(&GpuChildThread::QuitSafelyHelper,
+                             base::ThreadTaskRunnerHandle::Get());
 }
 
 #if defined(OS_ANDROID)
