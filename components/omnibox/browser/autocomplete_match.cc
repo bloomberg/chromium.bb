@@ -521,7 +521,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   static const char prefix[] = "www.";
   static const size_t prefix_len = arraysize(prefix) - 1;
   std::string host = stripped_destination_url.host();
-  if (host.compare(0, prefix_len, prefix) == 0) {
+  if (host.compare(0, prefix_len, prefix) == 0 && host.length() > prefix_len) {
     replacements.SetHostStr(base::StringPiece(host).substr(prefix_len));
     needs_replacement = true;
   }
