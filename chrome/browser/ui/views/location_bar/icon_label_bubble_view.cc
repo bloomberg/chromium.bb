@@ -170,6 +170,7 @@ void IconLabelBubbleView::SetLabel(const base::string16& label) {
   SetAccessibleName(label);
   label_->SetText(label);
   separator_view_->SetVisible(ShouldShowSeparator());
+  separator_view_->UpdateOpacity();
 }
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
