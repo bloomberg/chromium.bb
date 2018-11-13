@@ -107,7 +107,8 @@ public class AwWebContentsObserver extends WebContentsObserver {
         if (client != null) {
             // OnPageStarted is not called for fragment navigations.
             // Error page is handled by AwContentsClientBridge.onReceivedError.
-            if (!isFragmentNavigation && !isErrorPage && isRendererInitiated) {
+            if (!isFragmentNavigation && !isErrorPage
+                    && AwFeatureList.pageStartedOnCommitEnabled(isRendererInitiated)) {
                 client.getCallbackHelper().postOnPageStarted(url);
             }
 
