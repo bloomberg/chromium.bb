@@ -135,8 +135,8 @@ namespace content {
 class TouchActionBrowserTest : public ContentBrowserTest,
                                public testing::WithParamInterface<bool> {
  public:
-  TouchActionBrowserTest() {
-    if (GetParam())
+  TouchActionBrowserTest() : compositor_touch_action_enabled_(GetParam()) {
+    if (compositor_touch_action_enabled_)
       feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
     else
       feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
@@ -409,28 +409,34 @@ class TouchActionBrowserTest : public ContentBrowserTest,
         frame_observer_->LastRenderFrameMetadata().root_scroll_offset.value_or(
             default_scroll_offset);
 
-    // GetScrollTop() and GetScrollLeft() goes through the main thread, here
-    // we want to make sure that the compositor already scrolled before asking
-    // the main thread.
-    while (wait_until_scrolled &&
-           (root_scroll_offset.y() <
-                expected_scroll_position_after_scroll.y() / 2 ||
-            root_scroll_offset.x() <
-                expected_scroll_position_after_scroll.x() / 2)) {
-      frame_observer_->WaitForMetadataChange();
-      root_scroll_offset =
-          frame_observer_->LastRenderFrameMetadata()
-              .root_scroll_offset.value_or(default_scroll_offset);
+    int scroll_top, scroll_left;
+    if (!wait_until_scrolled) {
+      scroll_top = root_scroll_offset.y();
+      scroll_left = root_scroll_offset.x();
+    } else {
+      // GetScrollTop() and GetScrollLeft() goes through the main thread, here
+      // we want to make sure that the compositor already scrolled before asking
+      // the main thread.
+      while (root_scroll_offset.y() <
+                 expected_scroll_position_after_scroll.y() / 2 ||
+             root_scroll_offset.x() <
+                 expected_scroll_position_after_scroll.x() / 2) {
+        frame_observer_->WaitForMetadataChange();
+        root_scroll_offset =
+            frame_observer_->LastRenderFrameMetadata()
+                .root_scroll_offset.value_or(default_scroll_offset);
+      }
+      // Check the scroll offset
+      scroll_top = GetScrollTop();
+      scroll_left = GetScrollLeft();
     }
-
-    // Check the scroll offset
-    int scroll_top = GetScrollTop();
-    int scroll_left = GetScrollLeft();
 
     // Expect it scrolled at least half of the expected distance.
     EXPECT_LE(expected_scroll_position_after_scroll.y() / 2, scroll_top);
     EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
   }
+
+  const bool compositor_touch_action_enabled_;
 
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
@@ -455,8 +461,9 @@ INSTANTIATE_TEST_CASE_P(, TouchActionBrowserTest, testing::Bool());
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_DefaultAuto) {
   LoadURL(kTouchActionDataURL);
 
-  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45), true, 10200,
-                gfx::Vector2d(0, 45), kNoJankTime);
+  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 45), wait_until_scrolled,
+                10200, gfx::Vector2d(0, 45), kNoJankTime);
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
   EXPECT_GE(ExecuteScriptAndExtractInt("eventCounts.touchmove"), 1);
@@ -476,8 +483,9 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   LoadURL(kTouchActionDataURL);
 
-  DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45), false, 10200,
-                gfx::Vector2d(0, 0), kNoJankTime);
+  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45), wait_until_scrolled,
+                10200, gfx::Vector2d(0, 0), kNoJankTime);
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("eventCounts.touchstart"));
   EXPECT_GE(ExecuteScriptAndExtractInt("eventCounts.touchmove"), 1);
@@ -495,8 +503,9 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_TouchActionNone) {
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(0, 45), false, 10000,
-                gfx::Vector2d(0, 45), kShortJankTime);
+  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(0, 45), wait_until_scrolled,
+                10000, gfx::Vector2d(0, 45), kShortJankTime);
 }
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
@@ -509,8 +518,9 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 0), false, 10000,
-                gfx::Vector2d(45, 0), kShortJankTime);
+  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 0), wait_until_scrolled,
+                10000, gfx::Vector2d(45, 0), kShortJankTime);
 }
 
 #if defined(OS_ANDROID)
@@ -523,7 +533,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXMainThreadJanky) {
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXAtYAreaWithTimeout) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(45, 0), false, 10000,
+  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(45, 0), true, 10000,
                 gfx::Vector2d(45, 0), kLongJankTime);
 }
 
@@ -539,7 +549,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
                        MAYBE_TwoFingerPanXAtYAreaWithTimeout) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTwoFingerTouchScroll(false, gfx::Vector2d(20, 0));
+  DoTwoFingerTouchScroll(true, gfx::Vector2d(20, 0));
 }
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
@@ -552,8 +562,9 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
 IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(75, 60), gfx::Vector2d(45, 45), false, 10000,
-                gfx::Vector2d(45, 45), kShortJankTime);
+  bool wait_until_scrolled = !compositor_touch_action_enabled_;
+  DoTouchScroll(gfx::Point(75, 60), gfx::Vector2d(45, 45), wait_until_scrolled,
+                10000, gfx::Vector2d(45, 45), kShortJankTime);
 }
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
@@ -567,7 +578,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
                        MAYBE_PanXYAtXAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 20), false, 10000,
+  DoTouchScroll(gfx::Point(125, 25), gfx::Vector2d(45, 20), true, 10000,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
@@ -582,7 +593,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
                        MAYBE_PanXYAtYAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(20, 45), false, 10000,
+  DoTouchScroll(gfx::Point(25, 125), gfx::Vector2d(20, 45), true, 10000,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
@@ -599,7 +610,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
                        MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(20, 45), false, 10000,
+  DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(20, 45), true, 10000,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
@@ -616,7 +627,7 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest,
                        MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
-  DoTouchScroll(gfx::Point(125, 75), gfx::Vector2d(45, 20), false, 10000,
+  DoTouchScroll(gfx::Point(125, 75), gfx::Vector2d(45, 20), true, 10000,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 

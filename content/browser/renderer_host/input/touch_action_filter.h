@@ -82,7 +82,8 @@ class CONTENT_EXPORT TouchActionFilter {
   friend class TouchActionFilterPinchTest;
   friend class SitePerProcessBrowserTouchActionTest;
 
-  bool ShouldSuppressScrolling(const blink::WebGestureEvent&);
+  bool ShouldSuppressScrolling(const blink::WebGestureEvent&,
+                               cc::TouchAction touch_action);
   FilterGestureEventResult FilterScrollEventAndResetState();
   FilterGestureEventResult FilterPinchEventAndResetState();
   void ReportTouchAction();
@@ -117,6 +118,10 @@ class CONTENT_EXPORT TouchActionFilter {
   // True if an active gesture sequence is in progress. i.e. after GTD and
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
+
+  bool compositor_touch_action_enabled_ = false;
+
+  bool has_deferred_events_ = false;
 
   // Increment at receiving ACK for touch start and decrement at touch end.
   int num_of_active_touches_ = 0;

@@ -25,12 +25,15 @@ const blink::WebGestureDevice kSourceDevice =
 class TouchActionFilterTest : public testing::Test,
                               public testing::WithParamInterface<bool> {
  public:
-  TouchActionFilterTest() {
+  TouchActionFilterTest() : compositor_touch_action_enabled_(GetParam()) {
     filter_.OnHasTouchEventHandlers(true);
-    if (GetParam())
+    if (compositor_touch_action_enabled_) {
       feature_list_.InitAndEnableFeature(features::kCompositorTouchAction);
-    else
+      filter_.compositor_touch_action_enabled_ = true;
+    } else {
       feature_list_.InitAndDisableFeature(features::kCompositorTouchAction);
+      filter_.compositor_touch_action_enabled_ = false;
+    }
   }
   ~TouchActionFilterTest() override {}
 
@@ -39,6 +42,14 @@ class TouchActionFilterTest : public testing::Test,
     return filter_.active_touch_action_;
   }
   void ResetTouchAction() { filter_.ResetTouchAction(); }
+  void ResetActiveTouchAction() { filter_.active_touch_action_.reset(); }
+  void ResetWhiteListedTouchAction() {
+    filter_.white_listed_touch_action_.reset();
+  }
+  void SetNoDeferredEvents() { filter_.has_deferred_events_ = false; }
+  void SetGestureSequenceInProgress() {
+    filter_.gesture_sequence_in_progress_ = true;
+  }
   void PanTest(cc::TouchAction action,
                float scroll_x,
                float scroll_y,
@@ -224,6 +235,7 @@ class TouchActionFilterTest : public testing::Test,
     }
   }
   TouchActionFilter filter_;
+  const bool compositor_touch_action_enabled_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1182,6 +1194,158 @@ TEST_P(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
       WebInputEvent::kGestureTapDown, kSourceDevice);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
+// Test gesture event filtering with white listed touch action. It should test
+// all 3 kinds of results: Allowed / Dropped / Delayed.
+TEST_P(TouchActionFilterTest, FilterWithWhiteListedTouchAction) {
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ActiveTouchAction().has_value());
+  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
+  EXPECT_FALSE(filter_.white_listed_touch_action().has_value());
+
+  int dx = 2, dy = 5;
+  // Test gestures that are allowed.
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(dx, dy, kSourceDevice);
+  WebGestureEvent scroll_update =
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0,
+                                                         kSourceDevice);
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPan);
+  if (!compositor_touch_action_enabled_)
+    filter_.OnSetTouchAction(cc::kTouchActionPan);
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPan);
+  SetGestureSequenceInProgress();
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+
+  // Pinch related gestures are always delayed.
+  ResetTouchAction();
+  ResetActiveTouchAction();
+  ResetWhiteListedTouchAction();
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPan);
+  if (!compositor_touch_action_enabled_)
+    filter_.OnSetTouchAction(cc::kTouchActionPan);
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPan);
+  WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGesturePinchBegin, kSourceDevice);
+  WebGestureEvent pinch_update =
+      SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0,
+                                                        kSourceDevice);
+  WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGesturePinchEnd, kSourceDevice);
+  if (compositor_touch_action_enabled_) {
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_begin),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_update),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_end),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+  } else {
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_begin),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_update),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&pinch_end),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+  }
+
+  // Scroll updates should be delayed if white listed touch action is PanY,
+  // because there are delta along the direction that is not allowed.
+  ResetTouchAction();
+  ResetActiveTouchAction();
+  ResetWhiteListedTouchAction();
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPanY);
+  if (!compositor_touch_action_enabled_)
+    filter_.OnSetTouchAction(cc::kTouchActionPanY);
+  SetNoDeferredEvents();
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPanY);
+  SetGestureSequenceInProgress();
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  if (compositor_touch_action_enabled_) {
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+  } else {
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventAllowed);
+  }
+
+  ResetTouchAction();
+  ResetActiveTouchAction();
+  ResetWhiteListedTouchAction();
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPanX);
+  if (!compositor_touch_action_enabled_)
+    filter_.OnSetTouchAction(cc::kTouchActionPanX);
+  SetNoDeferredEvents();
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPanX);
+
+  dy = 0;
+  scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(dx, dy, kSourceDevice);
+  scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      dx, dy, 0, kSourceDevice);
+  SetGestureSequenceInProgress();
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+
+  dx = 0;
+  dy = 5;
+  scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(dx, dy, kSourceDevice);
+  scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      dx, dy, 0, kSourceDevice);
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPanX);
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPanX);
+  SetGestureSequenceInProgress();
+  if (compositor_touch_action_enabled_) {
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
+  } else {
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+    EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+              FilterGestureEventResult::kFilterGestureEventFiltered);
+  }
+}
+
+TEST_P(TouchActionFilterTest, WhiteListedTouchActionNotResetHasHandlers) {
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(filter_.white_listed_touch_action().has_value());
+
+  filter_.OnSetWhiteListedTouchAction(cc::kTouchActionPan);
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPan);
+  ResetTouchAction();
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionPan);
+}
+
+TEST_P(TouchActionFilterTest, WhiteListedTouchActionAutoNoHasHandlers) {
+  filter_.OnHasTouchEventHandlers(false);
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionAuto);
+
+  ResetTouchAction();
+  EXPECT_EQ(filter_.white_listed_touch_action().value(), cc::kTouchActionAuto);
 }
 
 TEST_P(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
