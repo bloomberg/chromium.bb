@@ -228,12 +228,6 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (codec_ == kCodecVP8 &&
-      config.content_type == Config::ContentType::kDisplay) {
-    VLOGF(1) << "Vaapi VP8 encoder does not currently support screen content.";
-    return false;
-  }
-
   switch (config.input_format) {
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_NV12:
