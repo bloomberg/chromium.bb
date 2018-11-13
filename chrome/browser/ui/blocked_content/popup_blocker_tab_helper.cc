@@ -137,8 +137,9 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   Navigate(&popup->params);
 #endif
   if (popup->params.navigated_or_inserted_contents) {
-    PopupTracker::CreateForWebContents(
+    auto* tracker = PopupTracker::CreateForWebContents(
         popup->params.navigated_or_inserted_contents, web_contents());
+    tracker->set_is_trusted(true);
 
     if (popup->params.disposition == WindowOpenDisposition::NEW_POPUP) {
       content::RenderFrameHost* host =

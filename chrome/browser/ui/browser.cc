@@ -1351,9 +1351,12 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
   Navigate(&nav_params);
 
-  if (is_popup && nav_params.navigated_or_inserted_contents)
-    PopupTracker::CreateForWebContents(
+  if (is_popup && nav_params.navigated_or_inserted_contents) {
+    auto* tracker = PopupTracker::CreateForWebContents(
         nav_params.navigated_or_inserted_contents, source);
+    tracker->set_is_trusted(params.triggering_event_info !=
+                            blink::WebTriggeringEventInfo::kFromUntrustedEvent);
+  }
 
   return nav_params.navigated_or_inserted_contents;
 }
