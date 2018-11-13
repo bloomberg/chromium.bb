@@ -3345,6 +3345,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
 }
 
+- (void)openAddressSettings {
+  [self.dispatcher showProfileSettingsFromViewController:self];
+}
+
+- (void)openCreditCardSettings {
+  [self.dispatcher showCreditCardSettingsFromViewController:self];
+}
+
 #pragma mark - CRWWebStateDelegate methods.
 
 - (web::WebState*)webState:(web::WebState*)webState

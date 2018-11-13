@@ -1461,9 +1461,9 @@ enum class ShowTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController =
-      [SettingsNavigationController newAutofillController:_mainBrowserState
-                                                 delegate:self];
+  _settingsNavigationController = [SettingsNavigationController
+      newAutofillProfilleController:_mainBrowserState
+                           delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1689,6 +1689,38 @@ enum class ShowTabSwitcherSnapshotResult {
   _settingsNavigationController =
       [SettingsNavigationController newSavePasswordsController:_mainBrowserState
                                                       delegate:self];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+// TODO(crbug.com/779791) : Remove show settings commands from MainController.
+- (void)showProfileSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (_settingsNavigationController) {
+    [_settingsNavigationController
+        showProfileSettingsFromViewController:baseViewController];
+    return;
+  }
+  _settingsNavigationController = [SettingsNavigationController
+      newAutofillProfilleController:_mainBrowserState
+                           delegate:self];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+// TODO(crbug.com/779791) : Remove show settings commands from MainController.
+- (void)showCreditCardSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (_settingsNavigationController) {
+    [_settingsNavigationController
+        showCreditCardSettingsFromViewController:baseViewController];
+    return;
+  }
+  _settingsNavigationController = [SettingsNavigationController
+      newAutofillCreditCardController:_mainBrowserState
+                             delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];

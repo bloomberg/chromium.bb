@@ -17,6 +17,12 @@ class WebStateList;
 // Opens the passwords settings.
 - (void)openPasswordSettings;
 
+// Opens the addresses settings.
+- (void)openAddressSettings;
+
+// Opens the credit cards settings.
+- (void)openCreditCardSettings;
+
 @end
 
 // Creates and manages a custom input accessory view while the user is

@@ -191,13 +191,13 @@
 #pragma mark - CardCoordinatorDelegate
 
 - (void)openCardSettings {
-  // TODO(crbug.com/845472): implement.
+  [self.delegate openCreditCardSettings];
 }
 
 #pragma mark - AddressCoordinatorDelegate
 
 - (void)openAddressSettings {
-  // TODO(crbug.com/845472): implement.
+  [self.delegate openAddressSettings];
 }
 
 @end
