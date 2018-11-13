@@ -386,7 +386,7 @@ class Port(object):
 
         return exit_codes.OK_EXIT_STATUS
 
-    def check_sys_deps(self, needs_http):
+    def check_sys_deps(self):
         """Checks whether the system is properly configured.
 
         Most checks happen during invocation of the driver prior to running
