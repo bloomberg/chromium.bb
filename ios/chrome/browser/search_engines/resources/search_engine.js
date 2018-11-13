@@ -65,7 +65,7 @@ function isCheckableElement_(element) {
  * @type {Element}
  * @private
  */
-var activeSubmitElement_ = null;
+let activeSubmitElement_ = null;
 
 /**
  * Returns the submit element which triggers the submission of |form|. If there
@@ -80,7 +80,7 @@ function getActiveSubmitElement_(form) {
   if (activeSubmitElement_ && activeSubmitElement_.form === form) {
     return activeSubmitElement_;
   }
-  for (var i = 0; i < form.elements.length; ++i) {
+  for (let i = 0; i < form.elements.length; ++i) {
     if (isSubmitElement_(form.elements[i])) {
       return form.elements[i];
     }
@@ -90,21 +90,20 @@ function getActiveSubmitElement_(form) {
 /**
  * A set of all the text categories of <input>'s type attribute.
  * This set is based on:
- * https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/forms/base_text_input_type.h?rcl=3e6185be26ac5e48c7921d314d2abc4a3a1572e2&l=40
- * https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/forms/text_field_input_type.h?rcl=3e6185be26ac5e48c7921d314d2abc4a3a1572e2&l=41
+ *   https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/forms/text_field_input_type.h
+ *   https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/html/forms/base_text_input_type.h
  * "password" is not in the map because it makes the <form> invalid.
  * @type {Set<string>}
  * @private
  */
-var textInputTypes_ =
+const textInputTypes_ =
     new Set(['email', 'search', 'tel', 'text', 'url', 'number']);
 
 /**
  * Returns false if |element| is <input type="radio|checkbox"> or <select> and
  * it's not in its default state, otherwise true. The default state is the state
- * of the form element on initial load of the page, and varies depending upon
- * the form element. The code is based on:
- * https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/web_searchable_form_data.cc?rcl=a26f1d82bbd020be06fb96518179bbb6b6146370&l=120
+ * of the form element on initial load of the page, and leties depending upon
+ * the form element.
  * @param {Element} element Element in <form>.
  * @return {boolean} If the element is in its default state.
  * @private
@@ -113,8 +112,8 @@ function isInDefaultState_(element) {
   if (isCheckableElement_(element)) {
     return element.checked == element.defaultChecked;
   } else if (element.tagName == 'SELECT') {
-    for (var i = 0; i < element.options.length; ++i) {
-      var option = element.options[i];
+    for (let i = 0; i < element.options.length; ++i) {
+      let option = element.options[i];
       if (option.selected != option.defaultSelected) {
         return false;
       }
@@ -125,8 +124,9 @@ function isInDefaultState_(element) {
 
 /**
  * Looks for a suitable search text field in |form|. Returns undefined if |form|
- * is not a valid searchable <form>. The code is based on:
- * https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/web_searchable_form_data.cc?rcl=a26f1d82bbd020be06fb96518179bbb6b6146370&l=137
+ * is not a valid searchable <form>. The code is based on the function with same
+ * name in:
+ *   https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/web_searchable_form_data.cc
  *
  * The criteria for a valid searchable <form>:
  *   1. Has no <textarea>;
@@ -143,9 +143,9 @@ function isInDefaultState_(element) {
  * @private
  */
 function findSuitableSearchInputElement_(form) {
-  var result = undefined;
-  for (var i = 0; i < form.elements.length; ++i) {
-    var element = form.elements[i];
+  let result = undefined;
+  for (let i = 0; i < form.elements.length; ++i) {
+    let element = form.elements[i];
     if (element.disabled || !element.name) {
       continue;
     }
@@ -169,8 +169,8 @@ function findSuitableSearchInputElement_(form) {
 
 /**
  * Generates a searchable URL from |form| if it's a valid searchable <form>.
- * The code is based on:
-https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/web_searchable_form_data.cc?rcl=9c80632d2b16884970961dc9a12bddd3a4ca50b5&l=218
+ * The code is based on the function with same name in:
+ *   https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/web_searchable_form_data.cc
  *
  * @param {Element} form The <form> element.
  * @return {string|undefined} The searchable URL, or undefined if |form| is not
@@ -180,9 +180,9 @@ https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/exported/we
  *   searchableURL.
  */
 function generateSearchableUrl_(form) {
-  // Only consider <form> that navigates in current frame, because new
-  // TemplateURL will only be created from navigation in the same page:
-  // https://cs.chromium.org/chromium/src/chrome/browser/ui/search_engines/search_engine_tab_helper.cc?l=177&gsn=last_index
+  // Only consider <form> that navigates in current frame, because currently
+  // TemplateURLs are created by SearchEngineTabHelper, which cannot handle
+  // navigation across WebState.
   if (form.target && form.target != '_self')
     return;
 
@@ -191,24 +191,24 @@ function generateSearchableUrl_(form) {
     return;
   }
 
-  var searchInput = findSuitableSearchInputElement_(form);
+  let searchInput = findSuitableSearchInputElement_(form);
   if (!searchInput) {
     return;
   }
 
-  var activeSubmitElement = getActiveSubmitElement_(form);
+  let activeSubmitElement = getActiveSubmitElement_(form);
 
   // The "name=value" pairs appended to the end of the action URL.
-  var queryArgs = [];
-  for (var i = 0; i < form.elements.length; ++i) {
-    var element = form.elements[i];
+  let queryArgs = [];
+  for (let i = 0; i < form.elements.length; ++i) {
+    let element = form.elements[i];
     if (element.disabled || !element.name) {
       continue;
     }
     if (isSubmitElement_(element)) {
       // Only append the active submit element's name-value pair.
       if (element === activeSubmitElement) {
-        var value = element.value;
+        let value = element.value;
         // <input type="submit"> will have "Submit" as default "value" when
         // submitted with empty "value" and non-empty "name". This probably
         // comes from the default label text of <input type="submit">:
@@ -234,7 +234,7 @@ function generateSearchableUrl_(form) {
   }
   // If |form| uses "GET" method, appended query args in |form|.action should be
   // dropped. Use URL class to get rid of these query args.
-  var url = new URL(form.action);
+  let url = new URL(form.action);
   return url.origin + url.pathname + '?' + queryArgs.join('&');
 };
 
@@ -265,7 +265,7 @@ document.addEventListener('click', function(event) {
   if (event.defaultPrevented) {
     return;
   }
-  var element = event.target;
+  let element = event.target;
   if (!(element instanceof Element) || !isSubmitElement_(element)) {
     return;
   }
@@ -288,7 +288,7 @@ document.addEventListener('submit', function(event) {
   if (event.defaultPrevented || !(event.target instanceof Element)) {
     return;
   }
-  var url = generateSearchableUrl_(event.target);
+  let url = generateSearchableUrl_(event.target);
   if (url) {
     __gCrWeb.message.invokeOnHost(
         {'command': 'searchEngine.searchableUrl', 'url': url});
@@ -303,8 +303,8 @@ document.addEventListener('submit', function(event) {
  * @return {undefined}
  */
 function findOpenSearchLink() {
-  var links = document.getElementsByTagName('link');
-  for (var i = 0; i < links.length; ++i) {
+  let links = document.getElementsByTagName('link');
+  for (let i = 0; i < links.length; ++i) {
     if (links[i].type == 'application/opensearchdescription+xml') {
       __gCrWeb.message.invokeOnHost({
         'command': 'searchEngine.openSearch',
