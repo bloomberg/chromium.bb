@@ -38,7 +38,10 @@ class CrostiniInstallerView
   // numeric values should never be reused.
   enum class SetupResult {
     kNotStarted = 0,
+
+    // Deprecated, use the more specific cancelled values further down
     kUserCancelled = 1,
+
     kSuccess = 2,
     kErrorLoadingTermina = 3,
     kErrorStartingConcierge = 4,
@@ -49,6 +52,18 @@ class CrostiniInstallerView
     kErrorFetchingSshKeys = 9,
     kErrorMountingContainer = 10,
     kErrorSettingUpContainer = 11,
+
+    kUserCancelledStart = 12,
+    kUserCancelledInstallImageLoader = 13,
+    kUserCancelledStartConcierge = 14,
+    kUserCancelledCreateDiskImage = 15,
+    kUserCancelledStartTerminaVm = 16,
+    kUserCancelledCreateContainer = 17,
+    kUserCancelledStartContainer = 18,
+    kUserCancelledSetupContainer = 19,
+    kUserCancelledFetchSshKeys = 20,
+    kUserCancelledMountContainer = 21,
+
     kCount
   };
 
