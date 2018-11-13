@@ -155,6 +155,20 @@ class ContentSettingPopupImageModel : public ContentSettingSimpleImageModel {
 
 namespace {
 
+bool ShouldShowPluginExplanation(content::WebContents* web_contents,
+                                 HostContentSettingsMap* map) {
+  const GURL& url = web_contents->GetURL();
+  ContentSetting setting = map->GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+
+  // For plugins, show the animated explanation in these cases:
+  //  - The plugin is blocked despite the user having content setting ALLOW.
+  //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
+  return setting == CONTENT_SETTING_ALLOW ||
+         (setting == CONTENT_SETTING_BLOCK &&
+          PluginUtils::ShouldPreferHtmlOverPlugins(map));
+}
+
 struct ContentSettingsImageDetails {
   ContentSettingsType content_type;
   const gfx::VectorIcon& icon;
@@ -302,44 +316,38 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
   int tooltip_id = image_details->blocked_tooltip_id;
   int explanation_id = image_details->blocked_explanatory_text_id;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    GURL url = web_contents->GetURL();
-    ContentSetting setting =
-        map->GetContentSetting(url, url, type, std::string());
-
-    // For plugins, show the animated explanation in these cases:
-    //  - The plugin is blocked despite the user having content setting ALLOW.
-    //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
-    bool show_explanation = setting == CONTENT_SETTING_ALLOW ||
-                            (setting == CONTENT_SETTING_BLOCK &&
-                             PluginUtils::ShouldPreferHtmlOverPlugins(map));
-    if (!show_explanation)
-      explanation_id = 0;
-  }
-
   // If a content type is blocked by default and was accessed, display the
   // content blocked page action.
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return false;
-  if (!content_settings->IsContentBlocked(type)) {
-    if (!content_settings->IsContentAllowed(type))
-      return false;
 
-    // For cookies, only show the cookie blocked page action if cookies are
-    // blocked by default.
-    if (type == CONTENT_SETTINGS_TYPE_COOKIES &&
-        (map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK))
-      return false;
+  bool is_blocked = content_settings->IsContentBlocked(type);
+  bool is_allowed = content_settings->IsContentAllowed(type);
+  if (!is_blocked && !is_allowed)
+    return false;
 
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+  // For allowed cookies, don't show the cookie page action unless cookies are
+  // blocked by default.
+  if (!is_blocked && type == CONTENT_SETTINGS_TYPE_COOKIES &&
+      map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  if (!is_blocked) {
     tooltip_id = image_details->accessed_tooltip_id;
     explanation_id = 0;
   }
+
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      !ShouldShowPluginExplanation(web_contents, map)) {
+    explanation_id = 0;
+  }
+
   const gfx::VectorIcon* badge_id = &gfx::kNoneIcon;
   if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
     badge_id = &kWarningBadgeIcon;
