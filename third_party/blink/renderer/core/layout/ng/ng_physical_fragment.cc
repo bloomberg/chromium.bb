@@ -23,7 +23,7 @@ namespace {
 
 struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
-  void* pointers[3];
+  void* pointers[2];
   NGPhysicalSize size;
   unsigned flags;
 };
@@ -249,7 +249,6 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
     : layout_object_(builder->layout_object_),
-      style_(std::move(builder->style_)),
       size_(ToNGPhysicalSize(builder->size_, builder->GetWritingMode())),
       break_token_(std::move(builder->break_token_)),
       type_(type),
@@ -259,14 +258,12 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       style_variant_((unsigned)builder->style_variant_) {}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
-                                       const ComputedStyle& style,
                                        NGStyleVariant style_variant,
                                        NGPhysicalSize size,
                                        NGFragmentType type,
                                        unsigned sub_type,
                                        scoped_refptr<NGBreakToken> break_token)
     : layout_object_(layout_object),
-      style_(&style),
       size_(size),
       break_token_(std::move(break_token)),
       type_(type),
@@ -298,21 +295,20 @@ void NGPhysicalFragment::Destroy() const {
 }
 
 const ComputedStyle& NGPhysicalFragment::Style() const {
-  DCHECK(style_);
-  // TODO(kojii): Returning |style_| locks the style at the layout time, and
-  // will not be updated when its base style is updated later. Line styles and
-  // ellipsis styles have this problem.
-  if (!GetLayoutObject())
-    return *style_;
+  if (Type() == kFragmentLineBox)
+    return ToNGPhysicalLineBoxFragment(this)->Style();
   switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
+      DCHECK(GetLayoutObject());
       return *GetLayoutObject()->Style();
     case NGStyleVariant::kFirstLine:
+      DCHECK(GetLayoutObject());
       return *GetLayoutObject()->FirstLineStyle();
     case NGStyleVariant::kEllipsis:
-      return *style_;
+      return ToNGPhysicalTextFragment(this)->Style();
   }
-  return *style_;
+  NOTREACHED();
+  return *GetLayoutObject()->Style();
 }
 
 Node* NGPhysicalFragment::GetNode() const {

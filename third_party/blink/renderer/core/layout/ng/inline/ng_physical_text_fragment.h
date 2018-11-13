@@ -72,6 +72,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return IsLineBreak() || TextType() == kFlowControl;
   }
 
+  const ComputedStyle& Style() const;
+
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
   const String& TextContent() const { return text_; }
@@ -102,7 +104,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
-  NGPhysicalOffsetRect SelfInkOverflow() const { return self_ink_overflow_; }
+  NGPhysicalOffsetRect SelfInkOverflow() const;
 
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
@@ -135,16 +137,16 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
  private:
   // For use by TrimText only
-  NGPhysicalTextFragment(LayoutObject* layout_object,
-                         const ComputedStyle& style,
-                         NGStyleVariant style_variant,
-                         NGTextType text_type,
-                         const String& text,
+  NGPhysicalTextFragment(const NGPhysicalTextFragment& source,
                          unsigned start_offset,
                          unsigned end_offset,
-                         NGPhysicalSize size,
-                         NGLineOrientation line_orientation,
                          scoped_refptr<const ShapeResultView> shape_result);
+
+  struct RareData {
+    NGPhysicalOffsetRect self_ink_overflow_;
+    scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
+  };
+  RareData* EnsureRareData();
 
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
@@ -152,7 +154,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
 
-  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
+  void UpdateSelfInkOverflow();
+  void ClearSelfInkOverflow();
 
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
@@ -161,8 +164,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Start and end offset of the parent block text.
   const unsigned start_offset_;
   const unsigned end_offset_;
-  NGPhysicalOffsetRect self_ink_overflow_;
   const scoped_refptr<const ShapeResultView> shape_result_;
+
+  std::unique_ptr<RareData> rare_data_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
