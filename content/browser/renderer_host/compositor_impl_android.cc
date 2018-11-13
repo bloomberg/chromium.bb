@@ -224,6 +224,20 @@ class CompositorDependencies {
                              std::move(pending_connect_viz_on_io_thread_));
   }
 
+  void OnCompositorVisible(CompositorImpl* compositor) {
+    bool element_inserted = visible_compositors_.insert(compositor).second;
+    DCHECK(element_inserted);
+    if (visible_compositors_.size() == 1)
+      OnVisibilityChanged();
+  }
+
+  void OnCompositorHidden(CompositorImpl* compositor) {
+    size_t elements_removed = visible_compositors_.erase(compositor);
+    DCHECK_EQ(1u, elements_removed);
+    if (visible_compositors_.size() == 0)
+      OnVisibilityChanged();
+  }
+
   SingleThreadTaskGraphRunner task_graph_runner;
   viz::HostFrameSinkManager host_frame_sink_manager;
   viz::FrameSinkIdAllocator frame_sink_id_allocator;
@@ -244,16 +258,8 @@ class CompositorDependencies {
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
-  CompositorDependencies()
-      : frame_sink_id_allocator(kDefaultClientId),
-        app_listener_(
-            base::android::ApplicationStatusListener::New(base::BindRepeating(
-                &CompositorDependencies::OnApplicationStateChange,
-                base::Unretained(this)))) {
+  CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Ensure we're in the correct state at start up.
-    OnApplicationStateChange(app_listener_->GetState());
 
     bool enable_viz =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
@@ -312,34 +318,19 @@ class CompositorDependencies {
         }));
   }
 
-  // This callback function runs when application state changes. If application
-  // state is UNKNOWN, consider it as the app running as a conservative
-  // approach so that we don't send the gpu services to background.
-  void OnApplicationStateChange(
-      base::android::ApplicationState application_state) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    switch (application_state) {
-      case base::android::APPLICATION_STATE_UNKNOWN:
-      case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
-      case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
-        if (application_is_foreground_)
-          return;
-        application_is_foreground_ = true;
-        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
-        BrowserGpuChannelHostFactorySetApplicationVisible(true);
-        SendOnForegroundedToGpuService();
-        low_end_background_cleanup_task_.Cancel();
-        break;
-      case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
-      case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
-        if (!application_is_foreground_)
-          return;
-        application_is_foreground_ = false;
-        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
-        BrowserGpuChannelHostFactorySetApplicationVisible(false);
-        SendOnBackgroundedToGpuService();
-        EnqueueLowEndBackgroundCleanup();
+  // This function runs when our first CompositorImpl becomes visible or when
+  // our last Compositormpl is hidden.
+  void OnVisibilityChanged() {
+    if (visible_compositors_.size() > 0) {
+      GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
+      BrowserGpuChannelHostFactorySetApplicationVisible(true);
+      SendOnForegroundedToGpuService();
+      low_end_background_cleanup_task_.Cancel();
+    } else {
+      GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
+      BrowserGpuChannelHostFactorySetApplicationVisible(false);
+      SendOnBackgroundedToGpuService();
+      EnqueueLowEndBackgroundCleanup();
     }
   }
 
@@ -347,12 +338,11 @@ class CompositorDependencies {
   // when we hide, canceled when we're shown.
   base::CancelableOnceClosure low_end_background_cleanup_task_;
 
-  // An instance of Android AppListener.
-  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
-  bool application_is_foreground_ = true;
-
   // A callback which connects to the viz service on the IO thread.
   base::OnceClosure pending_connect_viz_on_io_thread_;
+
+  // The set of visible CompositorImpls.
+  base::flat_set<CompositorImpl*> visible_compositors_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
@@ -927,6 +917,7 @@ void CompositorImpl::SetVisible(bool visible) {
 
   if (!visible) {
     DCHECK(host_->IsVisible());
+    CompositorDependencies::Get().OnCompositorHidden(this);
     // Tear down the display first, synchronously completing any pending
     // draws/readbacks if poosible.
     TearDownDisplayAndUnregisterRootFrameSink();
@@ -937,6 +928,7 @@ void CompositorImpl::SetVisible(bool visible) {
     pending_frames_ = 0;
   } else {
     DCHECK(!host_->IsVisible());
+    CompositorDependencies::Get().OnCompositorVisible(this);
     RegisterRootFrameSink();
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
