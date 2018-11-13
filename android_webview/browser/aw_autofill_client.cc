@@ -84,7 +84,7 @@ autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
   return nullptr;
 }
 
-autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
+autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
   return nullptr;
 }
 

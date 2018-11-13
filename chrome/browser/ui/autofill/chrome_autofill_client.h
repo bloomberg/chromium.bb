@@ -58,7 +58,7 @@ class ChromeAutofillClient
   identity::IdentityManager* GetIdentityManager() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   FormDataImporter* GetFormDataImporter() override;
-  StrikeDatabase* GetStrikeDatabase() override;
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;

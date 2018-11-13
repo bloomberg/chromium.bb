@@ -24,7 +24,7 @@ class DictionaryValue;
 namespace autofill {
 
 class CreditCard;
-class StrikeDatabase;
+class LegacyStrikeDatabase;
 
 // An InfoBarDelegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission. Only used on mobile.
@@ -35,7 +35,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
       bool should_request_name_from_user,
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      StrikeDatabase* strike_database,
+      LegacyStrikeDatabase* legacy_strike_database,
       AutofillClient::UserAcceptedUploadCallback upload_save_card_callback,
       base::OnceClosure local_save_card_callback,
       PrefService* pref_service);
@@ -92,8 +92,8 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|,
   PrefService* pref_service_;
 
-  // Weak reference to the Autofill StrikeDatabase.
-  StrikeDatabase* strike_database_;
+  // Weak reference to the Autofill LegacyStrikeDatabase.
+  LegacyStrikeDatabase* legacy_strike_database_;
 
   // Did the user ever explicitly accept or dismiss this infobar?
   bool had_user_interaction_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 
 #include <utility>
 #include <vector>
@@ -18,13 +18,13 @@
 namespace autofill {
 namespace {
 
-// Note: This class is NOT the same as test_strike_database.h. This is an actual
-// implementation of StrikeDatabase, but with helper functions added for easier
-// test setup.
-class TestStrikeDatabase : public StrikeDatabase {
+// Note: This class is NOT the same as test_legacy_strike_database.h. This is an
+// actual implementation of LegacyStrikeDatabase, but with helper functions
+// added for easier test setup.
+class TestLegacyStrikeDatabase : public LegacyStrikeDatabase {
  public:
-  TestStrikeDatabase(const base::FilePath& database_dir)
-      : StrikeDatabase(database_dir) {}
+  TestLegacyStrikeDatabase(const base::FilePath& database_dir)
+      : LegacyStrikeDatabase(database_dir) {}
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add,
@@ -41,23 +41,23 @@ class TestStrikeDatabase : public StrikeDatabase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestStrikeDatabase);
+  DISALLOW_COPY_AND_ASSIGN(TestLegacyStrikeDatabase);
 };
 
 }  // anonymous namespace
 
-// Runs tests against the actual StrikeDatabase class, complete with
+// Runs tests against the actual LegacyStrikeDatabase class, complete with
 // ProtoDatabase.
-class StrikeDatabaseTest : public ::testing::Test {
+class LegacyStrikeDatabaseTest : public ::testing::Test {
  public:
-  StrikeDatabaseTest() : strike_database_(InitFilePath()) {}
+  LegacyStrikeDatabaseTest() : legacy_strike_database_(InitFilePath()) {}
 
   void AddEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
     base::RunLoop run_loop;
-    strike_database_.AddEntries(
+    legacy_strike_database_.AddEntries(
         entries_to_add,
-        base::BindRepeating(&StrikeDatabaseTest::OnAddEntries,
+        base::BindRepeating(&LegacyStrikeDatabaseTest::OnAddEntries,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -73,9 +73,9 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   int GetStrikes(std::string key) {
     base::RunLoop run_loop;
-    strike_database_.GetStrikes(
+    legacy_strike_database_.GetStrikes(
         key,
-        base::BindRepeating(&StrikeDatabaseTest::OnGetStrikes,
+        base::BindRepeating(&LegacyStrikeDatabaseTest::OnGetStrikes,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return num_strikes_;
@@ -88,9 +88,9 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   int AddStrike(std::string key) {
     base::RunLoop run_loop;
-    strike_database_.AddStrike(
+    legacy_strike_database_.AddStrike(
         key,
-        base::BindRepeating(&StrikeDatabaseTest::OnAddStrike,
+        base::BindRepeating(&LegacyStrikeDatabaseTest::OnAddStrike,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return num_strikes_;
@@ -103,9 +103,9 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllStrikesForKey(const std::string key) {
     base::RunLoop run_loop;
-    strike_database_.ClearAllStrikesForKey(
+    legacy_strike_database_.ClearAllStrikesForKey(
         key,
-        base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
+        base::BindRepeating(&LegacyStrikeDatabaseTest::OnClearAllStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -117,8 +117,8 @@ class StrikeDatabaseTest : public ::testing::Test {
 
   void ClearAllStrikes() {
     base::RunLoop run_loop;
-    strike_database_.ClearAllStrikes(
-        base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
+    legacy_strike_database_.ClearAllStrikes(
+        base::BindRepeating(&LegacyStrikeDatabaseTest::OnClearAllStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -126,14 +126,14 @@ class StrikeDatabaseTest : public ::testing::Test {
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  TestStrikeDatabase strike_database_;
+  TestLegacyStrikeDatabase legacy_strike_database_;
 
  private:
   static const base::FilePath InitFilePath() {
     base::ScopedTempDir temp_dir_;
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath file_path =
-        temp_dir_.GetPath().AppendASCII("StrikeDatabaseTest");
+        temp_dir_.GetPath().AppendASCII("LegacyStrikeDatabaseTest");
     return file_path;
   }
 
@@ -142,7 +142,7 @@ class StrikeDatabaseTest : public ::testing::Test {
   std::unique_ptr<StrikeData> strike_data_;
 };
 
-TEST_F(StrikeDatabaseTest, AddStrikeTest) {
+TEST_F(LegacyStrikeDatabaseTest, AddStrikeTest) {
   const std::string key = "12345";
   int strikes = AddStrike(key);
   EXPECT_EQ(1, strikes);
@@ -150,13 +150,13 @@ TEST_F(StrikeDatabaseTest, AddStrikeTest) {
   EXPECT_EQ(2, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, GetStrikeForZeroStrikesTest) {
+TEST_F(LegacyStrikeDatabaseTest, GetStrikeForZeroStrikesTest) {
   const std::string key = "12345";
   int strikes = GetStrikes(key);
   EXPECT_EQ(0, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
+TEST_F(LegacyStrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
   // Set up database with 3 pre-existing strikes at |key|.
   const std::string key = "12345";
   std::vector<std::pair<std::string, StrikeData>> entries;
@@ -169,14 +169,14 @@ TEST_F(StrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
   EXPECT_EQ(3, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
+TEST_F(LegacyStrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
   const std::string key = "12345";
   ClearAllStrikesForKey(key);
   int strikes = GetStrikes(key);
   EXPECT_EQ(0, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
+TEST_F(LegacyStrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
   // Set up database with 3 pre-existing strikes at |key|.
   const std::string key = "12345";
   std::vector<std::pair<std::string, StrikeData>> entries;
@@ -192,7 +192,8 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
   EXPECT_EQ(0, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
+TEST_F(LegacyStrikeDatabaseTest,
+       ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   // Set up database with 3 pre-existing strikes at |key1|, and 5 pre-existing
   // strikes at |key2|.
   const std::string key1 = "12345";
@@ -217,7 +218,7 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   EXPECT_EQ(5, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearAllStrikesTest) {
+TEST_F(LegacyStrikeDatabaseTest, ClearAllStrikesTest) {
   // Set up database with 3 pre-existing strikes at |key1|, and 5 pre-existing
   // strikes at |key2|.
   const std::string key1 = "12345";
@@ -238,27 +239,27 @@ TEST_F(StrikeDatabaseTest, ClearAllStrikesTest) {
   EXPECT_EQ(0, GetStrikes(key2));
 }
 
-TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
+TEST_F(LegacyStrikeDatabaseTest, GetKeyForCreditCardSave) {
   const std::string last_four = "1234";
   EXPECT_EQ("creditCardSave__1234",
-            strike_database_.GetKeyForCreditCardSave(last_four));
+            legacy_strike_database_.GetKeyForCreditCardSave(last_four));
 }
 
-TEST_F(StrikeDatabaseTest, GetPrefixFromKey) {
+TEST_F(LegacyStrikeDatabaseTest, GetPrefixFromKey) {
   const std::string key = "creditCardSave__1234";
-  EXPECT_EQ("creditCardSave", strike_database_.GetPrefixFromKey(key));
+  EXPECT_EQ("creditCardSave", legacy_strike_database_.GetPrefixFromKey(key));
 }
 
-TEST_F(StrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
+TEST_F(LegacyStrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
   const std::string last_four1 = "1234";
   const std::string last_four2 = "9876";
   const std::string key1 = "NotACreditCard";
   // 1st strike added for |last_four1|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four1));
+  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four1));
   // 2nd strike added for |last_four1|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four1));
+  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four1));
   // 1st strike added for |last_four2|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four2));
+  AddStrike(legacy_strike_database_.GetKeyForCreditCardSave(last_four2));
   // Shouldn't be counted in histogram since key doesn't have prefix for credit
   // cards.
   AddStrike(key1);

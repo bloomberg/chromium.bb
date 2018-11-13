@@ -30,7 +30,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
-    StrikeDatabase* strike_database,
+    LegacyStrikeDatabase* strike_database,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
@@ -51,7 +51,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           personal_data_manager_,
           ios_web_view::ApplicationContext::GetInstance()
               ->GetApplicationLocale())),
-      strike_database_(strike_database),
+      legacy_strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service) {}
 
@@ -83,8 +83,8 @@ payments::PaymentsClient* WebViewAutofillClientIOS::GetPaymentsClient() {
   return payments_client_.get();
 }
 
-StrikeDatabase* WebViewAutofillClientIOS::GetStrikeDatabase() {
-  return strike_database_;
+LegacyStrikeDatabase* WebViewAutofillClientIOS::GetLegacyStrikeDatabase() {
+  return legacy_strike_database_;
 }
 
 ukm::UkmRecorder* WebViewAutofillClientIOS::GetUkmRecorder() {

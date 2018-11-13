@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LEGACY_STRIKE_DATABASE_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LEGACY_STRIKE_DATABASE_H_
 
 #include <memory>
 #include <string>
@@ -24,15 +24,16 @@ class StrikeData;
 
 // Here's how to create a new project type:
 // 1) The keys used for this database are in form
-// <ProjectTypePrefixName>__<SomeIdentifierSuffix>. In strike_database.cc, add a
-// char[] variable called kKeyPrefixFor<ProjectType>.
-// 2) In strike_database.h/cc, create the functions
+// <ProjectTypePrefixName>__<SomeIdentifierSuffix>. In
+// legacy_strike_database.cc, add a char[] variable called
+// kKeyPrefixFor<ProjectType>.
+// 2) In legacy_strike_database.h/cc, create the functions
 //   GetKeyFor<ProjectType>(const std::string& identifier) and
 //   GetKeyPrefixFor<ProjectType>().
 // 3) Add new project type to the if block in
-// StrikeDatabase::OnAddStrikeComplete(~).
+// LegacyStrikeDatabase::OnAddStrikeComplete(~).
 
-class StrikeDatabase : public KeyedService {
+class LegacyStrikeDatabase : public KeyedService {
  public:
   using ClearStrikesCallback = base::RepeatingCallback<void(bool success)>;
 
@@ -50,8 +51,8 @@ class StrikeDatabase : public KeyedService {
 
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
-  explicit StrikeDatabase(const base::FilePath& database_dir);
-  ~StrikeDatabase() override;
+  explicit LegacyStrikeDatabase(const base::FilePath& database_dir);
+  ~LegacyStrikeDatabase() override;
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
   // that the database fails to retrieve the strike update or if no entry is
@@ -83,16 +84,16 @@ class StrikeDatabase : public KeyedService {
 
  protected:
   // Constructor for testing that does not initialize a ProtoDatabase.
-  StrikeDatabase();
+  LegacyStrikeDatabase();
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>> db_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseTest, GetPrefixFromKey);
+  FRIEND_TEST_ALL_PREFIXES(LegacyStrikeDatabaseTest, GetPrefixFromKey);
   FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
-                           StrikeDatabaseEmptyOnAutofillRemoveEverything);
-  friend class StrikeDatabaseTest;
-  friend class StrikeDatabaseTester;
+                           LegacyStrikeDatabaseEmptyOnAutofillRemoveEverything);
+  friend class LegacyStrikeDatabaseTest;
+  friend class LegacyStrikeDatabaseTester;
 
   void OnDatabaseInit(bool success);
 
@@ -139,9 +140,9 @@ class StrikeDatabase : public KeyedService {
 
   std::string GetPrefixFromKey(const std::string& key);
 
-  base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<LegacyStrikeDatabase> weak_ptr_factory_;
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_STRIKE_DATABASE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LEGACY_STRIKE_DATABASE_H_

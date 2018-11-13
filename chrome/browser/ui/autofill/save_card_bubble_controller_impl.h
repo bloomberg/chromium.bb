@@ -22,7 +22,7 @@ class PrefService;
 namespace autofill {
 
 enum class BubbleType;
-class StrikeDatabase;
+class LegacyStrikeDatabase;
 
 // Implementation of per-tab class to control the save credit card bubble and
 // Omnibox icon.
@@ -140,8 +140,8 @@ class SaveCardBubbleControllerImpl
 
   void FetchAccountInfo();
 
-  // Fetches the Autofill StrikeDatabase for the current profile.
-  StrikeDatabase* GetStrikeDatabase();
+  // Fetches the Autofill LegacyStrikeDatabase for the current profile.
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase();
 
   // Displays both the offer-to-save bubble and is associated omnibox icon.
   void ShowBubble();

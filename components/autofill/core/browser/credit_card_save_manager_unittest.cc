@@ -35,8 +35,8 @@
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
+#include "components/autofill/core/browser/test_legacy_strike_database.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/browser/test_strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -92,9 +92,9 @@ std::string NextMonth() {
 class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    std::unique_ptr<TestStrikeDatabase> test_strike_database =
-        std::make_unique<TestStrikeDatabase>();
-    strike_database_ = test_strike_database.get();
+    std::unique_ptr<TestLegacyStrikeDatabase> test_strike_database =
+        std::make_unique<TestLegacyStrikeDatabase>();
+    legacy_strike_database_ = test_strike_database.get();
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
     personal_data_.Init(/*profile_database=*/autofill_client_.GetDatabase(),
@@ -322,7 +322,7 @@ class CreditCardSaveManagerTest : public testing::Test {
   // Ends up getting owned (and destroyed) by TestAutofillClient:
   payments::TestPaymentsClient* payments_client_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
-  TestStrikeDatabase* strike_database_;
+  TestLegacyStrikeDatabase* legacy_strike_database_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
@@ -4004,8 +4004,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4045,8 +4046,9 @@ TEST_F(CreditCardSaveManagerTest,
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4097,8 +4099,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a single strike for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/1);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/1);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4136,8 +4139,9 @@ TEST_F(CreditCardSaveManagerTest,
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a single strike for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/1);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/1);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4186,8 +4190,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4221,8 +4226,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesDisallowsSave) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4276,8 +4282,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4315,8 +4322,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesStillAllowsSave) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4365,10 +4373,11 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_ClearStrikesOnAdd) {
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4388,8 +4397,8 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_ClearStrikesOnAdd) {
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that adding the card reset the strike count for that card.
-  EXPECT_EQ(0, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  EXPECT_EQ(0, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 }
 
 // Tests that adding a card clears all strikes for that card.
@@ -4398,10 +4407,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4431,8 +4441,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that adding the card reset the strike count for that card.
-  EXPECT_EQ(0, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  EXPECT_EQ(0, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 }
 
 // Tests that adding a card clears all strikes for that card.
@@ -4442,10 +4452,11 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_NumStrikesLoggedOnAdd) {
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4478,10 +4489,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.

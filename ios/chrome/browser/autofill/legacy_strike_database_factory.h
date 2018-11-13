@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_FACTORY_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_AUTOFILL_LEGACY_STRIKE_DATABASE_FACTORY_H_
+#define IOS_CHROME_BROWSER_AUTOFILL_LEGACY_STRIKE_DATABASE_FACTORY_H_
 
 #include <memory>
 
@@ -21,29 +21,29 @@ class ChromeBrowserState;
 
 namespace autofill {
 
-class StrikeDatabase;
+class LegacyStrikeDatabase;
 
-// Singleton that owns all StrikeDatabases and associates them with
+// Singleton that owns all LegacyStrikeDatabases and associates them with
 // ios::ChromeBrowserState.
-class StrikeDatabaseFactory : public BrowserStateKeyedServiceFactory {
+class LegacyStrikeDatabaseFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static StrikeDatabase* GetForBrowserState(
+  static LegacyStrikeDatabase* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
-  static StrikeDatabaseFactory* GetInstance();
+  static LegacyStrikeDatabaseFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<StrikeDatabaseFactory>;
+  friend struct base::DefaultSingletonTraits<LegacyStrikeDatabaseFactory>;
 
-  StrikeDatabaseFactory();
-  ~StrikeDatabaseFactory() override;
+  LegacyStrikeDatabaseFactory();
+  ~LegacyStrikeDatabaseFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(StrikeDatabaseFactory);
+  DISALLOW_COPY_AND_ASSIGN(LegacyStrikeDatabaseFactory);
 };
 
 }  // namespace autofill
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_STRIKE_DATABASE_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_AUTOFILL_LEGACY_STRIKE_DATABASE_FACTORY_H_
