@@ -15,6 +15,7 @@
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory_impl.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/notification_service.h"
@@ -138,8 +139,9 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
   picker_params.context = parent_window;
   picker_params.parent = parent_window;
-  picker_params.app_name = base::ASCIIToUTF16(
-      web_contents->GetVisibleURL().GetWithEmptyPath().spec());
+  picker_params.app_name = url_formatter::FormatUrlForSecurityDisplay(
+      web_contents->GetLastCommittedURL(),
+      url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio = false;
   pending_request.picker->Show(picker_params, std::move(source_lists),
@@ -171,11 +173,14 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
     request_result = content::MEDIA_DEVICE_PERMISSION_DENIED;
   } else {
     request_result = content::MEDIA_DEVICE_OK;
+    const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
+        web_contents->GetLastCommittedURL(),
+        url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
     ui = GetDevicesForDesktopCapture(
         web_contents, &devices, media_id, content::MEDIA_DISPLAY_VIDEO_CAPTURE,
         content::MEDIA_NO_SERVICE, false /* capture_audio */,
-        false /* disable_local_echo */, display_notification_,
-        web_contents->GetTitle(), web_contents->GetTitle());
+        false /* disable_local_echo */, display_notification_, visible_url,
+        visible_url);
   }
 
   std::move(pending_request.callback)
