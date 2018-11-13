@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
@@ -52,6 +53,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -63,6 +65,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/user_activity_monitor.mojom.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -176,6 +179,21 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
+  if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled()) {
+    // Start the UI Devtools server using ash::Shell's aura::Env, if possible.
+    // This can handle events targeting aura::Windows created by Ash and window
+    // service clients like Chrome. Shell is inaccessible in multi-process Mash.
+    // Chrome can access the Shell's Env as a workaround in single-process Mash.
+    // TODO(crbug.com/896977): Init the devtools server in Ash on Chrome OS.
+    aura::Env* env = aura::Env::GetInstance();
+    if (!features::IsMultiProcessMash())
+      env = ash::Shell::Get()->aura_env();
+    else
+      LOG(WARNING) << "Chrome cannot handle Ash and mojo app events in Mash.";
+    devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
+        g_browser_process->system_network_context_manager()->GetContext(), env);
+  }
+
   // IME driver must be available at login screen, so initialize before profile.
   IMEDriver::Register();
 

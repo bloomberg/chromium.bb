@@ -73,6 +73,8 @@ component("ui_devtools") {
     "root_element.h",
     "string_util.cc",
     "string_util.h",
+    "switches.cc",
+    "switches.h",
     "ui_element.cc",
     "ui_element.h",
     "ui_element_delegate.h",
