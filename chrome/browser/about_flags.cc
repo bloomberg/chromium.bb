@@ -785,6 +785,13 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
      switches::kTLS13VariantFinal},
 };
 
+const FeatureEntry::FeatureParam kEnforceTLS13DowngradeKnownOnly[] = {
+    {"known_roots_only", "true"}};
+
+const FeatureEntry::FeatureVariation kEnforceTLS13DowngradeFeatureVariations[] =
+    {{"(Known Root Only)", kEnforceTLS13DowngradeKnownOnly,
+      base::size(kEnforceTLS13DowngradeKnownOnly), nullptr}};
+
 #if !defined(OS_ANDROID)
 const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
     {flag_descriptions::kEnableAudioFocusDisabled, "", ""},
@@ -2596,7 +2603,10 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kTLS13VariantChoices)},
     {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
      flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kEnforceTLS13Downgrade)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         net::features::kEnforceTLS13Downgrade,
+         kEnforceTLS13DowngradeFeatureVariations,
+         net::features::kEnforceTLS13Downgrade.name)},
     {"enable-scroll-anchor-serialization",
      flag_descriptions::kEnableScrollAnchorSerializationName,
      flag_descriptions::kEnableScrollAnchorSerializationDescription, kOsAll,
