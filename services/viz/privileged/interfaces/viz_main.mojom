@@ -28,16 +28,13 @@ struct FrameSinkManagerParams {
 
   // Viz to host interface.
   FrameSinkManagerClient frame_sink_manager_client;
+};
 
-  // Optional socket for viz devtools server, which is used to observe the
-  // FrameSinkManager in the viz compositor. This will be null unless the flag
-  // --enable-viz-devtools is used. If present, the server will be created on
-  // the viz process using this socket.
-  [EnableIf=use_viz_devtools]
-  network.mojom.TCPServerSocket? devtools_server_socket;
+struct VizDevToolsParams {
+  // Socket for viz devtools server.
+  network.mojom.TCPServerSocket server_socket;
 
   // Port the devtools server socket is bound to.
-  [EnableIf=use_viz_devtools]
   uint16 server_port;
 };
 
@@ -50,4 +47,9 @@ interface VizMain {
                    discardable_memory.mojom.DiscardableSharedMemoryManager discardable_memory_manager,
                    handle<shared_buffer>? activity_flags,
                    gfx.mojom.SubpixelRendering subpixel_rendering);
+
+  // The viz devtools server is for use by developers to observe the
+  // FrameSinkManager in the viz compositor. This is only called if the flag
+  // --enable-viz-devtools is used.
+  CreateVizDevTools(VizDevToolsParams params);
 };

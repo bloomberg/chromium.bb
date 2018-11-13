@@ -67,6 +67,10 @@ class VizCompositorThreadRunner {
       scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
       GpuServiceImpl* gpu_service);
 
+#if defined(USE_VIZ_DEVTOOLS)
+  void CreateVizDevTools(mojom::VizDevToolsParamsPtr params);
+#endif
+
   // Performs cleanup on VizCompositorThread needed before forcing thread to
   // shut down. Ensures VizCompositorThread teardown during the destructor
   // doesn't block on PostTasks back to the GPU thread. After cleanup has
@@ -86,9 +90,8 @@ class VizCompositorThreadRunner {
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManager* gpu_channel_manager);
 #if defined(USE_VIZ_DEVTOOLS)
-  void InitVizDevToolsOnCompositorThread(
-      network::mojom::TCPServerSocketPtr server_socket,
-      int port);
+  void CreateVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
+  void InitVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
 #endif
   void CleanupForShutdownOnCompositorThread();
   void TearDownOnCompositorThread();
@@ -99,6 +102,10 @@ class VizCompositorThreadRunner {
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
 #if defined(USE_VIZ_DEVTOOLS)
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
+
+  // If the FrameSinkManager is not ready yet, then we stash the pending
+  // VizDevToolsParams.
+  mojom::VizDevToolsParamsPtr pending_viz_dev_tools_params_;
 #endif
   // End variables to be accessed only on |task_runner_|.
 

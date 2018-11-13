@@ -265,6 +265,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::ResourceContext* context) override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory() override;
+  network::mojom::NetworkContext* GetSystemNetworkContext() override;
   std::string GetGeolocationApiKey() override;
 
 #if defined(OS_ANDROID)

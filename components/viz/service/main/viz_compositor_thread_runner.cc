@@ -99,6 +99,19 @@ void VizCompositorThreadRunner::CreateFrameSinkManager(
           base::Unretained(gpu_channel_manager)));
 }
 
+#if defined(USE_VIZ_DEVTOOLS)
+void VizCompositorThreadRunner::CreateVizDevTools(
+    mojom::VizDevToolsParamsPtr params) {
+  // It is safe to use Unretained(this) because |this| owns the |task_runner_|,
+  // and will outlive it.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &VizCompositorThreadRunner::CreateVizDevToolsOnCompositorThread,
+          base::Unretained(this), std::move(params)));
+}
+#endif
+
 void VizCompositorThreadRunner::CleanupForShutdown(
     base::OnceClosure cleanup_finished_callback) {
   task_runner_->PostTaskAndReply(
@@ -155,21 +168,28 @@ void VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread(
           std::move(params->frame_sink_manager_client)));
 
 #if defined(USE_VIZ_DEVTOOLS)
-  if (params->devtools_server_socket) {
-    InitVizDevToolsOnCompositorThread(
-        network::mojom::TCPServerSocketPtr(
-            std::move(params->devtools_server_socket)),
-        params->server_port);
-  }
+  if (pending_viz_dev_tools_params_)
+    InitVizDevToolsOnCompositorThread(std::move(pending_viz_dev_tools_params_));
 #endif
 }
 
 #if defined(USE_VIZ_DEVTOOLS)
+void VizCompositorThreadRunner::CreateVizDevToolsOnCompositorThread(
+    mojom::VizDevToolsParamsPtr params) {
+  if (!frame_sink_manager_) {
+    DCHECK(!pending_viz_dev_tools_params_);
+    pending_viz_dev_tools_params_ = std::move(params);
+    return;
+  }
+  InitVizDevToolsOnCompositorThread(std::move(params));
+}
+
 void VizCompositorThreadRunner::InitVizDevToolsOnCompositorThread(
-    network::mojom::TCPServerSocketPtr server_socket,
-    int port) {
+    mojom::VizDevToolsParamsPtr params) {
+  DCHECK(frame_sink_manager_);
   devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViz(
-      std::move(server_socket), port);
+      network::mojom::TCPServerSocketPtr(std::move(params->server_socket)),
+      params->server_port);
   auto dom_agent =
       std::make_unique<ui_devtools::DOMAgentViz>(frame_sink_manager_.get());
   auto css_agent = std::make_unique<ui_devtools::CSSAgent>(dom_agent.get());

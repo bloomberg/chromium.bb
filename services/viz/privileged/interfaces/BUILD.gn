@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/ui_devtools/devtools.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
@@ -18,11 +17,6 @@ mojom("interfaces") {
     "//services/viz/public/interfaces",
     "//ui/gfx/mojo",
   ]
-
-  enabled_features = []
-  if (use_viz_devtools) {
-    enabled_features += [ "use_viz_devtools" ]
-  }
 }
 
 source_set("unit_tests") {

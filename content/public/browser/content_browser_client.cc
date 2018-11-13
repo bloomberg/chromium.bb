@@ -423,6 +423,11 @@ ContentBrowserClient::GetSystemSharedURLLoaderFactory() {
   return nullptr;
 }
 
+network::mojom::NetworkContext*
+ContentBrowserClient::GetSystemNetworkContext() {
+  return nullptr;
+}
+
 std::string ContentBrowserClient::GetGeolocationApiKey() {
   return std::string();
 }
