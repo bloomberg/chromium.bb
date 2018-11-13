@@ -192,7 +192,8 @@ class PersonalDataManagerTestBase {
     personal_data_.reset(new PersonalDataManagerMock("en"));
     personal_data_->Init(
         scoped_refptr<AutofillWebDataService>(profile_database_service_),
-        use_account_server_storage
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableAccountWalletStorage)
             ? scoped_refptr<AutofillWebDataService>(account_database_service_)
             : nullptr,
         prefs_.get(), identity_test_env_.identity_manager(),
@@ -200,6 +201,9 @@ class PersonalDataManagerTestBase {
         /*history_service=*/nullptr, is_incognito);
 
     personal_data_->AddObserver(&personal_data_observer_);
+    AccountInfo account_info;
+    account_info.email = "sync@account";
+    sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
     personal_data_->OnSyncServiceInitialized(&sync_service_);
     personal_data_->OnStateChanged(&sync_service_);
@@ -211,7 +215,7 @@ class PersonalDataManagerTestBase {
   }
 
   void ResetPersonalDataManager(UserMode user_mode) {
-    ResetPersonalDataManager(user_mode, /*use_account_server_storage=*/true);
+    ResetPersonalDataManager(user_mode, /*use_account_server_storage=*/false);
   }
 
   void ResetProfiles() {
@@ -368,8 +372,17 @@ class PersonalDataManagerTestBase {
     EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   }
 
-  void SetServerCards(std::vector<CreditCard> server_cards) {
-    test::SetServerCreditCards(account_autofill_table_, server_cards);
+  AutofillTable* GetServerDataTable() {
+    return personal_data_->IsSyncFeatureEnabled() ? profile_autofill_table_
+                                                  : account_autofill_table_;
+  }
+
+  void SetServerCards(const std::vector<CreditCard>& server_cards) {
+    test::SetServerCreditCards(GetServerDataTable(), server_cards);
+  }
+
+  void SetServerProfiles(const std::vector<AutofillProfile>& server_profiles) {
+    GetServerDataTable()->SetServerProfiles(server_profiles);
   }
 
   // Verifies that the web database has been updated and the notification sent.
@@ -2111,17 +2124,16 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   personal_data_->AddProfile(local_profile);
 
   // Add a different server profile.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
                        "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
                        "77401", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  SetServerProfiles(server_profiles);
 
   // Disable Profile autofill.
   prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
@@ -2156,17 +2168,16 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->AddProfile(local_profile);
 
   // Add a different server profile.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
                        "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
                        "77401", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  SetServerProfiles(server_profiles);
 
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
@@ -5026,7 +5037,7 @@ TEST_F(PersonalDataManagerTest,
   // will be ignored when the profile is written to the DB.
   server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
   server_profiles.back().set_use_count(100);
-  account_autofill_table_->SetServerProfiles(server_profiles);
+  SetServerProfiles(server_profiles);
 
   // Add a server and a local card that have the server address as billing
   // address.
@@ -5050,9 +5061,9 @@ TEST_F(PersonalDataManagerTest,
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
-  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+  ASSERT_EQ(1U, personal_data_->GetServerProfiles().size());
+  ASSERT_EQ(2U, personal_data_->GetCreditCards().size());
 
   ///////////////////////////////////////////////////////////////////////
   // Tested method.
@@ -5120,17 +5131,16 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->AddProfile(local_profile);
 
   // Add a different server profile.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "Fox",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "", "Fox",
                        "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  GetServerProfiles.back().set_use_count(100);
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  server_profiles.back().set_use_count(100);
+  SetServerProfiles(server_profiles);
 
   // Add a server and a local card that have the server address as billing
   // address.
@@ -5212,16 +5222,16 @@ TEST_F(PersonalDataManagerTest,
   const std::string kServerAddressId("server_address1");
 
   // Add a server profile that has already been converted.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "Ray", "Doe",
+  test::SetProfileInfo(&server_profiles.back(), "John", "Ray", "Doe",
                        "john@doe.com", "Fox", "1212 Center", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "");
-  GetServerProfiles.back().set_has_converted(true);
+  server_profiles.back().set_has_converted(true);
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  SetServerProfiles(server_profiles);
 
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
@@ -5274,30 +5284,28 @@ TEST_F(
   personal_data_->AddProfile(local_profile);
 
   // Add a server profile.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "", "",
                        "1212 Center", "Bld. 5", "Orlando", "FL", "32801", "US",
                        "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  GetServerProfiles.back().set_use_count(100);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  server_profiles.back().set_use_count(100);
 
   // Add a similar server profile.
-  GetServerProfiles.push_back(
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId2));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe",
                        "john@doe.com", "Fox", "1212 Center", "Bld. 5",
                        "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  GetServerProfiles.back().set_use_count(200);
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  server_profiles.back().set_use_count(200);
+  SetServerProfiles(server_profiles);
 
   // Add a server and a local card that have the first and second Wallet address
   // as a billing address.
@@ -5389,17 +5397,16 @@ TEST_F(
   const std::string kServerAddressId("server_address1");
 
   // Add a server profile.
-  std::vector<AutofillProfile> GetServerProfiles;
-  GetServerProfiles.push_back(
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
       AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
-  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "Fox",
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "", "Fox",
                        "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL,
-                                      base::ASCIIToUTF16("John Doe"));
-  GetServerProfiles.back().set_use_count(100);
-  account_autofill_table_->SetServerProfiles(GetServerProfiles);
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+  server_profiles.back().set_use_count(100);
+  SetServerProfiles(server_profiles);
 
   // Add a server card that have the server address as billing address.
   std::vector<CreditCard> server_cards;
@@ -5443,7 +5450,7 @@ TEST_F(
                           "1112" /* Visa */, "01", "2888", "1");
   server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId);
-  test::SetServerCreditCards(account_autofill_table_, server_cards);
+  SetServerCards(server_cards);
 
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
@@ -6167,8 +6174,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
 
   // Call OnSyncServiceInitialized with a sync service in auth error.
   syncer::TestSyncService sync_service;
-  sync_service.SetIsAuthenticatedAccountPrimary(
-      /*is_authenticated_account_primary=*/false);
   sync_service.SetAuthError(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   personal_data_->OnSyncServiceInitialized(&sync_service);
@@ -6529,7 +6534,8 @@ TEST_F(PersonalDataManagerTest, UsePersistentServerStorage) {
 // Verify that PDM can switch at runtime between the different storages.
 TEST_F(PersonalDataManagerTest, SwitchServerStorages) {
   // Start with account storage.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_account_server_storage=*/true);
   SetUpThreeCardTypes();
 
   // Check that we do have 2 server cards, as expected.
@@ -6565,9 +6571,10 @@ TEST_F(PersonalDataManagerTest, SwitchServerStorages) {
 // Sanity check that the mode where we use the regular, persistent storage for
 // cards still works.
 TEST_F(PersonalDataManagerTest, UseCorrectStorageForDifferentCards) {
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_account_server_storage=*/true);
 
-  // Add a server card
+  // Add a server card.
   CreditCard server_card;
   test::SetCreditCardInfo(&server_card, "Server Card",
                           "4234567890123456",  // Visa
@@ -6589,7 +6596,7 @@ TEST_F(PersonalDataManagerTest, UseCorrectStorageForDifferentCards) {
   EXPECT_EQ(1U, cards.size());
   EXPECT_EQ(server_card.LastFourDigits(), cards[0]->LastFourDigits());
 
-  // Add a local card
+  // Add a local card.
   CreditCard local_card;
   test::SetCreditCardInfo(&local_card, "Freddy Mercury",
                           "4234567890123463",  // Visa
