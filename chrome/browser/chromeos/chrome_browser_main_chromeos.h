@@ -40,7 +40,6 @@ class DiscoverManager;
 class EventRewriterDelegateImpl;
 class IdleActionWarningObserver;
 class LowDiskNotification;
-class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PowerMetricsReporter;
@@ -103,7 +102,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
   std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
-  std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
 
   // Indicates whether the DBus has been initialized before. It is possible that
   // the DBus has been initialized in ChromeFeatureListCreator.
