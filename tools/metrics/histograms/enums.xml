@@ -40111,11 +40111,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2126196629" label="PPB_UDPSocket_Private;0.4"/>
 </enum>
 
-<enum name="PerformanceMeasurePassedInParameterType">
-  <obsolete>
-    Deprecated 05/2018. Made decision in issue 758385 with already acquired
-    data. So this is no longer needed.
-  </obsolete>
+<enum name="PerformanceMeasureParameterType">
   <int value="0" label="OBJECT_OBJECT"/>
   <int value="1" label="UNLOAD_EVENT_START"/>
   <int value="2" label="UNLOAD_EVENT_END"/>
@@ -40126,6 +40122,22 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="LOAD_EVENT_START"/>
   <int value="8" label="LOAD_EVENT_END"/>
   <int value="9" label="OTHER"/>
+  <int value="10" label="UNDEFINED_OR_NULL"/>
+  <int value="11" label="NUMBER"/>
+  <int value="12" label="UNPROVIDED"/>
+  <int value="13" label="NAVIGATION_START"/>
+  <int value="14" label="REDIRECT_START"/>
+  <int value="15" label="REDIRECT_END"/>
+  <int value="16" label="FETCH_START"/>
+  <int value="17" label="DOMAIN_LOOKUP_START"/>
+  <int value="18" label="DOMAIN_LOOKUP_END"/>
+  <int value="19" label="CONNECT_START"/>
+  <int value="20" label="CONNECT_END"/>
+  <int value="21" label="SECURE_CONNECTION_START"/>
+  <int value="22" label="REQUEST_START"/>
+  <int value="23" label="RESPONSE_START"/>
+  <int value="24" label="RESPONSE_END"/>
+  <int value="25" label="DOM_LOADING"/>
 </enum>
 
 <enum name="PermissionAction">

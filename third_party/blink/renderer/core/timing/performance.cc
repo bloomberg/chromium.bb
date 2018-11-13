@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 
 #include <algorithm>
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
@@ -78,6 +79,92 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
       {ConvertSecondsToDOMHighResTimeStamp(CurrentTime() -
                                            CurrentTimeTicksInSeconds())});
   return unix_at_zero_monotonic;
+}
+
+Performance::MeasureParameterType StringToNavigationTimingParameterType(
+    const String& s) {
+  // The following names come from performance_user_timing.cc.
+  if (s == "unloadEventStart")
+    return Performance::MeasureParameterType::kUnloadEventStart;
+  if (s == "unloadEventEnd")
+    return Performance::MeasureParameterType::kUnloadEventEnd;
+  if (s == "domInteractive")
+    return Performance::MeasureParameterType::kDomInteractive;
+  if (s == "domContentLoadedEventStart")
+    return Performance::MeasureParameterType::kDomContentLoadedEventStart;
+  if (s == "domContentLoadedEventEnd")
+    return Performance::MeasureParameterType::kDomContentLoadedEventEnd;
+  if (s == "domComplete")
+    return Performance::MeasureParameterType::kDomComplete;
+  if (s == "loadEventStart")
+    return Performance::MeasureParameterType::kLoadEventStart;
+  if (s == "loadEventEnd")
+    return Performance::MeasureParameterType::kLoadEventEnd;
+  if (s == "navigationStart")
+    return Performance::MeasureParameterType::kNavigationStart;
+  if (s == "redirectStart")
+    return Performance::MeasureParameterType::kRedirectStart;
+  if (s == "redirectEnd")
+    return Performance::MeasureParameterType::kRedirectEnd;
+  if (s == "fetchStart")
+    return Performance::MeasureParameterType::kFetchStart;
+  if (s == "domainLookupStart")
+    return Performance::MeasureParameterType::kDomainLookupStart;
+  if (s == "domainLookupEnd")
+    return Performance::MeasureParameterType::kDomainLookupEnd;
+  if (s == "connectStart")
+    return Performance::MeasureParameterType::kConnectStart;
+  if (s == "connectEnd")
+    return Performance::MeasureParameterType::kConnectEnd;
+  if (s == "secureConnectionStart")
+    return Performance::MeasureParameterType::kSecureConnectionStart;
+  if (s == "requestStart")
+    return Performance::MeasureParameterType::kRequestStart;
+  if (s == "responseStart")
+    return Performance::MeasureParameterType::kResponseStart;
+  if (s == "responseEnd")
+    return Performance::MeasureParameterType::kResponseEnd;
+  if (s == "domLoading")
+    return Performance::MeasureParameterType::kDomLoading;
+  return Performance::MeasureParameterType::kOther;
+}
+
+Performance::MeasureParameterType StartOrOptionsToParameterType(
+    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options) {
+  if (start_or_options.IsString()) {
+    return StringToNavigationTimingParameterType(
+        start_or_options.GetAsString());
+  }
+  if (start_or_options.IsDouble())
+    return Performance::MeasureParameterType::kNumber;
+  if (start_or_options.IsPerformanceMeasureOptions())
+    return Performance::MeasureParameterType::kObjectObject;
+  // null and undefined are undistinguishable in
+  // StringOrDoubleOrPerformanceMeasureOptions.
+  return Performance::MeasureParameterType::kUndefinedOrNull;
+}
+
+Performance::MeasureParameterType EndToParameterType(
+    const StringOrDouble& end) {
+  if (end.IsString()) {
+    // When passing an object to |end|, the object will be implicitly converted
+    // as the following string.
+    if (end.GetAsString() == "[object Object]")
+      return Performance::MeasureParameterType::kObjectObject;
+    return StringToNavigationTimingParameterType(end.GetAsString());
+  }
+  if (end.IsDouble())
+    return Performance::MeasureParameterType::kNumber;
+  // null and undefined are undistinguishable in StringOrDouble.
+  return Performance::MeasureParameterType::kUndefinedOrNull;
+}
+
+void LogMeasureStartToUma(Performance::MeasureParameterType type) {
+  UMA_HISTOGRAM_ENUMERATION("Performance.MeasureParameter.StartMark", type);
+}
+
+void LogMeasureEndToUma(Performance::MeasureParameterType type) {
+  UMA_HISTOGRAM_ENUMERATION("Performance.MeasureParameter.EndMark", type);
 }
 
 }  // namespace
@@ -601,6 +688,8 @@ void Performance::clearMarks(const AtomicString& mark_name) {
 PerformanceMeasure* Performance::measure(ScriptState* script_state,
                                          const AtomicString& measure_name,
                                          ExceptionState& exception_state) {
+  LogMeasureStartToUma(MeasureParameterType::kUnprovided);
+  LogMeasureEndToUma(MeasureParameterType::kUnprovided);
   return measureInternal(script_state, measure_name,
                          NativeValueTraits<StringOrDouble>::NullValue(),
                          NativeValueTraits<StringOrDouble>::NullValue(),
@@ -613,6 +702,8 @@ PerformanceMeasure* Performance::measure(
     const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     ExceptionState& exception_state) {
+  LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
+  LogMeasureEndToUma(MeasureParameterType::kUnprovided);
   return measureInternal(script_state, measure_name, start_or_options,
                          NativeValueTraits<StringOrDouble>::NullValue(),
                          exception_state);
@@ -624,6 +715,8 @@ PerformanceMeasure* Performance::measure(
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     const StringOrDouble& end,
     ExceptionState& exception_state) {
+  LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
+  LogMeasureEndToUma(EndToParameterType(end));
   return measureInternal(script_state, measure_name, start_or_options, end,
                          exception_state);
 }
