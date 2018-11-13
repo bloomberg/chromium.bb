@@ -365,9 +365,10 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   // use the passed-in mode here.
   NGConstraintSpace space =
       NGConstraintSpaceBuilder(
-          style.GetWritingMode(),
-          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
-          .ToConstraintSpace(style.GetWritingMode());
+          style.GetWritingMode(), style.GetWritingMode(),
+          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite},
+          /* is_new_fc */ false)
+          .ToConstraintSpace();
 
   LayoutUnit content_size =
       min_and_max ? min_and_max->max_size : NGSizeIndefinite;
@@ -465,15 +466,15 @@ MinMaxSize ComputeMinAndMaxContentContribution(
       // partial layout. It is also important that we shrink to fit, by
       // definition.
       adjusted_constraint_space =
-          NGConstraintSpaceBuilder(*constraint_space)
+          NGConstraintSpaceBuilder(
+              *constraint_space, node.Style().GetWritingMode(),
+              /* is_new_fc */ constraint_space->IsNewFormattingContext())
               .SetAvailableSize(constraint_space->AvailableSize())
               .SetPercentageResolutionSize(
                   constraint_space->PercentageResolutionSize())
               .SetFloatsBfcBlockOffset(LayoutUnit())
-              .SetIsNewFormattingContext(
-                  constraint_space->IsNewFormattingContext())
               .SetIsShrinkToFit(true)
-              .ToConstraintSpace(node.Style().GetWritingMode());
+              .ToConstraintSpace();
       constraint_space = &adjusted_constraint_space;
     }
     minmax = node.ComputeMinMaxSize(writing_mode, input, constraint_space);

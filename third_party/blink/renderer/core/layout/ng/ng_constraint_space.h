@@ -322,11 +322,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
  private:
   friend class NGConstraintSpaceBuilder;
-  // Default constructor.
-  // is_new_fc is technically redundant, but simplifies the code here a bit.
-  NGConstraintSpace(WritingMode out_writing_mode,
-                    bool is_new_fc,
-                    NGConstraintSpaceBuilder& builder);
+
+  NGConstraintSpace(WritingMode out_writing_mode, NGPhysicalSize icb_size);
 
   bool HasFlag(ConstraintSpaceFlags mask) const {
     return flags_ & static_cast<unsigned>(mask);
@@ -343,10 +340,10 @@ class CORE_EXPORT NGConstraintSpace final {
 
   NGExclusionSpace exclusion_space_;
 
-  LayoutUnit fragmentainer_block_size_;
-  LayoutUnit fragmentainer_space_at_bfc_start_;
+  LayoutUnit fragmentainer_block_size_ = NGSizeIndefinite;
+  LayoutUnit fragmentainer_space_at_bfc_start_ = NGSizeIndefinite;
 
-  LayoutUnit clearance_offset_;
+  LayoutUnit clearance_offset_ = LayoutUnit::Min();
 
   unsigned block_direction_fragmentation_type_ : 2;
   unsigned table_cell_child_layout_phase_ : 2;  // NGTableCellChildLayoutPhase

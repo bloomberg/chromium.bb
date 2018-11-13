@@ -868,11 +868,13 @@ static LayoutUnit ComputeContentSize(
       << node.InitialContainingBlockSize();
 
   NGConstraintSpace space =
-      NGConstraintSpaceBuilder(writing_mode, icb_size)
+      NGConstraintSpaceBuilder(/* parent_writing_mode */ writing_mode,
+                               /* out_writing_mode */ writing_mode, icb_size,
+                               /* is_new_fc */ false)
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .SetIsIntermediateLayout(true)
-          .ToConstraintSpace(writing_mode);
+          .ToConstraintSpace();
 
   Vector<NGPositionedFloat> positioned_floats;
   NGUnpositionedFloatVector unpositioned_floats;

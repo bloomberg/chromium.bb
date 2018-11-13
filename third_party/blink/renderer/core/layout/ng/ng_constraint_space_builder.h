@@ -22,69 +22,133 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   STACK_ALLOCATED();
 
  public:
-  // NOTE: This constructor doesn't act like a copy-constructor, it uses the
-  // writing_mode and icb_size from the parent constraint space, and passes
-  // them to the constructor below.
-  NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space)
+  // The setters on this builder are in the writing mode of parent_space.
+  NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space,
+                           WritingMode out_writing_mode,
+                           bool is_new_fc)
       : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
-                                 parent_space.InitialContainingBlockSize()) {
-    flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+                                 out_writing_mode,
+                                 parent_space.InitialContainingBlockSize(),
+                                 is_new_fc) {
+    // Propagate the intermediate layout bit to the child constraint space.
     if (parent_space.IsIntermediateLayout())
-      flags_ |= NGConstraintSpace::kIntermediateLayout;
+      space_.flags_ |= NGConstraintSpace::kIntermediateLayout;
   }
 
-  // writing_mode is the writing mode that the logical sizes passed to the
-  // setters are in.
-  NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size)
-      : initial_containing_block_size_(icb_size),
-        parent_writing_mode_(writing_mode) {
-    flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
+  // The setters on this builder are in the writing mode of parent_writing_mode.
+  //
+  // forced_orthogonal_writing_mode_root is set for constraint spaces created
+  // directly from a LayoutObject. In this case parent_writing_mode isn't
+  // actually the parent's, it's the same as out_writing_mode.
+  // When this occurs we would miss setting the kOrthogonalWritingModeRoot flag
+  // unless we force it.
+  NGConstraintSpaceBuilder(WritingMode parent_writing_mode,
+                           WritingMode out_writing_mode,
+                           const NGPhysicalSize& icb_size,
+                           bool is_new_fc,
+                           bool force_orthogonal_writing_mode_root = false)
+      : space_(out_writing_mode, icb_size),
+        is_in_parallel_flow_(
+            IsParallelWritingMode(parent_writing_mode, out_writing_mode)),
+        is_new_fc_(is_new_fc),
+        force_orthogonal_writing_mode_root_(
+            force_orthogonal_writing_mode_root) {
+    if (is_new_fc_)
+      space_.flags_ |= NGConstraintSpace::kNewFormattingContext;
+
+    if (!is_in_parallel_flow_ || force_orthogonal_writing_mode_root_)
+      space_.flags_ |= NGConstraintSpace::kOrthogonalWritingModeRoot;
+  }
+
+  // If inline size is indefinite, use size of initial containing block.
+  // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
+  void AdjustInlineSizeIfNeeded(LayoutUnit* inline_size) const {
+    DCHECK(!is_in_parallel_flow_);
+
+    if (*inline_size != NGSizeIndefinite)
+      return;
+
+    if (static_cast<WritingMode>(space_.writing_mode_) ==
+        WritingMode::kHorizontalTb)
+      *inline_size = space_.initial_containing_block_size_.width;
+    else
+      *inline_size = space_.initial_containing_block_size_.height;
   }
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
-    available_size_ = available_size;
+    space_.available_size_ = available_size;
+
+    if (UNLIKELY(!is_in_parallel_flow_)) {
+      space_.available_size_.Flip();
+      AdjustInlineSizeIfNeeded(&space_.available_size_.inline_size);
+    }
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       NGLogicalSize percentage_resolution_size) {
-    percentage_resolution_size_ = percentage_resolution_size;
+    space_.percentage_resolution_size_ = percentage_resolution_size;
+
+    if (UNLIKELY(!is_in_parallel_flow_)) {
+      space_.percentage_resolution_size_.Flip();
+      AdjustInlineSizeIfNeeded(&space_.percentage_resolution_size_.inline_size);
+    }
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
       NGLogicalSize replaced_percentage_resolution_size) {
-    replaced_percentage_resolution_size_ = replaced_percentage_resolution_size;
+    space_.replaced_percentage_resolution_size_ =
+        replaced_percentage_resolution_size;
+
+    if (UNLIKELY(!is_in_parallel_flow_)) {
+      space_.replaced_percentage_resolution_size_.Flip();
+      AdjustInlineSizeIfNeeded(
+          &space_.replaced_percentage_resolution_size_.inline_size);
+    }
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
-    fragmentainer_block_size_ = size;
+    space_.fragmentainer_block_size_ = size;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetFragmentainerSpaceAtBfcStart(LayoutUnit space) {
-    fragmentainer_space_at_bfc_start_ = space;
+    space_.fragmentainer_space_at_bfc_start_ = space;
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetTextDirection(TextDirection text_direction) {
-    text_direction_ = text_direction;
+  NGConstraintSpaceBuilder& SetTextDirection(TextDirection direction) {
+    space_.direction_ = static_cast<unsigned>(direction);
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
-    SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+    if (LIKELY(is_in_parallel_flow_))
+      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+    else
+      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool b) {
-    SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+    if (LIKELY(is_in_parallel_flow_))
+      SetFlag(NGConstraintSpace::kFixedSizeBlock, b);
+    else
+      SetFlag(NGConstraintSpace::kFixedSizeInline, b);
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetFixedSizeBlockIsDefinite(bool b) {
-    SetFlag(NGConstraintSpace::kFixedSizeBlockIsDefinite, b);
+    if (LIKELY(is_in_parallel_flow_ || !force_orthogonal_writing_mode_root_))
+      SetFlag(NGConstraintSpace::kFixedSizeBlockIsDefinite, b);
+
     return *this;
   }
 
@@ -100,7 +164,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetFragmentationType(
       NGFragmentationType fragmentation_type) {
-    fragmentation_type_ = fragmentation_type;
+    space_.block_direction_fragmentation_type_ = fragmentation_type;
     return *this;
   }
 
@@ -109,10 +173,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool b) {
-    SetFlag(NGConstraintSpace::kNewFormattingContext, b);
-    return *this;
-  }
   NGConstraintSpaceBuilder& SetIsAnonymous(bool b) {
     SetFlag(NGConstraintSpace::kAnonymous, b);
     return *this;
@@ -124,27 +184,37 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
-    adjoining_floats_ = floats;
+    if (!is_new_fc_)
+      space_.adjoining_floats_ = static_cast<unsigned>(floats);
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut) {
-    margin_strut_ = margin_strut;
+    if (!is_new_fc_)
+      space_.margin_strut_ = margin_strut;
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset) {
-    bfc_offset_ = bfc_offset;
+    if (!is_new_fc_)
+      space_.bfc_offset_ = bfc_offset;
+
     return *this;
   }
   NGConstraintSpaceBuilder& SetFloatsBfcBlockOffset(
       const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
-    floats_bfc_block_offset_ = floats_bfc_block_offset;
+    if (!is_new_fc_)
+      space_.floats_bfc_block_offset_ = floats_bfc_block_offset;
+
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset) {
-    clearance_offset_ = clearance_offset;
+    if (!is_new_fc_)
+      space_.clearance_offset_ = clearance_offset;
+
     return *this;
   }
 
@@ -155,23 +225,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetTableCellChildLayoutPhase(
       NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
-    table_cell_child_layout_phase_ = table_cell_child_layout_phase;
-    return *this;
-  }
-
-  // Usually orthogonality is inferred from the WritingMode parameters passed to
-  // the constructor and ToConstraintSpace. But if you're passing the same
-  // writing mode to those methods but the node targeted by this ConstraintSpace
-  // is an orthogonal writing mode root, call this method to have the
-  // appropriate flags set on the resulting ConstraintSpace.
-  NGConstraintSpaceBuilder& SetIsOrthogonalWritingModeRoot(bool b) {
-    force_orthogonal_writing_mode_root_ = b;
+    space_.table_cell_child_layout_phase_ = table_cell_child_layout_phase;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space) {
-    exclusion_space_ = &exclusion_space;
+    if (!is_new_fc_)
+      space_.exclusion_space_ = exclusion_space;
+
     return *this;
   }
 
@@ -185,53 +247,43 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  // Creates a new constraint space. This may be called multiple times, for
-  // example the constraint space will be different for a child which:
-  //  - Establishes a new formatting context.
-  //  - Is within a fragmentation container and needs its fragmentation offset
-  //    updated.
-  //  - Has its size is determined by its parent layout (flex, abs-pos).
-  //
-  // WritingMode specifies the writing mode of the generated space.
-  const NGConstraintSpace ToConstraintSpace(WritingMode out_writing_mode) {
-    return NGConstraintSpace(out_writing_mode,
-                             flags_ & NGConstraintSpace::kNewFormattingContext,
-                             *this);
+  // Creates a new constraint space.
+  const NGConstraintSpace ToConstraintSpace() {
+#if DCHECK_IS_ON()
+    DCHECK(!to_constraint_space_called_)
+        << "ToConstraintSpace should only be called once.";
+    to_constraint_space_called_ = true;
+#endif
+
+    DCHECK(!is_new_fc_ || !space_.adjoining_floats_);
+    DCHECK_EQ(space_.HasFlag(NGConstraintSpace::kOrthogonalWritingModeRoot),
+              !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_);
+
+    DCHECK(!force_orthogonal_writing_mode_root_ || is_in_parallel_flow_)
+        << "Forced and inferred orthogonal writing mode shouldn't happen "
+           "simultaneously. Inferred means the constraints are in parent "
+           "writing mode, forced means they are in child writing mode.";
+
+    space_.baseline_requests_ = baseline_requests_.Serialize();
+    return std::move(space_);
   }
 
  private:
   void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
-    flags_ = (flags_ & ~static_cast<unsigned>(mask)) |
-             (-(int32_t)value & static_cast<unsigned>(mask));
+    space_.flags_ = (space_.flags_ & ~static_cast<unsigned>(mask)) |
+                    (-(int32_t)value & static_cast<unsigned>(mask));
   }
 
-  // NOTE: The below NGLogicalSizes are relative to parent_writing_mode_.
-  NGLogicalSize available_size_;
-  NGLogicalSize percentage_resolution_size_;
-  NGLogicalSize replaced_percentage_resolution_size_;
+  NGConstraintSpace space_;
+  bool is_in_parallel_flow_;
+  bool is_new_fc_;
+  bool force_orthogonal_writing_mode_root_;
 
-  NGPhysicalSize initial_containing_block_size_;
-  LayoutUnit fragmentainer_block_size_ = NGSizeIndefinite;
-  LayoutUnit fragmentainer_space_at_bfc_start_ = NGSizeIndefinite;
+#if DCHECK_IS_ON()
+  bool to_constraint_space_called_ = false;
+#endif
 
-  WritingMode parent_writing_mode_;
-  NGFragmentationType fragmentation_type_ = kFragmentNone;
-  NGTableCellChildLayoutPhase table_cell_child_layout_phase_ =
-      kNotTableCellChild;
-  NGFloatTypes adjoining_floats_ = kFloatTypeNone;
-  TextDirection text_direction_ = TextDirection::kLtr;
-  bool force_orthogonal_writing_mode_root_ = false;
-
-  unsigned flags_;
-
-  NGMarginStrut margin_strut_;
-  NGBfcOffset bfc_offset_;
-  base::Optional<LayoutUnit> floats_bfc_block_offset_;
-  const NGExclusionSpace* exclusion_space_ = nullptr;
-  LayoutUnit clearance_offset_;
   NGBaselineRequestList baseline_requests_;
-
-  friend class NGConstraintSpace;
 };
 
 }  // namespace blink

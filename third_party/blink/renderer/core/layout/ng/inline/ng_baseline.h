@@ -113,6 +113,7 @@ class CORE_EXPORT NGBaselineRequestList {
   explicit NGBaselineRequestList(unsigned serialized)
       : type_id_mask_(serialized) {}
   friend class NGConstraintSpace;
+  friend class NGConstraintSpaceBuilder;
 
   unsigned type_id_mask_ = 0;
 };

@@ -95,7 +95,8 @@ base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
 
 NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
     const NGLogicalSize& page_size) const {
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+  NGConstraintSpaceBuilder space_builder(
+      ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(page_size);
   space_builder.SetPercentageResolutionSize(page_size);
 
@@ -106,10 +107,9 @@ NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
   space_builder.SetFragmentationType(kFragmentPage);
   space_builder.SetFragmentainerBlockSize(page_size.block_size);
   space_builder.SetFragmentainerSpaceAtBfcStart(page_size.block_size);
-  space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
 
-  return space_builder.ToConstraintSpace(Style().GetWritingMode());
+  return space_builder.ToConstraintSpace();
 }
 
 }  // namespace blink

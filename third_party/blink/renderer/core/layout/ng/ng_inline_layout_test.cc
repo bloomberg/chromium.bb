@@ -23,11 +23,13 @@ class NGInlineLayoutTest : public SimTest {
   NGConstraintSpace ConstraintSpaceForElement(LayoutBlockFlow* block_flow) {
     return NGConstraintSpaceBuilder(
                block_flow->Style()->GetWritingMode(),
-               /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+               block_flow->Style()->GetWritingMode(),
+               /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite},
+               /* is_new_fc */ false)
         .SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetPercentageResolutionSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetTextDirection(block_flow->Style()->Direction())
-        .ToConstraintSpace(block_flow->Style()->GetWritingMode());
+        .ToConstraintSpace();
   }
 };
 

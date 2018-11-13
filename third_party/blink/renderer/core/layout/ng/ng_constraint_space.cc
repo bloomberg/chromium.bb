@@ -34,102 +34,14 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 }  // namespace
 
 NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
-                                     bool is_new_fc,
-                                     NGConstraintSpaceBuilder& builder)
-    : available_size_(builder.available_size_),
-      percentage_resolution_size_(builder.percentage_resolution_size_),
-      replaced_percentage_resolution_size_(
-          builder.replaced_percentage_resolution_size_),
-      initial_containing_block_size_(builder.initial_containing_block_size_),
-      margin_strut_(is_new_fc ? NGMarginStrut() : builder.margin_strut_),
-      bfc_offset_(is_new_fc ? NGBfcOffset() : builder.bfc_offset_),
-      floats_bfc_block_offset_(is_new_fc ? base::nullopt
-                                         : builder.floats_bfc_block_offset_),
-      fragmentainer_block_size_(builder.fragmentainer_block_size_),
-      fragmentainer_space_at_bfc_start_(
-          builder.fragmentainer_space_at_bfc_start_),
-      clearance_offset_(is_new_fc ? LayoutUnit::Min()
-                                  : builder.clearance_offset_),
-      block_direction_fragmentation_type_(builder.fragmentation_type_),
-      table_cell_child_layout_phase_(builder.table_cell_child_layout_phase_),
-      adjoining_floats_(builder.adjoining_floats_),
+                                     NGPhysicalSize icb_size)
+    : initial_containing_block_size_(icb_size),
+      block_direction_fragmentation_type_(static_cast<unsigned>(kFragmentNone)),
+      table_cell_child_layout_phase_(static_cast<unsigned>(kNotTableCellChild)),
+      adjoining_floats_(static_cast<unsigned>(kFloatTypeNone)),
       writing_mode_(static_cast<unsigned>(out_writing_mode)),
-      direction_(static_cast<unsigned>(builder.text_direction_)),
-      flags_(builder.flags_),
-      baseline_requests_(builder.baseline_requests_.Serialize()) {
-  bool is_in_parallel_flow =
-      IsParallelWritingMode(builder.parent_writing_mode_, out_writing_mode);
-
-  DCHECK(!is_new_fc || !adjoining_floats_);
-
-  auto SetResolvedFlag = [this](unsigned mask, bool value) {
-    flags_ = (flags_ & ~static_cast<unsigned>(mask)) |
-             (-(int32_t)value & static_cast<unsigned>(mask));
-  };
-  if (!is_in_parallel_flow) {
-    available_size_.Flip();
-    percentage_resolution_size_.Flip();
-    replaced_percentage_resolution_size_.Flip();
-    // Swap the fixed size block/inline flags
-    bool fixed_size_block = flags_ & kFixedSizeBlock;
-    bool fixed_size_inline = flags_ & kFixedSizeInline;
-    SetResolvedFlag(kFixedSizeInline, fixed_size_block);
-    SetResolvedFlag(kFixedSizeBlock, fixed_size_inline);
-    SetResolvedFlag(kFixedSizeBlockIsDefinite, true);
-    SetResolvedFlag(kOrthogonalWritingModeRoot, true);
-  }
-  DCHECK_EQ(flags_ & kOrthogonalWritingModeRoot, !is_in_parallel_flow);
-
-  // For ConstraintSpace instances created from layout objects,
-  // parent_writing_mode_ isn't actually the parent's, it's the same as the out
-  // writing mode. So we miss setting kOrthogonalWritingModeRoot on such
-  // constraint spaces unless it is forced.
-  if (builder.force_orthogonal_writing_mode_root_) {
-    DCHECK(is_in_parallel_flow)
-        << "Forced and inferred ortho writing mode shouldn't happen "
-           "simultaneously. Inferred means the constraints are in parent "
-           "writing mode, forced means they are in child writing mode. "
-           "parent_writing_mode_ = "
-        << static_cast<int>(builder.parent_writing_mode_)
-        << ", requested writing mode = " << static_cast<int>(out_writing_mode);
-    SetResolvedFlag(kOrthogonalWritingModeRoot, true);
-    SetResolvedFlag(kFixedSizeBlockIsDefinite, true);
-  }
-
-  // If inline size is indefinite, use size of initial containing block.
-  // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
-  if (available_size_.inline_size == NGSizeIndefinite) {
-    DCHECK(!is_in_parallel_flow);
-    if (out_writing_mode == WritingMode::kHorizontalTb) {
-      available_size_.inline_size = initial_containing_block_size_.width;
-    } else {
-      available_size_.inline_size = initial_containing_block_size_.height;
-    }
-  }
-  if (percentage_resolution_size_.inline_size == NGSizeIndefinite) {
-    DCHECK(!is_in_parallel_flow);
-    if (out_writing_mode == WritingMode::kHorizontalTb) {
-      percentage_resolution_size_.inline_size =
-          initial_containing_block_size_.width;
-    } else {
-      percentage_resolution_size_.inline_size =
-          initial_containing_block_size_.height;
-    }
-  }
-  if (replaced_percentage_resolution_size_.inline_size == NGSizeIndefinite) {
-    DCHECK(!is_in_parallel_flow);
-    if (out_writing_mode == WritingMode::kHorizontalTb) {
-      replaced_percentage_resolution_size_.inline_size =
-          initial_containing_block_size_.width;
-    } else {
-      replaced_percentage_resolution_size_.inline_size =
-          initial_containing_block_size_.height;
-    }
-  }
-
-  if (!is_new_fc && builder.exclusion_space_)
-    exclusion_space_ = *builder.exclusion_space_;
-}
+      direction_(static_cast<unsigned>(TextDirection::kLtr)),
+      flags_(kFixedSizeBlockIsDefinite) {}
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -206,15 +118,16 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   // DCHECK(is_new_fc,
   //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
 
-  IntSize icb_size = box.View()->GetLayoutSize(kExcludeScrollbars);
-  NGPhysicalSize initial_containing_block_size{LayoutUnit(icb_size.Width()),
-                                               LayoutUnit(icb_size.Height())};
+  IntSize int_icb_size = box.View()->GetLayoutSize(kExcludeScrollbars);
+  NGPhysicalSize icb_size{LayoutUnit(int_icb_size.Width()),
+                          LayoutUnit(int_icb_size.Height())};
 
-  // ICB cannot be indefinite by the spec.
-  DCHECK_GE(initial_containing_block_size.width, LayoutUnit());
-  DCHECK_GE(initial_containing_block_size.height, LayoutUnit());
+  // The initial containing block size cannot be indefinite.
+  DCHECK_GE(icb_size.width, LayoutUnit());
+  DCHECK_GE(icb_size.height, LayoutUnit());
 
-  NGConstraintSpaceBuilder builder(writing_mode, initial_containing_block_size);
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, icb_size,
+                                   is_new_fc, !parallel_containing_block);
 
   if (!box.IsWritingModeRoot() || box.IsGridItem()) {
     // Add all types because we don't know which baselines will be requested.
@@ -237,10 +150,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
       .SetIsShrinkToFit(
           box.SizesLogicalWidthToFitContent(box.StyleRef().LogicalWidth()))
-      .SetIsNewFormattingContext(is_new_fc)
       .SetTextDirection(box.StyleRef().Direction())
-      .SetIsOrthogonalWritingModeRoot(!parallel_containing_block)
-      .ToConstraintSpace(writing_mode);
+      .ToConstraintSpace();
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {

@@ -197,27 +197,28 @@ const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGBlockNode legend,
     NGLogicalSize available_size) {
-  NGConstraintSpaceBuilder builder(ConstraintSpace());
+  NGConstraintSpaceBuilder builder(
+      ConstraintSpace(), legend.Style().GetWritingMode(), /* is_new_fc */ true);
   builder.SetAvailableSize(available_size);
   NGLogicalSize percentage_size =
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);
   builder.SetPercentageResolutionSize(percentage_size);
-  builder.SetIsNewFormattingContext(true);
   builder.SetIsShrinkToFit(legend.Style().LogicalWidth().IsAuto());
   builder.SetTextDirection(legend.Style().Direction());
-  return builder.ToConstraintSpace(legend.Style().GetWritingMode());
+  return builder.ToConstraintSpace();
 }
 
 const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
     NGLogicalSize padding_box_size) {
-  NGConstraintSpaceBuilder builder(ConstraintSpace());
+  NGConstraintSpaceBuilder builder(ConstraintSpace(),
+                                   ConstraintSpace().GetWritingMode(),
+                                   /* is_new_fc */ true);
   builder.SetPercentageResolutionSize(
       ConstraintSpace().PercentageResolutionSize());
   builder.SetAvailableSize(padding_box_size);
   builder.SetIsFixedSizeBlock(padding_box_size.block_size != NGSizeIndefinite);
-  builder.SetIsNewFormattingContext(true);
-  return builder.ToConstraintSpace(ConstraintSpace().GetWritingMode());
+  return builder.ToConstraintSpace();
 }
 
 }  // namespace blink

@@ -48,11 +48,12 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       continue;
 
     NGConstraintSpace child_space =
-        NGConstraintSpaceBuilder(ConstraintSpace())
+        NGConstraintSpaceBuilder(ConstraintSpace(),
+                                 child.Style().GetWritingMode(),
+                                 /* is_new_fc */ true)
             .SetAvailableSize(flex_container_content_box_size)
             .SetPercentageResolutionSize(flex_container_content_box_size)
-            .SetIsNewFormattingContext(true)
-            .ToConstraintSpace(child.Style().GetWritingMode());
+            .ToConstraintSpace();
 
     LayoutUnit main_axis_border_and_padding =
         ComputeBorders(child_space, child.Style()).InlineSum() +
@@ -121,7 +122,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     }
     for (wtf_size_t i = 0; i < line->line_items.size(); ++i) {
       FlexItem& flex_item = line->line_items[i];
-      NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+      NGConstraintSpaceBuilder space_builder(
+          ConstraintSpace(), flex_item.box->StyleRef().GetWritingMode(),
+          /* is_new_fc */ true);
       NGLogicalSize available_size(flex_item.flexed_content_size +
                                        flex_item.main_axis_border_and_padding,
                                    flex_container_content_box_size.block_size);
@@ -129,9 +132,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       space_builder.SetPercentageResolutionSize(
           flex_container_content_box_size);
       space_builder.SetIsFixedSizeInline(true);
-      space_builder.SetIsNewFormattingContext(true);
-      NGConstraintSpace child_space = space_builder.ToConstraintSpace(
-          flex_item.box->Style()->GetWritingMode());
+      NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
           ToNGBlockNode(flex_item.ng_input_node)
               .Layout(child_space, nullptr /*break token*/);
@@ -172,7 +173,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
             // TODO(dgrogan): Change this to line_context.cross_axis_extent once
             // lines are also sized and spaced.
             final_content_block_size);
-        NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+        NGConstraintSpaceBuilder space_builder(
+            ConstraintSpace(), flex_item.box->StyleRef().GetWritingMode(),
+            /* is_new_fc */ true);
         NGLogicalSize available_size(flex_item.flexed_content_size +
                                          flex_item.main_axis_border_and_padding,
                                      flex_item.cross_axis_size);
@@ -181,9 +184,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
             flex_container_content_box_size);
         space_builder.SetIsFixedSizeInline(true);
         space_builder.SetIsFixedSizeBlock(true);
-        space_builder.SetIsNewFormattingContext(true);
-        NGConstraintSpace child_space = space_builder.ToConstraintSpace(
-            flex_item.box->Style()->GetWritingMode());
+        NGConstraintSpace child_space = space_builder.ToConstraintSpace();
         flex_item.layout_result =
             ToNGBlockNode(flex_item.ng_input_node)
                 .Layout(child_space, nullptr /*break token*/);

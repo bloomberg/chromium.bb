@@ -135,10 +135,11 @@ void UpdateLegacyMultiColumnFlowThread(
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
     NGBlockNode node,
     NGPhysicalSize icb_size) {
-  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(), icb_size)
+  return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
+                                  node.Style().GetWritingMode(), icb_size,
+                                  node.CreatesNewFormattingContext())
       .SetTextDirection(node.Style().Direction())
       .SetIsIntermediateLayout(true)
-      .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
       .SetFloatsBfcBlockOffset(LayoutUnit());
 }
 
@@ -348,7 +349,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
                                 : InitialContainingBlockSize();
   NGConstraintSpace zero_constraint_space =
       CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
-          .ToConstraintSpace(Style().GetWritingMode());
+          .ToConstraintSpace();
 
   if (!constraint_space) {
     // Using the zero-sized constraint space when measuring for an orthogonal
@@ -404,7 +405,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       CreateConstraintSpaceBuilderForMinMax(*this, icb_size)
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
-          .ToConstraintSpace(Style().GetWritingMode());
+          .ToConstraintSpace();
 
   layout_result = Layout(infinite_constraint_space);
   NGBoxFragment max_fragment(
@@ -782,7 +783,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
     FontBaseline baseline_type,
     bool use_first_line_style) {
-  NGConstraintSpaceBuilder space_builder(parent_constraint_space);
+  NGConstraintSpaceBuilder space_builder(
+      parent_constraint_space, Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetUseFirstLineStyle(use_first_line_style);
 
   // Request to compute baseline during the layout, except when we know the box
@@ -793,17 +795,15 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
 
-  const ComputedStyle& style = Style();
   NGConstraintSpace constraint_space =
-      space_builder.SetIsNewFormattingContext(true)
-          .SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
+      space_builder.SetIsShrinkToFit(Style().LogicalWidth().IsAuto())
           .SetAvailableSize(parent_constraint_space.AvailableSize())
           .SetPercentageResolutionSize(
               parent_constraint_space.PercentageResolutionSize())
           .SetReplacedPercentageResolutionSize(
               parent_constraint_space.ReplacedPercentageResolutionSize())
-          .SetTextDirection(style.Direction())
-          .ToConstraintSpace(style.GetWritingMode());
+          .SetTextDirection(Style().Direction())
+          .ToConstraintSpace();
   scoped_refptr<NGLayoutResult> result = Layout(constraint_space);
   // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
   // when it's being laid out.
