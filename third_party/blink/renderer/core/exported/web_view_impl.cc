@@ -728,6 +728,11 @@ void WebViewImpl::SetShowScrollBottleneckRects(bool show) {
     layer_tree_view_->SetShowScrollBottleneckRects(show);
 }
 
+void WebViewImpl::SetShowHitTestBorders(bool show) {
+  if (layer_tree_view_)
+    layer_tree_view_->SetShowHitTestBorders(show);
+}
+
 void WebViewImpl::AcceptLanguagesChanged() {
   if (client_)
     FontCache::AcceptLanguagesChanged(client_->AcceptLanguages());

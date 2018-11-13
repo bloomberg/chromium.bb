@@ -212,6 +212,9 @@ class WebLayerTreeView {
   // Toggles scroll bottleneck rects on the HUD layer
   virtual void SetShowScrollBottleneckRects(bool) {}
 
+  // Toggles the hit-test borders on layers
+  virtual void SetShowHitTestBorders(bool) {}
+
   // ReportTimeCallback is a callback that should be fired when the
   // corresponding Swap completes (either with DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}

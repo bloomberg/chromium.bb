@@ -562,6 +562,12 @@ void LayerTreeView::SetShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
+void LayerTreeView::SetShowHitTestBorders(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
+  debug_state.show_hit_test_borders = show;
+  layer_tree_host_->SetDebugState(debug_state);
+}
+
 void LayerTreeView::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,

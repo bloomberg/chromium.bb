@@ -229,6 +229,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       show_fps_counter_(&agent_state_, /*default_value=*/false),
       show_paint_rects_(&agent_state_, /*default_value=*/false),
       show_scroll_bottleneck_rects_(&agent_state_, /*default_value=*/false),
+      show_hit_test_borders_(&agent_state_, /*default_value=*/false),
       show_size_on_resize_(&agent_state_, /*default_value=*/false),
       paused_in_debugger_message_(&agent_state_, /*default_value=*/String()) {}
 
@@ -254,6 +255,7 @@ void InspectorOverlayAgent::Restore() {
   setShowFPSCounter(show_fps_counter_.Get());
   setShowPaintRects(show_paint_rects_.Get());
   setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
+  setShowHitTestBorders(show_hit_test_borders_.Get());
   setShowViewportSizeOnResize(show_size_on_resize_.Get());
   if (paused_in_debugger_message_.Get().IsNull())
     setPausedInDebuggerMessage(paused_in_debugger_message_.Get());
@@ -284,6 +286,7 @@ Response InspectorOverlayAgent::disable() {
   setShowFPSCounter(false);
   setShowPaintRects(false);
   setShowScrollBottleneckRects(false);
+  setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
   setPausedInDebuggerMessage(String());
   setSuspended(false);
@@ -335,6 +338,17 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
       return response;
   }
   frame_impl_->ViewImpl()->SetShowScrollBottleneckRects(show);
+  return Response::OK();
+}
+
+Response InspectorOverlayAgent::setShowHitTestBorders(bool show) {
+  show_hit_test_borders_.Set(show);
+  if (show) {
+    Response response = CompositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
+  frame_impl_->ViewImpl()->SetShowHitTestBorders(show);
   return Response::OK();
 }
 
