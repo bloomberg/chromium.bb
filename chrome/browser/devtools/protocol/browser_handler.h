@@ -12,12 +12,13 @@ class Profile;
 
 class BrowserHandler : public protocol::Browser::Backend {
  public:
-  explicit BrowserHandler(protocol::UberDispatcher* dispatcher);
+  BrowserHandler(protocol::UberDispatcher* dispatcher,
+                 const std::string& target_id);
   ~BrowserHandler() override;
 
   // Browser::Backend:
   protocol::Response GetWindowForTarget(
-      const std::string& target_id,
+      protocol::Maybe<std::string> target_id,
       int* out_window_id,
       std::unique_ptr<protocol::Browser::Bounds>* out_bounds) override;
   protocol::Response GetWindowBounds(
@@ -42,6 +43,7 @@ class BrowserHandler : public protocol::Browser::Backend {
       Profile** profile);
 
   base::flat_set<std::string> contexts_with_overridden_permissions_;
+  std::string target_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };

@@ -29,8 +29,8 @@ HeadlessDevToolsSession::HeadlessDevToolsSession(
     AddHandler(
         std::make_unique<PageHandler>(browser_, agent_host->GetWebContents()));
   }
-  if (agent_host->GetType() == content::DevToolsAgentHost::kTypeBrowser)
-    AddHandler(std::make_unique<BrowserHandler>(browser_));
+  if (client->MayAttachToBrowser())
+    AddHandler(std::make_unique<BrowserHandler>(browser_, agent_host->GetId()));
   AddHandler(std::make_unique<TargetHandler>(browser_));
 }
 
