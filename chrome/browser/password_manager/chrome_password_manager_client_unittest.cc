@@ -467,10 +467,9 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
   NavigateAndCommit(url);
   EXPECT_EQ(url, GetClient()->GetLastCommittedEntryURL());
 
-  auto* it = std::find_if(std::begin(kTestCases), std::end(kTestCases),
-                          [this](auto test_case) {
-                            return strcmp(test_case.scheme, GetParam()) == 0;
-                          });
+  auto* it = std::find_if(
+      std::begin(kTestCases), std::end(kTestCases),
+      [](auto test_case) { return strcmp(test_case.scheme, GetParam()) == 0; });
   ASSERT_FALSE(it == std::end(kTestCases));
   EXPECT_EQ(it->password_manager_works,
             GetClient()->IsSavingAndFillingEnabledForCurrentPage());
