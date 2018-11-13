@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -39,6 +40,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
 const size_t kMaxcustomSearchEngines = 3;
+const char kUmaSelectDefaultSearchEngine[] =
+    "Search.iOS.SelectDefaultSearchEngine";
 
 }  // namespace
 
@@ -262,6 +265,7 @@ const size_t kMaxcustomSearchEngines = 3;
   _updatingBackend = YES;
   _templateURLService->SetUserSelectedDefaultSearchProvider(
       _priorSearchEngines[index]);
+  [self recordUmaOfDefaultSearchEngine];
   _updatingBackend = NO;
 }
 
@@ -272,7 +276,17 @@ const size_t kMaxcustomSearchEngines = 3;
   _updatingBackend = YES;
   _templateURLService->SetUserSelectedDefaultSearchProvider(
       _customSearchEngines[index]);
+  [self recordUmaOfDefaultSearchEngine];
   _updatingBackend = NO;
+}
+
+// Records the type of the selected default search engine.
+- (void)recordUmaOfDefaultSearchEngine {
+  UMA_HISTOGRAM_ENUMERATION(
+      kUmaSelectDefaultSearchEngine,
+      _templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          _templateURLService->search_terms_data()),
+      SEARCH_ENGINE_MAX);
 }
 
 - (void)searchEngineChanged {
