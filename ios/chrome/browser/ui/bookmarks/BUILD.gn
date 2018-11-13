@@ -101,6 +101,7 @@ source_set("bookmarks") {
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//services/identity/public/cpp",
+    "//services/identity/public/objc",
     "//ui/base",
     "//ui/gfx",
     "//url",
