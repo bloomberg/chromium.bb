@@ -38,7 +38,7 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
         FROM_HERE,
         base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
                        base::Unretained(this)),
-        base::TimeDelta::FromSeconds(10));
+        base::TimeDelta::FromSeconds(kParkingDelayInSeconds));
     // We only want to record statistics in the following case: a foreground tab
     // goes to background, and stays in background until the stats are recorded,
     // to make analysis simpler.
@@ -52,7 +52,8 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
           FROM_HERE,
           base::BindOnce(&ParkableStringManager::RecordStatistics,
                          base::Unretained(this)),
-          base::TimeDelta::FromSeconds(10 + 30));
+          base::TimeDelta::FromSeconds(kParkingDelayInSeconds +
+                                       kStatisticsRecordingDelayInSeconds));
       waiting_to_record_stats_ = true;
       should_record_stats_ = true;
     }

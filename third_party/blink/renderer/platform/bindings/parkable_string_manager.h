@@ -35,10 +35,16 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   void SetRendererBackgrounded(bool backgrounded);
   bool IsRendererBackgrounded() const;
+  // Number of parked and unparked strings. Public for testing.
+  size_t Size() const;
   void ResetForTesting();
 
   // Whether a string is parkable or not. Can be called from any thread.
   static bool ShouldPark(const StringImpl& string);
+
+  // Public for testing.
+  constexpr static int kParkingDelayInSeconds = 10;
+  constexpr static int kStatisticsRecordingDelayInSeconds = 30;
 
  private:
   friend class ParkableString;
@@ -51,7 +57,6 @@ class PLATFORM_EXPORT ParkableStringManager {
   void OnUnparked(ParkableStringImpl*, StringImpl*);
 
   void ParkAllIfRendererBackgrounded();
-  size_t Size() const;
   void RecordStatistics();
 
   ParkableStringManager();
@@ -63,8 +68,6 @@ class PLATFORM_EXPORT ParkableStringManager {
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
 
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, ManagerSimple);
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, ManagerMultipleStrings);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringManager);
 };
 

@@ -111,8 +111,8 @@ struct CompressionTaskParams final {
   const size_t size;
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner;
 
-  DISALLOW_COPY_AND_ASSIGN(CompressionTaskParams);
   CompressionTaskParams(CompressionTaskParams&&) = delete;
+  DISALLOW_COPY_AND_ASSIGN(CompressionTaskParams);
 };
 
 // Valid transitions are:

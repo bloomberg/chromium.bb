@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-
 #include <thread>
 #include <vector>
 
@@ -13,6 +9,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 
 namespace blink {
 
@@ -28,8 +27,27 @@ String MakeLargeString() {
 }  // namespace
 
 class ParkableStringTest : public ::testing::Test {
+ public:
+  ParkableStringTest()
+      : ::testing::Test(),
+        scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        scoped_feature_list_() {}
+
  protected:
   void RunPostedTasks() { scoped_task_environment_.RunUntilIdle(); }
+
+  void WaitForDelayedParking() {
+    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
+        ParkableStringManager::kParkingDelayInSeconds));
+    RunPostedTasks();
+  }
+
+  void WaitForStatisticsRecording() {
+    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(
+        ParkableStringManager::kStatisticsRecordingDelayInSeconds));
+    RunPostedTasks();
+  }
 
   bool ParkAndWait(const ParkableString& string) {
     bool return_value = string.Impl()->Park();
@@ -41,6 +59,14 @@ class ParkableStringTest : public ::testing::Test {
     ParkableStringManager::Instance().ResetForTesting();
     scoped_feature_list_.InitAndEnableFeature(
         kCompressParkableStringsInBackground);
+  }
+
+  void TearDown() override {
+    // No leaks.
+    CHECK_EQ(0u, ParkableStringManager::Instance().Size());
+    // Delayed tasks may remain, clear the queues.
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    RunPostedTasks();
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -216,25 +242,24 @@ TEST_F(ParkableStringTest, ManagerSimple) {
   EXPECT_EQ(1u, manager.Size());
 
   // No parking as the current state is not "backgrounded".
+  manager.SetRendererBackgrounded(true);
   manager.SetRendererBackgrounded(false);
   ASSERT_FALSE(manager.IsRendererBackgrounded());
-  manager.ParkAllIfRendererBackgrounded();
-  RunPostedTasks();
+  WaitForDelayedParking();
   EXPECT_FALSE(parkable.Impl()->is_parked());
   histogram_tester.ExpectTotalCount("Memory.MovableStringsCount", 0);
 
   manager.SetRendererBackgrounded(true);
   ASSERT_TRUE(manager.IsRendererBackgrounded());
-  manager.ParkAllIfRendererBackgrounded();
-  RunPostedTasks();
+  WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
 
   // Park and unpark.
   parkable.ToString();
   EXPECT_FALSE(parkable.Impl()->is_parked());
-  manager.ParkAllIfRendererBackgrounded();
-  RunPostedTasks();
+  manager.SetRendererBackgrounded(true);
+  WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 2);
 
@@ -242,14 +267,13 @@ TEST_F(ParkableStringTest, ManagerSimple) {
   manager.SetRendererBackgrounded(false);
   String alive_unparked = parkable.ToString();  // Unparked in foreground.
   manager.SetRendererBackgrounded(true);
-  manager.ParkAllIfRendererBackgrounded();
-  RunPostedTasks();
+  WaitForDelayedParking();
   EXPECT_FALSE(parkable.Impl()->is_parked());
 
   // Other reference is dropped, OK to park.
   alive_unparked = String();
-  manager.ParkAllIfRendererBackgrounded();
-  RunPostedTasks();
+  manager.SetRendererBackgrounded(true);
+  WaitForDelayedParking();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
   histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 5);
@@ -297,15 +321,17 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   ParkableString parkable4(MakeLargeString().Impl());
   String parkable4_content = parkable4.ToString();
 
+  int parking_count = 0;
   manager.SetRendererBackgrounded(true);
+  parking_count++;
   ASSERT_TRUE(manager.IsRendererBackgrounded());
-  manager.ParkAllIfRendererBackgrounded();  // Records count and size histograms
-  RunPostedTasks();
+  WaitForDelayedParking();
   EXPECT_TRUE(parkable3.Impl()->is_parked());
-  manager.ParkAllIfRendererBackgrounded();  // Records count and size histograms
-  RunPostedTasks();
-
-  manager.RecordStatistics();
+  manager.SetRendererBackgrounded(true);
+  parking_count++;
+  WaitForDelayedParking();
+  WaitForStatisticsRecording();
+  // Even though two parking tasks ran, only one metrics collection.
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
                                       2 * kSizeKb, 1);
   // a 20kB string with only one character compresses down to <1kB, hence with
@@ -322,9 +348,12 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   // Don't record statistics if the renderer moves to foreground before
   // recording statistics.
   manager.SetRendererBackgrounded(true);
+  parking_count++;
   manager.SetRendererBackgrounded(false);
   manager.SetRendererBackgrounded(true);
-  manager.RecordStatistics();
+  parking_count++;
+  WaitForDelayedParking();
+  WaitForStatisticsRecording();
   // Same count as above, no stats recording in the meantime.
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
                                       2 * kSizeKb, 1);
@@ -332,7 +361,9 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   // Calling |RecordStatistics()| resets the state, can now record stats next
   // time.
   manager.SetRendererBackgrounded(true);
-  manager.RecordStatistics();
+  parking_count++;
+  WaitForDelayedParking();
+  WaitForStatisticsRecording();
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb",
                                       2 * kSizeKb, 2);
 
@@ -345,9 +376,10 @@ TEST_F(ParkableStringTest, ManagerMultipleStrings) {
   EXPECT_EQ(0u, manager.Size());
 
   // 1 parked, 1 unparked. Bucket count is 2 as we collected stats twice.
-  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 2, 2);
+  histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 2,
+                                      parking_count);
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsTotalSizeKb",
-                                      2 * kSizeKb, 2);
+                                      2 * kSizeKb, parking_count);
 
   histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 1);
   histogram_tester.ExpectBucketCount(
@@ -408,6 +440,30 @@ TEST_F(ParkableStringTest, Compression) {
       "Memory.ParkableString.Decompression.Latency", 1);
   histogram_tester.ExpectTotalCount(
       "Memory.ParkableString.Decompression.ThroughputMBps", 1);
+}
+
+TEST_F(ParkableStringTest, DelayedTasks) {
+  ParkableStringManager& manager = ParkableStringManager::Instance();
+  base::HistogramTester histogram_tester;
+
+  ParkableString parkable(MakeLargeString().Impl());
+  manager.SetRendererBackgrounded(true);
+
+  // Parking, and statistics.
+  EXPECT_EQ(2u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+  WaitForDelayedParking();
+  EXPECT_TRUE(parkable.Impl()->is_parked());
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.Compression.SizeKb", kSizeKb, 1);
+  // Statistics haven't been recorded yet.
+  histogram_tester.ExpectTotalCount("Memory.ParkableString.TotalSizeKb", 0);
+
+  // Statistics task.
+  EXPECT_EQ(1u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+  WaitForStatisticsRecording();
+  EXPECT_EQ(0u, scoped_task_environment_.GetPendingMainThreadTaskCount());
+  // Statistics should have been recorded.
+  histogram_tester.ExpectTotalCount("Memory.ParkableString.TotalSizeKb", 1);
 }
 
 }  // namespace blink
