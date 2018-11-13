@@ -283,7 +283,7 @@
       Change printer options...
     </message>
     <message name="IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS" desc="The text for the button to open the printer's advanced settings dialog in the new UI.">
-      Advanced printer options
+      Advanced settings
     </message>
     <message name="IDS_PRINT_PREVIEW_ACCEPT_INVITE" desc="Text for the button to accept the printer-sharing invitation.">
       Accept
