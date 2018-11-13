@@ -11,7 +11,7 @@ var pass = chrome.test.callbackPass;
 var listenOnce = chrome.test.listenOnce;
 
 var NOT_OPTIONAL_ERROR =
-    "Optional permissions must be listed in extension manifest.";
+    "Only permissions specified in the manifest may be requested.";
 
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";

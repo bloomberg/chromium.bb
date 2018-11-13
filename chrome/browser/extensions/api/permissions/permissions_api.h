@@ -60,7 +60,11 @@ class PermissionsRequestFunction : public UIThreadExtensionFunction {
 
   // FOR TESTS ONLY to bypass the confirmation UI.
   static void SetAutoConfirmForTests(bool should_proceed);
+  static void ResetAutoConfirmForTests();
   static void SetIgnoreUserGestureForTests(bool ignore);
+
+  // Returns the set of permissions that the user was prompted for, if any.
+  std::unique_ptr<const PermissionSet> TakePromptedPermissionsForTesting();
 
  protected:
   ~PermissionsRequestFunction() override;
@@ -72,7 +76,16 @@ class PermissionsRequestFunction : public UIThreadExtensionFunction {
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   std::unique_ptr<ExtensionInstallPrompt> install_ui_;
-  std::unique_ptr<const PermissionSet> requested_permissions_;
+
+  // Requested permissions that are currently withheld.
+  std::unique_ptr<const PermissionSet> requested_withheld_;
+  // Requested permissions that are currently optional, and not granted.
+  std::unique_ptr<const PermissionSet> requested_optional_;
+
+  // The permissions, if any, that Chrome would prompt the user for. This will
+  // be recorded if and only if the prompt is being bypassed for a test (see
+  // also SetAutoConfirmForTests()).
+  std::unique_ptr<const PermissionSet> prompted_permissions_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsRequestFunction);
 };

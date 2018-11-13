@@ -24,6 +24,19 @@ namespace extensions {
 
 namespace {
 
+// Returns a list of |patterns| as strings, making it easy to compare for
+// equality with readable errors.
+// TODO(devlin): This was blatantly copy-pasted from
+// scriptable_permissions_modifier_unittest.cc. Put it somewhere common.
+std::vector<std::string> GetPatternsAsStrings(const URLPatternSet& patterns) {
+  std::vector<std::string> pattern_strings;
+  pattern_strings.reserve(patterns.size());
+  for (const auto& pattern : patterns)
+    pattern_strings.push_back(pattern.GetAsString());
+
+  return pattern_strings;
+}
+
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
     std::unique_ptr<base::Value> permissions,
     const std::string& name,
@@ -43,6 +56,45 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
       .AddFlags(creation_flags)
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
+}
+
+// Helper function to create a base::Value from a list of strings.
+std::unique_ptr<base::Value> StringVectorToValue(
+    const std::vector<std::string>& strings) {
+  ListBuilder builder;
+  for (const auto& str : strings)
+    builder.Append(str);
+  return builder.Build();
+}
+
+// Runs permissions.request() with the provided |args|, and returns the result
+// of the API call. Expects the function to succeed.
+// Populates |did_prompt_user| with whether the user would be prompted for the
+// new permissions.
+bool RunRequestFunction(
+    const Extension& extension,
+    Browser* browser,
+    const char* args,
+    std::unique_ptr<const PermissionSet>* prompted_permissions_out) {
+  auto function = base::MakeRefCounted<PermissionsRequestFunction>();
+  function->set_user_gesture(true);
+  function->set_extension(&extension);
+  std::unique_ptr<base::Value> result(
+      extension_function_test_utils::RunFunctionAndReturnSingleResult(
+          function.get(), args, browser, api_test_utils::NONE));
+  if (!function->GetError().empty()) {
+    ADD_FAILURE() << "Unexpected function error: " << function->GetError();
+    return false;
+  }
+
+  if (!result || !result->is_bool()) {
+    ADD_FAILURE() << "Unexpected function result.";
+    return false;
+  }
+
+  *prompted_permissions_out = function->TakePromptedPermissionsForTesting();
+
+  return result->GetBool();
 }
 
 }  // namespace
@@ -73,10 +125,20 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
     return has_permission;
   }
 
+  // Adds the extension to the ExtensionService, and grants any inital
+  // permissions.
+  void AddExtensionAndGrantPermissions(const Extension& extension) {
+    PermissionsUpdater updater(profile());
+    updater.InitializePermissions(&extension);
+    updater.GrantActivePermissions(&extension);
+    service()->AddExtension(&extension);
+  }
+
  private:
   // ExtensionServiceTestBase:
   void SetUp() override {
     ExtensionServiceTestWithInstall::SetUp();
+    PermissionsRequestFunction::SetAutoConfirmForTests(true);
     InitializeEmptyExtensionService();
     browser_window_.reset(new TestBrowserWindow());
     Browser::CreateParams params(profile(), true);
@@ -88,6 +150,7 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
   void TearDown() override {
     browser_.reset();
     browser_window_.reset();
+    PermissionsRequestFunction::ResetAutoConfirmForTests();
     ExtensionServiceTestWithInstall::TearDown();
   }
 
@@ -136,6 +199,8 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
       ExtensionBuilder("extension")
           .AddPermissions({"https://example.com/"})
           .Build();
+
+  AddExtensionAndGrantPermissions(*extension);
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
   updater.GrantActivePermissions(extension.get());
@@ -202,6 +267,247 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   // able to use them anyway (since they aren't active).
   EXPECT_FALSE(contains_origin(kChromiumOrg));
   EXPECT_THAT(get_all(), testing::IsEmpty());
+}
+
+// Tests requesting withheld permissions with the permissions.request() API.
+TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Create an extension with required host permissions, and withhold those
+  // permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermissions({"https://example.com/*", "https://google.com/*"})
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  const GURL kExampleCom("https://example.com");
+  const GURL kGoogleCom("https://google.com");
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+
+  // Request one of the withheld permissions.
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(RunRequestFunction(*extension, browser(),
+                                 R"([{"origins": ["https://example.com/*"]}])",
+                                 &prompted_permissions));
+  ASSERT_TRUE(prompted_permissions);
+  EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+              testing::UnorderedElementsAre("https://example.com/*"));
+
+  // The withheld permission should be granted.
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kExampleCom));
+  EXPECT_FALSE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kGoogleCom));
+}
+
+// Tests an extension re-requesting an optional host after the user removes it.
+TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Create an extension an optional host permissions, and withhold those
+  // permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .SetManifestKey("optional_permissions",
+                          StringVectorToValue({"https://chromium.org/*"}))
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+
+  const GURL kChromiumOrg("https://chromium.org");
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+  {
+    std::unique_ptr<const PermissionSet> prompted_permissions;
+    EXPECT_TRUE(RunRequestFunction(
+        *extension, browser(),
+        R"([{"origins": ["https://chromium.org/*"]}])", &prompted_permissions));
+    ASSERT_TRUE(prompted_permissions);
+    EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+                testing::UnorderedElementsAre("https://chromium.org/*"));
+  }
+
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kChromiumOrg));
+
+  {
+    URLPattern chromium_org_pattern(Extension::kValidHostPermissionSchemes,
+                                    "https://chromium.org/*");
+    PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
+                              URLPatternSet({chromium_org_pattern}),
+                              URLPatternSet());
+    PermissionsUpdater(profile()).RevokeRuntimePermissions(*extension,
+                                                           permissions);
+  }
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+
+  PermissionsRequestFunction::SetAutoConfirmForTests(false);
+  {
+    std::unique_ptr<const PermissionSet> prompted_permissions;
+    EXPECT_FALSE(RunRequestFunction(
+        *extension, browser(),
+        R"([{"origins": ["https://chromium.org/*"]}])", &prompted_permissions));
+    ASSERT_TRUE(prompted_permissions);
+    EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+                testing::UnorderedElementsAre("https://chromium.org/*"));
+  }
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+}
+
+// Tests requesting both optional and withheld permissions in the same call to
+// permissions.request().
+TEST_F(PermissionsAPIUnitTest, RequestingWithheldAndOptionalPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Create an extension with required and optional host permissions, and
+  // withhold the required permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermissions({"https://example.com/*", "https://google.com/*"})
+          .SetManifestKey("optional_permissions",
+                          StringVectorToValue({"https://chromium.org/*"}))
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  const GURL kExampleCom("https://example.com");
+  const GURL kGoogleCom("https://google.com");
+  const GURL kChromiumOrg("https://chromium.org");
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+
+  // Request one of the withheld host permissions and an optional host
+  // permission in the same call.
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(RunRequestFunction(
+      *extension, browser(),
+      R"([{"origins": ["https://example.com/*", "https://chromium.org/*"]}])",
+      &prompted_permissions));
+  ASSERT_TRUE(prompted_permissions);
+  EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+              testing::UnorderedElementsAre("https://chromium.org/*",
+                                            "https://example.com/*"));
+
+  // The requested permissions should be added.
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kExampleCom));
+  EXPECT_FALSE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kGoogleCom));
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kChromiumOrg));
+}
+
+// Tests requesting permissions that weren't specified in the manifest (either
+// in optional permissions or in required permissions).
+TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Create an extension with required and optional host permissions, and
+  // withhold the required permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermissions({
+              "https://example.com/*",
+          })
+          .SetManifestKey("optional_permissions",
+                          StringVectorToValue({"https://chromium.org/*"}))
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  const GURL kExampleCom("https://example.com");
+  const GURL kGoogleCom("https://google.com");
+  const GURL kChromiumOrg("https://chromium.org");
+
+  // Request permission for an optional and required permission, as well as a
+  // permission that wasn't specified in the manifest. The call should fail.
+  // Note: Not using RunRequestFunction(), since that expects function success.
+  auto function = base::MakeRefCounted<PermissionsRequestFunction>();
+  function->set_user_gesture(true);
+  function->set_extension(extension.get());
+  EXPECT_EQ("Only permissions specified in the manifest may be requested.",
+            extension_function_test_utils::RunFunctionAndReturnError(
+                function.get(),
+                R"([{
+               "origins": [
+                 "https://example.com/*",
+                 "https://chromium.org/*",
+                 "https://google.com/*"
+               ]
+             }])",
+                browser(), api_test_utils::NONE));
+}
+
+// Tests requesting withheld permissions that have already been granted.
+TEST_F(PermissionsAPIUnitTest, RequestingAlreadyGrantedWithheldPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  // Create an extension with required host permissions, withhold host
+  // permissions, and then grant one of the hosts.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermissions({"https://example.com/*", "https://google.com/*"})
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  const GURL kExampleCom("https://example.com");
+  const GURL kGoogleCom("https://google.com");
+  modifier.GrantHostPermission(kExampleCom);
+
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kExampleCom));
+  EXPECT_FALSE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kGoogleCom));
+
+  // Request the already-granted host permission. The function should succeed
+  // (without even prompting the user), and the permission should (still) be
+  // granted.
+  PermissionsRequestFunction::SetAutoConfirmForTests(false);
+
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(RunRequestFunction(*extension, browser(),
+                                 R"([{"origins": ["https://example.com/*"]}])",
+                                 &prompted_permissions));
+  ASSERT_FALSE(prompted_permissions);
+
+  // The withheld permission should be granted.
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kExampleCom));
+  EXPECT_FALSE(
+      permissions_data->active_permissions().effective_hosts().MatchesURL(
+          kGoogleCom));
 }
 
 }  // namespace extensions
