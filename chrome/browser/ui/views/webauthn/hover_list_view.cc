@@ -19,6 +19,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
 
 namespace {
@@ -86,7 +87,6 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
 views::Separator* AddSeparatorAsChild(views::View* view) {
   auto* separator = new views::Separator();
   separator->SetColor(gfx::kGoogleGrey300);
-
   view->AddChildView(separator);
   return separator;
 }
@@ -98,10 +98,14 @@ views::Separator* AddSeparatorAsChild(views::View* view) {
 HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
     : model_(std::move(model)) {
   DCHECK(model_);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
-  AddSeparatorAsChild(this);
+  item_container_ = new views::View();
+  item_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      0 /* betweeen_child_spacing */));
+
+  AddSeparatorAsChild(item_container_);
 
   for (const auto item_tag : model_->GetItemTags()) {
     AppendListItemView(model_->GetItemIcon(item_tag),
@@ -109,8 +113,15 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
   }
 
   if (tags_to_list_item_views_.empty() &&
-      model_->ShouldShowPlaceholderForEmptyList())
+      model_->ShouldShowPlaceholderForEmptyList()) {
     CreateAndAppendPlaceholderItem();
+  }
+
+  scroll_view_ = new views::ScrollView();
+  scroll_view_->SetContents(item_container_);
+  AddChildView(scroll_view_);
+  scroll_view_->ClipHeightTo(GetPreferredViewHeight(),
+                             GetPreferredViewHeight());
 
   model_->SetObserver(this);
 }
@@ -126,8 +137,8 @@ void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
       CreateHoverButtonForListItem(item_tag, icon, item_text, this);
 
   auto* list_item_view_ptr = hover_button.release();
-  AddChildView(list_item_view_ptr);
-  auto* separator = AddSeparatorAsChild(this);
+  item_container_->AddChildView(list_item_view_ptr);
+  auto* separator = AddSeparatorAsChild(item_container_);
   tags_to_list_item_views_.emplace(
       item_tag, ListItemViews{list_item_view_ptr, separator});
 }
@@ -136,8 +147,8 @@ void HoverListView::CreateAndAppendPlaceholderItem() {
   auto placeholder_item = CreateHoverButtonForListItem(
       kPlaceHolderItemTag, model_->GetPlaceholderIcon(),
       model_->GetPlaceholderText(), nullptr, true /* is_placeholder_item */);
-  AddChildView(placeholder_item.get());
-  auto* separator = AddSeparatorAsChild(this);
+  item_container_->AddChildView(placeholder_item.get());
+  auto* separator = AddSeparatorAsChild(item_container_);
   placeholder_list_item_view_.emplace(
       ListItemViews{placeholder_item.release(), separator});
 }
@@ -146,7 +157,7 @@ void HoverListView::AddListItemView(int item_tag) {
   CHECK(!base::ContainsKey(tags_to_list_item_views_, item_tag));
   if (placeholder_list_item_view_) {
     RemoveListItemView(*placeholder_list_item_view_);
-    placeholder_list_item_view_.emplace();
+    placeholder_list_item_view_.reset();
   }
 
   AppendListItemView(model_->GetItemIcon(item_tag),
@@ -166,6 +177,15 @@ void HoverListView::RemoveListItemView(int item_tag) {
   RemoveListItemView(view_it->second);
   tags_to_list_item_views_.erase(view_it);
 
+  // Removed list item may have not been the bottom-most view in the scroll
+  // view. To enforce that all remaining items are re-shifted to the top,
+  // invalidate all child views.
+  //
+  // TODO(hongjunchoi): Restructure HoverListView and |scroll_view_| so that
+  // InvalidateLayout() does not need to be explicitly called when items are
+  // removed from the list. See: https://crbug.com/904968
+  item_container_->InvalidateLayout();
+
   if (tags_to_list_item_views_.empty() &&
       model_->ShouldShowPlaceholderForEmptyList()) {
     CreateAndAppendPlaceholderItem();
@@ -178,10 +198,10 @@ void HoverListView::RemoveListItemView(int item_tag) {
 }
 
 void HoverListView::RemoveListItemView(ListItemViews list_item) {
-  DCHECK(Contains(list_item.item_view));
-  DCHECK(Contains(list_item.separator_view));
-  RemoveChildView(list_item.item_view);
-  RemoveChildView(list_item.separator_view);
+  DCHECK(item_container_->Contains(list_item.item_view));
+  DCHECK(item_container_->Contains(list_item.separator_view));
+  item_container_->RemoveChildView(list_item.item_view);
+  item_container_->RemoveChildView(list_item.separator_view);
 }
 
 views::Button& HoverListView::GetTopListItemView() const {
@@ -216,4 +236,11 @@ void HoverListView::OnListItemChanged(int changed_list_item_tag,
 void HoverListView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   model_->OnListItemSelected(sender->tag());
+}
+
+int HoverListView::GetPreferredViewHeight() const {
+  auto dummy_hover_button = CreateHoverButtonForListItem(
+      -1 /* tag */, gfx::kNoneIcon, base::string16(), nullptr /* listener */);
+  return dummy_hover_button->GetPreferredSize().height() *
+         model_->GetPreferredItemCount();
 }

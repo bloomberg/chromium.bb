@@ -16,6 +16,8 @@
 
 namespace {
 
+constexpr size_t kDefaultItemViewCount = 2;
+
 std::map<int, std::string>::iterator FindElementByValue(
     std::map<int, std::string>* item_map,
     base::StringPiece value) {
@@ -100,6 +102,10 @@ void BleDeviceHoverListModel::OnListItemSelected(int item_tag) {
   auto authenticator_item = authenticator_tags_.find(item_tag);
   CHECK(authenticator_item != authenticator_tags_.end());
   delegate_->OnItemSelected(authenticator_item->second);
+}
+
+size_t BleDeviceHoverListModel::GetPreferredItemCount() const {
+  return kDefaultItemViewCount;
 }
 
 void BleDeviceHoverListModel::OnAuthenticatorAdded(

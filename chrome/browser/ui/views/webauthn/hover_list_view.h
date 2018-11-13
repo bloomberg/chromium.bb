@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/webauthn/hover_list_model.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -57,6 +58,7 @@ class HoverListView : public views::View,
   void RemoveListItemView(int item_tag);
   void RemoveListItemView(ListItemViews list_item);
   views::Button& GetTopListItemView() const;
+  int GetPreferredViewHeight() const;
 
   // views::View:
   void RequestFocus() override;
@@ -73,6 +75,8 @@ class HoverListView : public views::View,
   std::unique_ptr<HoverListModel> model_;
   std::map<int, ListItemViews> tags_to_list_item_views_;
   base::Optional<ListItemViews> placeholder_list_item_view_;
+  views::ScrollView* scroll_view_;
+  views::View* item_container_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverListView);
 };

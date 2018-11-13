@@ -34,6 +34,7 @@ class TransportHoverListModel : public HoverListModel {
   base::string16 GetItemText(int item_tag) const override;
   const gfx::VectorIcon& GetItemIcon(int item_tag) const override;
   void OnListItemSelected(int item_tag) override;
+  size_t GetPreferredItemCount() const override;
 
  private:
   std::vector<AuthenticatorTransport> transport_list_;
