@@ -8,6 +8,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//components/ui_devtools/devtools.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
@@ -61,6 +62,7 @@ jumbo_source_set("browser") {
     "//components/services/leveldb:lib",
     "//components/tracing",
     "//components/tracing:startup_tracing",
+    "//components/ui_devtools",
     "//components/url_formatter",
     "//components/variations",
     "//components/viz/client",
@@ -2512,6 +2514,14 @@ jumbo_source_set("browser") {
       "net/reporting_service_proxy.cc",
       "net/reporting_service_proxy.h",
     ]
+  }
+
+  if (use_viz_devtools) {
+    sources += [
+      "gpu/viz_devtools_connector.cc",
+      "gpu/viz_devtools_connector.h",
+    ]
+    defines += [ "USE_VIZ_DEVTOOLS" ]
   }
 }
 

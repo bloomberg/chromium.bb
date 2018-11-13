@@ -58,6 +58,9 @@ class VIZ_HOST_EXPORT VizMainWrapper {
       mojo::ScopedSharedBufferHandle activity_flags,
       gfx::FontRenderParams::SubpixelRendering subpixel_rendering);
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params);
+#if defined(USE_VIZ_DEVTOOLS)
+  void CreateVizDevTools(mojom::VizDevToolsParamsPtr params);
+#endif
 
  private:
   mojom::VizMainPtr viz_main_ptr_;
@@ -164,6 +167,11 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // Connects to FrameSinkManager running in the Viz service.
   void ConnectFrameSinkManager(mojom::FrameSinkManagerRequest request,
                                mojom::FrameSinkManagerClientPtrInfo client);
+
+#if defined(USE_VIZ_DEVTOOLS)
+  // Connects to Viz DevTools running in the Viz service.
+  void ConnectVizDevTools(mojom::VizDevToolsParamsPtr params);
+#endif
 
   // Tells the GPU service to create a new channel for communication with a
   // client. Once the GPU service responds asynchronously with the channel

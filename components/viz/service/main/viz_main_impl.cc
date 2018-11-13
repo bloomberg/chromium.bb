@@ -271,6 +271,12 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
       std::move(params), task_executor_, gpu_service_.get());
 }
 
+void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
+#if defined(USE_VIZ_DEVTOOLS)
+  viz_compositor_thread_runner_->CreateVizDevTools(std::move(params));
+#endif
+}
+
 void VizMainImpl::ExitProcess() {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 

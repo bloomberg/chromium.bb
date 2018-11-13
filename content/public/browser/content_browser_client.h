@@ -657,6 +657,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory();
 
+  // Returns the system network context. This shouldn't be used to create a
+  // URLLoaderFactory, instead use GetSystemSharedURLLoaderFactory(). Must be
+  // called on the UI thread. The default implementation returns nullptr.
+  virtual network::mojom::NetworkContext* GetSystemNetworkContext();
+
   // Allows an embedder to provide a Google API Key to use for network
   // geolocation queries.
   // * May be called from any thread.

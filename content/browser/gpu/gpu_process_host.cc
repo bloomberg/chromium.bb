@@ -849,6 +849,16 @@ bool GpuProcessHost::Init() {
       this, std::make_unique<viz::VizMainWrapper>(std::move(viz_main_ptr)),
       std::move(params));
 
+#if defined(USE_VIZ_DEVTOOLS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVizDevTools)) {
+    // Start creating a socket for the Viz DevTools server. If it is created
+    // before the FrameSinkManager, the socket will be stashed.
+    devtools_connector_ = std::make_unique<VizDevToolsConnector>();
+    devtools_connector_->ConnectVizDevTools();
+  }
+#endif
+
 #if defined(OS_MACOSX)
   ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);
 #endif
