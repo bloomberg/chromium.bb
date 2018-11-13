@@ -5404,6 +5404,15 @@ void Document::setDomain(const String& raw_domain,
                          ExceptionState& exception_state) {
   UseCounter::Count(*this, WebFeature::kDocumentSetDomain);
 
+  const String feature_policy_error =
+      "Setting `document.domain` is disabled by Feature Policy.";
+  if (!IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentDomain,
+                        ReportOptions::kReportOnFailure,
+                        feature_policy_error)) {
+    exception_state.ThrowSecurityError(feature_policy_error);
+    return;
+  }
+
   if (!frame_) {
     exception_state.ThrowSecurityError(
         "A browsing context is required to set a domain.");
