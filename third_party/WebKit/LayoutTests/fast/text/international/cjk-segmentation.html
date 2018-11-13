@@ -27,7 +27,7 @@ expand_word_test(
     'Case A-0');
 expand_word_test(
     `\u56FD|\u52A1\u9662${kA1}${kA2}${kA3}${kA4}${kA5}${kA6}${kA7}`,
-    `\u56FD^\u52A1\u9662|${kA1}${kA2}${kA3}${kA4}${kA5}${kA6}${kA7}`,
+    `^${kA0}|${kA1}${kA2}${kA3}${kA4}${kA5}${kA6}${kA7}`,
     'Case A-1');
 expand_word_test(
     `\u56FD\u52A1|\u9662${kA1}${kA2}${kA3}${kA4}${kA5}${kA6}${kA7}`,
@@ -153,7 +153,7 @@ expand_word_test(
     'Case C-0');
 expand_word_test(
     `\u4FC4|\u7F57\u65AF${kC1}${kC2}${kC3}${kC4}${kC5}${kC6}${kC7}`,
-    `\u4FC4^\u7F57\u65AF|${kC1}${kC2}${kC3}${kC4}${kC5}${kC6}${kC7}`,
+    `^${kC0}|${kC1}${kC2}${kC3}${kC4}${kC5}${kC6}${kC7}`,
     'Case C-1');
 expand_word_test(
     `\u4FC4\u7F57|\u65AF${kC1}${kC2}${kC3}${kC4}${kC5}${kC6}${kC7}`,
