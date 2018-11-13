@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -50,10 +49,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Prefix for Intent extras relevant to this feature. */
     private static final String INTENT_EXTRA_PREFIX =
             "org.chromium.chrome.browser.autofill_assistant.";
-    /** Autofill Assistant Study name. */
-    private static final String STUDY_NAME = "AutofillAssistant";
-    /** Variation url parameter name. */
-    private static final String URL_PARAMETER_NAME = "url";
 
     /** Special parameter that enables the feature. */
     private static final String PARAMETER_ENABLED = "ENABLED";
@@ -99,8 +94,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      */
     public static boolean isConfigured(Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
-                && !VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME)
-                            .isEmpty()
+                && !AutofillAssistantStudy.getUrl().isEmpty()
                 && ContextUtils.getAppSharedPreferences().getBoolean(
                            AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
     }

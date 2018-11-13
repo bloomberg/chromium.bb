@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -311,17 +310,10 @@ class AutofillAssistantUiDelegate {
                 == ViewCompat.LAYOUT_DIRECTION_RTL;
 
         // Finch experiment to adjust overlay color
-        String overlayColor = VariationsAssociatedData.getVariationParamValue(
-                "AutofillAssistantOverlay", "overlay_color");
-        if (!overlayColor.isEmpty()) {
-            try {
-                @ColorInt
-                int color = Color.parseColor(overlayColor);
-                mOverlay.setBackgroundColor(color);
-                mTouchEventFilter.setGrayOutColor(color);
-            } catch (IllegalArgumentException exception) {
-                // ignore
-            }
+        Integer overlayColor = AutofillAssistantStudy.getOverlayColor();
+        if (overlayColor != null) {
+            mOverlay.setBackgroundColor(overlayColor);
+            mTouchEventFilter.setGrayOutColor(overlayColor);
         }
 
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
