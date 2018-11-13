@@ -708,7 +708,12 @@ public class UrlBar extends AutocompleteEditText {
 
         Layout textLayout = getLayout();
         assert getLayout().getLineCount() == 1;
-        final int originEndIndex = mOriginEndIndex;
+        final int originEndIndex = Math.min(mOriginEndIndex, url.length());
+        if (mOriginEndIndex > url.length()) {
+            // If discovered locally, please update crbug.com/859219 with the steps to reproduce.
+            assert false : "Attempting to scroll past the end of the URL: " + url + ", end index: "
+                           + mOriginEndIndex;
+        }
         float endPointX = textLayout.getPrimaryHorizontal(originEndIndex);
         // Compare the position offset of the last character and the character prior to determine
         // the LTR-ness of the final component of the URL.
