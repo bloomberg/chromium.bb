@@ -289,9 +289,8 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 
   unsigned fragment_end = line_box->size();
   DCHECK(box->item);
-  box_data_list_.push_back(
-      BoxData{box->fragment_start, fragment_end, box->item, size});
-  BoxData& box_data = box_data_list_.back();
+  BoxData& box_data = box_data_list_.emplace_back(
+      box->fragment_start, fragment_end, box->item, size);
   box_data.padding = box->padding;
   box_data.inline_container = box->inline_container;
   if (box->has_start_edge) {
@@ -344,6 +343,10 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 
 void NGInlineLayoutStateStack::PrepareForReorder(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
+  // There's nothing to do if no boxes.
+  if (box_data_list_.IsEmpty())
+    return;
+
   // Set indexes of BoxData to the children of the line box.
   unsigned box_data_index = 0;
   for (const BoxData& box_data : box_data_list_) {
@@ -361,42 +364,29 @@ void NGInlineLayoutStateStack::PrepareForReorder(
     const NGLineBoxFragmentBuilder::Child& placeholder =
         (*line_box)[box_data.fragment_end];
     DCHECK(!placeholder.HasFragment());
-    box_data.box_data_index = placeholder.box_data_index;
+    box_data.parent_box_data_index = placeholder.box_data_index;
   }
 }
 
 void NGInlineLayoutStateStack::UpdateAfterReorder(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
+  // There's nothing to do if no boxes.
+  if (box_data_list_.IsEmpty())
+    return;
+
   // Compute start/end of boxes from the children of the line box.
+  // Clear start/end first.
   for (BoxData& box_data : box_data_list_)
     box_data.fragment_start = box_data.fragment_end = 0;
-  for (unsigned i = 0; i < line_box->size(); i++) {
-    const NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
-    if (child.IsPlaceholder())
-      continue;
-    if (unsigned box_data_index = child.box_data_index) {
-      BoxData& box_data = box_data_list_[box_data_index - 1];
-      if (!box_data.fragment_end)
-        box_data.fragment_start = i;
-      box_data.fragment_end = i + 1;
-    }
-  }
 
-  // Extend start/end of boxes when they are nested.
-  for (BoxData& box_data : box_data_list_) {
-    if (box_data.box_data_index) {
-      BoxData& parent_box_data = box_data_list_[box_data.box_data_index - 1];
-      if (!parent_box_data.fragment_end) {
-        parent_box_data.fragment_start = box_data.fragment_start;
-        parent_box_data.fragment_end = box_data.fragment_end;
-      } else {
-        parent_box_data.fragment_start =
-            std::min(box_data.fragment_start, parent_box_data.fragment_start);
-        parent_box_data.fragment_end =
-            std::max(box_data.fragment_end, parent_box_data.fragment_end);
-      }
-    }
-  }
+  // Scan children and update start/end from their box_data_index.
+  unsigned box_count = box_data_list_.size();
+  for (unsigned index = 0; index < line_box->size();)
+    index = UpdateBoxDataFragmentRange(line_box, index);
+
+  // If any inline fragmentation due to BiDi reorder, adjust box edges.
+  if (box_count != box_data_list_.size())
+    UpdateFragmentedBoxDataEdges();
 
 #if DCHECK_IS_ON()
   // Check all BoxData have ranges.
@@ -404,7 +394,93 @@ void NGInlineLayoutStateStack::UpdateAfterReorder(
     DCHECK_NE(box_data.fragment_end, 0u);
     DCHECK_GT(box_data.fragment_end, box_data.fragment_start);
   }
+  // Check all |box_data_index| were migrated to BoxData.
+  for (const NGLineBoxFragmentBuilder::Child& child : *line_box) {
+    DCHECK_EQ(child.box_data_index, 0u);
+  }
 #endif
+}
+
+unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
+    NGLineBoxFragmentBuilder::ChildList* line_box,
+    unsigned index) {
+  // Find the first line box item that should create a box fragment.
+  for (; index < line_box->size(); index++) {
+    NGLineBoxFragmentBuilder::Child* start = &(*line_box)[index];
+    if (start->IsPlaceholder())
+      continue;
+    const unsigned box_data_index = start->box_data_index;
+    if (!box_data_index)
+      continue;
+
+    // As |box_data_index| is converted to start/end of BoxData, update
+    // |box_data_index| to the parent box, or to 0 if no parent boxes.
+    // This allows including this box to the nested parent box.
+    BoxData* box_data = &box_data_list_[box_data_index - 1];
+    start->box_data_index = box_data->parent_box_data_index;
+
+    // Find the end line box item.
+    const unsigned start_index = index;
+    for (index++; index < line_box->size(); index++) {
+      NGLineBoxFragmentBuilder::Child* end = &(*line_box)[index];
+      if (end->IsPlaceholder())
+        continue;
+
+      // If we found another box that maybe included in this box, update it
+      // first. Updating will change |end->box_data_index| so that we can
+      // determine if it should be included into this box or not.
+      // It also changes other BoxData, but not the one we're dealing with here
+      // because the update is limited only when its |box_data_index| is lower.
+      while (end->box_data_index && end->box_data_index < box_data_index) {
+        UpdateBoxDataFragmentRange(line_box, index);
+        // Re-compute |box_data| in case |box_data_list_| was reallocated when
+        // |UpdateBoxDataFragmentRange| added new fragments.
+        box_data = &box_data_list_[box_data_index - 1];
+      }
+
+      if (box_data_index != end->box_data_index)
+        break;
+      end->box_data_index = box_data->parent_box_data_index;
+    }
+
+    // If this is the first range for this BoxData, set it.
+    if (!box_data->fragment_end) {
+      box_data->fragment_start = start_index;
+      box_data->fragment_end = index;
+    } else {
+      // This box is fragmented by BiDi reordering. Add a new BoxData for the
+      // fragmented range.
+      box_data->fragmented_box_data_index = box_data_list_.size();
+      box_data_list_.emplace_back(*box_data, start_index, index);
+    }
+    return box_data->parent_box_data_index ? start_index : index;
+  }
+  return index;
+}
+
+void NGInlineLayoutStateStack::UpdateFragmentedBoxDataEdges() {
+  for (BoxData& box_data : box_data_list_) {
+    if (box_data.fragmented_box_data_index)
+      box_data.UpdateFragmentEdges(box_data_list_);
+  }
+}
+
+void NGInlineLayoutStateStack::BoxData::UpdateFragmentEdges(
+    Vector<BoxData, 4>& list) {
+  DCHECK(fragmented_box_data_index);
+
+  // If this box has the right edge, move it to the last fragment.
+  if (has_line_right_edge) {
+    BoxData& last = list[fragmented_box_data_index];
+    last.has_line_right_edge = true;
+    last.margin_line_right = margin_line_right;
+    last.margin_border_padding_line_right = margin_border_padding_line_right;
+    last.padding.inline_end = padding.inline_end;
+
+    has_line_right_edge = false;
+    margin_line_right = margin_border_padding_line_right = padding.inline_end =
+        LayoutUnit();
+  }
 }
 
 LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(

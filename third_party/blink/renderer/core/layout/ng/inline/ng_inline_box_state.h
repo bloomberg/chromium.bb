@@ -148,6 +148,18 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // reordering.
   void UpdateAfterReorder(NGLineBoxFragmentBuilder::ChildList*);
 
+  // Update start/end of the first BoxData found at |index|.
+  //
+  // If inline fragmentation is found, a new BoxData is added.
+  //
+  // Returns the index to process next. It should be given to the next call to
+  // this function.
+  unsigned UpdateBoxDataFragmentRange(NGLineBoxFragmentBuilder::ChildList*,
+                                      unsigned index);
+
+  // Update edges of inline fragmented boxes.
+  void UpdateFragmentedBoxDataEdges();
+
   // Compute inline positions of fragments and boxes.
   LayoutUnit ComputeInlinePositions(NGLineBoxFragmentBuilder::ChildList*);
 
@@ -191,8 +203,24 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // Data for a box fragment. See AddBoxFragmentPlaceholder().
   // This is a transient object only while building a line box.
   struct BoxData {
+    BoxData(unsigned start,
+            unsigned end,
+            const NGInlineItem* item,
+            NGLogicalSize size)
+        : fragment_start(start), fragment_end(end), item(item), size(size) {}
+
+    BoxData(const BoxData& other, unsigned start, unsigned end)
+        : fragment_start(start),
+          fragment_end(end),
+          item(other.item),
+          size(other.size),
+          inline_container(other.inline_container),
+          offset(other.offset) {}
+
+    // The range of child fragments this box contains.
     unsigned fragment_start;
     unsigned fragment_end;
+
     const NGInlineItem* item;
     NGLogicalSize size;
 
@@ -207,7 +235,10 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     LayoutUnit margin_border_padding_line_right;
 
     NGLogicalOffset offset;
-    unsigned box_data_index = 0;
+    unsigned parent_box_data_index = 0;
+    unsigned fragmented_box_data_index = 0;
+
+    void UpdateFragmentEdges(Vector<BoxData, 4>& list);
 
     scoped_refptr<NGLayoutResult> CreateBoxFragment(
         NGLineBoxFragmentBuilder::ChildList*);
