@@ -105,7 +105,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
     BT2020_NCL,
     BT2020_CL,
     YDZDX,
-    LAST = YDZDX,
+    GBR,
+    LAST = GBR,
   };
 
   enum class RangeID : uint8_t {
