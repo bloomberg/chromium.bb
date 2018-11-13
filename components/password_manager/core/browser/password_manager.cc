@@ -869,7 +869,7 @@ void PasswordManager::CreateFormManagers(
       // filled values.
       // TODO(https://crbug.com/831123): Implement more robust filling and
       // remove the next line.
-      manager->Fill();
+      manager->FillForm(form.form_data);
     } else {
       new_forms.push_back(&form);
     }

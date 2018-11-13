@@ -71,6 +71,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
+using base::ASCIIToUTF16;
 using testing::_;
 using testing::ElementsAre;
 
@@ -3899,6 +3900,45 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
                                   0, gfx::RectF());
   EXPECT_FALSE(autofill_client->popup_controller_for_testing());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.username_value = ASCIIToUTF16("temp");
+  signin_form.password_value = ASCIIToUTF16("pw");
+  password_store->AddLogin(signin_form);
+
+  // Check that password update bubble is shown.
+  NavigateToFile("/password/simple_password.html");
+
+  // Simulate that a script removes username/password elements and adds the
+  // elements identical to them.
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      RenderFrameHost(),
+      "function replaceElement(id) {"
+      "  var elem = document.getElementById(id);"
+      "  var parent = elem.parentElement;"
+      "  var cloned_elem = elem.cloneNode();"
+      "  cloned_elem.value = '';"
+      "  parent.removeChild(elem);"
+      "  parent.appendChild(cloned_elem);"
+      "}"
+      "replaceElement('username_field');"
+      "replaceElement('password_field');"));
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
+
+  WaitForElementValue("username_field", "temp");
+  WaitForElementValue("password_field", "pw");
 }
 
 }  // namespace password_manager
