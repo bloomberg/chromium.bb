@@ -302,4 +302,8 @@ bool TegraV4L2Device::IsJpegDecodingSupported() {
   return false;
 }
 
+bool TegraV4L2Device::IsJpegEncodingSupported() {
+  return false;
+}
+
 }  //  namespace media

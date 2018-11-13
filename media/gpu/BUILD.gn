@@ -230,6 +230,8 @@ component("gpu") {
       "v4l2/v4l2_image_processor.h",
       "v4l2/v4l2_jpeg_decode_accelerator.cc",
       "v4l2/v4l2_jpeg_decode_accelerator.h",
+      "v4l2/v4l2_jpeg_encode_accelerator.cc",
+      "v4l2/v4l2_jpeg_encode_accelerator.h",
       "v4l2/v4l2_slice_video_decode_accelerator.cc",
       "v4l2/v4l2_slice_video_decode_accelerator.h",
       "v4l2/v4l2_video_decode_accelerator.cc",
@@ -546,7 +548,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   }
 }
 
-if (use_vaapi) {
+if (use_v4l2_codec || use_vaapi) {
   test("jpeg_encode_accelerator_unittest") {
     deps = [
       "//base",

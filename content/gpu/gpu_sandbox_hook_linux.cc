@@ -122,6 +122,10 @@ void AddV4L2GpuWhitelist(
   // Device node for V4L2 JPEG decode accelerator drivers.
   static const char kDevJpegDecPath[] = "/dev/jpeg-dec";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegDecPath));
+
+  // Device node for V4L2 JPEG encode accelerator drivers.
+  static const char kDevJpegEncPath[] = "/dev/jpeg-enc";
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegEncPath));
 }
 
 void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {

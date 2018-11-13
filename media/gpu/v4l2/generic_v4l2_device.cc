@@ -466,6 +466,11 @@ bool GenericV4L2Device::IsJpegDecodingSupported() {
   return !devices.empty();
 }
 
+bool GenericV4L2Device::IsJpegEncodingSupported() {
+  const auto& devices = GetDevicesForType(Type::kJpegEncoder);
+  return !devices.empty();
+}
+
 bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
   DCHECK(!device_fd_.is_valid());
 
@@ -511,6 +516,7 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
   static const std::string kEncoderDevicePattern = "/dev/video-enc";
   static const std::string kImageProcessorDevicePattern = "/dev/image-proc";
   static const std::string kJpegDecoderDevicePattern = "/dev/jpeg-dec";
+  static const std::string kJpegEncoderDevicePattern = "/dev/jpeg-enc";
 
   std::string device_pattern;
   v4l2_buf_type buf_type;
@@ -530,6 +536,10 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
     case Type::kJpegDecoder:
       device_pattern = kJpegDecoderDevicePattern;
       buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+      break;
+    case Type::kJpegEncoder:
+      device_pattern = kJpegEncoderDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
       break;
   }
 

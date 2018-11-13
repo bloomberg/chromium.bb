@@ -71,6 +71,7 @@ class TegraV4L2Device : public V4L2Device {
   bool IsImageProcessingSupported() override;
 
   bool IsJpegDecodingSupported() override;
+  bool IsJpegEncodingSupported() override;
 
  private:
   ~TegraV4L2Device() override;
