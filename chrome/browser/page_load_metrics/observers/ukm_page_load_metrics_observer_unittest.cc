@@ -794,4 +794,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
   }
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "PageLoad.Experimental.LayoutStability.JankScore"),
+              testing::ElementsAre(base::Bucket(25, 1)));
 }
