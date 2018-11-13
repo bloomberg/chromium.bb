@@ -136,6 +136,10 @@ const char kImmersiveModeCSSClass[] = "immersive-mode";
 // The delay between two taps to be recognized as a double tap gesture.
 constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
 
+// The time user have to hover on mute button to show volume slider.
+constexpr WTF::TimeDelta kTimeToShowVolumeSlider =
+    TimeDelta::FromMilliseconds(200);
+
 // The number of seconds to jump when double tapping.
 constexpr int kNumberOfSecondsToJump = 10;
 
@@ -395,7 +399,11 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       tap_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
-          &MediaControlsImpl::TapTimerFired) {
+          &MediaControlsImpl::TapTimerFired),
+      volume_slider_wanted_timer_(
+          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
+          this,
+          &MediaControlsImpl::VolumeSliderWantedTimerFired) {
   // On touch devices, start with the assumption that the user will interact via
   // touch events.
   Settings* settings = media_element.GetDocument().GetSettings();
@@ -2162,14 +2170,24 @@ void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
     StartHideMediaControlsTimer();
 }
 
+void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
+  volume_slider_->OpenSlider();
+}
+
 void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
-  if (ShouldOpenVolumeSlider())
-    volume_slider_->OpenSlider();
+  if (ShouldOpenVolumeSlider() && !volume_slider_wanted_timer_.IsActive()) {
+    volume_slider_wanted_timer_.StartOneShot(kTimeToShowVolumeSlider,
+                                             FROM_HERE);
+  }
 }
 
 void MediaControlsImpl::CloseVolumeSliderIfNecessary() {
-  if (ShouldCloseVolumeSlider())
+  if (ShouldCloseVolumeSlider()) {
     volume_slider_->CloseSlider();
+
+    if (volume_slider_wanted_timer_.IsActive())
+      volume_slider_wanted_timer_.Stop();
+  }
 }
 
 bool MediaControlsImpl::ShouldOpenVolumeSlider() const {

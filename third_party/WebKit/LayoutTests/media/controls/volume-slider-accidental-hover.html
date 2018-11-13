@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<title>Accidental hovering mute button should not show volume slider.</title>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../media-controls.js'></script>
+<video controls width="400"></video>
+<script>
+async_test(t => {
+  const video = document.querySelector('video');
+  video.src = '../content/test.ogv';
+  enableTestMode(video);
+
+  video.onloadedmetadata = t.step_func(() => {
+    const muteBtn = muteButton(video);
+    const currentTime = currentTimeElement(video);
+
+    assert_false(isVolumeSliderOpen(video), "volume slider should start closed");
+
+    hoverOverControl(muteBtn, t.step_func(() => {
+      assert_false(isVolumeSliderOpen(video), "volume slider should not open yet");
+
+      hoverOverControl(currentTime, t.step_func_done(() => {
+        assert_false(isVolumeSliderOpen(video), "volume slider should not open if its accidental pass through");
+      }));
+    }));
+  });
+});
+</script>
