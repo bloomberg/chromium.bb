@@ -262,12 +262,13 @@ void BrowserState::Initialize(BrowserState* browser_state,
     auto service_request = mojo::MakeRequest(&service);
 
     service_manager::mojom::PIDReceiverPtr pid_receiver;
-    service_manager::Identity identity(mojom::kBrowserServiceName, new_group);
-    service_manager_connection->GetConnector()->StartService(
+    service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
+                                       base::Token{},
+                                       base::Token::CreateRandom());
+    service_manager_connection->GetConnector()->RegisterServiceInstance(
         identity, std::move(service), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
 
-    service_manager_connection->GetConnector()->StartService(identity);
     auto connection_holder =
         std::make_unique<BrowserStateServiceManagerConnectionHolder>(
             std::move(service_request));

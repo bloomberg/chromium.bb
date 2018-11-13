@@ -115,7 +115,9 @@ void HandlePrintWindowHierarchy() {
 }
 
 void HandleShowQuickLaunch() {
-  Shell::Get()->connector()->StartService(quick_launch::mojom::kServiceName);
+  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+  Shell::Get()->connector()->WarmService(service_manager::ServiceFilter::ByName(
+      quick_launch::mojom::kServiceName));
 }
 
 gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {

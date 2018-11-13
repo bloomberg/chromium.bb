@@ -110,6 +110,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP_TYPES) ServiceFilter {
     globally_unique_id_ = globally_unique_id;
   }
 
+  bool operator<(const ServiceFilter& other) const;
+
  private:
   ServiceFilter(const std::string& service_name,
                 const base::Optional<base::Token>& instance_group,

@@ -468,23 +468,24 @@ class ServiceManager::Instance
     params->set_target(target);
     params->set_interface_request_info(interface_name,
                                        std::move(interface_pipe));
-    params->set_start_service_callback(std::move(callback));
+    params->set_connection_callback(std::move(callback));
     service_manager_->Connect(std::move(params));
   }
 
-  void QueryService(const ServiceFilter& service_filter,
+  void QueryService(const std::string& service_name,
                     QueryServiceCallback callback) override {
-    std::string sandbox;
+    std::string sandbox_type;
     bool success = service_manager_->QueryCatalog(
-        Identity(service_filter.service_name(), identity_.instance_group()),
-        &sandbox);
-    std::move(callback).Run(success ? mojom::ConnectResult::SUCCEEDED
-                                    : mojom::ConnectResult::INVALID_ARGUMENT,
-                            std::move(sandbox));
+        Identity(service_name, identity_.instance_group()), &sandbox_type);
+    if (success) {
+      std::move(callback).Run(mojom::ServiceInfo::New(sandbox_type));
+    } else {
+      std::move(callback).Run(nullptr);
+    }
   }
 
-  void StartService(const ServiceFilter& service_filter,
-                    StartServiceCallback callback) override {
+  void WarmService(const ServiceFilter& service_filter,
+                   WarmServiceCallback callback) override {
     Identity target(
         service_filter.service_name(), service_filter.instance_group(),
         service_filter.instance_id(), service_filter.globally_unique_id());
@@ -499,32 +500,37 @@ class ServiceManager::Instance
     std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
     params->set_target(target);
-    params->set_start_service_callback(std::move(callback));
+    params->set_connection_callback(std::move(callback));
     service_manager_->Connect(std::move(params));
   }
 
-  void StartServiceWithProcess(
-      const Identity& in_target,
+  void RegisterServiceInstance(
+      const Identity& identity,
       mojo::ScopedMessagePipeHandle service_handle,
       mojom::PIDReceiverRequest pid_receiver_request,
-      StartServiceWithProcessCallback callback) override {
-    Identity target = in_target;
+      RegisterServiceInstanceCallback callback) override {
+    Identity target = identity;
     mojom::ServicePtr service;
     service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
     mojom::ConnectResult result = ValidateConnectParams(
         &target, &service, &pid_receiver_request, nullptr);
     if (!Succeeded(result)) {
-      std::move(callback).Run(result, Identity());
+      std::move(callback).Run(result);
       return;
     }
 
     std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
     params->set_target(target);
-
     params->set_client_process_info(std::move(service),
                                     std::move(pid_receiver_request));
-    params->set_start_service_callback(std::move(callback));
+    params->set_connection_callback(base::BindOnce(
+        [](RegisterServiceInstanceCallback callback,
+           mojom::ConnectResult result,
+           const base::Optional<Identity>& identity) {
+          std::move(callback).Run(result);
+        },
+        std::move(callback)));
     service_manager_->Connect(std::move(params));
   }
 
@@ -1060,8 +1066,9 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
   // If there was no existing instance but the source specified a specific
   // globally unique ID for the target, ignore the request. That instance is
-  // obviously no longer running.
-  if (params->target().globally_unique_id())
+  // obviously no longer running. If it has "client info" (i.e. it's an
+  // explicit service instance registration), we allow it.
+  if (!params->HasClientProcessInfo() && params->target().globally_unique_id())
     return;
 
   const catalog::Entry* entry =
@@ -1106,7 +1113,17 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     instance_type = InstanceType::kRegular;
 
   Identity target;
-  if (instance_type == InstanceType::kSingleton) {
+  // |HasClientProcessInfo()| implies that this Connect call came from
+  // |Connector.RegisterServiceInstance()| or |ServiceManager::RegisterService|
+  // directly. In both cases, we are given an explicit Identity we should use
+  // and should therefore ignore the various overriding behaviors below.
+  if (params->HasClientProcessInfo()) {
+    source_identity_for_creation = params->source();
+    target = original_target;
+    DCHECK(target.instance_group());
+    DCHECK(target.instance_id());
+    DCHECK(target.globally_unique_id());
+  } else if (instance_type == InstanceType::kSingleton) {
     source_identity_for_creation = CreateServiceManagerIdentity();
     target = Identity(params->target().name(), base::Token::CreateRandom(),
                       base::Token{});
@@ -1229,10 +1246,12 @@ void ServiceManager::RegisterService(
     pid_receiver->SetPID(GetCurrentPid());
   }
 
-  Identity target = identity;
-  DCHECK(target.instance_group());
-  if (!target.instance_id())
-    target.set_instance_id(base::Token{});
+  DCHECK(identity.instance_group());
+  Identity target(
+      identity.name(), identity.instance_group(),
+      identity.instance_id() ? identity.instance_id() : base::Token{},
+      identity.globally_unique_id() ? identity.globally_unique_id()
+                                    : base::Token::CreateRandom());
   params->set_source(target);
   params->set_target(target);
   params->set_client_process_info(
@@ -1349,11 +1368,19 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
   if (target.instance_id())
     instance_id = *target.instance_id();
 
-  // We add a newly minted globally unique ID to the target Identity here. This
-  // ensures that every new Instance has a globally unique ID as part of its
-  // Identity.
+  // We add a newly minted globally unique ID to the target Identity here if
+  // one wasn't provided. This ensures that every new Instance has a globally
+  // unique ID as part of its Identity.
+  base::Token globally_unique_id;
+  if (target.globally_unique_id()) {
+    DCHECK(!target.globally_unique_id()->is_zero());
+    globally_unique_id = *target.globally_unique_id();
+  } else {
+    globally_unique_id = base::Token::CreateRandom();
+  }
+
   Identity target_with_unique_id(target.name(), target.instance_group(),
-                                 instance_id, base::Token::CreateRandom());
+                                 instance_id, globally_unique_id);
   auto instance =
       std::make_unique<Instance>(this, target_with_unique_id, specs, options);
   Instance* raw_instance = instance.get();

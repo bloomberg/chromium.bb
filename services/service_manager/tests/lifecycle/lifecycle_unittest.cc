@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
@@ -161,8 +162,9 @@ class LifecycleTest : public test::ServiceTest {
 #else
         "lifecycle_unittest_exe",
 #endif
-        Identity(kTestExeName, base::nullopt /* instance_group */), connector(),
-        &process);
+        Identity(kTestExeName, kSystemInstanceGroup, base::Token{},
+                 base::Token::CreateRandom()),
+        connector(), &process);
     return process;
   }
 

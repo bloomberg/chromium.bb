@@ -69,7 +69,7 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
     connector_ = service_manager::Connector::Create(&request);
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
-        service_manager::Identity(ash::mojom::kServiceName),
+        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
         ash::mojom::CrosDisplayConfigController::Name_,
         base::BindRepeating(&DisplayInfoProviderChromeosTest::
                                 AddCrosDisplayConfigControllerBinding,

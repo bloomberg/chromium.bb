@@ -251,8 +251,8 @@ void AssistantController::GetNavigableContentsFactory(
   }
 
   Shell::Get()->connector()->BindInterface(
-      service_manager::Identity(content::mojom::kServiceName,
-                                service_instance_group),
+      service_manager::ServiceFilter::ByNameInGroup(
+          content::mojom::kServiceName, *service_instance_group),
       std::move(request));
 }
 

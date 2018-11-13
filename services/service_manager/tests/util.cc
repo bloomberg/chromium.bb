@@ -31,8 +31,7 @@ namespace {
 
 void GrabConnectResult(base::RunLoop* loop,
                        mojom::ConnectResult* out_result,
-                       mojom::ConnectResult result,
-                       const base::Optional<Identity>& resolved_identity) {
+                       mojom::ConnectResult result) {
   loop->Quit();
   *out_result = result;
 }
@@ -73,15 +72,12 @@ mojom::ConnectResult LaunchAndConnectToProcess(
       std::move(pipe), 0u));
   service_manager::mojom::PIDReceiverPtr receiver;
 
-  connector->StartService(target, std::move(client), MakeRequest(&receiver));
   mojom::ConnectResult result;
-  {
-    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-    Connector::TestApi test_api(connector);
-    test_api.SetStartServiceCallback(
-        base::Bind(&GrabConnectResult, &loop, &result));
-    loop.Run();
-  }
+  base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+  connector->RegisterServiceInstance(
+      target, std::move(client), MakeRequest(&receiver),
+      base::BindOnce(&GrabConnectResult, &loop, &result));
+  loop.Run();
 
   base::LaunchOptions options;
 #if defined(OS_WIN)

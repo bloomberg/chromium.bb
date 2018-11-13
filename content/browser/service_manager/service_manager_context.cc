@@ -130,10 +130,10 @@ void StartServiceInUtilityProcess(
     base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request,
     service_manager::mojom::PIDReceiverPtr pid_receiver,
-    service_manager::mojom::ConnectResult query_result,
-    const std::string& sandbox_string) {
+    service_manager::mojom::ServiceInfoPtr service_info) {
+  DCHECK(service_info);
   service_manager::SandboxType sandbox_type =
-      service_manager::UtilitySandboxTypeFromString(sandbox_string);
+      service_manager::UtilitySandboxTypeFromString(service_info->sandbox_type);
 
   // Look for an existing process group.
   base::WeakPtr<UtilityProcessHost>* weak_host = nullptr;
@@ -182,7 +182,7 @@ void QueryAndStartServiceInUtilityProcess(
     service_manager::mojom::ServiceRequest request,
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
   ServiceManagerContext::GetConnectorForIOThread()->QueryService(
-      service_manager::Identity(service_name),
+      service_name,
       base::BindOnce(&StartServiceInUtilityProcess, service_name,
                      process_name_callback, std::move(process_group),
                      std::move(request), std::move(pid_receiver)));
@@ -583,9 +583,10 @@ ServiceManagerContext::ServiceManagerContext(
   auto* browser_connection = ServiceManagerConnection::GetForProcess();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;
-  packaged_services_connection_->GetConnector()->StartService(
+  packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::kSystemInstanceGroup),
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
@@ -843,8 +844,8 @@ void ServiceManagerContext::StartBrowserConnection() {
   } else if (!network_service_in_process) {
     // Start the network service process as soon as possible, since it is
     // critical to start up performance.
-    browser_connection->GetConnector()->StartService(
-        mojom::kNetworkServiceName);
+    browser_connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(mojom::kNetworkServiceName));
   }
 }
 

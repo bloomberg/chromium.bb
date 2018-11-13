@@ -10,7 +10,7 @@ import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/service_manager/public/mojom/service_filter.mojom";
 
 // TODO(beng): Evaluate the utility of this enum. There are some inconsistencies
-//             in its use with BindInterface/StartService.
+//             in its use with BindInterface/WarmService.
 enum ConnectResult {
   // The operation was completed successfully.
   SUCCEEDED,
@@ -81,6 +81,16 @@ struct Identity {
   mojo_base.mojom.Token? globally_unique_id;
 };
 
+// Static metadata about a service the Service Manager knows about. This is
+// information pertaining to the service definition itself (e.g. registered
+// manifest contents), not to any particular service instance running in the
+// system.
+struct ServiceInfo {
+  // A string describing the kind of sandboxing the service has declared for
+  // itself in its manifest.
+  string sandbox_type;
+};
+
 // Implemented by an object in the service manager associated with a specific
 // instance. Tells the service manager the PID for a process launched by the
 // client.
@@ -125,65 +135,57 @@ interface Connector {
                 handle<message_pipe> interface_pipe)
       => (ConnectResult result, Identity? identity);
 
-  // Asks the service manager whether it knows how to manage a given service,
-  // and how the service is to be sandboxed per the mainifest. No processes are
-  // started as a result. QueryService() is typically used before a call to
-  // StartProcessWithService() so the client can determine how to launch a
-  // process.
-  //
-  // |filter| is interpreted similarly to |BindInterface()| above.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the QueryService() operation.
-  //
-  //  sandbox_type
-  //    A string describing the kind of sandboxing the service has declared
-  //    for itself in the manifest.
-  //
-  QueryService(ServiceFilter filter)
-      => (ConnectResult result, string sandbox_type);
+  // Asks the Service Manager for details about the service named
+  // |service_name|. No processes are started as a result of this request. On
+  // response, |info| provides information about the service. If the Service
+  // Manager is not familiar the named service, |info| will be null.
+  QueryService(string service_name) => (ServiceInfo? info);
 
-  // Asks the Service Manager to create a service instance which would match
-  // |filter|. This is essentially equivalent to |BindInterface()| above but
-  // no interface request given to bind. This may be used to elicit service
-  // launching if no matching service instance is already running. See comments
-  // on |BindInterface()| above for details on filtering constraints, instance
-  // creation, and response values.
-  StartService(ServiceFilter filter)
+  // Asks the Service Manager to ensure that a service instance which would
+  // match |filter| (from the caller's perspective) is running. This is
+  // essentially equivalent to |BindInterface()| above but no interface request
+  // is given to bind. This is mainly here as a performance measure, as a client
+  // may wish to ensure that a service is warmed up by the time the client
+  // actually needs it.
+  //
+  // See comments on |BindInterface()| above for details on filtering
+  // constraints, instance creation, and response values.
+  WarmService(ServiceFilter filter)
       => (ConnectResult result, Identity? identity);
 
-  // Typically, the service manager will start a process for a service the first
-  // time it receives a bind interface request for it, or when StartService() is
-  // called. This struct allows a client to start the process itself and provide
-  // the service manager the pipes it needs to communicate with it. When this
-  // function is called, the client owns the lifetime of the child process it
-  // started, not the service manager. The service manager binds the |service|
-  // pipe, and when it closes destroys the associated instance but the process
-  // stays alive.
+  // Typically, the Service Manager will start a process for a service the first
+  // time it receives a |BindInterface()| or |WarmService()| request for a
+  // filter it can't match to an existing instance.
   //
-  // Parameters:
+  // This call allows new service instances to be explicitly injected into the
+  // Service Manager's set of running services. As such, this is considered to
+  // be a highly privileged API. A service calling this API must have the
+  // |can_create_other_service_instances| option set to |true| in its own
+  // manifest or the request will be rejected.
   //
-  //  target
-  //    The identity of the service to create the instance for.
+  // |identity| is the full identity of the service instance to introduce. This
+  // must include a valid instance group and a valid, random, globally unique
+  // ID.
   //
-  //  service
-  //    A pipe to an implementation of Service that the service manager can use
-  //    to communicate with the service.
+  // |service| is a |Service| interface pipe (i.e. a ServicePtr in C++).
   //
-  //  pid_receiver_request
-  //   Allows the client process launcher to tell the service manager the PID of
-  //   the process it created (the pid isn't supplied directly here as the
-  //   process may not have been launched by the time BindInterface() is
-  //   called.)
+  // |pid_receiver_request| is the receiving end of a PIDReceiver pipe. The
+  // caller is expected to call |SetPid()| on the other end of this pipe in
+  // order to inform the Service Manager about which process is actually hosting
+  // the service instance.
   //
-  StartServiceWithProcess(Identity target,
+  // TODO(https://crbug.com/904137): We should be able to be more typesafe here
+  // for the |service| argument, but Service's definition requires Connector's
+  // definition and we don't yet support circular mojom imports. Hence the raw
+  // message pipe.
+  RegisterServiceInstance(Identity identity,
                           handle<message_pipe> service,
                           PIDReceiver& pid_receiver_request) =>
-      (ConnectResult result, Identity? identity);
+      (ConnectResult result);
 
-  // Clones this Connector so it can be passed to another thread.
+  // Binds another Connector pipe to this same implementation. This effectively
+  // allows the client to "clone" its Connector arbitrarily many times, for
+  // example to mint Connector endpoints for different threads to use.
   Clone(Connector& request);
 
   // Filter interface requests received from |source| according to the policy
@@ -197,6 +199,17 @@ interface Connector {
   // in |target|. The Service Manager will only forward interface requests that
   // were permitted by intersecting |source|'s manifest requirements with the
   // contents of |spec|.
+  //
+  // DEPRECATED: Please do not introduce new uses of this API, as it will be
+  // removed soon. Please instead avoid using InterfaceProvider altogether in
+  // favor of explicit factory interfaces. i.e., instead of an InterfaceProvider
+  // hooked up to a BinderRegistry, prefer to define something like:
+  //
+  //   interface MyInterfaceBroker {
+  //     GetFoo(Foo& request);
+  //     GetBar(Bar& request);
+  //   };
+  //
   FilterInterfaces(string spec,
                    Identity source,
                    InterfaceProvider& source_request,

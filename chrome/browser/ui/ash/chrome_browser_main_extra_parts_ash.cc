@@ -153,10 +153,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
   if (features::IsUsingWindowService()) {
     // Start up the window service and the ash system UI service.
     // NOTE: ash::Shell is still created below for SingleProcessMash.
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ws::mojom::kServiceName));
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ash::mojom::kServiceName));
+    connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(ws::mojom::kServiceName));
+    connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName));
 
     views::MusClient::InitParams params;
     params.connector = connection->GetConnector();

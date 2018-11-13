@@ -42,11 +42,16 @@ TEST_F(AppLaunchTest, TestQuickLaunch) {
   if (features::IsSingleProcessMash())
     return;
 
-  connector()->StartService(mojom::kServiceName);
-  connector()->StartService(quick_launch::mojom::kServiceName);
+  // TODO(https://crbug.com/904148): These should not use |WarmService()|.
+  connector()->WarmService(
+      service_manager::ServiceFilter::ByName(mojom::kServiceName));
+  connector()->WarmService(service_manager::ServiceFilter::ByName(
+      quick_launch::mojom::kServiceName));
 
   ws::mojom::WindowServerTestPtr test_interface;
-  connector()->BindInterface(ws::mojom::kServiceName, &test_interface);
+  connector()->BindInterface(
+      service_manager::ServiceFilter::ByName(ws::mojom::kServiceName),
+      mojo::MakeRequest(&test_interface));
 
   base::RunLoop run_loop;
   bool success = false;

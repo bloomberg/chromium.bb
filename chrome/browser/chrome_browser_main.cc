@@ -1873,8 +1873,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (parsed_command_line().HasSwitch(switches::kLaunchSimpleBrowserSwitch) ||
       parsed_command_line().HasSwitch(
           switches::kLaunchInProcessSimpleBrowserSwitch)) {
-    content::BrowserContext::GetConnectorFor(profile_)->StartService(
-        service_manager::Identity(simple_browser::mojom::kServiceName));
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    content::BrowserContext::GetConnectorFor(profile_)->WarmService(
+        service_manager::ServiceFilter::ByName(
+            simple_browser::mojom::kServiceName));
   }
 #endif
 

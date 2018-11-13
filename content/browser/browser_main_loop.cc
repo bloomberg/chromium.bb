@@ -1674,8 +1674,9 @@ void BrowserMainLoop::InitializeAudio() {
           if (connection) {
             // The browser is not shutting down: |connection| would be null
             // otherwise.
-            connection->GetConnector()->StartService(
-                audio::mojom::kServiceName);
+            connection->GetConnector()->WarmService(
+                service_manager::ServiceFilter::ByName(
+                    audio::mojom::kServiceName));
           }
         }));
   }

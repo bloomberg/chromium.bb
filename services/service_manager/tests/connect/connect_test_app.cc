@@ -172,17 +172,14 @@ class ConnectTestApp : public Service,
   void ConnectToClassAppWithIdentity(
       const service_manager::Identity& target,
       ConnectToClassAppWithIdentityCallback callback) override {
-    context()->connector()->StartService(target);
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
-    {
-      base::RunLoop loop;
-      Connector::TestApi test_api(context()->connector());
-      test_api.SetStartServiceCallback(base::BindRepeating(
-          &OnConnectResult, loop.QuitClosure(), &result, &resolved_identity));
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-      loop.Run();
-    }
+    base::RunLoop loop;
+    context()->connector()->WarmService(
+        target, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
+                               &resolved_identity));
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    loop.Run();
     std::move(callback).Run(static_cast<int32_t>(result), *resolved_identity);
   }
 

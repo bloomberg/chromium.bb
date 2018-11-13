@@ -1870,12 +1870,12 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   // Establish a ServiceManager connection for the new render service instance.
   mojo_invitation_ = {};
-  service_manager::Identity child_identity(
-      mojom::kRendererServiceName,
-      BrowserContext::GetServiceInstanceGroupFor(GetBrowserContext()),
-      base::Token::CreateRandom());
   child_connection_ = std::make_unique<ChildConnection>(
-      child_identity, &mojo_invitation_, connector, io_task_runner);
+      service_manager::Identity(
+          mojom::kRendererServiceName,
+          BrowserContext::GetServiceInstanceGroupFor(GetBrowserContext()),
+          base::Token::CreateRandom(), base::Token::CreateRandom()),
+      &mojo_invitation_, connector, io_task_runner);
 
   // Send an interface request to bootstrap the IPC::Channel. Note that this
   // request will happily sit on the pipe until the process is launched and
@@ -3805,12 +3805,12 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 }
 
 // static
-RenderProcessHost* RenderProcessHost::FromRendererIdentity(
-    const service_manager::Identity& identity) {
+RenderProcessHost* RenderProcessHost::FromRendererInstanceId(
+    const base::Token& instance_id) {
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* process = i.GetCurrentValue();
-    if (process->GetChildIdentity().Matches(identity))
+    if (process->GetChildIdentity().instance_id() == instance_id)
       return process;
   }
   return nullptr;

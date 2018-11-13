@@ -234,9 +234,9 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
     return;
 
   connector_->BindInterface(
-      service_manager::Identity(
+      service_manager::ServiceFilter::ByNameInGroup(
           chromeos::multidevice_setup::mojom::kServiceName,
-          service_instance_group),
+          *service_instance_group),
       &multidevice_setup_ptr_);
 
   // Add this object as the delegate of the MultiDeviceSetup Service.

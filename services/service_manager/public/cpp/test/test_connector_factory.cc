@@ -98,21 +98,21 @@ class TestConnectorImplBase : public mojom::Connector {
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 
-  void StartService(const ServiceFilter& service_filter,
-                    StartServiceCallback callback) override {
+  void WarmService(const ServiceFilter& service_filter,
+                   WarmServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void QueryService(const ServiceFilter& service_filter,
+  void QueryService(const std::string& service_name,
                     QueryServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void StartServiceWithProcess(
+  void RegisterServiceInstance(
       const Identity& identity,
       mojo::ScopedMessagePipeHandle service,
       mojom::PIDReceiverRequest pid_receiver_request,
-      StartServiceWithProcessCallback callback) override {
+      RegisterServiceInstanceCallback callback) override {
     NOTREACHED();
   }
 
@@ -235,21 +235,21 @@ class ProxiedServiceConnector : public mojom::Connector {
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 
-  void StartService(const ServiceFilter& target,
-                    StartServiceCallback callback) override {
+  void WarmService(const ServiceFilter& filter,
+                   WarmServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void QueryService(const ServiceFilter& target,
+  void QueryService(const std::string& service_name,
                     QueryServiceCallback callback) override {
     NOTREACHED();
   }
 
-  void StartServiceWithProcess(
+  void RegisterServiceInstance(
       const Identity& identity,
       mojo::ScopedMessagePipeHandle service,
       mojom::PIDReceiverRequest pid_receiver_request,
-      StartServiceWithProcessCallback callback) override {
+      RegisterServiceInstanceCallback callback) override {
     NOTREACHED();
   }
 

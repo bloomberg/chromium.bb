@@ -53,12 +53,6 @@ class ResourceCoordinatorTest : public service_manager::test::ServiceTest {
     TestCUImpl<CoordinationUnitPtrType*>(cu);
   }
 
- protected:
-  void SetUp() override {
-    service_manager::test::ServiceTest::SetUp();
-    connector()->StartService(mojom::kServiceName);
-  }
-
  private:
   base::RunLoop* loop_ = nullptr;
 
