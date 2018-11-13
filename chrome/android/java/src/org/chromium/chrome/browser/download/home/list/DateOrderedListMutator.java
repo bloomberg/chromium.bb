@@ -77,13 +77,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     @Override
     public void onItemsAdded(Collection<OfflineItem> items) {
         for (OfflineItem item : items) {
-            Date date = getSectionDateFromOfflineItem(item);
-            DateGroup dateGroup = mDateGroups.get(date);
-            if (dateGroup == null) {
-                dateGroup = new DateGroup();
-                mDateGroups.put(date, dateGroup);
-            }
-            dateGroup.addItem(item);
+            addOrUpdateItemToDateGroups(item);
         }
 
         pushItemsToModel();
@@ -117,6 +111,8 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
             onItemsRemoved(CollectionUtil.newArrayList(oldItem));
             onItemsAdded(CollectionUtil.newArrayList(item));
         } else {
+            addOrUpdateItemToDateGroups(item);
+
             int sectionHeaderIndex = -1;
             for (int i = 0; i < mModel.size(); i++) {
                 ListItem listItem = mModel.get(i);
@@ -134,6 +130,16 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         }
 
         mModel.dispatchLastEvent();
+    }
+
+    private void addOrUpdateItemToDateGroups(OfflineItem item) {
+        Date date = getSectionDateFromOfflineItem(item);
+        DateGroup dateGroup = mDateGroups.get(date);
+        if (dateGroup == null) {
+            dateGroup = new DateGroup();
+            mDateGroups.put(date, dateGroup);
+        }
+        dateGroup.addOrUpdateItem(item);
     }
 
     private void updateSectionHeader(int sectionHeaderIndex, int offlineItemIndex) {
@@ -218,13 +224,13 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                     Filters.fromOfflineItem(lhs), Filters.fromOfflineItem(rhs));
         });
 
-        public void addItem(OfflineItem item) {
+        public void addOrUpdateItem(OfflineItem item) {
             Section section = sections.get(item.filter);
             if (section == null) {
                 section = new Section();
                 sections.put(item.filter, section);
             }
-            section.addItem(item);
+            section.addOrUpdateItem(item);
         }
 
         public void removeItem(OfflineItem item) {
@@ -252,7 +258,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
         public Map<Date, OfflineItem> items =
                 new TreeMap<>((lhs, rhs) -> { return rhs.compareTo(lhs); });
 
-        public void addItem(OfflineItem item) {
+        public void addOrUpdateItem(OfflineItem item) {
             items.put(new Date(item.creationTimeMs), item);
         }
 
