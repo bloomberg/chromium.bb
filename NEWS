@@ -12,6 +12,7 @@ issues]].
 ** Braille table improvements
 - Defined the undefined character for the Czech tables thanks to Jan
   Hegr.
+- Improvements to Unified English braille thanks to Mike Gray
 
 ** Other changes
 - Updated the ~lou_allround~ test tool to include all the mode flags
