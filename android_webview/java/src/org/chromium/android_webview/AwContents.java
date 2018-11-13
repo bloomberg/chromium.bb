@@ -640,7 +640,7 @@ public class AwContents implements SmartClipProvider {
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
-            if (!navigationParams.isRendererInitiated) {
+            if (!AwFeatureList.pageStartedOnCommitEnabled(navigationParams.isRendererInitiated)) {
                 mContentsClient.getCallbackHelper().postOnPageStarted(navigationParams.url);
             }
             return false;

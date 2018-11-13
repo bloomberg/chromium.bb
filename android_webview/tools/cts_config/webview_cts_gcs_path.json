@@ -37,10 +37,51 @@
       {
         "apk": "android-cts/repository/testcases/CtsWebkitTestCases.apk",
         "excludes": [
-        {
-          "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
-          "_bug_id": "crbug.com/896857"
-        }]
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testDoUpdateVisitedHistory",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testLoadPage",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnFormResubmission",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedErrorForSubresource",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpAuthRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedLoginRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnScaleChanged",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
+            "_bug_id": "crbug.com/896022"
+          }
+        ]
       },
       {
         "apk": "android-cts/repository/testcases/CtsWidgetTestCases.apk",
@@ -58,10 +99,51 @@
       {
         "apk": "android-cts/repository/testcases/CtsWebkitTestCases.apk",
         "excludes": [
-        {
-          "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
-          "_bug_id": "crbug.com/896857"
-        }]
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testDoUpdateVisitedHistory",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testLoadPage",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnFormResubmission",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedErrorForSubresource",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpAuthRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedLoginRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnScaleChanged",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
+            "_bug_id": "crbug.com/896022"
+          }
+        ]
       },
       {
         "apk": "android-cts/repository/testcases/CtsWidgetTestCases.apk",
