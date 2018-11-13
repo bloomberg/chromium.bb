@@ -195,7 +195,7 @@ class WebInputEvent {
     kPointerCausedUaAction,
     kPointerTypeLast = kPointerCausedUaAction,
 
-    kTypeLast = kTouchTypeLast
+    kTypeLast = kPointerTypeLast
   };
 
   // The modifier constants cannot change their values since pepper
