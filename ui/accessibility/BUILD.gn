@@ -255,3 +255,15 @@ fuzzer_test("ax_tree_fuzzer") {
     ":accessibility",
   ]
 }
+
+fuzzer_test("ax_table_fuzzer") {
+  sources = [
+    "ax_table_fuzzer.cc",
+  ]
+
+  deps = [
+    ":accessibility",
+  ]
+
+  seed_corpus = "fuzz_corpus"
+}
