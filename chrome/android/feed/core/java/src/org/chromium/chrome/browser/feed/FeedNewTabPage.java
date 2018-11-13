@@ -23,7 +23,6 @@ import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Header;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.action.ActionApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
@@ -321,9 +320,7 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(activity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                loggingBridge, offlineIndicator,
-                                (FeedAppLifecycleListener)
-                                        feedProcessScope.getAppLifecycleListener())
+                                loggingBridge, offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
