@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -40,7 +41,18 @@ constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
+// Helpers ---------------------------------------------------------------------
+
+// Returns a GURL for the specified |url| having set the locale query parameter.
+GURL CreateLocalizedGURL(const std::string& url) {
+  static constexpr char kLocaleParamKey[] = "hl";
+  return net::AppendOrReplaceQueryParameter(GURL(url), kLocaleParamKey,
+                                            base::i18n::GetConfiguredLocale());
+}
+
 }  // namespace
+
+// Utilities -------------------------------------------------------------------
 
 GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
@@ -155,19 +167,18 @@ base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
 base::Optional<GURL> GetWebUrl(DeepLinkType type) {
   // TODO(b/113357196): Make these URLs configurable for development purposes.
   static constexpr char kAssistantRemindersWebUrl[] =
-      "https://assistant.google.com/reminders/mainview?hl=";
+      "https://assistant.google.com/reminders/mainview";
   static constexpr char kAssistantSettingsWebUrl[] =
-      "https://assistant.google.com/settings/mainpage?hl=";
+      "https://assistant.google.com/settings/mainpage";
 
   if (!IsWebDeepLinkType(type))
     return base::nullopt;
 
   switch (type) {
     case DeepLinkType::kReminders:
-      return GURL(kAssistantRemindersWebUrl +
-                  base::i18n::GetConfiguredLocale());
+      return CreateLocalizedGURL(kAssistantRemindersWebUrl);
     case DeepLinkType::kSettings:
-      return GURL(kAssistantSettingsWebUrl + base::i18n::GetConfiguredLocale());
+      return CreateLocalizedGURL(kAssistantSettingsWebUrl);
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kChromeSettings:
     case DeepLinkType::kFeedback:
