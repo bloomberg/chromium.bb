@@ -62,7 +62,6 @@ class CORE_EXPORT EventPath final
   const NodeEventContext& operator[](wtf_size_t index) const {
     return node_event_contexts_[index];
   }
-  NodeEventContext& at(wtf_size_t index) { return node_event_contexts_[index]; }
   NodeEventContext& Last() { return node_event_contexts_[size() - 1]; }
 
   WindowEventContext& GetWindowEventContext() {
