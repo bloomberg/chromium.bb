@@ -1839,11 +1839,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PostBrowserStart();
 
+#if defined(OS_ANDROID)
+  DCHECK(!parameters().ui_task);
+#else
   if (parameters().ui_task) {
     parameters().ui_task->Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
   }
+#endif
 
 #if defined(OS_WIN)
   // Clean up old user data directory and disk cache directory.
