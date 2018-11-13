@@ -38,7 +38,7 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
   base::TimeTicks GetCurrentStreamTime();
 
   // Event handlers for |audio_renderer_|.
-  void OnRendererError();
+  void OnRendererError(zx_status_t status);
   void OnMinLeadTimeChanged(int64_t min_lead_time);
 
   int sample_rate_ = 0;

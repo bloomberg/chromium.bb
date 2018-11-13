@@ -124,7 +124,7 @@ URLLoaderImpl::URLLoaderImpl(std::unique_ptr<net::URLRequestContext> context,
       context_(std::move(context)),
       buffer_(new net::GrowableIOBuffer()),
       write_watch_(FROM_HERE) {
-  binding_.set_error_handler([this] { delete this; });
+  binding_.set_error_handler([this](zx_status_t status) { delete this; });
   g_active_requests++;
 }
 

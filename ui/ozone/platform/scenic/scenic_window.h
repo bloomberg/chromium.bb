@@ -80,7 +80,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
                OnEventCallback callback) override;
 
   // Callbacks for |scenic_session_|.
-  void OnScenicError();
+  void OnScenicError(zx_status_t status);
   void OnScenicEvents(fidl::VectorPtr<fuchsia::ui::scenic::Event> events);
 
   // InputEventDispatcher::Delegate interface.
@@ -88,7 +88,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   // Error handler for |view_|. This error normally indicates the View was
   // destroyed (e.g. dropping ViewOwner).
-  void OnViewError();
+  void OnViewError(zx_status_t status);
 
   void UpdateSize();
 

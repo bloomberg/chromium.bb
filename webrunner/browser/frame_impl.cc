@@ -161,7 +161,8 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
-  binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
+  binding_.set_error_handler(
+      [this](zx_status_t status) { context_->DestroyFrame(this); });
 }
 
 FrameImpl::~FrameImpl() {
@@ -317,9 +318,8 @@ void FrameImpl::SetNavigationEventObserver(
 
   if (observer) {
     navigation_observer_.Bind(std::move(observer));
-    navigation_observer_.set_error_handler([this]() {
-      SetNavigationEventObserver(nullptr);
-    });
+    navigation_observer_.set_error_handler(
+        [this](zx_status_t status) { SetNavigationEventObserver(nullptr); });
   } else {
     navigation_observer_.Unbind();
   }

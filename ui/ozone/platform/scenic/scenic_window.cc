@@ -221,8 +221,8 @@ void ScenicWindow::OnPropertiesChanged(
   callback();
 }
 
-void ScenicWindow::OnScenicError() {
-  LOG(ERROR) << "scenic::Session failed.";
+void ScenicWindow::OnScenicError(zx_status_t status) {
+  LOG(ERROR) << "scenic::Session failed with code " << status << ".";
   delegate_->OnClosed();
 }
 
@@ -273,8 +273,8 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
   callback(result);
 }
 
-void ScenicWindow::OnViewError() {
-  VLOG(1) << "viewsv1::View connection was closed.";
+void ScenicWindow::OnViewError(zx_status_t status) {
+  VLOG(1) << "viewsv1::View connection was closed with code " << status << ".";
   delegate_->OnClosed();
 }
 

@@ -56,7 +56,8 @@ class HttpServiceTest : public ::testing::Test {
   void TearDown() override {
     // Disconnect the client and wait for the service to shut down.
     base::RunLoop run_loop;
-    binding_.set_error_handler([&run_loop]() { run_loop.Quit(); });
+    binding_.set_error_handler(
+        [&run_loop](zx_status_t status) { run_loop.Quit(); });
     http_service_interface_.Unbind();
     run_loop.Run();
     binding_.set_error_handler(nullptr);

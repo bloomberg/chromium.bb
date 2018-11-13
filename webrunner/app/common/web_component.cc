@@ -49,7 +49,7 @@ WebComponent::WebComponent(
   // to destroy this component on error.
   if (controller_request.is_valid()) {
     controller_binding_.Bind(std::move(controller_request));
-    controller_binding_.set_error_handler([this] {
+    controller_binding_.set_error_handler([this](zx_status_t status) {
       // Signal graceful process termination.
       DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
     });

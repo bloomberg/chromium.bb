@@ -37,7 +37,7 @@ chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
   chromium::web::ContextPtr web_context;
   web_context_provider->Create(std::move(create_params),
                                web_context.NewRequest());
-  web_context.set_error_handler([]() {
+  web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt
     // to recover. appmgr will relaunch the runner when it is needed again.
     LOG(ERROR) << "Connection to Context lost.";

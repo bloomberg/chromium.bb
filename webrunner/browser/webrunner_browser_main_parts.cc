@@ -51,7 +51,7 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
                                   std::move(context_channel_)));
 
   // Quit the browser main loop when the Context connection is dropped.
-  context_binding_->set_error_handler([this]() {
+  context_binding_->set_error_handler([this](zx_status_t status) {
     DLOG(WARNING) << "Client connection to Context service dropped.";
     context_service_.reset();
     std::move(quit_closure_).Run();

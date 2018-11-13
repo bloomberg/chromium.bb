@@ -33,7 +33,7 @@ TEST_F(FilteredServiceDirectoryTest, Connect) {
 
   auto stub =
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, false);
+  VerifyTestInterface(&stub, ZX_OK);
 }
 
 // Verify that multiple connections to the same service work properly.
@@ -44,15 +44,15 @@ TEST_F(FilteredServiceDirectoryTest, ConnectMultiple) {
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
   auto stub2 =
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub1, false);
-  VerifyTestInterface(&stub2, false);
+  VerifyTestInterface(&stub1, ZX_OK);
+  VerifyTestInterface(&stub2, ZX_OK);
 }
 
 // Verify that non-whitelisted services are blocked.
 TEST_F(FilteredServiceDirectoryTest, ServiceBlocked) {
   auto stub =
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, true);
+  VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
 // Verify that FilteredServiceDirectory handles the case when the target service
@@ -64,7 +64,7 @@ TEST_F(FilteredServiceDirectoryTest, NoService) {
 
   auto stub =
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, true);
+  VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
 // Verify that FilteredServiceDirectory handles the case when the underlying
@@ -77,7 +77,7 @@ TEST_F(FilteredServiceDirectoryTest, NoServiceDir) {
 
   auto stub =
       filtered_client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, true);
+  VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
 }  // namespace fuchsia
