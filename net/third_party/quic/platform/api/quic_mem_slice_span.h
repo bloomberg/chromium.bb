@@ -35,6 +35,9 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpan {
     return impl_.SaveMemSlicesInSendBuffer(send_buffer);
   }
 
+  // Return data of the span at |index| by the form of a QuicStringPiece.
+  QuicStringPiece GetData(int index) { return impl_.GetData(index); }
+
   bool empty() const { return impl_.empty(); }
 
  private:
