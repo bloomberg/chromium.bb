@@ -182,6 +182,8 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
+#include "ios/chrome/browser/ui/sad_tab/features.h"
+#import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -436,6 +438,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     PreloadControllerDelegate,
                                     QRScannerPresenting,
                                     RepostFormTabHelperDelegate,
+                                    SadTabCoordinatorDelegate,
                                     SideSwipeControllerDelegate,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
@@ -546,7 +549,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   QRScannerLegacyCoordinator* _qrScannerCoordinator;
 
   // Coordinator for displaying Sad Tab.
-  SadTabLegacyCoordinator* _sadTabCoordinator;
+  id<SadTabTabHelperDelegate> _sadTabCoordinator;
 
   // Coordinator for Page Info UI.
   PageInfoLegacyCoordinator* _pageInfoCoordinator;
@@ -2402,9 +2405,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       self.popupMenuCoordinator;
   self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
 
-  _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
-  _sadTabCoordinator.baseViewController = self;
-  _sadTabCoordinator.dispatcher = self.dispatcher;
+  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
+    SadTabCoordinator* sadTabCoordinator = [[SadTabCoordinator alloc]
+        initWithBaseViewController:_browserContainerCoordinator.viewController
+                      browserState:_browserState];
+    sadTabCoordinator.dispatcher = self.dispatcher;
+    sadTabCoordinator.delegate = self;
+    _sadTabCoordinator = sadTabCoordinator;
+  } else {
+    SadTabLegacyCoordinator* sadTabCoordinator =
+        [[SadTabLegacyCoordinator alloc] init];
+    sadTabCoordinator.baseViewController = self;
+    sadTabCoordinator.dispatcher = self.dispatcher;
+    _sadTabCoordinator = sadTabCoordinator;
+  }
 
   // If there are any existing SadTabHelpers in |self.tabModel|, update the
   // helpers delegate with the new |_sadTabCoordinator|.
@@ -3176,6 +3190,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         [[SnapshotOverlay alloc] initWithView:downloadManagerView
                                       yOffset:offset];
     [overlays addObject:downloadManagerOverlay];
+  }
+
+  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
+    UIViewController* viewController =
+        [base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator)
+            viewController];
+    UIView* sadTabView = viewController.view;
+    if (sadTabView) {
+      CGFloat offset = [self headerHeightForTab:tab];
+      SnapshotOverlay* sadTabOverlay =
+          [[SnapshotOverlay alloc] initWithView:sadTabView yOffset:offset];
+      [overlays addObject:sadTabOverlay];
+    }
   }
 
   return overlays;
@@ -5140,6 +5167,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return self.visible;
 }
 
+#pragma mark - SadTabCoordinatorDelegate
+
+- (void)sadTabCoordinatorDidStart:(SadTabCoordinator*)sadTabCoordinator {
+  UIView* sadTabView = sadTabCoordinator.viewController.view;
+  sadTabView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(
+      [NamedGuide guideWithName:kContentAreaGuide view:self.view], sadTabView);
+}
+
 #pragma mark - UIGestureRecognizerDelegate
 
 // Always return yes, as this tap should work with various recognizers,
@@ -5175,6 +5211,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [sideSwipeView removeFromSuperview];
   [self.sideSwipeController setInSwipe:NO];
   [[self.infoBarCoordinator view] setHidden:NO];
+
+  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
+    // SatTabCoordinator was stopped when SideSwipeContentView was removed.
+    SadTabTabHelper* sadTabHelper =
+        SadTabTabHelper::FromWebState(self.tabModel.currentTab.webState);
+    if (sadTabHelper && sadTabHelper->is_showing_sad_tab()) {
+      SadTabCoordinator* sadTabCoordinator =
+          base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
+      [sadTabCoordinator start];
+    }
+  }
 }
 
 - (UIView*)sideSwipeContentView {
@@ -5237,6 +5284,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (UIView*)topToolbarView {
   return self.primaryToolbarCoordinator.viewController.view;
+}
+
+- (void)didRemoveSideSwipeContentView {
+  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
+    SadTabCoordinator* sadTabCoordinator =
+        base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
+    [sadTabCoordinator stop];
+  }
 }
 
 #pragma mark - PreloadControllerDelegate methods
