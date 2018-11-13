@@ -99,6 +99,11 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
 
   ~PreviewsLitePageNavigationThrottle() override;
 
+  // Attempts to extract the original URL from the given Previews URL. Returns
+  // false if |url| is not a valid Preview URL. It is ok to pass nullptr for
+  // |original_url| if you only want the boolean return value.
+  static bool GetOriginalURL(const GURL& url, std::string* original_url);
+
   // Returns the URL for a preview given by the url.
   static GURL GetPreviewsURLForURL(const GURL& original_url);
 

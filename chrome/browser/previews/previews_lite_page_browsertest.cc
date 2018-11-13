@@ -26,23 +26,17 @@
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_lite_page_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
@@ -53,7 +47,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/test/test_network_quality_tracker.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
@@ -231,17 +224,6 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     // this validation to flake. Waiting for the load stop on the page will
     // ensure that the Virtual URL has been set.
     content::WaitForLoadStop(GetWebContents());
-    base::RunLoop().RunUntilIdle();
-
-    PreviewsUITabHelper* ui_tab_helper =
-        PreviewsUITabHelper::FromWebContents(GetWebContents());
-    EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
-
-    previews::PreviewsUserData* previews_data =
-        ui_tab_helper->previews_user_data();
-    EXPECT_TRUE(previews_data->HasCommittedPreviewsType());
-    EXPECT_EQ(previews_data->committed_previews_type(),
-              previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
@@ -273,17 +255,6 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     // this validation to flake. Waiting for the load stop on the page will
     // ensure that the Virtual URL has been set.
     content::WaitForLoadStop(GetWebContents());
-    base::RunLoop().RunUntilIdle();
-
-    PreviewsUITabHelper* ui_tab_helper =
-        PreviewsUITabHelper::FromWebContents(GetWebContents());
-    EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
-
-    previews::PreviewsUserData* previews_data =
-        ui_tab_helper->previews_user_data();
-    EXPECT_FALSE(previews_data->HasCommittedPreviewsType());
-    EXPECT_NE(previews_data->committed_previews_type(),
-              previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
@@ -441,7 +412,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     std::string original_url_str;
 
     // Ignore anything that's not a previews request with an unused status.
-    if (!previews::ExtractOriginalURLFromLitePageRedirectURL(
+    if (!PreviewsLitePageNavigationThrottle::GetOriginalURL(
             request.GetURL(), &original_url_str)) {
       response->set_code(net::HttpStatusCode::HTTP_BAD_REQUEST);
       return response;
@@ -1108,22 +1079,13 @@ IN_PROC_BROWSER_TEST_F(
 
   VerifyPreviewNotLoaded();
   ClearDeciderState();
-  ASSERT_EQ(1U, GetInfoBarService()->infobar_count());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_LITE_PAGE_PREVIEWS_MESSAGE),
-            static_cast<ConfirmInfoBarDelegate*>(
-                GetInfoBarService()->infobar_at(0)->delegate())
-                ->GetMessageText());
+  EXPECT_EQ(1U, GetInfoBarService()->infobar_count());
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
       PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen, 1);
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  // Expect the "Saved Data" InfoBar.
-  ASSERT_EQ(1U, GetInfoBarService()->infobar_count());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE),
-            static_cast<ConfirmInfoBarDelegate*>(
-                GetInfoBarService()->infobar_at(0)->delegate())
-                ->GetMessageText());
+  EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
   VerifyPreviewLoaded();
 }
 
