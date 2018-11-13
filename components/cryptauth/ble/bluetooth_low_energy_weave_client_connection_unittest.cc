@@ -18,7 +18,6 @@
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
