@@ -67,6 +67,14 @@ SequenceSortKey Sequence::Transaction::GetSortKey() const {
                          next_task_sequenced_time);
 }
 
+void Sequence::SetHeapHandle(const HeapHandle& handle) {
+  heap_handle_ = handle;
+}
+
+void Sequence::ClearHeapHandle() {
+  heap_handle_ = HeapHandle();
+}
+
 Sequence::Sequence(
     const TaskTraits& traits,
     scoped_refptr<SchedulerParallelTaskRunner> scheduler_parallel_task_runner)

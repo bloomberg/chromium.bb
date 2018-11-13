@@ -53,37 +53,43 @@ class ThreadBeginningTransaction : public SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadBeginningTransaction);
 };
 
-}  // namespace
-
-TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
-  // Create test sequences.
-  scoped_refptr<Sequence> sequence_a =
-      MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_VISIBLE));
-  sequence_a->BeginTransaction()->PushTask(
+scoped_refptr<Sequence> MakeSequenceWithTraitsAndTask(
+    const TaskTraits& traits) {
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits);
+  sequence->BeginTransaction()->PushTask(
       Task(FROM_HERE, DoNothing(), TimeDelta()));
+  return sequence;
+}
+
+class TaskSchedulerPriorityQueueWithSequencesTest : public testing::Test {
+ protected:
+  scoped_refptr<Sequence> sequence_a =
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_VISIBLE));
   SequenceSortKey sort_key_a = sequence_a->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_b =
-      MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_BLOCKING));
-  sequence_b->BeginTransaction()->PushTask(
-      Task(FROM_HERE, DoNothing(), TimeDelta()));
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
   SequenceSortKey sort_key_b = sequence_b->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_c =
-      MakeRefCounted<Sequence>(TaskTraits(TaskPriority::USER_BLOCKING));
-  sequence_c->BeginTransaction()->PushTask(
-      Task(FROM_HERE, DoNothing(), TimeDelta()));
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
   SequenceSortKey sort_key_c = sequence_c->BeginTransaction()->GetSortKey();
 
   scoped_refptr<Sequence> sequence_d =
-      MakeRefCounted<Sequence>(TaskTraits(TaskPriority::BEST_EFFORT));
-  sequence_d->BeginTransaction()->PushTask(
-      Task(FROM_HERE, DoNothing(), TimeDelta()));
+      MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::BEST_EFFORT));
   SequenceSortKey sort_key_d = sequence_d->BeginTransaction()->GetSortKey();
 
-  // Create a PriorityQueue and a Transaction.
+ private:
   PriorityQueue pq;
-  auto transaction(pq.BeginTransaction());
+
+ protected:
+  std::unique_ptr<PriorityQueue::Transaction> transaction =
+      pq.BeginTransaction();
+};
+
+}  // namespace
+
+TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, PushPopPeek) {
   EXPECT_TRUE(transaction->IsEmpty());
 
   // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
@@ -123,6 +129,91 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   // Pop |sequence_d| from the PriorityQueue. It is now empty.
   EXPECT_EQ(sequence_d, transaction->PopSequence());
+  EXPECT_TRUE(transaction->IsEmpty());
+}
+
+TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, RemoveSequence) {
+  EXPECT_TRUE(transaction->IsEmpty());
+
+  // Push all test Sequences into the PriorityQueue. |sequence_b|
+  // will be the sequence with the highest priority.
+  transaction->Push(sequence_a, sort_key_a);
+  transaction->Push(sequence_b, sort_key_b);
+  transaction->Push(sequence_c, sort_key_c);
+  transaction->Push(sequence_d, sort_key_d);
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
+
+  // Remove |sequence_a| from the PriorityQueue. |sequence_b| is still the
+  // sequence with the highest priority.
+  EXPECT_TRUE(transaction->RemoveSequence(sequence_a));
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
+
+  // RemoveSequence() should return false if called on a sequence not in the
+  // PriorityQueue.
+  EXPECT_FALSE(transaction->RemoveSequence(sequence_a));
+
+  // Remove |sequence_b| from the PriorityQueue. |sequence_c| becomes the
+  // sequence with the highest priority.
+  EXPECT_TRUE(transaction->RemoveSequence(sequence_b));
+  EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
+
+  // Remove |sequence_d| from the PriorityQueue. |sequence_c| is still the
+  // sequence with the highest priority.
+  EXPECT_TRUE(transaction->RemoveSequence(sequence_d));
+  EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
+
+  // Remove |sequence_c| from the PriorityQueue, making it empty.
+  EXPECT_TRUE(transaction->RemoveSequence(sequence_c));
+  EXPECT_TRUE(transaction->IsEmpty());
+
+  // Return false if RemoveSequence() is called on an empty PriorityQueue.
+  EXPECT_FALSE(transaction->RemoveSequence(sequence_c));
+}
+
+TEST_F(TaskSchedulerPriorityQueueWithSequencesTest, UpdateSortKey) {
+  EXPECT_TRUE(transaction->IsEmpty());
+
+  // Push all test Sequences into the PriorityQueue. |sequence_b|
+  // becomes the sequence with the highest priority.
+  transaction->Push(sequence_a, sort_key_a);
+  transaction->Push(sequence_b, sort_key_b);
+  transaction->Push(sequence_c, sort_key_c);
+  transaction->Push(sequence_d, sort_key_d);
+  EXPECT_EQ(sort_key_b, transaction->PeekSortKey());
+
+  // Downgrade |sequence_b| from USER_BLOCKING to BEST_EFFORT. |sequence_c|
+  // (USER_BLOCKING priority) becomes the sequence with the highest priority.
+  const SequenceSortKey best_effort_sort_key =
+      SequenceSortKey(TaskPriority::BEST_EFFORT, TimeTicks::Now());
+  transaction->UpdateSortKey(sequence_b, best_effort_sort_key);
+  EXPECT_EQ(sort_key_c, transaction->PeekSortKey());
+
+  // Update |sequence_c|'s sort key to one with the same priority. |sequence_c|
+  // (USER_BLOCKING priority) is still the sequence with the highest priority.
+  const SequenceSortKey user_blocking_sort_key =
+      SequenceSortKey(TaskPriority::USER_BLOCKING, TimeTicks::Now());
+  transaction->UpdateSortKey(sequence_c, user_blocking_sort_key);
+  // Note: |sequence_c| is popped for comparison as |sort_key_c| becomes
+  // obsolete. |sequence_a| (USER_VISIBLE priority) becomes the sequence with
+  // the highest priority.
+  EXPECT_EQ(sequence_c, transaction->PopSequence());
+  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
+
+  // Upgrade |sequence_d| from BEST_EFFORT to USER_BLOCKING. |sequence_d|
+  // becomes the sequence with the highest priority.
+  transaction->UpdateSortKey(sequence_d, user_blocking_sort_key);
+  // Note: |sequence_d| is popped for comparison as |sort_key_d| becomes
+  // obsolete.
+  EXPECT_EQ(sequence_d, transaction->PopSequence());
+
+  // No-op if UpdateSortKey() is called on a Sequence not in the PriorityQueue.
+  EXPECT_EQ(sort_key_a, transaction->PeekSortKey());
+  transaction->UpdateSortKey(sequence_d, user_blocking_sort_key);
+  EXPECT_EQ(sequence_a, transaction->PopSequence());
+  EXPECT_EQ(sequence_b, transaction->PopSequence());
+
+  // No-op if UpdateSortKey() is called on an empty PriorityQueue.
+  transaction->UpdateSortKey(sequence_b, sort_key_b);
   EXPECT_TRUE(transaction->IsEmpty());
 }
 
