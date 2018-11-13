@@ -60,7 +60,7 @@ class LocationBarModel {
 
   // Returns text for the omnibox secure verbose chip, displayed next to the
   // security icon on certain platforms.
-  virtual base::string16 GetSecureVerboseText() const = 0;
+  virtual base::string16 GetSecureDisplayText() const = 0;
 
   // Returns text describing the security state for accessibility.
   virtual base::string16 GetSecureAccessibilityText() const = 0;

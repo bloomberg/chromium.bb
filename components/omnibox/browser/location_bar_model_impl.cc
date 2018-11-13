@@ -159,64 +159,66 @@ base::string16 LocationBarModelImpl::GetEVCertName() const {
       base::UTF8ToUTF16(cert->subject().country_name));
 }
 
-base::string16 LocationBarModelImpl::GetSecureText() const {
-  switch (GetSecurityLevel(false)) {
-    case security_state::HTTP_SHOW_WARNING:
-      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
-    case security_state::EV_SECURE:
-      return GetEVCertName();
-    case security_state::SECURE:
-      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-    case security_state::DANGEROUS:
-      if (delegate_->FailsMalwareCheck())
-        return l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE);
-      // Don't show any text in the security indicator for sites on the billing
-      // interstitial list.
-      return delegate_->FailsBillingCheck()
-                 ? base::string16()
-                 : l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
-    default:
-      return base::string16();
-  }
-}
-
-base::string16 LocationBarModelImpl::GetSecureVerboseText() const {
-  if (IsOfflinePage())
-    return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
+LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
+    const {
+  // Note that displayed text (the first output) will be implicitly used as the
+  // accessibility text unless no display text has been specified.
 
   // Security UI study (https://crbug.com/803501): Change EV/Secure text.
-  const std::string parameter =
+  const std::string securityUIStudyParam =
       base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
           ? base::GetFieldTrialParamValueByFeature(
                 omnibox::kSimplifyHttpsIndicator,
                 OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
           : std::string();
 
-  auto security_level = GetSecurityLevel(false);
-  if (security_level == security_state::EV_SECURE) {
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
-      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-    }
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
-      return base::string16();
-    }
+  if (IsOfflinePage())
+    return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
+
+  switch (GetSecurityLevel(false)) {
+    case security_state::HTTP_SHOW_WARNING:
+      return SecureChipText(
+          l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
+    case security_state::EV_SECURE:
+      if (securityUIStudyParam ==
+          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure)
+        return SecureChipText(
+            l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
+      if (securityUIStudyParam ==
+          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock)
+        return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
+                                                    IDS_SECURE_VERBOSE_STATE));
+      return SecureChipText(GetEVCertName());
+    case security_state::SECURE:
+      if (securityUIStudyParam !=
+          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip)
+        return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
+                                                    IDS_SECURE_VERBOSE_STATE));
+      return SecureChipText(
+          l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
+    case security_state::DANGEROUS:
+      if (delegate_->FailsMalwareCheck())
+        return SecureChipText(
+            l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE));
+      // Don't show any text in the security indicator for sites on the billing
+      // interstitial list.
+      return SecureChipText(
+          delegate_->FailsBillingCheck()
+              ? base::string16()
+              : l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
+    default:
+      return SecureChipText(base::string16());
   }
-  if (security_level == security_state::SECURE) {
-    if (parameter !=
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
-      return base::string16();
-    }
-  }
-  return GetSecureText();
+}
+
+base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
+  return GetSecureChipText().display_text_;
 }
 
 base::string16 LocationBarModelImpl::GetSecureAccessibilityText() const {
-  if (IsOfflinePage())
-    return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
-
-  return GetSecureText();
+  auto labels = GetSecureChipText();
+  return labels.display_text_.empty() ? labels.accessibility_label_
+                                      : labels.display_text_;
 }
 
 bool LocationBarModelImpl::ShouldDisplayURL() const {
