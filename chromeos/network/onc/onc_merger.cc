@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/policy_util.h"
 #include "components/onc/onc_constants.h"
 
 namespace chromeos {
@@ -421,11 +422,29 @@ class MergeToAugmented : public MergeToEffective {
                               base::Value(which_effective));
     }
 
-    // Prevent credentials from being forwarded in cleartext to
-    // UI. User/shared credentials are not stored separately, so they cannot
+    // Prevent credentials from being forwarded in cleartext to UI.
+    // User/shared credentials are not stored separately, so they cannot
     // leak here.
+    // User and Shared settings are already replaced with |kFakeCredential|.
     bool is_credential = onc::FieldIsCredential(*signature_, key);
-    if (!is_credential) {
+    if (is_credential) {
+      // Set |kFakeCredential| to notify UI that credential is saved.
+      if (values.user_policy) {
+        augmented_value->SetKey(
+            ::onc::kAugmentationUserPolicy,
+            base::Value(chromeos::policy_util::kFakeCredential));
+      }
+      if (values.device_policy) {
+        augmented_value->SetKey(
+            ::onc::kAugmentationDevicePolicy,
+            base::Value(chromeos::policy_util::kFakeCredential));
+      }
+      if (values.active_setting) {
+        augmented_value->SetKey(
+            ::onc::kAugmentationActiveSetting,
+            base::Value(chromeos::policy_util::kFakeCredential));
+      }
+    } else {
       if (values.user_policy) {
         augmented_value->SetKey(::onc::kAugmentationUserPolicy,
                                 values.user_policy->Clone());

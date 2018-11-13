@@ -685,6 +685,7 @@ var availableTests = [
             Passphrase: {
               Effective: 'UserSetting',
               UserEditable: true,
+              UserPolicy: 'FAKE_CREDENTIAL_VPaJDV9x',
               UserSetting: 'FAKE_CREDENTIAL_VPaJDV9x'
             },
             SSID: {
