@@ -4,8 +4,11 @@
 
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -176,6 +179,100 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
                                    GetExecutionContext()));
+}
+
+TEST_F(PerformanceTest, MeasureParameters_StartEndBothUnprovided) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(scope.GetScriptState(), "name", exception_state);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
+}
+
+TEST_F(PerformanceTest, MeasureParameters_StartProvidedEndUnprovided) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(scope.GetScriptState(), "name",
+                 StringOrDoubleOrPerformanceMeasureOptions::FromDouble(1.1),
+                 exception_state);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                               Performance::MeasureParameterType::kNumber, 1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
+}
+
+TEST_F(PerformanceTest, MeasureParameters_StartEndBothProvided) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(scope.GetScriptState(), "name",
+                 StringOrDoubleOrPerformanceMeasureOptions::FromDouble(1.1),
+                 StringOrDouble::FromDouble(1.1), exception_state);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                               Performance::MeasureParameterType::kNumber, 1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kNumber, 1);
+}
+
+TEST_F(PerformanceTest, MeasureParameters_ObjectType) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(
+      scope.GetScriptState(), "name",
+      StringOrDoubleOrPerformanceMeasureOptions::FromPerformanceMeasureOptions(
+          PerformanceMeasureOptions::Create()),
+      exception_state);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                               Performance::MeasureParameterType::kObjectObject,
+                               1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
+}
+
+TEST_F(PerformanceTest, MeasureParameters_NavigationTiming) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(
+      scope.GetScriptState(), "name",
+      StringOrDoubleOrPerformanceMeasureOptions::FromString("unloadEventStart"),
+      exception_state);
+  histograms.ExpectBucketCount(
+      "Performance.MeasureParameter.StartMark",
+      Performance::MeasureParameterType::kUnloadEventStart, 1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
+}
+
+TEST_F(PerformanceTest, MeasureParameters_Other) {
+  base::HistogramTester histograms;
+  V8TestingScope scope;
+  DummyExceptionStateForTesting exception_state;
+  Initialize(scope.GetScriptState());
+  base_->measure(
+      scope.GetScriptState(), "name",
+      StringOrDoubleOrPerformanceMeasureOptions::FromString("aRandomString"),
+      exception_state);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                               Performance::MeasureParameterType::kOther, 1);
+  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                               Performance::MeasureParameterType::kUnprovided,
+                               1);
 }
 
 }  // namespace blink
