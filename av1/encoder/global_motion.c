@@ -370,7 +370,7 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
     if (y > 1 && y < height - 2) {
       double arr[4];
       get_subcolumn(ref, arr, stride, 0, i - 1);
-      return clamp(getCubicValue(arr, a), 0, 255);
+      return clamp((int)(getCubicValue(arr, a) + 0.5), 0, 255);
     }
     v = (int)(ref[i * stride] * (1 - a) + ref[(i + 1) * stride] * a + 0.5);
     return clamp(v, 0, 255);
@@ -380,7 +380,7 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
     double b = x - j;
     if (x > 1 && x < width - 2) {
       double arr[4] = { ref[j - 1], ref[j], ref[j + 1], ref[j + 2] };
-      return clamp(getCubicValue(arr, b), 0, 255);
+      return clamp((int)(getCubicValue(arr, b) + 0.5), 0, 255);
     }
     v = (int)(ref[j] * (1 - b) + ref[j + 1] * b + 0.5);
     return clamp(v, 0, 255);
@@ -391,7 +391,7 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
     if (y > 1 && y < height - 2) {
       double arr[4];
       get_subcolumn(ref, arr, stride, width - 1, i - 1);
-      return clamp(getCubicValue(arr, a), 0, 255);
+      return clamp((int)(getCubicValue(arr, a) + 0.5), 0, 255);
     }
     v = (int)(ref[i * stride + width - 1] * (1 - a) +
               ref[(i + 1) * stride + width - 1] * a + 0.5);
@@ -404,13 +404,13 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
       int row = (height - 1) * stride;
       double arr[4] = { ref[row + j - 1], ref[row + j], ref[row + j + 1],
                         ref[row + j + 2] };
-      return clamp(getCubicValue(arr, b), 0, 255);
+      return clamp((int)(getCubicValue(arr, b) + 0.5), 0, 255);
     }
     v = (int)(ref[(height - 1) * stride + j] * (1 - b) +
               ref[(height - 1) * stride + j + 1] * b + 0.5);
     return clamp(v, 0, 255);
   } else if (x > 1 && y > 1 && x < width - 2 && y < height - 2) {
-    return clamp(bicubic(ref, x, y, stride), 0, 255);
+    return clamp((int)(bicubic(ref, x, y, stride) + 0.5), 0, 255);
   } else {
     int i = (int)y;
     int j = (int)x;
@@ -427,14 +427,14 @@ unsigned char interpolate(unsigned char *ref, double x, double y, int width,
 // Warps a block using flow vector [u, v] and computes the mse
 double compute_warp_and_error(unsigned char *ref, unsigned char *frm, int width,
                               int height, int stride, double u, double v) {
-  int i, j, x, y;
-  double warped;
+  int i, j;
+  double warped, x, y;
   double mse = 0;
   double err = 0;
   for (i = 0; i < height; ++i)
     for (j = 0; j < width; ++j) {
-      x = j - u;
-      y = i - v;
+      x = (double)j - u;
+      y = (double)i - v;
       warped = interpolate(ref, x, y, width, height, stride);
       err = warped - frm[j + i * stride];
       mse += err * err;
