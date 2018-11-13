@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "components/variations/hashing.h"
+#include "components/variations/variations_murmur_hash.h"
 
 namespace variations {
 
@@ -130,6 +131,43 @@ uint16_t PermutedEntropyProvider::GetPermutedValue(
   std::vector<uint16_t> mapping(low_entropy_source_max_);
   internal::PermuteMappingUsingRandomizationSeed(randomization_seed, &mapping);
   return mapping[low_entropy_source_];
+}
+
+NormalizedMurmurHashEntropyProvider::NormalizedMurmurHashEntropyProvider(
+    uint16_t low_entropy_source,
+    size_t low_entropy_source_max)
+    : low_entropy_source_(low_entropy_source),
+      low_entropy_source_max_(low_entropy_source_max) {
+  DCHECK_LT(low_entropy_source, low_entropy_source_max);
+  DCHECK_LE(low_entropy_source_max, std::numeric_limits<uint16_t>::max());
+}
+
+NormalizedMurmurHashEntropyProvider::~NormalizedMurmurHashEntropyProvider() {}
+
+double NormalizedMurmurHashEntropyProvider::GetEntropyForTrial(
+    const std::string& trial_name,
+    uint32_t randomization_seed) const {
+  if (randomization_seed == 0) {
+    randomization_seed = internal::VariationsMurmurHash::Hash(
+        internal::VariationsMurmurHash::StringToLE32(trial_name),
+        trial_name.length());
+  }
+
+  uint32_t x = internal::VariationsMurmurHash::Hash16(randomization_seed,
+                                                      low_entropy_source_);
+  int x_ordinal = 0;
+  for (uint32_t i = 0; i < low_entropy_source_max_; i++) {
+    uint32_t y = internal::VariationsMurmurHash::Hash16(randomization_seed, i);
+    x_ordinal += (y < x);
+  }
+
+  DCHECK_GE(x_ordinal, 0);
+  // There must have been at least one iteration where |x| == |y|, because
+  // |i| == |low_entropy_source_|, and |x_ordinal| was not incremented in that
+  // iteration, so |x_ordinal| < |low_entropy_source_max_|.
+  DCHECK_LT(static_cast<size_t>(x_ordinal), low_entropy_source_max_);
+
+  return static_cast<double>(x_ordinal) / low_entropy_source_max_;
 }
 
 }  // namespace variations
