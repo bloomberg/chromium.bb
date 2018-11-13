@@ -29,6 +29,11 @@ bool IsUserAllowed(const user_manager::User& user,
                    bool is_user_whitelisted,
                    bool are_min_version_constraints_satisfied);
 
+// Returns whether the active user is public session user or non-regular
+// ephemeral user. Note: it assumes the active user exists (ie. at least one
+// user has logged in).
+bool IsPublicSessionOrEphemeralLogin();
+
 }  // namespace chrome_user_manager_util
 }  // namespace chromeos
 
