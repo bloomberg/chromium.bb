@@ -81,7 +81,7 @@ public class PasswordAccessorySheetViewTest {
                 R.layout.password_accessory_sheet, new KeyboardAccessoryData.Tab.Listener() {
                     @Override
                     public void onTabCreated(ViewGroup view) {
-                        mView.set((RecyclerView) view);
+                        mView.set(view.findViewById(R.id.password_items));
                         // Reuse coordinator code to create and wire the adapter. No mediator
                         // involved.
                         PasswordAccessorySheetViewBinder.initializeView(mView.get(),

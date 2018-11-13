@@ -16,6 +16,8 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -188,5 +190,16 @@ class PasswordAccessorySheetViewBinder {
                 new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         view.setItemAnimator(null);
         view.setAdapter(adapter);
+        // TODO(fhorschig): Move the shadow into the sheet and reflect visibility in its model.
+        final ImageView topShadow =
+                ((FrameLayout) view.getParent()).findViewById(R.id.accessory_sheet_shadow);
+        view.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (recyclerView == null) return;
+                topShadow.setVisibility(
+                        recyclerView.canScrollVertically(-1) ? View.VISIBLE : View.GONE);
+            }
+        });
     }
 }
