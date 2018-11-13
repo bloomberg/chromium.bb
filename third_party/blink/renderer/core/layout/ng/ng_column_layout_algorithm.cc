@@ -293,7 +293,8 @@ LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
     const NGLogicalSize& column_size,
     bool separate_leading_margins) const {
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+  NGConstraintSpaceBuilder space_builder(
+      ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(column_size);
   space_builder.SetPercentageResolutionSize(column_size);
 
@@ -309,24 +310,23 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   space_builder.SetFragmentationType(kFragmentColumn);
   space_builder.SetFragmentainerBlockSize(column_block_size);
   space_builder.SetFragmentainerSpaceAtBfcStart(column_block_size);
-  space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
   space_builder.SetSeparateLeadingFragmentainerMargins(
       separate_leading_margins);
 
-  return space_builder.ToConstraintSpace(Style().GetWritingMode());
+  return space_builder.ToConstraintSpace();
 }
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
     const NGLogicalSize& column_size) const {
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+  NGConstraintSpaceBuilder space_builder(
+      ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize({column_size.inline_size, NGSizeIndefinite});
   space_builder.SetPercentageResolutionSize(column_size);
-  space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsIntermediateLayout(true);
 
-  return space_builder.ToConstraintSpace(Style().GetWritingMode());
+  return space_builder.ToConstraintSpace();
 }
 
 }  // namespace Blink

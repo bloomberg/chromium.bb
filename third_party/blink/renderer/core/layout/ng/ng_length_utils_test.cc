@@ -27,13 +27,14 @@ static NGConstraintSpace ConstructConstraintSpace(
   NGLogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
   return NGConstraintSpaceBuilder(
-             writing_mode,
-             /* icb_size */ ToNGPhysicalSize(size, writing_mode))
+             writing_mode, writing_mode,
+             /* icb_size */ ToNGPhysicalSize(size, writing_mode),
+             /* is_new_fc */ false)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
-      .ToConstraintSpace(writing_mode);
+      .ToConstraintSpace();
 }
 
 class NGLengthUtilsTest : public testing::Test {

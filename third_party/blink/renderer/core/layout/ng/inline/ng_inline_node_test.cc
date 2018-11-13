@@ -110,9 +110,11 @@ class NGInlineNodeTest : public NGLayoutTest {
     NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
 
     NGConstraintSpace constraint_space =
-        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb, icb_size)
+        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
+                                 WritingMode::kHorizontalTb, icb_size,
+                                 /* is_new_fc */ false)
             .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
-            .ToConstraintSpace(WritingMode::kHorizontalTb);
+            .ToConstraintSpace();
     NGInlineChildLayoutContext context;
     scoped_refptr<NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, constraint_space,

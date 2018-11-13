@@ -44,10 +44,11 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
 
   NGConstraintSpace constraint_space =
       NGConstraintSpaceBuilder(
-          WritingMode::kHorizontalTb,
-          /* icb_size */ ToNGPhysicalSize(size, WritingMode::kHorizontalTb))
+          WritingMode::kHorizontalTb, WritingMode::kHorizontalTb,
+          /* icb_size */ ToNGPhysicalSize(size, WritingMode::kHorizontalTb),
+          /* is_new_fc */ false)
           .SetAvailableSize(size)
-          .ToConstraintSpace(WritingMode::kHorizontalTb);
+          .ToConstraintSpace();
 
   NGInlineChildLayoutContext context;
   scoped_refptr<NGLayoutResult> layout_result =

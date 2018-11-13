@@ -1979,10 +1979,12 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   // inline size first.
   if (!is_new_fc && needs_inline_size) {
     NGConstraintSpace space =
-        NGConstraintSpaceBuilder(ConstraintSpace())
+        NGConstraintSpaceBuilder(ConstraintSpace(),
+                                 child_style.GetWritingMode(),
+                                 /* is_new_fc */ false)
             .SetAvailableSize(child_available_size_)
             .SetPercentageResolutionSize(child_percentage_size_)
-            .ToConstraintSpace(child_style.GetWritingMode());
+            .ToConstraintSpace();
 
     NGBoxStrut child_border_padding =
         ComputeBorders(space, child) + ComputePadding(space, child.Style());
@@ -2002,7 +2004,12 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGInflowChildData& child_data,
     const NGLogicalSize child_available_size,
     const base::Optional<LayoutUnit> floats_bfc_block_offset) {
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+  WritingMode child_writing_mode = child.IsInline()
+                                       ? Style().GetWritingMode()
+                                       : child.Style().GetWritingMode();
+
+  NGConstraintSpaceBuilder space_builder(ConstraintSpace(), child_writing_mode,
+                                         child_data.is_new_fc);
 
   space_builder.SetAvailableSize(child_available_size)
       .SetPercentageResolutionSize(child_percentage_size_)
@@ -2019,8 +2026,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (NGBaseline::ShouldPropagateBaselines(child))
     space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
-  space_builder.SetIsNewFormattingContext(child_data.is_new_fc)
-      .SetBfcOffset(child_data.bfc_offset_estimate)
+  space_builder.SetBfcOffset(child_data.bfc_offset_estimate)
       .SetMarginStrut(child_data.margin_strut);
 
   if (!container_builder_.BfcBlockOffset() &&
@@ -2032,18 +2038,14 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (floats_bfc_block_offset)
     space_builder.SetFloatsBfcBlockOffset(floats_bfc_block_offset);
 
-  WritingMode writing_mode;
   LayoutUnit clearance_offset = constraint_space_.IsNewFormattingContext()
                                     ? LayoutUnit::Min()
                                     : ConstraintSpace().ClearanceOffset();
-  if (child.IsInline()) {
-    writing_mode = Style().GetWritingMode();
-  } else {
+  if (child.IsBlock()) {
     const ComputedStyle& child_style = child.Style();
-    writing_mode = child_style.GetWritingMode();
     bool is_shrink_to_fit =
         !IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
-                               writing_mode) &&
+                               child_writing_mode) &&
         child_style.LogicalWidth().IsAuto();
     LayoutUnit child_clearance_offset =
         exclusion_space_.ClearanceOffset(child_style.Clear());
@@ -2088,7 +2090,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
   space_builder.SetFragmentationType(
       ConstraintSpace().BlockFragmentationType());
-  return space_builder.ToConstraintSpace(writing_mode);
+  return space_builder.ToConstraintSpace();
 }
 
 LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(

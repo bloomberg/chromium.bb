@@ -133,8 +133,11 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     } else {
       inline_cb_style = &block_info.value.start_fragment->Style();
       NGConstraintSpace dummy_constraint_space =
-          NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(), icb_size_)
-              .ToConstraintSpace(inline_cb_style->GetWritingMode());
+          NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(),
+                                   inline_cb_style->GetWritingMode(), icb_size_,
+                                   /* is_new_fc */ false)
+              .ToConstraintSpace();
+
       // TODO Creating dummy constraint space just to get borders feels wrong.
       NGBoxStrut inline_cb_borders =
           ComputeBorders(dummy_constraint_space, *inline_cb_style);
@@ -315,11 +318,12 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
   // The block estimate is in the descendant's writing mode.
   NGConstraintSpace descendant_constraint_space =
-      NGConstraintSpaceBuilder(container_writing_mode, icb_size_)
+      NGConstraintSpaceBuilder(container_writing_mode, descendant_writing_mode,
+                               icb_size_, /* is_new_fc */ true)
           .SetTextDirection(container_info.style->Direction())
           .SetAvailableSize(container_info.content_size)
           .SetPercentageResolutionSize(container_info.content_size)
-          .ToConstraintSpace(descendant_writing_mode);
+          .ToConstraintSpace();
   base::Optional<MinMaxSize> min_max_size;
   base::Optional<LayoutUnit> block_estimate;
 
@@ -451,15 +455,15 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   NGLogicalSize available_size{inline_size, block_size};
 
   // TODO(atotic) will need to be adjusted for scrollbars.
-  NGConstraintSpaceBuilder builder(writing_mode, icb_size_);
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, icb_size_,
+                                   /* is_new_fc */ true);
   builder.SetAvailableSize(available_size)
       .SetTextDirection(descendant.Style().Direction())
       .SetPercentageResolutionSize(container_size)
-      .SetIsNewFormattingContext(true)
       .SetIsFixedSizeInline(true);
   if (block_estimate)
     builder.SetIsFixedSizeBlock(true);
-  NGConstraintSpace space = builder.ToConstraintSpace(writing_mode);
+  NGConstraintSpace space = builder.ToConstraintSpace();
 
   scoped_refptr<NGLayoutResult> result = descendant.Layout(space);
 

@@ -67,7 +67,8 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     const NGConstraintSpace& parent_space,
     base::Optional<LayoutUnit> origin_block_offset = base::nullopt) {
   const ComputedStyle& style = unpositioned_float.node.Style();
-  NGConstraintSpaceBuilder builder(parent_space);
+  NGConstraintSpaceBuilder builder(parent_space, style.GetWritingMode(),
+                                   /* is_new_fc */ true);
 
   if (origin_block_offset) {
     DCHECK(parent_space.HasBlockFragmentation());
@@ -86,10 +87,9 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
   return builder.SetPercentageResolutionSize(float_percentage_size)
       .SetAvailableSize(float_available_size)
       .SetReplacedPercentageResolutionSize(float_replaced_percentage_size)
-      .SetIsNewFormattingContext(true)
       .SetIsShrinkToFit(style.LogicalWidth().IsAuto())
       .SetTextDirection(style.Direction())
-      .ToConstraintSpace(style.GetWritingMode());
+      .ToConstraintSpace();
 }
 
 std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(

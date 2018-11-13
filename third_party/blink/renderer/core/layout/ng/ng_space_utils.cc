@@ -29,13 +29,14 @@ NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
   NGLogicalSize extrinsic_size(NGSizeIndefinite,
                                container_extrinsic_block_size);
 
-  return NGConstraintSpaceBuilder(container_constraint_space)
+  return NGConstraintSpaceBuilder(container_constraint_space,
+                                  child.Style().GetWritingMode(),
+                                  child.CreatesNewFormattingContext())
       .SetAvailableSize(extrinsic_size)
       .SetPercentageResolutionSize(extrinsic_size)
       .SetIsIntermediateLayout(true)
-      .SetIsNewFormattingContext(child.CreatesNewFormattingContext())
       .SetFloatsBfcBlockOffset(LayoutUnit())
-      .ToConstraintSpace(child.Style().GetWritingMode());
+      .ToConstraintSpace();
 }
 
 }  // namespace blink
