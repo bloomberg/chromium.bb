@@ -162,11 +162,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   // bubbles fit this description.
   // TODO(msramek): Move this to ContentSettingSimpleBubbleModel or remove
   // entirely.
-  static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
-      Delegate* delegate,
-      content::WebContents* web_contents,
-      Profile* profile,
-      ContentSettingsType content_type);
+  static std::unique_ptr<ContentSettingBubbleModel>
+  CreateContentSettingBubbleModel(Delegate* delegate,
+                                  content::WebContents* web_contents,
+                                  Profile* profile,
+                                  ContentSettingsType content_type);
 
   ~ContentSettingBubbleModel() override;
 

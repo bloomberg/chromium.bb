@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -359,13 +360,13 @@ void ContentSettingBubbleContents::ListItemContainer::AddRowToLayout(
 // ContentSettingBubbleContents -----------------------------------------------
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
-    ContentSettingBubbleModel* content_setting_bubble_model,
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model,
     content::WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, arrow),
-      content_setting_bubble_model_(content_setting_bubble_model),
+      content_setting_bubble_model_(std::move(content_setting_bubble_model)),
       list_item_container_(nullptr),
       custom_link_(nullptr),
       manage_button_(nullptr),
