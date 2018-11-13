@@ -29,8 +29,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<ColorMatrixType>();
+DECLARE_SVG_ENUM_MAP(ColorMatrixType);
 
 class SVGFEColorMatrixElement final
     : public SVGFilterPrimitiveStandardAttributes {

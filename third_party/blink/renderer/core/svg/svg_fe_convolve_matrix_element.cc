@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -28,13 +29,13 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<EdgeModeType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(EDGEMODE_DUPLICATE, "duplicate"));
-    entries.push_back(std::make_pair(EDGEMODE_WRAP, "wrap"));
-    entries.push_back(std::make_pair(EDGEMODE_NONE, "none"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<EdgeModeType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {EDGEMODE_DUPLICATE, "duplicate"},
+      {EDGEMODE_WRAP, "wrap"},
+      {EDGEMODE_NONE, "none"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

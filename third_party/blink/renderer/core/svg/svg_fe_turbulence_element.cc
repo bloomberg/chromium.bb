@@ -20,29 +20,27 @@
 
 #include "third_party/blink/renderer/core/svg/svg_fe_turbulence_element.h"
 
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<SVGStitchOptions>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSvgStitchtypeStitch, "stitch"));
-    entries.push_back(std::make_pair(kSvgStitchtypeNostitch, "noStitch"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGStitchOptions>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSvgStitchtypeStitch, "stitch"}, {kSvgStitchtypeNostitch, "noStitch"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
 template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<TurbulenceType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(
-        std::make_pair(FETURBULENCE_TYPE_FRACTALNOISE, "fractalNoise"));
-    entries.push_back(
-        std::make_pair(FETURBULENCE_TYPE_TURBULENCE, "turbulence"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<TurbulenceType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FETURBULENCE_TYPE_FRACTALNOISE, "fractalNoise"},
+      {FETURBULENCE_TYPE_TURBULENCE, "turbulence"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

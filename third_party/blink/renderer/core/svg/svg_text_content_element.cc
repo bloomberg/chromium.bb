@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_query.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_point_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_rect_tear_off.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -37,14 +38,12 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGLengthAdjustType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGLengthAdjustSpacing, "spacing"));
-    entries.push_back(
-        std::make_pair(kSVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGLengthAdjustType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGLengthAdjustSpacing, "spacing"},
+      {kSVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

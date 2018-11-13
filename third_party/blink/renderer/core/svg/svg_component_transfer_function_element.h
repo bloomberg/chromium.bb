@@ -30,9 +30,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ComponentTransferType>();
+DECLARE_SVG_ENUM_MAP(ComponentTransferType);
 
 class SVGComponentTransferFunctionElement : public SVGElement {
   DEFINE_WRAPPERTYPEINFO();

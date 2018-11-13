@@ -74,11 +74,7 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
   Member<SVGAnimatedEnumeration<Mode>> mode_;
 };
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGFEBlendElement::Mode>();
-template <>
-unsigned short GetMaxExposedEnumValue<SVGFEBlendElement::Mode>();
+DECLARE_SVG_ENUM_MAP(SVGFEBlendElement::Mode);
 
 }  // namespace blink
 

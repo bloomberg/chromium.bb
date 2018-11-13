@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/svg/svg_enumeration.h"
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 
 namespace blink {
 
@@ -46,10 +47,8 @@ SVGPropertyBase* SVGEnumerationBase::CloneForAnimation(
 }
 
 String SVGEnumerationBase::ValueAsString() const {
-  for (const auto& entry : entries_) {
-    if (value_ == entry.first)
-      return entry.second;
-  }
+  if (const char* enum_name = map_.NameFromValue(value_))
+    return String(enum_name);
 
   DCHECK_LT(value_, MaxInternalEnumValue());
   return g_empty_string;
@@ -61,17 +60,12 @@ void SVGEnumerationBase::SetValue(unsigned short value) {
 }
 
 SVGParsingError SVGEnumerationBase::SetValueAsString(const String& string) {
-  for (const auto& entry : entries_) {
-    if (string == entry.second) {
-      // 0 corresponds to _UNKNOWN enumeration values, and should not be
-      // settable.
-      DCHECK(entry.first);
-      value_ = entry.first;
-      NotifyChange();
-      return SVGParseStatus::kNoError;
-    }
+  unsigned short value = map_.ValueFromName(string);
+  if (value) {
+    value_ = value;
+    NotifyChange();
+    return SVGParseStatus::kNoError;
   }
-
   NotifyChange();
   return SVGParseStatus::kExpectedEnumeration;
 }
@@ -102,6 +96,14 @@ void SVGEnumerationBase::CalculateAnimatedValue(
 float SVGEnumerationBase::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   // No paced animations for boolean.
   return -1;
+}
+
+unsigned short SVGEnumerationBase::MaxExposedEnumValue() const {
+  return map_.MaxExposedValue();
+}
+
+unsigned short SVGEnumerationBase::MaxInternalEnumValue() const {
+  return map_.ValueOfLast();
 }
 
 }  // namespace blink

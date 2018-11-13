@@ -40,9 +40,7 @@ class SVGUnitTypes final : public ScriptWrappable {
   SVGUnitTypes() = delete;  // No instantiation.
 };
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGUnitTypes::SVGUnitType>();
+DECLARE_SVG_ENUM_MAP(SVGUnitTypes::SVGUnitType);
 
 }  // namespace blink
 
