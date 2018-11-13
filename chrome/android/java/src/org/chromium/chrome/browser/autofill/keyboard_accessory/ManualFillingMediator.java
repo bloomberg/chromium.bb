@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.ui.DropdownPopupWindow;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.HashMap;
@@ -185,16 +184,17 @@ class ManualFillingMediator extends EmptyTabObserver
         return mWindowAndroid != null;
     }
 
-    boolean isFillingViewShown() {
-        return mAccessorySheet != null && mAccessorySheet.isShown();
+    boolean isFillingViewShown(View view) {
+        if (!isInitialized()) return false;
+        boolean isSoftInputShowing = getKeyboard().isSoftKeyboardShowing(mActivity, view);
+        return !isSoftInputShowing && mKeyboardAccessory.hasActiveTab();
     }
 
     @Override
     public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
         if (mActivity == null) return; // Activity has been cleaned up already.
-        onKeyboardVisibilityPossiblyChanged(
-                getKeyboardDelegate().isSoftKeyboardShowing(mActivity, view));
+        onKeyboardVisibilityPossiblyChanged(getKeyboard().isSoftKeyboardShowing(mActivity, view));
     }
 
     private void onKeyboardVisibilityPossiblyChanged(boolean isShowing) {
@@ -387,8 +387,9 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     private ChromeKeyboardVisibilityDelegate getKeyboard() {
-        KeyboardVisibilityDelegate delegate = mWindowAndroid.getKeyboardDelegate();
-        return (ChromeKeyboardVisibilityDelegate) delegate;
+        assert mWindowAndroid instanceof ChromeWindow;
+        assert mWindowAndroid.getKeyboardDelegate() instanceof ChromeKeyboardVisibilityDelegate;
+        return (ChromeKeyboardVisibilityDelegate) mWindowAndroid.getKeyboardDelegate();
     }
 
     private AccessoryState getOrCreateAccessoryState(Tab tab) {
@@ -430,12 +431,6 @@ class ManualFillingMediator extends EmptyTabObserver
         if (!mKeyboardAccessory.isShown()) return 0;
         return mActivity.getResources().getDimensionPixelSize(
                 org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
-    }
-
-    private ChromeKeyboardVisibilityDelegate getKeyboardDelegate() {
-        assert mWindowAndroid instanceof ChromeWindow;
-        assert mWindowAndroid.getKeyboardDelegate() instanceof ChromeKeyboardVisibilityDelegate;
-        return (ChromeKeyboardVisibilityDelegate) mWindowAndroid.getKeyboardDelegate();
     }
 
     @VisibleForTesting

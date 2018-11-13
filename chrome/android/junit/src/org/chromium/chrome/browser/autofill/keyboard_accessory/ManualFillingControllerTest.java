@@ -10,12 +10,15 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
@@ -41,6 +44,8 @@ import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
+import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
@@ -56,7 +61,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
-import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -70,7 +75,7 @@ import java.util.Map;
 @DisableFeatures(ChromeFeatureList.EXPERIMENTAL_UI)
 public class ManualFillingControllerTest {
     @Mock
-    private ActivityWindowAndroid mMockWindow;
+    private ChromeWindow mMockWindow;
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
@@ -89,6 +94,8 @@ public class ManualFillingControllerTest {
     private Drawable mMockIcon;
     @Mock
     private android.content.res.Resources mMockResources;
+    @Mock
+    private ChromeKeyboardVisibilityDelegate mMockKeyboard;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -101,6 +108,8 @@ public class ManualFillingControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        KeyboardVisibilityDelegate.setInstance(mMockKeyboard);
+        when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
@@ -476,6 +485,27 @@ public class ManualFillingControllerTest {
 
         // Without any tab, there should be no state that would allow creating a sheet.
         assertThat(mediator.getPasswordAccessorySheet(), is(nullValue()));
+    }
+
+    @Test
+    public void testIsFillingViewShownReturnsTargetValueAheadOfComponentUpdate() {
+        // After initialization with one tab, the accessory sheet is closed.
+        KeyboardAccessoryCoordinator accessory =
+                mController.getMediatorForTesting().getKeyboardAccessory();
+        mController.getMediatorForTesting().addTab(
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+        accessory.requestShowing();
+        assertThat(mController.isFillingViewShown(null), is(false));
+
+        // As soon as active tab and keyboard change, |isFillingViewShown| returns the expected
+        // state - even if the sheet component wasn't updated yet.
+        accessory.getMediatorForTesting().getModelForTesting().set(ACTIVE_TAB, 0);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(false);
+        assertThat(mController.isFillingViewShown(null), is(true));
+
+        // The layout change impacts the component, but not the coordinator method.
+        mController.getMediatorForTesting().onLayoutChange(null, 0, 0, 0, 0, 0, 0, 0, 0);
+        assertThat(mController.isFillingViewShown(null), is(true));
     }
 
     /**
