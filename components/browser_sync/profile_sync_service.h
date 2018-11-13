@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -21,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/browser_sync/sync_user_settings_impl.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -40,7 +38,6 @@
 #include "components/sync/driver/sync_stopped_reporter.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
-#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_engine.h"
