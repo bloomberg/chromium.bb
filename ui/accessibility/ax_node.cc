@@ -91,12 +91,12 @@ void AXNode::SetData(const AXNodeData& src) {
 void AXNode::SetLocation(int32_t offset_container_id,
                          const gfx::RectF& location,
                          gfx::Transform* transform) {
-  data_.offset_container_id = offset_container_id;
-  data_.location = location;
+  data_.relative_bounds.offset_container_id = offset_container_id;
+  data_.relative_bounds.bounds = location;
   if (transform)
-    data_.transform.reset(new gfx::Transform(*transform));
+    data_.relative_bounds.transform.reset(new gfx::Transform(*transform));
   else
-    data_.transform.reset(nullptr);
+    data_.relative_bounds.transform.reset(nullptr);
 }
 
 void AXNode::SetIndexInParent(int index_in_parent) {

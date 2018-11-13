@@ -320,7 +320,7 @@ int32_t BrowserAccessibility::GetId() const {
 }
 
 gfx::RectF BrowserAccessibility::GetLocation() const {
-  return GetData().location;
+  return GetData().relative_bounds.bounds;
 }
 
 ax::mojom::Role BrowserAccessibility::GetRole() const {

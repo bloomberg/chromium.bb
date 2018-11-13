@@ -105,8 +105,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, RoleShouldMatch) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, BoundsShouldMatch) {
-  gfx::Rect bounds =
-      gfx::ToEnclosingRect(button_accessibility()->GetData().location);
+  gfx::Rect bounds = gfx::ToEnclosingRect(
+      button_accessibility()->GetData().relative_bounds.bounds);
   gfx::Rect screen_bounds =
       button_accessibility()->GetUnclippedScreenBoundsRect();
 

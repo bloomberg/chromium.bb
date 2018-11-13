@@ -315,7 +315,8 @@ TEST_F(AXRemoteHostTest, ScaleFactor) {
 
   // Widget transform is scaled by a factor of 2.
   ASSERT_FALSE(service.last_updates_.empty());
-  gfx::Transform* transform = service.last_updates_[0].nodes[0].transform.get();
+  gfx::Transform* transform =
+      service.last_updates_[0].nodes[0].relative_bounds.transform.get();
   ASSERT_TRUE(transform);
   EXPECT_TRUE(transform->IsScale2d());
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), transform->Scale2d());

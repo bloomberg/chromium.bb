@@ -36,15 +36,16 @@ void AXTreeSourceMus::SerializeNode(AXAuraObjWrapper* node,
     // Root is a contents view with an offset from the containing Widget.
     // However, the contents view in the host (browser) already has an offset
     // from its Widget, so the root should start at (0,0).
-    out_data->location.set_origin(gfx::PointF());
+    out_data->relative_bounds.bounds.set_origin(gfx::PointF());
 
     // Adjust for display device scale factor.
     if (device_scale_factor_ == 1.f) {
       // The AX system represents the identity transform with null.
-      out_data->transform.reset();
+      out_data->relative_bounds.transform.reset();
     } else {
-      out_data->transform = std::make_unique<gfx::Transform>();
-      out_data->transform->Scale(device_scale_factor_, device_scale_factor_);
+      out_data->relative_bounds.transform = std::make_unique<gfx::Transform>();
+      out_data->relative_bounds.transform->Scale(device_scale_factor_,
+                                                 device_scale_factor_);
     }
     return;
   }

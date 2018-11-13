@@ -383,8 +383,9 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                                       : wm_helper->GetActiveWindow();
     const gfx::Rect& local_bounds = tree_source_->GetBounds(
         tree_source_->GetFromId(GetId()), active_window);
-    out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
-                               local_bounds.width(), local_bounds.height());
+    out_data->relative_bounds.bounds.SetRect(local_bounds.x(), local_bounds.y(),
+                                             local_bounds.width(),
+                                             local_bounds.height());
   }
 
   // Integer properties.

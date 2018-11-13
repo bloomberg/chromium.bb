@@ -6,10 +6,8 @@
 #define UI_ACCESSIBILITY_MOJOM_AX_NODE_DATA_MOJOM_TRAITS_H_
 
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/mojom/ax_node_data.mojom-shared.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-#include "ui/gfx/mojo/transform.mojom.h"
-#include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
 
@@ -37,11 +35,9 @@ struct StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData> {
   static std::vector<int32_t> child_ids(const ui::AXNodeData& p) {
     return p.child_ids;
   }
-  static int32_t offset_container_id(const ui::AXNodeData& p) {
-    return p.offset_container_id;
+  static ui::AXRelativeBounds relative_bounds(const ui::AXNodeData& p) {
+    return p.relative_bounds;
   }
-  static gfx::RectF location(const ui::AXNodeData& p) { return p.location; }
-  static gfx::Transform transform(const ui::AXNodeData& p);
   static bool Read(ax::mojom::AXNodeDataDataView data, ui::AXNodeData* out);
 };
 

@@ -56,8 +56,8 @@ bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
       node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {
     // Ensure the doc has finished loading and has a non-zero size.
     return node->manager()->GetTreeData().loaded &&
-           (node->GetData().location.width() > 0 &&
-            node->GetData().location.height() > 0);
+           (node->GetData().relative_bounds.bounds.width() > 0 &&
+            node->GetData().relative_bounds.bounds.height() > 0);
   }
   if (node->GetRole() == ax::mojom::Role::kWebArea &&
       node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {

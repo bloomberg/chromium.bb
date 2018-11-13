@@ -118,12 +118,12 @@ void AXPositionTest::SetUp() {
   root_.role = ax::mojom::Role::kDialog;
   root_.AddState(ax::mojom::State::kFocusable);
   root_.SetName(std::string("ButtonCheck box") + TEXT_VALUE);
-  root_.location = gfx::RectF(0, 0, 800, 600);
+  root_.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   button_.role = ax::mojom::Role::kButton;
   button_.SetHasPopup(ax::mojom::HasPopup::kMenu);
   button_.SetName("Button");
-  button_.location = gfx::RectF(20, 20, 200, 30);
+  button_.relative_bounds.bounds = gfx::RectF(20, 20, 200, 30);
   button_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
                               std::vector<int32_t>{0});
   button_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
@@ -135,7 +135,7 @@ void AXPositionTest::SetUp() {
   check_box_.role = ax::mojom::Role::kCheckBox;
   check_box_.SetCheckedState(ax::mojom::CheckedState::kTrue);
   check_box_.SetName("Check box");
-  check_box_.location = gfx::RectF(20, 50, 200, 30);
+  check_box_.relative_bounds.bounds = gfx::RectF(20, 50, 200, 30);
   check_box_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
                                  std::vector<int32_t>{0, 6});
   check_box_.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,

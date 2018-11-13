@@ -106,13 +106,13 @@ gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
 
 gfx::Rect TestAXNodeWrapper::GetClippedScreenBoundsRect() const {
   // We could add clipping here if needed.
-  gfx::RectF bounds = GetData().location;
+  gfx::RectF bounds = GetData().relative_bounds.bounds;
   bounds.Offset(g_offset);
   return gfx::ToEnclosingRect(bounds);
 }
 
 gfx::Rect TestAXNodeWrapper::GetUnclippedScreenBoundsRect() const {
-  gfx::RectF bounds = GetData().location;
+  gfx::RectF bounds = GetData().relative_bounds.bounds;
   bounds.Offset(g_offset);
   return gfx::ToEnclosingRect(bounds);
 }
@@ -256,7 +256,7 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
   }
 
   if (data.action == ax::mojom::Action::kScrollToMakeVisible) {
-    auto offset = node_->data().location.OffsetFromOrigin();
+    auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
     g_offset = gfx::Vector2d(-offset.x(), -offset.y());
     return true;
   }

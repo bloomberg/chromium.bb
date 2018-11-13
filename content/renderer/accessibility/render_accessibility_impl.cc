@@ -511,11 +511,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     for (size_t j = 0; j < update.nodes.size(); ++j) {
       ui::AXNodeData& src = update.nodes[j];
       ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
-      dst.offset_container_id = src.offset_container_id;
-      dst.bounds = src.location;
-      dst.transform.reset(nullptr);
-      if (src.transform)
-        dst.transform.reset(new gfx::Transform(*src.transform));
+      dst = src.relative_bounds;
     }
 
     for (size_t j = 0; j < update.nodes.size(); ++j)
@@ -891,9 +887,9 @@ void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
   ui::AXNodeData target_data =
       plugin_tree_source_->GetFromId(id_to_make_visible)->data();
 
-  gfx::RectF bounds = target_data.location;
-  if (root_data.transform)
-    root_data.transform->TransformRect(&bounds);
+  gfx::RectF bounds = target_data.relative_bounds.bounds;
+  if (root_data.relative_bounds.transform)
+    root_data.relative_bounds.transform->TransformRect(&bounds);
 
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())

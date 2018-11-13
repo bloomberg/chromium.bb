@@ -99,8 +99,9 @@ void AXTreeSourceViews::SerializeNode(AXAuraObjWrapper* node,
     return;
   ui::AXNodeData parent_data;
   parent->Serialize(&parent_data);
-  out_data->location.Offset(-parent_data.location.OffsetFromOrigin());
-  out_data->offset_container_id = parent->GetUniqueId();
+  out_data->relative_bounds.bounds.Offset(
+      -parent_data.relative_bounds.bounds.OffsetFromOrigin());
+  out_data->relative_bounds.offset_container_id = parent->GetUniqueId();
 }
 
 std::string AXTreeSourceViews::ToString(AXAuraObjWrapper* root,

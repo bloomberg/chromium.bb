@@ -121,7 +121,7 @@ TEST(AXEventGeneratorTest, LoadCompleteSameTree) {
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  initial_state.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   initial_state.has_tree_data = true;
   AXTree tree(initial_state);
 
@@ -146,7 +146,8 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.root_id = 2;
   load_complete_update.nodes.resize(1);
   load_complete_update.nodes[0].id = 2;
-  load_complete_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  load_complete_update.nodes[0].relative_bounds.bounds =
+      gfx::RectF(0, 0, 800, 600);
   load_complete_update.has_tree_data = true;
   load_complete_update.tree_data.loaded = true;
   EXPECT_TRUE(tree.Unserialize(load_complete_update));
@@ -156,7 +157,7 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.root_id = 3;
   load_complete_update.nodes.resize(1);
   load_complete_update.nodes[0].id = 3;
-  load_complete_update.nodes[0].location = gfx::RectF(0, 0, 0, 0);
+  load_complete_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 0, 0);
   load_complete_update.has_tree_data = true;
   load_complete_update.tree_data.loaded = true;
   EXPECT_TRUE(tree.Unserialize(load_complete_update));
@@ -167,7 +168,8 @@ TEST(AXEventGeneratorTest, LoadCompleteNewTree) {
   load_complete_update.root_id = 4;
   load_complete_update.nodes.resize(1);
   load_complete_update.nodes[0].id = 4;
-  load_complete_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  load_complete_update.nodes[0].relative_bounds.bounds =
+      gfx::RectF(0, 0, 800, 600);
   load_complete_update.nodes[0].AddStringAttribute(
       ax::mojom::StringAttribute::kUrl, "chrome-search://foo");
   load_complete_update.has_tree_data = true;
@@ -181,7 +183,7 @@ TEST(AXEventGeneratorTest, LoadStart) {
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  initial_state.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   initial_state.has_tree_data = true;
   AXTree tree(initial_state);
 
@@ -190,7 +192,8 @@ TEST(AXEventGeneratorTest, LoadStart) {
   load_start_update.root_id = 2;
   load_start_update.nodes.resize(1);
   load_start_update.nodes[0].id = 2;
-  load_start_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  load_start_update.nodes[0].relative_bounds.bounds =
+      gfx::RectF(0, 0, 800, 600);
   load_start_update.has_tree_data = true;
   load_start_update.tree_data.loaded = false;
   EXPECT_TRUE(tree.Unserialize(load_start_update));
