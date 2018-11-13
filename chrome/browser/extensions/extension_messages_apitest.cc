@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -220,6 +222,13 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingInterstitial) {
   if (content::AreAllSitesIsolatedForTesting())
     return;
 #endif
+  // TODO(carlosil): Completely remove this test once committed interstitials
+  // fully launch.
+  // With committed interstitials enabled, interstitials are no longer a
+  // special case, and do have a web contents, so the special conditions
+  // that are checked in this test no longer apply.
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+    return;
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
