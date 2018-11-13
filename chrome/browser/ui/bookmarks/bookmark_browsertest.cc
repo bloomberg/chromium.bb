@@ -118,15 +118,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_Persist) {
                                 base::ASCIIToUTF16(kPersistBookmarkTitle));
 }
 
-#if defined(THREAD_SANITIZER) || defined(OS_WIN)
-// BookmarkBrowsertest.Persist fails under ThreadSanitizer on Linux, see
-// http://crbug.com/340223.
-// Also flaky under Windows. See crbug.com/813759.
-#define MAYBE_Persist DISABLED_Persist
-#else
-#define MAYBE_Persist Persist
-#endif
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_Persist) {
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, Persist) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
 
   std::vector<UrlAndTitle> urls;
