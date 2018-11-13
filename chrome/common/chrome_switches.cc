@@ -329,6 +329,10 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
+// Enables DevTools server for UI (mus, ash, etc). Value should be the port the
+// server is started on. Default port is 9223.
+const char kEnableUiDevTools[] = "enable-ui-devtools";
+
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
 const char kExtensionContentVerification[] = "extension-content-verification";

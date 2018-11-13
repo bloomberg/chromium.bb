@@ -12,10 +12,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace aura {
-class Env;
-}
-
 namespace gfx {
 class RenderText;
 }
@@ -39,7 +35,7 @@ class OverlayAgentAura : public OverlayAgent,
                          public ui::EventHandler,
                          public ui::LayerDelegate {
  public:
-  OverlayAgentAura(DOMAgentAura* dom_agent, aura::Env* env);
+  explicit OverlayAgentAura(DOMAgentAura* dom_agent);
   ~OverlayAgentAura() override;
   int pinned_id() const { return pinned_id_; };
   void SetPinnedNodeId(int pinned_id);
@@ -93,7 +89,6 @@ class OverlayAgentAura : public OverlayAgent,
 
   ui::Layer* layer_for_highlighting() { return layer_for_highlighting_.get(); }
 
-  aura::Env* env_;
   std::unique_ptr<gfx::RenderText> render_text_;
   bool show_size_on_canvas_ = false;
   HighlightRectsConfiguration highlight_rect_config_;

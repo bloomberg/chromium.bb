@@ -19,7 +19,6 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #endif
@@ -43,10 +42,9 @@ class OverlayAgentTest : public views::ViewsTestBase {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ = std::make_unique<protocol::UberDispatcher>(
         fake_frontend_channel_.get());
-    aura::Env* env = aura::Env::GetInstance();
-    dom_agent_ = std::make_unique<DOMAgentAura>(env);
+    dom_agent_ = std::make_unique<DOMAgentAura>();
     dom_agent_->Init(uber_dispatcher_.get());
-    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get(), env);
+    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get());
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
     views::ViewsTestBase::SetUp();

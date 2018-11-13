@@ -368,9 +368,8 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
 
 }  // namespace
 
-OverlayAgentAura::OverlayAgentAura(DOMAgentAura* dom_agent, aura::Env* env)
+OverlayAgentAura::OverlayAgentAura(DOMAgentAura* dom_agent)
     : OverlayAgent(dom_agent),
-      env_(env),
       show_size_on_canvas_(false),
       highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {}
 
@@ -387,9 +386,10 @@ protocol::Response OverlayAgentAura::setInspectMode(
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
   if (in_mode.compare("searchForNode") == 0)
-    env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    aura::Env::GetInstance()->AddPreTargetHandler(
+        this, ui::EventTarget::Priority::kSystem);
   else if (in_mode.compare("none") == 0)
-    env_->RemovePreTargetHandler(this);
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
   return protocol::Response::OK();
 }
 
@@ -595,7 +595,7 @@ void OverlayAgentAura::OnKeyEvent(ui::KeyEvent* event) {
 
   // Exit inspect mode by pressing ESC key.
   if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
-    env_->RemovePreTargetHandler(this);
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
     if (pinned_id_) {
       frontend()->inspectNodeRequested(pinned_id_);
       HighlightNode(pinned_id_, true /* show_size */);

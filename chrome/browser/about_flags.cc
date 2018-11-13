@@ -99,7 +99,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
-#include "components/ui_devtools/switches.h"
 #include "components/unified_consent/feature.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
@@ -3019,10 +3018,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(prerender::kNoStatePrefetchFeature)},
 
 #if defined(OS_CHROMEOS)
-    {ui_devtools::switches::kEnableUiDevTools,
-     flag_descriptions::kUiDevToolsName,
+    {switches::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
      flag_descriptions::kUiDevToolsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ui_devtools::switches::kEnableUiDevTools)},
+     SINGLE_VALUE_TYPE(switches::kEnableUiDevTools)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-autofill-credit-card-ablation-experiment",
@@ -4537,7 +4535,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 
   // enable-ui-devtools is only available on for non Stable channels.
-  if (!strcmp(ui_devtools::switches::kEnableUiDevTools, entry.internal_name) &&
+  if (!strcmp(switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
     return true;
   }
