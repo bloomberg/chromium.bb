@@ -14,6 +14,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalLineBoxFragment : NGPhysicalContainerFragment {
+  void* pointer;
   NGLineHeightMetrics metrics;
 };
 
@@ -46,6 +47,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   kFragmentLineBox,
                                   0),
       metrics_(builder->metrics_) {
+  style_ = std::move(builder->style_);
   base_direction_ = static_cast<unsigned>(builder->base_direction_);
 }
 

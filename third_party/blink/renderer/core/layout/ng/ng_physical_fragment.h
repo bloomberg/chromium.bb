@@ -236,7 +236,6 @@ class CORE_EXPORT NGPhysicalFragment
                      unsigned sub_type);
 
   NGPhysicalFragment(LayoutObject* layout_object,
-                     const ComputedStyle& style,
                      NGStyleVariant,
                      NGPhysicalSize size,
                      NGFragmentType type,
@@ -246,7 +245,6 @@ class CORE_EXPORT NGPhysicalFragment
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
   LayoutObject* const layout_object_;
-  scoped_refptr<const ComputedStyle> style_;
   const NGPhysicalSize size_;
   scoped_refptr<NGBreakToken> break_token_;
 

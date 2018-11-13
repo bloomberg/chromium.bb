@@ -15,6 +15,11 @@ bool NGPhysicalOffsetRect::operator==(const NGPhysicalOffsetRect& other) const {
   return other.offset == offset && other.size == size;
 }
 
+bool NGPhysicalOffsetRect::Contains(const NGPhysicalOffsetRect& other) const {
+  return offset.left <= other.offset.left && offset.top <= other.offset.top &&
+         Right() >= other.Right() && Bottom() >= other.Bottom();
+}
+
 NGPhysicalOffsetRect NGPhysicalOffsetRect::operator+(
     const NGPhysicalOffset& offset) const {
   return {this->offset + offset, size};

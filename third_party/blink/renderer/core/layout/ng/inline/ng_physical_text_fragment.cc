@@ -19,8 +19,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
-  void* pointers[2];
-  NGPhysicalOffsetRect rect;
+  void* pointers[3];
   unsigned offsets[2];
 };
 
@@ -56,31 +55,31 @@ NGLineOrientation ToLineOrientation(WritingMode writing_mode) {
 }  // anonymous namespace
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(
-    LayoutObject* layout_object,
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGTextType text_type,
-    const String& text,
+    const NGPhysicalTextFragment& source,
     unsigned start_offset,
     unsigned end_offset,
-    NGPhysicalSize size,
-    NGLineOrientation line_orientation,
     scoped_refptr<const ShapeResultView> shape_result)
-    : NGPhysicalFragment(layout_object,
-                         style,
-                         style_variant,
-                         size,
+    : NGPhysicalFragment(source.GetLayoutObject(),
+                         source.StyleVariant(),
+                         source.IsHorizontal()
+                             ? NGPhysicalSize{shape_result->SnappedWidth(),
+                                              source.Size().height}
+                             : NGPhysicalSize{source.Size().width,
+                                              shape_result->SnappedWidth()},
                          kFragmentText,
-                         text_type),
-      text_(text),
+                         source.TextType()),
+      text_(source.text_),
       start_offset_(start_offset),
       end_offset_(end_offset),
       shape_result_(shape_result) {
+  DCHECK_GE(start_offset_, source.StartOffset());
+  DCHECK_LE(end_offset_, source.EndOffset());
   DCHECK(shape_result_ || IsFlowControl()) << ToString();
-  line_orientation_ = static_cast<unsigned>(line_orientation);
-  is_anonymous_text_ = IsPhysicalTextFragmentAnonymousText(layout_object);
+  DCHECK(!source.rare_data_ || !source.rare_data_->style_);
+  line_orientation_ = source.line_orientation_;
+  is_anonymous_text_ = source.is_anonymous_text_;
 
-  self_ink_overflow_ = ComputeSelfInkOverflow();
+  UpdateSelfInkOverflow();
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
@@ -95,7 +94,29 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   is_anonymous_text_ =
       IsPhysicalTextFragmentAnonymousText(builder->layout_object_);
 
-  self_ink_overflow_ = ComputeSelfInkOverflow();
+  if (UNLIKELY(StyleVariant() == NGStyleVariant::kEllipsis))
+    EnsureRareData()->style_ = std::move(builder->style_);
+
+  UpdateSelfInkOverflow();
+}
+
+NGPhysicalTextFragment::RareData* NGPhysicalTextFragment::EnsureRareData() {
+  if (!rare_data_)
+    rare_data_ = std::make_unique<RareData>();
+  return rare_data_.get();
+}
+
+const ComputedStyle& NGPhysicalTextFragment::Style() const {
+  switch (StyleVariant()) {
+    case NGStyleVariant::kStandard:
+    case NGStyleVariant::kFirstLine:
+      return NGPhysicalFragment::Style();
+    case NGStyleVariant::kEllipsis:
+      DCHECK(rare_data_ && rare_data_->style_);
+      return *rare_data_->style_;
+  }
+  NOTREACHED();
+  return NGPhysicalFragment::Style();
 }
 
 // Convert logical cooridnate to local physical coordinate.
@@ -185,9 +206,20 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
   return {};
 }
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
-  if (UNLIKELY(!shape_result_))
-    return LocalRect();
+NGPhysicalOffsetRect NGPhysicalTextFragment::SelfInkOverflow() const {
+  return UNLIKELY(rare_data_) ? rare_data_->self_ink_overflow_ : LocalRect();
+}
+
+void NGPhysicalTextFragment::ClearSelfInkOverflow() {
+  if (UNLIKELY(rare_data_))
+    rare_data_->self_ink_overflow_ = LocalRect();
+}
+
+void NGPhysicalTextFragment::UpdateSelfInkOverflow() {
+  if (UNLIKELY(!shape_result_)) {
+    ClearSelfInkOverflow();
+    return;
+  }
 
   // Glyph bounds is in logical coordinate, origin at the alphabetic baseline.
   LayoutRect ink_overflow = EnclosingLayoutRect(shape_result_->Bounds());
@@ -234,8 +266,13 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.
   NGPhysicalOffsetRect local_ink_overflow = ConvertToLocal(ink_overflow);
-  local_ink_overflow.Unite(LocalRect());
-  return local_ink_overflow;
+  NGPhysicalOffsetRect local_rect = LocalRect();
+  if (local_rect.Contains(local_ink_overflow)) {
+    ClearSelfInkOverflow();
+    return;
+  }
+  local_ink_overflow.Unite(local_rect);
+  EnsureRareData()->self_ink_overflow_ = local_ink_overflow;
 }
 
 scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
@@ -250,13 +287,9 @@ scoped_refptr<const NGPhysicalFragment> NGPhysicalTextFragment::TrimText(
   scoped_refptr<ShapeResult> new_shape_result =
       shape_result_->CreateShapeResult()->SubRange(new_start_offset,
                                                    new_end_offset);
-  LayoutUnit new_inline_size = new_shape_result->SnappedWidth();
   return base::AdoptRef(new NGPhysicalTextFragment(
-      layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
-      TextType(), text_, new_start_offset, new_end_offset,
-      IsHorizontal() ? NGPhysicalSize{new_inline_size, size_.height}
-                     : NGPhysicalSize{size_.width, new_inline_size},
-      LineOrientation(), ShapeResultView::Create(new_shape_result.get())));
+      *this, new_start_offset, new_end_offset,
+      ShapeResultView::Create(new_shape_result.get())));
 }
 
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(

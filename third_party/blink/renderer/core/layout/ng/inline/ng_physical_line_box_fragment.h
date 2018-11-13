@@ -29,6 +29,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
     return ChildLinkList(num_children_, &children_[0]);
   }
 
+  const ComputedStyle& Style() const { return *style_; }
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
   // The base direction of this line. Also known as the paragraph direction.
@@ -66,6 +67,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 
+  scoped_refptr<const ComputedStyle> style_;
   NGLineHeightMetrics metrics_;
   NGLinkStorage children_[];
 };
