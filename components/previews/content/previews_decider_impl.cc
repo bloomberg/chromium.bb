@@ -39,6 +39,18 @@ void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
       ->Add(static_cast<int>(status));
 }
 
+void LogTriggeredPreviewEffectiveConnectionType(
+    net::EffectiveConnectionType navigation_ect,
+    PreviewsType type) {
+  int32_t max_limit = static_cast<int32_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST);
+  base::LinearHistogram::FactoryGet(
+      base::StringPrintf("Previews.Triggered.EffectiveConnectionType.%s",
+                         GetStringNameForType(type).c_str()),
+      1, max_limit, max_limit + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(static_cast<int>(navigation_ect));
+}
+
 bool AllowedOnReload(PreviewsType type) {
   switch (type) {
     // These types return new content on refresh.
@@ -459,6 +471,8 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
+  LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
+                                             type);
 
   return PreviewsEligibilityReason::ALLOWED;
 }
