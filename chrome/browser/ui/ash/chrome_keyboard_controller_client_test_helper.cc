@@ -54,6 +54,11 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   void HideKeyboard(ash::mojom::HideReason reason) override {
     visible_ = false;
   }
+  void SetContainerType(keyboard::mojom::ContainerType container_type,
+                        const base::Optional<gfx::Rect>& target_bounds,
+                        SetContainerTypeCallback callback) override {
+    std::move(callback).Run(true);
+  }
   void AddObserver(ash::mojom::KeyboardControllerObserverAssociatedPtrInfo
                        observer) override {}
 

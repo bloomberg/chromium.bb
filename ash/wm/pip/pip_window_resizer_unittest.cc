@@ -436,9 +436,9 @@ TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
 
 TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
-                                        gfx::Rect(0, 0, 1, 1),
-                                        base::DoNothing());
+  keyboard_controller->SetContainerType(
+      keyboard::mojom::ContainerType::kFloating, gfx::Rect(0, 0, 1, 1),
+      base::DoNothing());
   keyboard_controller->ShowKeyboard(/*lock=*/true);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 

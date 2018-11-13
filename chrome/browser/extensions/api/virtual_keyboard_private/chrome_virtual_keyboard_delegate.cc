@@ -43,9 +43,9 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/public/keyboard_controller_types.mojom.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 
 namespace keyboard_api = extensions::api::virtual_keyboard_private;
@@ -60,18 +60,18 @@ std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
 }
 
-keyboard::ContainerType ConvertKeyboardModeToContainerType(int mode) {
+keyboard::mojom::ContainerType ConvertKeyboardModeToContainerType(int mode) {
   switch (mode) {
     case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
-      return keyboard::ContainerType::FULL_WIDTH;
+      return keyboard::mojom::ContainerType::kFullWidth;
     case keyboard_api::KEYBOARD_MODE_FLOATING:
-      return keyboard::ContainerType::FLOATING;
+      return keyboard::mojom::ContainerType::kFloating;
     case keyboard_api::KEYBOARD_MODE_FULLSCREEN:
-      return keyboard::ContainerType::FULLSCREEN;
+      return keyboard::mojom::ContainerType::kFullscreen;
   }
 
   NOTREACHED();
-  return keyboard::ContainerType::FULL_WIDTH;
+  return keyboard::mojom::ContainerType::kFullWidth;
 }
 
 const char kKeyDown[] = "keydown";
@@ -268,13 +268,13 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
     base::Optional<gfx::Rect> target_bounds,
     OnSetModeCallback on_set_mode_callback) {
-  auto* controller = keyboard::KeyboardController::Get();
-  if (!controller->IsEnabled())
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
     return false;
 
-  controller->SetContainerType(ConvertKeyboardModeToContainerType(mode_enum),
-                               std::move(target_bounds),
-                               std::move(on_set_mode_callback));
+  keyboard_client->SetContainerType(
+      ConvertKeyboardModeToContainerType(mode_enum), target_bounds,
+      std::move(on_set_mode_callback));
   return true;
 }
 

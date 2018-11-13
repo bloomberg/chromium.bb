@@ -122,10 +122,11 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
 
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
                        CanDragFloatingKeyboardWithMouse) {
-  auto* controller = keyboard::KeyboardController::Get();
-  controller->SetContainerType(keyboard::ContainerType::FLOATING, base::nullopt,
-                               base::DoNothing());
+  ChromeKeyboardControllerClient::Get()->SetContainerType(
+      keyboard::mojom::ContainerType::kFloating, base::nullopt,
+      base::DoNothing());
 
+  auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 

@@ -272,7 +272,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   SetKeyboardOverscrollBehavior(
       keyboard::mojom::KeyboardOverscrollBehavior::kDefault);
 
-  keyboard->SetContainerType(keyboard::ContainerType::FLOATING,
+  keyboard->SetContainerType(keyboard::mojom::ContainerType::kFloating,
                              base::nullopt /* target_bounds */,
                              base::BindOnce([](bool success) {}));
   ShowKeyboard(true);

@@ -58,45 +58,46 @@ class TestObserver : public mojom::KeyboardControllerObserver {
 class TestClient {
  public:
   explicit TestClient(service_manager::Connector* connector) {
-    connector->BindInterface("test", &keyboard_controller_);
+    connector->BindInterface("test", &keyboard_controller_ptr_);
 
-    test_observer_ = std::make_unique<TestObserver>(keyboard_controller_.get());
+    test_observer_ =
+        std::make_unique<TestObserver>(keyboard_controller_ptr_.get());
   }
 
   ~TestClient() = default;
 
   bool IsKeyboardEnabled() {
-    keyboard_controller_->IsKeyboardEnabled(base::BindOnce(
+    keyboard_controller_ptr_->IsKeyboardEnabled(base::BindOnce(
         &TestClient::OnIsKeyboardEnabled, base::Unretained(this)));
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_.FlushForTesting();
     return is_enabled_;
   }
 
   void GetKeyboardConfig() {
-    keyboard_controller_->GetKeyboardConfig(base::BindOnce(
+    keyboard_controller_ptr_->GetKeyboardConfig(base::BindOnce(
         &TestClient::OnGetKeyboardConfig, base::Unretained(this)));
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   void SetKeyboardConfig(KeyboardConfigPtr config) {
-    keyboard_controller_->SetKeyboardConfig(std::move(config));
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->SetKeyboardConfig(std::move(config));
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   void SetEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_->SetEnableFlag(flag);
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->SetEnableFlag(flag);
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   void ClearEnableFlag(KeyboardEnableFlag flag) {
-    keyboard_controller_->ClearEnableFlag(flag);
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->ClearEnableFlag(flag);
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   std::vector<keyboard::mojom::KeyboardEnableFlag> GetEnableFlags() {
     std::vector<keyboard::mojom::KeyboardEnableFlag> enable_flags;
     base::RunLoop run_loop;
-    keyboard_controller_->GetEnableFlags(base::BindOnce(
+    keyboard_controller_ptr_->GetEnableFlags(base::BindOnce(
         [](std::vector<keyboard::mojom::KeyboardEnableFlag>* enable_flags,
            base::OnceClosure callback,
            const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
@@ -109,25 +110,41 @@ class TestClient {
   }
 
   void RebuildKeyboardIfEnabled() {
-    keyboard_controller_->RebuildKeyboardIfEnabled();
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->RebuildKeyboardIfEnabled();
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   bool IsKeyboardVisible() {
-    keyboard_controller_->IsKeyboardVisible(base::BindOnce(
+    keyboard_controller_ptr_->IsKeyboardVisible(base::BindOnce(
         &TestClient::OnIsKeyboardVisible, base::Unretained(this)));
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_.FlushForTesting();
     return is_visible_;
   }
 
   void ShowKeyboard() {
-    keyboard_controller_->ShowKeyboard();
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->ShowKeyboard();
+    keyboard_controller_ptr_.FlushForTesting();
   }
 
   void HideKeyboard() {
-    keyboard_controller_->HideKeyboard(ash::mojom::HideReason::kUser);
-    keyboard_controller_.FlushForTesting();
+    keyboard_controller_ptr_->HideKeyboard(ash::mojom::HideReason::kUser);
+    keyboard_controller_ptr_.FlushForTesting();
+  }
+
+  bool SetContainerType(keyboard::mojom::ContainerType container_type,
+                        const base::Optional<gfx::Rect>& target_bounds) {
+    bool result;
+    base::RunLoop run_loop;
+    keyboard_controller_ptr_->SetContainerType(
+        container_type, target_bounds,
+        base::BindOnce(
+            [](bool* result_ptr, base::OnceClosure callback, bool result) {
+              *result_ptr = result;
+              std::move(callback).Run();
+            },
+            &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
   }
 
   TestObserver* test_observer() const { return test_observer_.get(); }
@@ -146,7 +163,7 @@ class TestClient {
     keyboard_config_ = *config;
   }
 
-  mojom::KeyboardControllerPtr keyboard_controller_;
+  mojom::KeyboardControllerPtr keyboard_controller_ptr_;
   std::unique_ptr<TestObserver> test_observer_;
 };
 
@@ -297,6 +314,36 @@ TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
 
   // TODO(stevenjb): Also use TestObserver and IsKeyboardVisible to test
   // visibility changes. https://crbug.com/849995.
+}
+
+TEST_F(AshKeyboardControllerTest, SetContainerType) {
+  // Enable the keyboard.
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+  const auto default_behavior = keyboard::mojom::ContainerType::kFullWidth;
+  EXPECT_EQ(default_behavior, keyboard_controller()->GetActiveContainerType());
+
+  gfx::Rect target_bounds(0, 0, 10, 10);
+  // Set the container type to kFloating.
+  EXPECT_TRUE(test_client()->SetContainerType(
+      keyboard::mojom::ContainerType::kFloating, target_bounds));
+  EXPECT_EQ(keyboard::mojom::ContainerType::kFloating,
+            keyboard_controller()->GetActiveContainerType());
+  // Ensure that the window size is correct (position is determined by Ash).
+  EXPECT_EQ(
+      target_bounds.size(),
+      keyboard_controller()->GetKeyboardWindow()->GetTargetBounds().size());
+
+  // Set the container type to kFullscreen.
+  EXPECT_TRUE(test_client()->SetContainerType(
+      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
+  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
+            keyboard_controller()->GetActiveContainerType());
+
+  // Setting the container type to the current type should fail.
+  EXPECT_FALSE(test_client()->SetContainerType(
+      keyboard::mojom::ContainerType::kFullscreen, base::nullopt));
+  EXPECT_EQ(keyboard::mojom::ContainerType::kFullscreen,
+            keyboard_controller()->GetActiveContainerType());
 }
 
 }  // namespace ash

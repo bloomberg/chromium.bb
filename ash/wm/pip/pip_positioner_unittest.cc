@@ -559,8 +559,9 @@ TEST_F(PipPositionerTest, AvoidObstaclesAvoidsUnifiedSystemTray) {
 
 TEST_F(PipPositionerTest, AvoidObstaclesAvoidsFloatingKeyboard) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->SetContainerType(keyboard::ContainerType::FLOATING,
-                                        base::nullopt, base::DoNothing());
+  keyboard_controller->SetContainerType(
+      keyboard::mojom::ContainerType::kFloating, base::nullopt,
+      base::DoNothing());
   keyboard_controller->ShowKeyboard(/*lock=*/true);
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
   keyboard_window->SetBounds(gfx::Rect(200, 200, 100, 100));

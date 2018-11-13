@@ -71,17 +71,14 @@ class ChromeKeyboardControllerClient
   // Returns whether |flag| has been set.
   bool IsEnableFlagSet(const keyboard::mojom::KeyboardEnableFlag& flag);
 
-  // Calls ash.mojom.ReloadKeyboardIfNeeded.
+  // Calls forwarded to ash.mojom.KeyboardController..
   void ReloadKeyboardIfNeeded();
-
-  // Calls ash.mojom.RebuildKeyboard.
   void RebuildKeyboardIfEnabled();
-
-  // Shows the virtual keyboard if enabled.
   void ShowKeyboard();
-
-  // Hides the virtual keyboard if enabled.
   void HideKeyboard(ash::mojom::HideReason reason);
+  void SetContainerType(keyboard::mojom::ContainerType container_type,
+                        const base::Optional<gfx::Rect>& target_bounds,
+                        base::OnceCallback<void(bool)> callback);
 
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();

@@ -36,3 +36,16 @@ enum KeyboardEnableFlag {
   // Temporarily enable the keyboard; cleared once the keyboard is shown.
   kTemporarilyEnabled,
 };
+
+// Container types used to set and identify contaner behavior. Used in UMA
+// stats gathering, so values should never be changed or reused.
+enum ContainerType {
+  // Corresponds to a ContainerFullWidthBehavior.
+  kFullWidth = 0,
+
+  // Corresponds to a ContainerFloatingBehavior.
+  kFloating = 1,
+
+  // Corresponds to a ContainerFullscreenBehavior.
+  kFullscreen = 2,
+};

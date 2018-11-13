@@ -6,7 +6,7 @@ module ash.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
-import "ui/keyboard/public/keyboard_enable_flag.mojom";
+import "ui/keyboard/public/keyboard_controller_types.mojom";
 
 enum HideReason {
   // Hide requested by an explicit user action.
@@ -73,6 +73,12 @@ interface KeyboardController {
 
   // Hides the virtual keyboard if it is visible.
   HideKeyboard(HideReason reason);
+
+  // Sets the keyboard container type. If non empty, |target_bounds| provides
+  // the container size. Returns whether the transition succeeded once the
+  // container type changes (or fails to change).
+  SetContainerType(keyboard.mojom.ContainerType container_type,
+                   gfx.mojom.Rect? target_bounds) => (bool result);
 
   // Adds a KeyboardControllerObserver.
   AddObserver(associated KeyboardControllerObserver observer);

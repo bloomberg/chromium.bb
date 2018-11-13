@@ -34,7 +34,6 @@
 #include "ui/keyboard/container_floating_behavior.h"
 #include "ui/keyboard/container_full_width_behavior.h"
 #include "ui/keyboard/container_fullscreen_behavior.h"
-#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
@@ -217,7 +216,7 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
   keyboard_locked_ = false;
   state_ = KeyboardControllerState::UNKNOWN;
   ui_->SetController(this);
-  SetContainerBehaviorInternal(ContainerType::FULL_WIDTH);
+  SetContainerBehaviorInternal(mojom::ContainerType::kFullWidth);
   ChangeState(KeyboardControllerState::INITIAL);
   visual_bounds_in_screen_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
@@ -611,20 +610,20 @@ void KeyboardController::ShowAnimationFinished() {
 
 // private
 void KeyboardController::SetContainerBehaviorInternal(
-    const ContainerType type) {
+    mojom::ContainerType type) {
   // Reset the hit test event targeter because the hit test bounds will
   // be wrong when container type changes and may cause the UI to be unusable.
   if (GetKeyboardWindow())
     GetKeyboardWindow()->SetEventTargeter(nullptr);
 
   switch (type) {
-    case ContainerType::FULL_WIDTH:
+    case mojom::ContainerType::kFullWidth:
       container_behavior_ = std::make_unique<ContainerFullWidthBehavior>(this);
       break;
-    case ContainerType::FLOATING:
+    case mojom::ContainerType::kFloating:
       container_behavior_ = std::make_unique<ContainerFloatingBehavior>(this);
       break;
-    case ContainerType::FULLSCREEN:
+    case mojom::ContainerType::kFullscreen:
       container_behavior_ = std::make_unique<ContainerFullscreenBehavior>(this);
       break;
     default:
@@ -871,7 +870,8 @@ void KeyboardController::PopulateKeyboardContent(
   ChangeState(KeyboardControllerState::SHOWN);
 
   UMA_HISTOGRAM_ENUMERATION("InputMethod.VirtualKeyboard.ContainerBehavior",
-                            GetActiveContainerType(), ContainerType::COUNT);
+                            GetActiveContainerType(),
+                            mojom::ContainerType::kMaxValue);
 }
 
 bool KeyboardController::WillHideKeyboard() const {
@@ -956,8 +956,8 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
   if (!IsKeyboardOverscrollEnabled() &&
-      container_behavior_->GetType() != ContainerType::FLOATING &&
-      container_behavior_->GetType() != ContainerType::FULLSCREEN) {
+      container_behavior_->GetType() != mojom::ContainerType::kFloating &&
+      container_behavior_->GetType() != mojom::ContainerType::kFullscreen) {
     return visual_bounds_in_screen_;
   }
   return gfx::Rect();
@@ -998,8 +998,8 @@ bool KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
 }
 
 void KeyboardController::SetContainerType(
-    const ContainerType type,
-    base::Optional<gfx::Rect> target_bounds,
+    mojom::ContainerType type,
+    const base::Optional<gfx::Rect>& target_bounds,
     base::OnceCallback<void(bool)> callback) {
   if (container_behavior_->GetType() == type) {
     std::move(callback).Run(false);

@@ -70,6 +70,9 @@ class ASH_EXPORT AshKeyboardController
   void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override;
   void ShowKeyboard() override;
   void HideKeyboard(mojom::HideReason reason) override;
+  void SetContainerType(keyboard::mojom::ContainerType container_type,
+                        const base::Optional<gfx::Rect>& target_bounds,
+                        SetContainerTypeCallback callback) override;
   void AddObserver(
       mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
 
