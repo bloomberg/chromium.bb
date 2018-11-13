@@ -29,14 +29,12 @@ namespace {
 
 PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
   DCHECK_EQ(content::kChromeUIScheme, url.scheme());
-  return {
-      url,
-      LaunchContainer::kWindow,
-      InstallSource::kSystemInstalled,
-      false /* create_shortcuts */,
-      PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall,
-      true /* bypass_service_worker_check */,
-  };
+
+  web_app::PendingAppManager::AppInfo app_info(url, LaunchContainer::kWindow,
+                                               InstallSource::kSystemInstalled);
+  app_info.create_shortcuts = false;
+  app_info.bypass_service_worker_check = true;
+  return app_info;
 }
 
 }  // namespace
@@ -73,7 +71,7 @@ void SystemWebAppManager::StartAppInstallation() {
 
   std::vector<PendingAppManager::AppInfo> apps_to_install;
   for (const auto& url : urls_to_install)
-    apps_to_install.emplace_back(CreateAppInfoForSystemApp(url));
+    apps_to_install.push_back(CreateAppInfoForSystemApp(url));
 
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(apps_to_install), InstallSource::kSystemInstalled);

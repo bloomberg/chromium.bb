@@ -155,13 +155,13 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       continue;
     }
 
-    app_infos.emplace_back(
+    web_app::PendingAppManager::AppInfo info(
         std::move(app_url), launch_container,
-        web_app::InstallSource::kExternalDefault, create_shortcuts,
-        web_app::PendingAppManager::AppInfo::
-            kDefaultOverridePreviousUserUninstall,
-        web_app::PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck,
-        true /* require_manifest */);
+        web_app::InstallSource::kExternalDefault);
+    info.create_shortcuts = create_shortcuts;
+    info.require_manifest = true;
+
+    app_infos.push_back(std::move(info));
   }
 
   return app_infos;

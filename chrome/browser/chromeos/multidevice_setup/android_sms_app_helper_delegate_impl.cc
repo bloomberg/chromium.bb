@@ -90,15 +90,16 @@ void AndroidSmsAppHelperDelegateImpl::OnSetDefaultToPersistCookieForInstall(
 
   // TODO(crbug.com/874605): Consider retries and error handling here. This call
   // can easily fail.
+  web_app::PendingAppManager::AppInfo info(
+      chromeos::android_sms::GetAndroidMessagesURLWithParams(),
+      web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal);
+  info.override_previous_user_uninstall = true;
+  // The service worker does not load in time for the installability
+  // check so we bypass it as a workaround.
+  info.bypass_service_worker_check = true;
+  info.require_manifest = true;
   pending_app_manager_->Install(
-      web_app::PendingAppManager::AppInfo(
-          chromeos::android_sms::GetAndroidMessagesURLWithParams(),
-          web_app::LaunchContainer::kWindow, web_app::InstallSource::kInternal,
-          web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
-          true /* override_previous_user_uninstall */,
-          // The service worker does not load in time for the installability
-          // check so we bypass it as a workaround.
-          true /* bypass_service_worker_check */, true /* require_manifest */),
+      std::move(info),
       base::BindOnce(&AndroidSmsAppHelperDelegateImpl::OnAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), launch_on_install));
 }

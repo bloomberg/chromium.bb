@@ -46,9 +46,10 @@ base::Value GetWindowedItem() {
 }
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
-  return PendingAppManager::AppInfo(
-      GURL(kWindowedUrl), LaunchContainer::kWindow,
-      InstallSource::kExternalPolicy, false /* create_shortcuts */);
+  PendingAppManager::AppInfo info(GURL(kWindowedUrl), LaunchContainer::kWindow,
+                                  InstallSource::kExternalPolicy);
+  info.create_shortcuts = false;
+  return info;
 }
 
 base::Value GetTabbedItem() {
@@ -59,9 +60,10 @@ base::Value GetTabbedItem() {
 }
 
 PendingAppManager::AppInfo GetTabbedAppInfo() {
-  return PendingAppManager::AppInfo(GURL(kTabbedUrl), LaunchContainer::kTab,
-                                    InstallSource::kExternalPolicy,
-                                    false /* create_shortcuts */);
+  PendingAppManager::AppInfo info(GURL(kTabbedUrl), LaunchContainer::kTab,
+                                  InstallSource::kExternalPolicy);
+  info.create_shortcuts = false;
+  return info;
 }
 
 base::Value GetDefaultContainerItem() {
@@ -71,9 +73,11 @@ base::Value GetDefaultContainerItem() {
 }
 
 PendingAppManager::AppInfo GetDefaultContainerAppInfo() {
-  return PendingAppManager::AppInfo(
-      GURL(kDefaultContainerUrl), LaunchContainer::kDefault,
-      InstallSource::kExternalPolicy, false /* create_shortcuts */);
+  PendingAppManager::AppInfo info(GURL(kDefaultContainerUrl),
+                                  LaunchContainer::kDefault,
+                                  InstallSource::kExternalPolicy);
+  info.create_shortcuts = false;
+  return info;
 }
 
 }  // namespace

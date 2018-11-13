@@ -38,11 +38,11 @@ const char kAppUrl2[] = "chrome://system-app2";
 const char kAppUrl3[] = "chrome://system-app3";
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
-  return PendingAppManager::AppInfo(
-      GURL(kAppUrl1), LaunchContainer::kWindow, InstallSource::kSystemInstalled,
-      false /* create_shortcuts */,
-      PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall,
-      true /* bypass_service_worker_check */);
+  PendingAppManager::AppInfo info(GURL(kAppUrl1), LaunchContainer::kWindow,
+                                  InstallSource::kSystemInstalled);
+  info.create_shortcuts = false;
+  info.bypass_service_worker_check = true;
+  return info;
 }
 
 }  // namespace
