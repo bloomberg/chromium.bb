@@ -265,6 +265,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
 
+  void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
+                               InputEventAckState ack_result) override;
+
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;
 

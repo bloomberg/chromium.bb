@@ -267,8 +267,6 @@ void GestureEventQueue::AckGestureEventToClient(
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
-
-  fling_controller_.OnGestureEventAck(event_with_latency, ack_result);
 }
 
 void GestureEventQueue::LegacyProcessGestureAck(
@@ -298,8 +296,6 @@ void GestureEventQueue::LegacyProcessGestureAck(
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
-
-  fling_controller_.OnGestureEventAck(event_with_latency, ack_result);
 
   DCHECK_LT(event_index, coalesced_gesture_events_.size());
   coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +

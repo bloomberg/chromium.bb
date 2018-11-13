@@ -1139,6 +1139,10 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
                                               InputEventAckState ack_result) {
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
+  // Stop flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  StopFlingingIfNecessary(event, ack_result);
+
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:

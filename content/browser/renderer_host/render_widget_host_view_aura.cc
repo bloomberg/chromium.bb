@@ -1025,9 +1025,14 @@ void RenderWidgetHostViewAura::GestureEventAck(
         event.data.scroll_update.inertial_phase ==
             blink::WebGestureEvent::kMomentumPhase &&
         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE) {
-      host()->StopFling();
+      StopFling();
     }
   }
+
+  // Stop flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  StopFlingingIfNecessary(event, ack_result);
+
   event_handler_->GestureEventAck(event, ack_result);
 
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);

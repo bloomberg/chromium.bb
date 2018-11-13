@@ -1585,6 +1585,10 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
+  // Stop flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  StopFlingingIfNecessary(event, ack_result);
+
   if (!gesture_listener_manager_)
     return;
   gesture_listener_manager_->GestureEventAck(event, ack_result);

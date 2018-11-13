@@ -643,6 +643,10 @@ void RenderWidgetHostViewGuest::WheelEventAck(
 void RenderWidgetHostViewGuest::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
+  // Stops flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  StopFlingingIfNecessary(event, ack_result);
+
   bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
                       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   // GestureScrollBegin/End are always consumed by the guest, so we only

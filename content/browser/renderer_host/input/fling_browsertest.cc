@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -299,6 +300,36 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFling) {
   SimulateTouchpadFling(GetWidgetHost());
   WaitForScroll();
 }
+IN_PROC_BROWSER_TEST_F(
+    BrowserSideFlingBrowserTest,
+    EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed) {
+  LoadURL(kBrowserFlingDataURL);
+
+  // Fling upward and wait for the generated GSE to arrive. Then check that the
+  // RWHV has stopped the fling.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+  gfx::Vector2d fling_velocity(0, 2000);
+  SimulateTouchscreenFling(
+      GetWidgetHost(), nullptr /*parent_render_widget_host*/, fling_velocity);
+  input_msg_watcher->GetAckStateWaitIfNecessary();
+  EXPECT_TRUE(GetWidgetHost()->GetView()->view_stopped_flinging_for_test());
+}
+IN_PROC_BROWSER_TEST_F(
+    BrowserSideFlingBrowserTest,
+    EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
+  LoadURL(kBrowserFlingDataURL);
+
+  // Fling upward and wait for the generated GSE to arrive. Then check that the
+  // RWHV has stopped the fling.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+  gfx::Vector2d fling_velocity(0, 2000);
+  SimulateTouchpadFling(GetWidgetHost(), nullptr /*parent_render_widget_host*/,
+                        fling_velocity);
+  input_msg_watcher->GetAckStateWaitIfNecessary();
+  EXPECT_TRUE(GetWidgetHost()->GetView()->view_stopped_flinging_for_test());
+}
 
 // Tests that flinging does not continue after navigating to a page that uses
 // the same renderer.
@@ -337,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchpadFlingInOOPIF) {
   WaitForFrameScroll(GetChildNode());
 }
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       TouchscreenFlingBubblesFromOOPIF) {
+                       TouchscreenInertialGSUsBubbleFromOOPIF) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
   EXPECT_TRUE(
@@ -358,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 // Touchpad fling only happens on ChromeOS.
 #if defined(CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       TouchpadFlingBubblesFromOOPIF) {
+                       TouchpadInertialGSUsBubbleFromOOPIF) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
   EXPECT_TRUE(
@@ -376,7 +407,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 }
 #endif  // defined(CHROMEOS)
 
-IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, GFCGetsBubbledFromOOPIF) {
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
+                       InertialGSEGetsBubbledFromOOPIF) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
   EXPECT_TRUE(
@@ -393,9 +425,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, GFCGetsBubbledFromOOPIF) {
                            fling_velocity);
   WaitForFrameScroll(GetRootNode(), 15, true /* upward */);
 
-  // Send a GFC to the child and wait for it to get bubbled.
+  // Send a GFC to the child and wait for the Generated GSE to get bubbled.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureFlingCancel);
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
   blink::WebGestureEvent gesture_fling_cancel(
       blink::WebGestureEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
@@ -410,6 +442,58 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, GFCGetsBubbledFromOOPIF) {
   gesture_fling_cancel.SetPositionInScreen(location_in_screen);
   child_view_->host()->ForwardGestureEvent(gesture_fling_cancel);
   input_msg_watcher->GetAckStateWaitIfNecessary();
+}
+
+// Checks that the fling controller of the oopif stops the fling when the
+// bubbled inertial GSUs are not consumed by the parent's renderer.
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
+                       InertialGSUBubblingStopsWhenParentCannotScroll) {
+  LoadPageWithOOPIF();
+  // Scroll the parent down so that it is scrollable upward.
+  EXPECT_TRUE(
+      ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
+  // We expect to have window.scrollY == 20 after scrolling but with zoom for
+  // dsf enabled on android we get window.scrollY == 19 (see
+  // https://crbug.com/891860).
+  WaitForFrameScroll(GetRootNode(), 19);
+  SynchronizeThreads();
+
+  // Fling and wait for the parent to scroll up.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  const gfx::PointF location_in_widget(10, 10);
+  const gfx::PointF location_in_root =
+      child_view_->TransformPointToRootCoordSpaceF(location_in_widget);
+  const gfx::PointF location_in_screen =
+      location_in_root + root_view_->GetViewBounds().OffsetFromOrigin();
+  params.anchor = location_in_screen;
+  params.distances.push_back(gfx::Vector2d(0, 100));
+  params.prevent_fling = false;
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+  GetWidgetHost()->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindOnce(&BrowserSideFlingBrowserTest::OnSyntheticGestureCompleted,
+                     base::Unretained(this)));
+
+  // Runs until we get the OnSyntheticGestureCompleted callback.
+  run_loop_->Run();
+
+  // Wait for the Generated GSE to get bubbled.
+  input_msg_watcher->GetAckStateWaitIfNecessary();
+
+  // Check that the router has forced the last fling start target to stop
+  // flinging.
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+  EXPECT_TRUE(
+      router->forced_last_fling_start_target_to_stop_flinging_for_test());
 }
 
 // Flaky, see https://crbug.com/850455

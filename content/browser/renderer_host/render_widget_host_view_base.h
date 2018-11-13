@@ -560,6 +560,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // |text_input_manager_|.
   TextInputManager* GetTextInputManager();
 
+  void StopFling();
+
   bool is_fullscreen() { return is_fullscreen_; }
 
   void set_web_contents_accessibility(WebContentsAccessibility* wcax) {
@@ -574,6 +576,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool is_currently_scrolling_viewport() {
     return is_currently_scrolling_viewport_;
   }
+
 #if defined(USE_AURA)
   void EmbedChildFrameRendererWindowTreeClient(
       RenderWidgetHostViewBase* root_view,
@@ -617,6 +620,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // transfer this color to that page. This allows us to pass this background
   // color to new views on navigation.
   virtual void UpdateBackgroundColor() = 0;
+
+  // Stops flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  virtual void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
+                                       InputEventAckState ack_result);
 
 #if defined(USE_AURA)
   virtual void ScheduleEmbed(
@@ -683,6 +691,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool is_currently_scrolling_viewport_ = false;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      BrowserSideFlingBrowserTest,
+      EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed);
+  FRIEND_TEST_ALL_PREFIXES(
+      BrowserSideFlingBrowserTest,
+      EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed);
+
   void SynchronizeVisualProperties();
 
 #if defined(USE_AURA)
@@ -714,6 +729,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       gfx::PointF* transformed_point,
       viz::EventSource source);
 
+  bool view_stopped_flinging_for_test() const {
+    return view_stopped_flinging_for_test_;
+  }
+
   gfx::Rect current_display_area_;
 
   uint32_t renderer_frame_number_ = 0;
@@ -733,6 +752,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 #endif
 
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
+
+  // True when StopFlingingIfNecessary() calls StopFling().
+  bool view_stopped_flinging_for_test_ = false;
 
   bool is_evicted_ = false;
 

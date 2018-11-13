@@ -103,6 +103,25 @@ MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
   return nullptr;
 }
 
+void RenderWidgetHostViewBase::StopFlingingIfNecessary(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  // Reset view_stopped_flinging_for_test_ at the beginning of the scroll
+  // sequence.
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+    view_stopped_flinging_for_test_ = false;
+
+  bool processed = INPUT_EVENT_ACK_STATE_CONSUMED == ack_result;
+  if (!processed &&
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+      event.data.scroll_update.inertial_phase ==
+          blink::WebGestureEvent::kMomentumPhase &&
+      event.SourceDevice() != blink::kWebGestureDeviceSyntheticAutoscroll) {
+    StopFling();
+    view_stopped_flinging_for_test_ = true;
+  }
+}
+
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {}
 
@@ -774,6 +793,19 @@ TextInputManager* RenderWidgetHostViewBase::GetTextInputManager() {
     text_input_manager_->Register(this);
 
   return text_input_manager_;
+}
+
+void RenderWidgetHostViewBase::StopFling() {
+  if (!host())
+    return;
+
+  host()->StopFling();
+
+  // In case of scroll bubbling tells the child's fling controller which is in
+  // charge of generating GSUs to stop flinging.
+  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    host()->delegate()->GetInputEventRouter()->StopFling();
+  }
 }
 
 void RenderWidgetHostViewBase::AddObserver(
