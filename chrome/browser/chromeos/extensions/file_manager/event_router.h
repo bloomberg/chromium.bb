@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
@@ -59,7 +60,8 @@ class EventRouter : public KeyedService,
                     public drive::DriveServiceObserver,
                     public VolumeManagerObserver,
                     public arc::ArcIntentHelperObserver,
-                    public drive::DriveIntegrationServiceObserver {
+                    public drive::DriveIntegrationServiceObserver,
+                    public crostini::CrostiniSharePath::Observer {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -152,10 +154,16 @@ class EventRouter : public KeyedService,
   // DriveIntegrationServiceObserver override.
   void OnFileSystemMountFailed() override;
 
+  // crostini::CrostiniSharePath::Observer overrides
+  void OnUnshare(const base::FilePath& path) override;
+
   // Returns a weak pointer for the event router.
   base::WeakPtr<EventRouter> GetWeakPtr();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EventRouterTest,
+                           PopulateCrostiniSharedPathsChangedEvent);
+
   // Starts observing file system change events.
   void ObserveEvents();
 
@@ -194,6 +202,14 @@ class EventRouter : public KeyedService,
       extensions::api::file_manager_private::MountCompletedEventType event_type,
       chromeos::MountError error,
       const Volume& volume);
+
+  // Populate the paths changed event.
+  static void PopulateCrostiniSharedPathsChangedEvent(
+      extensions::api::file_manager_private::CrostiniSharedPathsChangedEvent&
+          event,
+      const std::string& extension_id,
+      const std::string& mount_name,
+      const std::string& full_path);
 
   base::Time last_copy_progress_event_;
 

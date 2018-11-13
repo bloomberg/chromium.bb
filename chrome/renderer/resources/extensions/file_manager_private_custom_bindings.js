@@ -262,5 +262,15 @@ registerArgumentMassager('fileManagerPrivate.onDirectoryChanged',
   dispatch(args);
 });
 
+registerArgumentMassager('fileManagerPrivate.onCrostiniSharedPathsChanged',
+                         function(args, dispatch) {
+  // Convert entries arguments into real Entry objects.
+  const entries = args[0].entries;
+  for (let i = 0; i < entries.length; i++) {
+    entries[i] = GetExternalFileEntry(entries[i]);
+  }
+  dispatch(args);
+});
+
 if (!apiBridge)
   exports.$set('binding', binding.generate());

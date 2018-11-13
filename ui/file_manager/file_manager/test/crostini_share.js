@@ -5,6 +5,11 @@
 const crostiniShare = {};
 
 crostiniShare.testSharePathsCrostiniSuccess = (done) => {
+  const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"][hidden][disabled="disabled"]';
+  const menuShareWithLinux = '#file-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const photos = '#file-list [file-name="photos"]';
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
   let sharePathsCalled = false;
   let sharePathsPersist;
@@ -16,6 +21,12 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
           callback();
         });
       };
+  const oldCrostiniUnregister = Crostini.unregisterSharedPath;
+  let unregisterCalled = false;
+  Crostini.unregisterSharedPath = function(entry, volumeManager) {
+    unregisterCalled = true;
+    oldCrostiniUnregister(entry, volumeManager);
+  };
   chrome.metricsPrivate.smallCounts_ = [];
   chrome.metricsPrivate.values_ = [];
 
@@ -23,12 +34,8 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       .then(() => {
         // Right-click 'photos' directory.
         // Check 'Share with Linux' is shown in menu.
-        assertTrue(
-            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
-            'right-click photos');
-        return test.waitForElement(
-            '#file-context-menu:not([hidden]) ' +
-            '[command="#share-with-linux"]:not([hidden]):not([disabled])');
+        assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
+        return test.waitForElement(menuShareWithLinux);
       })
       .then(() => {
         // Click on 'Share with Linux'.
@@ -42,6 +49,12 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         });
       })
       .then(() => {
+        // Right-click 'photos' directory.
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
         // Share should persist when right-click > Share with Linux.
         assertTrue(sharePathsPersist);
         // Validate UMAs.
@@ -52,9 +65,32 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         const lastEnumUma = chrome.metricsPrivate.values_.pop();
         assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
         assertEquals(12 /* Share with Linux */, lastEnumUma[1]);
-
+      })
+      .then(() => {
+        // Dispatch unshare event which is normally initiated when the user
+        // manages shared paths in the settings page.
+        const photos = mockVolumeManager
+                           .getCurrentProfileVolumeInfo(
+                               VolumeManagerCommon.VolumeType.DOWNLOADS)
+                           .fileSystem.entries['/photos'];
+        chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.dispatchEvent(
+            {eventType: 'unshare', entries: [photos]});
+        // Check unregisterSharedPath is called.
+        return test.repeatUntil(() => {
+          return unregisterCalled || test.pending('wait for unregisterCalled');
+        });
+      })
+      .then(() => {
+        // Right-click 'photos' directory.
+        // Check 'Share with Linux' is shown in menu.
+        assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
+        return test.waitForElement(menuShareWithLinux);
+      })
+      .then(() => {
         // Restore fmp.*.
         chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
+        // Restore Crostini.unregisterSharedPath;
+        Crostini.unregisterSharedPath = oldCrostiniUnregister;
         done();
       });
 };

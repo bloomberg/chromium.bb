@@ -101,6 +101,10 @@ void ConvertToContentUrls(
 std::string GetPathDisplayTextForSettings(Profile* profile,
                                           const std::string& path);
 
+// Extracts |mount_name| and |full_path| from given |absolute_path|.
+bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
+                                 std::string* mount_name,
+                                 std::string* full_path);
 }  // namespace util
 }  // namespace file_manager
 
