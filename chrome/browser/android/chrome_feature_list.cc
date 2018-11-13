@@ -83,6 +83,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTExternalLinkHandling,
     &kCCTModule,
     &kCCTModuleCache,
+    &kCCTModulePostMessage,
     &kCCTParallelRequest,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
@@ -224,6 +225,9 @@ const base::Feature kCCTModule{"CCTModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTModuleCache{"CCTModuleCache",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTModulePostMessage{"CCTModulePostMessage",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTParallelRequest{"CCTParallelRequest",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

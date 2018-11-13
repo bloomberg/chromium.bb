@@ -24,7 +24,9 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageBackend;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -64,6 +66,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
@@ -192,6 +195,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private ModuleEntryPoint mModuleEntryPoint;
     @Nullable
     private ActivityDelegate mModuleActivityDelegate;
+    @Nullable
+    private PostMessageHandler mDynamicModulePostMessageHandler;
 
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
@@ -359,7 +364,20 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate,
                     mModuleEntryPoint.getModuleVersion());
             mModuleCallback = null;
+
+            // Initialise the PostMessageHandler for the current web contents.
+            maybeInitialiseDynamicModulePostMessageHandler(
+                    new ActivityDelegatePostMessageBackend());
         }
+    }
+
+    @VisibleForTesting
+    void maybeInitialiseDynamicModulePostMessageHandler(PostMessageBackend backend) {
+        // Only initialise the handler if the feature is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)) return;
+
+        mDynamicModulePostMessageHandler = new PostMessageHandler(backend);
+        mDynamicModulePostMessageHandler.reset(getCurrentWebContents());
     }
 
     private void startModule() {
@@ -408,6 +426,42 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mTopBarDelegate.setTopBarContentView(view);
         mTopBarDelegate.showTopBarIfNecessary(
                 isModuleManagedUrl(mIntentDataProvider.getUrlToLoad()));
+    }
+
+    /**
+     * Requests a postMessage channel for a loaded dynamic module.
+     *
+     * <p>The initialisation work is posted to the UI thread because this method will be called by
+     * the dynamic module so we can't be sure of the thread it will be called on.
+     *
+     * @param postMessageOrigin The origin to use for messages posted to this channel.
+     * @return Whether it was possible to request a channel. Will return false if the dynamic module
+     *         has not been loaded.
+     */
+    public boolean requestPostMessageChannel(Uri postMessageOrigin) {
+        if (mDynamicModulePostMessageHandler == null) return false;
+
+        ThreadUtils.postOnUiThread(
+            () -> mDynamicModulePostMessageHandler.initializeWithPostMessageUri(postMessageOrigin));
+        return true;
+    }
+
+    /**
+     * Posts a message from a loaded dynamic module.
+     *
+     * @param message The message to post to the page. Nothing is assumed about the format of the
+     *                message; we just post it as-is.
+     * @return Whether it was possible to post the message. Will always return {@link
+     *         CustomTabsService#RESULT_FAILURE_DISALLOWED} if the dynamic module has not been
+     *         loaded.
+     */
+    public int postMessage(String message) {
+        // Use of the postMessage API is disallowed when the module has not been loaded.
+        if (mDynamicModulePostMessageHandler == null) {
+            return CustomTabsService.RESULT_FAILURE_DISALLOWED;
+        }
+
+        return mDynamicModulePostMessageHandler.postMessageFromClientApp(message);
     }
 
     @Override
@@ -730,7 +784,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 webContentsStateOnLaunch, WebContentsState.NUM_ENTRIES);
 
-        mConnection.resetPostMessageHandlerForSession(mSession, webContents);
+        resetPostMessageHandlersForCurrentSession(webContents);
 
         return webContents;
     }
@@ -741,6 +795,14 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         AsyncTabParams asyncParams = AsyncTabParamsManager.remove(assignedTabId);
         if (asyncParams == null) return null;
         return asyncParams.getWebContents();
+    }
+
+    private void resetPostMessageHandlersForCurrentSession(WebContents newWebContents) {
+        mConnection.resetPostMessageHandlerForSession(mSession, newWebContents);
+
+        if (mDynamicModulePostMessageHandler != null) {
+            mDynamicModulePostMessageHandler.reset(newWebContents);
+        }
     }
 
     /**
@@ -1371,7 +1433,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             mMainTab = null;
             // mHasCreatedTabEarly == true => mMainTab != null in the rest of the code.
             mHasCreatedTabEarly = false;
-            mConnection.resetPostMessageHandlerForSession(mSession, null);
+            resetPostMessageHandlersForCurrentSession(null);
             tab.detachAndStartReparenting(intent, startActivityOptions, finalizeCallback);
         } else {
             // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
@@ -1502,6 +1564,38 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         @Override
         public void closeAllIncognitoTabs() {
             finishAndClose(false);
+        }
+    }
+
+    /**
+     * A {@link PostMessageBackend} which delegates incoming notifications to the {@link
+     * ActivityDelegate} from the dynamic module.
+     *
+     * <p>If the dynamic module is not loaded, we ignore incoming notifications and always return
+     * false.
+     */
+    private class ActivityDelegatePostMessageBackend implements PostMessageBackend {
+        @Override
+        public boolean onPostMessage(String message, Bundle extras) {
+            if (mModuleActivityDelegate != null) {
+                mModuleActivityDelegate.onPostMessage(message);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onNotifyMessageChannelReady(Bundle extras) {
+            if (mModuleActivityDelegate != null) {
+                mModuleActivityDelegate.onMessageChannelReady();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void onDisconnectChannel(Context appContext) {
+            // Nothing to do.
         }
     }
 

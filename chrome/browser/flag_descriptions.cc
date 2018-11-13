@@ -2305,6 +2305,12 @@ const char kCCTModuleCacheDescription[] =
     "Enables a cache for dynamically loaded modules in Chrome Custom Tabs. "
     "Under mild memory pressure the cache may be retained for some time";
 
+const char kCCTModulePostMessageName[] =
+    "Chrome Custom Tabs Module postMessage API";
+const char kCCTModulePostMessageDescription[] =
+    "Enables the postMessage API exposed to dynamically loaded modules in "
+    "Chrome Custom Tabs.";
+
 const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
