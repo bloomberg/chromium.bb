@@ -960,8 +960,6 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 }
 
 void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
-  LOG(ERROR) << "Lost UI shared context.";
-
   // Keep old resources around while we call the observers, but ensure that
   // new resources are created if needed.
   // Kill shared contexts for both threads in tandem so they are always in
@@ -1004,6 +1002,8 @@ GpuProcessTransportFactory::SharedVulkanContextProvider() {
 #endif
 
 void GpuProcessTransportFactory::OnContextLost() {
+  DLOG(ERROR) << "Lost UI shared context.";
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
