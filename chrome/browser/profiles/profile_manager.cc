@@ -54,9 +54,8 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -86,9 +85,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/stop_source.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -100,6 +97,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -347,14 +345,6 @@ bool IsProfileEphemeral(ProfileAttributesStorage* storage,
   ProfileAttributesEntry* entry = nullptr;
   return storage->GetProfileAttributesWithPath(profile_dir, &entry) &&
          entry->IsEphemeral();
-}
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-void SignOut(SigninManager* signin_manager) {
-  signin_manager->SignOutAndRemoveAllAccounts(
-      signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 #endif
 
@@ -1657,13 +1647,9 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
     return;
   }
 
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  AccountInfo account_info = account_tracker->GetAccountInfo(
-      signin_manager->GetAuthenticatedAccountId());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
@@ -1677,7 +1663,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       bool was_authenticated_status = entry->IsAuthenticated();
 #endif
-      // The ProfileAttributesStorage's info must match the Signin Manager.
+      // The ProfileAttributesStorage's info must match the Identity Manager.
       entry->SetAuthInfo(account_info.gaia, username);
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
@@ -1686,8 +1672,12 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
           !entry->IsAuthenticated()) {
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::UI},
-            base::BindOnce(&SignOut, SigninManager::FromSigninManagerBase(
-                                         signin_manager)));
+            base::BindOnce(
+                &identity::IdentityManager::ClearPrimaryAccount,
+                base::Unretained(identity_manager),
+                identity::IdentityManager::ClearAccountTokensAction::kRemoveAll,
+                signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
+                signin_metrics::SignoutDelete::IGNORE_METRIC));
       }
 #endif
       return;
