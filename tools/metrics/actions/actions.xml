@@ -17207,6 +17207,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromMachineLogon">
+  <owner>rogerta@chromium.org</owner>
+  <owner>tienmai@chromium.org</owner>
+  <description>
+    Record when a user signs in using a Windows machine's logon screen.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromManageCardsBubble">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>

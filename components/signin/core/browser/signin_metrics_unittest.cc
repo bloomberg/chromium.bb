@@ -106,6 +106,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "SaveCardBubble";
       case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
         return "ManageCardsBubble";
+      case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
+        return "MachineLogon";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

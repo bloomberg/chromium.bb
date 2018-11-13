@@ -153,6 +153,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_FORCE_SIGNIN_WARNING,
   ACCESS_POINT_SAVE_CARD_BUBBLE,
   ACCESS_POINT_MANAGE_CARDS_BUBBLE,
+  ACCESS_POINT_MACHINE_LOGON,
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -185,7 +186,11 @@ enum class Reason : int {
   REASON_UNLOCK,
   REASON_UNKNOWN_REASON,  // This should never have been used to get signin URL.
   REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT,
-  REASON_MAX,  // This must be last.
+  REASON_FETCH_LST_ONLY,  // Used to simply login and acquire a login scope
+                          // token without actually signing into any profiles on
+                          // Chrome. This allows the chrome signin page to work
+                          // in incognito mode.
+  REASON_MAX,             // This must be last.
 };
 
 // Enum values used for use with the "Signin.Reauth" histogram.

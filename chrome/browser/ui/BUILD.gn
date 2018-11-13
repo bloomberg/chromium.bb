@@ -2110,6 +2110,10 @@ jumbo_split_static_library("ui") {
     sources += [
       "network_profile_bubble.cc",
       "network_profile_bubble.h",
+      "startup/credential_provider_signin_dialog_win.cc",
+      "startup/credential_provider_signin_dialog_win.h",
+      "startup/credential_provider_signin_info_fetcher_win.cc",
+      "startup/credential_provider_signin_info_fetcher_win.h",
       "startup/default_browser_prompt_win.cc",
       "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
@@ -2172,6 +2176,7 @@ jumbo_split_static_library("ui") {
       "//ui/views/controls/webview",
     ]
     deps += [
+      "//chrome/credential_provider/common:common_constants",
       "//components/search_engines",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",

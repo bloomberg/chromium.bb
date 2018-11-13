@@ -77,6 +77,8 @@
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -109,16 +111,18 @@ enum LaunchMode {
   LM_SHORTCUT_TASKBAR = 8,      // Launched from the taskbar.
   LM_USER_EXPERIMENT = 9,  // Launched after acceptance of a user experiment.
   LM_OTHER_OS = 10,        // Result bucket for OSes with no coverage here.
-  LM_MAC_UNDOCKED_DISK_LAUNCH = 11,   // Undocked launch from disk.
-  LM_MAC_DOCKED_DISK_LAUNCH = 12,     // Docked launch from disk.
-  LM_MAC_UNDOCKED_DMG_LAUNCH = 13,    // Undocked launch from a dmg.
-  LM_MAC_DOCKED_DMG_LAUNCH = 14,      // Docked launch from a dmg.
-  LM_MAC_DOCK_STATUS_ERROR = 15,      // Error determining dock status.
-  LM_MAC_DMG_STATUS_ERROR = 16,       // Error determining dmg status.
-  LM_MAC_DOCK_DMG_STATUS_ERROR = 17,  // Error determining dock and dmg status.
-  LM_WIN_PLATFORM_NOTIFICATION = 18,  // Launched from toast notification
-                                      // activation on Windows.
-  LM_SHORTCUT_START_MENU = 19,        // A Windows Start Menu shortcut.
+  LM_MAC_UNDOCKED_DISK_LAUNCH = 11,    // Undocked launch from disk.
+  LM_MAC_DOCKED_DISK_LAUNCH = 12,      // Docked launch from disk.
+  LM_MAC_UNDOCKED_DMG_LAUNCH = 13,     // Undocked launch from a dmg.
+  LM_MAC_DOCKED_DMG_LAUNCH = 14,       // Docked launch from a dmg.
+  LM_MAC_DOCK_STATUS_ERROR = 15,       // Error determining dock status.
+  LM_MAC_DMG_STATUS_ERROR = 16,        // Error determining dmg status.
+  LM_MAC_DOCK_DMG_STATUS_ERROR = 17,   // Error determining dock and dmg status.
+  LM_WIN_PLATFORM_NOTIFICATION = 18,   // Launched from toast notification
+                                       // activation on Windows.
+  LM_SHORTCUT_START_MENU = 19,         // A Windows Start Menu shortcut.
+  LM_CREDENTIAL_PROVIDER_SIGNIN = 20,  // Started as a logon stub for the Google
+                                       // Credential Provider for Windows.
 };
 
 // Returns a LaunchMode value if one can be determined with low overhead, or
@@ -318,6 +322,17 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       return true;
     }
     return false;
+  }
+  // If being started for credential provider logon purpose, only show the
+  // signin page.
+  if (command_line_.HasSwitch(credential_provider::kGcpwSigninSwitch)) {
+    DCHECK_EQ(Profile::ProfileType::INCOGNITO_PROFILE,
+              profile_->GetProfileType());
+    // NOTE: All launch urls are ignored when running with --gcpw-logon since
+    // this mode only loads Google's sign in page.
+    StartGCPWSignin(command_line_, profile_);
+    RecordLaunchModeHistogram(LM_CREDENTIAL_PROVIDER_SIGNIN);
+    return true;
   }
 #endif  // defined(OS_WIN)
 

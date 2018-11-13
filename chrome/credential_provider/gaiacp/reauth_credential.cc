@@ -5,7 +5,7 @@
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 
 #include "base/stl_util.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
