@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
 
-// An inforbar with an optional message, icon, two action buttons, and a switch.
+// An infobar with an optional message, icon, two action buttons, and a switch.
 @interface ConfirmInfoBarView : BidiContainerView
 
 // Label text with links initialized with |stringAsLink:|.

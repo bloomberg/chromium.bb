@@ -941,6 +941,8 @@ UIImage* InfoBarCloseImage() {
                              tag:tag1
                           target:target
                           action:action];
+  [button1_
+      setAccessibilityIdentifier:kConfirmInfobarButton1AccessibilityIdentifier];
   [self addSubview:button1_];
 
   button2_ = [self infoBarButton:title2
@@ -949,6 +951,8 @@ UIImage* InfoBarCloseImage() {
                              tag:tag2
                           target:target
                           action:action];
+  [button2_
+      setAccessibilityIdentifier:kConfirmInfobarButton2AccessibilityIdentifier];
   [self addSubview:button2_];
 }
 

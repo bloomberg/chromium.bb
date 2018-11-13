@@ -5,6 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_
 
+#import <Foundation/Foundation.h>
+
 extern const int kInfobarBackgroundColor;
+
+// a11y identifier so that automation can tap on either infobar button
+extern NSString* const kConfirmInfobarButton1AccessibilityIdentifier;
+extern NSString* const kConfirmInfobarButton2AccessibilityIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONSTANTS_H_
