@@ -32,17 +32,30 @@ def ParseOrderfile(filename):
   with open(filename, 'r') as f:
     lines = [line.strip() for line in f]
 
-  for entry in lines:
-    # Keep only sections, not symbols (symbols don't contain '.').
-    # We could only keep symbols, but then old orderfiles would not be parsed.
-    if '.' not in entry:
-      continue
-    # Example: .text.startup.BLA
-    symbol_name = entry[entry.rindex('.'):]
-    if symbol_name in already_seen or symbol_name == '*' or entry == '.text':
-      continue
-    already_seen.add(symbol_name)
-    symbols.append(symbol_name)
+  # The (new) orderfiles that are oriented at the LLD linker contain only symbol
+  # names (i.e. not prefixed with '.text'). The (old) orderfiles aimed at the
+  # Gold linker were patched by duplicating symbols prefixed with '.text.hot.',
+  # '.text.unlikely.' and '.text.', hence the appearance of '.text' on the first
+  # symbol indicates such a legacy orderfile.
+  if not lines[0].startswith('.text.'):
+    for entry in lines:
+      symbol_name = entry.rstrip('\n')
+      assert symbol_name != '*' and symbol_name != '.text'
+      already_seen.add(symbol_name)
+      symbols.append(symbol_name)
+  else:
+    for entry in lines:
+      # Keep only (input) section names, not symbol names (only rare special
+      # symbols contain '.'). We could only keep symbols, but then some even
+      # older orderfiles would not be parsed.
+      if '.' not in entry:
+        continue
+      # Example: .text.startup.BLA
+      symbol_name = entry[entry.rindex('.'):]
+      if symbol_name in already_seen or symbol_name == '*' or entry == '.text':
+        continue
+      already_seen.add(symbol_name)
+      symbols.append(symbol_name)
   return symbols
 
 
@@ -167,6 +180,8 @@ def CreateArgumentParser():
   parser = argparse.ArgumentParser()
   parser.add_argument('--first', help='First orderfile')
   parser.add_argument('--second', help='Second orderfile')
+  parser.add_argument('--keep', default=False, action='store_true',
+                      help='Keep the downloaded orderfiles')
   parser.add_argument('--from-commit', help='Analyze the difference in the '
                       'orderfile from an orderfile bot commit.')
   parser.add_argument('--csv-output', help='Appends the result to a CSV file.')
@@ -190,8 +205,9 @@ def main():
           f.write('%s,%d,%d,%d,%d,%f\n' % tuple(
               [args.from_commit] + list(result)))
     finally:
-      os.remove(first)
-      os.remove(second)
+      if not args.keep:
+        os.remove(first)
+        os.remove(second)
   else:
     return False
   return True
