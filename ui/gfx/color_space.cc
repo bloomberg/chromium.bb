@@ -375,6 +375,7 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(MatrixID, BT2020_NCL)
     PRINT_ENUM_CASE(MatrixID, BT2020_CL)
     PRINT_ENUM_CASE(MatrixID, YDZDX)
+    PRINT_ENUM_CASE(MatrixID, GBR)
   }
   ss << ", range:";
   switch (range_) {
@@ -883,6 +884,14 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
       matrix->setRowMajorf(data);
       return;
     }
+    case ColorSpace::MatrixID::GBR: {
+      float data[16] = {0.0f, 1.0f, 0.0f, 0.0f,  // G
+                        0.0f, 0.0f, 1.0f, 0.0f,  // B
+                        1.0f, 0.0f, 0.0f, 0.0f,  // R
+                        0.0f, 0.0f, 0.0f, 1.0f};
+      matrix->setRowMajorf(data);
+      return;
+    }
   }
   float Kg = 1.0f - Kr - Kb;
   float u_m = 0.5f / (1.0f - Kb);
@@ -909,6 +918,7 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
   }
   switch (matrix_) {
     case MatrixID::RGB:
+    case MatrixID::GBR:
     case MatrixID::INVALID:
     case MatrixID::YCOCG:
       matrix->setScale(255.0f/219.0f, 255.0f/219.0f, 255.0f/219.0f);
