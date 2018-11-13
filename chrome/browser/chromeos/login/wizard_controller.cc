@@ -1018,7 +1018,9 @@ void WizardController::OnEnrollmentDone() {
   // Restart to make the login page pick up the policy changes resulting from
   // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
   if (prescribed_enrollment_config_.mode ==
-      policy::EnrollmentConfig::MODE_RECOVERY) {
+          policy::EnrollmentConfig::MODE_RECOVERY ||
+      prescribed_enrollment_config_.mode ==
+          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
     chrome::AttemptRestart();
   }
 
@@ -2105,6 +2107,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
   // Determine the effective enrollment configuration. If there is a valid
   // prescribed configuration, use that. If not, figure out which variant of
   // manual enrollment is taking place.
+  // If OOBE Configuration exits, it might also affect enrollment configuration.
   policy::EnrollmentConfig effective_config = prescribed_enrollment_config_;
   if (!effective_config.should_enroll() ||
       (force_interactive && !effective_config.should_enroll_interactively())) {
@@ -2113,6 +2116,13 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
             ? policy::EnrollmentConfig::MODE_MANUAL
             : policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT;
   }
+
+  // If chrome version is rolled back via policy, the device is actually
+  // enrolled but some enrollment-flow steps still need to be taken.
+  auto* restore_after_rollback_value = oobe_configuration_.FindKeyOfType(
+      configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
+  if (restore_after_rollback_value && restore_after_rollback_value->GetBool())
+    effective_config.mode = policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK;
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetParameters(effective_config, shark_controller_.get());

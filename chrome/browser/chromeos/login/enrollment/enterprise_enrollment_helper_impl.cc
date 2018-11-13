@@ -130,6 +130,74 @@ void EnterpriseEnrollmentHelperImpl::EnrollForOfflineDemo() {
   DoEnroll(policy::DMAuth::NoAuth());
 }
 
+void EnterpriseEnrollmentHelperImpl::RestoreAfterRollback() {
+  CHECK_EQ(enrollment_config_.mode,
+           policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK);
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DCHECK(connector->IsCloudManaged());
+
+  auto* manager = connector->GetDeviceCloudPolicyManager();
+
+  if (manager->core()->client()) {
+    RestoreAfterRollbackInitialized();
+  } else {
+    manager->AddDeviceCloudPolicyManagerObserver(this);
+  }
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerConnected() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  connector->GetDeviceCloudPolicyManager()
+      ->RemoveDeviceCloudPolicyManagerObserver(this);
+  RestoreAfterRollbackInitialized();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerDisconnected() {}
+
+void EnterpriseEnrollmentHelperImpl::RestoreAfterRollbackInitialized() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  auto* manager = connector->GetDeviceCloudPolicyManager();
+  auto* client = manager->core()->client();
+  DCHECK(client);
+
+  device_account_initializer_ =
+      std::make_unique<policy::DeviceAccountInitializer>(client, this);
+  device_account_initializer_->FetchToken();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenFetched(
+    bool empty_token) {
+  if (empty_token) {
+    status_consumer()->OnRestoreAfterRollbackCompleted();
+    return;
+  }
+  device_account_initializer_->StoreToken();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenStored() {
+  status_consumer()->OnRestoreAfterRollbackCompleted();
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenError(
+    policy::EnrollmentStatus status) {
+  OnEnrollmentFinished(status);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
+    policy::DeviceManagementStatus status) {
+  OnEnrollmentFinished(
+      policy::EnrollmentStatus::ForRobotAuthFetchError(status));
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
+}
+
 void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
   if (oauth_status_ != OAUTH_NOT_STARTED) {
     // Do not revoke the additional token if enrollment has finished

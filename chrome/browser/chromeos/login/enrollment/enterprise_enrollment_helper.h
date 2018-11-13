@@ -78,6 +78,10 @@ class EnterpriseEnrollmentHelper {
     // Called when device attribute upload finishes. |success| indicates
     // whether it is successful or not.
     virtual void OnDeviceAttributeUploadCompleted(bool success) = 0;
+
+    // Called when steps required to fully restore enrollment steps after
+    // version rollback are completed.
+    virtual void OnRestoreAfterRollbackCompleted() = 0;
   };
 
   // Factory method. Caller takes ownership of the returned object.
@@ -125,6 +129,12 @@ class EnterpriseEnrollmentHelper {
   // into enrollment without authentication -- and applies policies which are
   // stored locally.
   virtual void EnrollForOfflineDemo() = 0;
+
+  // When chrome version is rolled back on the device via policy, the enrollment
+  // information is persisted (install attributes, DM token), but some steps
+  // should still be taken (e.g. create robot accounts on the device) as the
+  // stateful partition is reset.
+  virtual void RestoreAfterRollback() = 0;
 
   // Continue enrollment using license |type|.
   virtual void UseLicenseType(policy::LicenseType type) = 0;

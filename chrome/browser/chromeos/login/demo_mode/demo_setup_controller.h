@@ -206,6 +206,7 @@ class DemoSetupController
   void OnDeviceAttributeUpdatePermission(bool granted) override;
   void OnMultipleLicensesAvailable(
       const EnrollmentLicenseMap& licenses) override;
+  void OnRestoreAfterRollbackCompleted() override;
 
   void SetCrOSComponentLoadErrorForTest(
       component_updater::CrOSComponentManager::Error error);

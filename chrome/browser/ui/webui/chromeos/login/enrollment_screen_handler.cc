@@ -82,6 +82,7 @@ std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
     case policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
       return kEnrollmentModeUIForced;
     case policy::EnrollmentConfig::MODE_RECOVERY:
+    case policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK:
       return kEnrollmentModeUIRecovery;
   }
 

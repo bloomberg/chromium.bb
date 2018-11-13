@@ -676,6 +676,10 @@ void DemoSetupController::OnDeviceAttributeUpdatePermission(bool granted) {
   NOTREACHED();
 }
 
+void DemoSetupController::OnRestoreAfterRollbackCompleted() {
+  NOTREACHED();
+}
+
 void DemoSetupController::SetCrOSComponentLoadErrorForTest(
     component_updater::CrOSComponentManager::Error error) {
   component_error_for_tests_ = error;
