@@ -340,7 +340,7 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
              response_body_mode_ ==
                  oldhttp::ResponseBodyMode::BUFFER_OR_STREAM);
       // In socket mode, attempt to shut down the socket and close it.
-      write_socket_.write(ZX_SOCKET_SHUTDOWN_WRITE, nullptr, 0, nullptr);
+      write_socket_.shutdown(ZX_SOCKET_SHUTDOWN_WRITE);
       write_socket_ = zx::socket();
     } else {
       DCHECK_EQ(response_body_mode_, oldhttp::ResponseBodyMode::BUFFER);
