@@ -167,6 +167,7 @@ bool IconLabelBubbleView::ShouldShowLabel() const {
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
+  SetAccessibleName(label);
   label_->SetText(label);
   separator_view_->SetVisible(ShouldShowSeparator());
 }
@@ -287,17 +288,6 @@ void IconLabelBubbleView::Layout() {
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   suppress_button_release_ = IsBubbleShowing();
   return Button::OnMousePressed(event);
-}
-
-void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  label_->GetAccessibleNodeData(node_data);
-  if (node_data->GetStringAttribute(ax::mojom::StringAttribute::kName)
-          .empty()) {
-    // Fallback name when there is no accessible name from the label.
-    base::string16 tooltip_text;
-    GetTooltipText(gfx::Point(), &tooltip_text);
-    node_data->SetName(tooltip_text);
-  }
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(

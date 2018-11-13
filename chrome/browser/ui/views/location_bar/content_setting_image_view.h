@@ -70,8 +70,6 @@ class ContentSettingImageView : public IconLabelBubbleView,
   // IconLabelBubbleView:
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;

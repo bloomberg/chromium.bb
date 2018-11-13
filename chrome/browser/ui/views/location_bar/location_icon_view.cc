@@ -52,13 +52,6 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
   return IconLabelBubbleView::OnMouseDragged(event);
 }
 
-bool LocationIconView::GetTooltipText(const gfx::Point& p,
-                                      base::string16* tooltip) const {
-  if (show_tooltip_)
-    *tooltip = l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON);
-  return show_tooltip_;
-}
-
 SkColor LocationIconView::GetTextColor() const {
   return delegate_->GetSecurityChipColor(
       delegate_->GetLocationBarModel()->GetSecurityLevel(false));
@@ -217,7 +210,9 @@ void LocationIconView::Update() {
 
   bool is_editing_or_empty = delegate_->IsEditingOrEmpty();
   // The tooltip should be shown if we are not editing or empty.
-  show_tooltip_ = !is_editing_or_empty;
+  SetTooltipText(is_editing_or_empty
+                     ? base::string16()
+                     : l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 
   // If the omnibox is empty or editing, the user should not be able to left
   // click on the icon. As such, the icon should not show a highlight or be
