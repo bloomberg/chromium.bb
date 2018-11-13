@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view_controller.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -25,6 +26,7 @@
 @implementation SadTabCoordinator
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
+@synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize viewController = _viewController;
 @synthesize repeatedFailure = _repeatedFailure;
 
@@ -34,6 +36,7 @@
 
   _viewController = [[SadTabViewController alloc] init];
   _viewController.delegate = self;
+  _viewController.overscrollDelegate = self.overscrollDelegate;
   _viewController.offTheRecord = self.browserState->IsOffTheRecord();
   _viewController.repeatedFailure = _repeatedFailure;
 
@@ -52,6 +55,12 @@
   [_viewController.view removeFromSuperview];
   [_viewController removeFromParentViewController];
   _viewController = nil;
+}
+
+- (void)setOverscrollDelegate:
+    (id<OverscrollActionsControllerDelegate>)delegate {
+  _viewController.overscrollDelegate = delegate;
+  _overscrollDelegate = delegate;
 }
 
 #pragma mark - SadTabViewDelegate

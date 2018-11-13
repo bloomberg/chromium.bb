@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 class GURL;
+@protocol OverscrollActionsControllerDelegate;
 @class SadTabViewController;
 
 @protocol SadTabViewControllerDelegate<NSObject>
@@ -27,6 +28,11 @@ class GURL;
 @interface SadTabViewController : UIViewController
 
 @property(nonatomic, weak) id<SadTabViewControllerDelegate> delegate;
+
+// Required to support Overscroll Actions UI, which is displayed when Sad Tab is
+// pulled down.
+@property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
+    overscrollDelegate;
 
 // YES if page load for this URL has failed more than once.
 @property(nonatomic, assign) BOOL repeatedFailure;

@@ -10,6 +10,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol OverscrollActionsControllerDelegate;
 @class SadTabCoordinator;
 
 @protocol SadTabCoordinatorDelegate
@@ -23,6 +24,11 @@
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 @property(nonatomic, weak) id<SadTabCoordinatorDelegate> delegate;
+
+// Required to support Overscroll Actions UI, which is displayed when Sad Tab is
+// pulled down.
+@property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
+    overscrollDelegate;
 
 @property(nonatomic, readonly) UIViewController* viewController;
 

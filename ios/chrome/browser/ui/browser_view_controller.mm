@@ -2413,6 +2413,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                       browserState:_browserState];
     sadTabCoordinator.dispatcher = self.dispatcher;
     sadTabCoordinator.delegate = self;
+    sadTabCoordinator.overscrollDelegate = self;
     _sadTabCoordinator = sadTabCoordinator;
   } else {
     SadTabLegacyCoordinator* sadTabCoordinator =
