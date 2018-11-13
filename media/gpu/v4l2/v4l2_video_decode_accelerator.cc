@@ -515,16 +515,8 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
   OutputRecord& output_record = output_buffer_map_[buffer_index];
   DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
   DCHECK(!output_record.egl_fence);
-  DCHECK_EQ(output_record.state, kFree);
 
   output_record.egl_image = egl_image;
-  // Drop our reference so the buffer returns to the queue and can be reused.
-  output_wait_map_.erase(picture_buffer_id);
-
-  if (decoder_state_ != kChangingResolution) {
-    Enqueue();
-    ScheduleDecodeBufferTaskIfNeeded();
-  }
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
@@ -654,19 +646,25 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     }
 
     size_t index = iter - output_buffer_map_.begin();
-    child_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                       weak_this_, index, picture_buffer_id,
-                       base::Passed(&dmabuf_fds), iter->texture_id,
-                       egl_image_size_, egl_image_format_fourcc_));
-  } else {
-    // No need for an EGLImage, start using this buffer now.
-    output_wait_map_.erase(picture_buffer_id);
-    if (decoder_state_ != kChangingResolution) {
-      Enqueue();
-      ScheduleDecodeBufferTaskIfNeeded();
+    // If we are not using an image processor, create the EGL image ahead of
+    // time since we already have its DMABUF fds. It is guaranteed that
+    // CreateEGLImageFor will run before the picture is passed to the client
+    // because the picture will need to be cleared on the child thread first.
+    if (!image_processor_) {
+      child_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
+                         weak_this_, index, picture_buffer_id,
+                         base::Passed(&dmabuf_fds), iter->texture_id,
+                         egl_image_size_, egl_image_format_fourcc_));
     }
+  }
+
+  // The buffer can now be used for decoding
+  output_wait_map_.erase(picture_buffer_id);
+  if (decoder_state_ != kChangingResolution) {
+    Enqueue();
+    ScheduleDecodeBufferTaskIfNeeded();
   }
 }
 
@@ -2621,9 +2619,26 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   DCHECK_EQ(output_record.state, kAtProcessor);
   DCHECK_NE(output_record.picture_id, -1);
 
-  image_processor_bitstream_buffer_ids_.pop();
+  // If the picture has not been cleared yet, this means it is the first time
+  // we are seeing this buffer from the image processor. Schedule a call to
+  // CreateEGLImageFor before the picture is sent to the client. It is
+  // guaranteed that CreateEGLImageFor will complete before the picture is sent
+  // to the client as both events happen on the child thread due to the picture
+  // uncleared status.
+  if (output_record.texture_id != 0 && !output_record.cleared) {
+    DCHECK(frame->HasDmaBufs());
+    child_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
+            output_buffer_index, output_record.picture_id,
+            media::DuplicateFDs(frame->DmabufFds()), output_record.texture_id,
+            egl_image_size_, egl_image_format_fourcc_));
+  }
+
   SendBufferToClient(output_buffer_index, bitstream_buffer_id);
   // Flush or resolution change may be waiting image processor to finish.
+  image_processor_bitstream_buffer_ids_.pop();
   if (image_processor_bitstream_buffer_ids_.empty()) {
     NotifyFlushDoneIfNeeded();
     if (decoder_state_ == kChangingResolution)
