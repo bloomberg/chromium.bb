@@ -76,6 +76,9 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
 
   IndexedDBFactory* GetIDBFactory();
 
+  // Called by StoragePartitionImpl to clear session-only data.
+  void Shutdown();
+
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
