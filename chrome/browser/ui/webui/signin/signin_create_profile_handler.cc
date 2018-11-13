@@ -230,9 +230,11 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
       base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
                  weak_ptr_factory_.GetWeakPtr()),
       false,  // Don't create a window if one already exists.
-      true,  // Create a first run window.
-      profile,
-      status);
+      true,   // Create a first run window.
+      false,  // There is no need to unblock all extensions because we only open
+              // browser window if the Profile is not locked. Hence there is no
+              // extension blocked.
+      profile, status);
 }
 
 void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {
