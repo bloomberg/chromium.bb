@@ -275,7 +275,8 @@ class AutofillAssistantUiDelegate {
         mOverlay = mFullContainer.findViewById(R.id.overlay);
         mOverlay.setOnClickListener(unusedView -> mClient.onClickOverlay());
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
-        mTouchEventFilter.init(client, activity.getFullscreenManager());
+        mTouchEventFilter.init(client, activity.getFullscreenManager(),
+                activity.getActivityTab().getWebContents());
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());
