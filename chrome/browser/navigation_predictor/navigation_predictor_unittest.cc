@@ -59,8 +59,6 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
         mojo::MakeRequest(&predictor_service_), main_rfh());
   }
 
-  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
-
   // Helper function to generate mojom metrics.
   blink::mojom::AnchorElementMetricsPtr CreateMetricsPtr(
       const std::string& source_url,

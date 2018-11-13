@@ -176,8 +176,6 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
         kManifestUrlLow, blink::mojom::EngagementLevel::LOW);
   }
 
-  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
-
   blink::mojom::ShareService* share_service() const {
     return share_service_.get();
   }

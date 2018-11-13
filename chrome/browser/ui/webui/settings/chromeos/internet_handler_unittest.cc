@@ -53,8 +53,6 @@ class InternetHandlerTest : public BrowserWithTestWindowTest {
         fake_tracker_.get());
   }
 
-  void TearDown() override { BrowserWithTestWindowTest::TearDown(); }
-
   void RequestGmsCoreNotificationsDisabledDeviceNames() {
     handler_->RequestGmsCoreNotificationsDisabledDeviceNames(nullptr);
   }

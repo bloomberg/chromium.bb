@@ -49,8 +49,6 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { ShillClientUnittestBase::TearDown(); }
-
   MOCK_METHOD0(MockSuccess, void());
   MOCK_METHOD1(MockSuccessWithWarning, void(const std::string& warning));
   static void Failure(const std::string& error_name,

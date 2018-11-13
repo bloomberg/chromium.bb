@@ -99,8 +99,6 @@ class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
         profile(), base::BindRepeating(&BuildLanguageSettingsPrivateDelegate));
   }
 
-  void TearDown() override { ExtensionServiceTestBase::TearDown(); }
-
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
 };

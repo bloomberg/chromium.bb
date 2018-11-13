@@ -100,8 +100,6 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->StartAcceptingConnections();
   }
 
-  void TearDown() override { InProcessBrowserTest::TearDown(); }
-
   void TearDownOnMainThread() override {
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
     InProcessBrowserTest::TearDownOnMainThread();
