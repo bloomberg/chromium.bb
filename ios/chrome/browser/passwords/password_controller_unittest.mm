@@ -219,8 +219,7 @@ class PasswordControllerTest : public ChromeWebTest {
           [[FormInputAccessoryMediator alloc] initWithConsumer:nil
                                                   webStateList:NULL];
       [accessoryMediator_ injectWebState:web_state()];
-      [accessoryMediator_
-          injectProviders:@[ [suggestionController_ accessoryViewProvider] ]];
+      [accessoryMediator_ injectProviders:@[ suggestionController_ ]];
     }
   }
 

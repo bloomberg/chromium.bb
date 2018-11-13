@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
+#import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -77,7 +77,7 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 
 @implementation FormSuggestionLabel {
   // Client of this view.
-  __weak id<FormSuggestionViewClient> client_;
+  __weak id<FormSuggestionClient> client_;
   FormSuggestion* suggestion_;
   BOOL userInteractionEnabled_;
 }
@@ -86,7 +86,7 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
                      index:(NSUInteger)index
     userInteractionEnabled:(BOOL)userInteractionEnabled
             numSuggestions:(NSUInteger)numSuggestions
-                    client:(id<FormSuggestionViewClient>)client {
+                    client:(id<FormSuggestionClient>)client {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     suggestion_ = suggestion;

@@ -13,11 +13,18 @@ namespace autofill {
 extern CGFloat const kInputAccessoryHeight;
 }  // namespace autofill
 
+@class ManualFillAccessoryViewController;
+
 // Creates and manages a custom input accessory view while the user is
 // interacting with a form. Also handles hiding and showing the default
 // accessory view elements.
 @interface FormInputAccessoryViewController
     : NSObject<FormInputAccessoryConsumer>
+
+// The manual fill accessory view controller to add at the end of the
+// suggestions.
+@property(nonatomic, weak)
+    ManualFillAccessoryViewController* manualFillAccessoryViewController;
 
 // Presents a view above the keyboard.
 - (void)presentView:(UIView*)view;

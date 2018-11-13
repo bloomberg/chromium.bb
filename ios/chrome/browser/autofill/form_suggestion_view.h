@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class FormSuggestion;
-@protocol FormSuggestionViewClient;
+@protocol FormSuggestionClient;
 
 // A scrollable view for displaying user-selectable autofill form suggestions.
 @interface FormSuggestionView : UIScrollView<UIInputViewAudioFeedback>
@@ -21,7 +21,7 @@
 
 // Initializes with |frame| and |client| to show |suggestions|.
 - (instancetype)initWithFrame:(CGRect)frame
-                       client:(id<FormSuggestionViewClient>)client
+                       client:(id<FormSuggestionClient>)client
                   suggestions:(NSArray<FormSuggestion*>*)suggestions;
 
 @end

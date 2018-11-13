@@ -8,6 +8,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -106,10 +107,21 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 #pragma mark - FormInputAccessoryConsumer
 
-- (void)showCustomInputAccessoryView:(UIView*)view
-                  navigationDelegate:
-                      (id<FormInputAccessoryViewDelegate>)navigationDelegate {
-  DCHECK(view);
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
+                suggestionClient:(id<FormSuggestionClient>)suggestionClient
+              navigationDelegate:
+                  (id<FormInputAccessoryViewDelegate>)navigationDelegate {
+  FormSuggestionView* formSuggestionView =
+      [[FormSuggestionView alloc] initWithFrame:CGRectZero
+                                         client:suggestionClient
+                                    suggestions:suggestions];
+
+  // If Manual Fallback is enabled, add its view after the suggestions.
+  if (autofill::features::IsPasswordManualFallbackEnabled()) {
+    formSuggestionView.trailingView =
+        self.manualFillAccessoryViewController.view;
+  }
+
   if (IsIPadIdiom()) {
     // On iPad, there's no inputAccessoryView available, so we attach the custom
     // view directly to the keyboard view instead.
@@ -127,8 +139,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     if (!autofill::features::IsPasswordManualFallbackEnabled()) {
       // If this is a form suggestion view and no suggestions have been
       // triggered yet, don't show the custom view.
-      FormSuggestionView* formSuggestionView =
-          base::mac::ObjCCast<FormSuggestionView>(view);
       if (formSuggestionView) {
         int numSuggestions = [[formSuggestionView suggestions] count];
         if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
@@ -139,7 +149,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       _suggestionsHaveBeenShown = YES;
     }
     self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithCustomView:view];
+    [self.customAccessoryView setUpWithCustomView:formSuggestionView];
     [self addCustomAccessoryViewIfNeeded];
   } else {
     // On iPhone, the custom view replaces the default UI of the
@@ -147,12 +157,13 @@ CGFloat const kInputAccessoryHeight = 44.0f;
     [self restoreOriginalInputAccessoryView];
     self.customAccessoryView = [[FormInputAccessoryView alloc] init];
     [self.customAccessoryView setUpWithNavigationDelegate:navigationDelegate
-                                               customView:view];
+                                               customView:formSuggestionView];
     [self addCustomAccessoryViewIfNeeded];
   }
 }
 
 - (void)restoreOriginalKeyboardView {
+  [self.manualFillAccessoryViewController reset];
   [self restoreOriginalInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
   self.keyboardReplacementView = nil;
