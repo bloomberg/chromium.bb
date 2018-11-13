@@ -3051,6 +3051,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="CVC fix flow ended, navigated away from page while prompt hidden"/>
   <int value="13"
       label="CVC fix flow dismissed, user clicked a legal message link"/>
+  <int value="14" label="Omnibox icon shown, but not bubble (max strikes)"/>
 </enum>
 
 <enum name="AutofillSaveType">

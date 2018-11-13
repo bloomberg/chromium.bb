@@ -635,7 +635,13 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE:
     case BubbleType::LOCAL_SAVE:
-      // TODO(crbug/884817): Log metrics for "bubble not shown".
+      AutofillMetrics::LogSaveCardPromptMetric(
+          AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, is_upload_save_,
+          is_reshow_, should_request_name_from_user_,
+          should_request_expiration_date_from_user_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState),
+          GetSecurityLevel());
       break;
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:
