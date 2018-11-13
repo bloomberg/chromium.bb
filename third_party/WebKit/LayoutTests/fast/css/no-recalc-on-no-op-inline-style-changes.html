@@ -8,8 +8,7 @@ test(function () {
   if (!window.internals)
     assert_unreached('This test requires window.internals.');
 
-  assert_greater_than(internals.updateStyleAndReturnAffectedElementCount(), 1);
-
+  element.offsetTop;
   element.style.top = "0px";
   assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
 
