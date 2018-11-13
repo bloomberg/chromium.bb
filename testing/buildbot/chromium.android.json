@@ -16776,6 +16776,10 @@
     ]
   },
   "android-cronet-arm-dbg": {
+    "additional_compile_targets": [
+      "cronet_package",
+      "cronet_perf_test_apk"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -17081,7 +17085,11 @@
       }
     ]
   },
-  "android-cronet-arm-rel": {},
+  "android-cronet-arm-rel": {
+    "additional_compile_targets": [
+      "cronet_package"
+    ]
+  },
   "android-cronet-arm64-dbg": {
     "additional_compile_targets": [
       "cronet_package",

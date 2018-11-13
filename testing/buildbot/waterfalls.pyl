@@ -340,6 +340,10 @@
         },
       },
       'android-cronet-arm-dbg': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+        ],
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
         },
@@ -354,7 +358,11 @@
         },
         'os_type': 'android',
       },
-      'android-cronet-arm-rel': {},
+      'android-cronet-arm-rel': {
+        'additional_compile_targets': [
+          'cronet_package',
+        ],
+      },
       'android-cronet-arm64-dbg': {
         'additional_compile_targets': [
           'cronet_package',
