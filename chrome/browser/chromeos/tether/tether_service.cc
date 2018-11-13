@@ -29,7 +29,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
-#include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -147,17 +146,8 @@ TetherService::TetherService(
       gms_core_notifications_state_tracker_(
           std::make_unique<
               chromeos::tether::GmsCoreNotificationsStateTrackerImpl>()),
-      remote_device_provider_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : cryptauth::RemoteDeviceProviderImpl::Factory::NewInstance(
-                    cryptauth_service->GetCryptAuthDeviceManager(),
-                    cryptauth_service->GetAccountId(),
-                    cryptauth_service->GetCryptAuthEnrollmentManager()
-                        ->GetUserPrivateKey())),
       tether_host_fetcher_(
           chromeos::tether::TetherHostFetcherImpl::Factory::NewInstance(
-              remote_device_provider_.get(),
               device_sync_client_,
               multidevice_setup_client_)),
       timer_(std::make_unique<base::OneShotTimer>()),
@@ -330,7 +320,6 @@ void TetherService::Shutdown() {
   tether_component_.reset();
 
   tether_host_fetcher_.reset();
-  remote_device_provider_.reset();
   notification_presenter_.reset();
 }
 
