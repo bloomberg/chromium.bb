@@ -74,6 +74,20 @@ public class BoundaryInterfaceReflectionUtil {
     }
 
     /**
+     * Plural version of {@link #createInvocationHandlerFor(Object)}.
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static InvocationHandler[] createInvocationHandlersForArray(final Object[] delegates) {
+        if (delegates == null) return null;
+
+        InvocationHandler[] handlers = new InvocationHandler[delegates.length];
+        for (int i = 0; i < handlers.length; i++) {
+            handlers[i] = createInvocationHandlerFor(delegates[i]);
+        }
+        return handlers;
+    }
+
+    /**
      * Assuming that the given InvocationHandler was created in the current classloader and is an
      * InvocationHandlerWithDelegateGetter, return the object the InvocationHandler delegates its
      * method calls to.
