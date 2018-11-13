@@ -3961,7 +3961,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return 0;
   }
   return [self primaryToolbarHeightWithInset] +
-         CGRectGetMaxY(self.tabStripView.frame);
+         ([self canShowTabStrip] ? self.tabStripView.frame.size.height : 0.0) +
+         (self.usesFullscreenContainer ? self.headerOffset : 0.0);
 }
 
 - (CGFloat)bottomToolbarHeight {
