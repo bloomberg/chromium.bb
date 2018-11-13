@@ -180,12 +180,9 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
   _signinManager->OnExternalSigninCompleted(info.email);
 
   [self reloadCredentials];
-  _profileSyncService->RequestStart();
-  _profileSyncService->SetFirstSetupComplete();
 }
 
 - (void)stopSyncAndClearIdentity {
-  _profileSyncService->RequestStop(syncer::SyncService::CLEAR_DATA);
   _signinManager->SignOut(
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);

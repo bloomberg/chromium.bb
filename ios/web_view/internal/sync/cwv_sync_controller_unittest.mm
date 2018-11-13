@@ -133,9 +133,6 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
         }]
               completionHandler:[OCMArg any]];
 
-    EXPECT_CALL(*profile_sync_service_, RequestStart());
-    EXPECT_CALL(*profile_sync_service_, SetFirstSetupComplete());
-
     CWVIdentity* identity =
         [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
                                   fullName:@"John Doe"
@@ -189,8 +186,6 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
 
 // Verifies CWVSyncController properly maintains the current syncing user.
 TEST_F(CWVSyncControllerTest, CurrentIdentity) {
-  EXPECT_CALL(*profile_sync_service_, RequestStart());
-  EXPECT_CALL(*profile_sync_service_, SetFirstSetupComplete());
   CWVIdentity* identity =
       [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
                                 fullName:@"John Doe"
@@ -203,7 +198,6 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
   EXPECT_NSEQ(identity.fullName, currentIdentity.fullName);
   EXPECT_NSEQ(identity.gaiaID, currentIdentity.gaiaID);
 
-  EXPECT_CALL(*profile_sync_service_, RequestStop(_));
   [sync_controller_ stopSyncAndClearIdentity];
   EXPECT_FALSE(sync_controller_.currentIdentity);
 }
