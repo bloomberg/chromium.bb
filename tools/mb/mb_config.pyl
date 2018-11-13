@@ -155,6 +155,27 @@
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
+    'chromium.fuzz': {
+      'ASAN Debug': 'asan_lsan_edge_debug_bot',
+      'ASAN Release Media': 'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release': 'asan_lsan_edge_fuzzer_v8_heap_release_bot',
+      'ASan Debug (32-bit x86 with V8-ARM)': 'asan_edge_v8_heap_debug_bot_hybrid',
+      'ASan Release (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_release_bot_hybrid',
+      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
+      'MSAN Release (chained origins)': 'msan_edge_release_bot',
+      'MSAN Release (no origins)': 'msan_no_origins_edge_release_bot',
+      'Mac ASAN Debug': 'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Release Media': 'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release': 'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
+      'TSAN Debug': 'tsan_disable_nacl_debug_bot',
+      'TSAN Release': 'tsan_disable_nacl_release_bot',
+      'UBSan Release': 'ubsan_release_bot',
+      'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
+      'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
+      'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
+    },
+
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_release_bot',
       'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
