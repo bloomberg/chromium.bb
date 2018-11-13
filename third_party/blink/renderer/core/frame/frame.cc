@@ -199,17 +199,6 @@ bool Frame::ConsumeTransientUserActivationInLocalTree() {
   return was_active;
 }
 
-bool Frame::DeprecatedIsFeatureEnabled(
-    mojom::FeaturePolicyFeature feature) const {
-  return GetSecurityContext()->IsFeatureEnabled(feature,
-                                                ReportOptions::kDoNotReport);
-}
-
-bool Frame::DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                                       ReportOptions report_on_failure) const {
-  return GetSecurityContext()->IsFeatureEnabled(feature, report_on_failure);
-}
-
 void Frame::SetOwner(FrameOwner* owner) {
   owner_ = owner;
   UpdateInertIfPossible();

@@ -1523,11 +1523,6 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
   return reporting_service_;
 }
 
-void LocalFrame::DeprecatedReportFeaturePolicyViolation(
-    mojom::FeaturePolicyFeature feature) const {
-  GetSecurityContext()->ReportFeaturePolicyViolation(feature);
-}
-
 // static
 std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
