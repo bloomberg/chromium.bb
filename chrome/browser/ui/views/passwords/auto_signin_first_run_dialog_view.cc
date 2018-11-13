@@ -33,8 +33,10 @@ void AutoSigninFirstRunDialogView::ShowAutoSigninPrompt() {
 }
 
 void AutoSigninFirstRunDialogView::ControllerGone() {
-  controller_ = nullptr;
+  // During Widget::Close() phase some accessibility event may occur. Thus,
+  // |controller_| should be kept around.
   GetWidget()->Close();
+  controller_ = nullptr;
 }
 
 ui::ModalType AutoSigninFirstRunDialogView::GetModalType() const {
@@ -62,12 +64,18 @@ void AutoSigninFirstRunDialogView::WindowClosing() {
 }
 
 bool AutoSigninFirstRunDialogView::Cancel() {
-  controller_->OnAutoSigninTurnOff();
+  // On Mac the button click event may be dispatched after the dialog was
+  // hidden. Thus, the controller can be NULL.
+  if (controller_)
+    controller_->OnAutoSigninTurnOff();
   return true;
 }
 
 bool AutoSigninFirstRunDialogView::Accept() {
-  controller_->OnAutoSigninOK();
+  // On Mac the button click event may be dispatched after the dialog was
+  // hidden. Thus, the controller can be NULL.
+  if (controller_)
+    controller_->OnAutoSigninOK();
   return true;
 }
 
