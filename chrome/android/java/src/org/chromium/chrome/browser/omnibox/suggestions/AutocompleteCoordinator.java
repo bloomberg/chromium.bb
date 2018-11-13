@@ -13,11 +13,12 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ListView;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.Callback;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -28,9 +29,11 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
+import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,9 +42,8 @@ import java.util.List;
 public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextChangeListener {
     private final ViewGroup mParent;
     private final AutocompleteMediator mMediator;
-    private final SuggestionListViewHolder mListViewHolder;
 
-    private final OmniboxResultsAdapter mSuggestionListAdapter;
+    private ListView mListView;
 
     /**
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.
@@ -109,24 +111,58 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
         mParent = parent;
         Context context = parent.getContext();
 
-        mSuggestionListAdapter = new OmniboxResultsAdapter(context);
-
-        Supplier<ViewStub> containerStubSupplier = () -> {
-            return (ViewStub) mParent.getRootView().findViewById(
-                    R.id.omnibox_results_container_stub);
-        };
-        mListViewHolder = new SuggestionListViewHolder(
-                context, containerStubSupplier, mSuggestionListAdapter);
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
-        // TODO(tedchoc): Investigate replacing with LazyConstructionPropertyMcp to simplify the
-        //                view binder handling property updates when the view hasn't been created
-        //                yet.
-        PropertyModelChangeProcessor.create(
-                listModel, mListViewHolder, SuggestionListViewBinder::bind);
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);
+        listModel.set(SuggestionListProperties.VISIBLE, false);
+
+        ViewProvider<SuggestionListViewHolder> viewProvider = createViewProvider(context);
+        viewProvider.whenLoaded((holder) -> { mListView = holder.listView; });
+        LazyConstructionPropertyMcp.create(listModel, SuggestionListProperties.VISIBLE,
+                viewProvider, SuggestionListViewBinder::bind);
 
         mMediator =
                 new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+    }
+
+    private ViewProvider<SuggestionListViewHolder> createViewProvider(Context context) {
+        return new ViewProvider<SuggestionListViewHolder>() {
+            private List<Callback<SuggestionListViewHolder>> mCallbacks = new ArrayList<>();
+            private SuggestionListViewHolder mHolder;
+
+            @Override
+            public void inflate() {
+                ViewGroup container = (ViewGroup) ((ViewStub) mParent.getRootView().findViewById(
+                                                           R.id.omnibox_results_container_stub))
+                                              .inflate();
+                OmniboxSuggestionsList list;
+                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                    list = new OmniboxSuggestionsList(context);
+                }
+
+                // Start with visibility GONE to ensure that show() is called.
+                // http://crbug.com/517438
+                list.setVisibility(View.GONE);
+                OmniboxResultsAdapter adapter = new OmniboxResultsAdapter(context);
+                list.setAdapter(adapter);
+                list.setClipToPadding(false);
+
+                mHolder = new SuggestionListViewHolder(container, list, adapter);
+
+                for (int i = 0; i < mCallbacks.size(); i++) {
+                    mCallbacks.get(i).onResult(mHolder);
+                }
+                mCallbacks = null;
+            }
+
+            @Override
+            public void whenLoaded(Callback<SuggestionListViewHolder> callback) {
+                if (mHolder != null) {
+                    callback.onResult(mHolder);
+                    return;
+                }
+                mCallbacks.add(callback);
+            }
+        };
     }
 
     @Override
@@ -200,8 +236,8 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      *         been created).
      */
     @VisibleForTesting
-    public OmniboxSuggestionsList getSuggestionList() {
-        return mListViewHolder.mListView;
+    public ListView getSuggestionList() {
+        return mListView;
     }
 
     /**
@@ -253,11 +289,9 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      * @return Whether the key event was handled.
      */
     public boolean handleKeyEvent(int keyCode, KeyEvent event) {
-        OmniboxSuggestionsList suggestionList = mListViewHolder.mListView;
-        if (KeyNavigationUtil.isGoDown(event) && suggestionList != null
-                && suggestionList.isShown()) {
-            int suggestionCount = mSuggestionListAdapter.getCount();
-            if (suggestionList.getSelectedItemPosition() < suggestionCount - 1) {
+        if (KeyNavigationUtil.isGoDown(event) && mListView != null && mListView.isShown()) {
+            int suggestionCount = mMediator.getSuggestionCount();
+            if (mListView.getSelectedItemPosition() < suggestionCount - 1) {
                 if (suggestionCount > 0) mMediator.allowPendingItemSelection();
             } else {
                 // Do not pass down events when the last item is already selected as it will
@@ -265,36 +299,33 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                 return true;
             }
 
-            if (suggestionList.getSelectedItemPosition() == ListView.INVALID_POSITION) {
+            if (mListView.getSelectedItemPosition() == ListView.INVALID_POSITION) {
                 // When clearing the selection after a text change, state is not reset
                 // correctly so hitting down again will cause it to start from the previous
                 // selection point. We still have to send the key down event to let the list
                 // view items take focus, but then we select the first item explicitly.
-                boolean result = suggestionList.onKeyDown(keyCode, event);
-                suggestionList.setSelection(0);
+                boolean result = mListView.onKeyDown(keyCode, event);
+                mListView.setSelection(0);
                 return result;
             } else {
-                return suggestionList.onKeyDown(keyCode, event);
+                return mListView.onKeyDown(keyCode, event);
             }
-        } else if (KeyNavigationUtil.isGoUp(event) && suggestionList != null
-                && suggestionList.isShown()) {
-            if (suggestionList.getSelectedItemPosition() != 0
-                    && mSuggestionListAdapter.getCount() > 0) {
+        } else if (KeyNavigationUtil.isGoUp(event) && mListView != null && mListView.isShown()) {
+            if (mListView.getSelectedItemPosition() != 0 && mMediator.getSuggestionCount() > 0) {
                 mMediator.allowPendingItemSelection();
             }
-            return suggestionList.onKeyDown(keyCode, event);
-        } else if (KeyNavigationUtil.isGoRight(event) && suggestionList != null
-                && suggestionList.isShown()
-                && suggestionList.getSelectedItemPosition() != ListView.INVALID_POSITION) {
+            return mListView.onKeyDown(keyCode, event);
+        } else if (KeyNavigationUtil.isGoRight(event) && mListView != null && mListView.isShown()
+                && mListView.getSelectedItemPosition() != ListView.INVALID_POSITION) {
             mMediator.onSetUrlToSuggestion(
-                    mMediator.getSuggestionAt(suggestionList.getSelectedItemPosition()));
+                    mMediator.getSuggestionAt(mListView.getSelectedItemPosition()));
             onTextChangedForAutocomplete();
-            suggestionList.setSelection(0);
+            mListView.setSelection(0);
             return true;
         } else if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
             int selectedItemPosition = ListView.INVALID_POSITION;
-            if (suggestionList != null && suggestionList.isShown()) {
-                selectedItemPosition = suggestionList.getSelectedItemPosition();
+            if (mListView != null && mListView.isShown()) {
+                selectedItemPosition = mListView.getSelectedItemPosition();
             }
             mMediator.loadSuggestionAtIndex(selectedItemPosition, event.getEventTime());
             return true;
@@ -308,8 +339,8 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     @Override
     public void onTextChangedForAutocomplete() {
-        if (!mParent.isInTouchMode() && mListViewHolder.mListView != null) {
-            mListViewHolder.mListView.setSelection(0);
+        if (!mParent.isInTouchMode() && mListView != null) {
+            mListView.setSelection(0);
         }
         mMediator.onTextChangedForAutocomplete();
     }
