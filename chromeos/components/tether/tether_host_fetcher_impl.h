@@ -13,12 +13,7 @@
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_provider.h"
 #include "components/cryptauth/remote_device_ref.h"
-
-namespace cryptauth {
-class RemoteDeviceProvider;
-}  // namespace cryptauth
 
 namespace chromeos {
 
@@ -28,23 +23,18 @@ namespace tether {
 // prototypes, callbacks are invoked synchronously.
 //
 // Note: TetherHostFetcherImpl, and the Tether feature as a whole, is currently
-// in the middle of a migration from using RemoteDeviceProvider to
-// DeviceSyncClient and eventually to MultiDeviceSetupClient. Its constructor
-// accepts all three objects, but some may be null. (This is controlled at a
-// higher level by features::kMultiDeviceApi and
-// features::kEnableUnifiedMultiDeviceSetup.). Once Tether has been fully
-// migrated, RemoteDeviceProvider and eventually DeviceSyncClient will be ripped
+// in the middle of a migration from using DeviceSyncClient and eventually to
+// MultiDeviceSetupClient. Its constructor accepts both objects, but either may
+// be null. Once Tether has been fully migrated, DeviceSyncClient will be ripped
 // out of this class. See https://crbug.com/848956.
 class TetherHostFetcherImpl
     : public TetherHostFetcher,
-      public cryptauth::RemoteDeviceProvider::Observer,
       public device_sync::DeviceSyncClient::Observer,
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   class Factory {
    public:
     static std::unique_ptr<TetherHostFetcher> NewInstance(
-        cryptauth::RemoteDeviceProvider* remote_device_provider,
         device_sync::DeviceSyncClient* device_sync_client,
         chromeos::multidevice_setup::MultiDeviceSetupClient*
             multidevice_setup_client);
@@ -53,7 +43,6 @@ class TetherHostFetcherImpl
 
    protected:
     virtual std::unique_ptr<TetherHostFetcher> BuildInstance(
-        cryptauth::RemoteDeviceProvider* remote_device_provider,
         device_sync::DeviceSyncClient* device_sync_client,
         chromeos::multidevice_setup::MultiDeviceSetupClient*
             multidevice_setup_client);
@@ -70,9 +59,6 @@ class TetherHostFetcherImpl
   void FetchTetherHost(const std::string& device_id,
                        const TetherHostCallback& callback) override;
 
-  // cryptauth::RemoteDeviceProvider::Observer:
-  void OnSyncDeviceListChanged() override;
-
   // device_sync::DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;
   void OnReady() override;
@@ -86,10 +72,7 @@ class TetherHostFetcherImpl
           feature_states_map) override;
 
  protected:
-  // TODO(crbug.com/848956): Remove RemoteDeviceProvider once all clients have
-  // migrated to the DeviceSync Mojo API.
-  TetherHostFetcherImpl(cryptauth::RemoteDeviceProvider* remote_device_provider,
-                        device_sync::DeviceSyncClient* device_sync_client,
+  TetherHostFetcherImpl(device_sync::DeviceSyncClient* device_sync_client,
                         chromeos::multidevice_setup::MultiDeviceSetupClient*
                             multidevice_setup_client_);
 
@@ -103,7 +86,7 @@ class TetherHostFetcherImpl
 
   void CacheCurrentTetherHosts();
   cryptauth::RemoteDeviceRefList GenerateHostDeviceList();
-  TetherHostSource GetTetherHostSourceBasedOnFlags();
+
   // This returns true if there is no BETTER_TOGETHER_HOST supported or enabled,
   // but there *are* MAGIC_TETHER_HOSTs supported or enabled. This can only
   // happen if the user's phone has not yet fully updated to the new multidevice
@@ -111,7 +94,6 @@ class TetherHostFetcherImpl
   // TODO(crbug.com/894585): Remove this legacy special case after M71.
   bool IsInLegacyHostMode();
 
-  cryptauth::RemoteDeviceProvider* remote_device_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::multidevice_setup::MultiDeviceSetupClient*
       multidevice_setup_client_;
