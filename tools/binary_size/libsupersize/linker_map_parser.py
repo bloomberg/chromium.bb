@@ -1,12 +1,20 @@
+#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import demangle
+"""Parser for linker map files."""
+
+from __future__ import print_function
+
+import argparse
+import code
 import logging
 import os
 import re
+import readline
 
+import demangle
 import models
 
 # About linker maps:
@@ -362,7 +370,8 @@ class MapFileParserLld(object):
 
       if indent_size == 0:
         sym_maker.Flush()
-        self._section_sizes[tok] = size
+        if not tok.startswith('PROVIDE_HIDDEN'):
+          self._section_sizes[tok] = size
         cur_section = tok
         # E.g., Want to convert "(.text._name)" -> "_name" later.
         mangled_start_idx = len(cur_section) + 2
@@ -454,7 +463,15 @@ def _DetectLto(lines):
 
 
 def DetectLinkerNameFromMapFile(lines):
-  """Scans linker map file, and returns a coded linker name."""
+  """Heuristic linker detection from partial scan of the linker map.
+
+  Args:
+    lines: Iterable of lines from the linker map.
+
+  Returns:
+    A coded linker name: 'gold', 'lld_v#' (# is a number), or 'lld-lto_v#'.
+
+  """
   first_line = next(lines)
 
   if first_line.startswith('Address'):
@@ -470,12 +487,13 @@ def DetectLinkerNameFromMapFile(lines):
 
 
 class MapFileParser(object):
-  """Parses a linker map file, with heuristic linker detection."""
+  """Parses a linker map file generated from a specified linker."""
   def Parse(self, linker_name, lines):
     """Parses a linker map file.
 
     Args:
-      lines: Iterable of lines.
+      linker_name: Coded linker name to specify a linker.
+      lines: Iterable of lines from the linker map.
 
     Returns:
       A tuple of (section_sizes, symbols).
@@ -495,3 +513,42 @@ class MapFileParser(object):
         # Thin archives' paths will get fixed in |ar.CreateThinObjectPath|.
         sym.object_path = os.path.normpath(sym.object_path)
     return (section_sizes, syms)
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('linker_file', type=os.path.realpath)
+  parser.add_argument(
+      '-v',
+      '--verbose',
+      default=0,
+      action='count',
+      help='Verbose level (multiple times for more)')
+  args = parser.parse_args()
+
+  logging.basicConfig(
+      level=logging.WARNING - args.verbose * 10,
+      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+
+  with open(args.linker_file, 'r') as map_file:
+    linker_name = DetectLinkerNameFromMapFile(map_file)
+  print('Linker type: %s' % linker_name)
+
+  with open(args.linker_file, 'r') as map_file:
+    section_sizes, syms = MapFileParser().Parse(linker_name, map_file)
+
+  # Enter interactive shell.
+  readline.parse_and_bind('tab: complete')
+  variables = {'section_sizes': section_sizes, 'syms': syms}
+  banner_lines = [
+      '*' * 80,
+      'Variables:',
+      '  section_sizes: Map from section to sizes.',
+      '  syms: Raw symbols parsed from the linker map file.',
+      '*' * 80,
+  ]
+  code.InteractiveConsole(variables).interact('\n'.join(banner_lines))
+
+
+if __name__ == '__main__':
+  main()
