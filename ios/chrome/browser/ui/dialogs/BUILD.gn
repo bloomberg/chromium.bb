@@ -16,6 +16,20 @@ source_set("dialogs") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("feature_flags") {
+  sources = [
+    "dialog_features.h",
+    "dialog_features.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//components/flags_ui",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

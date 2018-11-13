@@ -232,6 +232,11 @@ const char kNewPasswordFormParsingDescription[] =
     "currently under development. WARNING: when enabled Password Manager might "
     "stop working";
 
+const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
+const char kNonModalDialogsDescription[] =
+    "Presents JavaScript dialogs non-modally so that the user can change tabs "
+    "while a dialog is displayed.";
+
 const char kOmniboxPopupShortcutIconsInZeroStateName[] =
     "Show zero-state omnibox shortcuts";
 const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
