@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -37,6 +38,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -365,10 +367,6 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_FALSE(OpenDialogIsResizable());
 }
 
-// TODO(jamescook): Add a test for selecting a file for an <input type='file'/>
-// page element, as that uses different memory management pathways.
-// crbug.com/98791
-
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileAndCancel) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
@@ -513,4 +511,37 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, OpenTwoDialogs) {
   ASSERT_FALSE(listener_->file_selected());
   ASSERT_TRUE(listener_->canceled());
   ASSERT_EQ(this, listener_->params());
+}
+
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, FileInputElement) {
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
+
+  // Start the embedded test server.
+  base::FilePath source_dir;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  auto test_data_dir = source_dir.AppendASCII("chrome")
+                           .AppendASCII("test")
+                           .AppendASCII("data")
+                           .AppendASCII("chromeos")
+                           .AppendASCII("file_manager");
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate the browser to the file input element test page.
+  const GURL url = embedded_test_server()->GetURL("/file_input/element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(url, web_contents->GetLastCommittedURL());
+
+  // Create a listener for the file dialog's "ready" message.
+  ExtensionTestMessageListener listener("ready", false);
+
+  // Click the file <input> element to open the file dialog.
+  constexpr auto kButton = blink::WebMouseEvent::Button::kLeft;
+  content::SimulateMouseClickAt(web_contents, 0, kButton, gfx::Point(0, 0));
+
+  // Wait for file dialog's "ready" message.
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
