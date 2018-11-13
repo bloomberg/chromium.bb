@@ -5149,7 +5149,8 @@
     "V8WasmTrapHandler": [
         {
             "platforms": [
-                "linux"
+                "linux",
+                "windows"
             ],
             "experiments": [
                 {
