@@ -356,6 +356,7 @@ class AndroidProfileTool(object):
         _SimulateSwipe(self._device, 200, 700, 200, 1000)
         _SimulateSwipe(self._device, 200, 700, 200, 1000)
       time.sleep(30)
+      self._AssertRunning(package_info)
       self._KillChrome(package_info)
 
   def Cleanup(self):
@@ -424,8 +425,13 @@ class AndroidProfileTool(object):
                       extras={'create_new_tab': True}),
         blocking=True, force_stop=True)
 
+  def _AssertRunning(self, package_info):
+    assert self._device.GetApplicationPids(package_info.package), (
+        'Expected at least one pid associated with {} but found none'.format(
+            package_info.package))
+
   def _KillChrome(self, package_info):
-    self._device.KillAll(package_info.package)
+    self._device.ForceStop(package_info.package)
 
   def _DeleteHostData(self):
     """Clears out profile storage locations on the host."""
