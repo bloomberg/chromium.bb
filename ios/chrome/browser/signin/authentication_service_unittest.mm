@@ -93,8 +93,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupServiceMock>(
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state),
-      browser_state->GetPrefs());
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
 }  // namespace

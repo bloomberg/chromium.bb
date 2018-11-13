@@ -52,9 +52,8 @@ using testing::Return;
 
 class SyncSetupServiceMockThatFails : public SyncSetupServiceMock {
  public:
-  SyncSetupServiceMockThatFails(browser_sync::ProfileSyncService* sync_service,
-                                PrefService* prefs)
-      : SyncSetupServiceMock(sync_service, prefs) {}
+  SyncSetupServiceMockThatFails(browser_sync::ProfileSyncService* sync_service)
+      : SyncSetupServiceMock(sync_service) {}
   bool IsSyncEnabled() const override { return sync_enabled_; }
   void SetSyncEnabled(bool sync_enabled) override {}
   bool IsSyncingAllDataTypes() const override { return sync_all_; }
@@ -78,9 +77,8 @@ bool SyncSetupServiceMockThatFails::sync_all_ = true;
 class SyncSetupServiceMockThatSucceeds : public SyncSetupServiceMockThatFails {
  public:
   SyncSetupServiceMockThatSucceeds(
-      browser_sync::ProfileSyncService* sync_service,
-      PrefService* prefs)
-      : SyncSetupServiceMockThatFails(sync_service, prefs) {}
+      browser_sync::ProfileSyncService* sync_service)
+      : SyncSetupServiceMockThatFails(sync_service) {}
   void SetSyncEnabled(bool sync_enabled) override {
     sync_enabled_ = sync_enabled;
   }
@@ -99,8 +97,7 @@ class SyncSettingsCollectionViewControllerTest
         ios::ChromeBrowserState::FromBrowserState(context);
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
-    return std::make_unique<NiceMock<SyncSetupServiceMock>>(
-        sync_service, chrome_browser_state->GetPrefs());
+    return std::make_unique<NiceMock<SyncSetupServiceMock>>(sync_service);
   }
 
   static std::unique_ptr<KeyedService> CreateSucceedingSyncSetupService(
@@ -110,7 +107,7 @@ class SyncSettingsCollectionViewControllerTest
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMockThatSucceeds>>(
-        sync_service, chrome_browser_state->GetPrefs());
+        sync_service);
   }
 
   static std::unique_ptr<KeyedService> CreateFailingSyncSetupService(
@@ -120,7 +117,7 @@ class SyncSettingsCollectionViewControllerTest
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMockThatFails>>(
-        sync_service, chrome_browser_state->GetPrefs());
+        sync_service);
   }
 
   static std::unique_ptr<KeyedService> CreateProfileSyncService(
