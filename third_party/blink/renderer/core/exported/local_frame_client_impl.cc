@@ -504,23 +504,22 @@ void LocalFrameClientImpl::BeginNavigation(
   if (!web_frame_->Client())
     return;
 
-  WrappedResourceRequest wrapped_resource_request(request);
-  WebLocalFrameClient::NavigationPolicyInfo navigation_info(
-      wrapped_resource_request);
-  navigation_info.navigation_type = type;
-  navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
-  navigation_info.has_user_gesture = has_transient_activation;
-  navigation_info.frame_load_type = frame_load_type;
-  navigation_info.is_client_redirect = is_client_redirect;
-  navigation_info.triggering_event_info = triggering_event_info;
-  navigation_info.should_check_main_world_content_security_policy =
+  auto navigation_info = std::make_unique<WebNavigationInfo>();
+  navigation_info->url_request = WrappedResourceRequest(request);
+  navigation_info->navigation_type = type;
+  navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
+  navigation_info->has_transient_user_activation = has_transient_activation;
+  navigation_info->frame_load_type = frame_load_type;
+  navigation_info->is_client_redirect = is_client_redirect;
+  navigation_info->triggering_event_info = triggering_event_info;
+  navigation_info->should_check_main_world_content_security_policy =
       should_check_main_world_content_security_policy ==
               kCheckContentSecurityPolicy
           ? kWebContentSecurityPolicyDispositionCheck
           : kWebContentSecurityPolicyDispositionDoNotCheck;
-  navigation_info.blob_url_token = blob_url_token.PassInterface().PassHandle();
-  navigation_info.input_start = input_start_time;
-  navigation_info.navigation_initiator_handle =
+  navigation_info->blob_url_token = blob_url_token.PassInterface().PassHandle();
+  navigation_info->input_start = input_start_time;
+  navigation_info->navigation_initiator_handle =
       navigation_initiator.PassInterface().PassHandle();
 
   // Can be null.
@@ -531,22 +530,22 @@ void LocalFrameClientImpl::BeginNavigation(
   // is a LocalFrame doing a back/forward navigation that has not completed.
   // (If the load has completed and the parent later adds a frame with script,
   // we do not want to use a history item for it.)
-  navigation_info.is_history_navigation_in_new_child_frame =
+  navigation_info->is_history_navigation_in_new_child_frame =
       IsBackForwardNavigationInProgress(local_parent_frame);
 
   // TODO(nasko): How should this work with OOPIF?
   // The MHTMLArchive is parsed as a whole, but can be constructed from frames
   // in multiple processes. In that case, which process should parse it and how
   // should the output be spread back across multiple processes?
-  navigation_info.archive_status =
+  navigation_info->archive_status =
       IsLoadedAsMHTMLArchive(local_parent_frame)
-          ? WebLocalFrameClient::NavigationPolicyInfo::ArchiveStatus::Present
-          : WebLocalFrameClient::NavigationPolicyInfo::ArchiveStatus::Absent;
+          ? WebNavigationInfo::ArchiveStatus::Present
+          : WebNavigationInfo::ArchiveStatus::Absent;
 
   if (form)
-    navigation_info.form = WebFormElement(form);
+    navigation_info->form = WebFormElement(form);
 
-  navigation_info.is_opener_navigation =
+  navigation_info->is_opener_navigation =
       origin_document && origin_document->GetFrame() &&
       origin_document->GetFrame()->Client()->Opener() ==
           ToCoreFrame(web_frame_);
@@ -563,20 +562,21 @@ void LocalFrameClientImpl::BeginNavigation(
           ? SourceLocation::Capture(origin_document)
           : SourceLocation::Capture(web_frame_->GetFrame()->GetDocument());
   if (source_location && !source_location->IsUnknown()) {
-    navigation_info.source_location.url = source_location->Url();
-    navigation_info.source_location.line_number = source_location->LineNumber();
-    navigation_info.source_location.column_number =
+    navigation_info->source_location.url = source_location->Url();
+    navigation_info->source_location.line_number =
+        source_location->LineNumber();
+    navigation_info->source_location.column_number =
         source_location->ColumnNumber();
   }
 
   if (WebDevToolsAgentImpl* devtools = DevToolsAgent()) {
-    navigation_info.devtools_initiator_info =
+    navigation_info->devtools_initiator_info =
         devtools->NavigationInitiatorInfo(web_frame_->GetFrame());
   }
 
-  navigation_info.href_translate = href_translate;
+  navigation_info->href_translate = href_translate;
 
-  web_frame_->Client()->BeginNavigation(navigation_info);
+  web_frame_->Client()->BeginNavigation(std::move(navigation_info));
 }
 
 void LocalFrameClientImpl::DispatchWillSendSubmitEvent(HTMLFormElement* form) {

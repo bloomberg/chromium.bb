@@ -676,10 +676,11 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       frame_->Close();
       frame_ = nullptr;
     }
-    void BeginNavigation(NavigationPolicyInfo& info) override {
+    void BeginNavigation(
+        std::unique_ptr<blink::WebNavigationInfo> info) override {
       frame_->CommitNavigation(
-          info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-          info.is_client_redirect, base::UnguessableToken::Create(),
+          info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+          info->is_client_redirect, base::UnguessableToken::Create(),
           nullptr /* navigation_params */, nullptr /* extra_data */);
     }
 
@@ -797,7 +798,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType owner_type) override;
   void FrameDetached(DetachType detach_type) override;
-  void BeginNavigation(NavigationPolicyInfo& info) override;
+  void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   void CallOnReady();
@@ -983,12 +984,13 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
   frame_.Reset(nullptr);
 }
 
-void PrepareFrameAndViewForPrint::BeginNavigation(NavigationPolicyInfo& info) {
+void PrepareFrameAndViewForPrint::BeginNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
   // TODO(dgozman): We disable javascript through WebPreferences, so perhaps
   // we want to disallow any navigations here by just removing this method?
   frame()->CommitNavigation(
-      info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-      info.is_client_redirect, base::UnguessableToken::Create(),
+      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+      info->is_client_redirect, base::UnguessableToken::Create(),
       nullptr /* navigation_params */, nullptr /* extra_data */);
 }
 

@@ -206,21 +206,22 @@ void TestRenderFrame::SetCompositionFromExistingText(
                                                          ime_text_spans);
 }
 
-void TestRenderFrame::BeginNavigation(NavigationPolicyInfo& info) {
-  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
-      ((GetWebFrame()->Parent() && info.form.IsNull()) ||
+void TestRenderFrame::BeginNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
+  if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
+      ((GetWebFrame()->Parent() && info->form.IsNull()) ||
        next_request_url_override_.has_value())) {
     // RenderViewTest::LoadHTML immediately commits navigation for the main
     // frame. However if the loaded html has a subframe,
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
     GetWebFrame()->CommitNavigation(
-        info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-        info.is_client_redirect, base::UnguessableToken::Create(),
+        info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+        info->is_client_redirect, base::UnguessableToken::Create(),
         nullptr /* navigation_params */, nullptr /* extra_data */);
     return;
   }
-  RenderFrameImpl::BeginNavigation(info);
+  RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

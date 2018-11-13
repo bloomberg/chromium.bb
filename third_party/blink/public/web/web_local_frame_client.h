@@ -70,6 +70,7 @@
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_icon_url.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
@@ -329,49 +330,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Navigational queries ------------------------------------------------
 
-  // The client may choose to alter the navigation policy.  Otherwise,
-  // defaultPolicy should just be returned.
-
-  struct NavigationPolicyInfo {
-    WebURLRequest& url_request;
-    WebNavigationType navigation_type;
-    WebNavigationPolicy default_policy;
-    bool has_user_gesture;
-    WebFrameLoadType frame_load_type;
-    bool is_history_navigation_in_new_child_frame;
-    bool is_client_redirect;
-    bool is_opener_navigation;
-    WebTriggeringEventInfo triggering_event_info;
-    WebFormElement form;
-    WebSourceLocation source_location;
-    WebString devtools_initiator_info;
-    WebContentSecurityPolicyDisposition
-        should_check_main_world_content_security_policy;
-    mojo::ScopedMessagePipeHandle blob_url_token;
-    base::TimeTicks input_start;
-    WebString href_translate;
-    mojo::ScopedMessagePipeHandle navigation_initiator_handle;
-
-    // Specify whether or not a MHTML Archive can be used to load a subframe
-    // resource instead of doing a network request.
-    enum class ArchiveStatus { Absent, Present };
-    ArchiveStatus archive_status;
-
-    explicit NavigationPolicyInfo(WebURLRequest& url_request)
-        : url_request(url_request),
-          navigation_type(kWebNavigationTypeOther),
-          default_policy(kWebNavigationPolicyCurrentTab),
-          has_user_gesture(false),
-          frame_load_type(WebFrameLoadType::kStandard),
-          is_history_navigation_in_new_child_frame(false),
-          is_client_redirect(false),
-          is_opener_navigation(false),
-          triggering_event_info(WebTriggeringEventInfo::kUnknown),
-          should_check_main_world_content_security_policy(
-              kWebContentSecurityPolicyDispositionCheck),
-          archive_status(ArchiveStatus::Absent) {}
-  };
-
   // Requests the client to begin a navigation for this frame.
   //
   // The client can just call CommitNavigation() on this frame in response.
@@ -388,7 +346,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   //
   // Note that ignoring this method effectively disables any navigations
   // initiated by Blink in this frame.
-  virtual void BeginNavigation(NavigationPolicyInfo& info) {}
+  virtual void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) {
+  }
 
   // Asks the embedder whether the frame is allowed to navigate the main frame
   // to a data URL.

@@ -471,10 +471,11 @@ void TestWebFrameClient::DidStopLoading() {
   --loads_in_progress_;
 }
 
-void TestWebFrameClient::BeginNavigation(NavigationPolicyInfo& info) {
+void TestWebFrameClient::BeginNavigation(
+    std::unique_ptr<WebNavigationInfo> info) {
   frame_->CommitNavigation(
-      info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-      info.is_client_redirect, base::UnguessableToken::Create(),
+      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+      info->is_client_redirect, base::UnguessableToken::Create(),
       nullptr /* navigation_params */, nullptr /* extra_data */);
 }
 

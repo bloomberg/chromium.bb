@@ -370,12 +370,13 @@ void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
   main_frame()->Close();
 }
 
-void WebViewPlugin::WebViewHelper::BeginNavigation(NavigationPolicyInfo& info) {
+void WebViewPlugin::WebViewHelper::BeginNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
   // TODO(dgozman): remove this method and effectively disallow
   // content-inititated navigations in WebViewPlugin.
   main_frame()->CommitNavigation(
-      info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-      info.is_client_redirect, base::UnguessableToken::Create(),
+      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+      info->is_client_redirect, base::UnguessableToken::Create(),
       nullptr /* navigation_params */, nullptr /* extra_data */);
 }
 
