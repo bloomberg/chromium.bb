@@ -50,39 +50,42 @@ enum Feature {
   kSmartLock
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
 enum FeatureState {
   // Feature was prohibited by a device policy (e.g., EDU or Enterprise).
-  kProhibitedByPolicy,
+  kProhibitedByPolicy = 0,
 
   // Feature was disabled by the user (i.e., via settings).
-  kDisabledByUser,
+  kDisabledByUser = 1,
 
   // Feature was enabled by the user (i.e., via settings).
-  kEnabledByUser,
+  kEnabledByUser = 2,
 
   // Feature is not supported by this Chromebook.
-  kNotSupportedByChromebook,
+  kNotSupportedByChromebook = 3,
 
   // Feature is not supported by the current host phone device.
-  kNotSupportedByPhone,
+  kNotSupportedByPhone = 4,
 
   // The feature is unavailable because there is no verified multi-device host.
   // To set a host, use SetHostDevice(); to verify a host, use
   // RetrySetHostNow().
-  kUnavailableNoVerifiedHost,
+  kUnavailableNoVerifiedHost = 5,
 
   // The feature is unavailable because there are insufficient security
   // mechanisms in place (e.g., Smart Lock returns this value when the host
   // phone device does not have a lock screen set).
-  kUnavailableInsufficientSecurity,
+  kUnavailableInsufficientSecurity = 6,
 
   // The feature has been enabled by the user, but it is still unavailable
   // because the entire Better Together suite has been disabled by the user.
-  kUnavailableSuiteDisabled,
+  kUnavailableSuiteDisabled = 7,
 
   // The feature still requires further setup to be ready for use (e.g., Android
   // Messages requires a separate pairing flow after unified setup).
-  kFurtherSetupRequired,
+  kFurtherSetupRequired = 8,
 };
 
 interface AccountStatusChangeDelegate {
