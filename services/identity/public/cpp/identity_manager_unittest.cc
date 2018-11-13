@@ -392,7 +392,6 @@ class IdentityManagerTest : public testing::Test {
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
         gaia_cookie_manager_service_(&token_service_,
-                                     "identity_manager_unittest",
                                      &signin_client_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());

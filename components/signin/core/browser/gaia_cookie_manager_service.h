@@ -107,9 +107,9 @@ class GaiaCookieManagerService : public KeyedService,
                       const std::vector<std::string>& account_ids,
                       const std::string& source);
 
-    GaiaCookieRequestType request_type_;
-    std::vector<std::string> account_ids_;
-    std::string source_;
+    const GaiaCookieRequestType request_type_;
+    const std::vector<std::string> account_ids_;
+    const std::string source_;
   };
 
   class Observer {
@@ -213,7 +213,6 @@ class GaiaCookieManagerService : public KeyedService,
   };
 
   GaiaCookieManagerService(OAuth2TokenService* token_service,
-                           const std::string& source,
                            SigninClient* signin_client);
   ~GaiaCookieManagerService() override;
 
@@ -312,10 +311,6 @@ class GaiaCookieManagerService : public KeyedService,
   // virtual to allow tests and fake classes to override.
   virtual std::string GetSourceForRequest(
       const GaiaCookieManagerService::GaiaCookieRequest& request);
-
-  // Returns the default source value to use for GaiaFetcher requests.  This is
-  // virtual to allow tests and fake classes to override.
-  virtual std::string GetDefaultSourceForRequest();
 
   // Overridden from network::mojom::CookieChangeListner. If the cookie relates
   // to a GAIA APISID cookie, then we call ListAccounts and fire

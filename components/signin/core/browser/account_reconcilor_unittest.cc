@@ -340,7 +340,6 @@ AccountReconcilorTest::AccountReconcilorTest()
       test_signin_client_(&pref_service_),
       token_service_(&pref_service_),
       cookie_manager_service_(&token_service_,
-                              GaiaConstants::kChromeSource,
                               &test_signin_client_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&test_signin_client_, &account_tracker_) {

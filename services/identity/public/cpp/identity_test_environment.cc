@@ -69,7 +69,6 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
       // blundell@chromium.org if you come up against this issue.
       gaia_cookie_manager_service_(
           &token_service_,
-          "identity_test_environment",
           &signin_client_,
           use_fake_url_loader_for_gaia_cookie_manager) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());

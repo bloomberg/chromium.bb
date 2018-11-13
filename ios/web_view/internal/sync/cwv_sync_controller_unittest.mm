@@ -60,7 +60,6 @@ class CWVSyncControllerTest : public PlatformTest {
                 &account_tracker_service_,
                 &sigin_error_controller_)),
         gaia_cookie_manager_service_(&token_service_,
-                                     "cookie-source",
                                      &signin_client_),
         signin_manager_(&signin_client_,
                         &token_service_,

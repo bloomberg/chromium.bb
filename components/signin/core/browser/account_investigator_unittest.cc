@@ -21,7 +21,6 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,7 +40,6 @@ class AccountInvestigatorTest : public testing::Test {
                         &account_tracker_service_,
                         nullptr),
         gaia_cookie_manager_service_(nullptr,
-                                     GaiaConstants::kChromeSource,
                                      &signin_client_),
         investigator_(&gaia_cookie_manager_service_,
                       &prefs_,

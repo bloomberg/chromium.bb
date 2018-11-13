@@ -285,7 +285,7 @@ class SigninHelper {
       : task_environment_(task_environment),
         signin_client_(&pref_service_),
         token_service_(&pref_service_),
-        cookie_service_(&token_service_, "test_source", &signin_client_) {
+        cookie_service_(&token_service_, &signin_client_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());

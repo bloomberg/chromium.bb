@@ -53,7 +53,6 @@ class SigninTrackerTest : public testing::Test {
       : signin_client_(&pref_service_),
         fake_oauth2_token_service_(&pref_service_),
         fake_gaia_cookie_manager_service_(&fake_oauth2_token_service_,
-                                          "signin_tracker_unittest",
                                           &signin_client_),
 #if defined(OS_CHROMEOS)
         fake_signin_manager_(&signin_client_, &account_tracker_) {

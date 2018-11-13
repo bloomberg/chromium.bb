@@ -20,7 +20,6 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -96,7 +95,6 @@ class MockGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   MockGaiaCookieManagerService()
       : GaiaCookieManagerService(nullptr,
-                                 GaiaConstants::kChromeSource,
                                  nullptr) {}
   MOCK_METHOD0(ForceOnCookieChangeProcessing, void());
 };

@@ -10,7 +10,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 
 namespace {
 
@@ -20,7 +19,6 @@ std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceImpl(
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<FakeGaiaCookieManagerService>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      GaiaConstants::kChromeSource,
       ChromeSigninClientFactory::GetForProfile(profile), use_fake_url_fetcher);
 }
 
