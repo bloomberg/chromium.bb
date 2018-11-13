@@ -1116,14 +1116,12 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
 }
 
-// TODO(crbug.com/840080, crbug.com/824533): Filesystem, IndexedDb and
+// TODO(crbug.com/840080, crbug.com/824533): Filesystem and
 // CacheStorage can't be deleted on exit correctly at the moment.
 const std::vector<std::string> kSessionOnlyStorageTestTypes{
     "Cookie", "LocalStorage",
     // "FileSystem",
-    "SessionStorage",
-    // "IndexedDb",
-    "WebSql", "ServiceWorker",
+    "SessionStorage", "IndexedDb", "WebSql", "ServiceWorker",
     // "CacheStorage",
 };
 

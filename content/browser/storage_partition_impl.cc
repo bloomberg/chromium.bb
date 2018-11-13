@@ -551,6 +551,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetServiceWorkerContext())
     GetServiceWorkerContext()->Shutdown();
 
+  if (GetIndexedDBContext())
+    GetIndexedDBContext()->Shutdown();
+
   if (GetCacheStorageContext())
     GetCacheStorageContext()->Shutdown();
 

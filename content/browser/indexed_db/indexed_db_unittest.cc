@@ -67,20 +67,20 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  // Create the scope which will ensure we run the destructor of the context
-  // which should trigger the clean up.
-  {
-    auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir.GetPath(), special_storage_policy_.get(),
-        quota_manager_proxy_.get());
+  auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
+      temp_dir.GetPath(), special_storage_policy_.get(),
+      quota_manager_proxy_.get());
 
-    normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
-    session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
-    ASSERT_TRUE(base::CreateDirectory(normal_path));
-    ASSERT_TRUE(base::CreateDirectory(session_only_path));
-    RunAllTasksUntilIdle();
-    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  }
+  normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
+  session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
+  ASSERT_TRUE(base::CreateDirectory(normal_path));
+  ASSERT_TRUE(base::CreateDirectory(session_only_path));
+  RunAllTasksUntilIdle();
+  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+
+  RunAllTasksUntilIdle();
+
+  idb_context->Shutdown();
 
   RunAllTasksUntilIdle();
 
@@ -95,25 +95,23 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  // Create the scope which will ensure we run the destructor of the context.
-  {
-    // Create some indexedDB paths.
-    // With the levelDB backend, these are directories.
-    auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir.GetPath(), special_storage_policy_.get(),
-        quota_manager_proxy_.get());
+  // Create some indexedDB paths.
+  // With the levelDB backend, these are directories.
+  auto idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
+      temp_dir.GetPath(), special_storage_policy_.get(),
+      quota_manager_proxy_.get());
 
-    // Save session state. This should bypass the destruction-time deletion.
-    idb_context->SetForceKeepSessionState();
+  // Save session state. This should bypass the destruction-time deletion.
+  idb_context->SetForceKeepSessionState();
 
-    normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
-    session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
-    ASSERT_TRUE(base::CreateDirectory(normal_path));
-    ASSERT_TRUE(base::CreateDirectory(session_only_path));
-    base::RunLoop().RunUntilIdle();
-  }
+  normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
+  session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
+  ASSERT_TRUE(base::CreateDirectory(normal_path));
+  ASSERT_TRUE(base::CreateDirectory(session_only_path));
+  base::RunLoop().RunUntilIdle();
 
-  // Make sure we wait until the destructor has run.
+  idb_context->Shutdown();
+
   base::RunLoop().RunUntilIdle();
 
   // No data was cleared because of SetForceKeepSessionState.

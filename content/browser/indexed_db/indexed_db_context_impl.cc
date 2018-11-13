@@ -84,28 +84,6 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
 
 }  // namespace
 
-// This will be called after the IndexedDBContext is destroyed.
-void IndexedDBContextImpl::ClearSessionOnlyOrigins(
-    const base::FilePath& indexeddb_path,
-    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
-  // TODO(jsbell): DCHECK that this is running on an IndexedDB sequence,
-  // if a global handle to it is ever available.
-  std::vector<Origin> origins;
-  std::vector<base::FilePath> file_paths;
-  GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
-  DCHECK_EQ(origins.size(), file_paths.size());
-  auto file_path = file_paths.cbegin();
-  auto origin = origins.cbegin();
-  for (; origin != origins.cend(); ++origin, ++file_path) {
-    const GURL origin_url = GURL(origin->Serialize());
-    if (!special_storage_policy->IsStorageSessionOnly(origin_url))
-      continue;
-    if (special_storage_policy->IsStorageProtected(origin_url))
-      continue;
-    base::DeleteFile(*file_path, true);
-  }
-}
-
 IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
@@ -116,7 +94,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+           // BLOCK_SHUTDOWN to support clearing session-only storage.
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
@@ -542,24 +521,44 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
                            base::BindOnce(&IndexedDBFactory::ContextDestroyed,
                                           std::move(factory_)));
   }
+}
 
+void IndexedDBContextImpl::Shutdown() {
   if (is_incognito())
     return;
 
   if (force_keep_session_state_)
     return;
 
-  bool has_session_only_databases =
-      special_storage_policy_.get() &&
-      special_storage_policy_->HasSessionOnlyOrigins();
-
-  // Clearing only session-only databases, and there are none.
-  if (!has_session_only_databases)
-    return;
-
-  TaskRunner()->PostTask(FROM_HERE,
-                         base::BindOnce(&ClearSessionOnlyOrigins, data_path_,
-                                        special_storage_policy_));
+  // Clear session-only databases.
+  if (special_storage_policy_ &&
+      special_storage_policy_->HasSessionOnlyOrigins()) {
+    TaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](const base::FilePath& indexeddb_path,
+               scoped_refptr<IndexedDBFactory> factory,
+               scoped_refptr<storage::SpecialStoragePolicy>
+                   special_storage_policy) {
+              std::vector<Origin> origins;
+              std::vector<base::FilePath> file_paths;
+              GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
+              DCHECK_EQ(origins.size(), file_paths.size());
+              auto file_path = file_paths.cbegin();
+              auto origin = origins.cbegin();
+              for (; origin != origins.cend(); ++origin, ++file_path) {
+                const GURL origin_url = GURL(origin->Serialize());
+                if (!special_storage_policy->IsStorageSessionOnly(origin_url))
+                  continue;
+                if (special_storage_policy->IsStorageProtected(origin_url))
+                  continue;
+                if (factory.get())
+                  factory->ForceClose(*origin);
+                base::DeleteFile(*file_path, true);
+              }
+            },
+            data_path_, factory_, special_storage_policy_));
+  }
 }
 
 // static
