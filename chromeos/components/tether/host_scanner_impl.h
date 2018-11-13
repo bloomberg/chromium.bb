@@ -132,6 +132,10 @@ class HostScannerImpl : public HostScanner,
   ConnectionPreserver* connection_preserver_;
   base::Clock* clock_;
 
+  // TODO(crbug.com/904609): Read ignore_wired_networks_ from flag defaulting to
+  // false. Scan for tethering hosts even if there is a wired connection to
+  // allow end-to-end tests to be deployed and run without unplugging ethernet.
+  bool ignore_wired_networks_ = false;
   bool is_fetching_hosts_ = false;
   bool was_notification_showing_when_current_scan_started_ = false;
   bool was_notification_shown_in_current_scan_ = false;
