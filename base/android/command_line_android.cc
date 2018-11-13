@@ -65,7 +65,7 @@ static void JNI_CommandLine_AppendSwitchWithValue(
     const JavaParamRef<jstring>& jswitch,
     const JavaParamRef<jstring>& jvalue) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
-  std::string value_string (ConvertJavaStringToUTF8(env, jvalue));
+  std::string value_string(ConvertJavaStringToUTF8(env, jvalue));
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switch_string,
                                                       value_string);
 }
