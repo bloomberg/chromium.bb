@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
@@ -89,9 +88,6 @@ class MediaEngagementService : public KeyedService,
 
   Profile* profile() const;
 
-  // The name of the histogram that scores are logged to on startup.
-  static const char kHistogramScoreAtStartupName[];
-
   // The name of the histogram that records the reduction in score when history
   // is cleared.
   static const char kHistogramURLsDeletedScoreReductionName[];
@@ -126,9 +122,6 @@ class MediaEngagementService : public KeyedService,
   // An internal clock for testing.
   base::Clock* clock_;
 
-  // Records all the stored scores to a histogram.
-  void RecordStoredScoresToHistogram();
-
   std::vector<MediaEngagementScore> GetAllStoredScores() const;
 
   int GetSchemaVersion() const;
@@ -140,9 +133,6 @@ class MediaEngagementService : public KeyedService,
   void RemoveOriginsWithNoVisits(
       const std::set<GURL>& deleted_origins,
       const history::OriginCountAndLastVisitMap& origin_data);
-
-  // Allows us to cancel the RecordScoresToHistogram task if we are destroyed.
-  base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };

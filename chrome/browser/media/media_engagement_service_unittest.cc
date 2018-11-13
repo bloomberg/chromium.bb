@@ -817,35 +817,6 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
       MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
-TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
-  GURL url1("https://www.google.com");
-  GURL url2("https://www.google.co.uk");
-  GURL url3("https://www.example.com");
-
-  SetScores(url1, 24, 20);
-  SetScores(url2, 24, 12);
-  RecordVisitAndPlaybackAndAdvanceClock(url3);
-
-  ExpectScores(url1, 5.0 / 6.0, 24, 20, TimeNotSet());
-  ExpectScores(url2, 0.5, 24, 12, TimeNotSet());
-  ExpectScores(url3, 0.05, 1, 1, Now());
-
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<MediaEngagementService> new_service =
-      base::WrapUnique<MediaEngagementService>(
-          StartNewMediaEngagementService());
-  new_service->Shutdown();
-
-  histogram_tester.ExpectTotalCount(
-      MediaEngagementService::kHistogramScoreAtStartupName, 3);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramScoreAtStartupName, 5, 1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramScoreAtStartupName, 50, 1);
-  histogram_tester.ExpectBucketCount(
-      MediaEngagementService::kHistogramScoreAtStartupName, 83, 1);
-}
-
 TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
   GURL origin1("https://www.google.com");
   GURL origin2("https://www.google.co.uk");
