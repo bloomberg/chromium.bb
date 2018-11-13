@@ -52,9 +52,7 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
   if (content_transform && replaced.IsSVGRoot()) {
     new_properties.SetTransform(content_transform);
     adjusted_paint_info_.emplace(input_paint_info_);
-    DCHECK(content_transform->Matrix().IsAffine());
-    adjusted_paint_info_->UpdateCullRect(
-        content_transform->Matrix().ToAffineTransform());
+    adjusted_paint_info_->TransformCullRect(content_transform);
     property_changed = true;
   }
 

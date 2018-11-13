@@ -53,7 +53,7 @@ bool ScrollbarTheme::g_mock_scrollbars_enabled_ = false;
 
 static inline bool ShouldPaintScrollbarPart(const IntRect& part_rect,
                                             const CullRect& cull_rect) {
-  return (!part_rect.IsEmpty()) || cull_rect.IntersectsCullRect(part_rect);
+  return (!part_rect.IsEmpty()) || cull_rect.Intersects(part_rect);
 }
 
 bool ScrollbarTheme::Paint(const Scrollbar& scrollbar,

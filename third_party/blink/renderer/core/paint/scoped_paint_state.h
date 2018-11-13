@@ -86,8 +86,7 @@ class ScopedPaintState {
   bool LocalRectIntersectsCullRect(const LayoutRect& local_rect) const {
     LayoutRect rect_in_paint_info_space = local_rect;
     rect_in_paint_info_space.MoveBy(PaintOffset());
-    return GetPaintInfo().GetCullRect().IntersectsCullRect(
-        rect_in_paint_info_space);
+    return GetPaintInfo().GetCullRect().Intersects(rect_in_paint_info_space);
   }
 
  protected:

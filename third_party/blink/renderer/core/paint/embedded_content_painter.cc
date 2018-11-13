@@ -32,7 +32,8 @@ void EmbeddedContentPainter::PaintReplaced(const PaintInfo& paint_info,
 
   IntSize view_paint_offset =
       paint_location - embedded_content_view->FrameRect().Location();
-  CullRect adjusted_cull_rect(paint_info.GetCullRect(), -view_paint_offset);
+  CullRect adjusted_cull_rect = paint_info.GetCullRect();
+  adjusted_cull_rect.Move(-view_paint_offset);
   embedded_content_view->Paint(paint_info.context,
                                paint_info.GetGlobalPaintFlags(),
                                adjusted_cull_rect, view_paint_offset);

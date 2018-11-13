@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CULL_RECT_H_
 
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -14,9 +13,11 @@
 
 namespace blink {
 
+class AffineTransform;
 class FloatRect;
 class LayoutRect;
 class LayoutUnit;
+class TransformPaintPropertyNode;
 
 class PLATFORM_EXPORT CullRect {
   DISALLOW_NEW();
@@ -24,22 +25,16 @@ class PLATFORM_EXPORT CullRect {
  public:
   CullRect() = default;
   explicit CullRect(const IntRect& rect) : rect_(rect) {}
-  CullRect(const CullRect&, const IntPoint& offset);
-  CullRect(const CullRect&, const IntSize& offset);
 
-  bool IntersectsCullRect(const AffineTransform&,
-                          const FloatRect& bounding_box) const;
-  bool IntersectsCullRect(const IntRect&) const;
-  bool IntersectsCullRect(const LayoutRect&) const;
+  bool Intersects(const IntRect&) const;
+  bool Intersects(const LayoutRect&) const;
+  bool IntersectsTransformed(const AffineTransform&, const FloatRect&) const;
   bool IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
   bool IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
 
-  void UpdateCullRect(const AffineTransform& local_to_parent_transform);
-
-  // |overflow_clip_rect| should be in the same coordinate space as |rect_|.
-  void UpdateForScrollingContents(
-      const IntRect& overflow_clip_rect,
-      const AffineTransform& local_to_parent_transform);
+  void MoveBy(const IntPoint& offset);
+  void Move(const IntSize& offset);
+  void ApplyTransform(const TransformPaintPropertyNode*);
 
   const IntRect& Rect() const { return rect_; }
 
@@ -49,10 +44,6 @@ class PLATFORM_EXPORT CullRect {
   IntRect rect_;
 
   friend bool operator==(const CullRect&, const CullRect&);
-
-  friend class CullRectTest;
-
-  friend class TableSectionPainter;
 };
 
 inline bool operator==(const CullRect& a, const CullRect& b) {

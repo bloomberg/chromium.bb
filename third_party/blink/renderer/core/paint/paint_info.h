@@ -149,15 +149,8 @@ struct CORE_EXPORT PaintInfo {
     cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
   }
 
-  void UpdateCullRect(const AffineTransform& local_to_parent_transform) {
-    cull_rect_.UpdateCullRect(local_to_parent_transform);
-  }
-
-  void UpdateCullRectForScrollingContents(
-      const IntRect& overflow_clip_rect,
-      const AffineTransform& local_to_parent_transform) {
-    cull_rect_.UpdateForScrollingContents(overflow_clip_rect,
-                                          local_to_parent_transform);
+  void TransformCullRect(const TransformPaintPropertyNode* transform) {
+    cull_rect_.ApplyTransform(transform);
   }
 
   // Returns the fragment of the current painting object matching the current
@@ -208,10 +201,6 @@ struct CORE_EXPORT PaintInfo {
 
   // For SPv2 only.
   bool is_painting_scrolling_background_;
-
-  // TODO(chrishtr): temporary while we implement CullRect everywhere.
-  friend class ScopedSVGPaintState;
-  friend class SVGShapePainter;
 };
 
 Image::ImageDecodingMode GetImageDecodingMode(Node*);

@@ -3438,8 +3438,8 @@ void CompositedLayerMapping::PaintScrollableArea(
     const IntRect& interest_rect) const {
   // cull_rect is in the space of the containing scrollable area in which
   // Scrollbar::Paint() will paint the scrollbar.
-  CullRect cull_rect(CullRect(interest_rect),
-                     graphics_layer->OffsetFromLayoutObject());
+  CullRect cull_rect(interest_rect);
+  cull_rect.Move(graphics_layer->OffsetFromLayoutObject());
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
   if (graphics_layer == LayerForHorizontalScrollbar()) {
     if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())

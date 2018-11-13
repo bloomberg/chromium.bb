@@ -168,7 +168,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const CullRect& cull_rect,
                                    const IntSize& paint_offset) const {
   // Don't paint anything if the plugin doesn't intersect.
-  if (!cull_rect.IntersectsCullRect(FrameRect()))
+  if (!cull_rect.Intersects(FrameRect()))
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && layer_) {

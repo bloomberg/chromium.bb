@@ -57,7 +57,7 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   inline_flow_box_.FlipForWritingMode(overflow_rect);
   overflow_rect.MoveBy(paint_offset);
 
-  if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
+  if (!paint_info.GetCullRect().Intersects(overflow_rect))
     return;
 
   if (paint_info.phase == PaintPhase::kMask) {
