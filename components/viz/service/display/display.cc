@@ -81,7 +81,9 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
 
   const auto difference = feedback.timestamp - swap_time;
   if (difference.InMinutes() > 3) {
-    base::debug::DumpWithoutCrashing();
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Graphics.PresentationTimestamp.LargePresentationDelta", difference,
+        base::TimeDelta::FromMinutes(3), base::TimeDelta::FromHours(1), 50);
     // In debug builds, just crash immediately.
     DCHECK(false);
   }
