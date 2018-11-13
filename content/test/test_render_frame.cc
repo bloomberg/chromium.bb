@@ -206,18 +206,21 @@ void TestRenderFrame::SetCompositionFromExistingText(
                                                          ime_text_spans);
 }
 
-blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
-    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
+void TestRenderFrame::BeginNavigation(NavigationPolicyInfo& info) {
   if (info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
       ((GetWebFrame()->Parent() && info.form.IsNull()) ||
        next_request_url_override_.has_value())) {
     // RenderViewTest::LoadHTML immediately commits navigation for the main
     // frame. However if the loaded html has a subframe,
-    // DecidePolicyForNavigation will be called from Blink and we should avoid
+    // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
-    return blink::kWebNavigationPolicyCurrentTab;
+    GetWebFrame()->CommitNavigation(
+        info.url_request, info.frame_load_type, blink::WebHistoryItem(),
+        info.is_client_redirect, base::UnguessableToken::Create(),
+        nullptr /* navigation_params */, nullptr /* extra_data */);
+    return;
   }
-  return RenderFrameImpl::DecidePolicyForNavigation(info);
+  RenderFrameImpl::BeginNavigation(info);
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

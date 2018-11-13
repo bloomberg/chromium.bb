@@ -246,14 +246,9 @@ void WebFrameTestProxy::DidReceiveResponse(
   RenderFrameImpl::DidReceiveResponse(response);
 }
 
-blink::WebNavigationPolicy WebFrameTestProxy::DecidePolicyForNavigation(
-    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
-  blink::WebNavigationPolicy policy =
-      test_client_->DecidePolicyForNavigation(info);
-  if (policy == blink::kWebNavigationPolicyIgnore)
-    return policy;
-
-  return RenderFrameImpl::DecidePolicyForNavigation(info);
+void WebFrameTestProxy::BeginNavigation(NavigationPolicyInfo& info) {
+  if (test_client_->ShouldContinueNavigation(info))
+    RenderFrameImpl::BeginNavigation(info);
 }
 
 void WebFrameTestProxy::PostAccessibilityEvent(const blink::WebAXObject& object,

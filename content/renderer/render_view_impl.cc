@@ -280,8 +280,6 @@ Referrer RenderViewImpl::GetReferrerFromRequest(
 WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
     WebNavigationPolicy policy) {
   switch (policy) {
-    case blink::kWebNavigationPolicyIgnore:
-      return WindowOpenDisposition::IGNORE_ACTION;
     case blink::kWebNavigationPolicyDownload:
       return WindowOpenDisposition::SAVE_TO_DISK;
     case blink::kWebNavigationPolicyCurrentTab:

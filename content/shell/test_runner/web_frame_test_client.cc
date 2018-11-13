@@ -548,8 +548,7 @@ void WebFrameTestClient::DidAddMessageToConsole(
   }
 }
 
-blink::WebNavigationPolicy WebFrameTestClient::DecidePolicyForNavigation(
-    blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
+bool WebFrameTestClient::ShouldContinueNavigation(NavigationPolicyInfo& info) {
   DCHECK(!delegate_->IsNavigationInitiatedByRenderer(info.url_request));
 
   if (test_runner()->shouldDumpNavigationPolicy()) {
@@ -559,25 +558,20 @@ blink::WebNavigationPolicy WebFrameTestClient::DecidePolicyForNavigation(
                             "'\n");
   }
 
-  blink::WebNavigationPolicy result;
   if (!test_runner()->policyDelegateEnabled())
-    return info.default_policy;
+    return true;
 
   delegate_->PrintMessage(
       std::string("Policy delegate: attempt to load ") +
       URLDescription(info.url_request.Url()) + " with navigation type '" +
       WebNavigationTypeToString(info.navigation_type) + "'\n");
-  if (test_runner()->policyDelegateIsPermissive())
-    result = blink::kWebNavigationPolicyCurrentTab;
-  else
-    result = blink::kWebNavigationPolicyIgnore;
 
+  bool should_continue = test_runner()->policyDelegateIsPermissive();
   if (test_runner()->policyDelegateShouldNotifyDone()) {
     test_runner()->policyDelegateDone();
-    result = blink::kWebNavigationPolicyIgnore;
+    should_continue = false;
   }
-
-  return result;
+  return should_continue;
 }
 
 void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(

@@ -34,7 +34,6 @@
 namespace blink {
 
 enum WebNavigationPolicy {
-  kWebNavigationPolicyIgnore,
   kWebNavigationPolicyDownload,
   kWebNavigationPolicyCurrentTab,
   kWebNavigationPolicyNewBackgroundTab,

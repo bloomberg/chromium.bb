@@ -333,11 +333,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // defaultPolicy should just be returned.
 
   struct NavigationPolicyInfo {
-    // Note: if browser side navigations are enabled, the client may modify
-    // the urlRequest. However, should this happen, the client should change
-    // the WebNavigationPolicy to WebNavigationPolicyIgnore, and the load
-    // should stop in blink. In all other cases, the urlRequest should not
-    // be modified.
     WebURLRequest& url_request;
     WebNavigationType navigation_type;
     WebNavigationPolicy default_policy;
@@ -365,7 +360,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     explicit NavigationPolicyInfo(WebURLRequest& url_request)
         : url_request(url_request),
           navigation_type(kWebNavigationTypeOther),
-          default_policy(kWebNavigationPolicyIgnore),
+          default_policy(kWebNavigationPolicyCurrentTab),
           has_user_gesture(false),
           frame_load_type(WebFrameLoadType::kStandard),
           is_history_navigation_in_new_child_frame(false),
@@ -377,10 +372,23 @@ class BLINK_EXPORT WebLocalFrameClient {
           archive_status(ArchiveStatus::Absent) {}
   };
 
-  virtual WebNavigationPolicy DecidePolicyForNavigation(
-      NavigationPolicyInfo& info) {
-    return info.default_policy;
-  }
+  // Requests the client to begin a navigation for this frame.
+  //
+  // The client can just call CommitNavigation() on this frame in response.
+  // This will effectively commit a navigation the frame has asked about.
+  // This usually happens for navigations which do not require a network
+  // request, e.g. about:blank or mhtml archive.
+  //
+  // In the case of a navigation which requires network request and goes
+  // to the browser process, client calls CreatePlaceholderDocumentLoader
+  // (see it for more details) and commits/cancels the navigation later.
+  //
+  // It is also totally valid to ignore the request and abandon the
+  // navigation entirely.
+  //
+  // Note that ignoring this method effectively disables any navigations
+  // initiated by Blink in this frame.
+  virtual void BeginNavigation(NavigationPolicyInfo& info) {}
 
   // Asks the embedder whether the frame is allowed to navigate the main frame
   // to a data URL.

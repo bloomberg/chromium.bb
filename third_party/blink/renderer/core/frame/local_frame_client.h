@@ -148,7 +148,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidFinishLoad() = 0;
   virtual void DispatchDidChangeThemeColor() = 0;
 
-  virtual NavigationPolicy DecidePolicyForNavigation(
+  virtual void BeginNavigation(
       const ResourceRequest&,
       Document* origin_document,
       DocumentLoader*,
