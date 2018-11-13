@@ -62,6 +62,7 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
       delay_scan_after_unlock_timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      ignore_wired_networks_(false),
       is_screen_locked_(session_manager_->IsScreenLocked()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
@@ -90,9 +91,11 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 }
 
 void HostScanSchedulerImpl::AttemptScanIfOffline() {
+  const chromeos::NetworkTypePattern network_type_pattern =
+      ignore_wired_networks_ ? chromeos::NetworkTypePattern::Wireless()
+                             : chromeos::NetworkTypePattern::Default();
   const chromeos::NetworkState* first_network =
-      network_state_handler_->FirstNetworkByType(
-          chromeos::NetworkTypePattern::Default());
+      network_state_handler_->FirstNetworkByType(network_type_pattern);
   if (IsOnlineOrHasActiveTetherConnection(first_network)) {
     PA_LOG(VERBOSE) << "Skipping scan attempt because the device is already "
                        "connected to a network.";
@@ -103,8 +106,8 @@ void HostScanSchedulerImpl::AttemptScanIfOffline() {
 }
 
 void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
-  // If there is an active (i.e., connecting or connected) network, there is no
-  // need to schedule a scan.
+  // If there is an active (i.e., connecting or connected) network, there is
+  // no need to schedule a scan.
   if (IsOnlineOrHasActiveTetherConnection(network)) {
     return;
   }
@@ -112,7 +115,8 @@ void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
   // Schedule a scan as part of a new task. Posting a task here ensures that
   // processing the default network change is done after other
   // NetworkStateHandlerObservers are finished running. Processing the
-  // network change immediately can cause crashes; see https://crbug.com/800370.
+  // network change immediately can cause crashes; see
+  // https://crbug.com/800370.
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&HostScanSchedulerImpl::AttemptScan,
                                         weak_ptr_factory_.GetWeakPtr()));
@@ -148,8 +152,8 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
   if (!was_screen_locked)
     return;
 
-  // If the device was just unlocked, start a scan if not already connected to a
-  // network.
+  // If the device was just unlocked, start a scan if not already connected to
+  // a network.
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     AttemptScanIfOffline();
   } else {
