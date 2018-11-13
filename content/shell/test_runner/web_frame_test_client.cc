@@ -548,14 +548,15 @@ void WebFrameTestClient::DidAddMessageToConsole(
   }
 }
 
-bool WebFrameTestClient::ShouldContinueNavigation(NavigationPolicyInfo& info) {
+bool WebFrameTestClient::ShouldContinueNavigation(
+    const blink::WebNavigationInfo& info) {
   DCHECK(!delegate_->IsNavigationInitiatedByRenderer(info.url_request));
 
   if (test_runner()->shouldDumpNavigationPolicy()) {
-    delegate_->PrintMessage("Default policy for navigation to '" +
-                            URLDescription(info.url_request.Url()) + "' is '" +
-                            WebNavigationPolicyToString(info.default_policy) +
-                            "'\n");
+    delegate_->PrintMessage(
+        "Default policy for navigation to '" +
+        URLDescription(info.url_request.Url()) + "' is '" +
+        WebNavigationPolicyToString(info.navigation_policy) + "'\n");
   }
 
   if (!test_runner()->policyDelegateEnabled())

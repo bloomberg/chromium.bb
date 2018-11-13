@@ -645,7 +645,7 @@ class CONTENT_EXPORT RenderFrameImpl
                    CrossOriginRedirects cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
-  void BeginNavigation(NavigationPolicyInfo& info) override;
+  void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
@@ -1087,7 +1087,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // |is_history_navigation_in_new_child| is true, the browser process should
   // look for a matching FrameNavigationEntry in the last committed entry to use
   // instead of |url|.
-  void OpenURL(const NavigationPolicyInfo& info,
+  void OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
                bool is_history_navigation_in_new_child);
 
   // Creates a WebURLRequest to use fo the commit of a navigation.
@@ -1175,7 +1175,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
-  void BeginNavigationInternal(NavigationPolicyInfo& info);
+  void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Loads a data url.
   void LoadDataURL(

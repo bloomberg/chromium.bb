@@ -510,22 +510,21 @@ NavigationDownloadPolicy GetDownloadPolicy(
 
 CommonNavigationParams MakeCommonNavigationParams(
     const WebSecurityOrigin& current_origin,
-    const blink::WebLocalFrameClient::NavigationPolicyInfo& info,
-    int load_flags,
-    base::TimeTicks input_start) {
+    std::unique_ptr<blink::WebNavigationInfo> info,
+    int load_flags) {
   Referrer referrer(
-      GURL(info.url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
+      GURL(info->url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
-      info.url_request.GetReferrerPolicy());
+      info->url_request.GetReferrerPolicy());
 
   // No history-navigation is expected to happen.
-  DCHECK(info.navigation_type != blink::kWebNavigationTypeBackForward);
+  DCHECK(info->navigation_type != blink::kWebNavigationTypeBackForward);
 
   // Determine the navigation type. No same-document navigation is expected
   // because it is loaded immediately by the FrameLoader.
   FrameMsg_Navigate_Type::Value navigation_type =
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  if (info.navigation_type == blink::kWebNavigationTypeReload) {
+  if (info->navigation_type == blink::kWebNavigationTypeReload) {
     if (load_flags & net::LOAD_BYPASS_CACHE)
       navigation_type = FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
     else
@@ -533,39 +532,39 @@ CommonNavigationParams MakeCommonNavigationParams(
   }
 
   base::Optional<SourceLocation> source_location;
-  if (!info.source_location.url.IsNull()) {
-    source_location = SourceLocation(info.source_location.url.Latin1(),
-                                     info.source_location.line_number,
-                                     info.source_location.column_number);
+  if (!info->source_location.url.IsNull()) {
+    source_location = SourceLocation(info->source_location.url.Latin1(),
+                                     info->source_location.line_number,
+                                     info->source_location.column_number);
   }
 
   CSPDisposition should_check_main_world_csp =
-      info.should_check_main_world_content_security_policy ==
+      info->should_check_main_world_content_security_policy ==
               blink::kWebContentSecurityPolicyDispositionCheck
           ? CSPDisposition::CHECK
           : CSPDisposition::DO_NOT_CHECK;
 
   const RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(info.url_request.GetExtraData());
+      static_cast<RequestExtraData*>(info->url_request.GetExtraData());
   DCHECK(extra_data);
   NavigationDownloadPolicy download_policy = GetDownloadPolicy(
-      info.is_opener_navigation, info.url_request, current_origin);
+      info->is_opener_navigation, info->url_request, current_origin);
   return CommonNavigationParams(
-      info.url_request.Url(), referrer, extra_data->transition_type(),
+      info->url_request.Url(), referrer, extra_data->transition_type(),
       navigation_type, download_policy,
-      info.frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
-      GURL(), static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
-      base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
-      GetRequestBodyForWebURLRequest(info.url_request), source_location,
-      false /* started_from_context_menu */, info.url_request.HasUserGesture(),
+      info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
+      GURL(), static_cast<PreviewsState>(info->url_request.GetPreviewsState()),
+      base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
+      GetRequestBodyForWebURLRequest(info->url_request), source_location,
+      false /* started_from_context_menu */, info->url_request.HasUserGesture(),
       InitiatorCSPInfo(
           should_check_main_world_csp,
-          BuildContentSecurityPolicyList(info.url_request.GetInitiatorCSP()),
-          info.url_request.GetInitiatorCSP().self_source.has_value()
+          BuildContentSecurityPolicyList(info->url_request.GetInitiatorCSP()),
+          info->url_request.GetInitiatorCSP().self_source.has_value()
               ? base::Optional<CSPSource>(BuildCSPSource(
-                    info.url_request.GetInitiatorCSP().self_source.value()))
+                    info->url_request.GetInitiatorCSP().self_source.value()))
               : base::nullopt),
-      info.href_translate.Latin1(), input_start);
+      info->href_translate.Latin1(), info->input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
@@ -5973,7 +5972,8 @@ void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
       BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
-void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
+void RenderFrameImpl::BeginNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
   // This method is only called for renderer initiated navigations, which
   // may have originated from a link-click, script, drag-n-drop operation, etc.
 
@@ -5994,7 +5994,7 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
   // Blink is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
   // context and they're trying to navigate to a different context.
-  const GURL& url = info.url_request.Url();
+  const GURL& url = info->url_request.Url();
 
 #ifdef OS_ANDROID
   bool render_view_was_created_by_renderer =
@@ -6004,8 +6004,9 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
   if (!IsURLHandledByNetworkStack(url) && !url.is_empty() &&
       GetContentClient()->renderer()->HandleNavigation(
           this, true /* is_content_initiated */,
-          render_view_was_created_by_renderer, frame_, info.url_request,
-          info.navigation_type, info.default_policy, false /* is_redirect */)) {
+          render_view_was_created_by_renderer, frame_, info->url_request,
+          info->navigation_type, info->navigation_policy,
+          false /* is_redirect */)) {
     return;
   }
 #endif
@@ -6014,7 +6015,7 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
   if (IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(info, /*is_history_navigation_in_new_child=*/false);
+    OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
     return;  // Suppress the load here.
   }
 
@@ -6024,7 +6025,7 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
   // that have history items, or if it's staying at the initial about:blank URL,
   // fall back to loading the default url.  (We remove each name as we encounter
   // it, because it will only be used once as the frame is created.)
-  if (info.is_history_navigation_in_new_child_frame && frame_->Parent()) {
+  if (info->is_history_navigation_in_new_child_frame && frame_->Parent()) {
     // Check whether the browser has a history item for this frame that isn't
     // just staying at the initial about:blank document.
     bool should_ask_browser = false;
@@ -6042,8 +6043,8 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
       // Don't do this if |info| also says it is a client redirect, in which
       // case JavaScript on the page is trying to interrupt the history
       // navigation.
-      if (!info.is_client_redirect) {
-        OpenURL(info, /*is_history_navigation_in_new_child=*/true);
+      if (!info->is_client_redirect) {
+        OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/true);
         // TODO(japhet): This case wants to flag the frame as loading and do
         // nothing else. It'd be nice if it could go through the placeholder
         // DocumentLoader path, too.
@@ -6087,7 +6088,7 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
         (cumulative_bindings & kWebUIBindingsPolicyMask) ||
         url.SchemeIs(kViewSourceScheme) ||
         (frame_->IsViewSourceModeEnabled() &&
-         info.navigation_type != blink::kWebNavigationTypeReload);
+         info->navigation_type != blink::kWebNavigationTypeReload);
     if (!should_fork && url.SchemeIs(url::kFileScheme)) {
       // Fork non-file to file opens.  Note that this may fork unnecessarily if
       // another tab (hosting a file or not) targeted this one before its
@@ -6098,18 +6099,18 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
     if (!should_fork) {
       // Give the embedder a chance.
       should_fork = GetContentClient()->renderer()->ShouldFork(
-          frame_, url, info.url_request.HttpMethod().Utf8(),
+          frame_, url, info->url_request.HttpMethod().Utf8(),
           is_initial_navigation, false /* is_redirect */);
     }
 
     if (should_fork) {
-      OpenURL(info, /*is_history_navigation_in_new_child=*/false);
+      OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
       return;  // Suppress the load here.
     }
   }
 
   bool should_dispatch_before_unload =
-      info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
+      info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
       // No need to dispatch beforeunload if the frame has not committed a
       // navigation and contains an empty initial document.
       (has_accessed_initial_document_ || !current_history_item_.IsNull());
@@ -6121,7 +6122,7 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
     // BeforeUnload event destriyed this frame.
     base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
 
-    if (!frame_->DispatchBeforeUnloadEvent(info.navigation_type ==
+    if (!frame_->DispatchBeforeUnloadEvent(info->navigation_type ==
                                            blink::kWebNavigationTypeReload) ||
         !weak_self) {
       return;
@@ -6130,23 +6131,23 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
 
   // When an MHTML Archive is present, it should be used to serve iframe content
   // instead of doing a network request.
-  bool use_archive =
-      (info.archive_status == NavigationPolicyInfo::ArchiveStatus::Present) &&
-      !url.SchemeIs(url::kDataScheme);
+  bool use_archive = (info->archive_status ==
+                      blink::WebNavigationInfo::ArchiveStatus::Present) &&
+                     !url.SchemeIs(url::kDataScheme);
 
-  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
-    if (!info.form.IsNull()) {
+  if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {
+    if (!info->form.IsNull()) {
       for (auto& observer : observers_)
-        observer.WillSubmitForm(info.form);
+        observer.WillSubmitForm(info->form);
     }
     // If the navigation is not synchronous, send it to the browser.  This
     // includes navigations with no request being sent to the network stack.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
-      BeginNavigationInternal(info);
+      BeginNavigationInternal(std::move(info));
     } else {
       // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
       auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-      navigation_params->navigation_timings.input_start = info.input_start;
+      navigation_params->navigation_timings.input_start = info->input_start;
       // We need the provider to be non-null, otherwise Blink crashes, even
       // though the provider should not be used for any actual networking.
       navigation_params->service_worker_network_provider =
@@ -6154,21 +6155,21 @@ void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
               nullptr /* request_params */,
               nullptr /* controller_service_worker_info */);
       frame_->CommitNavigation(
-          info.url_request, info.frame_load_type, blink::WebHistoryItem(),
-          info.is_client_redirect, base::UnguessableToken::Create(),
+          info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+          info->is_client_redirect, base::UnguessableToken::Create(),
           std::move(navigation_params), BuildDocumentState());
     }
     return;
   }
 
-  if (info.default_policy == blink::kWebNavigationPolicyDownload) {
+  if (info->navigation_policy == blink::kWebNavigationPolicyDownload) {
     blink::mojom::BlobURLTokenPtrInfo blob_url_token =
-        CloneBlobURLToken(info.blob_url_token.get());
-    DownloadURL(info.url_request,
+        CloneBlobURLToken(info->blob_url_token.get());
+    DownloadURL(info->url_request,
                 blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
                 blob_url_token.PassHandle());
   } else {
-    OpenURL(info, /*is_history_navigation_in_new_child=*/false);
+    OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
   }
 }
 
@@ -6401,25 +6402,25 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 #endif
 #endif
 
-void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
+void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
                               bool is_history_navigation_in_new_child) {
-  WebNavigationPolicy policy = info.default_policy;
+  WebNavigationPolicy policy = info->navigation_policy;
   FrameHostMsg_OpenURL_Params params;
-  params.url = info.url_request.Url();
-  params.uses_post = IsHttpPost(info.url_request);
+  params.url = info->url_request.Url();
+  params.uses_post = IsHttpPost(info->url_request);
   params.resource_request_body =
-      GetRequestBodyForWebURLRequest(info.url_request);
-  params.extra_headers = GetWebURLRequestHeadersAsString(info.url_request);
+      GetRequestBodyForWebURLRequest(info->url_request);
+  params.extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
   params.referrer =
-      RenderViewImpl::GetReferrerFromRequest(frame_, info.url_request);
+      RenderViewImpl::GetReferrerFromRequest(frame_, info->url_request);
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
-  params.triggering_event_info = info.triggering_event_info;
+  params.triggering_event_info = info->triggering_event_info;
   params.blob_url_token =
-      CloneBlobURLToken(info.blob_url_token.get()).PassHandle().release();
+      CloneBlobURLToken(info->blob_url_token.get()).PassHandle().release();
   params.should_replace_current_entry =
-      info.frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
+      info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
       render_view_->history_list_length_;
-  params.user_gesture = info.has_user_gesture;
+  params.user_gesture = info->has_transient_user_activation;
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
@@ -6674,9 +6675,10 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }
 }  // namespace
 
-void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
+void RenderFrameImpl::BeginNavigationInternal(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
   auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-  navigation_params->navigation_timings.input_start = info.input_start;
+  navigation_params->navigation_timings.input_start = info->input_start;
   // We need the provider to be non-null, otherwise Blink crashes, even though
   // the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
@@ -6684,8 +6686,8 @@ void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
           nullptr /* request_params */,
           nullptr /* controller_service_worker_info */);
   if (!frame_->CreatePlaceholderDocumentLoader(
-          info.url_request, info.frame_load_type, info.navigation_type,
-          info.is_client_redirect, base::UnguessableToken::Create(),
+          info->url_request, info->frame_load_type, info->navigation_type,
+          info->is_client_redirect, base::UnguessableToken::Create(),
           std::move(navigation_params), BuildDocumentState())) {
     return;
   }
@@ -6695,9 +6697,9 @@ void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
       NavigationState::FromDocumentLoader(document_loader);
 
   browser_side_navigation_pending_ = true;
-  browser_side_navigation_pending_url_ = info.url_request.Url();
+  browser_side_navigation_pending_url_ = info->url_request.Url();
 
-  blink::WebURLRequest& request = info.url_request;
+  blink::WebURLRequest& request = info->url_request;
 
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
@@ -6720,11 +6722,11 @@ void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
   WillSendRequest(request);
 
   // Update the transition type of the request for client side redirects.
-  if (!info.url_request.GetExtraData())
-    info.url_request.SetExtraData(std::make_unique<RequestExtraData>());
-  if (info.is_client_redirect) {
+  if (!info->url_request.GetExtraData())
+    info->url_request.SetExtraData(std::make_unique<RequestExtraData>());
+  if (info->is_client_redirect) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(info.url_request.GetExtraData());
+        static_cast<RequestExtraData*>(info->url_request.GetExtraData());
     extra_data->set_transition_type(ui::PageTransitionFromInt(
         extra_data->transition_type() | ui::PAGE_TRANSITION_CLIENT_REDIRECT));
   }
@@ -6735,50 +6737,50 @@ void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
   // These values are assumed on the browser side for navigations. These checks
   // ensure the renderer has the correct values.
   DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
-            info.url_request.GetFetchRequestMode());
+            info->url_request.GetFetchRequestMode());
   DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
-            info.url_request.GetFetchCredentialsMode());
+            info->url_request.GetFetchCredentialsMode());
   DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
-            info.url_request.GetFetchRedirectMode());
+            info->url_request.GetFetchRedirectMode());
   DCHECK(frame_->Parent() ||
-         info.url_request.GetFrameType() ==
+         info->url_request.GetFrameType() ==
              network::mojom::RequestContextFrameType::kTopLevel);
   DCHECK(!frame_->Parent() ||
-         info.url_request.GetFrameType() ==
+         info->url_request.GetFrameType() ==
              network::mojom::RequestContextFrameType::kNested);
 
-  DCHECK(!info.url_request.RequestorOrigin().IsNull());
+  DCHECK(!info->url_request.RequestorOrigin().IsNull());
   base::Optional<url::Origin> initiator_origin =
-      base::Optional<url::Origin>(info.url_request.RequestorOrigin());
+      base::Optional<url::Origin>(info->url_request.RequestorOrigin());
 
   bool is_form_submission =
-      info.navigation_type == blink::kWebNavigationTypeFormSubmitted ||
-      info.navigation_type == blink::kWebNavigationTypeFormResubmitted;
+      info->navigation_type == blink::kWebNavigationTypeFormSubmitted ||
+      info->navigation_type == blink::kWebNavigationTypeFormResubmitted;
 
   GURL searchable_form_url;
   std::string searchable_form_encoding;
-  if (!info.form.IsNull()) {
-    WebSearchableFormData web_searchable_form_data(info.form);
+  if (!info->form.IsNull()) {
+    WebSearchableFormData web_searchable_form_data(info->form);
     searchable_form_url = web_searchable_form_data.Url();
     searchable_form_encoding = web_searchable_form_data.Encoding().Utf8();
   }
 
   GURL client_side_redirect_url;
-  if (info.is_client_redirect)
+  if (info->is_client_redirect)
     client_side_redirect_url = frame_->GetDocument().Url();
 
   blink::mojom::BlobURLTokenPtr blob_url_token(
-      CloneBlobURLToken(info.blob_url_token.get()));
+      CloneBlobURLToken(info->blob_url_token.get()));
 
-  int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
+  int load_flags = GetLoadFlagsForWebURLRequest(info->url_request);
   std::unique_ptr<base::DictionaryValue> initiator =
-      GetDevToolsInitiator(info.devtools_initiator_info);
+      GetDevToolsInitiator(info->devtools_initiator_info);
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
-          GetWebURLRequestHeadersAsString(info.url_request), load_flags,
-          info.url_request.GetSkipServiceWorker(),
-          GetRequestContextTypeForWebURLRequest(info.url_request),
-          GetMixedContentContextTypeForWebURLRequest(info.url_request),
+          GetWebURLRequestHeadersAsString(info->url_request), load_flags,
+          info->url_request.GetSkipServiceWorker(),
+          GetRequestContextTypeForWebURLRequest(info->url_request),
+          GetMixedContentContextTypeForWebURLRequest(info->url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,
           initiator_origin, client_side_redirect_url,
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
@@ -6792,11 +6794,11 @@ void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
 
   blink::mojom::NavigationInitiatorPtr initiator_ptr(
       blink::mojom::NavigationInitiatorPtrInfo(
-          std::move(info.navigation_initiator_handle), 0));
+          std::move(info->navigation_initiator_handle), 0));
 
   GetFrameHost()->BeginNavigation(
-      MakeCommonNavigationParams(frame_->GetSecurityOrigin(), info, load_flags,
-                                 info.input_start),
+      MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),
+                                 load_flags),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
 

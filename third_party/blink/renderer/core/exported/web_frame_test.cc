@@ -4463,9 +4463,9 @@ class TestReloadDoesntRedirectWebFrameClient
   ~TestReloadDoesntRedirectWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void BeginNavigation(NavigationPolicyInfo& info) override {
-    EXPECT_FALSE(info.is_client_redirect);
-    TestWebFrameClient::BeginNavigation(info);
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    EXPECT_FALSE(info->is_client_redirect);
+    TestWebFrameClient::BeginNavigation(std::move(info));
   }
 };
 
@@ -7372,12 +7372,12 @@ class TestNewWindowWebFrameClient
   ~TestNewWindowWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void BeginNavigation(NavigationPolicyInfo& info) override {
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
     if (ignore_navigations_) {
       begin_navigation_call_count_++;
       return;
     }
-    TestWebFrameClient::BeginNavigation(info);
+    TestWebFrameClient::BeginNavigation(std::move(info));
   }
 
   int BeginNavigationCallCount() const { return begin_navigation_call_count_; }
@@ -12444,14 +12444,14 @@ class TestFallbackWebFrameClient
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }
-  void BeginNavigation(NavigationPolicyInfo& info) override {
-    if (child_client_ || KURL(info.url_request.Url()) == BlankURL()) {
-      TestWebFrameClient::BeginNavigation(info);
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    if (child_client_ || KURL(info->url_request.Url()) == BlankURL()) {
+      TestWebFrameClient::BeginNavigation(std::move(info));
       return;
     }
     Frame()->CreatePlaceholderDocumentLoader(
-        info.url_request, info.frame_load_type, info.navigation_type,
-        info.is_client_redirect, base::UnguessableToken::Create(), nullptr,
+        info->url_request, info->frame_load_type, info->navigation_type,
+        info->is_client_redirect, base::UnguessableToken::Create(), nullptr,
         nullptr);
   }
 

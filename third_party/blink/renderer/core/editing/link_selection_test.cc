@@ -113,8 +113,9 @@ String LinkSelectionTestBase::GetSelectionText() {
 
 class TestFrameClient : public frame_test_helpers::TestWebFrameClient {
  public:
-  void BeginNavigation(NavigationPolicyInfo& info) override {
-    last_policy_ = info.default_policy;
+  void BeginNavigation(
+      std::unique_ptr<blink::WebNavigationInfo> info) override {
+    last_policy_ = info->navigation_policy;
   }
 
   WebNavigationPolicy GetLastNavigationPolicy() const { return last_policy_; }

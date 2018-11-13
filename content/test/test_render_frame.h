@@ -56,7 +56,7 @@ class TestRenderFrame : public RenderFrameImpl {
       int end,
       const std::vector<ui::ImeTextSpan>& ime_text_spans);
 
-  void BeginNavigation(NavigationPolicyInfo& info) override;
+  void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
 
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   TakeLastCommitParams();

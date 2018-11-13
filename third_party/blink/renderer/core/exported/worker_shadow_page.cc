@@ -104,7 +104,8 @@ void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
   }
 }
 
-void WorkerShadowPage::BeginNavigation(NavigationPolicyInfo& info) {
+void WorkerShadowPage::BeginNavigation(
+    std::unique_ptr<WebNavigationInfo> info) {
   NOTREACHED();
 }
 
