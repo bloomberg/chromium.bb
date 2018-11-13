@@ -50,6 +50,11 @@
 // editing mode of this controller.
 - (void)editButtonPressed;
 
+// Called when this ViewController toolbar's delete item has been tapped.
+// |indexPaths| is the index paths of the currently selected item to be deleted.
+// Default implementation removes the items.
+- (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_ROOT_TABLE_VIEW_CONTROLLER_H_
