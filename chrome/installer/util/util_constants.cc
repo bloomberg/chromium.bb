@@ -8,6 +8,12 @@ namespace installer {
 
 namespace switches {
 
+// Allow an update of Chrome from a higher version to a lower version.
+// Ordinarily, such downgrades are disallowed. An administrator may wish to
+// allow them in circumstances where the potential loss of user data is
+// permissable.
+const char kAllowDowngrade[] = "allow-downgrade";
+
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 
