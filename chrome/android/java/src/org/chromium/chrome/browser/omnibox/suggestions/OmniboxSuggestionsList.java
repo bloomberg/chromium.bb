@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -19,6 +20,7 @@ import android.widget.ListView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.ArrayList;
@@ -176,6 +178,40 @@ public class OmniboxSuggestionsList extends ListView {
                 MeasureSpec.makeMeasureSpec(mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(availableViewportHeight,
                         mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY));
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (!isShown()) return false;
+
+        int selectedPosition = getSelectedItemPosition();
+        int itemCount = getAdapter().getCount();
+        if (KeyNavigationUtil.isGoDown(event)) {
+            if (selectedPosition >= itemCount - 1) {
+                // Do not pass down events when the last item is already selected as it will
+                // dismiss the suggestion list.
+                return true;
+            }
+
+            if (selectedPosition == ListView.INVALID_POSITION) {
+                // When clearing the selection after a text change, state is not reset
+                // correctly so hitting down again will cause it to start from the previous
+                // selection point. We still have to send the key down event to let the list
+                // view items take focus, but then we select the first item explicitly.
+                boolean result = super.onKeyDown(keyCode, event);
+                setSelection(0);
+                return result;
+            }
+        } else if (KeyNavigationUtil.isGoRight(event)
+                && selectedPosition != ListView.INVALID_POSITION) {
+            View selectedView = getSelectedView();
+            if (selectedView != null) return selectedView.onKeyDown(keyCode, event);
+        } else if (KeyNavigationUtil.isEnter(event)
+                && selectedPosition != ListView.INVALID_POSITION) {
+            View selectedView = getSelectedView();
+            if (selectedView != null) return selectedView.performClick();
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

@@ -289,45 +289,14 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      * @return Whether the key event was handled.
      */
     public boolean handleKeyEvent(int keyCode, KeyEvent event) {
-        if (KeyNavigationUtil.isGoDown(event) && mListView != null && mListView.isShown()) {
-            int suggestionCount = mMediator.getSuggestionCount();
-            if (mListView.getSelectedItemPosition() < suggestionCount - 1) {
-                if (suggestionCount > 0) mMediator.allowPendingItemSelection();
-            } else {
-                // Do not pass down events when the last item is already selected as it will
-                // dismiss the suggestion list.
-                return true;
-            }
-
-            if (mListView.getSelectedItemPosition() == ListView.INVALID_POSITION) {
-                // When clearing the selection after a text change, state is not reset
-                // correctly so hitting down again will cause it to start from the previous
-                // selection point. We still have to send the key down event to let the list
-                // view items take focus, but then we select the first item explicitly.
-                boolean result = mListView.onKeyDown(keyCode, event);
-                mListView.setSelection(0);
-                return result;
-            } else {
-                return mListView.onKeyDown(keyCode, event);
-            }
-        } else if (KeyNavigationUtil.isGoUp(event) && mListView != null && mListView.isShown()) {
-            if (mListView.getSelectedItemPosition() != 0 && mMediator.getSuggestionCount() > 0) {
-                mMediator.allowPendingItemSelection();
-            }
-            return mListView.onKeyDown(keyCode, event);
-        } else if (KeyNavigationUtil.isGoRight(event) && mListView != null && mListView.isShown()
-                && mListView.getSelectedItemPosition() != ListView.INVALID_POSITION) {
-            mMediator.onSetUrlToSuggestion(
-                    mMediator.getSuggestionAt(mListView.getSelectedItemPosition()));
-            onTextChangedForAutocomplete();
-            mListView.setSelection(0);
-            return true;
-        } else if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
-            int selectedItemPosition = ListView.INVALID_POSITION;
-            if (mListView != null && mListView.isShown()) {
-                selectedItemPosition = mListView.getSelectedItemPosition();
-            }
-            mMediator.loadSuggestionAtIndex(selectedItemPosition, event.getEventTime());
+        boolean isShowingList = mListView != null && mListView.isShown();
+        if (isShowingList && mMediator.getSuggestionCount() > 0
+                && (KeyNavigationUtil.isGoDown(event) || KeyNavigationUtil.isGoUp(event))) {
+            mMediator.allowPendingItemSelection();
+        }
+        if (isShowingList && mListView.onKeyDown(keyCode, event)) return true;
+        if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
+            mMediator.loadTypedOmniboxText(event.getEventTime());
             return true;
         }
         return false;
@@ -339,9 +308,6 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     @Override
     public void onTextChangedForAutocomplete() {
-        if (!mParent.isInTouchMode() && mListView != null) {
-            mListView.setSelection(0);
-        }
         mMediator.onTextChangedForAutocomplete();
     }
 
