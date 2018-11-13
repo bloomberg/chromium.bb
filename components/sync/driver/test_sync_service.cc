@@ -94,6 +94,14 @@ void TestSyncService::SetNonEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(MakeDefaultCycleSnapshot());
 }
 
+syncer::SyncUserSettings* TestSyncService::GetUserSettings() {
+  return nullptr;
+}
+
+const syncer::SyncUserSettings* TestSyncService::GetUserSettings() const {
+  return nullptr;
+}
+
 int TestSyncService::GetDisableReasons() const {
   return disable_reasons_;
 }
