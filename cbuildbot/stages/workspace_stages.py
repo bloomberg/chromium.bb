@@ -25,7 +25,6 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -67,13 +66,12 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     """
     # TODO: Properly select the manifest. Currently hard coded to internal
     # branch checkouts.
-    site_config = config_lib.GetConfig()
-    manifest_url = site_config.params['MANIFEST_INT_URL']
+    manifest_url = config_lib.GetConfig().params['MANIFEST_INT_URL']
 
-    return repository.RepoRepository(
-        manifest_url, self._build_root,
-        branch=self._run.config.workspace_branch,
-        git_cache_dir=self._run.options.git_cache_dir)
+    # Workspace repos use the workspace URL / branch.
+    return self.GetRepoRepository(
+        manifest_repo_url=manifest_url,
+        branch=self._run.config.workspace_branch)
 
   def GetWorkspaceVersionInfo(self):
     """Fetch a VersionInfo for the workspace.
