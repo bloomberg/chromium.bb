@@ -328,10 +328,12 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
     return;
 
+  is_removing_imm_entry_ = true;
   scoped_refptr<InputMethodManager::State> state =
       InputMethodManager::Get()->GetActiveIMEState();
   // Remove the old registered entry.
   state->RemoveInputMethodExtension(proxy_ime_extension_id_);
+  is_removing_imm_entry_ = false;
 
   // Convert ime_info_array to InputMethodDescriptors.
   InputMethodDescriptors descriptors;
@@ -363,6 +365,11 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
     if (!base::ContainsValue(active_ime_list, input_method_id))
       active_ime_list.push_back(input_method_id);
   }
+  // Disable IMEs that are already disable in the container.
+  base::EraseIf(active_ime_list, [&enabled_input_method_ids](const auto& id) {
+    return chromeos::extension_ime_util::IsArcIME(id) &&
+           !base::ContainsValue(enabled_input_method_ids, id);
+  });
   profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
                                   base::JoinString(active_ime_list, ","));
 
@@ -382,6 +389,11 @@ void ArcInputMethodManagerService::OnConnectionClosed() {
 }
 
 void ArcInputMethodManagerService::ImeMenuListChanged() {
+  // Ignore ime menu list change while removing the old entry in
+  // |OnImeInfoChanged| not to expose temporary state to ARC++ container.
+  if (is_removing_imm_entry_)
+    return;
+
   auto* manager = chromeos::input_method::InputMethodManager::Get();
   auto new_active_ime_ids =
       manager->GetActiveIMEState()->GetActiveInputMethodIds();
