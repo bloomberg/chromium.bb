@@ -33,12 +33,6 @@
 -WizardControllerDeviceStateTest.ControlFlowDeviceDisabled
 -WizardControllerDeviceStateWithInitialEnrollmentTest.ControlFlowInitialEnrollment
 
-# Relies on net::URLRequestInterceptor.
-# https://crbug.com/884782
-# Convert the production code using example of how we add/remove
-# variations::kClientDataHeader in GoogleURLLoaderThrottle.
--ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
-
 # Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
 -DevToolsSanityTest.DisposeEmptyBrowserContext
 
