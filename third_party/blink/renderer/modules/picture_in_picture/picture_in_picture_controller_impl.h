@@ -46,6 +46,7 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   Status IsDocumentAllowed() const;
 
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
+  Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;
 
   // Implementation of PictureInPictureController.

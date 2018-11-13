@@ -32,8 +32,7 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
     Document& document) {
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
-  Element* picture_in_picture_element =
-      controller.PictureInPictureElement(document);
+  Element* picture_in_picture_element = controller.PictureInPictureElement();
 
   if (!picture_in_picture_element) {
     return ScriptPromise::RejectWithDOMException(

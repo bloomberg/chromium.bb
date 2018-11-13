@@ -193,6 +193,10 @@ void PictureInPictureControllerImpl::OnPictureInPictureControlClicked(
   }
 }
 
+Element* PictureInPictureControllerImpl::PictureInPictureElement() const {
+  return picture_in_picture_element_;
+}
+
 Element* PictureInPictureControllerImpl::PictureInPictureElement(
     TreeScope& scope) const {
   if (!picture_in_picture_element_)
