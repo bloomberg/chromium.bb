@@ -920,7 +920,15 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   if (IsPageLoad(*request))
     NotifyPageLoad();
 
-  request_time_tracker_->LogRequestStartTime(request->id, base::Time::Now());
+  bool has_listener = false;
+  for (const auto& kv : listeners_[browser_context]) {
+    if (!kv.second.empty()) {
+      has_listener = true;
+      break;
+    }
+  }
+  request_time_tracker_->LogRequestStartTime(
+      request->id, base::TimeTicks::Now(), has_listener);
 
   const bool is_incognito_context = IsIncognitoBrowserContext(browser_context);
 
@@ -1246,7 +1254,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     return;
   }
 
-  request_time_tracker_->LogRequestEndTime(request->id, base::Time::Now());
+  request_time_tracker_->LogRequestEndTime(request->id, base::TimeTicks::Now());
 
   // See comment in OnErrorOccurred regarding net::ERR_WS_UPGRADE.
   DCHECK(net_error == net::OK || net_error == net::ERR_WS_UPGRADE);
@@ -1300,7 +1308,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     return;
   }
 
-  request_time_tracker_->LogRequestEndTime(request->id, base::Time::Now());
+  request_time_tracker_->LogRequestEndTime(request->id, base::TimeTicks::Now());
 
   DCHECK_NE(net::OK, net_error);
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
@@ -1333,7 +1341,7 @@ void ExtensionWebRequestEventRouter::OnRequestWillBeDestroyed(
     const WebRequestInfo* request) {
   ClearPendingCallbacks(*request);
   signaled_requests_.erase(request->id);
-  request_time_tracker_->LogRequestEndTime(request->id, base::Time::Now());
+  request_time_tracker_->LogRequestEndTime(request->id, base::TimeTicks::Now());
 }
 
 void ExtensionWebRequestEventRouter::ClearPendingCallbacks(

@@ -20,17 +20,20 @@ ExtensionWebRequestTimeTracker::~ExtensionWebRequestTimeTracker() = default;
 
 void ExtensionWebRequestTimeTracker::LogRequestStartTime(
     int64_t request_id,
-    const base::Time& start_time) {
+    const base::TimeTicks& start_time,
+    bool has_listener) {
   auto iter = request_time_logs_.find(request_id);
   if (iter != request_time_logs_.end())
     return;
 
-  request_time_logs_[request_id].request_start_time = start_time;
+  RequestTimeLog& log = request_time_logs_[request_id];
+  log.request_start_time = start_time;
+  log.has_listener = has_listener;
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestEndTime(
     int64_t request_id,
-    const base::Time& end_time) {
+    const base::TimeTicks& end_time) {
   auto iter = request_time_logs_.find(request_id);
   if (iter == request_time_logs_.end())
     return;
@@ -42,12 +45,19 @@ void ExtensionWebRequestTimeTracker::LogRequestEndTime(
 
 void ExtensionWebRequestTimeTracker::AnalyzeLogRequest(
     const RequestTimeLog& log,
-    const base::Time& end_time) {
+    const base::TimeTicks& end_time) {
   base::TimeDelta request_duration = end_time - log.request_start_time;
+
+  if (log.has_listener) {
+    UMA_HISTOGRAM_TIMES("Extensions.WebRequest.TotalRequestTime",
+                        request_duration);
+  }
 
   if (log.block_duration.is_zero())
     return;
 
+  UMA_HISTOGRAM_TIMES("Extensions.WebRequest.TotalBlockingRequestTime",
+                      request_duration);
   UMA_HISTOGRAM_TIMES("Extensions.NetworkDelay", log.block_duration);
 
   // Ignore really short requests. Time spent on these is negligible, and any
