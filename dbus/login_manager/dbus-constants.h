@@ -62,7 +62,6 @@ const char kSessionManagerStopArcInstance[] = "StopArcInstance";
 const char kSessionManagerSetArcCpuRestriction[] = "SetArcCpuRestriction";
 const char kSessionManagerEmitArcBooted[] = "EmitArcBooted";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
-const char kSessionManagerRemoveArcData[] = "RemoveArcData";
 const char kSessionManagerStartContainer[] = "StartContainer";
 const char kSessionManagerStopContainer[] = "StopContainer";
 // Signals
