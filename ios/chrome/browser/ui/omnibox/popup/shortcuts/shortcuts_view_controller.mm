@@ -34,8 +34,14 @@ const NSInteger kCollectionShortcutSection = 1;
 
 @property(nonatomic, strong) UICollectionViewFlowLayout* layout;
 @property(nonatomic, strong) UICollectionView* collectionView;
+// Latest most visited items. Updated directly from the consumer calls.
 @property(nonatomic, strong)
-    NSArray<ShortcutsMostVisitedItem*>* mostVisitedItems;
+    NSArray<ShortcutsMostVisitedItem*>* latestMostVisitedItems;
+// Currently displayed most visited items. Will be set to nil when the view
+// disappears, and set to |latestMostVisitedItems| when the view appears. This
+// prevents the updates when the user sees the tiles.
+@property(nonatomic, strong)
+    NSArray<ShortcutsMostVisitedItem*>* displayedMostVisitedItems;
 
 @end
 
@@ -60,6 +66,10 @@ const NSInteger kCollectionShortcutSection = 1;
                         2;
   self.layout.sectionInset =
       UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
+  // Promote the latest most visited items to the displayed ones and reload the
+  // collection view data.
+  self.displayedMostVisitedItems = self.latestMostVisitedItems;
+  [self.collectionView reloadData];
 }
 
 #pragma mark - properties
@@ -99,23 +109,28 @@ const NSInteger kCollectionShortcutSection = 1;
 
 - (void)mostVisitedShortcutsAvailable:
     (NSArray<ShortcutsMostVisitedItem*>*)items {
-  self.mostVisitedItems = items;
-  if (!self.viewLoaded) {
-    return;
+  self.latestMostVisitedItems = items;
+
+  // Normally, the most visited tiles should not change when the user sees them.
+  // However, in case there were no items, and now they're available, it is
+  // better to show something, even if this means reloading the view.
+  if (self.displayedMostVisitedItems.count == 0 && self.viewLoaded) {
+    self.displayedMostVisitedItems = self.latestMostVisitedItems;
+    [self.collectionView reloadData];
   }
-  [self.collectionView reloadData];
 }
 
 - (void)faviconChangedForItem:(ShortcutsMostVisitedItem*)item {
   if (!self.viewLoaded) {
     return;
   }
-  NSUInteger i = [self.mostVisitedItems indexOfObject:item];
+  NSUInteger i = [self.displayedMostVisitedItems indexOfObject:item];
   if (i == NSNotFound) {
     return;
   }
-  [self.collectionView
-      reloadItemsAtIndexPaths:@[ [NSIndexPath indexPathWithIndex:i] ]];
+  [self.collectionView reloadItemsAtIndexPaths:@[
+    [NSIndexPath indexPathForItem:i inSection:kMostVisitedSection]
+  ]];
 }
 
 - (void)readingListBadgeUpdatedWithCount:(NSInteger)count {
@@ -130,6 +145,9 @@ const NSInteger kCollectionShortcutSection = 1;
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
+  if (section == kMostVisitedSection) {
+    return MIN(kNumberOfItemsPerRow, self.displayedMostVisitedItems.count);
+  };
   return kNumberOfItemsPerRow;
 }
 
@@ -142,7 +160,8 @@ const NSInteger kCollectionShortcutSection = 1;
         dequeueReusableCellWithReuseIdentifier:
             NSStringFromClass([MostVisitedShortcutCell class])
                                   forIndexPath:indexPath];
-    ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+    ShortcutsMostVisitedItem* item =
+        self.displayedMostVisitedItems[indexPath.item];
     [self configureMostVisitedCell:cell withItem:item];
     return cell;
   }
@@ -179,7 +198,8 @@ const NSInteger kCollectionShortcutSection = 1;
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   if (indexPath.section == kMostVisitedSection) {
-    ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+    ShortcutsMostVisitedItem* item =
+        self.displayedMostVisitedItems[indexPath.item];
     DCHECK(item);
     [self.commandHandler openMostVisitedItem:item];
   }
