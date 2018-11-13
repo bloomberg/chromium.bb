@@ -842,11 +842,11 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 
 #if DCHECK_IS_ON()
 
-#if defined(DHECK_IS_CONFIGURABLE)
+#if defined(DCHECK_IS_CONFIGURABLE)
 BASE_EXPORT extern LogSeverity LOG_DCHECK;
 #else
 const LogSeverity LOG_DCHECK = LOG_FATAL;
-#endif
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #else  // DCHECK_IS_ON()
 
