@@ -13782,7 +13782,7 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
-      'supported_on': ['chrome.*:71-'],
+      'supported_on': ['chrome.win:71-'],
       'caption': '''Use Internet Explorer's SiteList policy for Legacy Browser Support.''',
       'tags': [],
       'desc': '''This policy controls whether to load rules from Internet Explorer's SiteList policy.
