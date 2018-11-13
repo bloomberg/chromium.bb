@@ -135,7 +135,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;

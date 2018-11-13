@@ -71,8 +71,6 @@ class LocationIconView : public IconLabelBubbleView {
   gfx::Size GetMinimumSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
   bool ShouldShowSeparator() const override;
   bool ShouldShowExtraEndSpace() const override;
@@ -116,9 +114,6 @@ class LocationIconView : public IconLabelBubbleView {
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
 
   int GetSlideDurationTime() const override;
-
-  // True if hovering this view should display a tooltip.
-  bool show_tooltip_;
 
   Delegate* delegate_;
 

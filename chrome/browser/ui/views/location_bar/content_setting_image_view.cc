@@ -47,6 +47,7 @@ void ContentSettingImageView::Update() {
   // Note: We explicitly want to call this even if |web_contents| is NULL, so we
   // get hidden properly while the user is editing the omnibox.
   content_setting_image_model_->Update(web_contents);
+  SetTooltipText(content_setting_image_model_->get_tooltip());
 
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
@@ -88,12 +89,6 @@ void ContentSettingImageView::OnBoundsChanged(
   if (bubble_view_)
     bubble_view_->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
-}
-
-bool ContentSettingImageView::GetTooltipText(const gfx::Point& p,
-                                             base::string16* tooltip) const {
-  *tooltip = content_setting_image_model_->get_tooltip();
-  return !tooltip->empty();
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
