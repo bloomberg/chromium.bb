@@ -27,6 +27,10 @@ bool FidoDevice::IsInPairingMode() const {
   return false;
 }
 
+bool FidoDevice::IsPaired() const {
+  return false;
+}
+
 void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
     base::OnceClosure done) {
   if (base::FeatureList::IsEnabled(kNewCtap2Device)) {

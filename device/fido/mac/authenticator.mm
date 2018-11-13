@@ -167,6 +167,10 @@ bool TouchIdAuthenticator::IsInPairingMode() const {
   return false;
 }
 
+bool TouchIdAuthenticator::IsPaired() const {
+  return false;
+}
+
 base::WeakPtr<FidoAuthenticator> TouchIdAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

@@ -475,7 +475,8 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
       "authenticator" /* authenticator_id */,
       base::string16() /* authenticator_display_name */,
-      AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
+      AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
+      false /* is_paired */));
 
   model.StartFlow(std::move(transports_info), base::nullopt);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,

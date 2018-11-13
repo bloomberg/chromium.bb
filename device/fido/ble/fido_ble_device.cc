@@ -108,6 +108,14 @@ bool FidoBleDevice::IsInPairingMode() const {
           static_cast<int>(FidoServiceDataFlags::kPairingMode)) != 0;
 }
 
+bool FidoBleDevice::IsPaired() const {
+  const BluetoothDevice* const ble_device = connection_->GetBleDevice();
+  if (!ble_device)
+    return false;
+
+  return ble_device->IsPaired();
+}
+
 FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
   return base::BindRepeating(&FidoBleDevice::OnStatusMessage,
                              base::Unretained(this));

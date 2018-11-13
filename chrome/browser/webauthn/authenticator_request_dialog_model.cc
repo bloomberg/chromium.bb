@@ -224,6 +224,7 @@ void AuthenticatorRequestDialogModel::OnPairingSuccess(
   if (authenticator)
     return;
 
+  authenticator->SetIsPaired(true /* is_paired */);
   DispatchRequestAsync(authenticator, base::TimeDelta());
 }
 
@@ -357,8 +358,8 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
   }
   saved_authenticators_.AddAuthenticator(AuthenticatorReference(
       authenticator.GetId(), authenticator.GetDisplayName(),
-      *authenticator.AuthenticatorTransport(),
-      authenticator.IsInPairingMode()));
+      *authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode(),
+      authenticator.IsPaired()));
 }
 
 void AuthenticatorRequestDialogModel::RemoveAuthenticator(
