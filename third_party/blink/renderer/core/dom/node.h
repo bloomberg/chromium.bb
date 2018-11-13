@@ -208,7 +208,7 @@ class CORE_EXPORT Node : public EventTarget {
   void NativeApplyScroll(ScrollState&);
   void CallDistributeScroll(ScrollState&);
   void CallApplyScroll(ScrollState&);
-  void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
+  void WillBeginCustomizedScrollPhase(scroll_customization::ScrollDirection);
   void DidEndCustomizedScrollPhase();
 
   Node& TreeRoot() const;

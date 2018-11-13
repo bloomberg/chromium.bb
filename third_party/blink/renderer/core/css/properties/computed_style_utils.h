@@ -189,7 +189,7 @@ class ComputedStyleUtils {
                                                 Node*,
                                                 bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
-      ScrollCustomization::ScrollDirection);
+      scroll_customization::ScrollDirection);
   static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
 };
 

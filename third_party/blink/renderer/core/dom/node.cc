@@ -645,13 +645,13 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
 }
 
 void Node::WillBeginCustomizedScrollPhase(
-    ScrollCustomization::ScrollDirection direction) {
+    scroll_customization::ScrollDirection direction) {
   DCHECK(!GetScrollCustomizationCallbacks().InScrollPhase(this));
   LayoutBox* box = GetLayoutBox();
   if (!box)
     return;
 
-  ScrollCustomization::ScrollDirection scroll_customization =
+  scroll_customization::ScrollDirection scroll_customization =
       box->Style()->ScrollCustomization();
 
   GetScrollCustomizationCallbacks().SetInScrollPhase(

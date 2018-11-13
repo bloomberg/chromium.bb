@@ -940,8 +940,8 @@ WebGestureEvent ScrollManager::SynthesizeGestureScrollBegin(
 
 void ScrollManager::NotifyScrollPhaseBeginForCustomizedScroll(
     const ScrollState& scroll_state) {
-  ScrollCustomization::ScrollDirection direction =
-      ScrollCustomization::GetScrollDirectionFromDeltas(
+  scroll_customization::ScrollDirection direction =
+      scroll_customization::GetScrollDirectionFromDeltas(
           scroll_state.deltaXHint(), scroll_state.deltaYHint());
   for (auto id : current_scroll_chain_) {
     Node* node = DOMNodeIds::NodeForId(id);
