@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/url_formatter/url_fixer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -37,6 +39,18 @@ bool WillHandleWebBrowserAboutURL(GURL* url, web::BrowserState* browser_state) {
   // url_formatter::FixupURL translates about:foo into chrome://foo/.
   if (!url->SchemeIs(kChromeUIScheme))
     return false;
+
+  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+    // Translate chrome://newtab back into about://newtab when
+    // kBrowserContainerContainsNTP is enabled so the WebState shows a blank
+    // page under the NTP.
+    if (url->GetOrigin() == kChromeUINewTabURL) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr(url::kAboutScheme);
+      *url = url->ReplaceComponents(replacements);
+      return true;
+    }
+  }
 
   std::string host(url->host());
   for (size_t i = 0; i < base::size(kHostReplacements); ++i) {

@@ -221,20 +221,3 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
   EXPECT_NSEQ(GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/true),
               page);
 }
-
-// Tests PrepareErrorPage wth NTP and an empty string.
-TEST_F(ChromeWebClientTest, PrepareErrorPageNTP) {
-  ChromeWebClient web_client;
-  NSString* ntp_url = base::SysUTF8ToNSString(kChromeUINewTabURL);
-  NSDictionary* info = @{
-    NSURLErrorFailingURLStringErrorKey : ntp_url,
-  };
-  NSError* error = web::testing::CreateTestNetError([NSError
-      errorWithDomain:NSURLErrorDomain
-                 code:NSURLErrorNetworkConnectionLost
-             userInfo:info]);
-  NSString* page = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/false,
-                              /*is_off_the_record=*/false, &page);
-  EXPECT_NSEQ(@"", page);
-}

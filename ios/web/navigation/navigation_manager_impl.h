@@ -237,9 +237,9 @@ class NavigationManagerImpl : public NavigationManager {
       const GURL& previous_url,
       const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
-  // Returns the most recent NavigationItem that does not have an app-specific
-  // URL.
-  NavigationItem* GetLastCommittedNonAppSpecificItem() const;
+  // Returns the most recent NavigationItem with an URL that generates an HTTP
+  // request.
+  NavigationItem* GetLastCommittedItemWithUserAgentType() const;
 
   // Subclass specific implementation to update session state.
   virtual void FinishGoToIndex(int index,

@@ -447,19 +447,18 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
   item->SetNavigationInitiationType(initiation_type);
-  if (web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
+  if (!wk_navigation_util::URLNeedsUserAgentType(loaded_url)) {
     item->SetUserAgentType(web::UserAgentType::NONE);
   }
 
   return item;
 }
 
-NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
+NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
     const {
-  WebClient* client = GetWebClient();
   for (int index = GetLastCommittedItemIndex(); index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
-    if (!client->IsAppSpecificURL(item->GetURL()))
+    if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL()))
       return item;
   }
   return nullptr;

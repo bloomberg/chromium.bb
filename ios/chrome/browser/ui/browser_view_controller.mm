@@ -2667,15 +2667,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                        shouldFocus:[_findBarController isFocused]];
   }
 
-  web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
   BOOL hideToolbar = NO;
-  if (item) {
-    GURL url = item->GetURL();
-    BOOL isNTP = url.GetOrigin() == kChromeUINewTabURL;
+  if (tab.webState) {
     // Hide the toolbar when displaying content suggestions without the tab
     // strip, without the focused omnibox, and for UI Refresh, only when in
     // split toolbar mode.
-    hideToolbar = isNTP && !_isOffTheRecord &&
+    hideToolbar = IsVisibleUrlNewTabPage(tab.webState) && !_isOffTheRecord &&
                   ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                   ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
                   ![self canShowTabStrip] && IsSplitToolbarMode(self);
@@ -3914,8 +3911,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  if (tab && tab.webState->GetVisibleURL().GetOrigin() == kChromeUINewTabURL &&
-      ![self canShowTabStrip]) {
+  if (IsVisibleUrlNewTabPage(tab.webState) && ![self canShowTabStrip]) {
     if (self.usesFullscreenContainer)
       return 0;
     // Also subtract the top safe area so the view will appear as full screen.
@@ -4368,6 +4364,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   }
 
+  Tab* currentTab = self.tabModel.currentTab;
+  DCHECK(currentTab);
+  currentTab.navigationManager->LoadURLWithParams(params);
+
+  // Deactive the NTP immediately on a load to hide the NTP quickly, but after
+  // calling -LoadURLWithParams.  Otherwise, if the webState has never been
+  // visible (such as during startup with an NTP), it's possible the webView can
+  // trigger a unnecessary load for chrome://newtab.
   web::WebState* webState = self.tabModel.currentTab.webState;
   if (webState && params.url.GetOrigin() != kChromeUINewTabURL) {
     NewTabPageTabHelper* NTPHelper =
@@ -4376,10 +4380,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       NTPHelper->Deactivate();
     }
   }
-
-  Tab* currentTab = self.tabModel.currentTab;
-  DCHECK(currentTab);
-  currentTab.navigationManager->LoadURLWithParams(params);
 }
 
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
@@ -4479,10 +4479,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.sideSwipeController setEnabled:NO];
 
   web::WebState* webState = self.tabModel.currentTab.webState;
-  bool isNTP =
-      webState && webState->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
-
-  if (!isNTP) {
+  if (!IsVisibleUrlNewTabPage(webState)) {
     // Tapping on web content area should dismiss the keyboard. Tapping on NTP
     // gesture should propagate to NTP view.
     [self.view insertSubview:self.typingShield aboveSubview:self.contentArea];

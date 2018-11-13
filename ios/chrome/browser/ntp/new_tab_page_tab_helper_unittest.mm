@@ -102,6 +102,19 @@ TEST_F(NewTabPageTabHelperTest, TestAlreadyNTP) {
               base::SysUTF16ToNSString(pending_item_->GetTitle()));
 }
 
+// Tests a newly created NTP webstate using about://newtab.
+TEST_F(NewTabPageTabHelperTest, TestAlreadyAboutNTP) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
+
+  GURL url(kChromeUIAboutNewTabURL);
+  test_web_state_.SetVisibleURL(url);
+  CreateTabHelper();
+  EXPECT_TRUE(tab_helper()->IsActive());
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_NEW_TAB_TITLE),
+              base::SysUTF16ToNSString(pending_item_->GetTitle()));
+}
+
 // Tests a newly created non-NTP webstate.
 TEST_F(NewTabPageTabHelperTest, TestNotNTP) {
   base::test::ScopedFeatureList scoped_feature_list_;

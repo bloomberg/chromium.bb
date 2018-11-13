@@ -45,8 +45,12 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Enable or disable the tab helper.
   void SetActive(bool active);
 
-  // Sets the NTP's NavigationItem title to the appropriate string.
-  void UpdatePendingItemTitle();
+  // Sets the NTP's NavigationItem title and virtualURL to the appropriate
+  // string and chrome://newtab respectively.
+  void UpdatePendingItem();
+
+  // Returns true if an |url| is either chrome://newtab or about://newtab.
+  bool IsNTPURL(const GURL& url);
 
   // Used to present and dismiss the NTP.
   __weak id<NewTabPageTabHelperDelegate> delegate_ = nil;

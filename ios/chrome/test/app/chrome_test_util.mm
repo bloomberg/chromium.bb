@@ -258,8 +258,9 @@ bool PurgeCachedWebViewPages() {
       base::test::ios::kWaitForPageLoadTimeout, ^{
         return observer_ptr->did_finish_navigation_info() &&
                observer_ptr->did_finish_navigation_info()->context &&
-               observer_ptr->did_finish_navigation_info()->context->GetUrl() ==
-                   last_committed_url;
+               observer_ptr->did_finish_navigation_info()
+                       ->context->GetWebState()
+                       ->GetVisibleURL() == last_committed_url;
       });
 }
 
