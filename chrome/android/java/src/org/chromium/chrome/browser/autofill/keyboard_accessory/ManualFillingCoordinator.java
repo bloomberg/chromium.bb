@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
@@ -141,10 +142,11 @@ public class ManualFillingCoordinator {
     }
 
     /**
-     * Returns whether - at this very moment - the Keyboard is replaced by an accessory sheet.
-     * @return True if an accessory sheet is open and replacing the keyboard.
+     * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.
+     * @return True if an accessory sheet is (being) opened and replacing the keyboard.
+     * @param view A {@link View} that is used to find the window root.
      */
-    public boolean isFillingViewShown() {
-        return mMediator.isFillingViewShown();
+    public boolean isFillingViewShown(View view) {
+        return mMediator.isFillingViewShown(view);
     }
 }
