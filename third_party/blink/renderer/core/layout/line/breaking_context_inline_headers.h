@@ -1431,7 +1431,7 @@ inline bool BreakingContext::TrailingSpaceExceedsAvailableWidth(
   // If we break only after white-space, consider the current character
   // as candidate width for this line.
   if (width_.FitsOnLine() && current_character_is_space_ &&
-      current_style_->BreakOnlyAfterWhiteSpace() && !can_break_mid_word) {
+      current_style_->BreakOnlyAfterWhiteSpace()) {
     float char_width = TextWidth(layout_text, current_.Offset(), 1, font,
                                  width_.CurrentWidth(), collapse_white_space_,
                                  &word_measurement.fallback_fonts,

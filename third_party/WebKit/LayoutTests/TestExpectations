@@ -2074,8 +2074,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-my-000.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/pre-wrap-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/textarea-pre-wrap-002.html [ Failure ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Failure ]
 
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-color-001.xht [ Failure ]
