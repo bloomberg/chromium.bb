@@ -16,7 +16,6 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -179,7 +178,7 @@ MessageType GetStatusInfo(Profile* profile,
   if (!signin.IsAuthenticated())
     return PRE_SYNCED;
 
-  if (!service || service->IsFirstSetupComplete() ||
+  if (!service || service->GetUserSettings()->IsFirstSetupComplete() ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       service->HasDisableReason(
@@ -204,9 +203,8 @@ MessageType GetStatusInfo(Profile* profile,
       return PRE_SYNCED;
     }
 
-    PrefService* pref_service = profile->GetPrefs();
-    syncer::SyncPrefs sync_prefs(pref_service);
-    bool sync_everything = sync_prefs.HasKeepEverythingSynced();
+    bool sync_everything =
+        service->GetUserSettings()->IsSyncEverythingEnabled();
 
     // Check for sync errors if the sync service is enabled.
     if (service) {
@@ -232,8 +230,8 @@ MessageType GetStatusInfo(Profile* profile,
       }
 
       // Check for a passphrase error.
-      if (service->IsPassphraseRequired() &&
-          service->IsPassphraseRequiredForDecryption()) {
+      if (service->GetUserSettings()->IsPassphraseRequired() &&
+          service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
         if (status_label && link_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
@@ -426,8 +424,9 @@ MessageType GetStatus(Profile* profile,
 }
 
 bool ShouldShowPassphraseError(const ProfileSyncService* service) {
-  return service->IsFirstSetupComplete() && service->IsPassphraseRequired() &&
-         service->IsPassphraseRequiredForDecryption();
+  return service->GetUserSettings()->IsFirstSetupComplete() &&
+         service->GetUserSettings()->IsPassphraseRequired() &&
+         service->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
 
 }  // namespace sync_ui_util
