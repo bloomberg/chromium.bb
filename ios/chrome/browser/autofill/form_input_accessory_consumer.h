@@ -5,9 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_CONSUMER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_CONSUMER_H_
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
+@class FormSuggestion;
 @protocol FormInputAccessoryViewDelegate;
+@protocol FormSuggestionClient;
 
 @protocol FormInputAccessoryConsumer<NSObject>
 
@@ -26,11 +28,12 @@
 // reset.
 - (void)continueCustomKeyboardView;
 
-// Hides the default input accessory view and replaces it with one that shows
-// |customView| and form navigation controls.
-- (void)showCustomInputAccessoryView:(UIView*)view
-                  navigationDelegate:
-                      (id<FormInputAccessoryViewDelegate>)navigationDelegate;
+// Replace the keyboard accessory view with one showing the passed suggestions.
+// And form navigation buttons if not an iPad (which already includes those).
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
+                suggestionClient:(id<FormSuggestionClient>)suggestionClient
+              navigationDelegate:
+                  (id<FormInputAccessoryViewDelegate>)navigationDelegate;
 
 @end
 

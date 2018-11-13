@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
+#import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,13 +43,13 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   UIStackView* _stackView;
 
   // Handles user interactions.
-  id<FormSuggestionViewClient> _client;
+  id<FormSuggestionClient> _client;
 }
 
 @synthesize trailingView = _trailingView;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                       client:(id<FormSuggestionViewClient>)client
+                       client:(id<FormSuggestionClient>)client
                   suggestions:(NSArray<FormSuggestion*>*)suggestions {
   self = [super initWithFrame:frame];
   if (self) {

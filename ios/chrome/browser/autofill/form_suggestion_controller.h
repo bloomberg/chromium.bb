@@ -10,8 +10,9 @@
 #include <string>
 
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
+#import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
-#import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 namespace autofill {
@@ -23,11 +24,12 @@ class WebState;
 }
 
 @protocol CRWWebViewProxy;
-@protocol FormInputAccessoryViewProvider;
+@protocol FormInputSuggestionsProvider;
 
 // Handles form focus events and presents input suggestions.
-@interface FormSuggestionController
-    : NSObject<CRWWebStateObserver, FormSuggestionViewClient>
+@interface FormSuggestionController : NSObject<CRWWebStateObserver,
+                                               FormSuggestionClient,
+                                               FormInputSuggestionsProvider>
 
 // Initializes a new FormSuggestionController with the specified WebState and a
 // list of FormSuggestionProviders.
@@ -46,10 +48,6 @@ class WebState;
 
 // Instructs the controller to detach itself from the WebState.
 - (void)detachFromWebState;
-
-// Provides an input accessory view for form suggestions.
-@property(nonatomic, readonly) id<FormInputAccessoryViewProvider>
-    accessoryViewProvider;
 
 @end
 

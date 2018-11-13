@@ -28,9 +28,9 @@ void FormSuggestionTabHelper::CreateForWebState(
   }
 }
 
-id<FormInputAccessoryViewProvider>
+id<FormInputSuggestionsProvider>
 FormSuggestionTabHelper::GetAccessoryViewProvider() {
-  return controller_.accessoryViewProvider;
+  return controller_;
 }
 
 FormSuggestionTabHelper::FormSuggestionTabHelper(

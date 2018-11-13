@@ -13,9 +13,8 @@
 
 @class ChromeCoordinator;
 @protocol FormInputAccessoryConsumer;
-@protocol FormInputAccessoryViewProvider;
+@protocol FormInputSuggestionsProvider;
 @class JsSuggestionManager;
-@class ManualFillAccessoryViewController;
 class WebStateList;
 namespace web {
 class WebState;
@@ -25,11 +24,6 @@ class WebState;
 // views to its consumer. As well as telling the consumer when the default
 // accessory view shoeuld be restored to the system default.
 @interface FormInputAccessoryMediator : NSObject
-
-// The manual fill accessory view controller to add at the end of the
-// suggestions.
-@property(nonatomic, weak)
-    ManualFillAccessoryViewController* manualFillAccessoryViewController;
 
 // Returns a mediator observing the passed `WebStateList` and associated with
 // the passed consumer. `webSateList` can be nullptr and `consumer` can be nil.
@@ -60,7 +54,7 @@ class WebState;
 
 // The objects that can provide a custom input accessory view while filling
 // forms.
-- (void)injectProviders:(NSArray<id<FormInputAccessoryViewProvider>>*)providers;
+- (void)injectProviders:(NSArray<id<FormInputSuggestionsProvider>>*)providers;
 
 @end
 

@@ -15,12 +15,11 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
+#import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -46,7 +45,7 @@
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
 
 // The object that manages the currently-shown custom accessory view.
-@property(nonatomic, weak) id<FormInputAccessoryViewProvider> currentProvider;
+@property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
@@ -56,18 +55,17 @@
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
 // Last seen provider. Used to reenable suggestions.
-@property(nonatomic, weak) id<FormInputAccessoryViewProvider> lastProvider;
+@property(nonatomic, weak) id<FormInputSuggestionsProvider> lastProvider;
 
 // Last seen suggestions. Used to reenable suggestions.
-@property(nonatomic, strong) UIView* lastSuggestionView;
+@property(nonatomic, strong) NSArray<FormSuggestion*>* lastSuggestions;
 
 // Whether suggestions are disabled.
 @property(nonatomic, assign) BOOL suggestionsDisabled;
 
 // The objects that can provide a custom input accessory view while filling
 // forms.
-@property(nonatomic, copy)
-    NSArray<id<FormInputAccessoryViewProvider>>* providers;
+@property(nonatomic, copy) NSArray<id<FormInputSuggestionsProvider>>* providers;
 
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
@@ -211,7 +209,7 @@
   [_formInputAccessoryHandler
       setLastFocusFormActivityWebFrameID:base::SysUTF8ToNSString(
                                              params.frame_id)];
-  [self retrieveAccessoryViewForForm:params webState:webState];
+  [self retrieveSuggestionsForForm:params webState:webState];
 }
 
 #pragma mark - CRWWebStateObserver
@@ -262,20 +260,20 @@
 
 - (void)disableSuggestions {
   self.suggestionsDisabled = YES;
-  [self updateWithProvider:nil suggestionView:nil];
+  [self updateWithProvider:nil suggestions:nil];
 }
 
 - (void)enableSuggestions {
   self.suggestionsDisabled = NO;
-  if (self.lastProvider && self.lastSuggestionView) {
+  if (self.lastProvider && self.lastSuggestions) {
     [self updateWithProvider:self.lastProvider
-              suggestionView:self.lastSuggestionView];
+                 suggestions:self.lastSuggestions];
   }
 }
 
 #pragma mark - Setters
 
-- (void)setCurrentProvider:(id<FormInputAccessoryViewProvider>)currentProvider {
+- (void)setCurrentProvider:(id<FormInputSuggestionsProvider>)currentProvider {
   if (_currentProvider == currentProvider) {
     return;
   }
@@ -318,7 +316,6 @@
 // well as reenables suggestions.
 - (void)reset {
   [self.consumer restoreOriginalKeyboardView];
-  [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryHandler reset];
 
   self.suggestionsDisabled = NO;
@@ -327,8 +324,8 @@
 
 // Asynchronously queries the providers for an accessory view. Sends it to
 // the consumer if found.
-- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
-                            webState:(web::WebState*)webState {
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
+                          webState:(web::WebState*)webState {
   DCHECK_EQ(webState, self.webState);
 
   // TODO(crbug.com/845472): refactor this overly complex code. There is
@@ -338,7 +335,7 @@
   // if the provider can provide an accessory view for the specified form/field
   // and NO otherwise.
   NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
-  for (id<FormInputAccessoryViewProvider> provider in _providers) {
+  for (id<FormInputSuggestionsProvider> provider in _providers) {
     passwords::PipelineBlock findProviderBlock =
         [self queryViewBlockForProvider:provider params:params];
     [findProviderBlocks addObject:findProviderBlock];
@@ -357,7 +354,7 @@
 // Returns a pipeline block used to search for a provider with the current form
 // params.
 - (passwords::PipelineBlock)
-queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
+queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
                    params:(autofill::FormActivityParams)params {
   __weak __typeof(self) weakSelf = self;
   return ^(void (^completion)(BOOL success)) {
@@ -365,72 +362,66 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
     if (!strongSelf) {
       return;
     }
-    AccessoryViewReadyCompletion accessoryViewReadyCompletion =
+    FormSuggestionsReadyCompletion formSuggestionsReadyCompletion =
         [self accessoryViewReadyBlockWithCompletion:completion];
-    [provider retrieveAccessoryViewForForm:params
-                                  webState:strongSelf.webState
-                  accessoryViewUpdateBlock:accessoryViewReadyCompletion];
+    [provider retrieveSuggestionsForForm:params
+                                webState:strongSelf.webState
+                accessoryViewUpdateBlock:formSuggestionsReadyCompletion];
   };
 }
 
 // Returns a block setting up the provider and the view returned. It calls the
 // passed completion with NO if the view found is invalid. With YES otherwise.
-- (AccessoryViewReadyCompletion)accessoryViewReadyBlockWithCompletion:
+- (FormSuggestionsReadyCompletion)accessoryViewReadyBlockWithCompletion:
     (void (^)(BOOL success))completion {
   __weak __typeof(self) weakSelf = self;
-  return ^(UIView* accessoryView, id<FormInputAccessoryViewProvider> provider) {
+  return ^(NSArray<FormSuggestion*>* suggestions,
+           id<FormInputSuggestionsProvider> provider) {
     // View is nil, tell the pipeline to continue searching.
-    if (!accessoryView) {
+    if (!suggestions) {
       completion(NO);
       return;
     }
     // Once the view is retrieved, tell the pipeline to stop and
     // update the UI.
     completion(YES);
-    [weakSelf updateWithProvider:provider suggestionView:accessoryView];
+    [weakSelf updateWithProvider:provider suggestions:suggestions];
   };
 }
 
 // Post the passed |suggestionView| to the consumer. In case suggestions are
 // disabled, it's keep for later.
-- (void)updateWithProvider:(id<FormInputAccessoryViewProvider>)provider
-            suggestionView:(UIView*)suggestionView {
+- (void)updateWithProvider:(id<FormInputSuggestionsProvider>)provider
+               suggestions:(NSArray<FormSuggestion*>*)suggestions {
   // If the povider is valid, save the view and the provider for later. This is
   // used to restore the state when re-enabling suggestions.
   if (provider) {
-    self.lastSuggestionView = suggestionView;
+    self.lastSuggestions = suggestions;
     self.lastProvider = provider;
   }
   // If the suggestions are disabled, post this view with no suggestions to the
   // consumer. This allows the navigation buttons be in sync.
-  UIView* consumerView = suggestionView;
   if (self.suggestionsDisabled) {
-    consumerView = [[FormSuggestionView alloc] initWithFrame:CGRectZero
-                                                      client:nil
-                                                 suggestions:@[]];
+    [self.consumer showAccessorySuggestions:@[]
+                           suggestionClient:provider
+                         navigationDelegate:self.formInputAccessoryHandler];
   } else {
     // If suggestions are enabled update |currentProvider|.
     self.currentProvider = provider;
   }
-  // If Manual Fallback is enabled, add its view after the suggestions.
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
-    FormSuggestionView* formSuggestionView =
-        base::mac::ObjCCast<FormSuggestionView>(consumerView);
-    formSuggestionView.trailingView =
-        self.manualFillAccessoryViewController.view;
-  }
   // Post it to the consumer.
-  [self.consumer showCustomInputAccessoryView:consumerView
-                           navigationDelegate:self.formInputAccessoryHandler];
+  [self.consumer showAccessorySuggestions:suggestions
+                         suggestionClient:provider
+                       navigationDelegate:self.formInputAccessoryHandler];
 }
 
 #pragma mark - Keyboard Notifications
 
 // When the keyboard is shown, send the last suggestions to the consumer.
 - (void)handleKeyboardWillShow:(NSNotification*)notification {
-  if (self.lastSuggestionView) {
+  if (self.lastSuggestions) {
     [self updateWithProvider:self.lastProvider
-              suggestionView:self.lastSuggestionView];
+                 suggestions:self.lastSuggestions];
   }
 }
 
@@ -466,8 +457,7 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
   _formInputAccessoryHandler.JSSuggestionManager = _JSSuggestionManager;
 }
 
-- (void)injectProviders:
-    (NSArray<id<FormInputAccessoryViewProvider>>*)providers {
+- (void)injectProviders:(NSArray<id<FormInputSuggestionsProvider>>*)providers {
   self.providers = providers;
 }
 

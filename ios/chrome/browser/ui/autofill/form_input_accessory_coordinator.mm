@@ -78,11 +78,12 @@
     _manualFillAccessoryViewController =
         [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
 
+    _formInputAccessoryViewController.manualFillAccessoryViewController =
+        _manualFillAccessoryViewController;
+
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
         initWithConsumer:self.formInputAccessoryViewController
             webStateList:webStateList];
-    _formInputAccessoryMediator.manualFillAccessoryViewController =
-        _manualFillAccessoryViewController;
   }
   return self;
 }

@@ -257,8 +257,7 @@ void AutofillControllerTest::SetUp() {
       [[FormInputAccessoryMediator alloc] initWithConsumer:nil
                                               webStateList:NULL];
   [accessory_mediator_ injectWebState:web_state()];
-  [accessory_mediator_
-      injectProviders:@[ [suggestion_controller_ accessoryViewProvider] ]];
+  [accessory_mediator_ injectProviders:@[ suggestion_controller_ ]];
   auto suggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
       [web_state()->GetJSInjectionReceiver()
           instanceOfClass:[JsSuggestionManager class]]);

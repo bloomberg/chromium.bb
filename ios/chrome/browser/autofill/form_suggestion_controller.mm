@@ -16,7 +16,7 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
+#import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -62,12 +62,12 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 }  // namespace
 
-@interface FormSuggestionController () <FormInputAccessoryViewProvider> {
+@interface FormSuggestionController ()<FormInputSuggestionsProvider> {
   // Form navigation delegate.
   __weak id<FormInputAccessoryViewDelegate> _delegate;
 
   // Callback to update the accessory view.
-  AccessoryViewReadyCompletion accessoryViewUpdateBlock_;
+  FormSuggestionsReadyCompletion accessoryViewUpdateBlock_;
 
   // Autofill suggestion state.
   std::unique_ptr<AutofillSuggestionState> _suggestionState;
@@ -256,7 +256,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   if (!accessoryViewUpdateBlock_) {
     return;
   }
-  accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:@[]], self);
+  accessoryViewUpdateBlock_(@[], self);
 }
 
 - (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
@@ -300,25 +300,8 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 - (void)updateKeyboardWithSuggestions:(NSArray<FormSuggestion*>*)suggestions {
   if (accessoryViewUpdateBlock_) {
-    accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:suggestions],
-                              self);
+    accessoryViewUpdateBlock_(suggestions, self);
   }
-}
-
-// Returns an autoreleased input accessory view that shows |suggestions|.
-- (UIView*)suggestionViewWithSuggestions:
-    (NSArray<FormSuggestion*>*)suggestions {
-  CGRect frame = [_webViewProxy keyboardAccessory].frame;
-  // Force the desired height on iPad where the height of the
-  // inputAccessoryView is 0.
-  if (IsIPadIdiom()) {
-    frame.size.height = autofill::kInputAccessoryHeight;
-  }
-  FormSuggestionView* view =
-      [[FormSuggestionView alloc] initWithFrame:frame
-                                         client:self
-                                    suggestions:suggestions];
-  return view;
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion {
@@ -340,11 +323,7 @@ AutofillSuggestionState::AutofillSuggestionState(
         }];
 }
 
-- (id<FormInputAccessoryViewProvider>)accessoryViewProvider {
-  return self;
-}
-
-#pragma mark FormInputAccessoryViewProvider
+#pragma mark FormInputSuggestionsProvider
 
 - (id<FormInputAccessoryViewDelegate>)accessoryViewDelegate {
   return _delegate;
@@ -354,10 +333,10 @@ AutofillSuggestionState::AutofillSuggestionState(
   _delegate = delegate;
 }
 
-- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
-                            webState:(web::WebState*)webState
-            accessoryViewUpdateBlock:
-                (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
+                          webState:(web::WebState*)webState
+          accessoryViewUpdateBlock:
+              (FormSuggestionsReadyCompletion)accessoryViewUpdateBlock {
   [self processPage:webState];
   _suggestionState.reset(
       new AutofillSuggestionState(params.form_name, params.field_identifier,
