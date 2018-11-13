@@ -33993,6 +33993,18 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Service not ready"/>
 </enum>
 
+<enum name="MultiDevice_FeatureState">
+  <int value="0" label="Prohibited by policy"/>
+  <int value="1" label="Disabled by user"/>
+  <int value="2" label="Enabled by user"/>
+  <int value="3" label="Not support by Chromebook"/>
+  <int value="4" label="Not supported by phone"/>
+  <int value="5" label="Unable, no verified host"/>
+  <int value="6" label="Unavailable, insufficient security"/>
+  <int value="7" label="Unavailable, suite disabled"/>
+  <int value="8" label="Further setup required"/>
+</enum>
+
 <enum name="MultiDevice_PostOOBESetupFlow_Page">
   <int value="0" label="Unknown page"/>
   <int value="1" label="Start page"/>
