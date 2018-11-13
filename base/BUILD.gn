@@ -2083,6 +2083,10 @@ test("base_perftests") {
     "//testing/gtest",
     "//testing/perf",
   ]
+  data_deps = [
+    # Needed for isolate script to execute.
+    "//testing:run_perf_test",
+  ]
 
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
