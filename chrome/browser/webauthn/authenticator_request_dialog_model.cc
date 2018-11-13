@@ -349,9 +349,16 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
 
 void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
+  if (!authenticator.AuthenticatorTransport()) {
+    // AuthenticatorTransport is nullopt if we cannot determine the transport
+    // upfront, i.e. for the Windows API authenticator. The UI will be
+    // suppressed for this authenticator, so we can simply ignore it here.
+    return;
+  }
   saved_authenticators_.AddAuthenticator(AuthenticatorReference(
       authenticator.GetId(), authenticator.GetDisplayName(),
-      authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode()));
+      *authenticator.AuthenticatorTransport(),
+      authenticator.IsInPairingMode()));
 }
 
 void AuthenticatorRequestDialogModel::RemoveAuthenticator(

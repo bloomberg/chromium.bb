@@ -76,13 +76,14 @@ bool CheckResponseCredentialIdMatchesRequestAllowList(
   }
   // Credential ID may be omitted if allow list has size 1. Otherwise, it needs
   // to match.
-  const auto transport_used = authenticator.AuthenticatorTransport();
+  const auto opt_transport_used = authenticator.AuthenticatorTransport();
   return (allow_list->size() == 1 && !response.credential()) ||
          std::any_of(allow_list->cbegin(), allow_list->cend(),
-                     [&response, transport_used](const auto& credential) {
+                     [&response, opt_transport_used](const auto& credential) {
                        return credential.id() == response.raw_credential_id() &&
-                              base::ContainsKey(credential.transports(),
-                                                transport_used);
+                              (!opt_transport_used ||
+                               base::ContainsKey(credential.transports(),
+                                                 *opt_transport_used));
                      });
 }
 
@@ -158,7 +159,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
-    SignResponseCallback completion_callback)
+    CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(

@@ -33,14 +33,10 @@ namespace {
 using FakeTaskCallback =
     base::OnceCallback<void(CtapDeviceResponseCode status_code,
                             base::Optional<std::vector<uint8_t>>)>;
-using FakeHandlerCallback =
-    base::OnceCallback<void(FidoReturnCode status_code,
-                            base::Optional<std::vector<uint8_t>> response_data,
-                            FidoTransportProtocol)>;
-using FakeHandlerCallbackReceiver =
-    test::StatusAndValuesCallbackReceiver<FidoReturnCode,
-                                          base::Optional<std::vector<uint8_t>>,
-                                          FidoTransportProtocol>;
+using FakeHandlerCallbackReceiver = test::StatusAndValuesCallbackReceiver<
+    FidoReturnCode,
+    base::Optional<std::vector<uint8_t>>,
+    base::Optional<FidoTransportProtocol>>;
 
 enum class FakeTaskResponse : uint8_t {
   kSuccess = 0x00,
@@ -176,13 +172,13 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
   FakeFidoRequestHandler(service_manager::Connector* connector,
                          const base::flat_set<FidoTransportProtocol>& protocols,
-                         FakeHandlerCallback callback)
+                         CompletionCallback callback)
       : FidoRequestHandler(connector, protocols, std::move(callback)),
         weak_factory_(this) {
     Start();
   }
   FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
-                         FakeHandlerCallback callback)
+                         CompletionCallback callback)
       : FakeFidoRequestHandler(nullptr /* connector */,
                                protocols,
                                std::move(callback)) {}

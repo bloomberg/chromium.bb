@@ -25,11 +25,6 @@ namespace device {
 class FidoAuthenticator;
 class AuthenticatorGetAssertionResponse;
 
-using SignResponseCallback =
-    base::OnceCallback<void(FidoReturnCode,
-                            base::Optional<AuthenticatorGetAssertionResponse>,
-                            FidoTransportProtocol)>;
-
 class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
     : public FidoRequestHandler<AuthenticatorGetAssertionResponse> {
  public:
@@ -37,7 +32,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,
-      SignResponseCallback completion_callback);
+      CompletionCallback completion_callback);
   ~GetAssertionRequestHandler() override;
 
  private:

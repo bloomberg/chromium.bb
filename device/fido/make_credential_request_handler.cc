@@ -87,7 +87,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
-    RegisterResponseCallback completion_callback)
+    CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(

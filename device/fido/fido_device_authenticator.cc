@@ -116,7 +116,8 @@ FidoDeviceAuthenticator::Options() const {
   return options_;
 }
 
-FidoTransportProtocol FidoDeviceAuthenticator::AuthenticatorTransport() const {
+base::Optional<FidoTransportProtocol>
+FidoDeviceAuthenticator::AuthenticatorTransport() const {
   return device_->DeviceTransport();
 }
 

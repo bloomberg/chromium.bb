@@ -357,8 +357,10 @@ CreateMakeCredentialResponse(
 
   // The transport list must not contain duplicates but the order doesn't matter
   // because Blink will sort the resulting strings before returning them.
-  std::vector<device::FidoTransportProtocol> transports = {
-      response_data.transport_used()};
+  std::vector<device::FidoTransportProtocol> transports;
+  if (response_data.transport_used()) {
+    transports.push_back(*response_data.transport_used());
+  }
   // If the attestation certificate specifies that the token supports any other
   // transports, include them in the list.
   base::Optional<base::span<const uint8_t>> leaf_cert =
@@ -799,7 +801,7 @@ void AuthenticatorImpl::DidFinishNavigation(
 void AuthenticatorImpl::OnRegisterResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-    device::FidoTransportProtocol transport_used) {
+    base::Optional<device::FidoTransportProtocol> transport_used) {
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -840,7 +842,9 @@ void AuthenticatorImpl::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
-      request_delegate_->UpdateLastTransportUsed(transport_used);
+      if (transport_used) {
+        request_delegate_->UpdateLastTransportUsed(*transport_used);
+      }
 
       if (attestation_preference_ !=
           blink::mojom::AttestationConveyancePreference::NONE) {
@@ -859,7 +863,8 @@ void AuthenticatorImpl::OnRegisterResponse(
           AttestationErasureOption::kEraseAttestationAndAaguid;
       if (response_data->IsSelfAttestation()) {
         attestation_erasure = AttestationErasureOption::kIncludeAttestation;
-      } else if (transport_used == device::FidoTransportProtocol::kInternal) {
+      } else if (transport_used &&
+                 *transport_used == device::FidoTransportProtocol::kInternal) {
         // Contrary to what the WebAuthn spec says, for internal (platform)
         // authenticators we do not erase the AAGUID from authenticatorData,
         // even if requested attestationConveyancePreference is "none".
@@ -938,7 +943,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
-    device::FidoTransportProtocol transport_used) {
+    base::Optional<device::FidoTransportProtocol> transport_used) {
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -975,7 +980,9 @@ void AuthenticatorImpl::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
-      request_delegate_->UpdateLastTransportUsed(transport_used);
+      if (transport_used) {
+        request_delegate_->UpdateLastTransportUsed(*transport_used);
+      }
 
       base::Optional<bool> echo_appid_extension;
       if (alternative_application_parameter_) {

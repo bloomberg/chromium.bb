@@ -355,11 +355,11 @@ bool WinNativeCrossPlatformAuthenticator::IsInPairingMode() const {
   return false;
 }
 
-FidoTransportProtocol
+base::Optional<FidoTransportProtocol>
 WinNativeCrossPlatformAuthenticator::AuthenticatorTransport() const {
-  // TODO(martinkr): Note that this may not necessarily be true if not in
-  // U2F-only mode, in which case the authenticator might be NFC, too.
-  return FidoTransportProtocol::kUsbHumanInterfaceDevice;
+  // The Windows API could potentially use any external or
+  // platform authenticator.
+  return base::nullopt;
 }
 
 const base::Optional<AuthenticatorSupportedOptions>&

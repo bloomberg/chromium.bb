@@ -43,7 +43,7 @@ constexpr uint8_t kBogusCredentialId[] = {0x01, 0x02, 0x03, 0x04};
 using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
     base::Optional<AuthenticatorGetAssertionResponse>,
-    FidoTransportProtocol>;
+    base::Optional<FidoTransportProtocol>>;
 
 }  // namespace
 

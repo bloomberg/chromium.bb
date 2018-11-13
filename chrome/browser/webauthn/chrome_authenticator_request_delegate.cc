@@ -287,8 +287,9 @@ bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
   if (!IsWebAuthnUiEnabled())
     return false;
 
-  return authenticator.AuthenticatorTransport() ==
-         device::FidoTransportProtocol::kInternal;
+  return authenticator.AuthenticatorTransport() &&
+         *authenticator.AuthenticatorTransport() ==
+             device::FidoTransportProtocol::kInternal;
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(

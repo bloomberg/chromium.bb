@@ -287,8 +287,9 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
                         FidoTransportProtocol::kInternal)) {
     DCHECK(platform_authenticator_info->authenticator);
     DCHECK(
-        (platform_authenticator_info->authenticator->AuthenticatorTransport() ==
-         FidoTransportProtocol::kInternal));
+        platform_authenticator_info->authenticator->AuthenticatorTransport() &&
+        *platform_authenticator_info->authenticator->AuthenticatorTransport() ==
+            FidoTransportProtocol::kInternal);
     transport_availability_info_.has_recognized_mac_touch_id_credential =
         platform_authenticator_info->has_recognized_mac_touch_id_credential;
     platform_authenticator_ =
