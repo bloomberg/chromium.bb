@@ -27,6 +27,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -132,6 +133,11 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
+
+    // Due to race conditions, it's possible that blacklist data is not loaded
+    // at the time of first navigation. That may prevent Preview from
+    // triggering, and causing the test to flake.
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
   void SetDefaultOnlyResourceLoadingHints(
