@@ -1350,11 +1350,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 
-  if (mbmi->skip_mode) {
-    assert(mbmi->mode == NEAREST_NEARESTMV);
-    mbmi->mv[0].as_int = nearestmv[0].as_int;
-    mbmi->mv[1].as_int = nearestmv[1].as_int;
-  } else {
+  if (mbmi->skip_mode) assert(mbmi->mode == NEAREST_NEARESTMV);
+
+  {
     int mv_corrupted_flag =
         !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, mbmi->mv, ref_mv,
                    nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
