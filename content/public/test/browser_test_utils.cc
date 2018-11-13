@@ -659,8 +659,11 @@ void ResetTouchAction(RenderWidgetHost* host) {
 
 void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
                                          const blink::WebInputEvent& event) {
-  DCHECK(guest_web_contents->GetBrowserPluginGuest());
-  guest_web_contents->GetBrowserPluginGuest()->ResendEventToEmbedder(event);
+  auto* guest_web_contents_impl =
+      static_cast<WebContentsImpl*>(guest_web_contents);
+  DCHECK(guest_web_contents_impl->GetBrowserPluginGuest());
+  guest_web_contents_impl->GetBrowserPluginGuest()->ResendEventToEmbedder(
+      event);
 }
 
 void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents) {

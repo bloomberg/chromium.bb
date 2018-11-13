@@ -189,6 +189,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
 
+  // Returns guest browser plugin object, or nullptr if this WebContents is not
+  // for guest.
+  BrowserPluginGuest* GetBrowserPluginGuest() const;
+
   // Creates a BrowserPluginEmbedder object for this WebContents if one doesn't
   // already exist.
   void CreateBrowserPluginEmbedderIfNecessary();
@@ -458,7 +462,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsShowingContextMenu() const override;
   void SetShowingContextMenu(bool showing) override;
   void PausePageScheduledTasks(bool paused) override;
-  BrowserPluginGuest* GetBrowserPluginGuest() const override;
   bool CompletedFirstVisuallyNonEmptyPaint() const override;
 
 #if defined(OS_ANDROID)
