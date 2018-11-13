@@ -162,6 +162,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
