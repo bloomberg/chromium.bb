@@ -98,14 +98,11 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // Accessors
   const std::string& group_name() const { return group_name_; }
   const NetLogWithSource& net_log() { return net_log_; }
-  RequestPriority priority() const { return priority_; }
 
   // Releases ownership of the underlying socket to the caller.
   // Returns the released socket, or NULL if there was a connection
   // error.
   std::unique_ptr<StreamSocket> PassSocket();
-
-  void ChangePriority(RequestPriority priority);
 
   // Begins connecting the socket.  Returns OK on success, ERR_IO_PENDING if it
   // cannot complete synchronously without blocking, or another net error code
@@ -129,7 +126,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const NetLogWithSource& net_log() const { return net_log_; }
 
  protected:
-  void set_priority(RequestPriority priority) { priority_ = priority; }
+  RequestPriority priority() const { return priority_; }
   const SocketTag& socket_tag() const { return socket_tag_; }
   ClientSocketPool::RespectLimits respect_limits() const {
     return respect_limits_;
@@ -145,8 +142,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
  private:
   virtual int ConnectInternal() = 0;
 
-  virtual void ChangePriorityInternal(RequestPriority priority) {}
-
   void LogConnectStart();
   void LogConnectCompletion(int net_error);
 
@@ -155,7 +150,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   const std::string group_name_;
   const base::TimeDelta timeout_duration_;
-  RequestPriority priority_;
+  // TODO(akalin): Support reprioritization.
+  const RequestPriority priority_;
   const SocketTag socket_tag_;
   const ClientSocketPool::RespectLimits respect_limits_;
   // Timer to abort jobs that take too long.
