@@ -287,10 +287,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestions)) {
-    LookalikeUrlNavigationObserver::CreateForWebContents(web_contents);
-  }
+  LookalikeUrlNavigationObserver::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(

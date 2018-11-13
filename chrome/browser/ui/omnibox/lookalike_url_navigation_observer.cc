@@ -24,9 +24,6 @@
 
 namespace {
 
-const base::FeatureParam<std::string> kMetricsOnly{
-    &features::kLookalikeUrlNavigationSuggestions, "metrics_only", ""};
-
 void RecordEvent(
     LookalikeUrlNavigationObserver::NavigationSuggestionEvent event) {
   UMA_HISTOGRAM_ENUMERATION(LookalikeUrlNavigationObserver::kHistogramName,
@@ -113,7 +110,8 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
       .SetMatchType(static_cast<int>(match_type))
       .Record(ukm_recorder);
 
-  if (kMetricsOnly.Get().empty()) {
+  if (base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI)) {
     RecordEvent(NavigationSuggestionEvent::kInfobarShown);
     AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
         web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
