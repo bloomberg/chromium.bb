@@ -323,50 +323,33 @@ TEST(ProxyBypassRulesTest, Equals) {
   EXPECT_FALSE(rules2 == rules1);
 }
 
-TEST(ProxyBypassRulesTest, BypassLocalNames) {
-  const struct {
-    const char* url;
-    bool expected_is_local;
-  } tests[] = {
-      // Single-component hostnames are considered local.
-      {"http://localhost/x", true},
-      {"http://www", true},
-
-      // IPv4 loopback interface.
-      {"http://127.0.0.1/x", true},
-      {"http://127.0.0.1:80/x", true},
-
-      // IPv6 loopback interface.
-      {"http://[::1]:80/x", true},
-      {"http://[0:0::1]:6233/x", true},
-      {"http://[0:0:0:0:0:0:0:1]/x", true},
-
-      // Non-local URLs.
-      {"http://foo.com/", false},
-      {"http://localhost.i/", false},
-      {"http://www.google.com/", false},
-      {"http://192.168.0.1/", false},
-
-      // Try with different protocols.
-      {"ftp://127.0.0.1/x", true},
-      {"ftp://foobar.com/x", false},
-
-      // This is a bit of a gray-area, but GURL does not strip trailing dots
-      // in host-names, so the following are considered non-local.
-      {"http://www./x", false},
-
-      // localhost. is bypassed by the implict rules already.
-      {"http://localhost./x", true},
-  };
-
+TEST(ProxyBypassRulesTest, BypassSimpleHostnames) {
+  // Test the simple hostnames rule in isolation, by first removing the
+  // implicit rules.
   ProxyBypassRules rules;
-  rules.ParseFromString("<local>");
+  rules.ParseFromString("<-loopback>; <local>");
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf(
-        "Test[%d]: %s", static_cast<int>(i), tests[i].url));
-    EXPECT_EQ(tests[i].expected_is_local, rules.Matches(GURL(tests[i].url)));
-  }
+  ASSERT_EQ(2u, rules.rules().size());
+  EXPECT_EQ("<-loopback>", rules.rules()[0]->ToString());
+  EXPECT_EQ("<local>", rules.rules()[1]->ToString());
+
+  EXPECT_TRUE(rules.Matches(GURL("http://example/")));
+
+  EXPECT_FALSE(rules.Matches(GURL("http://example./")));
+  EXPECT_FALSE(rules.Matches(GURL("http://example.com/")));
+  EXPECT_FALSE(rules.Matches(GURL("http://[dead::beef]/")));
+  EXPECT_FALSE(rules.Matches(GURL("http://192.168.1.1/")));
+
+  // Confusingly, <local> rule is NOT about localhost names. There is however
+  // overlap on "localhost6?" as it is both a simple hostname and a localhost
+  // name
+  ExpectBypassLocalhost(rules, false, {"localhost", "localhost6"});
+
+  // Should NOT bypass link-local addresses.
+  ExpectBypassLinkLocal(rules, false);
+
+  // Should not bypass other names either (except for the ones with no dot).
+  ExpectBypassMisc(rules, false, {"foo", "loopback"});
 }
 
 TEST(ProxyBypassRulesTest, ParseAndMatchCIDR_IPv4) {

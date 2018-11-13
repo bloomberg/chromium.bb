@@ -662,7 +662,7 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   // link-local addresses, so it is not necessary to explicitly add them here.
   // See ProxyBypassRules::MatchesImplicitRules() for details.
   configurator_->SetBypassRules(
-      // localhost
+      // Hostnames with no dot in them.
       "<local>,"
 
       // RFC6890 current network (only valid as source address).
