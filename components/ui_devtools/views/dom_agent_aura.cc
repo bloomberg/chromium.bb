@@ -34,14 +34,14 @@ views::Widget* GetWidgetFromWindow(gfx::NativeWindow window) {
 
 }  // namespace
 
-DOMAgentAura::DOMAgentAura(aura::Env* env) : env_(env) {
-  env_->AddObserver(this);
+DOMAgentAura::DOMAgentAura() {
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 DOMAgentAura::~DOMAgentAura() {
   for (aura::Window* window : root_windows_)
     window->RemoveObserver(this);
-  env_->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void DOMAgentAura::OnHostInitialized(aura::WindowTreeHost* host) {

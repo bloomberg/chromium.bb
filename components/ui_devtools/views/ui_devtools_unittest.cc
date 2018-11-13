@@ -15,7 +15,6 @@
 #include "components/ui_devtools/views/widget_element.h"
 #include "components/ui_devtools/views/window_element.h"
 #include "ui/aura/client/window_parenting_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -136,13 +135,12 @@ class UIDevToolsTest : public views::ViewsTestBase {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ =
         std::make_unique<UberDispatcher>(fake_frontend_channel_.get());
-    aura::Env* env = aura::Env::GetInstance();
-    dom_agent_ = std::make_unique<DOMAgentAura>(env);
+    dom_agent_ = std::make_unique<DOMAgentAura>();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ = std::make_unique<CSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
-    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get(), env);
+    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get());
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
 
