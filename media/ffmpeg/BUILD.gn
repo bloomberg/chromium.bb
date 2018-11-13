@@ -30,6 +30,7 @@ source_set("ffmpeg") {
   deps = [
     "//base",
     "//media/base",
+    "//media/formats",
     "//third_party/ffmpeg",
     "//third_party/ffmpeg:ffmpeg_features",
   ]
