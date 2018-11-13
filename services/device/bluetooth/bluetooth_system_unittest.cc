@@ -232,11 +232,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     return adapter_object_paths_to_call_counts_[object_path].start_discovery;
   }
 
-  void SimulateStartDiscoveryCompleted(const std::string& object_path_str) {
-    GetProperties(dbus::ObjectPath(object_path_str))
-        ->discovering.ReplaceValueWithSetValue();
-  }
-
   void SetNextStopDiscoveryResponse(const std::string& object_path_str,
                                     bool response) {
     dbus::ObjectPath object_path(object_path_str);
@@ -249,11 +244,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   size_t GetStopDiscoveryCallCount(const std::string& object_path_str) {
     dbus::ObjectPath object_path(object_path_str);
     return adapter_object_paths_to_call_counts_[object_path].stop_discovery;
-  }
-
-  void SimulateStopDiscoveryCompleted(const std::string& object_path_str) {
-    GetProperties(dbus::ObjectPath(object_path_str))
-        ->discovering.ReplaceValueWithSetValue();
   }
 
   // Helper methods to perform multiple common operations.
@@ -309,8 +299,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
       std::move(callback).Run(Error(kUnknownAdapterError, "Unknown error"));
       return;
     }
-
-    GetProperties(object_path)->discovering.ReplaceSetValueForTesting(true);
     std::move(callback).Run(base::nullopt);
   }
 
@@ -331,8 +319,6 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
       std::move(callback).Run(Error(kUnknownAdapterError, "Unknown error"));
       return;
     }
-
-    GetProperties(object_path)->discovering.ReplaceSetValueForTesting(false);
     std::move(callback).Run(base::nullopt);
   }
 
@@ -1166,8 +1152,8 @@ TEST_F(BluetoothSystemTest, StartScan_Succeeds) {
   EXPECT_EQ(ScanStateVector(), on_scan_state_changed_states_);
   ResetResults();
 
-  test_bluetooth_adapter_client_->SimulateStartDiscoveryCompleted(
-      kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
 
   EXPECT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
             GetScanStateAndWait(system));
@@ -1296,8 +1282,8 @@ TEST_F(BluetoothSystemTest, StopScan_Succeeds) {
   test_bluetooth_adapter_client_->SetNextStartDiscoveryResponse(
       kFooObjectPathStr, true);
   StartScanAndWait(system);
-  test_bluetooth_adapter_client_->SimulateStartDiscoveryCompleted(
-      kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
   EXPECT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
             GetScanStateAndWait(system));
   ResetResults();
@@ -1315,8 +1301,8 @@ TEST_F(BluetoothSystemTest, StopScan_Succeeds) {
   EXPECT_EQ(ScanStateVector(), on_scan_state_changed_states_);
   ResetResults();
 
-  test_bluetooth_adapter_client_->SimulateStopDiscoveryCompleted(
-      kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, false);
 
   EXPECT_EQ(mojom::BluetoothSystem::ScanState::kNotScanning,
             GetScanStateAndWait(system));
@@ -1334,8 +1320,8 @@ TEST_F(BluetoothSystemTest, StopScan_Fails) {
   test_bluetooth_adapter_client_->SetNextStartDiscoveryResponse(
       kFooObjectPathStr, true);
   StartScanAndWait(system);
-  test_bluetooth_adapter_client_->SimulateStartDiscoveryCompleted(
-      kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
   EXPECT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
             GetScanStateAndWait(system));
   ResetResults();
@@ -1397,8 +1383,8 @@ TEST_F(BluetoothSystemTest, StopScan_FailsDuringPowerOff) {
       kFooObjectPathStr, true);
   EXPECT_EQ(mojom::BluetoothSystem::StartScanResult::kSuccess,
             StartScanAndWait(system));
-  test_bluetooth_adapter_client_->SimulateStartDiscoveryCompleted(
-      kFooObjectPathStr);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
   EXPECT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
             GetScanStateAndWait(system));
 
@@ -1428,6 +1414,59 @@ TEST_F(BluetoothSystemTest, StopScan_FailsDuringPowerOff) {
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOff}),
             on_state_changed_states_);
+}
+
+// Tests that the scan state is correctly updated if the adapter is removed
+// during scanning.
+TEST_F(BluetoothSystemTest, Scan_AdapterRemovedWhileScanning) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter(kFooObjectPathStr);
+
+  auto system = CreateBluetoothSystem();
+
+  // Start scanning.
+  test_bluetooth_adapter_client_->SetNextStartDiscoveryResponse(
+      kFooObjectPathStr, true);
+  StartScanAndWait(system);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
+  ASSERT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
+            GetScanStateAndWait(system));
+  ResetResults();
+
+  // Remove the adapter. Scan state should change to kNotScanning.
+  test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+
+  EXPECT_EQ(mojom::BluetoothSystem::ScanState::kNotScanning,
+            GetScanStateAndWait(system));
+  EXPECT_EQ(ScanStateVector({mojom::BluetoothSystem::ScanState::kNotScanning}),
+            on_scan_state_changed_states_);
+}
+
+// Tests that the scan state is correctly updated if the adapter turns off
+// during scanning.
+TEST_F(BluetoothSystemTest, Scan_PowerOffWhileScanning) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter(kFooObjectPathStr);
+
+  auto system = CreateBluetoothSystem();
+
+  // Start scanning.
+  test_bluetooth_adapter_client_->SetNextStartDiscoveryResponse(
+      kFooObjectPathStr, true);
+  StartScanAndWait(system);
+  test_bluetooth_adapter_client_->SimulateAdapterDiscoveringStateChanged(
+      kFooObjectPathStr, true);
+  ASSERT_EQ(mojom::BluetoothSystem::ScanState::kScanning,
+            GetScanStateAndWait(system));
+  ResetResults();
+
+  // Power off the adapter. Scan state should change to kNotScanning.
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, false);
+
+  EXPECT_EQ(mojom::BluetoothSystem::ScanState::kNotScanning,
+            GetScanStateAndWait(system));
+  EXPECT_EQ(ScanStateVector({mojom::BluetoothSystem::ScanState::kNotScanning}),
+            on_scan_state_changed_states_);
 }
 
 }  // namespace device
