@@ -185,5 +185,47 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageBytes) {
   EXPECT_EQ(message.message.bytes, decoded_message.message.bytes);
 }
 
+TEST(PresentationMessagesTest, CborEncodeBufferSmall) {
+  std::vector<std::string> urls{"https://example.com/receiver.html"};
+  PresentationUrlAvailabilityRequest request{7, urls};
+  CborEncodeBuffer buffer;
+  ASSERT_TRUE(EncodePresentationUrlAvailabilityRequest(request, &buffer));
+  EXPECT_LT(buffer.size(), CborEncodeBuffer::kDefaultInitialEncodeBufferSize);
+
+  PresentationUrlAvailabilityRequest decoded_request;
+  size_t bytes_read = DecodePresentationUrlAvailabilityRequest(
+      buffer.data() + 1, buffer.size() - 1, &decoded_request);
+  EXPECT_EQ(bytes_read, buffer.size() - 1);
+  EXPECT_EQ(request.request_id, decoded_request.request_id);
+  EXPECT_EQ(request.urls, decoded_request.urls);
+}
+
+TEST(PresentationMessagesTest, CborEncodeBufferMedium) {
+  std::string url = "https://example.com/receiver.html";
+  std::vector<std::string> urls{};
+  for (int i = 0; i < 100; ++i) {
+    urls.push_back(url);
+  }
+  PresentationUrlAvailabilityRequest request{7, urls};
+  CborEncodeBuffer buffer;
+  ASSERT_TRUE(EncodePresentationUrlAvailabilityRequest(request, &buffer));
+  EXPECT_GT(buffer.size(), CborEncodeBuffer::kDefaultInitialEncodeBufferSize);
+
+  PresentationUrlAvailabilityRequest decoded_request;
+  ssize_t bytes_read = DecodePresentationUrlAvailabilityRequest(
+      buffer.data() + 1, buffer.size() - 1, &decoded_request);
+  ASSERT_GT(bytes_read, 0);
+  EXPECT_EQ(static_cast<size_t>(bytes_read), buffer.size() - 1);
+  EXPECT_EQ(request.request_id, decoded_request.request_id);
+  EXPECT_EQ(request.urls, decoded_request.urls);
+}
+
+TEST(PresentationMessagesTest, CborEncodeBufferTooLarge) {
+  std::vector<std::string> urls{"https://example.com/receiver.html"};
+  PresentationUrlAvailabilityRequest request{7, urls};
+  CborEncodeBuffer buffer{10, 30};
+  ASSERT_FALSE(EncodePresentationUrlAvailabilityRequest(request, &buffer));
+}
+
 }  // namespace msgs
 }  // namespace openscreen
