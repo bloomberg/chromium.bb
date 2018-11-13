@@ -5,7 +5,7 @@
 #include "content/child/webthemeengine_impl_android.h"
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"

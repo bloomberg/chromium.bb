@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_connection_observer.h"

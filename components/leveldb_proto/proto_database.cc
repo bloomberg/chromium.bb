@@ -4,7 +4,7 @@
 
 #include "components/leveldb_proto/proto_database.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace leveldb_proto {
 namespace {

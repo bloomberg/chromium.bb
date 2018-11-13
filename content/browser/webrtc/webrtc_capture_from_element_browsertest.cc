@@ -15,7 +15,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

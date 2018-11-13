@@ -9,7 +9,7 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 
 namespace extensions {

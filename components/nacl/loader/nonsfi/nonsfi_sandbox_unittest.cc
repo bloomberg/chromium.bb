@@ -35,7 +35,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"

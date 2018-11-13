@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"

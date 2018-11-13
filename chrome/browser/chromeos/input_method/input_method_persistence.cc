@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/profiles/profile.h"

@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"

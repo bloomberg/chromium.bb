@@ -28,7 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace data_reduction_proxy {

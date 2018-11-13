@@ -17,7 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"

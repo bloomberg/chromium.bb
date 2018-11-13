@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,16 +27,13 @@ namespace base {
 namespace {
 
 const char* const kLinuxStandardBaseVersionKeys[] = {
-  "CHROMEOS_RELEASE_VERSION",
-  "GOOGLE_RELEASE",
-  "DISTRIB_RELEASE",
+    "CHROMEOS_RELEASE_VERSION", "GOOGLE_RELEASE", "DISTRIB_RELEASE",
 };
 
 const char kChromeOsReleaseNameKey[] = "CHROMEOS_RELEASE_NAME";
 
 const char* const kChromeOsReleaseNames[] = {
-  "Chrome OS",
-  "Chromium OS",
+    "Chrome OS", "Chromium OS",
 };
 
 const char kLinuxStandardBaseReleaseFile[] = "/etc/lsb-release";
@@ -50,9 +47,7 @@ const char kLsbReleaseSourceFile[] = "file";
 
 class ChromeOSVersionInfo {
  public:
-  ChromeOSVersionInfo() {
-    Parse();
-  }
+  ChromeOSVersionInfo() { Parse(); }
 
   void Parse() {
     lsb_release_map_.clear();
@@ -160,8 +155,8 @@ class ChromeOSVersionInfo {
   bool is_running_on_chromeos_;
 };
 
-static LazyInstance<ChromeOSVersionInfo>::Leaky
-    g_chrome_os_version_info = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<ChromeOSVersionInfo>::Leaky g_chrome_os_version_info =
+    LAZY_INSTANCE_INITIALIZER;
 
 ChromeOSVersionInfo& GetChromeOSVersionInfo() {
   return g_chrome_os_version_info.Get();

@@ -11,7 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/browser_sync_switches.h"

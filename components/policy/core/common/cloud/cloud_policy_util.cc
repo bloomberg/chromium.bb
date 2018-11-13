@@ -35,7 +35,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
@@ -48,11 +48,11 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace policy {

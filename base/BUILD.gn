@@ -719,12 +719,12 @@ jumbo_component("base") {
     "synchronization/waitable_event_watcher_win.cc",
     "synchronization/waitable_event_win.cc",
     "sys_byteorder.h",
-    "sys_info.cc",
-    "sys_info.h",
-    "sys_info_internal.h",
+    "system/sys_info.cc",
+    "system/sys_info.h",
+    "system/sys_info_internal.h",
 
-    #"sys_info_freebsd.cc",  # Unused in Chromium build.
-    #"sys_info_openbsd.cc",  # Unused in Chromium build.
+    #"system/sys_info_freebsd.cc",  # Unused in Chromium build.
+    #"system/sys_info_openbsd.cc",  # Unused in Chromium build.
     "syslog_logging.cc",
     "syslog_logging.h",
     "system/system_monitor.cc",
@@ -1116,7 +1116,7 @@ jumbo_component("base") {
       "synchronization/lock_impl_posix.cc",
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
-      "sys_info_posix.cc",
+      "system/sys_info_posix.cc",
       "task/task_scheduler/task_tracker_posix.cc",
       "task/task_scheduler/task_tracker_posix.h",
       "threading/platform_thread_internal_posix.cc",
@@ -1339,7 +1339,7 @@ jumbo_component("base") {
       "memory/platform_shared_memory_region_android.cc",
       "memory/shared_memory_android.cc",
       "memory/shared_memory_handle_android.cc",
-      "sys_info_android.cc",
+      "system/sys_info_android.cc",
       "time/time_android.cc",
     ]
 
@@ -1358,7 +1358,7 @@ jumbo_component("base") {
       "process/process_handle_linux.cc",
       "process/process_iterator_linux.cc",
       "process/process_metrics_linux.cc",
-      "sys_info_linux.cc",
+      "system/sys_info_linux.cc",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -1394,7 +1394,7 @@ jumbo_component("base") {
   if (is_chromeos) {
     sources += [
       "power_monitor/power_monitor_device_source_chromeos.cc",
-      "sys_info_chromeos.cc",
+      "system/sys_info_chromeos.cc",
     ]
   }
 
@@ -1462,8 +1462,8 @@ jumbo_component("base") {
       "synchronization/lock_impl_posix.cc",
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
-      "sys_info_fuchsia.cc",
-      "sys_info_posix.cc",
+      "system/sys_info_fuchsia.cc",
+      "system/sys_info_posix.cc",
       "task/task_scheduler/task_tracker_posix.cc",
       "task/task_scheduler/task_tracker_posix.h",
       "threading/platform_thread_fuchsia.cc",
@@ -1540,8 +1540,8 @@ jumbo_component("base") {
       "process/process_posix.cc",
       "scoped_native_library.cc",
       "sync_socket_posix.cc",
-      "sys_info.cc",
-      "sys_info_posix.cc",
+      "system/sys_info.cc",
+      "system/sys_info_posix.cc",
       "task/task_scheduler/initialization_util.cc",
       "task/task_scheduler/initialization_util.h",
       "trace_event/trace_event_system_stats_monitor.cc",
@@ -1627,7 +1627,7 @@ jumbo_component("base") {
       "profiler/win32_stack_frame_unwinder.cc",
       "profiler/win32_stack_frame_unwinder.h",
       "rand_util_win.cc",
-      "sys_info_win.cc",
+      "system/sys_info_win.cc",
       "time/time_win.cc",
     ]
 
@@ -1690,7 +1690,7 @@ jumbo_component("base") {
       "memory/shared_memory_handle_mac.cc",
       "memory/shared_memory_mac.cc",
       "power_monitor/power_monitor_device_source_mac.mm",
-      "sys_info_mac.mm",
+      "system/sys_info_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_exploded_posix.cc",
       "time/time_mac.cc",
@@ -1733,7 +1733,7 @@ jumbo_component("base") {
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
-      "sys_info_linux.cc",
+      "system/sys_info_linux.cc",
     ]
 
     defines += [ "USE_SYMBOLIZE" ]
@@ -1815,7 +1815,7 @@ jumbo_component("base") {
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
-      "sys_info_ios.mm",
+      "system/sys_info_ios.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
@@ -2452,7 +2452,7 @@ test("base_unittests") {
     "synchronization/waitable_event_unittest.cc",
     "synchronization/waitable_event_watcher_unittest.cc",
     "sys_byteorder_unittest.cc",
-    "sys_info_unittest.cc",
+    "system/sys_info_unittest.cc",
     "system/system_monitor_unittest.cc",
     "task/cancelable_task_tracker_unittest.cc",
     "task/common/intrusive_heap_unittest.cc",

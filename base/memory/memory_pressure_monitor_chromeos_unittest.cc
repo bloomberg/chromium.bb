@@ -8,7 +8,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

@@ -15,7 +15,7 @@
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #endif

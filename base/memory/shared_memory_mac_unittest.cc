@@ -17,7 +17,7 @@
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/unguessable_token.h"

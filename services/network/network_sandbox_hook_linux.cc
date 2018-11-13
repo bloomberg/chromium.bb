@@ -6,7 +6,7 @@
 #include "sandbox/linux/syscall_broker/broker_command.h"
 
 #include "base/rand_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 using sandbox::syscall_broker::BrokerFilePermission;
 using sandbox::syscall_broker::MakeBrokerCommandSet;

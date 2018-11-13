@@ -40,7 +40,7 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/manager/display_util.h"

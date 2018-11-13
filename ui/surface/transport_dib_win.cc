@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 
 TransportDIB::TransportDIB()

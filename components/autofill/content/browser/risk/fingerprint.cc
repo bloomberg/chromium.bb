@@ -23,7 +23,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"

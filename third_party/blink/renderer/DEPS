@@ -25,7 +25,7 @@ include_rules = [
     "+base/single_thread_task_runner.h",
     "+base/stl_util.h",
     "+base/sys_byteorder.h",
-    "+base/sys_info.h",
+    "+base/system/sys_info.h",
     "+base/task/post_task.h",
     "+base/test/metrics/histogram_tester.h",
     "+base/test/scoped_feature_list.h",

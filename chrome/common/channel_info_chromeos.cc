@@ -4,7 +4,7 @@
 
 #include "chrome/common/channel_info.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"
 
 namespace chrome {

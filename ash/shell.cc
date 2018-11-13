@@ -160,7 +160,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

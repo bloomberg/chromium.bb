@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"

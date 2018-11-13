@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

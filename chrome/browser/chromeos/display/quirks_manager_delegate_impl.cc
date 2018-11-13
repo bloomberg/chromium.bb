@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 
 #include "base/path_service.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"

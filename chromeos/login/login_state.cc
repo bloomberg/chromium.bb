@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/device_event_log/device_event_log.h"
 

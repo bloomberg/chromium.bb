@@ -13,7 +13,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace chromeos {  // NOLINT
 namespace system {

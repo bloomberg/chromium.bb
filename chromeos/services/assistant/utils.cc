@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/dbus/util/version_loader.h"

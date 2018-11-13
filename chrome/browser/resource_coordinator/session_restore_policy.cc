@@ -5,7 +5,7 @@
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
 
 #include "base/no_destructor.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_controller.h"

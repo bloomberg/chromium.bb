@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "chromecast/app/cast_main_delegate.h"

@@ -33,7 +33,7 @@
 #include "services/device/hid/hid_connection_linux.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)

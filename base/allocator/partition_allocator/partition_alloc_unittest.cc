@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

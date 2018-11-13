@@ -12,7 +12,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

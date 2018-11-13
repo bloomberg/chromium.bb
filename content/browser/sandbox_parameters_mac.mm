@@ -15,7 +15,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_client.h"

@@ -5,7 +5,7 @@
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/render_thread_impl.h"

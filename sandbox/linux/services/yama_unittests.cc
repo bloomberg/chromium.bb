@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "sandbox/linux/services/scoped_process.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/tests/unit_tests.h"

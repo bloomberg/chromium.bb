@@ -8,7 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/process/process_metrics.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_shared_memory_util.h"
 #include "build/build_config.h"

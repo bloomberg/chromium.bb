@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "base/linux_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"

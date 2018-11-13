@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/common/skia_utils.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"

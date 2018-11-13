@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_controller.h"
 
 #include "base/feature_list.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
