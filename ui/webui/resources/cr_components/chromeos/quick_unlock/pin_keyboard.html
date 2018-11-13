@@ -282,6 +282,7 @@
             <paper-icon-button id="backspaceButton" class="digit-button"
                 disabled$="[[!hasInput_(value)]]"
                 icon="pin-keyboard:backspace"
+                on-tap="onBackspaceTap_"
                 on-pointerdown="onBackspacePointerDown_"
                 on-pointerout="clearAndReset_"
                 on-pointerup="onBackspacePointerUp_"

@@ -237,11 +237,12 @@ Polymer({
    * Processes the message received from the quick unlock api and hides/shows
    * the problem based on the message.
    * @private
+   * @param {string} newPin
    * @param {chrome.quickUnlockPrivate.CredentialCheck} message The message
    *     received from checkCredential.
    */
-  processPinProblems_: function(message) {
-    if (!message.errors.length && !message.warnings.length) {
+  processPinProblems_: function(newPin, message) {
+    if (newPin && !message.errors.length && !message.warnings.length) {
       this.hideProblem_();
       this.enableSubmit = true;
       this.pinHasPassedMinimumLength_ = true;
@@ -280,6 +281,9 @@ Polymer({
           break;
       }
     }
+
+    if (!newPin)
+      this.enableSubmit = false;
   },
 
   /**
@@ -288,13 +292,13 @@ Polymer({
   onPinChange_: function(e) {
     const newPin = /** @type {{pin: string}} */ (e.detail).pin;
     if (!this.isConfirmStep) {
-      if (newPin) {
+      if (this.quickUnlockPrivate) {
         this.quickUnlockPrivate.checkCredential(
             chrome.quickUnlockPrivate.QuickUnlockMode.PIN, newPin,
-            this.processPinProblems_.bind(this));
-      } else {
-        this.enableSubmit = false;
+            this.processPinProblems_.bind(this, newPin));
       }
+      if (!newPin)
+        this.enableSubmit = false;
       return;
     }
 
