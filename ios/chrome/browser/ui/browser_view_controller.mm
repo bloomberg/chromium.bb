@@ -245,6 +245,7 @@
 #import "ios/net/request_tracker.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/ui/default_ios_web_view_factory.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -3161,8 +3162,30 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
 
-  CGFloat headerHeight = [self headerHeightForTab:tab];
-  return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
+  // The NTP's snapshot should be inset |headerHeight| from the top to remove
+  // the fake NTP toolbar from the snapshot.
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  BOOL isNTPActive = NTPHelper && NTPHelper->IsActive();
+  // When using frame-based viewport adjustment calculations out of web//, the
+  // WebState view's superview is used as the base snapshot view.  The content
+  // area is |headerHeight| from the top of its superview, so snapshots should
+  // be inset from this amount.
+  bool outOfWeb =
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen);
+  bool usesContentInset = ios::GetChromeBrowserProvider()
+                              ->GetFullscreenProvider()
+                              ->IsInitialized() ||
+                          webState->GetWebViewProxy().shouldUseViewContentInset;
+  if (isNTPActive || (outOfWeb && !usesContentInset)) {
+    CGFloat headerHeight = [self headerHeightForTab:tab];
+    return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
+  }
+
+  // For all other scenarios, the content area is inset from the snapshot base
+  // view by the web view proxy's contentInset.
+  UIEdgeInsets insets = webState->GetWebViewProxy().contentInset;
+  insets.bottom = 0.0;
+  return insets;
 }
 
 - (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
