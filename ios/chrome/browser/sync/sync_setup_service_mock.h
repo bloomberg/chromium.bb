@@ -9,15 +9,10 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
-class PrefService;
-
 // Mock for the class that allows configuring sync on iOS.
 class SyncSetupServiceMock : public SyncSetupService {
  public:
   SyncSetupServiceMock(syncer::SyncService* sync_service);
-  // TODO(crbug.com/884159): ¦prefs¦ is not required; get rid of this
-  // constructor once no tests use it anymore.
-  SyncSetupServiceMock(syncer::SyncService* sync_service, PrefService* prefs);
   ~SyncSetupServiceMock();
 
   MOCK_CONST_METHOD0(IsSyncEnabled, bool());
