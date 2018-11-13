@@ -6,6 +6,7 @@
 #define CHROMECAST_GRAPHICS_ACCESSIBILITY_FULLSCREEN_MAGNIFICATION_CONTROLLER_H_
 
 #include "chromecast/graphics/accessibility/magnification_controller.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
@@ -19,6 +20,7 @@ class Window;
 
 namespace ui {
 class GestureProviderAura;
+class Layer;
 }  // namespace ui
 
 namespace chromecast {
@@ -27,7 +29,8 @@ class CastGestureHandler;
 
 class FullscreenMagnificationController : public MagnificationController,
                                           public ui::EventRewriter,
-                                          public ui::GestureConsumer {
+                                          public ui::GestureConsumer,
+                                          public ui::LayerDelegate {
  public:
   explicit FullscreenMagnificationController(
       aura::Window* root_window,
@@ -60,6 +63,16 @@ class FullscreenMagnificationController : public MagnificationController,
   ui::EventRewriteStatus NextDispatchEvent(
       const ui::Event& last_event,
       std::unique_ptr<ui::Event>* new_event) override;
+
+  // Adds the layer for the highlight-ring which provides a visual indicator
+  // that magnification is enabled.
+  void UpdateHighlightLayerTransform(const gfx::Transform& magnifier_transform);
+  void AddHighlightLayer();
+
+  // ui::LayerDelegate overrides:
+  void OnPaintLayer(const ui::PaintContext& context) override;
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
 
   aura::Window* root_window_;
 
@@ -101,6 +114,8 @@ class FullscreenMagnificationController : public MagnificationController,
   std::map<int32_t, std::unique_ptr<ui::TouchEvent>> press_event_map_;
 
   CastGestureHandler* cast_gesture_handler_;
+
+  std::unique_ptr<ui::Layer> highlight_ring_layer_;
 };
 
 }  // namespace chromecast

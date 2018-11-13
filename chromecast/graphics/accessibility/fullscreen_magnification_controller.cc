@@ -6,10 +6,15 @@
 
 #include "base/numerics/ranges.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -17,7 +22,7 @@ namespace chromecast {
 
 namespace {
 // Default ratio of magnifier scale.
-const float kDefaultMagnificationScale = 2.f;
+constexpr float kDefaultMagnificationScale = 2.f;
 
 constexpr float kMaxMagnifiedScale = 20.0f;
 constexpr float kMinMagnifiedScaleThreshold = 1.1f;
@@ -25,6 +30,11 @@ constexpr float kNonMagnifiedScale = 1.0f;
 
 constexpr float kZoomGestureLockThreshold = 0.1f;
 constexpr float kScrollGestureLockThreshold = 20000.0f;
+
+// The color of the highlight ring.
+constexpr SkColor kHighlightRingColor = SkColorSetRGB(247, 152, 58);
+constexpr int kHighlightShadowRadius = 10;
+constexpr int kHighlightShadowAlpha = 90;
 
 // Convert point locations to DIP by using the original transform, rather than
 // the one currently installed on the window tree host (which might be our
@@ -100,7 +110,21 @@ void FullscreenMagnificationController::SetEnabled(bool enabled) {
     original_transform_ = root_window_->transform();
   }
   is_enabled_ = enabled;
-  root_window_->SetTransform(GetMagnifierTransform());
+  auto magnifier_transform(GetMagnifierTransform());
+  root_window_->SetTransform(magnifier_transform);
+  if (enabled) {
+    // Add the highlight ring.
+    if (!highlight_ring_layer_) {
+      AddHighlightLayer();
+    }
+    UpdateHighlightLayerTransform(magnifier_transform);
+  } else {
+    // Remove the highlight ring.
+    if (highlight_ring_layer_) {
+      root_window_->layer()->Remove(highlight_ring_layer_.get());
+      highlight_ring_layer_.reset();
+    }
+  }
 }
 
 bool FullscreenMagnificationController::IsEnabled() const {
@@ -277,7 +301,10 @@ bool FullscreenMagnificationController::RedrawDIP(
   magnification_origin_.set_y(y);
   magnification_scale_ = scale;
 
-  root_window_->SetTransform(GetMagnifierTransform());
+  auto magnifier_transform = GetMagnifierTransform();
+  root_window_->SetTransform(magnifier_transform);
+
+  UpdateHighlightLayerTransform(magnifier_transform);
 
   return true;
 }
@@ -386,5 +413,65 @@ bool FullscreenMagnificationController::ProcessGestures() {
 
   return cancel_pressed_touches;
 }
+
+void FullscreenMagnificationController::AddHighlightLayer() {
+  ui::Layer* root_layer = root_window_->layer();
+  highlight_ring_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
+  highlight_ring_layer_->set_name("MagnificationHighlightLayer");
+  root_layer->Add(highlight_ring_layer_.get());
+  highlight_ring_layer_->parent()->StackAtTop(highlight_ring_layer_.get());
+  gfx::Rect bounds(root_layer->bounds());
+  highlight_ring_layer_->SetBounds(bounds);
+  highlight_ring_layer_->set_delegate(this);
+  highlight_ring_layer_->SetFillsBoundsOpaquely(false);
+}
+
+void FullscreenMagnificationController::UpdateHighlightLayerTransform(
+    const gfx::Transform& magnifier_transform) {
+  // The highlight ring layer needs to be drawn unmagnified, so take the inverse
+  // of the magnification transform.
+  gfx::Transform inverse_transform;
+  if (!magnifier_transform.GetInverse(&inverse_transform)) {
+    LOG(ERROR) << "Unable to apply inverse transform to magnifier ring";
+    return;
+  }
+  gfx::Transform highlight_layer_transform(original_transform_);
+  highlight_layer_transform.ConcatTransform(inverse_transform);
+  highlight_ring_layer_->SetTransform(highlight_layer_transform);
+
+  // Make sure the highlight ring layer is on top.
+  highlight_ring_layer_->parent()->StackAtTop(highlight_ring_layer_.get());
+
+  // Repaint.
+  highlight_ring_layer_->SchedulePaint(root_window_->layer()->bounds());
+}
+
+void FullscreenMagnificationController::OnPaintLayer(
+    const ui::PaintContext& context) {
+  ui::PaintRecorder recorder(context, highlight_ring_layer_->size());
+
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2);
+
+  flags.setColor(kHighlightRingColor);
+
+  gfx::Rect bounds(highlight_ring_layer_->bounds());
+  for (int i = 0; i < 10; i++) {
+    // Fade out alpha quadratically.
+    flags.setAlpha(
+        (kHighlightShadowAlpha * std::pow(kHighlightShadowRadius - i, 2)) /
+        std::pow(kHighlightShadowRadius, 2));
+
+    gfx::Rect outsetRect = bounds;
+    outsetRect.Inset(i, i, i, i);
+    recorder.canvas()->DrawRect(outsetRect, flags);
+  }
+}
+
+void FullscreenMagnificationController::OnDeviceScaleFactorChanged(
+    float old_device_scale_factor,
+    float new_device_scale_factor) {}
 
 }  // namespace chromecast
