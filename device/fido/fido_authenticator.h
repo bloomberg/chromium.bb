@@ -54,6 +54,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual base::Optional<FidoTransportProtocol> AuthenticatorTransport()
       const = 0;
   virtual bool IsInPairingMode() const = 0;
+  virtual bool IsPaired() const = 0;
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
 
  private:

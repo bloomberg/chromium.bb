@@ -27,7 +27,7 @@ std::map<int, std::string>::iterator FindElementByValue(
 }
 
 bool ShouldShowItemInView(const AuthenticatorReference& authenticator) {
-  return authenticator.is_in_pairing_mode() &&
+  return authenticator.is_in_pairing_mode() && !authenticator.is_paired() &&
          authenticator.transport() ==
              AuthenticatorTransport::kBluetoothLowEnergy;
 }

@@ -125,6 +125,10 @@ bool FidoDeviceAuthenticator::IsInPairingMode() const {
   return device_->IsInPairingMode();
 }
 
+bool FidoDeviceAuthenticator::IsPaired() const {
+  return device_->IsPaired();
+}
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);

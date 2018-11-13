@@ -50,6 +50,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   // mode by investigating the advertisement payload.
   bool IsInPairingMode() const override;
 
+  bool IsPaired() const override;
+
   FidoBleConnection::ReadCallback GetReadCallbackForTesting();
 
  protected:

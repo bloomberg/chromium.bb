@@ -6,6 +6,8 @@
 
 #include <Combaseapi.h>
 #include <windows.h>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
@@ -352,6 +354,10 @@ base::string16 WinNativeCrossPlatformAuthenticator::GetDisplayName() const {
 }
 
 bool WinNativeCrossPlatformAuthenticator::IsInPairingMode() const {
+  return false;
+}
+
+bool WinNativeCrossPlatformAuthenticator::IsPaired() const {
   return false;
 }
 
