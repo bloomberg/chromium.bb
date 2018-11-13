@@ -22,10 +22,12 @@ class ExtensionWebRequestTimeTracker {
   ~ExtensionWebRequestTimeTracker();
 
   // Records the time that a request was created.
-  void LogRequestStartTime(int64_t request_id, const base::Time& start_time);
+  void LogRequestStartTime(int64_t request_id,
+                           const base::TimeTicks& start_time,
+                           bool has_listener);
 
   // Records the time that a request either completed or encountered an error.
-  void LogRequestEndTime(int64_t request_id, const base::Time& end_time);
+  void LogRequestEndTime(int64_t request_id, const base::TimeTicks& end_time);
 
   // Records an additional delay for the given request caused by all extensions
   // combined.
@@ -43,8 +45,9 @@ class ExtensionWebRequestTimeTracker {
 
   // Timing information for a single request.
   struct RequestTimeLog {
-    base::Time request_start_time;
+    base::TimeTicks request_start_time;
     base::TimeDelta block_duration;
+    bool has_listener = false;
 
     RequestTimeLog();
     ~RequestTimeLog();
@@ -54,7 +57,8 @@ class ExtensionWebRequestTimeTracker {
   };
 
   // Records UMA metrics for the given request and its end time.
-  void AnalyzeLogRequest(const RequestTimeLog& log, const base::Time& end_time);
+  void AnalyzeLogRequest(const RequestTimeLog& log,
+                         const base::TimeTicks& end_time);
 
   // A map of current request IDs to timing info for each request.
   std::map<int64_t, RequestTimeLog> request_time_logs_;
