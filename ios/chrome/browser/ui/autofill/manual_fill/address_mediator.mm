@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -82,8 +83,19 @@ NSString* const ManageAddressAccessibilityIdentifier =
   if (!self.consumer) {
     return;
   }
-  // TODO(crbug.com/845472): implement.
-  [self.consumer presentActions:@[]];
+  NSString* manageAddressesTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_ADDRESSES);
+  __weak __typeof(self) weakSelf = self;
+  auto manageAddressesItem = [[ManualFillActionItem alloc]
+      initWithTitle:manageAddressesTitle
+             action:^{
+               base::RecordAction(base::UserMetricsAction(
+                   "ManualFallback_Profiles_OpenManageProfiles"));
+               [weakSelf.navigationDelegate openAddressSettings];
+             }];
+  manageAddressesItem.accessibilityIdentifier =
+      manual_fill::ManageAddressAccessibilityIdentifier;
+  [self.consumer presentActions:@[ manageAddressesItem ]];
 }
 
 @end

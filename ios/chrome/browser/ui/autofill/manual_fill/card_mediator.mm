@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -90,8 +91,19 @@ NSString* const ManageCardsAccessibilityIdentifier =
   if (!self.consumer) {
     return;
   }
-  // TODO(crbug.com/845472): implement.
-  [self.consumer presentActions:@[]];
+  NSString* manageCreditCardsTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_CREDIT_CARDS);
+  __weak __typeof(self) weakSelf = self;
+  auto manageCreditCardsItem = [[ManualFillActionItem alloc]
+      initWithTitle:manageCreditCardsTitle
+             action:^{
+               base::RecordAction(base::UserMetricsAction(
+                   "ManualFallback_CreditCard_OpenManageCreditCard"));
+               [weakSelf.navigationDelegate openCardSettings];
+             }];
+  manageCreditCardsItem.accessibilityIdentifier =
+      manual_fill::ManageCardsAccessibilityIdentifier;
+  [self.consumer presentActions:@[ manageCreditCardsItem ]];
 }
 
 #pragma mark - FullCardRequestResultDelegateObserving
