@@ -105,6 +105,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/tabs/tab_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
@@ -2870,28 +2871,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                      postData:(TemplateURLRef::PostContent*)postData
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition {
-  if (position == NSNotFound)
-    position = self.tabModel.count;
-  DCHECK(position <= self.tabModel.count);
-
-  web::NavigationManager::WebLoadParams params(URL);
-  params.transition_type = transition;
-  if (postData) {
-    // Extract the content type and post params from |postData| and add them
-    // to the load params.
-    NSString* contentType = base::SysUTF8ToNSString(postData->first);
-    NSData* data = [NSData dataWithBytes:(void*)postData->second.data()
-                                  length:postData->second.length()];
-    params.post_data = data;
-    params.extra_headers = @{@"Content-Type" : contentType};
-  }
-
-  Tab* tab = [self.tabModel insertTabWithLoadParams:params
-                                             opener:nil
-                                        openedByDOM:NO
-                                            atIndex:position
-                                       inBackground:NO];
-  return tab;
+  return [self.tabModel
+      insertTabWithLoadParams:CreateWebLoadParams(URL, transition, postData)
+                       opener:nil
+                  openedByDOM:NO
+                      atIndex:position
+                 inBackground:NO];
 }
 
 - (BOOL)isTabNativePage:(Tab*)tab {
