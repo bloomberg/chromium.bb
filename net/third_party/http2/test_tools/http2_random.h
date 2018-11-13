@@ -38,19 +38,19 @@ class Http2Random {
   uint64_t Rand64();
 
   // Return a uniformly distrubted random number in [0, n).
-  int32_t Uniform(int32_t n) { return Rand64() % n; }
+  uint32_t Uniform(uint32_t n) { return Rand64() % n; }
   // Return a uniformly distrubted random number in [lo, hi).
-  int64_t UniformInRange(int64_t lo, int64_t hi) {
+  uint64_t UniformInRange(uint64_t lo, uint64_t hi) {
     return lo + Rand64() % (hi - lo);
   }
   // Return an integer of logarithmically random scale.
-  int32_t Skewed(int32_t max_log) {
-    const int32_t base = Rand32() % (max_log + 1);
+  uint32_t Skewed(uint32_t max_log) {
+    const uint32_t base = Rand32() % (max_log + 1);
     const uint32_t mask = ((base < 32) ? (1u << base) : 0u) - 1u;
     return Rand32() & mask;
   }
   // Return a random number in [0, max] range that skews low.
-  size_t RandomSizeSkewedLow(size_t max) {
+  uint64_t RandomSizeSkewedLow(uint64_t max) {
     return std::round(max * std::pow(RandDouble(), 2));
   }
 
