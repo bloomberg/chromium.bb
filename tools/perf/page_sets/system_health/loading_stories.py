@@ -292,6 +292,12 @@ class LoadWikipediaStory(_LoadingStory):
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
 
+class LoadWikipediaStory2018(_LoadingStory):
+  NAME = 'load:news:wikipedia:2018'
+  URL = 'https://en.wikipedia.org/wiki/Science'
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2018]
+
+
 class LoadIrctcStory(_LoadingStory):
   NAME = 'load:news:irctc'
   URL = 'https://www.irctc.co.in'
