@@ -450,6 +450,9 @@ template("win_64bit_toolchains") {
     environment = "environment." + toolchain_arch
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${goma_prefix}$prefix/${clang_cl}"
+    if (toolchain_arch == "arm64") {
+      cl += " --target=arm64-windows"
+    }
     sys_include_flags = "${win_64bit_toolchain_data.include_flags_imsvc}"
     if (host_os != "win") {
       # For win cross build
