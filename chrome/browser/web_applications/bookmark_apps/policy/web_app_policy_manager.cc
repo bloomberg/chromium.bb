@@ -96,10 +96,13 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     else
       container = LaunchContainer::kTab;
 
+    web_app::PendingAppManager::AppInfo app_info(
+        GURL(std::move(url.GetString())), container,
+        web_app::InstallSource::kExternalPolicy);
+    app_info.create_shortcuts = false;
+
     // There is a separate policy to create shortcuts/pin apps to shelf.
-    apps_to_install.emplace_back(GURL(url.GetString()), container,
-                                 web_app::InstallSource::kExternalPolicy,
-                                 false /* create_shortcuts */);
+    apps_to_install.push_back(std::move(app_info));
   }
 
   pending_app_manager_->SynchronizeInstalledApps(

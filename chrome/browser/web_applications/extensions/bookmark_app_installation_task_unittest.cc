@@ -325,9 +325,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoShortcuts) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo app_info(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternal, false /* create_shortcuts */);
+      web_app::InstallSource::kInternal);
+  app_info.create_shortcuts = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
 

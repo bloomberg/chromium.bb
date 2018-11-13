@@ -42,31 +42,37 @@ const char kXyzWebAppUrl[] = "https://xyz.example";
 const char kWrongUrl[] = "https://foobar.example";
 
 web_app::PendingAppManager::AppInfo GetFooAppInfo(
-    bool override_previous_user_uninstall = web_app::PendingAppManager::
-        AppInfo::kDefaultOverridePreviousUserUninstall) {
-  return web_app::PendingAppManager::AppInfo(
+    base::Optional<bool> override_previous_user_uninstall =
+        base::Optional<bool>()) {
+  web_app::PendingAppManager::AppInfo info(
       GURL(kFooWebAppUrl), web_app::LaunchContainer::kTab,
-      web_app::InstallSource::kExternalPolicy,
-      web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
-      override_previous_user_uninstall);
+      web_app::InstallSource::kExternalPolicy);
+
+  if (override_previous_user_uninstall.has_value())
+    info.override_previous_user_uninstall = *override_previous_user_uninstall;
+
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kBarWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kQuxWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kXyzWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 scoped_refptr<const Extension> CreateDummyExtension(const std::string& id) {
@@ -204,7 +210,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     auto* task_ptr = task.get();
     task->SetOnInstallCalled(base::BindLambdaForTesting([task_ptr, this]() {
       ++installation_task_run_count_;
-      last_app_info_ = task_ptr->app_info().Clone();
+      last_app_info_ = task_ptr->app_info();
     }));
     return task;
   }
@@ -289,7 +295,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   const GURL& install_callback_url() { return install_callback_url_.value(); }
 
   const web_app::PendingAppManager::AppInfo& last_app_info() {
-    CHECK(last_app_info_.get());
+    CHECK(last_app_info_.has_value());
     return *last_app_info_;
   }
 
@@ -318,7 +324,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<GURL> install_callback_url_;
   base::Optional<web_app::InstallResultCode> install_callback_code_;
-  std::unique_ptr<web_app::PendingAppManager::AppInfo> last_app_info_;
+  base::Optional<web_app::PendingAppManager::AppInfo> last_app_info_;
   size_t installation_task_run_count_ = 0;
 
   std::unique_ptr<TestExtensionRegistryObserver>
