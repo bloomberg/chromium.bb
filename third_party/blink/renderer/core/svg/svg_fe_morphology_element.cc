@@ -20,18 +20,18 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_morphology_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<MorphologyOperatorType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(FEMORPHOLOGY_OPERATOR_ERODE, "erode"));
-    entries.push_back(std::make_pair(FEMORPHOLOGY_OPERATOR_DILATE, "dilate"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<MorphologyOperatorType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FEMORPHOLOGY_OPERATOR_ERODE, "erode"},
+      {FEMORPHOLOGY_OPERATOR_DILATE, "dilate"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

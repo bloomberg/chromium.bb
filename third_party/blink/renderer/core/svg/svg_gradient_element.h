@@ -41,9 +41,7 @@ enum SVGSpreadMethodType {
   kSVGSpreadMethodReflect,
   kSVGSpreadMethodRepeat
 };
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGSpreadMethodType>();
+DECLARE_SVG_ENUM_MAP(SVGSpreadMethodType);
 
 class SVGGradientElement : public SVGElement, public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();

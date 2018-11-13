@@ -33,8 +33,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<EdgeModeType>();
+DECLARE_SVG_ENUM_MAP(EdgeModeType);
 
 class SVGFEConvolveMatrixElement final
     : public SVGFilterPrimitiveStandardAttributes {

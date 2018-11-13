@@ -20,20 +20,17 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_displacement_map_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ChannelSelectorType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(CHANNEL_R, "R"));
-    entries.push_back(std::make_pair(CHANNEL_G, "G"));
-    entries.push_back(std::make_pair(CHANNEL_B, "B"));
-    entries.push_back(std::make_pair(CHANNEL_A, "A"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<ChannelSelectorType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {CHANNEL_R, "R"}, {CHANNEL_G, "G"}, {CHANNEL_B, "B"}, {CHANNEL_A, "A"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

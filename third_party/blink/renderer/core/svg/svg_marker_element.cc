@@ -24,20 +24,18 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 #include "third_party/blink/renderer/core/svg/svg_angle_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGMarkerUnitsType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(
-        std::make_pair(kSVGMarkerUnitsUserSpaceOnUse, "userSpaceOnUse"));
-    entries.push_back(
-        std::make_pair(kSVGMarkerUnitsStrokeWidth, "strokeWidth"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGMarkerUnitsType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGMarkerUnitsUserSpaceOnUse, "userSpaceOnUse"},
+      {kSVGMarkerUnitsStrokeWidth, "strokeWidth"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

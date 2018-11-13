@@ -21,21 +21,20 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_color_matrix_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<ColorMatrixType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(FECOLORMATRIX_TYPE_MATRIX, "matrix"));
-    entries.push_back(std::make_pair(FECOLORMATRIX_TYPE_SATURATE, "saturate"));
-    entries.push_back(
-        std::make_pair(FECOLORMATRIX_TYPE_HUEROTATE, "hueRotate"));
-    entries.push_back(std::make_pair(FECOLORMATRIX_TYPE_LUMINANCETOALPHA,
-                                     "luminanceToAlpha"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<ColorMatrixType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FECOLORMATRIX_TYPE_MATRIX, "matrix"},
+      {FECOLORMATRIX_TYPE_SATURATE, "saturate"},
+      {FECOLORMATRIX_TYPE_HUEROTATE, "hueRotate"},
+      {FECOLORMATRIX_TYPE_LUMINANCETOALPHA, "luminanceToAlpha"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

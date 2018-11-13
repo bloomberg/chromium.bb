@@ -31,19 +31,14 @@ enum SVGTextPathMethodType {
   kSVGTextPathMethodAlign,
   kSVGTextPathMethodStretch
 };
+DECLARE_SVG_ENUM_MAP(SVGTextPathMethodType);
 
 enum SVGTextPathSpacingType {
   kSVGTextPathSpacingUnknown = 0,
   kSVGTextPathSpacingAuto,
   kSVGTextPathSpacingExact
 };
-
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGTextPathMethodType>();
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGTextPathSpacingType>();
+DECLARE_SVG_ENUM_MAP(SVGTextPathSpacingType);
 
 class SVGTextPathElement final : public SVGTextContentElement,
                                  public SVGURIReference {

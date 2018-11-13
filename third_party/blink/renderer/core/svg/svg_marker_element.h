@@ -36,8 +36,7 @@ enum SVGMarkerUnitsType {
   kSVGMarkerUnitsUserSpaceOnUse,
   kSVGMarkerUnitsStrokeWidth
 };
-template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<SVGMarkerUnitsType>();
+DECLARE_SVG_ENUM_MAP(SVGMarkerUnitsType);
 
 class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
   DEFINE_WRAPPERTYPEINFO();

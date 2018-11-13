@@ -36,11 +36,10 @@
 
 namespace blink {
 
+class SVGEnumerationMap;
+
 class SVGEnumerationBase : public SVGPropertyBase {
  public:
-  typedef std::pair<unsigned short, String> StringEntry;
-  typedef Vector<StringEntry> StringEntries;
-
   // SVGEnumeration does not have a tear-off type.
   typedef void TearOffType;
   typedef unsigned short PrimitiveType;
@@ -72,13 +71,9 @@ class SVGEnumerationBase : public SVGPropertyBase {
   static AnimatedPropertyType ClassType() { return kAnimatedEnumeration; }
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
-  static unsigned short ValueOfLastEnum(const StringEntries& entries) {
-    return entries.back().first;
-  }
-
   // This is the maximum value that is exposed as an IDL constant on the
   // relevant interface.
-  unsigned short MaxExposedEnumValue() const { return max_exposed_; }
+  unsigned short MaxExposedEnumValue() const;
 
   void SetInitial(unsigned value) {
     SetValue(static_cast<unsigned short>(value));
@@ -86,32 +81,26 @@ class SVGEnumerationBase : public SVGPropertyBase {
   static constexpr int kInitialValueBits = 3;
 
  protected:
-  SVGEnumerationBase(unsigned short value,
-                     const StringEntries& entries,
-                     unsigned short max_exposed)
-      : value_(value), max_exposed_(max_exposed), entries_(entries) {}
+  SVGEnumerationBase(unsigned short value, const SVGEnumerationMap& map)
+      : value_(value), map_(map) {}
 
   // This is the maximum value of all the internal enumeration values.
-  // This assumes that |m_entries| are sorted.
-  unsigned short MaxInternalEnumValue() const {
-    return ValueOfLastEnum(entries_);
-  }
+  // This assumes that the map is sorted on the enumeration value.
+  unsigned short MaxInternalEnumValue() const;
 
   // Used by SVGMarkerOrientEnumeration.
   virtual void NotifyChange() {}
 
   unsigned short value_;
-  const unsigned short max_exposed_;
-  const StringEntries& entries_;
+  const SVGEnumerationMap& map_;
 };
-typedef SVGEnumerationBase::StringEntries SVGEnumerationStringEntries;
 
 template <typename Enum>
-const SVGEnumerationStringEntries& GetStaticStringEntries();
-template <typename Enum>
-unsigned short GetMaxExposedEnumValue() {
-  return SVGEnumerationBase::ValueOfLastEnum(GetStaticStringEntries<Enum>());
-}
+const SVGEnumerationMap& GetEnumerationMap();
+
+#define DECLARE_SVG_ENUM_MAP(cpp_enum_type) \
+  template <>                               \
+  const SVGEnumerationMap& GetEnumerationMap<cpp_enum_type>()
 
 template <typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
@@ -136,9 +125,7 @@ class SVGEnumeration : public SVGEnumerationBase {
 
  protected:
   explicit SVGEnumeration(Enum new_value)
-      : SVGEnumerationBase(new_value,
-                           GetStaticStringEntries<Enum>(),
-                           GetMaxExposedEnumValue<Enum>()) {}
+      : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
 };
 
 }  // namespace blink

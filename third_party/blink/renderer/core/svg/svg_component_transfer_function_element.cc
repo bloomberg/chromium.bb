@@ -20,7 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_component_transfer_function_element.h"
 
-#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_component_transfer_element.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -28,19 +28,15 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ComponentTransferType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"));
-    entries.push_back(std::make_pair(FECOMPONENTTRANSFER_TYPE_TABLE, "table"));
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_DISCRETE, "discrete"));
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_LINEAR, "linear"));
-    entries.push_back(std::make_pair(FECOMPONENTTRANSFER_TYPE_GAMMA, "gamma"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<ComponentTransferType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"},
+      {FECOMPONENTTRANSFER_TYPE_TABLE, "table"},
+      {FECOMPONENTTRANSFER_TYPE_DISCRETE, "discrete"},
+      {FECOMPONENTTRANSFER_TYPE_LINEAR, "linear"},
+      {FECOMPONENTTRANSFER_TYPE_GAMMA, "gamma"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

@@ -21,30 +21,25 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_composite_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<CompositeOperationType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
-    entries.push_back(
-        std::make_pair(FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_LIGHTER, "lighter"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<CompositeOperationType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FECOMPOSITE_OPERATOR_OVER, "over"},
+      {FECOMPOSITE_OPERATOR_IN, "in"},
+      {FECOMPOSITE_OPERATOR_OUT, "out"},
+      {FECOMPOSITE_OPERATOR_ATOP, "atop"},
+      {FECOMPOSITE_OPERATOR_XOR, "xor"},
+      {FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"},
+      {FECOMPOSITE_OPERATOR_LIGHTER, "lighter"},
+  };
+  static const SVGEnumerationMap entries(enum_items,
+                                         FECOMPOSITE_OPERATOR_ARITHMETIC);
   return entries;
-}
-
-template <>
-unsigned short GetMaxExposedEnumValue<CompositeOperationType>() {
-  return FECOMPOSITE_OPERATOR_ARITHMETIC;
 }
 
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)

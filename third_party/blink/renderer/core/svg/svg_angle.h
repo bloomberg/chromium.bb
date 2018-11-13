@@ -38,11 +38,7 @@ enum SVGMarkerOrientType {
   kSVGMarkerOrientAngle,
   kSVGMarkerOrientAutoStartReverse
 };
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGMarkerOrientType>();
-template <>
-unsigned short GetMaxExposedEnumValue<SVGMarkerOrientType>();
+DECLARE_SVG_ENUM_MAP(SVGMarkerOrientType);
 
 class SVGMarkerOrientEnumeration final
     : public SVGEnumeration<SVGMarkerOrientType> {

@@ -28,9 +28,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<MorphologyOperatorType>();
+DECLARE_SVG_ENUM_MAP(MorphologyOperatorType);
 
 class SVGFEMorphologyElement final
     : public SVGFilterPrimitiveStandardAttributes {

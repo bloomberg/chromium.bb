@@ -22,25 +22,24 @@
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
-#include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/svg/gradient_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_stop_element.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGSpreadMethodType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGSpreadMethodPad, "pad"));
-    entries.push_back(std::make_pair(kSVGSpreadMethodReflect, "reflect"));
-    entries.push_back(std::make_pair(kSVGSpreadMethodRepeat, "repeat"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGSpreadMethodType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGSpreadMethodPad, "pad"},
+      {kSVGSpreadMethodReflect, "reflect"},
+      {kSVGSpreadMethodRepeat, "repeat"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
