@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_QUIC_STREAM_H_
 
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
@@ -22,6 +24,9 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // TODO(steveanton): These maybe should be adjustable.
+  static const uint32_t kWriteBufferSize;
+
   RTCQuicStream(ExecutionContext* context,
                 RTCQuicTransport* transport,
                 QuicStreamProxy* stream_proxy);
@@ -36,6 +41,8 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   String state() const;
   uint32_t readBufferedAmount() const;
   uint32_t writeBufferedAmount() const;
+  uint32_t maxWriteBufferedAmount() const;
+  void write(NotShared<DOMUint8Array> data, ExceptionState& exception_state);
   void finish();
   void reset();
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
@@ -61,9 +68,9 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   Member<RTCQuicTransport> transport_;
   RTCQuicStreamState state_ = RTCQuicStreamState::kOpen;
   bool readable_ = true;
-  bool writeable_ = true;
   uint32_t read_buffered_amount_ = 0;
   uint32_t write_buffered_amount_ = 0;
+  bool wrote_fin_ = false;
   QuicStreamProxy* proxy_;
 };
 

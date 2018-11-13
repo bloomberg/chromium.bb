@@ -5,8 +5,11 @@
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
+
+const uint32_t RTCQuicStream::kWriteBufferSize = 4 * 1024;
 
 RTCQuicStream::RTCQuicStream(ExecutionContext* context,
                              RTCQuicTransport* transport,
@@ -49,12 +52,45 @@ uint32_t RTCQuicStream::writeBufferedAmount() const {
   return write_buffered_amount_;
 }
 
+uint32_t RTCQuicStream::maxWriteBufferedAmount() const {
+  return kWriteBufferSize;
+}
+
+void RTCQuicStream::write(NotShared<DOMUint8Array> data,
+                          ExceptionState& exception_state) {
+  if (IsClosed() || wrote_fin_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The stream is not writable.");
+    return;
+  }
+  if (data.View()->length() == 0) {
+    return;
+  }
+  uint32_t remaining_write_buffer_size =
+      kWriteBufferSize - writeBufferedAmount();
+  if (data.View()->length() > remaining_write_buffer_size) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kOperationError,
+        "The write data size of " + String::Number(data.View()->length()) +
+            " bytes would exceed the remaining write buffer size of " +
+            String::Number(remaining_write_buffer_size) + " bytes.");
+    return;
+  }
+  Vector<uint8_t> data_vector(data.View()->length());
+  memcpy(data_vector.data(), data.View()->Data(), data.View()->length());
+  proxy_->WriteData(std::move(data_vector), /*fin=*/false);
+  write_buffered_amount_ += data.View()->length();
+}
+
 void RTCQuicStream::finish() {
-  if (!writeable_) {
+  if (IsClosed()) {
+    return;
+  }
+  if (wrote_fin_) {
     return;
   }
   proxy_->WriteData({}, /*fin=*/true);
-  writeable_ = false;
+  wrote_fin_ = true;
   if (readable_) {
     DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
     state_ = RTCQuicStreamState::kClosing;
@@ -69,15 +105,14 @@ void RTCQuicStream::reset() {
     return;
   }
   proxy_->Reset();
-  writeable_ = false;
   readable_ = false;
   Close();
 }
 
 void RTCQuicStream::Stop() {
   readable_ = false;
-  writeable_ = false;
   state_ = RTCQuicStreamState::kClosed;
+  write_buffered_amount_ = 0;
   proxy_ = nullptr;
 }
 
@@ -99,7 +134,7 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_NE(state_, RTCQuicStreamState::kClosed);
   DCHECK(readable_);
   readable_ = false;
-  if (writeable_) {
+  if (!wrote_fin_) {
     DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
     state_ = RTCQuicStreamState::kClosing;
   } else {
@@ -109,7 +144,10 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
-void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {}
+void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
+  DCHECK_GE(write_buffered_amount_, amount);
+  write_buffered_amount_ -= amount;
+}
 
 const AtomicString& RTCQuicStream::InterfaceName() const {
   return event_target_names::kRTCQuicStream;
