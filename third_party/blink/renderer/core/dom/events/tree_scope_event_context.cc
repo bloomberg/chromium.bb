@@ -80,10 +80,10 @@ HeapVector<Member<EventTarget>>& TreeScopeEventContext::EnsureEventPath(
   return *event_path_;
 }
 
-TouchEventContext* TreeScopeEventContext::EnsureTouchEventContext() {
+TouchEventContext& TreeScopeEventContext::EnsureTouchEventContext() {
   if (!touch_event_context_)
     touch_event_context_ = TouchEventContext::Create();
-  return touch_event_context_.Get();
+  return *touch_event_context_;
 }
 
 TreeScopeEventContext* TreeScopeEventContext::Create(TreeScope& tree_scope) {

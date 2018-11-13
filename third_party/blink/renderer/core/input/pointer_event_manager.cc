@@ -704,8 +704,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         pointer_event->HasEventPath()) {
       for (const auto& context :
            pointer_event->GetEventPath().NodeEventContexts()) {
-        if (event_handling_util::IsInDocument(context.GetNode())) {
-          mouse_target = context.GetNode();
+        if (event_handling_util::IsInDocument(&context.GetNode())) {
+          mouse_target = &context.GetNode();
           break;
         }
       }
