@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/time/clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
@@ -71,9 +72,12 @@ class ConnectionAttempt : public PendingConnectionRequestDelegate {
 
  protected:
   ConnectionAttempt(ConnectionAttemptDelegate* delegate,
+                    base::Clock* clock,
                     const ConnectionAttemptDetails& connection_attempt_details)
       : delegate_(delegate),
-        connection_attempt_details_(connection_attempt_details) {
+        clock_(clock),
+        connection_attempt_details_(connection_attempt_details),
+        start_attempt_timestamp_(clock_->Now()) {
     DCHECK(delegate);
   }
 
@@ -87,6 +91,11 @@ class ConnectionAttempt : public PendingConnectionRequestDelegate {
   virtual std::vector<std::unique_ptr<ClientConnectionParameters>>
   ExtractClientConnectionParameters() = 0;
 
+  // Derived types can override this function to process the amount of time that
+  // this connection attempt has taken to produce a successful connection.
+  virtual void ProcessSuccessfulConnectionDuration(
+      const base::TimeDelta& duration) {}
+
   void OnConnectionAttemptSucceeded(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
     if (has_notified_delegate_of_success_) {
@@ -97,6 +106,8 @@ class ConnectionAttempt : public PendingConnectionRequestDelegate {
     }
 
     has_notified_delegate_of_success_ = true;
+    ProcessSuccessfulConnectionDuration(clock_->Now() -
+                                        start_attempt_timestamp_);
     delegate_->OnConnectionAttemptSucceeded(
         connection_attempt_details_.GetAssociatedConnectionDetails(),
         std::move(authenticated_channel));
@@ -117,7 +128,9 @@ class ConnectionAttempt : public PendingConnectionRequestDelegate {
 
  private:
   ConnectionAttemptDelegate* delegate_;
+  base::Clock* clock_;
   const ConnectionAttemptDetails connection_attempt_details_;
+  const base::Time start_attempt_timestamp_;
 
   bool has_notified_delegate_of_success_ = false;
 

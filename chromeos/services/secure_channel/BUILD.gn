@@ -74,6 +74,8 @@ static_library("secure_channel") {
     "error_tolerant_ble_advertisement.h",
     "error_tolerant_ble_advertisement_impl.cc",
     "error_tolerant_ble_advertisement_impl.h",
+    "latency_metrics_logger.cc",
+    "latency_metrics_logger.h",
     "multiplexed_channel.cc",
     "multiplexed_channel.h",
     "multiplexed_channel_impl.cc",

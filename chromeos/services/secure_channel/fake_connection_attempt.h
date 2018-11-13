@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/default_clock.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
@@ -30,6 +31,7 @@ class FakeConnectionAttempt : public ConnectionAttempt<FailureDetailType> {
       const ConnectionAttemptDetails& connection_attempt_details,
       base::OnceClosure destructor_callback = base::OnceClosure())
       : ConnectionAttempt<FailureDetailType>(delegate,
+                                             base::DefaultClock::GetInstance(),
                                              connection_attempt_details),
         destructor_callback_(std::move(destructor_callback)) {}
 

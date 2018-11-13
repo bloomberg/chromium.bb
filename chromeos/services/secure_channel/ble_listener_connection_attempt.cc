@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/secure_channel/ble_listener_operation.h"
+#include "chromeos/services/secure_channel/latency_metrics_logger.h"
 
 namespace chromeos {
 
@@ -64,6 +65,14 @@ BleListenerConnectionAttempt::CreateConnectToDeviceOperation(
   return BleListenerOperation::Factory::Get()->BuildInstance(
       ble_connection_manager_, std::move(success_callback), failure_callback,
       device_id_pair, connection_priority);
+}
+
+void BleListenerConnectionAttempt::ProcessSuccessfulConnectionDuration(
+    const base::TimeDelta& duration) {
+  LogLatencyMetric(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToAuthenticationDuration.Background",
+      duration);
 }
 
 }  // namespace secure_channel
