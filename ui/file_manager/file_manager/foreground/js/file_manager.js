@@ -1221,6 +1221,9 @@ FileManager.prototype = /** @struct */ {
                     VolumeManagerCommon.RootType.RECENT,
                     this.getSourceRestriction_())) :
             null);
+
+    chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.addListener(
+        Crostini.onSharedPathsChanged.bind(null, assert(this.volumeManager_)));
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
 

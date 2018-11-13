@@ -1312,7 +1312,8 @@ void CrostiniManager::OnStartTerminaVm(
 
   // Share folders from Downloads, etc with default VM.
   if (vm_name == kCrostiniDefaultVmName) {
-    SharePersistedPaths(profile_, base::DoNothing());
+    CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+        base::DoNothing());
   }
 }
 

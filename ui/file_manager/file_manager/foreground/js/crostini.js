@@ -91,6 +91,23 @@ Crostini.unregisterSharedPath = function(entry, volumeManager) {
 };
 
 /**
+ * Handles shared path changes.
+ * @param {!VolumeManager} volumeManager
+ * @param {chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent} event
+ */
+Crostini.onSharedPathsChanged = function(volumeManager, event) {
+  if (event.eventType === 'share') {
+    for (const entry of event.entries) {
+      Crostini.registerSharedPath(entry, volumeManager);
+    }
+  } else if (event.eventType === 'unshare') {
+    for (const entry of event.entries) {
+      Crostini.unregisterSharedPath(entry, volumeManager);
+    }
+  }
+};
+
+/**
  * Returns true if entry is shared.
  * @param {!Entry} entry
  * @param {!VolumeManager} volumeManager

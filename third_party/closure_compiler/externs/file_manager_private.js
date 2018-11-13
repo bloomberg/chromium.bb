@@ -222,6 +222,12 @@ chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
   INSTALL_ALREADY_ACTIVE: 'install_already_active',
 };
 
+/** @enum {string} */
+chrome.fileManagerPrivate.CrostiniSharedPathsChangedEventType = {
+  SHARE: 'share',
+  UNSHARE: 'unshare',
+};
+
 /**
  * @typedef {{
  *   taskId: string,
@@ -464,6 +470,14 @@ chrome.fileManagerPrivate.Provider;
  * }}
  */
 chrome.fileManagerPrivate.LinuxPackageInfo;
+
+/**
+ * @typedef {{
+ * eventType: chrome.fileManagerPrivate.CrostiniSharedPathsChangedEventType,
+ * entries: !Array<!Entry>,
+ * }}
+ */
+chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -1033,3 +1047,6 @@ chrome.fileManagerPrivate.onDriveSyncError;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onAppsUpdated;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onCrostiniSharedPathsChanged;

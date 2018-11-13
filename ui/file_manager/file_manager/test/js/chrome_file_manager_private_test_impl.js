@@ -154,6 +154,7 @@ chrome.fileManagerPrivate = {
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
+  onCrostiniSharedPathsChanged: new test.Event(),
   onDeviceChanged: new test.Event(),
   onDirectoryChanged: new test.Event(),
   onDriveConnectionStatusChanged: new test.Event(),

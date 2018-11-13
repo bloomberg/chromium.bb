@@ -467,5 +467,25 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
   return result;
 }
 
+bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
+                                 std::string* mount_name,
+                                 std::string* full_path) {
+  DCHECK(absolute_path.IsAbsolute());
+  DCHECK(mount_name);
+  DCHECK(full_path);
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath virtual_path;
+  if (!mount_points->GetVirtualPath(absolute_path, &virtual_path))
+    return false;
+  const std::string& value = virtual_path.value();
+  size_t pos = value.find(base::FilePath::kSeparators[0]);
+  if (pos == std::string::npos)
+    return false;
+  *mount_name = value.substr(0, pos);
+  *full_path = value.substr(pos);
+  return true;
+}
+
 }  // namespace util
 }  // namespace file_manager

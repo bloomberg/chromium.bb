@@ -222,6 +222,8 @@ enum SourceRestriction {
   native_or_drive_source
 };
 
+enum CrostiniSharedPathsChangedEventType { share, unshare };
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -648,6 +650,15 @@ dictionary LinuxPackageInfo {
   DOMString? summary;
   // A longer description of the project. Almost always present.
   DOMString? description;
+};
+
+// Payload data for crostini shared paths changed event.
+dictionary CrostiniSharedPathsChangedEvent {
+  // Is the event raised for shared or unshared.
+  CrostiniSharedPathsChangedEventType eventType;
+
+  // Paths that have been shared or unshared.
+  [instanceOf=Entry] object[] entries;
 };
 
 // Callback that does not take arguments.
@@ -1198,5 +1209,8 @@ interface Events {
   static void onDriveSyncError(DriveSyncErrorEvent event);
 
   static void onAppsUpdated();
+
+  static void onCrostiniSharedPathsChanged(
+      CrostiniSharedPathsChangedEvent event);
 };
 };

@@ -355,6 +355,30 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   }
 }
 
+TEST(FileManagerPathUtilTest, ExtractMountNameAndFullPath) {
+  content::TestBrowserThreadBundle thread_bundle;
+  content::TestServiceManagerContext service_manager_context;
+  TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  std::string downloads_mount_name = GetDownloadsMountPointName(&profile);
+  base::FilePath downloads_path = GetDownloadsFolderForProfile(&profile);
+  mount_points->RegisterFileSystem(
+      downloads_mount_name, storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), downloads_path);
+  std::string relative_path = "folder/in/downloads";
+  std::string mount_name;
+  std::string full_path;
+
+  EXPECT_TRUE(ExtractMountNameAndFullPath(downloads_path.Append(relative_path),
+                                          &mount_name, &full_path));
+  EXPECT_EQ(mount_name, downloads_mount_name);
+  EXPECT_EQ(full_path, "/" + relative_path);
+
+  EXPECT_FALSE(ExtractMountNameAndFullPath(base::FilePath("/unknown/path"),
+                                           &mount_name, &full_path));
+}
+
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
     content::BrowserContext* context) {
   return arc::ArcFileSystemOperationRunner::CreateForTesting(
