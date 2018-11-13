@@ -35,7 +35,7 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.username_element_renderer_id);
   target->SetBoolean("username_marked_by_site", form.username_marked_by_site);
   target->SetString("username_value", form.username_value);
-  target->SetString("password_elem", form.password_element);
+  target->SetString("password_element", form.password_element);
   target->SetString("password_value", form.password_value);
   target->SetString("new_password_element", form.new_password_element);
   target->SetInteger("password_element_renderer_id",
@@ -43,6 +43,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("new_password_value", form.new_password_value);
   target->SetBoolean("new_password_marked_by_site",
                      form.new_password_marked_by_site);
+  target->SetString("confirmation_password_element",
+                    form.confirmation_password_element);
   target->SetString("other_possible_usernames",
                     ValueElementVectorToString(form.other_possible_usernames));
   target->SetString("all_possible_passwords",
