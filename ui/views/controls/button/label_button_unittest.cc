@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/layout/layout_provider.h"
@@ -210,6 +211,30 @@ TEST_F(LabelButtonTest, AccessibleState) {
   base::string16 tooltip;
   EXPECT_TRUE(button_->GetTooltipText(gfx::Point(), &tooltip));
   EXPECT_EQ(tooltip_text, tooltip);
+}
+
+// Test View::GetAccessibleNodeData() for default buttons.
+TEST_F(LabelButtonTest, AccessibleDefaultState) {
+  {
+    // If SetIsDefault() is not called, the ax default state should not be set.
+    ui::AXNodeData ax_data;
+    button_->GetViewAccessibility().GetAccessibleNodeData(&ax_data);
+    EXPECT_FALSE(ax_data.HasState(ax::mojom::State::kDefault));
+  }
+
+  {
+    button_->SetIsDefault(true);
+    ui::AXNodeData ax_data;
+    button_->GetViewAccessibility().GetAccessibleNodeData(&ax_data);
+    EXPECT_TRUE(ax_data.HasState(ax::mojom::State::kDefault));
+  }
+
+  {
+    button_->SetIsDefault(false);
+    ui::AXNodeData ax_data;
+    button_->GetViewAccessibility().GetAccessibleNodeData(&ax_data);
+    EXPECT_FALSE(ax_data.HasState(ax::mojom::State::kDefault));
+  }
 }
 
 TEST_F(LabelButtonTest, Image) {
