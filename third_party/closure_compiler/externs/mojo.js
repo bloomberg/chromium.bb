@@ -132,6 +132,16 @@ mojo.internal.InterfaceProxyBase = class {
   sendMessage(ordinal, paramStruct, responseStruct, args) {}
 };
 
+mojo.internal.CallbackRouter = class {
+  constructor() {}
+
+  /**
+   * @param {number} id
+   * @return {boolean}
+   */
+  removeListener(id) {}
+};
+
 mojo.internal.InterfaceTarget = class {
   constructor() {}
 
@@ -145,7 +155,10 @@ mojo.internal.InterfaceTarget = class {
 };
 
 mojo.internal.InterfaceCallbackTarget = class {
-  constructor() {}
+  /**
+   * @param {!mojo.internal.CallbackRouter} callbackRouter
+   */
+  constructor(callbackRouter) {}
 
   /**
    * @param {!Function} listener

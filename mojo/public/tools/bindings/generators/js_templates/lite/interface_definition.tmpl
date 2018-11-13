@@ -148,11 +148,13 @@ class {{interface.name}} {
 class {{interface.name}}CallbackRouter {
   constructor() {
     this.target_ = new mojo.internal.InterfaceTarget;
+    this.router_ = new mojo.internal.CallbackRouter;
 {%  for method in interface.methods %}
 {%-   set interface_message_id =
           interface.mojom_name ~ "_" ~ method.mojom_name %}
     /** @public {!mojo.internal.InterfaceCallbackTarget} */
-    this.{{method.name}} = new mojo.internal.InterfaceCallbackTarget;
+    this.{{method.name}} =
+        new mojo.internal.InterfaceCallbackTarget(this.router_);
     this.target_.registerHandler(
         {{method.ordinal}},
         {{interface_message_id}}_Params,
@@ -186,5 +188,13 @@ class {{interface.name}}CallbackRouter {
     let proxy = new {{interface.name}}Proxy;
     this.target_.bindHandle(proxy.createRequest().handle);
     return proxy;
+  }
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   */
+  removeListener(id) {
+    return this.router_.removeListener(id);
   }
 }

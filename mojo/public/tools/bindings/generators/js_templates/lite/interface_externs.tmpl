@@ -84,4 +84,10 @@ goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
    * @return {!{{module.namespace}}.{{interface.name}}Proxy }
    */
   createProxy() {}
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   */
+  removeListener(id) {}
 };

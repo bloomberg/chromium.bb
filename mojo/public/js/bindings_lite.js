@@ -284,25 +284,18 @@ mojo.internal.InterfaceProxyBase = class {
  * messages as Event-like things.
  * @export
  */
-mojo.internal.InterfaceCallbackTarget = class {
-  /** @public */
+mojo.internal.CallbackRouter = class {
   constructor() {
-    /** @private {!Map<number, !Function>} */
-    this.listeners_ = new Map;
+    /** @type {!Map<number, !Function>} */
+    this.removeCallbacks = new Map;
 
     /** @private {number} */
     this.nextListenerId_ = 0;
   }
 
-  /**
-   * @param {!Function} listener
-   * @return {number} A unique ID for the added listener.
-   * @export
-   */
-  addListener(listener) {
-    const id = ++this.nextListenerId_;
-    this.listeners_.set(id, listener);
-    return id;
+  /** @return {number} */
+  getNextId() {
+    return ++this.nextListenerId_;
   }
 
   /**
@@ -311,7 +304,41 @@ mojo.internal.InterfaceCallbackTarget = class {
    * @export
    */
   removeListener(id) {
-    return this.listeners_.delete(id);
+    this.removeCallbacks.get(id)();
+    return this.removeCallbacks.delete(id);
+  }
+};
+
+/**
+ * Helper used by generated CallbackRouter types to dispatch incoming interface
+ * messages to listeners.
+ * @export
+ */
+mojo.internal.InterfaceCallbackTarget = class {
+  /**
+   * @public
+   * @param {!mojo.internal.CallbackRouter} callbackRouter
+   */
+  constructor(callbackRouter) {
+    /** @private {!Map<number, !Function>} */
+    this.listeners_ = new Map;
+
+    /** @private {!mojo.internal.CallbackRouter} */
+    this.callbackRouter_ = callbackRouter;
+  }
+
+  /**
+   * @param {!Function} listener
+   * @return {number} A unique ID for the added listener.
+   * @export
+   */
+  addListener(listener) {
+    const id = this.callbackRouter_.getNextId();
+    this.listeners_.set(id, listener);
+    this.callbackRouter_.removeCallbacks.set(id, () => {
+      return this.listeners_.delete(id);
+    });
+    return id;
   }
 
   /**
