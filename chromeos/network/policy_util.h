@@ -19,6 +19,11 @@ struct NetworkProfile;
 
 namespace policy_util {
 
+// This fake credential contains a random postfix which is extremely unlikely to
+// be used by any user. Used to determine saved but unknown credential
+// (PSK/Passphrase/Password) in UI (see network_password_input.js).
+extern const char kFakeCredential[];
+
 using GuidToPolicyMap =
     std::map<std::string, std::unique_ptr<base::DictionaryValue>>;
 

@@ -27,9 +27,6 @@ const VPNConfigType = {
 /** @type {string}  */ const NO_CERTS_HASH = 'no-certs';
 /** @type {string}  */ const NO_USER_CERT_HASH = 'no-user-cert';
 
-// Used to indicate a saved but unknown PSK value. Will appear as *'s in the
-// PSK field by default.
-/** @type {string}  */ const UNKNOWN_PSK = '        ';
 
 Polymer({
   is: 'network-config',
@@ -158,15 +155,6 @@ Polymer({
 
     /** @private {string|undefined} */
     selectedUserCertHash_: String,
-
-    /**
-     * Set to true when the PSK is saved but the value is unknown.
-     * @private
-     */
-    pskSavedUnknown_: {
-      type: Boolean,
-      value: false,
-    },
 
     /**
      * Whether all required properties have been set.
@@ -556,58 +544,10 @@ Polymer({
           !!CrOnc.getActiveValue(
               /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */
               (this.get('VPN.L2TP.SaveCredentials', managedProperties)));
-      if (CrOnc.getActiveValue(
-              /** @type {chrome.networkingPrivate.ManagedDOMString|undefined} */
-              (this.get('VPN.IPsec.PSK', managedProperties))) === '') {
-        // If an empty PSK is provided, show a blank value in the UI to indicate
-        // that the PSK has a saved value.
-        this.pskSavedUnknown_ = true;
-      } else {
-        this.pskSavedUnknown_ = false;
-      }
     }
+
     this.setManagedProperties_(managedProperties);
   },
-
-  /**
-   * If the IPsec.PSK field is focused and the PSK value is saved but unknown,
-   * clear the pseudo value set in getPropertiesCallback_.
-   * @param {!InputEvent} e
-   * @private
-   */
-  onPskFocus_: function(e) {
-    if (this.pskSavedUnknown_) {
-      // We can not rely on data binding to update the target value when a
-      // field is focused.
-      e.target.value = '';
-      this.set('VPN.IPsec.PSK', '', this.configProperties_);
-    }
-  },
-
-  /**
-   * If the IPsec.PSK field is in the saved-but-unknown state, restore the
-   * pseudo value when the field is unfocused.
-   * @param {!InputEvent} e
-   * @private
-   */
-  onPskBlur_: function(e) {
-    if (this.pskSavedUnknown_) {
-      // The target is still focused so we can not rely on data binding to
-      // update the target value.
-      e.target.value = UNKNOWN_PSK;
-      this.set('VPN.IPsec.PSK', UNKNOWN_PSK, this.configProperties_);
-    }
-  },
-
-  /**
-   * When the IPsec.PSK field is changed, clear pskSavedUnknown_.
-   * @param {!InputEvent} e
-   * @private
-   */
-  onPskInput_: function(e) {
-    this.pskSavedUnknown_ = false;
-  },
-
   /**
    * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
    * @private
@@ -794,9 +734,6 @@ Polymer({
                         {AuthenticationType: CrOnc.IPsecAuthenticationType.PSK},
                         CrOnc.getActiveProperties(
                             managedProperties.VPN.IPsec)));
-            if (this.pskSavedUnknown_) {
-              this.set('IPsec.PSK', UNKNOWN_PSK, vpn);
-            }
             vpn.L2TP = Object.assign(
                 {Username: ''},
                 CrOnc.getActiveProperties(managedProperties.VPN.L2TP));
@@ -1318,8 +1255,7 @@ Polymer({
 
     switch (this.vpnType_) {
       case VPNConfigType.L2TP_IPSEC_PSK:
-        return !!this.get('L2TP.Username', vpn) &&
-            (this.pskSavedUnknown_ || !!this.get('IPsec.PSK', vpn));
+        return !!this.get('L2TP.Username', vpn) && !!this.get('IPsec.PSK', vpn);
       case VPNConfigType.L2TP_IPSEC_CERT:
         return !!this.get('L2TP.Username', vpn) &&
             this.selectedUserCertHashIsValid_();
@@ -1416,7 +1352,6 @@ Polymer({
     }
 
     openvpn.SaveCredentials = this.vpnSaveCredentials_;
-
     propertiesToSet.VPN.OpenVPN = openvpn;
   },
 
@@ -1435,8 +1370,6 @@ Polymer({
     vpn.IPsec.IKEVersion = 1;
     vpn.IPsec.SaveCredentials = this.vpnSaveCredentials_;
     vpn.L2TP.SaveCredentials = this.vpnSaveCredentials_;
-    if (this.pskSavedUnknown_)
-      delete vpn.IPsec.PSK;
   },
 
   /**

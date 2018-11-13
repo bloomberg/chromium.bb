@@ -24,12 +24,9 @@ namespace chromeos {
 
 namespace policy_util {
 
-namespace {
-
-// This fake credential contains a random postfix which is extremely unlikely to
-// be used by any user.
 const char kFakeCredential[] = "FAKE_CREDENTIAL_VPaJDV9x";
 
+namespace {
 
 // Removes all kFakeCredential values from sensitive fields (determined by
 // onc::FieldIsCredential) of |onc_object|.

@@ -74,8 +74,6 @@
         <template is="dom-if" if="[[!showVpn_.Cert]]">
           <network-password-input label="[[i18n('OncVPN-IPsec-PSK')]]"
               value="{{configProperties_.VPN.IPsec.PSK}}"
-              on-focus="onPskFocus_" on-blur="onPskBlur_"
-              on-input="onPskInput_"
               property="[[managedProperties.VPN.IPsec.PSK]]">
           </network-password-input>
         </template>
