@@ -80,13 +80,17 @@ _DISABLED_TESTS = frozenset({
   # crbug.com/696824
   'system_health.memory_desktop/load:news:qq',
   # crbug.com/893615
+  # DESKTOP:
   'system_health.memory_desktop/browse:media:pinterest',
   'system_health.memory_desktop/browse:media:youtube',
   'system_health.memory_desktop/browse:search:google_india',
   'system_health.memory_desktop/load:games:alphabetty',
   'system_health.memory_desktop/load:games:miniclip',
   'system_health.memory_desktop/load:news:cnn',
+  'system_health.memory_desktop/load:news:wikipedia',
   'system_health.memory_desktop/load:tools:stackoverflow',
+  # MOBILE:
+  'system_health.memory_mobile/load:news:wikipedia',
 
   # crbug.com/698006
   'system_health.memory_desktop/load:tools:drive',

@@ -177,6 +177,9 @@
         "load:news:wikipedia": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },
+        "load:news:wikipedia:2018": {
+            "DEFAULT": "system_health_mobile_69876ae4b7.wprgo"
+        },
         "load:search:amazon": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },

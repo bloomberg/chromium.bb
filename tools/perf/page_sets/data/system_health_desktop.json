@@ -204,6 +204,9 @@
         "load:news:wikipedia": {
             "DEFAULT": "system_health_desktop_002.wprgo"
         },
+        "load:news:wikipedia:2018": {
+            "DEFAULT": "system_health_desktop_2c06c24ac6.wprgo"
+        },
         "load:search:amazon": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
