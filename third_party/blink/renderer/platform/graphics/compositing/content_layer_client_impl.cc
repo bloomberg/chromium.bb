@@ -201,8 +201,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     json->SetArray("displayItems",
                    paint_artifact->GetDisplayItemList().SubsequenceAsJSON(
                        chunk.begin_index, chunk.end_index,
-                       DisplayItemList::kSkipNonDrawings |
-                           DisplayItemList::kShownOnlyDisplayItemTypes));
+                       DisplayItemList::kShownOnlyDisplayItemTypes));
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif

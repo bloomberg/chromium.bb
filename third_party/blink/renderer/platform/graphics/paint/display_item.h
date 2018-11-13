@@ -153,8 +153,7 @@ class PLATFORM_EXPORT DisplayItem {
         type_(type),
         derived_size_(derived_size),
         fragment_(0),
-        // TODO(pdr): Should this return true for IsScrollHitTestType too?
-        is_cacheable_(client.IsCacheable() && IsDrawingType(type)),
+        is_cacheable_(client.IsCacheable()),
         is_tombstone_(false) {
     // |derived_size| must fit in |derived_size_|.
     // If it doesn't, enlarge |derived_size_| and fix this assert.
@@ -196,7 +195,7 @@ class PLATFORM_EXPORT DisplayItem {
 
   // Visual rect can change without needing invalidation of the client, e.g.
   // when ancestor clip changes. This is called from PaintController::
-  // UseCachedDrawingIfPossible() to update the visual rect of a cached display
+  // UseCachedItemIfPossible() to update the visual rect of a cached display
   // item.
   void UpdateVisualRect() { visual_rect_ = FloatRect(client_->VisualRect()); }
 

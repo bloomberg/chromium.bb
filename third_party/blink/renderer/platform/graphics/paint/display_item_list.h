@@ -74,10 +74,9 @@ class PLATFORM_EXPORT DisplayItemList
 #if DCHECK_IS_ON()
   enum JsonOptions {
     kDefault = 0,
-    kShowPaintRecords = 1,
-    kSkipNonDrawings = 1 << 1,
-    kClientKnownToBeAlive = 1 << 2,
-    kShownOnlyDisplayItemTypes = 1 << 3
+    kShowPaintRecords = 1 << 0,
+    kClientKnownToBeAlive = 1 << 1,
+    kShownOnlyDisplayItemTypes = 1 << 2
   };
   typedef unsigned JsonFlags;
 

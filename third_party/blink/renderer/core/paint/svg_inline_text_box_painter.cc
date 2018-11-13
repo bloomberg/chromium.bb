@@ -93,15 +93,13 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (!TextShouldBePainted(text_layout_object))
     return;
 
-  DisplayItem::Type display_item_type =
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase);
   if (!DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, svg_inline_text_box_, display_item_type)) {
+          paint_info.context, svg_inline_text_box_, paint_info.phase)) {
     LayoutObject& parent_layout_object = ParentInlineLayoutObject();
     const ComputedStyle& style = parent_layout_object.StyleRef();
 
     DrawingRecorder recorder(paint_info.context, svg_inline_text_box_,
-                             display_item_type);
+                             paint_info.phase);
     InlineTextBoxPainter text_painter(svg_inline_text_box_);
     const DocumentMarkerVector& markers_to_paint =
         text_painter.ComputeMarkersToPaint();

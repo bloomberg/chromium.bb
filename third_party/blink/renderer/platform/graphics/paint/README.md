@@ -140,8 +140,8 @@ but can be other Blink objects which get painted, such as inline boxes and drag
 images.
 
 *** note
-It is illegal for there to be two drawings with the same ID in a display item
-list, except for drawings that are marked uncacheable
+It is illegal for there to be two display items with the same ID in a display
+item list, except for display items that are marked uncacheable
 (see [DisplayItemCacheSkipper](DisplayItemCacheSkipper.h)).
 ***
 
@@ -179,10 +179,10 @@ a `PaintController`.
 the *current* paint artifact, and *new* display items and paint chunks, which
 are added as content is painted.
 
-Painters should call `PaintController::useCachedDrawingIfPossible()` or
-`PaintController::useCachedSubsequenceIfPossible()` and if the function returns
+Painters should call `PaintController::UseCachedItemIfPossible()` or
+`PaintController::UseCachedSubsequenceIfPossible()` and if the function returns
 `true`, existing display items that are still valid in the *current* paint artifact
-will be reused and the painter should skip real painting of the drawing or subsequence.
+will be reused and the painter should skip real painting of the item or subsequence.
 
 When the new display items have been populated, clients call
 `commitNewDisplayItems`, which replaces the previous artifact with the new data,

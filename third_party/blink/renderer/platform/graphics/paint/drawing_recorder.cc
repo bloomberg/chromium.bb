@@ -34,7 +34,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
   if (context.GetPaintController().DisplayItemConstructionIsDisabled())
     return;
 
-  // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the
+  // Must check DrawingRecorder::UseCachedDrawingIfPossible before creating the
   // DrawingRecorder.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
          !UseCachedDrawingIfPossible(context_, client_, type_));

@@ -240,12 +240,10 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, inline_flow_box_,
-          DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+          paint_info.context, inline_flow_box_, paint_info.phase))
     return;
-  DrawingRecorder recorder(
-      paint_info.context, inline_flow_box_,
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+  DrawingRecorder recorder(paint_info.context, inline_flow_box_,
+                           paint_info.phase);
 
   LayoutRect paint_rect = AdjustedPaintRect(paint_offset);
 

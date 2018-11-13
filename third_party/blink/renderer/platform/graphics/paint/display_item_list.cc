@@ -41,9 +41,6 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
     std::unique_ptr<JSONObject> json = JSONObject::Create();
 
     const auto& item = (*this)[i];
-    if ((flags & kSkipNonDrawings) && !item.IsDrawing())
-      continue;
-
     json->SetInteger("index", i);
 
     if (flags & kShownOnlyDisplayItemTypes) {
