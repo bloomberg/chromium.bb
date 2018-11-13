@@ -528,8 +528,9 @@ GpuBenchmarking::~GpuBenchmarking() {
 
 void GpuBenchmarking::EnsureRemoteInterface() {
   if (!input_injector_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&input_injector_));
+    render_frame_->GetRemoteInterfaces()->GetInterface(mojo::MakeRequest(
+        &input_injector_,
+        render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)));
   }
 }
 
