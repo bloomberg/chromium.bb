@@ -52,14 +52,14 @@ namespace blink {
 namespace {
 constexpr float kmax_oversize_ratio = 2.0f;
 
-bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
+bool CheckForOptimizedImagePolicy(const Document& document,
                                   LayoutImage* layout_image,
                                   ImageResourceContent* new_image) {
   // Render the image as a placeholder image if the document does not have the
   // 'legacy-image-formats' feature enabled, and the image is not one of the
   // allowed formats.
   if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !frame.DeprecatedIsFeatureEnabled(
+      !document.IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
     if (!new_image->IsAcceptableContentType()) {
       return true;
@@ -69,7 +69,7 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
   // 'unoptimized-images' feature enabled and the image is not
   // sufficiently-well-compressed.
   if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !frame.DeprecatedIsFeatureEnabled(
+      !document.IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kUnoptimizedImages)) {
     if (!new_image->IsAcceptableCompressionRatio())
       return true;
@@ -77,13 +77,12 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
   return false;
 }
 
-bool CheckForOversizedImagesPolicy(const LocalFrame& frame,
+bool CheckForOversizedImagesPolicy(const Document& document,
                                    ImageResourceContent* new_image,
                                    LayoutImage* layout_image) {
   DCHECK(new_image);
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() ||
-      frame.DeprecatedIsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kOversizedImages))
+      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kOversizedImages))
     return false;
   if (auto* image = new_image->GetImage()) {
     // Render the image as a placeholder image if the image's size is more
@@ -95,7 +94,7 @@ bool CheckForOversizedImagesPolicy(const LocalFrame& frame,
 
     if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
         image_height > 0) {
-      double device_pixel_ratio = frame.DevicePixelRatio();
+      double device_pixel_ratio = document.GetFrame()->DevicePixelRatio();
       if (LayoutUnit(image_width / (kmax_oversize_ratio * device_pixel_ratio)) >
               layout_width ||
           LayoutUnit(image_height / (kmax_oversize_ratio *
@@ -274,14 +273,11 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
   InvalidateBackgroundObscurationStatus();
 
   // Check for optimized image policies.
-  if (View() && View()->GetFrameView()) {
-    const LocalFrame& frame = View()->GetFrameView()->GetFrame();
-    is_legacy_format_or_unoptimized_image_ =
-        CheckForOptimizedImagePolicy(frame, this, new_image);
-    if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
-      is_oversized_image_ =
-          CheckForOversizedImagesPolicy(frame, new_image, this);
-    }
+  is_legacy_format_or_unoptimized_image_ =
+      CheckForOptimizedImagePolicy(GetDocument(), this, new_image);
+  if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
+    is_oversized_image_ =
+        CheckForOversizedImagesPolicy(GetDocument(), new_image, this);
   }
 
   if (new_image == image_resource_->CachedImage()) {
@@ -499,14 +495,10 @@ void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    if (View() && View()->GetFrameView()) {
-      const LocalFrame& frame = View()->GetFrameView()->GetFrame();
-
-      if (image_resource_ && image_resource_->CachedImage()) {
-        // Check for optimized image policies.
-        is_oversized_image_ = CheckForOversizedImagesPolicy(
-            frame, image_resource_->CachedImage(), this);
-      }
+    if (image_resource_ && image_resource_->CachedImage()) {
+      // Check for optimized image policies.
+      is_oversized_image_ = CheckForOversizedImagesPolicy(
+          GetDocument(), image_resource_->CachedImage(), this);
     }
 
     // Report violation of unsized-media policy.
