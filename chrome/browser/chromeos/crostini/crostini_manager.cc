@@ -185,9 +185,49 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(result);
       return;
     }
+
+    crostini_manager_->ListVmDisks(
+        base::BindOnce(&CrostiniRestarter::ListVmDisksFinished, this));
+  }
+
+  void ListVmDisksFinished(CrostiniResult result, int64_t disk_space_taken) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (is_aborted_)
+      return;
+    if (result != CrostiniResult::SUCCESS) {
+      LOG(ERROR) << "Failed to list disk images.";
+      FinishRestart(result);
+      return;
+    }
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                       base::FilePath(kHomeDirectory)),
+        base::BindOnce(&CrostiniRestarter::CreateDiskImageAfterSizeCheck, this,
+                       disk_space_taken));
+  }
+
+  void CreateDiskImageAfterSizeCheck(int64_t disk_space_taken,
+                                     int64_t free_disk_bytes) {
+    int64_t disk_size_available = (free_disk_bytes * 9) / 10;
+    // If there's no existing disk image, need enough space to create one.
+    if (disk_space_taken == 0) {
+      // Don't enforce minimum disk size on dev box or trybots because
+      // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
+      if (disk_size_available < kMinimumDiskSize &&
+          base::SysInfo::IsRunningOnChromeOS()) {
+        LOG(ERROR) << "Insufficient disk available. Need to free "
+                   << kMinimumDiskSize - disk_size_available << " bytes";
+        FinishRestart(CrostiniResult::INSUFFICIENT_DISK);
+        return;
+      }
+    }
+    // If we have an already existing disk, CreateDiskImage will just return its
+    // path so we can pass it to StartTerminaVm.
     crostini_manager_->CreateDiskImage(
         base::FilePath(vm_name_),
         vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
+        disk_size_available,
         base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished, this));
   }
 
@@ -659,6 +699,7 @@ void CrostiniManager::OnStopConcierge(StopConciergeCallback callback,
 void CrostiniManager::CreateDiskImage(
     const base::FilePath& disk_path,
     vm_tools::concierge::StorageLocation storage_location,
+    int64_t disk_size_bytes,
     CreateDiskImageCallback callback) {
   std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
@@ -687,34 +728,8 @@ void CrostiniManager::CreateDiskImage(
     return;
   }
   request.set_storage_location(storage_location);
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                     base::FilePath(kHomeDirectory)),
-      base::BindOnce(&CrostiniManager::CreateDiskImageAfterSizeCheck,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(callback)));
-}
-
-void CrostiniManager::CreateDiskImageAfterSizeCheck(
-    vm_tools::concierge::CreateDiskImageRequest request,
-    CreateDiskImageCallback callback,
-    int64_t free_disk_size) {
-  int64_t disk_size = (free_disk_size * 9) / 10;
-  // Skip disk size check on dev box or trybots because
-  // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
-  if (disk_size < kMinimumDiskSize && base::SysInfo::IsRunningOnChromeOS()) {
-    LOG(ERROR) << "Insufficient disk available. Need to free "
-               << kMinimumDiskSize - disk_size << " bytes";
-    std::move(callback).Run(
-        CrostiniResult::CLIENT_ERROR,
-        vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN,
-        base::FilePath());
-    return;
-  }
   // The logical size of the new disk image, in bytes.
-  request.set_disk_size(std::move(disk_size));
+  request.set_disk_size(std::move(disk_size_bytes));
 
   GetConciergeClient()->CreateDiskImage(
       std::move(request),
