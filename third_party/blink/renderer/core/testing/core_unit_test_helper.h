@@ -21,6 +21,8 @@
 
 namespace blink {
 
+class PaintLayer;
+
 class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   static SingleChildLocalFrameClient* Create() {
@@ -109,6 +111,10 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   LayoutObject* GetLayoutObjectByElementId(const char* id) const {
     const auto* element = GetElementById(id);
     return element ? element->GetLayoutObject() : nullptr;
+  }
+
+  PaintLayer* GetPaintLayerByElementId(const char* id) {
+    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
   }
 
  private:
