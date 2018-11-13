@@ -66,6 +66,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -259,6 +260,80 @@ bool ShouldDestroyWindowInCloseChildWindows(aura::Window* window) {
   return window->owned_by_parent();
 }
 
+class RootWindowTargeter : public aura::WindowTargeter {
+ public:
+  RootWindowTargeter() = default;
+  ~RootWindowTargeter() override = default;
+
+ protected:
+  aura::Window* FindTargetForLocatedEvent(aura::Window* window,
+                                          ui::LocatedEvent* event) override {
+    if (!window->parent() && !window->bounds().Contains(event->location()) &&
+        IsEventInsideDisplayForTelemetryHack(window, event)) {
+      auto* dispatcher = window->GetHost()->dispatcher();
+      bool has_capture_target = !!dispatcher->mouse_pressed_handler() ||
+                                !!aura::client::GetCaptureWindow(window);
+
+      // Make sure that event location is within the root window bounds if
+      // 1) mouse event isn't captured.
+      // 2) A mouse is clicked without movement and capture.
+      //
+      // The event can be outside on some scale factor due to rounding, or due
+      // to not well calibrated a touch screen, or Detect this situation and
+      // adjust the location.
+      bool bounded_click = ShouldConstrainMouseClick(event, has_capture_target);
+      if (!has_capture_target || bounded_click) {
+        gfx::Point new_location =
+            FitPointToBounds(event->location(), window->bounds());
+        // Do not change |location_f|. It's used to compute pixel position and
+        // such client should know what they're doing.
+        event->set_location(new_location);
+        event->set_root_location(new_location);
+      }
+    }
+    return aura::WindowTargeter::FindTargetForLocatedEvent(window, event);
+  }
+
+  // Stop-gap workaround for telemetry tests that send events far outside of the
+  // display (e.g. 512, -4711). Fix the test and remove this (crbgu.com/904623).
+  bool IsEventInsideDisplayForTelemetryHack(aura::Window* window,
+                                            ui::LocatedEvent* event) {
+    constexpr int ExtraMarginForTelemetryTest = -10;
+    gfx::Rect bounds = window->bounds();
+    bounds.Inset(ExtraMarginForTelemetryTest, ExtraMarginForTelemetryTest);
+    return bounds.Contains(event->location());
+  }
+
+ private:
+  // Returns true if the mouse event should be constrainted.
+  bool ShouldConstrainMouseClick(ui::LocatedEvent* event,
+                                 bool has_capture_target) {
+    if (event->type() == ui::ET_MOUSE_PRESSED && !has_capture_target) {
+      last_mouse_event_type_ = ui::ET_MOUSE_PRESSED;
+      return true;
+    }
+    if (last_mouse_event_type_ == ui::ET_MOUSE_PRESSED &&
+        event->type() == ui::ET_MOUSE_RELEASED && has_capture_target) {
+      last_mouse_event_type_ = ui::ET_UNKNOWN;
+      return true;
+    }
+    // For other cases, reset the state
+    if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
+      last_mouse_event_type_ = ui::ET_UNKNOWN;
+    return false;
+  }
+
+  gfx::Point FitPointToBounds(const gfx::Point p, const gfx::Rect& bounds) {
+    return gfx::Point(
+        std::min(std::max(bounds.x(), p.x()), bounds.right() - 1),
+        std::min(std::max(bounds.y(), p.y()), bounds.bottom() - 1));
+  }
+
+  ui::EventType last_mouse_event_type_ = ui::ET_UNKNOWN;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowTargeter);
+};
+
 }  // namespace
 
 // static
@@ -429,6 +504,9 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 }
 
 void RootWindowController::Shutdown() {
+  auto targeter = GetRootWindow()->SetEventTargeter(
+      std::make_unique<aura::NullWindowTargeter>());
+
   touch_exploration_manager_.reset();
 
   ResetRootForNewWindowsIfNecessary();
@@ -447,6 +525,12 @@ void RootWindowController::Shutdown() {
   system_wallpaper_.reset();
   lock_screen_action_background_controller_.reset();
   aura::client::SetScreenPositionClient(root_window, nullptr);
+
+  // The targeter may still on the stack, so delete it later.
+  if (targeter) {
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                    std::move(targeter));
+  }
 }
 
 void RootWindowController::CloseChildWindows() {
@@ -616,6 +700,9 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
+  auto old_targeter =
+      root_window->SetEventTargeter(std::make_unique<RootWindowTargeter>());
+  DCHECK(!old_targeter);
 
   CreateContainers();
   CreateSystemWallpaper(root_window_type);
