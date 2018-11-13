@@ -436,10 +436,6 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
 // TODO(skobes): Convert this to web-platform-tests when document.rootScroller
 // is launched (http://crbug.com/505516).
 TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
-  // TODO(crbug.com/889449): The test fails in LayoutNG mode.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
         ::-webkit-scrollbar {
