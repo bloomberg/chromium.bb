@@ -864,7 +864,6 @@ void cdef_filter_block_c(uint8_t* dst8,
                          int pri_damping,
                          int sec_damping,
                          int bsize,
-                         int max,
                          int coeff_shift);
 #define cdef_filter_block cdef_filter_block_c
 

@@ -1616,6 +1616,17 @@ void av1_jnt_convolve_2d_c(const uint8_t* src,
                            const int subpel_x_q4,
                            const int subpel_y_q4,
                            ConvolveParams* conv_params);
+void av1_jnt_convolve_2d_sse2(const uint8_t* src,
+                              int src_stride,
+                              uint8_t* dst,
+                              int dst_stride,
+                              int w,
+                              int h,
+                              const InterpFilterParams* filter_params_x,
+                              const InterpFilterParams* filter_params_y,
+                              const int subpel_x_q4,
+                              const int subpel_y_q4,
+                              ConvolveParams* conv_params);
 void av1_jnt_convolve_2d_ssse3(const uint8_t* src,
                                int src_stride,
                                uint8_t* dst,
@@ -1949,7 +1960,6 @@ void cdef_filter_block_c(uint8_t* dst8,
                          int pri_damping,
                          int sec_damping,
                          int bsize,
-                         int max,
                          int coeff_shift);
 void cdef_filter_block_sse2(uint8_t* dst8,
                             uint16_t* dst16,
@@ -1961,7 +1971,6 @@ void cdef_filter_block_sse2(uint8_t* dst8,
                             int pri_damping,
                             int sec_damping,
                             int bsize,
-                            int max,
                             int coeff_shift);
 void cdef_filter_block_ssse3(uint8_t* dst8,
                              uint16_t* dst16,
@@ -1973,7 +1982,6 @@ void cdef_filter_block_ssse3(uint8_t* dst8,
                              int pri_damping,
                              int sec_damping,
                              int bsize,
-                             int max,
                              int coeff_shift);
 void cdef_filter_block_sse4_1(uint8_t* dst8,
                               uint16_t* dst16,
@@ -1985,7 +1993,6 @@ void cdef_filter_block_sse4_1(uint8_t* dst8,
                               int pri_damping,
                               int sec_damping,
                               int bsize,
-                              int max,
                               int coeff_shift);
 void cdef_filter_block_avx2(uint8_t* dst8,
                             uint16_t* dst16,
@@ -1997,7 +2004,6 @@ void cdef_filter_block_avx2(uint8_t* dst8,
                             int pri_damping,
                             int sec_damping,
                             int bsize,
-                            int max,
                             int coeff_shift);
 RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       uint16_t* dst16,
@@ -2009,7 +2015,6 @@ RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       int pri_damping,
                                       int sec_damping,
                                       int bsize,
-                                      int max,
                                       int coeff_shift);
 
 int cdef_find_dir_c(const uint16_t* img,
@@ -2337,7 +2342,7 @@ static void setup_rtcd_internal(void) {
     av1_inv_txfm_add = av1_inv_txfm_add_ssse3;
   if (flags & HAS_AVX2)
     av1_inv_txfm_add = av1_inv_txfm_add_avx2;
-  av1_jnt_convolve_2d = av1_jnt_convolve_2d_c;
+  av1_jnt_convolve_2d = av1_jnt_convolve_2d_sse2;
   if (flags & HAS_SSSE3)
     av1_jnt_convolve_2d = av1_jnt_convolve_2d_ssse3;
   if (flags & HAS_AVX2)
