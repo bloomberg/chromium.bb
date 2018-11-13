@@ -1119,7 +1119,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
 }
 
 EventTarget* CSSAnimations::AnimationEventDelegate::GetEventTarget() const {
-  return EventPath::EventTargetRespectingTargetRules(*animation_target_);
+  return &EventPath::EventTargetRespectingTargetRules(*animation_target_);
 }
 
 void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
@@ -1189,7 +1189,7 @@ void CSSAnimations::AnimationEventDelegate::Trace(blink::Visitor* visitor) {
 }
 
 EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
-  return EventPath::EventTargetRespectingTargetRules(*transition_target_);
+  return &EventPath::EventTargetRespectingTargetRules(*transition_target_);
 }
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(

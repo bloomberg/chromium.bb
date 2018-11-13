@@ -38,13 +38,13 @@
 
 namespace blink {
 
-EventTarget* EventPath::EventTargetRespectingTargetRules(Node& reference_node) {
+EventTarget& EventPath::EventTargetRespectingTargetRules(Node& reference_node) {
   if (reference_node.IsPseudoElement()) {
     DCHECK(reference_node.parentNode());
-    return reference_node.parentNode();
+    return *reference_node.parentNode();
   }
 
-  return &reference_node;
+  return reference_node;
 }
 
 static inline bool ShouldStopAtShadowRoot(Event& event,
@@ -133,8 +133,9 @@ void EventPath::CalculatePath() {
 
   node_event_contexts_.ReserveCapacity(nodes_in_path.size());
   for (Node* node_in_path : nodes_in_path) {
+    DCHECK(node_in_path);
     node_event_contexts_.push_back(NodeEventContext(
-        node_in_path, EventTargetRespectingTargetRules(*node_in_path)));
+        *node_in_path, EventTargetRespectingTargetRules(*node_in_path)));
   }
 }
 
@@ -189,7 +190,7 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
     if (parent_tree_scope_event_context &&
         parent_tree_scope_event_context->Target()) {
       tree_scope_event_context->SetTarget(
-          parent_tree_scope_event_context->Target());
+          *parent_tree_scope_event_context->Target());
     } else if (current_target) {
       tree_scope_event_context->SetTarget(
           EventTargetRespectingTargetRules(*current_target));
@@ -273,7 +274,7 @@ void EventPath::RetargetRelatedTarget(const Node& related_target_node) {
     EventTarget* adjusted_related_target = FindRelatedNode(
         tree_scope_event_context->GetTreeScope(), related_node_map);
     DCHECK(adjusted_related_target);
-    tree_scope_event_context.Get()->SetRelatedTarget(adjusted_related_target);
+    tree_scope_event_context.Get()->SetRelatedTarget(*adjusted_related_target);
   }
 }
 
