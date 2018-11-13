@@ -91,8 +91,6 @@ PLATFORM_EXPORT bool CalculateCredentialsFlag(
 // CORS is enabled.
 PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);
 PLATFORM_EXPORT bool IsCORSSafelistedContentType(const String&);
-PLATFORM_EXPORT bool IsCORSSafelistedHeader(const String& name,
-                                            const String& value);
 PLATFORM_EXPORT bool IsNoCORSSafelistedHeader(const String& name,
                                               const String& value);
 PLATFORM_EXPORT Vector<String> CORSUnsafeRequestHeaderNames(

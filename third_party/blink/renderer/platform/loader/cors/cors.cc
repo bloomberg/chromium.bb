@@ -306,16 +306,6 @@ bool IsCORSSafelistedContentType(const String& media_type) {
       std::string(utf8_media_type.data(), utf8_media_type.length()));
 }
 
-bool IsCORSSafelistedHeader(const String& name, const String& value) {
-  DCHECK(!name.IsNull());
-  DCHECK(!value.IsNull());
-  CString utf8_name = name.Utf8();
-  CString utf8_value = value.Utf8();
-  return network::cors::IsCORSSafelistedHeader(
-      std::string(utf8_name.data(), utf8_name.length()),
-      std::string(utf8_value.data(), utf8_value.length()));
-}
-
 bool IsNoCORSSafelistedHeader(const String& name, const String& value) {
   DCHECK(!name.IsNull());
   DCHECK(!value.IsNull());
