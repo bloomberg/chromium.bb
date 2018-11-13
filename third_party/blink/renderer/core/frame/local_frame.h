@@ -406,10 +406,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  // TODO(iclelland): Replace this with a method on Document
-  void DeprecatedReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const override;
-
   const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
  private:

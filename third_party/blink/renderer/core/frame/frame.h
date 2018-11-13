@@ -32,7 +32,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -65,14 +64,12 @@ class SecurityContext;
 class Settings;
 class WindowProxy;
 class WindowProxyManager;
-enum class ReportOptions;
 struct FrameLoadRequest;
 
 enum class FrameDetachType { kRemove, kSwap };
 
 // Status of user gesture.
 enum class UserGestureStatus { kActive, kNone };
-
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
@@ -189,17 +186,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool IsAttached() const {
     return lifecycle_.GetState() == FrameLifecycle::kAttached;
   }
-
-  // Tests whether the policy-controlled feature is enabled in this frame.
-  // Optionally sends a report to any registered reporting observers or
-  // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
-  // disabled.
-  // TODO(iclelland): Replace these with methods on SecurityContext/Document
-  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature) const;
-  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature,
-                                  ReportOptions report_on_failure) const;
-  virtual void DeprecatedReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const {}
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
