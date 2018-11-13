@@ -87,7 +87,7 @@ void LegacyNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // bug. The workaround should be removed once the bug is fixed.
   NavigationItem* item = GetPendingItem();
   if (!item)
-    item = GetLastCommittedNonAppSpecificItem();
+    item = GetLastCommittedItemWithUserAgentType();
   // |item| may still be nullptr if NTP is the only entry in the session.
   // See https://crbug.com/822908 for details.
   if (item) {
@@ -113,7 +113,7 @@ void LegacyNavigationManagerImpl::AddPendingItem(
   }
 
   UpdatePendingItemUserAgentType(user_agent_override_option,
-                                 GetLastCommittedNonAppSpecificItem(),
+                                 GetLastCommittedItemWithUserAgentType(),
                                  GetPendingItem());
 }
 

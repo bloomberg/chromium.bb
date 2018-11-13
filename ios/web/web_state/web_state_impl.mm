@@ -676,9 +676,22 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
-  bool equalOrigins = URL.GetOrigin() == GetLastCommittedURL().GetOrigin();
+
+  GURL lastCommittedUrl = GetLastCommittedURL();
+  bool equalOrigins;
+  if (URL.SchemeIs(url::kAboutScheme) &&
+      web::GetWebClient()->IsAppSpecificURL(lastCommittedUrl)) {
+    // This special case is added for any app specific URLs that have been
+    // rewritten to about:// URLs.  In this case, an about scheme does not have
+    // an origin to compare, only a path.
+    web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+    GURL lastCommittedUrl = item ? item->GetURL() : GURL::EmptyGURL();
+    equalOrigins = URL.path() == lastCommittedUrl.path();
+  } else {
+    equalOrigins = URL.GetOrigin() == lastCommittedUrl.GetOrigin();
+  }
   DCHECK(equalOrigins) << "Origin mismatch. URL: " << URL.spec()
-                       << " Last committed: " << GetLastCommittedURL().spec();
+                       << " Last committed: " << lastCommittedUrl.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
   return URL;

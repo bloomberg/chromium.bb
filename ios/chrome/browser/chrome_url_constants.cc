@@ -106,3 +106,5 @@ const char kGoogleMyAccountURL[] =
 
 const char kReadingListReferrerURL[] =
     "chrome://do_not_consider_for_most_visited/reading_list";
+
+const char kChromeUIAboutNewTabURL[] = "about://newtab/";

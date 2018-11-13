@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -22,6 +23,13 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Internally the NTP URL is about://newtab/.  However, with
+// |url::kAboutScheme|, there's no host value, only a path.  Use this value for
+// matching the NTP.
+const char kAboutNewTabPath[] = "//newtab/";
+}  // namespace
 
 // static
 void NewTabPageTabHelper::CreateForWebState(
@@ -46,9 +54,9 @@ NewTabPageTabHelper::NewTabPageTabHelper(
 
   web_state->AddObserver(this);
 
-  active_ = web_state->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
+  active_ = IsNTPURL(web_state->GetVisibleURL());
   if (active_) {
-    UpdatePendingItemTitle();
+    UpdatePendingItem();
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
   }
 }
@@ -71,8 +79,8 @@ void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
 void NewTabPageTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  if (navigation_context->GetUrl().GetOrigin() == kChromeUINewTabURL) {
-    UpdatePendingItemTitle();
+  if (IsNTPURL(navigation_context->GetUrl())) {
+    UpdatePendingItem();
   }
 }
 
@@ -83,7 +91,7 @@ void NewTabPageTabHelper::DidFinishNavigation(
     return;
   }
 
-  SetActive(navigation_context->GetUrl().GetOrigin() == kChromeUINewTabURL);
+  SetActive(IsNTPURL(navigation_context->GetUrl()));
 }
 
 #pragma mark - Private
@@ -98,9 +106,20 @@ void NewTabPageTabHelper::SetActive(bool active) {
   }
 }
 
-void NewTabPageTabHelper::UpdatePendingItemTitle() {
+void NewTabPageTabHelper::UpdatePendingItem() {
   web::NavigationManager* manager = web_state_->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
-  if (item)
+  if (item) {
+    item->SetVirtualURL(GURL(kChromeUINewTabURL));
     item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  }
+}
+
+bool NewTabPageTabHelper::IsNTPURL(const GURL& url) {
+  // |url| can be chrome://newtab/ or about://newtab/ depending on where |url|
+  // comes from (the VisibleURL chrome:// from a navigation item or the actual
+  // webView url about://).  If the url is about://newtab/, there is no origin
+  // to match, so instead check the scheme and the path.
+  return url.GetOrigin() == kChromeUINewTabURL ||
+         (url.SchemeIs(url::kAboutScheme) && url.path() == kAboutNewTabPath);
 }

@@ -211,15 +211,6 @@ void ChromeWebClient::PrepareErrorPage(NSError* error,
                                        bool is_off_the_record,
                                        NSString** error_html) {
   DCHECK(error);
-
-  // Return an empty page for the NTP.
-  NSString* url_spec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
-  GURL url(base::SysNSStringToUTF16(url_spec));
-  if (url.GetOrigin() == kChromeUINewTabURL) {
-    *error_html = @"";
-    return;
-  }
-
   *error_html = GetErrorPage(error, is_post, is_off_the_record);
 }
 

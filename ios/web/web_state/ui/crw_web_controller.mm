@@ -1281,7 +1281,8 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && context &&
       !context->IsLoadingHtmlString() && !context->IsLoadingErrorPage() &&
-      !IsWKInternalUrl(newURL) && _webView) {
+      !IsWKInternalUrl(newURL) && !newURL.SchemeIs(url::kAboutScheme) &&
+      _webView) {
     GURL documentOrigin = newURL.GetOrigin();
     GURL committedOrigin = _webStateImpl->GetLastCommittedURL().GetOrigin();
     DCHECK_EQ(documentOrigin, committedOrigin)
@@ -4914,7 +4915,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Do not update the HTML5 history state or states of the last committed item
   // for placeholder page because the actual navigation item will not be
   // committed until the native content or WebUI is shown.
-  if (context && !IsPlaceholderUrl(context->GetUrl())) {
+  if (context && !IsPlaceholderUrl(context->GetUrl()) &&
+      !context->GetUrl().SchemeIs(url::kAboutScheme)) {
     [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
     if (!context->IsLoadingErrorPage()) {

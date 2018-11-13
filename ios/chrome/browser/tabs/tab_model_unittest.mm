@@ -4,6 +4,7 @@
 
 #import <objc/runtime.h>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -12,6 +13,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
@@ -22,6 +25,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -383,6 +387,12 @@ TEST_P(TabModelTest, RestoreSessionOnNTPTest) {
                                   atIndex:0
                              inBackground:NO];
   web::WebStateImpl* web_state = static_cast<web::WebStateImpl*>(tab.webState);
+
+  // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
+  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+    id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+    NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+  }
   web_state->GetNavigationManagerImpl().CommitPendingItem();
 
   SessionWindowIOS* window(CreateSessionWindow());

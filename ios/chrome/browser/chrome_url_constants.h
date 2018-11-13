@@ -107,4 +107,7 @@ extern const char kGoogleMyAccountURL[];
 // List page and thus should not be considered for Most Visited.
 extern const char kReadingListReferrerURL[];
 
+// URL used internally by ios/web when loading the NTP.
+extern const char kChromeUIAboutNewTabURL[];
+
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_

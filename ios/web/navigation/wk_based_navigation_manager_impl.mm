@@ -134,7 +134,7 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // navigation manager.
   NavigationItem* item = GetPendingItem();
   if (!item)
-    item = GetLastCommittedNonAppSpecificItem();
+    item = GetLastCommittedItemWithUserAgentType();
   // Item may still be null in captive portal case if chrome://newtab is the
   // only entry in back/forward history.
   if (item) {
@@ -159,7 +159,7 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
       &transient_url_rewriters_);
   RemoveTransientURLRewriters();
   UpdatePendingItemUserAgentType(user_agent_override_option,
-                                 GetLastCommittedNonAppSpecificItem(),
+                                 GetLastCommittedItemWithUserAgentType(),
                                  pending_item_.get());
 
   // No need to detect renderer-initiated back/forward navigation in detached

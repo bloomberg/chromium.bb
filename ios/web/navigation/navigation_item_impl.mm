@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#include "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/text_elider.h"
@@ -188,7 +189,7 @@ base::Time NavigationItemImpl::GetTimestamp() const {
 
 void NavigationItemImpl::SetUserAgentType(UserAgentType type) {
   user_agent_type_ = type;
-  DCHECK_EQ(GetWebClient()->IsAppSpecificURL(GetVirtualURL()),
+  DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetVirtualURL()),
             user_agent_type_ == UserAgentType::NONE);
 }
 
