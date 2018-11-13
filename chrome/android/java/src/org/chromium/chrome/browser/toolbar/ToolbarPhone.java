@@ -2353,9 +2353,11 @@ public class ToolbarPhone
         if (mVisibleNewTabPage != null && mVisibleNewTabPage.isLocationBarShownInNTP()) {
             mVisibleNewTabPage.setSearchBoxScrollListener(this);
 
-            NtpSearchBoxDrawable ntpSearchBox = new NtpSearchBoxDrawable(getContext(), this);
-            mVisibleNewTabPage.setSearchBoxBackground(ntpSearchBox);
-            mActiveLocationBarBackground = ntpSearchBox;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                NtpSearchBoxDrawable ntpSearchBox = new NtpSearchBoxDrawable(getContext(), this);
+                mVisibleNewTabPage.setSearchBoxBackground(ntpSearchBox);
+                mActiveLocationBarBackground = ntpSearchBox;
+            }
 
             requestLayout();
         } else if (wasShowingNtp) {
