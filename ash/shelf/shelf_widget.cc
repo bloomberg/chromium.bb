@@ -44,7 +44,7 @@ namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
 constexpr int kShelfBlurRadius = 10;
-constexpr float kShelfBlurQuality = 0.25f;
+constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
