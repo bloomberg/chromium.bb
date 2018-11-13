@@ -8531,9 +8531,8 @@ static int64_t interpolation_filter_search(
       }
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                               switchable_rate, best_skip_txfm_sb,
-                              best_skip_sse_sb, dst_bufs, i, switchable_ctx, 0,
-                              tmp_rate, tmp_dist);
-      assert(x->recalc_luma_mc_data == 0);
+                              best_skip_sse_sb, dst_bufs, i, switchable_ctx,
+                              (skip_hor & skip_ver), tmp_rate, tmp_dist);
     }
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
