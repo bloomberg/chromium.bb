@@ -90,7 +90,6 @@ jumbo_component("domain_reliability") {
     "//content/public/browser",
     "//content/public/common",
     "//net",
-    "//services/network/public/cpp",
     "//url",
   ]
 }
