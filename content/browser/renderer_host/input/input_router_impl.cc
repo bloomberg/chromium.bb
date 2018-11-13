@@ -278,8 +278,11 @@ void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
                                                 InputEventAckState state) {
   touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
   client_->OnSetWhiteListedTouchAction(touch_action);
-  if (compositor_touch_action_enabled_)
+  if (compositor_touch_action_enabled_) {
+    if (touch_action == cc::kTouchActionAuto)
+      FlushDeferredGestureQueue();
     UpdateTouchAckTimeoutEnabled();
+  }
 }
 
 void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
@@ -641,8 +644,11 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
-  if (compositor_touch_action_enabled_)
+  if (compositor_touch_action_enabled_) {
+    // TODO(xidachen): Call FlushDeferredGestureQueue when this flag is enabled.
     touch_event_queue_.StopTimeoutMonitor();
+    ProcessDeferredGestureEventQueue();
+  }
 }
 
 void InputRouterImpl::ForceResetTouchActionForTest() {
