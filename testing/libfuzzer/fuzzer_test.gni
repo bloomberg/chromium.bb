@@ -19,6 +19,7 @@ import("//testing/test.gni")
 # - environment_variables - certain whitelisted environment variables for the
 # fuzzer (AFL_DRIVER_DONT_DEFER is the only one allowed currently).
 # - libfuzzer_options - options for the fuzzer (e.g. -max_len or -timeout).
+# - libs - Additional libraries to link.
 # - seed_corpus - a directory with seed corpus.
 # - seed_corpus_deps - dependencies for generating the seed corpus.
 # - skip_owners - if true, skips writing the owners file.
@@ -120,6 +121,10 @@ template("fuzzer_test") {
         if (defined(invoker.libfuzzer_options)) {
           args += [ "--libfuzzer_options" ]
           args += invoker.libfuzzer_options
+        }
+
+        if (defined(invoker.libs)) {
+          libs = invoker.libs
         }
 
         if (defined(invoker.environment_variables)) {
