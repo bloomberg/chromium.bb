@@ -46,6 +46,7 @@
 typedef struct {
   int n_levels;
   int pad_size;
+  int has_gradient;
   int widths[N_LEVELS];
   int heights[N_LEVELS];
   int strides[N_LEVELS];
@@ -508,27 +509,35 @@ static INLINE void sobel_xy_image_gradient(const uint8_t *src, int src_stride,
   }
 }
 
-static ImagePyramid *alloc_pyramid(int width, int height, int pad_size) {
+static ImagePyramid *alloc_pyramid(int width, int height, int pad_size,
+                                   int compute_gradient) {
   ImagePyramid *pyr = aom_malloc(sizeof(*pyr));
+  pyr->has_gradient = compute_gradient;
   // 2 * width * height is the upper bound for a buffer that fits
   // all pyramid levels + padding for each level
   const int buffer_size = sizeof(*pyr->level_buffer) * 2 * width * height +
                           (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
-  const int gradient_size = sizeof(*pyr->level_dx_buffer) * 2 * width * height +
-                            (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
   pyr->level_buffer = aom_malloc(buffer_size);
-  pyr->level_dx_buffer = aom_malloc(gradient_size);
-  pyr->level_dy_buffer = aom_malloc(gradient_size);
   memset(pyr->level_buffer, 0, buffer_size);
-  memset(pyr->level_dx_buffer, 0, gradient_size);
-  memset(pyr->level_dy_buffer, 0, gradient_size);
+
+  if (compute_gradient) {
+    const int gradient_size =
+        sizeof(*pyr->level_dx_buffer) * 2 * width * height +
+        (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
+    pyr->level_dx_buffer = aom_malloc(gradient_size);
+    pyr->level_dy_buffer = aom_malloc(gradient_size);
+    memset(pyr->level_dx_buffer, 0, gradient_size);
+    memset(pyr->level_dy_buffer, 0, gradient_size);
+  }
   return pyr;
 }
 
 static void free_pyramid(ImagePyramid *pyr) {
   aom_free(pyr->level_buffer);
-  aom_free(pyr->level_dx_buffer);
-  aom_free(pyr->level_dy_buffer);
+  if (pyr->has_gradient) {
+    aom_free(pyr->level_dx_buffer);
+    aom_free(pyr->level_dy_buffer);
+  }
   aom_free(pyr);
 }
 
@@ -547,7 +556,7 @@ static INLINE void update_level_dims(ImagePyramid *frm_pyr, int level) {
 // Compute coarse to fine pyramids for a frame
 static void compute_flow_pyramids(unsigned char *frm, const int frm_width,
                                   const int frm_height, const int frm_stride,
-                                  int n_levels, int pad_size,
+                                  int n_levels, int pad_size, int compute_grad,
                                   ImagePyramid *frm_pyr) {
   int cur_width, cur_height, cur_stride, cur_loc;
   assert((frm_width >> n_levels) > 0);
@@ -584,15 +593,19 @@ static void compute_flow_pyramids(unsigned char *frm, const int frm_width,
                      frm_pyr->level_buffer + cur_loc, cur_height, cur_width,
                      cur_stride);
 
-    // Computation x gradient
-    sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
-                            frm_pyr->level_dx_buffer + cur_loc, cur_stride,
-                            cur_height, cur_width, 1);
+    if (compute_grad) {
+      assert(frm_pyr->has_gradient && frm_pyr->level_dx_buffer != NULL &&
+             frm_pyr->level_dy_buffer != NULL);
+      // Computation x gradient
+      sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
+                              frm_pyr->level_dx_buffer + cur_loc, cur_stride,
+                              cur_height, cur_width, 1);
 
-    // Computation y gradient
-    sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
-                            frm_pyr->level_dy_buffer + cur_loc, cur_stride,
-                            cur_height, cur_width, 0);
+      // Computation y gradient
+      sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
+                              frm_pyr->level_dy_buffer + cur_loc, cur_stride,
+                              cur_height, cur_width, 0);
+    }
   }
 }
 
@@ -631,13 +644,17 @@ static int compute_global_motion_disflow_based(
   // flow field is computed and upscaled. I'll add these optimizations
   // once the full implementation is working.
   // Allocate frm image pyramids
-  ImagePyramid *frm_pyr = alloc_pyramid(frm_width, frm_height, pad_size);
+  int compute_gradient = 1;
+  ImagePyramid *frm_pyr =
+      alloc_pyramid(frm_width, frm_height, pad_size, compute_gradient);
   compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm->y_stride,
-                        n_levels, pad_size, frm_pyr);
+                        n_levels, pad_size, compute_gradient, frm_pyr);
   // Allocate ref image pyramids
-  ImagePyramid *ref_pyr = alloc_pyramid(ref_width, ref_height, pad_size);
+  compute_gradient = 0;
+  ImagePyramid *ref_pyr =
+      alloc_pyramid(ref_width, ref_height, pad_size, compute_gradient);
   compute_flow_pyramids(ref_buffer, ref_width, ref_height, ref->y_stride,
-                        n_levels, pad_size, ref_pyr);
+                        n_levels, pad_size, compute_gradient, ref_pyr);
 
   // TODO(sarahparker) Implement the rest of DISFlow, currently only the image
   // pyramid is implemented.
