@@ -27,8 +27,8 @@ class AlsReader {
   };
 
   // Frequency in hertz at which we read ALS samples.
-  // TODO(jiameng): currently set frequency to 4hz. May revise.
-  static constexpr int kAlsPollFrequency = 4;
+  // TODO(jiameng): currently set frequency to 1hz. May revise.
+  static constexpr int kAlsPollFrequency = 1;
 
   // AlsReader must outlive the observers.
   class Observer : public base::CheckedObserver {

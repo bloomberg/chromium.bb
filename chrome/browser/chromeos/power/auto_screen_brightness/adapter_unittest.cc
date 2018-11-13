@@ -466,6 +466,7 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   fake_als_reader_.ReportAmbientLightUpdate(20);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), 20);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(), 22);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(), 16);
 
@@ -474,12 +475,14 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(20));
   fake_als_reader_.ReportAmbientLightUpdate(21);
   EXPECT_EQ(1, test_observer_.num_changes());
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), (20 + 21) / 2.0);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(), 22);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(), 16);
 
   // A 3rd ALS comes in, but still not enough to trigger brightness change.
   fake_als_reader_.ReportAmbientLightUpdate(15);
   EXPECT_EQ(test_observer_.num_changes(), 1);
+  EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), (21 + 15) / 2.0);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(), 22);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(), 16);
 
@@ -489,7 +492,9 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  const double expected_average_ambient = (20 + 21 + 15 + 7) / 4.0;
+  EXPECT_EQ(Adapter::kNumberAmbientValuesToTrack, 2);
+  const double expected_average_ambient =
+      (15.0 + 7.0) / Adapter::kNumberAmbientValuesToTrack;
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
                    expected_average_ambient);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
