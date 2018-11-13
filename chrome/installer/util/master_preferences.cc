@@ -115,20 +115,21 @@ void MasterPreferences::InitializeFromCommandLine(
     const char* cmd_line_switch;
     const char* distribution_switch;
   } translate_switches[] = {
-    { installer::switches::kDisableLogging,
-      installer::master_preferences::kDisableLogging },
-    { installer::switches::kMsi,
-      installer::master_preferences::kMsi },
-    { installer::switches::kDoNotRegisterForUpdateLaunch,
-      installer::master_preferences::kDoNotRegisterForUpdateLaunch },
-    { installer::switches::kDoNotLaunchChrome,
-      installer::master_preferences::kDoNotLaunchChrome },
-    { installer::switches::kMakeChromeDefault,
-      installer::master_preferences::kMakeChromeDefault },
-    { installer::switches::kSystemLevel,
-      installer::master_preferences::kSystemLevel },
-    { installer::switches::kVerboseLogging,
-      installer::master_preferences::kVerboseLogging },
+      {installer::switches::kAllowDowngrade,
+       installer::master_preferences::kAllowDowngrade},
+      {installer::switches::kDisableLogging,
+       installer::master_preferences::kDisableLogging},
+      {installer::switches::kMsi, installer::master_preferences::kMsi},
+      {installer::switches::kDoNotRegisterForUpdateLaunch,
+       installer::master_preferences::kDoNotRegisterForUpdateLaunch},
+      {installer::switches::kDoNotLaunchChrome,
+       installer::master_preferences::kDoNotLaunchChrome},
+      {installer::switches::kMakeChromeDefault,
+       installer::master_preferences::kMakeChromeDefault},
+      {installer::switches::kSystemLevel,
+       installer::master_preferences::kSystemLevel},
+      {installer::switches::kVerboseLogging,
+       installer::master_preferences::kVerboseLogging},
   };
 
   std::string name(installer::master_preferences::kDistroDict);
