@@ -182,7 +182,12 @@ bool CrostiniInstallerView::Cancel() {
     // being called after "this" has been destroyed.
     crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
         restart_id_);
-    RecordSetupResultHistogram(SetupResult::kUserCancelled);
+
+    SetupResult result = SetupResult::kUserCancelledStart;
+    result = static_cast<SetupResult>(static_cast<int>(result) +
+                                      static_cast<int>(state_) -
+                                      static_cast<int>(State::INSTALL_START));
+    RecordSetupResultHistogram(result);
 
     if (do_cleanup_) {
       // Remove anything that got installed
