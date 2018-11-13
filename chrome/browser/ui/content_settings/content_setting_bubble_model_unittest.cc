@@ -119,9 +119,9 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 
   content_settings->ClearNavigationRelatedContentSettings();
   content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
-  content_setting_bubble_model.reset(
+  content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(), CONTENT_SETTINGS_TYPE_COOKIES));
+          NULL, web_contents(), profile(), CONTENT_SETTINGS_TYPE_COOKIES);
   const ContentSettingBubbleModel::BubbleContent& bubble_content_2 =
       content_setting_bubble_model->bubble_content();
 
@@ -791,10 +791,9 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   content_settings
       ->ClearContentSettingsExceptForNavigationRelatedSettings();
   content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
-  content_setting_bubble_model.reset(
+  content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), profile(),
-          CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
+          NULL, web_contents(), profile(), CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   const ContentSettingBubbleModel::BubbleContent& bubble_content_2 =
       content_setting_bubble_model->bubble_content();
 

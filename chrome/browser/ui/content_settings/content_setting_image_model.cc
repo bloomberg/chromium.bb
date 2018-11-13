@@ -124,7 +124,7 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
 
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
-  ContentSettingBubbleModel* CreateBubbleModelImpl(
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       WebContents* web_contents,
       Profile* profile) override;
@@ -212,7 +212,7 @@ ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
     ContentSettingsType content_type)
     : ContentSettingImageModel(image_type), content_type_(content_type) {}
 
-ContentSettingBubbleModel*
+std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingSimpleImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
@@ -545,13 +545,13 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
   return true;
 }
 
-ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModelImpl(
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingMediaImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
-  return new ContentSettingMediaStreamBubbleModel(delegate,
-                                                  web_contents,
-                                                  profile);
+  return std::make_unique<ContentSettingMediaStreamBubbleModel>(
+      delegate, web_contents, profile);
 }
 
 // Blocked Framebust -----------------------------------------------------------
@@ -570,13 +570,13 @@ bool ContentSettingFramebustBlockImageModel::UpdateAndGetVisibility(
   return true;
 }
 
-ContentSettingBubbleModel*
+std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingFramebustBlockImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
     WebContents* web_contents,
     Profile* profile) {
-  return new ContentSettingFramebustBlockBubbleModel(delegate, web_contents,
-                                                     profile);
+  return std::make_unique<ContentSettingFramebustBlockBubbleModel>(
+      delegate, web_contents, profile);
 }
 
 // Sensors ---------------------------------------------------------------------
@@ -636,7 +636,8 @@ ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)
       explanatory_string_id_(0),
       image_type_(image_type) {}
 
-ContentSettingBubbleModel* ContentSettingImageModel::CreateBubbleModel(
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingImageModel::CreateBubbleModel(
     ContentSettingBubbleModel::Delegate* delegate,
     content::WebContents* web_contents,
     Profile* profile) {

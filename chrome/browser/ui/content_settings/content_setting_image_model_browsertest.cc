@@ -78,9 +78,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
-    EXPECT_TRUE(base::WrapUnique(
-                    model->CreateBubbleModel(nullptr, web_contents, profile))
-                    .get());
+    EXPECT_TRUE(model->CreateBubbleModel(nullptr, web_contents, profile));
     EXPECT_TRUE(image_types.insert(model->image_type()).second);
   }
 }

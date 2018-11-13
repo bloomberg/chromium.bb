@@ -1650,46 +1650,48 @@ ContentSettingFramebustBlockBubbleModel::CreateListItem(const GURL& url) {
 const int ContentSettingBubbleModel::kAllowButtonIndex = 0;
 
 // static
-ContentSettingBubbleModel*
-    ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-        Delegate* delegate,
-        WebContents* web_contents,
-        Profile* profile,
-        ContentSettingsType content_type) {
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+    Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile,
+    ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    return new ContentSettingCookiesBubbleModel(delegate, web_contents,
-                                                profile);
+    return std::make_unique<ContentSettingCookiesBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
-    return new ContentSettingPopupBubbleModel(delegate, web_contents, profile);
+    return std::make_unique<ContentSettingPopupBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return new ContentSettingDomainListBubbleModel(delegate, web_contents,
-                                                   profile, content_type);
+    return std::make_unique<ContentSettingDomainListBubbleModel>(
+        delegate, web_contents, profile, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    return new ContentSettingPluginBubbleModel(delegate, web_contents, profile);
+    return std::make_unique<ContentSettingPluginBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
-    return new ContentSettingMixedScriptBubbleModel(delegate, web_contents,
-                                                    profile);
+    return std::make_unique<ContentSettingMixedScriptBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
     ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
-    return new ContentSettingRPHBubbleModel(delegate, web_contents, profile,
-                                            registry);
+    return std::make_unique<ContentSettingRPHBubbleModel>(
+        delegate, web_contents, profile, registry);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-    return new ContentSettingMidiSysExBubbleModel(delegate, web_contents,
-                                                  profile);
+    return std::make_unique<ContentSettingMidiSysExBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
-    return new ContentSettingDownloadsBubbleModel(delegate, web_contents,
-                                                  profile);
+    return std::make_unique<ContentSettingDownloadsBubbleModel>(
+        delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_ADS) {
-    return new ContentSettingSubresourceFilterBubbleModel(
+    return std::make_unique<ContentSettingSubresourceFilterBubbleModel>(
         delegate, web_contents, profile);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
@@ -1698,8 +1700,8 @@ ContentSettingBubbleModel*
       content_type == CONTENT_SETTINGS_TYPE_SOUND ||
       content_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
       content_type == CONTENT_SETTINGS_TYPE_SENSORS) {
-    return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
-                                              content_type);
+    return std::make_unique<ContentSettingSingleRadioGroup>(
+        delegate, web_contents, profile, content_type);
   }
   NOTREACHED() << "No bubble for the content type " << content_type << ".";
   return nullptr;

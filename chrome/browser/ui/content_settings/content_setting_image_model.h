@@ -70,8 +70,7 @@ class ContentSettingImageModel {
   void Update(content::WebContents* contents);
 
   // Creates the model for the bubble that will be attached to this image.
-  // The bubble model is owned by the caller.
-  ContentSettingBubbleModel* CreateBubbleModel(
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModel(
       ContentSettingBubbleModel::Delegate* delegate,
       content::WebContents* web_contents,
       Profile* profile);
@@ -105,7 +104,7 @@ class ContentSettingImageModel {
   virtual bool UpdateAndGetVisibility(content::WebContents* web_contents) = 0;
 
   // Internal implementation by subclasses of bubble model creation.
-  virtual ContentSettingBubbleModel* CreateBubbleModelImpl(
+  virtual std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       content::WebContents* web_contents,
       Profile* profile) = 0;
@@ -139,7 +138,7 @@ class ContentSettingSimpleImageModel : public ContentSettingImageModel {
                                  ContentSettingsType content_type);
 
   // ContentSettingImageModel implementation.
-  ContentSettingBubbleModel* CreateBubbleModelImpl(
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       content::WebContents* web_contents,
       Profile* profile) override;
@@ -158,7 +157,7 @@ class ContentSettingFramebustBlockImageModel : public ContentSettingImageModel {
 
   bool UpdateAndGetVisibility(content::WebContents* web_contents) override;
 
-  ContentSettingBubbleModel* CreateBubbleModelImpl(
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       content::WebContents* web_contents,
       Profile* profile) override;
