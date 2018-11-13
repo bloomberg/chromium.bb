@@ -188,7 +188,7 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
       previews_service->previews_lite_page_decider();
   DCHECK(decider);
 
-  // TODO(crbug/842233): Replace this logic with PreviewsState.
+  // TODO(crbug/898557): Replace this logic with PreviewsState.
   bool drp_enabled = decider->drp_settings_->IsDataReductionProxyEnabled();
   bool preview_enabled = previews::params::ArePreviewsAllowed() &&
                          previews::params::IsLitePageServerPreviewsEnabled();

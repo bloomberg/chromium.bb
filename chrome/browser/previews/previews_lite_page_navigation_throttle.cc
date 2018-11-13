@@ -25,6 +25,7 @@
 #include "components/base32/base32.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_lite_page_url_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,12 +51,6 @@ namespace {
 constexpr char kChromeProxyHeader[] = "chrome-proxy";
 
 const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
-
-bool IsPreviewsDomain(const GURL& url) {
-  GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
-  return url.DomainIs(previews_host.host()) &&
-         url.EffectiveIntPort() == previews_host.EffectiveIntPort();
-}
 
 bool IsPrivateDomain(const GURL& url) {
   if (url.host().find(".") == base::StringPiece::npos)
@@ -160,14 +155,15 @@ bool HandlePreviewsLitePageURLRewrite(
     content::BrowserContext* browser_context) {
   // Don't change the |url|, just register our interest in reversing it before
   // it is displayed to the user in |HandlePreviewsLitePageURLRewriteReverse|.
-  return !!PreviewsLitePageNavigationThrottle::GetOriginalURL(*url, nullptr);
+  return previews::IsLitePageRedirectPreviewURL(*url);
 }
 
 bool HandlePreviewsLitePageURLRewriteReverse(
     GURL* url,
     content::BrowserContext* browser_context) {
   std::string original_url;
-  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(*url, &original_url)) {
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(*url,
+                                                          &original_url)) {
     *url = GURL(original_url);
     return true;
   }
@@ -221,7 +217,7 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   // Check dynamic blacklists.
   std::vector<BlacklistReason> blacklist_reasons;
 
-  if (IsPreviewsDomain(url))
+  if (previews::IsLitePageRedirectPreviewDomain(url))
     blacklist_reasons.push_back(BlacklistReason::kNavigationToPreviewsDomain);
 
   if (IsPrivateDomain(url))
@@ -259,25 +255,6 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
 }
 
 // static
-bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
-    const GURL& url,
-    std::string* original_url) {
-  if (!url.is_valid())
-    return false;
-
-  if (!IsPreviewsDomain(url))
-    return false;
-
-  std::string original_url_query_param;
-  if (!net::GetValueForKeyInQuery(url, "u", &original_url_query_param))
-    return false;
-
-  if (original_url)
-    *original_url = original_url_query_param;
-  return true;
-}
-
-// static
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
@@ -307,7 +284,8 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
 }
 
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
-  DCHECK(!IsPreviewsDomain(navigation_handle()->GetURL()));
+  DCHECK(!previews::IsLitePageRedirectPreviewDomain(
+      navigation_handle()->GetURL()));
   return GetPreviewsURLForURL(navigation_handle()->GetURL());
 }
 
@@ -417,7 +395,8 @@ PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
   std::string original_url;
   if (navigation_handle()->GetReloadType() ==
           content::ReloadType::ORIGINAL_REQUEST_URL &&
-      GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
+      previews::ExtractOriginalURLFromLitePageRedirectURL(
+          navigation_handle()->GetURL(), &original_url)) {
     LoadAndBypass(navigation_handle()->GetWebContents(), manager_,
                   MakeOpenURLParams(navigation_handle(), GURL(original_url),
                                     std::string()),
@@ -455,7 +434,8 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
 
   // If we are redirecting on a preview, count some UMA and proceed.
   std::string original_url;
-  if (GetOriginalURL(previous_url, &original_url)) {
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(previous_url,
+                                                          &original_url)) {
     // A redirect means one of two things: (1) there is no preview available for
     // this page and we should redirect back to the original page. (2) the
     // previews server is forwarding along a redirect from the origin. The
@@ -501,8 +481,10 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillFailRequest() {
   std::string original_url;
-  if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url))
+  if (!previews::ExtractOriginalURLFromLitePageRedirectURL(
+          navigation_handle()->GetURL(), &original_url)) {
     return content::NavigationThrottle::PROCEED;
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                             ServerResponse::kFailed);
@@ -520,7 +502,8 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillProcessResponse() {
   std::string original_url;
-  if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
+  if (!previews::ExtractOriginalURLFromLitePageRedirectURL(
+          navigation_handle()->GetURL(), &original_url)) {
     // Return early if this request was not for a Preview.
     return content::NavigationThrottle::PROCEED;
   }
