@@ -38,6 +38,7 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &CORSURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
+  preflight_controller_ = context_->cors_preflight_controller();
 }
 
 CORSURLLoaderFactory::CORSURLLoaderFactory(
@@ -50,6 +51,10 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
       preflight_finalizer_(preflight_finalizer),
       origin_access_list_(origin_access_list) {
   DCHECK(origin_access_list_);
+  // Ideally this should be per-profile, but per-factory would be enough for
+  // this code path that is eventually removed.
+  owned_preflight_controller_ = std::make_unique<PreflightController>();
+  preflight_controller_ = owned_preflight_controller_.get();
 }
 
 CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
@@ -88,7 +93,7 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
         network_loader_factory_.get(), preflight_finalizer_,
-        origin_access_list_);
+        origin_access_list_, preflight_controller_);
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();

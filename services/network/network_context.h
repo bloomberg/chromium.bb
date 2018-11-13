@@ -29,6 +29,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
@@ -344,6 +345,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
         std::move(network_qualities_pref_delegate);
   }
 
+  cors::PreflightController* cors_preflight_controller() {
+    return &cors_preflight_controller_;
+  }
+
  private:
   class ContextNetworkDelegate;
 
@@ -511,6 +516,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
+
+  // Manages CORS preflight requests and its cache.
+  cors::PreflightController cors_preflight_controller_;
 
   std::unique_ptr<NetworkQualitiesPrefDelegate>
       network_qualities_pref_delegate_;

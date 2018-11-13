@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -90,6 +91,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
   // Accessed by instances in |loaders_| too. Since the factory outlives them,
   // it's safe.
   const OriginAccessList* const origin_access_list_;
+
+  // Usually |preflight_controoler_| is owned by NetworkContext, but we create
+  // own one if NetworkContext is not provided, e.g. for legacy code path.
+  // TODO(toyoshim): Remove owned controller once the network service is fully
+  // enabled.
+  PreflightController* preflight_controller_;
+  std::unique_ptr<PreflightController> owned_preflight_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderFactory);
 };

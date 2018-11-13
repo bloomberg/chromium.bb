@@ -55,7 +55,8 @@ CORSURLLoader::CORSURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
     const base::RepeatingCallback<void(int)>& request_finalizer,
-    const OriginAccessList* origin_access_list)
+    const OriginAccessList* origin_access_list,
+    PreflightController* preflight_controller)
     : binding_(this, std::move(loader_request)),
       routing_id_(routing_id),
       request_id_(request_id),
@@ -68,11 +69,13 @@ CORSURLLoader::CORSURLLoader(
       request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
       origin_access_list_(origin_access_list),
+      preflight_controller_(preflight_controller),
       weak_factory_(this) {
   binding_.set_connection_error_handler(base::BindOnce(
       &CORSURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
+  DCHECK(preflight_controller_);
   SetCORSFlagIfNeeded();
 }
 
@@ -396,7 +399,7 @@ void CORSURLLoader::StartRequest() {
   if (request_finalizer_)
     preflight_finalizer = base::BindOnce(request_finalizer_, request_id_);
 
-  PreflightController::GetDefaultController()->PerformPreflightCheck(
+  preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CORSURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
       request_id_, request_, tainted_,
