@@ -2077,7 +2077,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
 
   if (should_launch_browser_)
-    SyncConsentScreen::MaybeLaunchSyncConstentSettings(profile);
+    SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(

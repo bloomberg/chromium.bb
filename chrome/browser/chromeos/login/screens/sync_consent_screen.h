@@ -55,7 +55,7 @@ class SyncConsentScreen : public BaseScreen,
 
   // Launches the sync consent settings dialog if the user requested to review
   // them after completing OOBE.
-  static void MaybeLaunchSyncConstentSettings(Profile* profile);
+  static void MaybeLaunchSyncConsentSettings(Profile* profile);
 
   SyncConsentScreen(BaseScreenDelegate* base_screen_delegate,
                     SyncConsentScreenView* view);

@@ -195,7 +195,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
-  SyncConsentScreen::MaybeLaunchSyncConstentSettings(user_profile);
+  SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
 }
 
 }  // namespace
