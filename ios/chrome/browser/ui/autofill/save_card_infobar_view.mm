@@ -65,6 +65,32 @@ UIFont* InfoBarMessageFont() {
   return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
+NSString* const kActionButtonsDummyViewAccessibilityIdentifier =
+    @"actionButtonsDummyView";
+NSString* const kCardDetailsContainerViewAccessibilityIdentifier =
+    @"cardDetailsContainerView";
+NSString* const kCardDetailsDummyViewAccessibilityIdentifier =
+    @"cardDetailsDummyView";
+NSString* const kCardIssuerIconImageViewAccessibilityIdentifier =
+    @"cardIssuerIconImageView";
+NSString* const kCardLabelAccessibilityIdentifier = @"cardLabel";
+NSString* const kCardSublabelAccessibilityIdentifier = @"cardSublabel";
+NSString* const kContentViewAccessibilityIdentifier = @"contentView";
+NSString* const kDescriptionLabelAccessibilityIdentifier = @"descriptionLabel";
+NSString* const kFooterViewAccessibilityIdentifier = @"footerView";
+NSString* const kGPayIconContainerViewAccessibilityIdentifier =
+    @"gPayIconContainerView";
+NSString* const kGPayIconImageViewAccessibilityIdentifier =
+    @"gPayIconImageView";
+NSString* const kHeaderViewAccessibilityIdentifier = @"headerView";
+NSString* const kIconContainerViewAccessibilityIdentifier =
+    @"iconContainerView";
+NSString* const kIconImageViewAccessibilityIdentifier = @"iconImageView";
+NSString* const kLegalMessageLabelAccessibilityIdentifier =
+    @"legalMessageLabel";
+NSString* const kTitleLabelAccessibilityIdentifier = @"titleLabel";
+NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
+
 }  // namespace
 
 @implementation MessageWithLinks
@@ -84,7 +110,7 @@ UIFont* InfoBarMessageFont() {
 @property(nonatomic, strong) LabelLinkController* legalMessageLinkController;
 
 // Constraint used to add bottom margin to the view.
-@property(nonatomic) NSLayoutConstraint* footerViewBottomAnchorConstraint;
+@property(nonatomic) NSLayoutConstraint* bottomAnchorConstraint;
 
 // How much of the infobar (in points) is visible (e.g., during showing/hiding
 // animation).
@@ -144,8 +170,7 @@ UIFont* InfoBarMessageFont() {
 @synthesize confirmButtonTitle = _confirmButtonTitle;
 @synthesize messageLinkController = _messageLinkController;
 @synthesize legalMessageLinkController = _legalMessageLinkController;
-@synthesize footerViewBottomAnchorConstraint =
-    _footerViewBottomAnchorConstraint;
+@synthesize bottomAnchorConstraint = _bottomAnchorConstraint;
 
 #pragma mark - UIView
 
@@ -153,7 +178,20 @@ UIFont* InfoBarMessageFont() {
   // Create and add subviews the first time this moves to a superview.
   if (newSuperview && !self.subviews.count) {
     [self setupSubviews];
+    // Lower constraint's priority to avoid breaking other constraints while
+    // |newSuperview| is animating.
+    // TODO(crbug.com/904521): Investigate why this is needed.
+    self.bottomAnchorConstraint.priority = UILayoutPriorityDefaultLow;
   }
+}
+
+- (void)didMoveToSuperview {
+  if (!self.superview)
+    return;
+
+  // Increase constraint's priority after the view was added to its superview.
+  // TODO(crbug.com/904521): Investigate why this is needed.
+  self.bottomAnchorConstraint.priority = UILayoutPriorityDefaultHigh;
 }
 
 - (void)layoutSubviews {
@@ -165,8 +203,7 @@ UIFont* InfoBarMessageFont() {
   // |layoutGuide| in |didMoveToSuperview|.
   NamedGuide* layoutGuide =
       [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
-  self.footerViewBottomAnchorConstraint.constant =
-      layoutGuide.layoutFrame.size.height;
+  self.bottomAnchorConstraint.constant = layoutGuide.layoutFrame.size.height;
 
   [super layoutSubviews];
 }
@@ -195,10 +232,21 @@ UIFont* InfoBarMessageFont() {
   UIView* iconContainerView = nil;
   if (self.icon) {
     iconContainerView = [[UIView alloc] initWithFrame:CGRectZero];
+    iconContainerView.accessibilityIdentifier =
+        kIconContainerViewAccessibilityIdentifier;
     iconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     iconContainerView.clipsToBounds = YES;
     UIImageView* iconImageView = [[UIImageView alloc] initWithImage:self.icon];
+    iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    iconImageView.accessibilityIdentifier =
+        kIconImageViewAccessibilityIdentifier;
     iconImageView.tintColor = UIColorFromRGB(kIconTintColor);
+    // Prevent the icon from shrinking horizontally. This is needed when the
+    // title is long and needs to wrap.
+    [iconImageView
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     [iconContainerView addSubview:iconImageView];
     AddSameConstraints(iconContainerView, iconImageView);
     [self addSubview:iconContainerView];
@@ -221,6 +269,7 @@ UIFont* InfoBarMessageFont() {
   // ||  FOOTER                 ||
   // +---------------------------+
   UIView* headerView = [[UIView alloc] initWithFrame:CGRectZero];
+  headerView.accessibilityIdentifier = kHeaderViewAccessibilityIdentifier;
   headerView.translatesAutoresizingMaskIntoConstraints = NO;
   headerView.clipsToBounds = YES;
   [self addSubview:headerView];
@@ -268,16 +317,15 @@ UIFont* InfoBarMessageFont() {
   [closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
   closeButton.tintColor = [UIColor blackColor];
   closeButton.alpha = 0.20;
-  // Prevent the button from shrinking or expanding horizontally.
+  // Prevent the button from shrinking horizontally. This is needed when the
+  // title is long and needs to wrap.
   [closeButton
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisHorizontal];
-  [closeButton setContentHuggingPriority:UILayoutPriorityRequired
-                                 forAxis:UILayoutConstraintAxisHorizontal];
   [headerView addSubview:closeButton];
   [NSLayoutConstraint activateConstraints:@[
     [closeButton.leadingAnchor
-        constraintEqualToAnchor:titleView.trailingAnchor],
+        constraintGreaterThanOrEqualToAnchor:titleView.trailingAnchor],
     [closeButton.topAnchor constraintEqualToAnchor:headerView.topAnchor],
     [closeButton.trailingAnchor
         constraintEqualToAnchor:headerView.trailingAnchor],
@@ -307,6 +355,7 @@ UIFont* InfoBarMessageFont() {
       self.confirmButtonTitle.length > 0UL) {
     UIStackView* footerView =
         [[UIStackView alloc] initWithArrangedSubviews:@[]];
+    footerView.accessibilityIdentifier = kFooterViewAccessibilityIdentifier;
     footerView.translatesAutoresizingMaskIntoConstraints = NO;
     footerView.clipsToBounds = YES;
     footerView.axis = UILayoutConstraintAxisHorizontal;
@@ -316,7 +365,7 @@ UIFont* InfoBarMessageFont() {
         UIEdgeInsetsMake(kButtonsTopPadding, kPadding, kPadding, kPadding);
     [self addSubview:footerView];
 
-    self.footerViewBottomAnchorConstraint =
+    self.bottomAnchorConstraint =
         [self.bottomAnchor constraintEqualToAnchor:footerView.bottomAnchor];
     [NSLayoutConstraint activateConstraints:@[
       [safeAreaLayoutGuide.leadingAnchor
@@ -324,16 +373,14 @@ UIFont* InfoBarMessageFont() {
       [safeAreaLayoutGuide.trailingAnchor
           constraintEqualToAnchor:footerView.trailingAnchor],
       [contentView.bottomAnchor constraintEqualToAnchor:footerView.topAnchor],
-      self.footerViewBottomAnchorConstraint
+      self.bottomAnchorConstraint
     ]];
 
     // Dummy view that expands so that the action buttons are aligned to the
     // trailing edge of the |footerView|.
     UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
-    [dummyView
-        setContentCompressionResistancePriority:UILayoutPriorityFittingSizeLevel
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
+    dummyView.accessibilityIdentifier =
+        kActionButtonsDummyViewAccessibilityIdentifier;
     [footerView addArrangedSubview:dummyView];
 
     if (self.cancelButtonTitle.length > 0UL) {
@@ -358,15 +405,15 @@ UIFont* InfoBarMessageFont() {
       [footerView addArrangedSubview:confirmButton];
     }
   } else {
-    [NSLayoutConstraint activateConstraints:@[
-      [contentView.bottomAnchor
-          constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor]
-    ]];
+    self.bottomAnchorConstraint =
+        [self.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor];
+    self.bottomAnchorConstraint.active = YES;
   }
 }
 
 - (UIView*)titleView {
   UIView* titleView = [[UIView alloc] initWithFrame:CGRectZero];
+  titleView.accessibilityIdentifier = kTitleViewAccessibilityIdentifier;
   titleView.translatesAutoresizingMaskIntoConstraints = NO;
   titleView.clipsToBounds = YES;
 
@@ -376,10 +423,15 @@ UIFont* InfoBarMessageFont() {
   UIView* iconContainerView = nil;
   if (self.googlePayIcon) {
     iconContainerView = [[UIView alloc] initWithFrame:CGRectZero];
+    iconContainerView.accessibilityIdentifier =
+        kGPayIconContainerViewAccessibilityIdentifier;
     iconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     iconContainerView.clipsToBounds = YES;
     UIImageView* iconImageView =
         [[UIImageView alloc] initWithImage:self.googlePayIcon];
+    iconImageView.accessibilityIdentifier =
+        kGPayIconImageViewAccessibilityIdentifier;
+    iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
     [iconContainerView addSubview:iconImageView];
     AddSameConstraints(iconContainerView, iconImageView);
     [titleView addSubview:iconContainerView];
@@ -395,6 +447,7 @@ UIFont* InfoBarMessageFont() {
   DCHECK_EQ(self.message.linkURLs.size(), self.message.linkRanges.count);
 
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  label.accessibilityIdentifier = kTitleLabelAccessibilityIdentifier;
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.clipsToBounds = YES;
   label.textColor = [[MDCPalette greyPalette] tint900];
@@ -456,6 +509,7 @@ UIFont* InfoBarMessageFont() {
 
 - (UIView*)contentView {
   UIStackView* contentView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  contentView.accessibilityIdentifier = kContentViewAccessibilityIdentifier;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
   contentView.clipsToBounds = YES;
   contentView.axis = UILayoutConstraintAxisVertical;
@@ -464,7 +518,7 @@ UIFont* InfoBarMessageFont() {
   // Description.
   if (self.description.length > 0UL) {
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.accessibilityIdentifier = kDescriptionLabelAccessibilityIdentifier;
     label.textColor = [[MDCPalette greyPalette] tint700];
     label.numberOfLines = 0;
     label.backgroundColor = [UIColor clearColor];
@@ -492,7 +546,8 @@ UIFont* InfoBarMessageFont() {
   // issuer network icon, the card label, and the card sublabel.
   UIStackView* cardDetailsContainerView =
       [[UIStackView alloc] initWithArrangedSubviews:@[]];
-  cardDetailsContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+  cardDetailsContainerView.accessibilityIdentifier =
+      kCardDetailsContainerViewAccessibilityIdentifier;
   cardDetailsContainerView.clipsToBounds = YES;
   cardDetailsContainerView.axis = UILayoutConstraintAxisHorizontal;
   cardDetailsContainerView.spacing = kHorizontalSpacing;
@@ -500,10 +555,12 @@ UIFont* InfoBarMessageFont() {
 
   UIImageView* cardIssuerIconImageView =
       [[UIImageView alloc] initWithImage:self.cardIssuerIcon];
+  cardIssuerIconImageView.accessibilityIdentifier =
+      kCardIssuerIconImageViewAccessibilityIdentifier;
   [cardDetailsContainerView addArrangedSubview:cardIssuerIconImageView];
 
   UILabel* cardLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  cardLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  cardLabel.accessibilityIdentifier = kCardLabelAccessibilityIdentifier;
   cardLabel.text = self.cardLabel;
   cardLabel.font = [MDCTypography body1Font];
   cardLabel.textColor = [[MDCPalette greyPalette] tint900];
@@ -511,7 +568,7 @@ UIFont* InfoBarMessageFont() {
   [cardDetailsContainerView addArrangedSubview:cardLabel];
 
   UILabel* cardSublabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  cardSublabel.translatesAutoresizingMaskIntoConstraints = NO;
+  cardSublabel.accessibilityIdentifier = kCardSublabelAccessibilityIdentifier;
   cardSublabel.text = self.cardSublabel;
   cardSublabel.font = [MDCTypography body1Font];
   cardSublabel.textColor = [[MDCPalette greyPalette] tint700];
@@ -521,9 +578,8 @@ UIFont* InfoBarMessageFont() {
   // Dummy view that expands so that the card details are aligned to the leading
   // edge of the |contentView|.
   UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
-  [dummyView
-      setContentCompressionResistancePriority:UILayoutPriorityFittingSizeLevel
-                                      forAxis:UILayoutConstraintAxisHorizontal];
+  dummyView.accessibilityIdentifier =
+      kCardDetailsDummyViewAccessibilityIdentifier;
   [cardDetailsContainerView addArrangedSubview:dummyView];
 
   // Legal messages.
@@ -532,7 +588,7 @@ UIFont* InfoBarMessageFont() {
     DCHECK_EQ(legalMessage.linkURLs.size(), legalMessage.linkRanges.count);
 
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.accessibilityIdentifier = kLegalMessageLabelAccessibilityIdentifier;
     label.textColor = [[MDCPalette greyPalette] tint700];
     label.numberOfLines = 0;
     label.backgroundColor = [UIColor clearColor];
@@ -588,7 +644,6 @@ UIFont* InfoBarMessageFont() {
                             target:(id)target
                             action:(SEL)action {
   MDCFlatButton* button = [[MDCFlatButton alloc] init];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
   button.titleLabel.adjustsFontSizeToFitWidth = YES;
   button.titleLabel.minimumScaleFactor = 0.6f;
   [button setTitle:title forState:UIControlStateNormal];
