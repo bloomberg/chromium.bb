@@ -21,7 +21,7 @@ namespace CSS{{property.namespace_group}} {
 {% else %}
 // Implements the '{{property.name}}' CSS descriptor
 {% endif %}
-// See src/third_party/WebKit/Source/core/css/properties/README.md
+// See src/third_party/blink/renderer/core/css/properties/README.md
   {% if property.alias_for != None%}
 class {{property_classname}} final : public CSSUnresolvedProperty {
  public:
