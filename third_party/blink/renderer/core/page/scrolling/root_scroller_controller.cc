@@ -70,17 +70,16 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
   if (element.IsFrameOwnerElement()) {
     const HTMLFrameOwnerElement* frame_owner =
         ToHTMLFrameOwnerElement(&element);
-    if (!frame_owner->ContentFrame())
+    EmbeddedContentView* content_view = frame_owner->OwnedEmbeddedContentView();
+    if (!content_view)
       return nullptr;
 
-    if (!frame_owner->ContentFrame()->IsLocalFrame())
+    if (!content_view->IsLocalFrameView())
       return nullptr;
 
-    LocalFrameView* frame_view =
-        ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
+    LocalFrameView* frame_view = ToLocalFrameView(content_view);
 
-    if (!frame_view)
-      return nullptr;
+    DCHECK(frame_view);
 
     return frame_view->LayoutViewport();
   }

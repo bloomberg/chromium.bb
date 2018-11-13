@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
 
 namespace blink {
 
@@ -25,6 +26,10 @@ class SimWebFrameClient final : public frame_test_helpers::TestWebFrameClient {
   WebEffectiveConnectionType GetEffectiveConnectionType() override;
   void SetEffectiveConnectionTypeForTesting(
       WebEffectiveConnectionType) override;
+
+  WebPlugin* CreatePlugin(const WebPluginParams& params) override {
+    return new FakeWebPlugin(params);
+  }
 
  private:
   SimTest* test_;
