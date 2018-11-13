@@ -190,8 +190,13 @@ base::SequencedTaskRunnerHandle::Get()->
 ## Using Sequences Instead of Locks
 
 Usage of locks is discouraged in Chrome. Sequences inherently provide
-thread-safety. Prefer classes that are always accessed from the same sequence to
-managing your own thread-safety with locks.
+thread-safety. Prefer classes that are always accessed from the same
+sequence to managing your own thread-safety with locks.
+
+**Thread-safe but not thread-affine; how so?** Tasks posted to the same sequence
+will run in sequential order. After a sequenced task completes, the next task
+may be picked up by a different worker thread, but that task is guaranteed to
+see any side-effects caused by the previous one(s) on its sequence.
 
 ```cpp
 class A {
