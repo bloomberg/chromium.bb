@@ -102,7 +102,9 @@ Response FromProtocolPermissionType(
 
 }  // namespace
 
-BrowserHandler::BrowserHandler(protocol::UberDispatcher* dispatcher) {
+BrowserHandler::BrowserHandler(protocol::UberDispatcher* dispatcher,
+                               const std::string& target_id)
+    : target_id_(target_id) {
   // Dispatcher can be null in tests.
   if (dispatcher)
     protocol::Browser::Dispatcher::wire(dispatcher, this);
@@ -111,10 +113,11 @@ BrowserHandler::BrowserHandler(protocol::UberDispatcher* dispatcher) {
 BrowserHandler::~BrowserHandler() = default;
 
 Response BrowserHandler::GetWindowForTarget(
-    const std::string& target_id,
+    protocol::Maybe<std::string> target_id,
     int* out_window_id,
     std::unique_ptr<protocol::Browser::Bounds>* out_bounds) {
-  auto host = content::DevToolsAgentHost::GetForId(target_id);
+  auto host =
+      content::DevToolsAgentHost::GetForId(target_id.fromMaybe(target_id_));
   if (!host)
     return Response::Error("No target with given id");
   content::WebContents* web_contents = host->GetWebContents();

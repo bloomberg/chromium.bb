@@ -242,7 +242,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
   session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
-      session->client()->MayDiscoverTargets()
+      session->client()->MayAttachToBrowser()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession())));
