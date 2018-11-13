@@ -34,6 +34,8 @@ blink_modules_sources("peerconnection") {
     "adapters/quic_transport_proxy.h",
     "adapters/web_rtc_cross_thread_copier.cc",
     "adapters/web_rtc_cross_thread_copier.h",
+    "byte_buffer_queue.cc",
+    "byte_buffer_queue.h",
     "rtc_certificate.cc",
     "rtc_certificate.h",
     "rtc_data_channel.cc",
