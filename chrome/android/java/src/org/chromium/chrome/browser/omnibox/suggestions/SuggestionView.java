@@ -14,14 +14,17 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.content.res.AppCompatResources;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.lang.annotation.Retention;
@@ -32,7 +35,7 @@ import java.lang.annotation.RetentionPolicy;
  * any unnecessary measures and layouts.
  */
 @VisibleForTesting
-public class SuggestionView extends ViewGroup {
+public class SuggestionView extends ViewGroup implements OnClickListener {
     private static final float ANSWER_IMAGE_SCALING_FACTOR = 1.15f;
 
     @IntDef({SuggestionLayoutType.TEXT_SUGGESTION, SuggestionLayoutType.ANSWER,
@@ -103,6 +106,8 @@ public class SuggestionView extends ViewGroup {
      */
     public SuggestionView(Context context) {
         super(context);
+
+        setOnClickListener(this);
 
         mSuggestionHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_height);
@@ -243,6 +248,20 @@ public class SuggestionView extends ViewGroup {
             mSuggestionDelegate.onGestureUp(ev.getEventTime());
         }
         return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public void onClick(View v) {
+        mContentsView.callOnClick();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (KeyNavigationUtil.isGoRight(event)) {
+            mSuggestionDelegate.onRefineSuggestion();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     /** Sets the delegate for the actions on the suggestion view. */

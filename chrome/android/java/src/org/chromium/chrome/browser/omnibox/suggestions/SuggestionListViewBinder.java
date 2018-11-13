@@ -53,6 +53,7 @@ class SuggestionListViewBinder {
             view.listView.setEmbedder(model.get(SuggestionListProperties.EMBEDDER));
         } else if (SuggestionListProperties.SUGGESTION_MODELS.equals(propertyKey)) {
             view.adapter.updateSuggestions(model.get(SuggestionListProperties.SUGGESTION_MODELS));
+            view.listView.setSelection(0);
         } else if (SuggestionListProperties.USE_DARK_BACKGROUND.equals(propertyKey)) {
             view.listView.refreshPopupBackground(
                     model.get(SuggestionListProperties.USE_DARK_BACKGROUND));

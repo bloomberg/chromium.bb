@@ -18,7 +18,6 @@ import android.text.style.StyleSpan;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
@@ -802,6 +801,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
 
         if (mShouldPreventOmniboxAutocomplete) return;
 
+        mIgnoreOmniboxItemSelection = true;
         cancelPendingAutocompleteStart();
 
         if (!mHasStartedNewOmniboxEditSession && mNativeInitialized) {
@@ -903,44 +903,34 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     }
 
     /**
-     * Load the suggestion at the given index.
-     * @param index The index that was selected.
+     * Load the url corresponding to the typed omnibox text.
      * @param eventTime The timestamp the load was triggered by the user.
      */
-    void loadSuggestionAtIndex(int index, long eventTime) {
+    void loadTypedOmniboxText(long eventTime) {
         mDelegate.hideKeyboard();
 
         final String urlText = mUrlBarEditingTextProvider.getTextWithAutocomplete();
         if (mNativeInitialized) {
-            findMatchAndLoadUrl(index, urlText, eventTime);
+            findMatchAndLoadUrl(urlText, eventTime);
         } else {
-            mDeferredNativeRunnables.add(() -> findMatchAndLoadUrl(index, urlText, eventTime));
+            mDeferredNativeRunnables.add(() -> findMatchAndLoadUrl(urlText, eventTime));
         }
     }
 
-    private void findMatchAndLoadUrl(int suggestionIndex, String urlText, long inputStart) {
-        int suggestionMatchPosition;
+    private void findMatchAndLoadUrl(String urlText, long inputStart) {
         OmniboxSuggestion suggestionMatch;
         boolean inSuggestionList = true;
 
-        if (suggestionIndex != ListView.INVALID_POSITION
-                && suggestionIndex < getSuggestionCount()) {
-            // Bluetooth keyboard case: the user highlighted a suggestion with the arrow
-            // keys, then pressed enter.
-            suggestionMatchPosition = suggestionIndex;
-            suggestionMatch = getSuggestionAt(suggestionMatchPosition);
-        } else if (getSuggestionCount() > 0
+        if (getSuggestionCount() > 0
                 && urlText.trim().equals(mUrlTextAfterSuggestionsReceived.trim())) {
             // Common case: the user typed something, received suggestions, then pressed enter.
             suggestionMatch = getSuggestionAt(0);
-            suggestionMatchPosition = 0;
         } else {
             // Less common case: there are no valid omnibox suggestions. This can happen if the
             // user tapped the URL bar to dismiss the suggestions, then pressed enter. This can
             // also happen if the user presses enter before any suggestions have been received
             // from the autocomplete controller.
             suggestionMatch = mAutocomplete.classify(urlText, mDelegate.didFocusUrlFromFakebox());
-            suggestionMatchPosition = 0;
             // Classify matches don't propagate to java, so skip the OOB check.
             inSuggestionList = false;
 
@@ -948,8 +938,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
             if (suggestionMatch == null) return;
         }
 
-        loadUrlFromOmniboxMatch(
-                suggestionMatchPosition, suggestionMatch, inputStart, inSuggestionList);
+        loadUrlFromOmniboxMatch(0, suggestionMatch, inputStart, inSuggestionList);
     }
 
     /**
