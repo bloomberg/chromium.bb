@@ -167,10 +167,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
     scroll_elasticity_controller_.reset(
         new InputScrollElasticityController(scroll_elasticity_helper));
   }
-  compositor_event_queue_ =
-      base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)
-          ? std::make_unique<CompositorThreadEventQueue>()
-          : nullptr;
+  compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
   scroll_predictor_ = std::make_unique<ScrollPredictor>(
       base::FeatureList::IsEnabled(features::kResamplingScrollEvents));
 }

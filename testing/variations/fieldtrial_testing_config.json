@@ -5304,26 +5304,6 @@
             ]
         }
     ],
-    "VsyncAlignedInput": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enable",
-                    "enable_features": [
-                        "RequestUnbufferedDispatch",
-                        "VsyncAlignedInput"
-                    ]
-                }
-            ]
-        }
-    ],
     "WKHTTPSystemCookieStore": [
         {
             "platforms": [

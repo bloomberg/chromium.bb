@@ -9,8 +9,6 @@
 
 namespace features {
 
-extern const base::Feature kVsyncAlignedInputEvents;
-
 // Enables resampling GestureScroll events on compositor thread.
 extern const base::Feature kResamplingScrollEvents;
 
