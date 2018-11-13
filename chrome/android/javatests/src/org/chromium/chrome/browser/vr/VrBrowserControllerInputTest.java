@@ -388,7 +388,7 @@ public class VrBrowserControllerInputTest {
                                           navStart, POLL_TIMEOUT_SHORT_MS))
                            .doubleValue()
                     > navigationTimestamp;
-        });
+        }, "Dragging page down did not refresh page");
     }
 
     /**
