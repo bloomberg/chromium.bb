@@ -111,6 +111,10 @@ class TabStripModelChange {
 // Struct to carry changes on selection/activation.
 struct TabStripSelectionChange {
   TabStripSelectionChange();
+  TabStripSelectionChange(const TabStripSelectionChange& other);
+  ~TabStripSelectionChange();
+
+  TabStripSelectionChange& operator=(const TabStripSelectionChange& other);
 
   // Fill TabStripSelectionChange with given |contents| and |selection_model|.
   // note that |new_contents| and |new_model| will be filled too so that
@@ -122,13 +126,17 @@ struct TabStripSelectionChange {
 
   // TODO(sangwoo.ko) Do we need something to indicate that the change
   // was made implicitly?
-  bool selection_changed() const { return old_model != new_model; }
+  bool selection_changed() const {
+    return selected_tabs_were_removed || old_model != new_model;
+  }
 
   content::WebContents* old_contents = nullptr;
   content::WebContents* new_contents = nullptr;
 
   ui::ListSelectionModel old_model;
   ui::ListSelectionModel new_model;
+
+  bool selected_tabs_were_removed = false;
 
   int reason = 0;
 };
