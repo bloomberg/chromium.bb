@@ -238,11 +238,6 @@ class FuchsiaPort(base.Port):
         # Run a single qemu instance.
         return min(MAX_WORKERS, requested_num_workers)
 
-    def check_sys_deps(self, needs_http):
-        # There is nothing to check here. If we have the package built we should
-        # be able to run it.
-        return exit_codes.OK_EXIT_STATUS
-
     def requires_http_server(self):
         """HTTP server is always required to avoid copying the tests to the VM.
         """

@@ -423,7 +423,7 @@ class TestPort(Port):
     def check_build(self, needs_http, printer):
         return exit_codes.OK_EXIT_STATUS
 
-    def check_sys_deps(self, needs_http):
+    def check_sys_deps(self):
         return exit_codes.OK_EXIT_STATUS
 
     def default_configuration(self):

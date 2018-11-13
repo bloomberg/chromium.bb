@@ -456,7 +456,7 @@ class AndroidPort(base.Port):
     def num_workers(self, requested_num_workers):
         return min(len(self._options.prepared_devices), requested_num_workers)
 
-    def check_sys_deps(self, needs_http):
+    def check_sys_deps(self):
         # _get_font_files() will throw if any of the required fonts is missing.
         self._get_font_files()
         return exit_codes.OK_EXIT_STATUS

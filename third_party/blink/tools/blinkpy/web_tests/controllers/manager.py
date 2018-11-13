@@ -376,7 +376,7 @@ class Manager(object):
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:
             self._printer.write_update('Checking system dependencies ...')
-            exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
+            exit_code = self._port.check_sys_deps()
             if exit_code:
                 return exit_code
 
