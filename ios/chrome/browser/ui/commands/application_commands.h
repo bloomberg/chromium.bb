@@ -41,6 +41,14 @@
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Shows the list of profiles (addresess) in the settings.
+- (void)showProfileSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
+// Shows the list of credit cards in the settings.
+- (void)showCreditCardSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 @end
 
 // Protocol for commands that will generally be handled by the application,

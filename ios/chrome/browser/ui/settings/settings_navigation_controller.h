@@ -104,12 +104,21 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
                 toEmail:(NSString*)toEmail
              isSignedIn:(BOOL)isSignedIn;
 
-// Creates a new AutofillCollectionViewController and the chrome around it.
-// |browserState| is used to personalize some settings aspects and should not be
-// nil. |delegate| may be nil.
+// Creates a new AutofillProfileCollectionViewController and the chrome around
+// it. |browserState| is used to personalize some settings aspects and should
+// not be nil. |delegate| may be nil.
 + (SettingsNavigationController*)
-newAutofillController:(ios::ChromeBrowserState*)browserState
-             delegate:(id<SettingsNavigationControllerDelegate>)delegate;
+newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
+                     delegate:
+                         (id<SettingsNavigationControllerDelegate>)delegate;
+
+// Creates a new AutofillCreditCardCollectionViewController and the chrome
+// around it. |browserState| is used to personalize some settings aspects and
+// should not be nil. |delegate| may be nil.
++ (SettingsNavigationController*)
+newAutofillCreditCardController:(ios::ChromeBrowserState*)browserState
+                       delegate:
+                           (id<SettingsNavigationControllerDelegate>)delegate;
 
 // Initializes the UINavigationController with |rootViewController|.
 - (instancetype)
