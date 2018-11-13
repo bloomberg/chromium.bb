@@ -1775,6 +1775,25 @@ TEST_F(ImplicitRootScrollerSimTest, CandidateLosesLayoutBoxDontCrash) {
   Compositor().BeginFrame();
 }
 
+// Ensure that a plugin view being considered for implicit promotion doesn't
+// cause a crash. https://crbug.com/903440.
+TEST_F(ImplicitRootScrollerSimTest, ConsiderEmbedCrash) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <embed id="embed" height="1" src="data:video/mp4,">
+          <script>
+           embed.type = "JavaScript 1.5";
+           embed.src = "x";
+          </script>
+      )HTML");
+  Compositor().BeginFrame();
+  Element* embed = GetDocument().getElementById("embed");
+  GetDocument().GetRootScrollerController().ConsiderForImplicit(*embed);
+}
+
 // Test that a valid implicit root scroller wont be promoted/will be demoted if
 // the main document has overflow.
 TEST_F(ImplicitRootScrollerSimTest,
