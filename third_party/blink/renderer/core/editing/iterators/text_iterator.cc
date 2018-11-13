@@ -74,7 +74,6 @@ TextIteratorBehavior AdjustBehaviorFlags<EditingInFlatTreeStrategy>(
       .SetExcludeAutofilledValue(behavior.ForSelectionToString() ||
                                  behavior.ExcludeAutofilledValue())
       .SetEntersOpenShadowRoots(false)
-      .SetEntersTextControls(false)
       .Build();
 }
 
@@ -163,6 +162,19 @@ bool IsRenderedAsTable(const Node* node) {
     return false;
   LayoutObject* layout_object = node->GetLayoutObject();
   return layout_object && layout_object->IsTable();
+}
+
+bool ShouldHandleChildren(const Node& node,
+                          const TextIteratorBehavior& behavior) {
+  // To support |TextIteratorEmitsImageAltText|, we don't traversal child
+  // nodes, in flat tree.
+  if (IsHTMLImageElement(node))
+    return false;
+  // Traverse internals of text control elements in flat tree only when
+  // |EntersTextControls| flag is set.
+  if (!behavior.EntersTextControls() && IsTextControl(node))
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -307,7 +319,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     } else {
       // Enter author shadow roots, from youngest, if any and if necessary.
       if (iteration_progress_ < kHandledOpenShadowRoots) {
-        if (EntersOpenShadowRoots() && node_->IsElementNode() &&
+        if (std::is_same<Strategy, EditingStrategy>::value &&
+            EntersOpenShadowRoots() && node_->IsElementNode() &&
             ToElement(node_)->OpenShadowRoot()) {
           ShadowRoot* youngest_shadow_root = ToElement(node_)->OpenShadowRoot();
           DCHECK(youngest_shadow_root->GetType() == ShadowRootType::V0 ||
@@ -324,7 +337,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
       // Enter user-agent shadow root, if necessary.
       if (iteration_progress_ < kHandledUserAgentShadowRoot) {
-        if (EntersTextControls() && layout_object->IsTextControl()) {
+        if (std::is_same<Strategy, EditingStrategy>::value &&
+            EntersTextControls() && layout_object->IsTextControl()) {
           ShadowRoot* user_agent_shadow_root =
               ToElement(node_)->UserAgentShadowRoot();
           DCHECK(user_agent_shadow_root->IsUserAgent());
@@ -369,12 +383,10 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     // calling exitNode() as we come back thru a parent node.
     //
     // 1. Iterate over child nodes, if we haven't done yet.
-    // To support |TextIteratorEmitsImageAltText|, we don't traversal child
-    // nodes, in flat tree.
-    Node* next =
-        iteration_progress_ < kHandledChildren && !IsHTMLImageElement(*node_)
-            ? Strategy::FirstChild(*node_)
-            : nullptr;
+    Node* next = iteration_progress_ < kHandledChildren &&
+                         ShouldHandleChildren(*node_, behavior_)
+                     ? Strategy::FirstChild(*node_)
+                     : nullptr;
     if (!next) {
       // 2. If we've already iterated children or they are not available, go to
       // the next sibling node.

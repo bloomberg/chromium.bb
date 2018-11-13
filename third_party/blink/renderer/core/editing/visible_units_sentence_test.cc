@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -171,6 +172,28 @@ TEST_F(VisibleUnitsSentenceTest, startOfSentence) {
                 .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(three, 0),
             StartOfSentence(CreateVisiblePositionInFlatTree(*four, 1))
+                .DeepEquivalent());
+}
+
+TEST_F(VisibleUnitsSentenceTest, SentenceBoundarySkipTextControl) {
+  SetBodyContent("foo <input value=\"xx. xx.\"> bar.");
+  const Node* foo = GetDocument().QuerySelector("input")->previousSibling();
+  const Node* bar = GetDocument().QuerySelector("input")->nextSibling();
+
+  EXPECT_EQ(Position(bar, 5), EndOfSentence(Position(foo, 1)).GetPosition());
+  EXPECT_EQ(PositionInFlatTree(bar, 5),
+            EndOfSentence(PositionInFlatTree(foo, 1)).GetPosition());
+
+  EXPECT_EQ(Position(foo, 0),
+            StartOfSentence(CreateVisiblePosition(Position(bar, 3)))
+                .DeepEquivalent());
+
+  // TODO(xiaochengh): Should be "foo"@0
+  const Node* xx = ToHTMLInputElement(GetDocument().QuerySelector("input"))
+                       ->InnerEditorElement()
+                       ->firstChild();
+  EXPECT_EQ(PositionInFlatTree(xx, 0),
+            StartOfSentence(CreateVisiblePosition(PositionInFlatTree(bar, 3)))
                 .DeepEquivalent());
 }
 

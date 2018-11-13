@@ -916,6 +916,15 @@ TextControlElement* EnclosingTextControl(const Position& position) {
   return EnclosingTextControl(position.ComputeContainerNode());
 }
 
+TextControlElement* EnclosingTextControl(const PositionInFlatTree& position) {
+  Node* container = position.ComputeContainerNode();
+  if (IsTextControl(container)) {
+    // For example, #inner-editor@beforeAnchor reaches here.
+    return ToTextControl(container);
+  }
+  return EnclosingTextControl(container);
+}
+
 TextControlElement* EnclosingTextControl(const Node* container) {
   if (!container)
     return nullptr;
