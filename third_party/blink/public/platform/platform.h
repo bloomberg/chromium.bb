@@ -50,7 +50,6 @@
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -297,11 +296,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // IDN conversion ------------------------------------------------------
 
   virtual WebString ConvertIDNToUnicode(const WebString& host) { return host; }
-
-  // IndexedDB ----------------------------------------------------------
-
-  // Must return non-null.
-  virtual std::unique_ptr<WebIDBFactory> CreateIdbFactory() { return nullptr; }
 
   // History -------------------------------------------------------------
 

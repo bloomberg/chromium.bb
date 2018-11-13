@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INDEXED_DB_MOCK_WEBIDBCALLBACKS_H_
-#define CONTENT_RENDERER_INDEXED_DB_MOCK_WEBIDBCALLBACKS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_CALLBACKS_H_
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,7 +15,7 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"
 
-namespace content {
+namespace blink {
 
 class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
  public:
@@ -71,6 +71,6 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
   DISALLOW_COPY_AND_ASSIGN(MockWebIDBCallbacks);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_INDEXED_DB_MOCK_WEBIDBCALLBACKS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_CALLBACKS_H_

@@ -2,47 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
-#define CONTENT_RENDERER_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CURSOR_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CURSOR_IMPL_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
-namespace content {
+namespace blink {
 
 class IndexedDBCallbacksImpl;
 
-class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
+class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  public:
-  WebIDBCursorImpl(blink::mojom::IDBCursorAssociatedPtrInfo cursor,
+  WebIDBCursorImpl(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
                    int64_t transaction_id);
   ~WebIDBCursorImpl() override;
 
-  void Advance(unsigned long count, blink::WebIDBCallbacks* callback) override;
-  void CursorContinue(blink::WebIDBKeyView key,
-                      blink::WebIDBKeyView primary_key,
-                      blink::WebIDBCallbacks* callback) override;
+  void Advance(unsigned long count, WebIDBCallbacks* callback) override;
+  void CursorContinue(WebIDBKeyView key,
+                      WebIDBKeyView primary_key,
+                      WebIDBCallbacks* callback) override;
   void PostSuccessHandlerCallback() override;
 
-  void SetPrefetchData(const std::vector<blink::IndexedDBKey>& keys,
-                       const std::vector<blink::IndexedDBKey>& primary_keys,
-                       std::vector<blink::WebIDBValue> values);
+  void SetPrefetchData(Vector<WebIDBKey> keys,
+                       Vector<WebIDBKey> primary_keys,
+                       Vector<WebIDBValue> values);
 
-  void CachedAdvance(unsigned long count, blink::WebIDBCallbacks* callbacks);
-  void CachedContinue(blink::WebIDBCallbacks* callbacks);
+  void CachedAdvance(unsigned long count, WebIDBCallbacks* callbacks);
+  void CachedContinue(WebIDBCallbacks* callbacks);
 
   // This method is virtual so it can be overridden in unit tests.
   virtual void ResetPrefetchCache();
@@ -50,7 +47,7 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   int64_t transaction_id() const { return transaction_id_; }
 
  private:
-  blink::mojom::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
@@ -59,19 +56,20 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
-  enum { kInvalidCursorId = -1 };
-  enum { kPrefetchContinueThreshold = 2 };
-  enum { kMinPrefetchAmount = 5 };
-  enum { kMaxPrefetchAmount = 100 };
+  static constexpr int kPrefetchContinueThreshold = 2;
+  static constexpr int kMinPrefetchAmount = 5;
+  static constexpr int kMaxPrefetchAmount = 100;
 
   int64_t transaction_id_;
 
-  blink::mojom::IDBCursorAssociatedPtr cursor_;
+  mojom::blink::IDBCursorAssociatedPtr cursor_;
 
-  // Prefetch cache.
-  base::circular_deque<blink::IndexedDBKey> prefetch_keys_;
-  base::circular_deque<blink::IndexedDBKey> prefetch_primary_keys_;
-  base::circular_deque<blink::WebIDBValue> prefetch_values_;
+  // Prefetch cache. Keys and values are stored in reverse order so that a
+  // cache'd continue can pop a value off of the back and prevent new memory
+  // allocations.
+  Vector<WebIDBKey> prefetch_keys_;
+  Vector<WebIDBKey> prefetch_primary_keys_;
+  Vector<WebIDBValue> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.
   int continue_count_;
@@ -90,6 +88,6 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CURSOR_IMPL_H_
