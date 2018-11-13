@@ -98,6 +98,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   ImageView* image() const { return image_; }

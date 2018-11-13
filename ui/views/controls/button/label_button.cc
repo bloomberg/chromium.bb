@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -415,6 +416,12 @@ std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
                    GetInkDropBaseColor())
              : CreateDefaultInkDropHighlight(
                    gfx::RectF(image()->GetMirroredBounds()).CenterPoint());
+}
+
+void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (is_default())
+    node_data->AddState(ax::mojom::State::kDefault);
+  Button::GetAccessibleNodeData(node_data);
 }
 
 void LabelButton::StateChanged(ButtonState old_state) {
