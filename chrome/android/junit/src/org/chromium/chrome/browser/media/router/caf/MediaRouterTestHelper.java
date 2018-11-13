@@ -15,6 +15,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Test helper for MediaRouter-related functionalities. */
 public class MediaRouterTestHelper {
     @Mock
@@ -40,6 +43,11 @@ public class MediaRouterTestHelper {
                 .when(mShadowMediaRouter)
                 .unselect(anyInt());
         doReturn(mDefaultRoute).when(mShadowMediaRouter).getDefaultRoute();
+        List<MediaRouter.RouteInfo> allRoutes = new ArrayList<>();
+        allRoutes.add(mDefaultRoute);
+        allRoutes.add(mCastRoute);
+        allRoutes.add(mOtherCastRoute);
+        doReturn(allRoutes).when(mShadowMediaRouter).getRoutes();
     }
 
     public ShadowMediaRouter.ShadowImplementation getShadowImpl() {
