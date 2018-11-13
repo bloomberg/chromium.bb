@@ -90,7 +90,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['nvidia'], bug=772651)
 
     # All platforms.
-    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=905001)
 
     # All non-ANGLE platforms.
     self.Fail('conformance2/attribs/' +
@@ -110,7 +110,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
-        bug=483282) # owner:cwallez, test might be buggy
+        bug=905003) # owner:cwallez, test might be buggy
 
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
@@ -792,13 +792,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturelod.html',
-        ['mac', 'intel'], bug=483282)
+        ['mac', 'intel'], bug=905004)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturegrad.html',
-        ['mac', 'intel'], bug=483282)
+        ['mac', 'intel'], bug=905004)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojgrad.html',
-        ['mac', 'intel'], bug=483282)
+        ['mac', 'intel'], bug=905004)
 
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
               'tex-2d-r8ui-red_integer-unsigned_byte.html',
@@ -851,7 +851,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
-        ['linux'], bug=483282)
+        ['linux'], bug=905006)
 
     # Linux Multi-vendor failures.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
@@ -973,7 +973,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux Intel
     self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
-       ['linux', 'intel'], bug=662644) # WebGL 2.0.1
+       ['linux', 'intel'], bug=905011) # WebGL 2.0.1
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
        ['linux', 'intel'], bug=666384)

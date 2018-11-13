@@ -590,7 +590,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Mac AMD failures
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
-        ['mac', 'amd'], bug=483282)
+        ['mac', 'amd'], bug=905007)
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
     # TODO(kbr): uncomment the following exepectation after test has
