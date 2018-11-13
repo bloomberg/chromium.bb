@@ -232,21 +232,21 @@ class SymbolOffsetProcessor(object):
     """
     dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
     logging.info('Offset to Symbol size = %d', len(dump_offset_to_symbol_info))
-    reached_return_addresses_not_found = 0
+    offsets_not_found = 0
     for i in items:
       dump_offset = get(i)
-      idx = dump_offset / 4
+      idx = dump_offset / 2
       assert dump_offset >= 0 and idx < len(dump_offset_to_symbol_info), (
           'Dump offset out of binary range')
       symbol_info = dump_offset_to_symbol_info[idx]
       if symbol_info is None:
-        reached_return_addresses_not_found += 1
+        offsets_not_found += 1
         update(i, None)
       else:
         update(i, symbol_info.offset)
-    if reached_return_addresses_not_found:
+    if offsets_not_found:
       logging.warning('%d return addresses don\'t map to any symbol',
-                      reached_return_addresses_not_found)
+                      offsets_not_found)
 
   def _GetDumpOffsetToSymbolInfo(self):
     """Computes an array mapping each word in .text to a symbol.
@@ -261,14 +261,23 @@ class SymbolOffsetProcessor(object):
       assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
       start_of_text = start_syms[0].offset
       max_offset = max(s.offset + s.size for s in self.SymbolInfos())
-      text_length_words = (max_offset - start_of_text) / 4
-      self._offset_to_symbol_info = [None for _ in xrange(text_length_words)]
-      for s in self.SymbolInfos():
-        offset = s.offset - start_of_text
-        if offset < 0:
-          continue
-        for i in range(offset / 4, (offset + s.size) / 4):
-          self._offset_to_symbol_info[i] = s
+      text_length_halfwords = (max_offset - start_of_text) / 2
+      self._offset_to_symbol_info = [None] * text_length_halfwords
+      for sym in self.SymbolInfos():
+        offset = sym.offset - start_of_text
+        assert offset >= 0, ('Unexpected symbol before the start of text. '
+                             'Has the linker script broken?')
+        # The low bit of offset may be set to indicate a thumb instruction. The
+        # actual offset is still halfword aligned and so the low bit may be
+        # safely ignored in the division by two below.
+        for i in range(offset / 2, (offset + sym.size) / 2):
+          assert i < text_length_halfwords
+          other_symbol = self._offset_to_symbol_info[i]
+          # There may be overlapping symbols, for example fancy
+          # implementations for __ltsf2 and __gtsf2 (merging common tail
+          # code). In this case, keep the one that started first.
+          if other_symbol is None or other_symbol.offset > sym.offset:
+            self._offset_to_symbol_info[i] = sym
     return self._offset_to_symbol_info
 
 
