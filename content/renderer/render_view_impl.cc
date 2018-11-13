@@ -1006,12 +1006,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableMiddleClickAutoscroll(true);
 #endif
 
-  // Only enable href translate if we have the experimental web platform
-  // flag on and the translation service is available.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    WebRuntimeFeatures::EnableHrefTranslate(prefs.translate_service_available);
-  }
+  WebRuntimeFeatures::EnableTranslateService(prefs.translate_service_available);
 }
 
 /*static*/

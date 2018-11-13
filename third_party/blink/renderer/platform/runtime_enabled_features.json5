@@ -559,10 +559,11 @@
     {
       name: "HeapUnifiedGarbageCollection",
     },
-    // Only exposed when a translation engine is available
-    // and experimental features are enabled.
     {
       name: "HrefTranslate",
+      depends_on: ["TranslateService"],
+      origin_trial_feature_name: "HrefTranslate",
+      status: "experimental",
     },
     // https://crbug.com/766694 for testing disabling the feature.
     {
@@ -1202,6 +1203,10 @@
     },
     {
       name: "TransferableStreams",
+    },
+    // This is conditionally set if the platform supports translation.
+    {
+      name: "TranslateService"
     },
     {
       name: "TrustedDOMTypes",
