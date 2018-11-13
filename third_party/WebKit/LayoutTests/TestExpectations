@@ -4551,9 +4551,6 @@ crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
 
-# Sheriff failures 2017-11-07
-crbug.com/782067 [ Mac10.10 Mac10.11 ] fast/css/no-recalc-on-no-op-inline-style-changes.html [ Pass Failure ]
-
 # Sheriff failures 2017-11-13
 crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
 crbug.com/783800 external/wpt/imagecapture/MediaStreamTrack-applyConstraints-getSettings.html [ Pass Failure ]
