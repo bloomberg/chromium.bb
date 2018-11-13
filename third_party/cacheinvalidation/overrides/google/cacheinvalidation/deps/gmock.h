@@ -48,7 +48,7 @@ class WhenDeserializedAsMatcher {
   bool MatchAndExplain(const string& arg, MatchResultListener* listener) const {
     // Deserializes the string arg as a protobuf of the same type as the
     // expected protobuf.
-    scoped_ptr<const Proto> deserialized_arg(Deserialize(arg));
+    std::unique_ptr<const Proto> deserialized_arg(Deserialize(arg));
     // No need to explain the match result.
     return (deserialized_arg.get() != NULL) &&
         proto_matcher_.Matches(*deserialized_arg);
