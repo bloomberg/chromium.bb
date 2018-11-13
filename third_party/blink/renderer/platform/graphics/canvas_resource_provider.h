@@ -156,10 +156,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  // Called by subclasses when the backing resource has changed and resources
-  // are not managed by skia, signaling that a new surface needs to be created.
-  void InvalidateSurface();
-
   CanvasResourceProvider(const IntSize&,
                          const CanvasColorParams&,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,

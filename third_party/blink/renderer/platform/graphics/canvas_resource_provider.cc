@@ -79,7 +79,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
       // A readback operation may alter the texture parameters, which may affect
       // the compositor's behavior. Therefore, we must trigger copy-on-write
       // even though we are not technically writing to the texture, only to its
-      // parameters.
+      // parameters. This issue is Android-WebView specific: crbug.com/585250.
       // If this issue with readback affecting state is ever fixed, then we'll
       // have to do this instead of triggering a copy-on-write:
       // static_cast<AcceleratedStaticBitmapImage*>(image.get())
@@ -731,13 +731,6 @@ void CanvasResourceProvider::Clear() {
     Canvas()->clear(SK_ColorBLACK);
   else
     Canvas()->clear(SK_ColorTRANSPARENT);
-}
-
-void CanvasResourceProvider::InvalidateSurface() {
-  canvas_ = nullptr;
-  canvas_image_provider_.reset();
-  xform_canvas_ = nullptr;
-  surface_ = nullptr;
 }
 
 uint32_t CanvasResourceProvider::ContentUniqueID() const {
