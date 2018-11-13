@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -71,8 +72,10 @@ void PrepopulatedComputedStylePropertyMap::UpdateCustomProperty(
     const Document& document,
     const ComputedStyle& style,
     const AtomicString& property_name) {
-  const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-      property_name, style, document.GetPropertyRegistry());
+  CSSPropertyRef ref(property_name, document);
+  const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
+      style, /* layout_object */ nullptr, styled_node_,
+      /* allow_visited_style */ false);
   if (!value)
     value = CSSUnparsedValue::Create()->ToCSSValue();
 

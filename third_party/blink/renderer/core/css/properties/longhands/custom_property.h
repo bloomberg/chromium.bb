@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class PropertyRegistry;
+
 // Represents a custom property (both registered and unregistered).
 //
 // Unlike all other CSSProperty instances, instances of this class are
@@ -24,6 +26,7 @@ class CORE_EXPORT CustomProperty : public Variable {
  public:
   CustomProperty() = default;
   CustomProperty(const AtomicString& name, const Document&);
+  CustomProperty(const AtomicString& name, const PropertyRegistry*);
 
   bool IsInherited() const override;
   const AtomicString& GetPropertyNameAtomicString() const override;
@@ -31,6 +34,13 @@ class CORE_EXPORT CustomProperty : public Variable {
   void ApplyInitial(StyleResolverState&) const override;
   void ApplyInherit(StyleResolverState&) const override;
   void ApplyValue(StyleResolverState&, const CSSValue&) const override;
+
+  const CSSValue* CSSValueFromComputedStyleInternal(
+      const ComputedStyle&,
+      const SVGComputedStyle&,
+      const LayoutObject*,
+      Node* styled_node,
+      bool allow_visited_style) const override;
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
 

@@ -27,15 +27,6 @@ class CORE_EXPORT Variable : public Longhand {
     DEFINE_STATIC_LOCAL(const AtomicString, name, ("variable"));
     return name;
   }
-  const CSSValue* CSSValueFromComputedStyleInternal(
-      const ComputedStyle&,
-      const SVGComputedStyle&,
-      const LayoutObject*,
-      Node*,
-      bool allow_visited_style) const override {
-    NOTREACHED();
-    return nullptr;
-  }
 
   static bool IsStaticInstance(const CSSProperty&);
 };
