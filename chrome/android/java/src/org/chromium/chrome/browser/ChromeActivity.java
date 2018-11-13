@@ -124,6 +124,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -688,7 +689,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
-                setStatusBarColor(tab, tab.getThemeColor());
+                setStatusBarColor(tab, TabThemeColorHelper.getColor(tab));
             }
 
             @Override
@@ -722,7 +723,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onContentChanged(Tab tab) {
-                if (getBottomSheet() != null) setStatusBarColor(tab, tab.getDefaultThemeColor());
+                if (getBottomSheet() != null) {
+                    setStatusBarColor(tab, TabThemeColorHelper.get(tab).getDefaultColor());
+                }
             }
         };
 
@@ -908,7 +911,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @param color The color that the status bar should be set to.
      */
     protected void setStatusBarColor(@Nullable Tab tab, int color) {
-        setStatusBarColor(color, tab != null && tab.isDefaultThemeColor());
+        setStatusBarColor(color, tab != null && TabThemeColorHelper.get(tab).isDefaultColor());
     }
 
     /**
