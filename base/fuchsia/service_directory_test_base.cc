@@ -54,13 +54,13 @@ void ServiceDirectoryTestBase::ConnectClientContextToDirectory(
 
 void ServiceDirectoryTestBase::VerifyTestInterface(
     fidl::InterfacePtr<testfidl::TestInterface>* stub,
-    bool expect_error) {
+    zx_status_t expected_error) {
   // Call the service and wait for response.
   base::RunLoop run_loop;
-  bool error = false;
+  zx_status_t actual_error = ZX_OK;
 
-  stub->set_error_handler([&run_loop, &error]() {
-    error = true;
+  stub->set_error_handler([&run_loop, &actual_error](zx_status_t status) {
+    actual_error = status;
     run_loop.Quit();
   });
 
@@ -71,11 +71,11 @@ void ServiceDirectoryTestBase::VerifyTestInterface(
 
   run_loop.Run();
 
-  EXPECT_EQ(error, expect_error);
+  EXPECT_EQ(expected_error, actual_error);
 
   // Reset error handler because the current one captures |run_loop| and
   // |error| references which are about to be destroyed.
-  stub->set_error_handler([]() {});
+  stub->set_error_handler(nullptr);
 }
 
 }  // namespace fuchsia

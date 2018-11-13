@@ -411,10 +411,12 @@ void FuchsiaVideoDecoder::Initialize(
           ->ConnectToService<fuchsia::mediacodec::CodecFactory>();
   codec_factory->CreateDecoder(std::move(codec_params), codec_.NewRequest());
 
-  codec_.set_error_handler([this]() {
-    LOG(ERROR) << "The fuchsia.mediacodec.Codec channel was terminated.";
-    OnError();
-  });
+  codec_.set_error_handler(
+      [this](zx_status_t status) {
+        ZX_LOG(ERROR, status)
+            << "The fuchsia.mediacodec.Codec channel was terminated.";
+        OnError();
+      });
 
   codec_.events().OnStreamFailed =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnStreamFailed);

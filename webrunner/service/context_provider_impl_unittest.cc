@@ -44,7 +44,7 @@ class FakeFrame : public chromium::web::Frame {
  public:
   explicit FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
       : binding_(this, std::move(request)) {
-    binding_.set_error_handler([this]() { delete this; });
+    binding_.set_error_handler([this](zx_status_t status) { delete this; });
   }
 
   ~FakeFrame() override = default;
@@ -157,7 +157,8 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
 
   // Quit the process when the context is destroyed.
   base::RunLoop run_loop;
-  context_binding.set_error_handler([&run_loop]() { run_loop.Quit(); });
+  context_binding.set_error_handler(
+      [&run_loop](zx_status_t status) { run_loop.Quit(); });
   run_loop.Run();
 
   return 0;
@@ -184,13 +185,13 @@ class ContextProviderImplTest : public base::MultiProcessTest {
       fidl::InterfacePtr<chromium::web::Context>* context) {
     // Call a Context method and wait for it to invoke an observer call.
     base::RunLoop run_loop;
-    context->set_error_handler([&run_loop]() {
+    context->set_error_handler([&run_loop](zx_status_t status) {
       ADD_FAILURE();
       run_loop.Quit();
     });
 
     chromium::web::FramePtr frame_ptr;
-    frame_ptr.set_error_handler([&run_loop]() {
+    frame_ptr.set_error_handler([&run_loop](zx_status_t status) {
       ADD_FAILURE();
       run_loop.Quit();
     });
@@ -225,7 +226,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   void CheckContextUnresponsive(
       fidl::InterfacePtr<chromium::web::Context>* context) {
     base::RunLoop run_loop;
-    context->set_error_handler([&run_loop]() { run_loop.Quit(); });
+    context->set_error_handler(
+        [&run_loop](zx_status_t status) { run_loop.Quit(); });
 
     chromium::web::FramePtr frame;
     (*context)->CreateFrame(frame.NewRequest());

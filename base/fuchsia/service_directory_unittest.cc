@@ -27,7 +27,7 @@ class ServiceDirectoryTest : public ServiceDirectoryTestBase {};
 // destroyed.
 TEST_F(ServiceDirectoryTest, ConnectDisconnect) {
   auto stub = client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, false);
+  VerifyTestInterface(&stub, ZX_OK);
 
   base::RunLoop run_loop;
   service_binding_->SetOnLastClientCallback(run_loop.QuitClosure());
@@ -50,15 +50,15 @@ TEST_F(ServiceDirectoryTest, ConnectDisconnect) {
 TEST_F(ServiceDirectoryTest, ConnectMulti) {
   auto stub = client_context_->ConnectToService<testfidl::TestInterface>();
   auto stub2 = client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, false);
-  VerifyTestInterface(&stub2, false);
+  VerifyTestInterface(&stub, ZX_OK);
+  VerifyTestInterface(&stub2, ZX_OK);
 }
 
 // Verify that services are also exported to the legacy flat service namespace.
 TEST_F(ServiceDirectoryTest, ConnectLegacy) {
   ConnectClientContextToDirectory(".");
   auto stub = client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, false);
+  VerifyTestInterface(&stub, ZX_OK);
 }
 
 // Verify that ComponentContext can handle the case when the service directory
@@ -72,14 +72,14 @@ TEST_F(ServiceDirectoryTest, DirectoryGone) {
       client_context_->ConnectToService(FidlInterfaceRequest(&stub));
   EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
 
-  VerifyTestInterface(&stub, true);
+  VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
 // Verify that the case when the service doesn't exist is handled properly.
 TEST_F(ServiceDirectoryTest, NoService) {
   service_binding_.reset();
   auto stub = client_context_->ConnectToService<testfidl::TestInterface>();
-  VerifyTestInterface(&stub, true);
+  VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
 }  // namespace fuchsia
