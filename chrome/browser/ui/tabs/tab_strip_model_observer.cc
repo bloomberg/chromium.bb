@@ -6,6 +6,9 @@
 
 using content::WebContents;
 
+////////////////////////////////////////////////////////////////////////////////
+// TabStripModelChange
+//
 // static
 TabStripModelChange::Delta TabStripModelChange::CreateInsertDelta(
     content::WebContents* contents,
@@ -55,10 +58,13 @@ TabStripModelChange::TabStripModelChange(
     const std::vector<TabStripModelChange::Delta>& deltas)
     : type_(type), deltas_(deltas) {}
 
-TabStripModelChange::~TabStripModelChange() = default;
-
 TabStripModelChange::TabStripModelChange(TabStripModelChange&& other) = default;
 
+TabStripModelChange::~TabStripModelChange() = default;
+
+////////////////////////////////////////////////////////////////////////////////
+// TabStripSelectionChange
+//
 TabStripSelectionChange::TabStripSelectionChange() = default;
 
 TabStripSelectionChange::TabStripSelectionChange(
@@ -70,6 +76,17 @@ TabStripSelectionChange::TabStripSelectionChange(
       new_model(selection_model),
       reason(0) {}
 
+TabStripSelectionChange::~TabStripSelectionChange() = default;
+
+TabStripSelectionChange::TabStripSelectionChange(
+    const TabStripSelectionChange& other) = default;
+
+TabStripSelectionChange& TabStripSelectionChange::operator=(
+    const TabStripSelectionChange& other) = default;
+
+////////////////////////////////////////////////////////////////////////////////
+// TabStripModelObserver
+//
 TabStripModelObserver::TabStripModelObserver() {
 }
 

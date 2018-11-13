@@ -453,7 +453,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
 
 void TabStripModel::SendDetachWebContentsNotifications(
     DetachNotifications* notifications) {
-  bool was_any_tab_selected = false;
   std::vector<TabStripModelChange::Delta> deltas;
 
   // Sort the DetachedWebContents in decreasing order of
@@ -479,17 +478,18 @@ void TabStripModel::SendDetachWebContentsNotifications(
   selection.old_model = notifications->selection_model;
   selection.new_model = selection_model_;
   selection.reason = TabStripModelObserver::CHANGE_REASON_NONE;
+  selection.selected_tabs_were_removed = std::any_of(
+      notifications->detached_web_contents.begin(),
+      notifications->detached_web_contents.end(), [&notifications](auto& dwc) {
+        return notifications->selection_model.IsSelected(
+            dwc->index_before_any_removals);
+      });
 
   TabStripModelChange change(TabStripModelChange::kRemoved, deltas);
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
 
   for (auto& dwc : notifications->detached_web_contents) {
-    if (notifications->selection_model.IsSelected(
-            dwc->index_before_any_removals)) {
-      was_any_tab_selected = true;
-    }
-
     if (notifications->initially_active_web_contents &&
         dwc->contents.get() == notifications->initially_active_web_contents) {
       if (!empty())
