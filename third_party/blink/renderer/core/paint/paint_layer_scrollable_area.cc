@@ -2251,7 +2251,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           &non_composited_main_thread_scrolling_reasons_) &
           kBackgroundPaintInScrollingContents &&
       layer->BackgroundIsKnownToBeOpaqueInRect(
-          ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect()) &&
+          ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
+          true) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
   // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
@@ -2269,7 +2270,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->BackgroundIsKnownToBeOpaqueInRect(
-            ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect())) {
+            ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
+            true)) {
       non_composited_main_thread_scrolling_reasons_ |=
           MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }

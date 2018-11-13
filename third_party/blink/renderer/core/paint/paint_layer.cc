@@ -2848,7 +2848,8 @@ bool PaintLayer::CompositesWithOpacity() const {
 }
 
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const LayoutRect& local_rect,
+    bool should_check_children) const {
   if (PaintsWithTransparency(kGlobalPaintNormalPhase))
     return false;
 
@@ -2879,6 +2880,9 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
   // into this layer.
   if (GetLayoutObject().BackgroundIsKnownToBeOpaqueInRect(local_rect))
     return true;
+
+  if (!should_check_children)
+    return false;
 
   // We can't consult child layers if we clip, since they might cover
   // parts of the rect that are clipped out.
@@ -2913,7 +2917,7 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     child_layer->ConvertToLayerCoords(this, child_offset);
     child_local_rect.MoveBy(-child_offset);
 
-    if (child_layer->BackgroundIsKnownToBeOpaqueInRect(child_local_rect))
+    if (child_layer->BackgroundIsKnownToBeOpaqueInRect(child_local_rect, true))
       return true;
   }
   return false;

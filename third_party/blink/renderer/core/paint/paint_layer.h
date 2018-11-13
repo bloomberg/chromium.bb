@@ -601,7 +601,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Returns true if background phase is painted opaque in the given rect.
   // The query rect is given in local coordinates.
-  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
+  // if |should_check_children| is true, checks non-composited stacking children
+  // recursively to see if they paint opaquely over the rect.
+  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+                                         bool should_check_children) const;
 
   bool ContainsDirtyOverlayScrollbars() const {
     return contains_dirty_overlay_scrollbars_;

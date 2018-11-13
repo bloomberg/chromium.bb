@@ -2721,4 +2721,53 @@ transform'></div>
             squashed->GraphicsLayerBacking()->GetPosition());
 }
 
+TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        isolation: isolate;
+      }
+    </style>
+    <div id='target' style='will-change: transform'>
+      <div style='background: blue; z-index: -1; will-change: transform'></div>
+      <div style='background: blue'></div>
+    </div>
+    )HTML");
+  PaintLayer* target_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  CompositedLayerMapping* mapping = target_layer->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->ForegroundLayer());
+  EXPECT_FALSE(mapping->MainGraphicsLayer()->ContentsOpaque());
+}
+
+TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        isolation: isolate;
+      }
+    </style>
+    <div id='target' style='will-change: transform'>
+      <div style='background: blue'></div>
+    </div>
+    )HTML");
+  PaintLayer* target_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  CompositedLayerMapping* mapping = target_layer->GetCompositedLayerMapping();
+  EXPECT_FALSE(mapping->ForegroundLayer());
+  EXPECT_TRUE(mapping->MainGraphicsLayer()->ContentsOpaque());
+}
+
 }  // namespace blink

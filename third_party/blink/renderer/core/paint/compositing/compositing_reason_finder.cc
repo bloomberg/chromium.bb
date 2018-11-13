@@ -272,7 +272,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
         (compositing_triggers_ & kViewportConstrainedPositionedTrigger)) &&
       (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled() ||
        !layer->BackgroundIsKnownToBeOpaqueInRect(
-           LayoutRect(layer->BoundingBoxForCompositing())) ||
+           LayoutRect(layer->BoundingBoxForCompositing()), true) ||
        layer->CompositesWithTransform() || layer->CompositesWithOpacity())) {
     return false;
   }

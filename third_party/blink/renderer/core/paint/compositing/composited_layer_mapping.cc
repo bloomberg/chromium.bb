@@ -427,6 +427,10 @@ void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
 }
 
 void CompositedLayerMapping::UpdateContentsOpaque() {
+  // If there is a foreground layer, children paint into that layer and
+  // not graphics_layer_, and so don't contribute to the opaqueness of the
+  // latter.
+  bool should_check_children = !foreground_layer_.get();
   if (IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
@@ -463,13 +467,14 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
       // this for solid color backgrounds the answer will be the same.
       scrolling_contents_layer_->SetContentsOpaque(
           owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-              ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect()));
+              ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
+              should_check_children));
 
       if (GetLayoutObject().GetBackgroundPaintLocation() &
           kBackgroundPaintInGraphicsLayer) {
         graphics_layer_->SetContentsOpaque(
             owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-                CompositedBounds()));
+                CompositedBounds(), should_check_children));
       } else {
         // If we only paint the background onto the scrolling contents layer we
         // are going to leave a hole in the m_graphicsLayer where the background
@@ -480,7 +485,8 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
       if (HasScrollingLayer())
         scrolling_contents_layer_->SetContentsOpaque(false);
       graphics_layer_->SetContentsOpaque(
-          owning_layer_.BackgroundIsKnownToBeOpaqueInRect(CompositedBounds()));
+          owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
+              CompositedBounds(), should_check_children));
     }
   }
 }

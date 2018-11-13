@@ -23,11 +23,6 @@ class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
     RenderingTest::SetUp();
     EnableCompositing();
   }
-
- protected:
-  PaintLayer* GetPaintLayerByElementId(const char* id) {
-    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
-  }
 };
 
 INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerTest);
@@ -1740,6 +1735,28 @@ TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
   EXPECT_EQ(target, result.InnerNode());
   EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
             result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, BackgroundIsKnownToBeOpaqueInRectChildren) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        isolation: isolate;
+      }
+    </style>
+    <div id='target'>
+      <div style='background: blue'></div>
+    </div>
+  )HTML");
+
+  PaintLayer* target_layer = GetPaintLayerByElementId("target");
+  EXPECT_TRUE(target_layer->BackgroundIsKnownToBeOpaqueInRect(
+      LayoutRect(0, 0, 100, 100), true));
+  EXPECT_FALSE(target_layer->BackgroundIsKnownToBeOpaqueInRect(
+      LayoutRect(0, 0, 100, 100), false));
 }
 
 TEST_P(PaintLayerTest, ChangeAlphaNeedsCompositingInputs) {
