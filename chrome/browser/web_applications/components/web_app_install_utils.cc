@@ -4,10 +4,33 @@
 
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
+
+namespace {
+
+void ReplaceWebAppIcons(std::map<int, web_app::BitmapAndSource> bitmap_map,
+                        WebApplicationInfo* web_app_info) {
+  web_app_info->icons.clear();
+
+  // Populate the icon data into the WebApplicationInfo we are using to
+  // install the bookmark app.
+  for (const auto& pair : bitmap_map) {
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.data = pair.second.bitmap;
+    icon_info.url = pair.second.source_url;
+    icon_info.width = icon_info.data.width();
+    icon_info.height = icon_info.data.height();
+    web_app_info->icons.push_back(icon_info);
+  }
+}
+
+}  // namespace
 
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
@@ -47,6 +70,81 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
       web_app_info->icons.push_back(info);
     }
   }
+}
+
+std::set<int> SizesToGenerate() {
+  // Generate container icons from smaller icons.
+  return std::set<int>({
+      icon_size::k32, icon_size::k64, icon_size::k48, icon_size::k96,
+      icon_size::k128, icon_size::k256,
+  });
+}
+
+std::vector<GURL> GetValidIconUrlsToDownload(
+    const InstallableData& data,
+    const WebApplicationInfo& web_app_info) {
+  // Add icon urls to download from the WebApplicationInfo.
+  std::vector<GURL> web_app_info_icon_urls;
+  for (auto& info : web_app_info.icons) {
+    if (!info.url.is_valid())
+      continue;
+
+    // Skip downloading icon if we already have it from the InstallableManager.
+    if (info.url == data.primary_icon_url && data.primary_icon)
+      continue;
+
+    web_app_info_icon_urls.push_back(info.url);
+  }
+
+  return web_app_info_icon_urls;
+}
+
+void MergeInstallableDataIcon(const InstallableData& data,
+                              WebApplicationInfo* web_app_info) {
+  if (data.primary_icon_url.is_valid()) {
+    WebApplicationInfo::IconInfo primary_icon_info;
+    const SkBitmap& icon = *data.primary_icon;
+    primary_icon_info.url = data.primary_icon_url;
+    primary_icon_info.data = icon;
+    primary_icon_info.width = icon.width();
+    primary_icon_info.height = icon.height();
+    web_app_info->icons.push_back(primary_icon_info);
+  }
+}
+
+std::vector<BitmapAndSource> FilterSquareIcons(
+    const std::map<GURL, std::vector<SkBitmap>>& bitmaps,
+    const WebApplicationInfo& web_app_info) {
+  std::vector<BitmapAndSource> downloaded_icons;
+  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : bitmaps) {
+    for (const SkBitmap& bitmap : url_bitmap.second) {
+      if (bitmap.empty() || bitmap.width() != bitmap.height())
+        continue;
+
+      downloaded_icons.push_back(BitmapAndSource(url_bitmap.first, bitmap));
+    }
+  }
+
+  // Add all existing icons from WebApplicationInfo.
+  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+    const SkBitmap& icon = icon_info.data;
+    if (!icon.drawsNothing() && icon.width() == icon.height()) {
+      downloaded_icons.push_back(BitmapAndSource(icon_info.url, icon));
+    }
+  }
+
+  return downloaded_icons;
+}
+
+void ResizeDownloadedIconsGenerateMissing(
+    std::vector<BitmapAndSource> downloaded_icons,
+    WebApplicationInfo* web_app_info) {
+  web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
+  std::map<int, BitmapAndSource> size_to_icons = ResizeIconsAndGenerateMissing(
+      downloaded_icons, SizesToGenerate(), web_app_info->app_url,
+      &web_app_info->generated_icon_color);
+
+  ReplaceWebAppIcons(size_to_icons, web_app_info);
 }
 
 }  // namespace web_app

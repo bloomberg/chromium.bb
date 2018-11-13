@@ -70,8 +70,8 @@ void WebAppDataRetriever::GetIcons(const GURL& app_url,
 
   // Generate missing icons.
   static constexpr int kIconSizesToGenerate[] = {
-      icon_size::k24,  icon_size::k32,  icon_size::k48,
-      icon_size::k128, icon_size::k256, icon_size::k512,
+      icon_size::k32, icon_size::k64,  icon_size::k48,
+      icon_size::k96, icon_size::k128, icon_size::k256,
   };
 
   // Get the letter to use in the generated icon.
