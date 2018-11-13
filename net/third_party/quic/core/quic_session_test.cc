@@ -1714,7 +1714,10 @@ TEST_P(QuicSessionTestServer, WritevDataOnReadUnidirectionalStream) {
       .Times(1);
   QuicString body(100, '.');
   struct iovec iov = {const_cast<char*>(body.data()), body.length()};
-  stream4->WritevData(&iov, 1, false);
+  QuicMemSliceStorage storage(
+      &iov, 1, session_.connection()->helper()->GetStreamSendBufferAllocator(),
+      1024);
+  stream4->WriteMemSlices(storage.ToSpan(), false);
 }
 
 TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {

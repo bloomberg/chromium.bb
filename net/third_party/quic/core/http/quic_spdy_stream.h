@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/quic_stream_sequencer.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/spdy/core/spdy_framer.h"

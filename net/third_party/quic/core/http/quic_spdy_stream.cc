@@ -11,6 +11,8 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -103,7 +105,15 @@ size_t QuicSpdyStream::WriteTrailers(
 QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
                                             int count,
                                             bool fin) {
-  return WritevData(iov, count, fin);
+  if (!GetQuicReloadableFlag(quic_call_write_mem_slices)) {
+    return WritevData(iov, count, fin);
+  }
+  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_call_write_mem_slices);
+  QuicMemSliceStorage storage(
+      iov, count,
+      session()->connection()->helper()->GetStreamSendBufferAllocator(),
+      GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size));
+  return WriteMemSlices(storage.ToSpan(), fin);
 }
 
 QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,

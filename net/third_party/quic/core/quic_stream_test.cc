@@ -881,7 +881,10 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
   struct iovec iov = {const_cast<char*>(data.data()), data.length()};
-  QuicConsumedData consumed = stream_->WritevData(&iov, 1, false);
+  QuicMemSliceStorage storage(
+      &iov, 1, session_->connection()->helper()->GetStreamSendBufferAllocator(),
+      1024);
+  QuicConsumedData consumed = stream_->WriteMemSlices(storage.ToSpan(), false);
   // There is no buffered data before, all data should be consumed without
   // respecting buffered data upper limit.
   EXPECT_EQ(data.length(), consumed.bytes_consumed);
@@ -890,7 +893,10 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_FALSE(stream_->CanWriteNewData());
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(0);
-  consumed = stream_->WritevData(&iov, 1, false);
+  QuicMemSliceStorage storage2(
+      &iov, 1, session_->connection()->helper()->GetStreamSendBufferAllocator(),
+      1024);
+  consumed = stream_->WriteMemSlices(storage2.ToSpan(), false);
   // No Data can be consumed as buffered data is beyond upper limit.
   EXPECT_EQ(0u, consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
@@ -912,7 +918,10 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(0);
   // All data can be consumed as buffered data is below upper limit.
-  consumed = stream_->WritevData(&iov, 1, false);
+  QuicMemSliceStorage storage3(
+      &iov, 1, session_->connection()->helper()->GetStreamSendBufferAllocator(),
+      1024);
+  consumed = stream_->WriteMemSlices(storage3.ToSpan(), false);
   EXPECT_EQ(data.length(), consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(data.length() + GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
@@ -928,11 +937,17 @@ TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Invoke(&(MockQuicSession::ConsumeData)));
   struct iovec iov = {const_cast<char*>(data.data()), 5u};
-  QuicConsumedData consumed = stream_->WritevData(&iov, 1u, false);
+  QuicMemSliceStorage storage(
+      &iov, 1, session_->connection()->helper()->GetStreamSendBufferAllocator(),
+      1024);
+  QuicConsumedData consumed = stream_->WriteMemSlices(storage.ToSpan(), false);
   EXPECT_EQ(data.length(), consumed.bytes_consumed);
   struct iovec iov2 = {const_cast<char*>(data.data()), 1u};
+  QuicMemSliceStorage storage2(
+      &iov2, 1,
+      session_->connection()->helper()->GetStreamSendBufferAllocator(), 1024);
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _));
-  EXPECT_QUIC_BUG(stream_->WritevData(&iov2, 1u, false),
+  EXPECT_QUIC_BUG(stream_->WriteMemSlices(storage2.ToSpan(), false),
                   "Write too many data via stream");
 }
 
