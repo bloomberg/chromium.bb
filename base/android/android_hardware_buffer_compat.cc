@@ -4,11 +4,11 @@
 
 #include "base/android/android_hardware_buffer_compat.h"
 
+#include <dlfcn.h>
+
 #include "base/android/build_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-
-#include <dlfcn.h>
 
 namespace base {
 

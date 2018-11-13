@@ -29,7 +29,7 @@ TEST(JniString, BasicConversionsUTF16) {
 }
 
 TEST(JniString, EmptyConversionUTF8) {
-  const std::string kEmptyString = "";
+  const std::string kEmptyString;
   JNIEnv* env = AttachCurrentThread();
   std::string result =
       ConvertJavaStringToUTF8(ConvertUTF8ToJavaString(env, kEmptyString));
@@ -37,7 +37,7 @@ TEST(JniString, EmptyConversionUTF8) {
 }
 
 TEST(JniString, EmptyConversionUTF16) {
-  const string16 kEmptyString = UTF8ToUTF16("");
+  const string16 kEmptyString;
   JNIEnv* env = AttachCurrentThread();
   string16 result =
       ConvertJavaStringToUTF16(ConvertUTF16ToJavaString(env, kEmptyString));
