@@ -910,7 +910,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private void onDestroy() {
         VrModuleProvider.unregisterVrModeObserver(this);
-        if (mOverviewObserver != null) {
+        // Need to null-check compositor view holder and layout manager since they might've
+        // been cleared by now.
+        if (mOverviewObserver != null && mTab.getActivity().getCompositorViewHolder() != null
+                && mTab.getActivity().getCompositorViewHolder().getLayoutManager() != null) {
             ((LayoutManagerChrome) mTab.getActivity().getCompositorViewHolder().getLayoutManager())
                     .removeOverviewModeObserver(mOverviewObserver);
             mOverviewObserver = null;
