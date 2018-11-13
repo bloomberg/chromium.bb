@@ -944,7 +944,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8073388330009372546">Buka imej dalam tab baharu</translation>
 <translation id="8084114998886531721">Kata laluan disimpan</translation>
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
-<translation id="8087980556724996220">Pembantu Autolengkap akan berhenti dalam masa <ph name="DURATION_SECONDS" />s…</translation>
 <translation id="8103578431304235997">Tab Inkognito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Cadangkan halaman yang berkaitan</translation>
@@ -1033,7 +1032,6 @@ Untuk mendapatkan lesen baharu, sambung ke internet dan mainkan kandungan anda y
 <translation id="8812260976093120287">Pada sesetengah tapak web, anda boleh membayar menggunakan apl pembayaran yang disokong di atas pada peranti anda.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> akan dibuka dalam Chrome. Dengan meneruskan penggunaan, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome serta <ph name="BEGIN_LINK3" />Notis Privasi untuk Akaun Google yang Diurus menggunakan Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
-<translation id="8823704566850948458">Cadangkan kata laluan...</translation>
 <translation id="8833831881926404480">Satu tapak sedang berkongsi skrin anda</translation>
 <translation id="883806473910249246">Ralat berlaku semasa memuat turun kandungan.</translation>
 <translation id="8840953339110955557">Halaman ini mungkin berbeza daripada versi dalam talian.</translation>
@@ -1081,7 +1079,6 @@ Untuk mendapatkan lesen baharu, sambung ke internet dan mainkan kandungan anda y
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Cadangkan kata laluan yang kukuh...</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="932599481871055447">Jimatkan data dan semak imbas dengan lebih pantas</translation>

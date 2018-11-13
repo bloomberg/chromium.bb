@@ -555,7 +555,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2482676533225429905">Mensajes nativos</translation>
 <translation id="2483146640187052324">Predecir las acciones de red en cualquier conexión de red</translation>
 <translation id="2484208301968418871">Esta política controla la aplicación del filtro de URLs SafeSites.
-      Este filtro usa la API de la Búsqueda Segura de Google para clasificar las URL como pornográficas o no.
+      Este filtro usa la API de Búsqueda Segura de Google para clasificar las URL como pornográficas o no.
 
       Si esta política no se habilita o se le asigna el valor "No filtrar contenido para adultos de los sitios web", no se filtrarán los sitios web.
 

@@ -166,7 +166,7 @@
     请在随即显示的屏幕上发送反馈，以协助我们解决此问题。</translation>
 <translation id="1217668622537098248">执行完操作后还原到左键点击</translation>
 <translation id="121783623783282548">密码不匹配。</translation>
-<translation id="1218860753635451122">点击“我同意”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
+<translation id="1219533395013150448">Google 助理会使用这些录音创建您的语音模型，并将其存储在您的设备上。您可以在 Google 助理设置部分删除或重新调校该模型，并可以在 Google 活动控制项中查看或删除语音指令。</translation>
 <translation id="122082903575839559">证书签名算法</translation>
 <translation id="1221024147024329929">PKCS #1，带有 RSA 加密的 MD2</translation>
 <translation id="1221825588892235038">仅限选定内容</translation>
@@ -614,6 +614,7 @@
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
+<translation id="1887597546629269384">再说一次“Hey Google”</translation>
 <translation id="1887850431809612466">硬件版本</translation>
 <translation id="1889984860246851556">打开代理设置</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -711,6 +712,7 @@
 <translation id="2048653237708779538">无法执行操作</translation>
 <translation id="204914487372604757">创建快捷方式</translation>
 <translation id="2050339315714019657">纵向</translation>
+<translation id="2052369079215022979">由贵单位管理</translation>
 <translation id="2053312383184521053">闲置状态数据</translation>
 <translation id="205560151218727633">Google 智能助理徽标</translation>
 <translation id="2058456167109518507">检测到的设备</translation>
@@ -840,7 +842,6 @@
 <translation id="2239921694246509981">添加受监管用户</translation>
 <translation id="2241053333139545397">读取和更改您在一些网站上的数据</translation>
 <translation id="2242687258748107519">文件信息</translation>
-<translation id="2243194103992005307">要想卸载应用，请依次转到“设置”&gt;“应用”或“应用管理器”，点按您要卸载的应用（您可能需要左右滑动才能找到相应的应用），然后点按“卸载”或“停用”。</translation>
 <translation id="224940702122312781">此网页会消耗很多网络数据流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系统查看器打开</translation>
@@ -898,6 +899,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">输入新名称</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 希望与以下所选设备配对：</translation>
+<translation id="2342740338116612727">书签已添加</translation>
 <translation id="2344028582131185878">自动下载</translation>
 <translation id="2345723121311404059">“<ph name="PRINTER_NAME" />”有 1 个页面需要打印</translation>
 <translation id="2347644257713614136">使用环聊和 Cast for Education 时须遵守《Google 隐私权政策》。</translation>
@@ -1092,7 +1094,6 @@
 <translation id="2643698698624765890">您可以通过点击“窗口”菜单中的“扩展程序”，管理您的扩展程序。</translation>
 <translation id="264810637653812429">找不到任何兼容设备。</translation>
 <translation id="2649045351178520408">Base64 编码 ASCII，证书链</translation>
-<translation id="2651353619134567122">发送系统数据。此设备目前会自动向 Google 发送诊断数据以及设备和应用使用情况数据。您随时可在设备的<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />部分中更改这项设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">搜索失败</translation>
 <translation id="2653266418988778031">如果您删除了某个证书授权中心 (CA) 证书，则浏览器不会再信任该 CA 颁发的任何证书。</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -1411,7 +1412,6 @@
 <translation id="3141318088920353606">正在听取…</translation>
 <translation id="3141917231319778873">“<ph name="DEVICE_NAME" />”不支持指定的请求。</translation>
 <translation id="3143515551205905069">取消同步</translation>
-<translation id="3143695347784622594">发送系统数据。自动向 Google 发送诊断数据以及设备和应用使用情况数据。您随时可在设备的<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />部分中更改这项设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3144647712221361880">以其他身份打开链接</translation>
 <translation id="3146006635381699911">无法使用离线演示模式资源。</translation>
@@ -1673,6 +1673,7 @@
 <translation id="3550915441744863158">Chrome会自动更新，因此您使用的始终都是最新版本</translation>
 <translation id="3551320343578183772">关闭标签页</translation>
 <translation id="3552780134252864554">退出时清除</translation>
+<translation id="3553146918065661815">使用 ⌘Q 退出时，先显示警告</translation>
 <translation id="3555812735919707620">卸载扩展程序</translation>
 <translation id="3556000484321257665">您的搜索引擎已改为 <ph name="URL" />。</translation>
 <translation id="3559262020195162408">未能在此设备上安装政策。</translation>
@@ -1743,6 +1744,7 @@
 <translation id="3651488188562686558">断开 Wi-Fi 连接</translation>
 <translation id="3652817283076144888">正在初始化</translation>
 <translation id="3653160965917900914">网络文件共享</translation>
+<translation id="3653842108912548333">通过 Voice Match 访问 Google 助理</translation>
 <translation id="3653999333232393305">继续允许 <ph name="HOST" /> 使用您的麦克风</translation>
 <translation id="3654045516529121250">读取您的无障碍设置</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{此应用对 1 个文件拥有永久访问权限。}other{此应用对 # 个文件拥有永久访问权限。}}</translation>
@@ -1982,7 +1984,6 @@
 <translation id="3982375475032951137">只需执行几个简单的步骤，即可完成浏览器设置</translation>
 <translation id="3983586614702900908">来自未知供应商的设备</translation>
 <translation id="3984159763196946143">无法启动演示模式</translation>
-<translation id="3985261842049607969">备份到 Google 云端硬盘。您随时可轻松地恢复数据或更换设备。您的备份内容包含应用数据。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">节省了数据流量</translation>
 <translation id="3987938432087324095">抱歉，没听清。</translation>
 <translation id="3988996860813292272">选择时区</translation>
@@ -2284,6 +2285,7 @@
 <translation id="4524832533047962394">此版本的操作系统不支持所提供的注册模式。请确保您运行的是最新版本。</translation>
 <translation id="4525382759303819021">接收与 Play 商店内的应用相关的最新动态和推荐内容</translation>
 <translation id="4530494379350999373">来源</translation>
+<translation id="4533846798469727141">现在说“Hey Google”</translation>
 <translation id="4533985347672295764">CPU 时间</translation>
 <translation id="4534661889221639075">请重试。</translation>
 <translation id="4535127706710932914">默认个人资料</translation>
@@ -2520,11 +2522,6 @@
 <translation id="4883274597792587930">找到印在密钥背面的名称</translation>
 <translation id="4883436287898674711">所有<ph name="WEBSITE_1" />网站</translation>
 <translation id="48838266408104654">任务管理器(&amp;T)</translation>
-<translation id="4883898390143004266">协助应用判断您所在的位置。Google 的位置信息服务有助于应用更快速、更准确地推测出您的位置。Google 可能会定期收集位置数据，并以匿名方式使用这类数据，从而提高位置信息精确度并改善基于地理位置的服务。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />备份到 Google 云端硬盘。您随时可轻松地恢复数据或更换设备。您的备份内容包含应用数据。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />应用数据可以是应用根据开发者设置而保存的任何数据，包括通讯录、邮件/消息、照片等可能具有敏感性的数据。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />备份数据不会计入您的云端硬盘存储空间配额。<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />您可在“设置”部分中关闭此服务。<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6 倍</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">使用系统查看器打开</translation>
@@ -2802,7 +2799,6 @@
 <translation id="5324780743567488672">使用您的位置信息自动设置时区</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5327570636534774768">此设备已被标记为受另一网域管理。您需要取消此设备在该网域中的配置，然后才能设置演示模式。</translation>
-<translation id="532776649628038357">我同意</translation>
 <translation id="532943162177641444">请点按您的 <ph name="PHONE_NAME" /> 设备上的通知，以设置可供此设备使用的移动热点。</translation>
 <translation id="5329858601952122676">删除(&amp;D)</translation>
 <translation id="5329945517224105597">您的 Google 助理可根据您屏幕上的内容，提供更多相关建议和具体操作。您可在 Google 助理的“设置”中更改此项设置</translation>
@@ -2916,7 +2912,6 @@
 <translation id="5488093641312826914">已复制“<ph name="COPIED_ITEM_NAME" />”</translation>
 <translation id="5488468185303821006">在隐身模式下启用</translation>
 <translation id="5489435190927933437">已保存的用于登录 <ph name="DOMAIN" /> 的密码</translation>
-<translation id="5491110079163012109">发送系统数据。自动向 Google 发送诊断数据以及设备和应用使用情况数据。此设备的所有者已强制启用了这项设置。此设备的所有者可以选择将它的诊断数据和使用情况数据发送给 Google。您可在“设置”部分中查看此设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">已开启屏幕</translation>
 <translation id="5494362494988149300">完成后打开(&amp;D)</translation>
 <translation id="5494920125229734069">全选</translation>
@@ -3261,6 +3256,7 @@
 <translation id="5990386583461751448">已翻译</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{为确保您能够继续浏览网页，请让您的管理员卸载这款应用。}other{为确保您能够继续浏览网页，请让您的管理员卸载这些应用。}}</translation>
 <translation id="5997337190805127100">详细了解网站访问权限</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
 <translation id="6002458620803359783">首选语音</translation>
 <translation id="6005695835120147974">媒体路由器</translation>
 <translation id="6006484371116297560">经典</translation>
@@ -3510,6 +3506,7 @@
 <translation id="637062427944097960">此文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看此文件。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">重试</translation>
+<translation id="6377268785556383139">1 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
 <translation id="6380143666419481200">接受并继续</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">网站可以保存和读取 Cookie 数据</translation>
@@ -3527,6 +3524,7 @@
 <translation id="6405510437656969977">当您准备好输入 PIN 码时，再继续操作</translation>
 <translation id="6406303162637086258">模拟浏览器重启</translation>
 <translation id="6406506848690869874">同步</translation>
+<translation id="6406708970972405507">设置 - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">读取和更改您在<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />和<ph name="WEBSITE_3" />上的数据</translation>
 <translation id="6410257289063177456">图片文件</translation>
 <translation id="6410328738210026208">变更版本并执行 Powerwash</translation>
@@ -3615,7 +3613,6 @@
 <translation id="6528513914570774834">允许此设备的其他用户使用此网络</translation>
 <translation id="652948702951888897">Chrome 历史记录</translation>
 <translation id="653019979737152879">正在同步<ph name="FILE_NAME" />…</translation>
-<translation id="6530681427077572136">发送系统数据。此设备目前会自动向 Google 发送诊断数据以及设备和应用使用情况数据。您随时可在设备的“设置”部分中更改这项设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">保留危险文件</translation>
 <translation id="6534583978616527129">初始化此连接</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非您有意这么做或被要求这样做，否则请不要随意启用这项功能，因为收集数据可能会降低性能。</translation>
@@ -3663,7 +3660,6 @@
 <translation id="6610147964972079463">关闭私密标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6613452264606394692">只需为此网页添加书签，便可在需要时快速返回到此处</translation>
-<translation id="6614893213975402384">安装更新和应用。继续操作即表示您同意此设备还可从 Google、您的运营商以及您设备的制造商处自动下载及安装更新和应用（可能会使用移动数据网络）。部分应用可能会提供应用内购商品。您可以随时卸载这些应用。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">显示图标</translation>
 <translation id="6618097958368085618">仍然保留</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -3810,6 +3806,7 @@
 <translation id="6840184929775541289">不是证书授权中心</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">错误</translation>
+<translation id="6843423766595476978">Ok Google 已设置完毕</translation>
 <translation id="6845038076637626672">以最大化模式打开</translation>
 <translation id="685040365210406336">不做任何更改</translation>
 <translation id="6851497530878285708">已启用此应用</translation>
@@ -4036,9 +4033,6 @@
 <translation id="7191454237977785534">文件另存为</translation>
 <translation id="7193374945610105795">未保存任何用于登录 <ph name="ORIGIN" /> 的密码</translation>
 <translation id="7196835305346730603">正在搜索附近的 Chromebox…</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />这是关于您的设备及其使用情况（例如，电池电量、应用使用情况和网络连接情形）的一般信息。我们会使用这些数据来改善 Google 的各项产品和服务，以让所有用户都受惠。另外，部分汇总信息也有助于我们的合作伙伴（例如 Android 开发者）改善其应用和产品。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />关闭此功能并不会影响您的设备为获得基本服务（例如系统更新和安全保护）而发送所需信息。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />要想控制此功能，请依次转到“设置”&gt;“Google”，并从菜单中选择“使用情况和诊断信息”。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">每次浏览时都可畅享 Google 搜索功能和 Google 智能工具</translation>
 <translation id="7197632491113152433">我们发现，您的帐号中有 <ph name="NUMBER_OF_APPS" /> 款可在此设备上使用的应用。</translation>
 <translation id="7199158086730159431">获取帮助(&amp;E)</translation>
@@ -4072,6 +4066,7 @@
 <translation id="7246947237293279874">FTP 代理</translation>
 <translation id="7248671827512403053">应用</translation>
 <translation id="725109152065019550">抱歉，您的管理员已停用了您帐号上的外部存储功能。</translation>
+<translation id="7251346854160851420">默认壁纸</translation>
 <translation id="7253521419891527137">了解详情(&amp;L)</translation>
 <translation id="7254554697254365959">无法翻译此网页。</translation>
 <translation id="7254951428499890870">确定要以诊断模式启动“<ph name="APP_NAME" />”吗？</translation>
@@ -4182,6 +4177,7 @@
 <translation id="7417705661718309329">Google 地图</translation>
 <translation id="741906494724992817">此应用不需要任何特殊权限。</translation>
 <translation id="7419433794191666278">将您的 Chromebook 连接到手机。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">书签已移除</translation>
 <translation id="7421925624202799674">显示网页源代码(&amp;V)</translation>
 <translation id="7422192691352527311">偏好设置...</translation>
 <translation id="7423098979219808738">先询问</translation>
@@ -4238,9 +4234,6 @@
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7508545000531937079">幻灯片演示</translation>
 <translation id="7513029293694390567">使用存储的凭据自动登录网站。停用该功能后，系统会在您每次登录网站时要求您进行确认。</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />协助应用判断您所在的位置。Google 的位置信息服务有助于应用更快速、更准确地推测出您的位置。Google 可能会定期收集位置数据，并以匿名方式使用这类数据，从而提高位置信息精确度并改善基于地理位置的服务。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Google 的位置信息服务会使用 WLAN、移动网络和传感器等来源协助推测设备所在的位置。当您开启设备上的“位置信息”设置时，系统即会启用这项服务。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />您可通过关闭设备上的主要“位置信息”设置来关闭位置信息服务。此外，您也可在“位置信息”设置中关闭使用 WLAN、移动网络和传感器来确定位置的功能。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">设置密码 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">说“Ok Google”</translation>
@@ -4344,6 +4337,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{书签列表中现有 1 个条目}other{书签列表中现有 # 个条目}}</translation>
 <translation id="7701040980221191251">无</translation>
 <translation id="7701869757853594372">用户句柄</translation>
+<translation id="7702574632857388784">从列表中移除 <ph name="FILE_NAME" /></translation>
 <translation id="7702907602086592255">域名</translation>
 <translation id="7704305437604973648">任务</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
@@ -4478,7 +4472,6 @@
 <translation id="7851457902707056880">仅所有者帐号才能登录。请重新启动并使用所有者帐号登录。设备将在30秒后自动重新启动。</translation>
 <translation id="7851716364080026749">始终禁止使用摄像头和麦克风</translation>
 <translation id="7853747251428735">更多工具(&amp;L)</translation>
-<translation id="7856006446339184955">发送系统数据。此设备目前会自动向 Google 发送诊断数据以及设备和应用使用情况数据。此设备的所有者已强制启用了这项<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">添加例外情况</translation>
 <translation id="7857949311770343000">这是您想要的新标签页吗？</translation>
 <translation id="786073089922909430">服务：<ph name="ARC_PROCESS_NAME" /></translation>
@@ -4738,6 +4731,7 @@
 <translation id="8249296373107784235">取消</translation>
 <translation id="8249672078237421304">询问是否翻译非您所用语言的网页</translation>
 <translation id="8251578425305135684">已删除缩略图。</translation>
+<translation id="8252569384384439529">正在上传…</translation>
 <translation id="8253198102038551905">点击“+”可查看网络属性</translation>
 <translation id="825483282309623688">要恢复数据，您需要连接互联网。</translation>
 <translation id="8256319818471787266">狗狗</translation>
@@ -4804,6 +4798,7 @@
 <translation id="8371695176452482769">请开始说话</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8373553483208508744">将所有标签页静音</translation>
+<translation id="8378714024927312812">由贵单位管理</translation>
 <translation id="8379878387931047019">此设备不支持该网站要求使用的安全密钥的类型</translation>
 <translation id="8382913212082956454">复制电子邮件地址(&amp;E)</translation>
 <translation id="8386091599636877289">找不到此政策。</translation>
@@ -4842,6 +4837,7 @@
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>
 <translation id="8440630305826533614">Linux 应用</translation>
+<translation id="8446474770554547328">录 3 遍“Ok Google”即可创建您的语音模型，并且该模型会存储在您的设备上。您可以在 Google 助理设置部分删除或重新调校该模型，并可以在 Google 活动控制项中查看或删除语音指令。</translation>
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8447409163267621480">必须以 Ctrl 键或 Alt 键开头</translation>
 <translation id="8448729345478502352">缩小或放大屏幕上的内容</translation>
@@ -4902,7 +4898,6 @@
 <translation id="8535005006684281994">Netscape 证书续订网址</translation>
 <translation id="8538358978858059843">允许投射到云服务？</translation>
 <translation id="8539727552378197395">否（仅 Http）</translation>
-<translation id="8541166929715485291">发送系统数据。自动向 Google 发送诊断数据以及设备和应用使用情况数据。此设备的所有者已强制启用了这项设置。此设备的所有者可以选择将它的诊断数据和使用情况数据发送给 Google。您可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />部分中查看此设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">抱歉，无法验证您的密码。该受监管用户的管理员可能在近期修改了密码。如果是这种情况，新密码将在您下次登录时生效。您可以尝试使用旧密码重新登录。</translation>
 <translation id="8546186510985480118">设备存储空间不足</translation>
 <translation id="8546306075665861288">图片缓存</translation>
@@ -4971,7 +4966,7 @@
 <translation id="8652400352452647993">打包扩展程序错误</translation>
 <translation id="8652487083013326477">页码范围单选按钮</translation>
 <translation id="8654151524613148204">很抱歉，文件过大，计算机无法处理。</translation>
-<translation id="8655295600908251630">渠道</translation>
+<translation id="8655295600908251630">版本</translation>
 <translation id="8655319619291175901">糟糕，出了点问题。</translation>
 <translation id="8655972064210167941">由于无法验证您的密码，因此登录失败了。请与管理员联系或重试。</translation>
 <translation id="8656619792520327915">添加其他蓝牙安全密钥</translation>
@@ -5168,7 +5163,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享窗口。</translation>
 <translation id="8946359700442089734">此<ph name="IDS_SHORT_PRODUCT_NAME" />设备上未完全启用调试功能。</translation>
 <translation id="894871326938397531">退出隐身模式？</translation>
-<translation id="8952774786254665439">高级打印机选项</translation>
 <translation id="895347679606913382">即将开始下载...</translation>
 <translation id="8954952943849489823">移动失败，出现意外错误：$1</translation>
 <translation id="895586998699996576">$1 图片</translation>
@@ -5310,7 +5304,6 @@
 <translation id="91568222606626347">创建快捷方式…</translation>
 <translation id="9157697743260533322">未能按您的要求为所有用户设置自动更新（启动预定流程时出错：<ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">糟糕！系统在进行身份验证时发生了网络通信问题。请检查您的网络连接，然后重试。</translation>
-<translation id="916501514001398070">发送系统数据。此设备目前会自动向 Google 发送诊断数据以及设备和应用使用情况数据。此设备的所有者已强制启用了这项设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">画中画</translation>
 <translation id="9168436347345867845">以后再说</translation>
 <translation id="9169496697824289689">查看键盘快捷键</translation>

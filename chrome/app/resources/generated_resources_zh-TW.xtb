@@ -166,7 +166,6 @@
     請在下一個畫面中提供您的寶貴意見，協助我們修正這個問題。</translation>
 <translation id="1217668622537098248">完成動作後還原至先前的按左鍵動作</translation>
 <translation id="121783623783282548">密碼不相符。</translation>
-<translation id="1218860753635451122">點選 [我同意] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="122082903575839559">憑證簽章演算法</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 (使用 RSA 加密)</translation>
 <translation id="1221825588892235038">僅限選取的內容</translation>
@@ -843,7 +842,6 @@
 <translation id="2239921694246509981">新增受監管的使用者</translation>
 <translation id="2241053333139545397">讀取及變更你在多個網站上的資料</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
-<translation id="2243194103992005307">如要移除應用程式，請依序前往 [設定] &gt; [應用程式] 或 [應用程式管理員]，然後輕觸你要解除安裝的應用程式 (你可能需要向左或向右滑動才能找出所需應用程式)。接著，輕觸 [解除安裝] 或 [停用]。</translation>
 <translation id="224940702122312781">這個網頁會耗用許多數據流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
@@ -1096,7 +1094,6 @@
 <translation id="2643698698624765890">如要管理擴充功能，只要按一下 [視窗] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="264810637653812429">找不到相容的裝置。</translation>
 <translation id="2649045351178520408">Base64 編碼 ASCII，憑證鏈結</translation>
-<translation id="2651353619134567122">傳送系統資料。這個裝置目前會自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。你隨時可以在裝置<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中變更這項設定。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">搜尋失敗</translation>
 <translation id="2653266418988778031">如果你刪除了憑證授權單位 (CA) 的憑證，你的瀏覽器就不會再信任該憑證授權單位所核發的任何憑證。</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -1415,7 +1412,6 @@
 <translation id="3141318088920353606">聽取中…</translation>
 <translation id="3141917231319778873">無法對以下裝置提出指定的要求：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="3143515551205905069">取消同步處理</translation>
-<translation id="3143695347784622594">傳送系統資料。自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。你隨時可以在裝置<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中變更這項設定。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3144647712221361880">以其他身分開啟連結</translation>
 <translation id="3146006635381699911">無法使用離線示範模式的資源。</translation>
@@ -1988,7 +1984,6 @@
 <translation id="3982375475032951137">只要簡單幾個步驟就能完成瀏覽器設定</translation>
 <translation id="3983586614702900908">製造商不明的裝置</translation>
 <translation id="3984159763196946143">無法啟動示範模式</translation>
-<translation id="3985261842049607969">備份到 Google 雲端硬碟。你隨時可以輕鬆還原資料或改用其他裝置。備份內容包含應用程式資料。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">數據用量更少</translation>
 <translation id="3987938432087324095">很抱歉，系統無法辨識你的語音指令。</translation>
 <translation id="3988996860813292272">選取時區</translation>
@@ -2526,11 +2521,6 @@
 <translation id="4883274597792587930">找出印在金鑰背面的名稱</translation>
 <translation id="4883436287898674711">所有 <ph name="WEBSITE_1" /> 網站</translation>
 <translation id="48838266408104654">工作管理員(&amp;T)</translation>
-<translation id="4883898390143004266">協助應用程式判斷位置。使用 Google 的定位服務，讓應用程式更準確地判斷你的位置。Google 可能會定期收集位置資料，並以匿名方式使用這類資料，藉此提高定位精確度及改善適地性服務。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />備份到 Google 雲端硬碟。你隨時可以輕鬆還原資料或改用其他裝置。備份內容包含應用程式資料。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />應用程式資料泛指應用程式依據開發人員設定所儲存的任何資料，可能包括聯絡人、訊息和相片這類機密資料。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />備份資料不會計入雲端硬碟儲存空間配額。<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />你可以在設定中停用這項服務。<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">使用 System Viewer 開啟</translation>
@@ -2813,7 +2803,6 @@
 <translation id="5324780743567488672">自動使用您的位置資訊設定時區</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5327570636534774768">這個裝置的標記狀態是由其他網域管理。請先從該網域取消佈建裝置，再設定示範模式。</translation>
-<translation id="532776649628038357">我同意</translation>
 <translation id="532943162177641444">在 <ph name="PHONE_NAME" /> 上輕觸通知，即可設定可供這個裝置使用的可攜式無線基地台。</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5329945517224105597">Google 助理可根據螢幕上的內容，提供更貼近你需求的建議以及可執行的特定動作。你可以在 Google 助理的設定頁面變更這項設定</translation>
@@ -2927,7 +2916,6 @@
 <translation id="5488093641312826914">已複製「<ph name="COPIED_ITEM_NAME" />」</translation>
 <translation id="5488468185303821006">允許在無痕模式中執行</translation>
 <translation id="5489435190927933437">已儲存的 <ph name="DOMAIN" /> 密碼</translation>
-<translation id="5491110079163012109">傳送系統資料。自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。擁有者強制啟用了這項設定。擁有者可能會選擇將這個裝置的診斷資料和使用資料傳送給 Google。你可以在「設定」中查看這項資訊。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">螢幕已開啟</translation>
 <translation id="5494362494988149300">下載完成時自動開啟檔案(&amp;D)</translation>
 <translation id="5494920125229734069">全選</translation>
@@ -3626,7 +3614,6 @@
 <translation id="6528513914570774834">允許這個裝置的其他使用者使用這個網路</translation>
 <translation id="652948702951888897">Chrome 歷史記錄</translation>
 <translation id="653019979737152879">正在同步處理 <ph name="FILE_NAME" />...</translation>
-<translation id="6530681427077572136">傳送系統資料。這個裝置目前會自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。你隨時可以在裝置設定中變更這項設定。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">保留不安全的檔案</translation>
 <translation id="6534583978616527129">初始化連線</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非你瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集資料可能會導致系統效能降低。</translation>
@@ -3674,7 +3661,6 @@
 <translation id="6610147964972079463">關閉私密分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6613452264606394692">將此頁加入書籤，方便你快速返回</translation>
-<translation id="6614893213975402384">安裝更新和應用程式。如果您選擇繼續，即表示您允許這部裝置自動下載及安裝來自 Google、您的電信業者和裝置製造商的更新內容和應用程式，上述程序可能會使用行動數據。這類應用程式中，有些可能會提供應用程式內購功能。您隨時可以移除這類應用程式。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">顯示</translation>
 <translation id="6618097958368085618">確定保留</translation>
 <translation id="6619058681307408113">線上印表機服務精靈 (LPD)</translation>
@@ -4047,9 +4033,6 @@
 <translation id="7191454237977785534">另存新檔</translation>
 <translation id="7193374945610105795">系統沒有儲存 <ph name="ORIGIN" /> 的密碼</translation>
 <translation id="7196835305346730603">正在搜尋附近的 Chromebox...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />這個選項會提供裝置的一般資訊和使用情形 (例如電池電量、應用程式使用情形，以及網路連線狀況)。這些資料會用於改善 Google 的產品和服務，使人人受惠。部分匯總資訊還能協助我們的合作夥伴 (例如 Android 開發人員) 提高應用程式和產品的服務品質。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />如果關閉這項功能，你的裝置仍然可以傳送基本服務 (例如系統更新與安全性) 所需的資訊。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />如要管理這項功能，請依序前往 [設定] &gt; [Google]，然後從選單中選取 [使用情形與診斷資訊]。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">每次瀏覽都能盡情使用 Google 搜尋和 Google 智慧功能</translation>
 <translation id="7197632491113152433">你的帳戶中有 <ph name="NUMBER_OF_APPS" /> 個應用程式可在這部裝置上使用。</translation>
 <translation id="7199158086730159431">取得說明(&amp;E)</translation>
@@ -4249,9 +4232,6 @@
 <translation id="7507930499305566459">狀態回應程式憑證</translation>
 <translation id="7508545000531937079">播放投影片</translation>
 <translation id="7513029293694390567">使用已儲存的憑證自動登入網站。如果停用這項功能，每當你登入網站時，都必須向系統確認你的登入憑證。</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />協助應用程式判斷位置。使用 Google 的定位服務，讓應用程式更準確地判斷你的位置。Google 可能會定期收集位置資料，並以匿名方式使用這類資料，藉此提高定位精確度及改善適地性服務。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Google 的定位服務會使用 Wi-Fi、行動網路和感應器等資源，藉此判定你裝置的所在位置。只要裝置的位置資訊設定處於開啟狀態，這項服務就會保持運作。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />關閉裝置的主要位置資訊設定即可關閉定位功能。你也可以前往位置資訊設定，將使用 Wi‑Fi、行動網路和感應器的定位功能關閉。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">建立密碼 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
@@ -4490,7 +4470,6 @@
 <translation id="7851457902707056880">只能使用擁有者帳戶才能登入。請重新開機並使用擁有者帳戶登入。電腦會在 30 秒後自動開機。</translation>
 <translation id="7851716364080026749">一律封鎖存取攝影機和麥克風</translation>
 <translation id="7853747251428735">更多工具(&amp;L)</translation>
-<translation id="7856006446339184955">傳送系統資料。這個裝置目前會自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。擁有者強制啟用了這項<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">新增例外狀況</translation>
 <translation id="7857949311770343000">這是你想要的新分頁嗎？</translation>
 <translation id="786073089922909430">服務：<ph name="ARC_PROCESS_NAME" /></translation>
@@ -4914,7 +4893,6 @@
 <translation id="8535005006684281994">Netscape 憑證更新網址</translation>
 <translation id="8538358978858059843">要啟用 Cast 雲端服務嗎？</translation>
 <translation id="8539727552378197395">否 (限 Http)</translation>
-<translation id="8541166929715485291">傳送系統資料。自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。擁有者強制啟用了這項設定。擁有者可能會選擇將這個裝置的診斷資料和使用資料傳送給 Google。你可以在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中查看這項資訊。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">很抱歉，系統無法驗證你的密碼。這位受監管使用者的管理員最近可能變更了密碼。如果是這樣的話，你下次登入時就必須使用新密碼。現在請嘗試使用你的舊密碼。</translation>
 <translation id="8546186510985480118">裝置空間即將用盡</translation>
 <translation id="8546306075665861288">圖片快取</translation>
@@ -5180,7 +5158,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用視窗。</translation>
 <translation id="8946359700442089734">尚未在這個 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上完整啟用偵錯功能。</translation>
 <translation id="894871326938397531">要退出無痕模式嗎？</translation>
-<translation id="8952774786254665439">進階印表機選項</translation>
 <translation id="895347679606913382">啟動中...</translation>
 <translation id="8954952943849489823">移動失敗，發生未預期的錯誤：$1</translation>
 <translation id="895586998699996576">$1 圖片</translation>
@@ -5322,7 +5299,6 @@
 <translation id="91568222606626347">建立捷徑...</translation>
 <translation id="9157697743260533322">無法為所有使用者設定自動更新作業 (預先啟動錯誤：<ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">糟糕！驗證過程中發生網路通訊問題，請檢查你的網路連線，然後再試一次。</translation>
-<translation id="916501514001398070">傳送系統資料。這個裝置目前會自動將診斷資料、裝置與應用程式使用情形資料傳送給 Google。擁有者強制啟用了這項設定。如果你另外開啟了「網路和應用程式活動」設定，這項資訊會儲存在你的帳戶中，方便你在「我的活動」中進行管理。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">子母畫面</translation>
 <translation id="9168436347345867845">稍後再說</translation>
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>

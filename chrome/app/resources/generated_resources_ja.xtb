@@ -166,7 +166,7 @@
     次の画面でフィードバックをお送りください。この問題の解決に役立てさせていただきます。</translation>
 <translation id="1217668622537098248">終了後、デフォルトの左クリック動作に戻す</translation>
 <translation id="121783623783282548">パスワードが一致しません。</translation>
-<translation id="1218860753635451122">[同意する] をクリックすると、これらの Google サービスに関する上記の処理内容に同意したことになります。</translation>
+<translation id="1219533395013150448">アシスタントによって、これらの録音データからお客様の音声モデルが作成され、デバイスに保存されます。このモデルの削除や再認識はアシスタントの設定で行います。音声コマンドの表示や削除は Google アクティビティ管理で行います。</translation>
 <translation id="122082903575839559">証明書の署名アルゴリズム</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 with RSA 暗号化</translation>
 <translation id="1221825588892235038">選択したコンテンツのみ</translation>
@@ -617,6 +617,7 @@
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="1886996562706621347">サイトからのプロトコルのデフォルト ハンドラとしての登録要求を許可する（推奨）</translation>
 <translation id="1887442540531652736">ログインエラー</translation>
+<translation id="1887597546629269384">もう一度「OK Google」と話しかけてください</translation>
 <translation id="1887850431809612466">ハードウェア リビジョン</translation>
 <translation id="1889984860246851556">プロキシ設定を開く</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -714,6 +715,7 @@
 <translation id="2048653237708779538">操作できません</translation>
 <translation id="204914487372604757">ショートカットを作成</translation>
 <translation id="2050339315714019657">縦</translation>
+<translation id="2052369079215022979">組織によって管理されています</translation>
 <translation id="2053312383184521053">アイドル状態のデータ</translation>
 <translation id="205560151218727633">Google アシスタントのロゴ</translation>
 <translation id="2058456167109518507">端末が検出されました</translation>
@@ -843,7 +845,6 @@
 <translation id="2239921694246509981">監視対象ユーザーを追加</translation>
 <translation id="2241053333139545397">多数のウェブサイト上にある自分のデータの読み取りと変更</translation>
 <translation id="2242687258748107519">ファイル情報</translation>
-<translation id="2243194103992005307">アプリを削除するには、まず [設定] &gt; [アプリ] または [アプリケーション管理] に移動して、アンインストールするアプリをタップします（必要に応じて、左右にスワイプしてアプリを見つけます）。次に、[アンインストール] または [無効にする] をタップします。</translation>
 <translation id="224940702122312781">このページでは大量のデータが使用されます。</translation>
 <translation id="2249605167705922988">例 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">システム ビューアで開く</translation>
@@ -901,6 +902,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">新しい名前を入力</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> がペア設定を要求しています</translation>
+<translation id="2342740338116612727">ブックマークを追加しました</translation>
 <translation id="2344028582131185878">自動ダウンロード</translation>
 <translation id="2345723121311404059">1 ページを <ph name="PRINTER_NAME" /> に送信しました</translation>
 <translation id="2347644257713614136">ハングアウトと Cast for Education のご利用には、Google プライバシー ポリシーが適用されます。</translation>
@@ -1097,7 +1099,6 @@
 <translation id="2643698698624765890">[ウィンドウ] メニューの [拡張機能] をクリックして拡張機能を管理できます。</translation>
 <translation id="264810637653812429">対応デバイスが見つかりませんでした。</translation>
 <translation id="2649045351178520408">Base64 エンコード ASCII 形式の証明書チェーン</translation>
-<translation id="2651353619134567122">システムデータを送信します。この端末では現在、診断データと端末およびアプリの使用状況データが Google に自動送信されるように設定されています。この設定は、端末の<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />でいつでも変更できます。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">検索できませんでした</translation>
 <translation id="2653266418988778031">認証局（CA）の証明書を削除すると、ブラウザはその CA が発行するどの証明書も信頼しなくなります。</translation>
 <translation id="2653659639078652383">送信</translation>
@@ -1416,7 +1417,6 @@
 <translation id="3141318088920353606">お話しください...</translation>
 <translation id="3141917231319778873">「<ph name="DEVICE_NAME" />」で、指定されたリクエストはサポートされていません。</translation>
 <translation id="3143515551205905069">同期をキャンセル</translation>
-<translation id="3143695347784622594">システムデータを送信します（診断データと端末およびアプリの使用状況データを Google に自動送信します）。この設定は、端末の<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />でいつでも変更できます。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">完了</translation>
 <translation id="3144647712221361880">別のユーザーとしてリンクを開く</translation>
 <translation id="3146006635381699911">オフライン デモモード リソースは使用できません。</translation>
@@ -1680,6 +1680,7 @@
 <translation id="3550915441744863158">Chrome は自動更新されるため、常に最新版をご利用になれます</translation>
 <translation id="3551320343578183772">タブを閉じる</translation>
 <translation id="3552780134252864554">終了時に削除</translation>
+<translation id="3553146918065661815">⌘+Q キーで終了する際、警告メッセージを表示します</translation>
 <translation id="3555812735919707620">拡張機能を削除</translation>
 <translation id="3556000484321257665">検索エンジンが <ph name="URL" /> に変更されました。</translation>
 <translation id="3559262020195162408">ポリシーを端末にインストールできませんでした。</translation>
@@ -1750,6 +1751,7 @@
 <translation id="3651488188562686558">Wi-Fi から切断します</translation>
 <translation id="3652817283076144888">初期化しています</translation>
 <translation id="3653160965917900914">ネットワーク ファイル共有</translation>
+<translation id="3653842108912548333">Voice Match でアシスタントにアクセス</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> によるマイクへのアクセスを引き続き許可する</translation>
 <translation id="3654045516529121250">ユーザー補助設定の読み取り</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{1 個のファイルに永続的にアクセスできます。}other{# 個のファイルに永続的にアクセスできます。}}</translation>
@@ -1990,7 +1992,6 @@
 <translation id="3982375475032951137">簡単な手順でブラウザを設定できます</translation>
 <translation id="3983586614702900908">不明なベンダーのデバイス</translation>
 <translation id="3984159763196946143">デモモードを開始できませんでした</translation>
-<translation id="3985261842049607969">Google ドライブにバックアップします。これにより、いつでも簡単にデータを復元したり端末を切り替えたりできます。バックアップ対象には、アプリのデータが含まれます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">データの使用量が削減されました</translation>
 <translation id="3987938432087324095">聞き取れませんでした。</translation>
 <translation id="3988996860813292272">タイムゾーンの選択</translation>
@@ -2292,6 +2293,7 @@
 <translation id="4524832533047962394">指定の登録モードは、このバージョンのオペレーティング システムではサポートされていません。最新バージョンであることをご確認ください。</translation>
 <translation id="4525382759303819021">Play ストアのアプリに関する最新情報やおすすめの情報を受け取る</translation>
 <translation id="4530494379350999373">発行元:</translation>
+<translation id="4533846798469727141">それでは「OK Google」と話しかけてください</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
 <translation id="4534661889221639075">もう一度お試しください。</translation>
 <translation id="4535127706710932914">デフォルトのプロフィール</translation>
@@ -2528,11 +2530,6 @@
 <translation id="4883274597792587930">キーの背面に記載されている名前を確認します</translation>
 <translation id="4883436287898674711"><ph name="WEBSITE_1" /> の全サイト</translation>
 <translation id="48838266408104654">タスク マネージャ(&amp;T)</translation>
-<translation id="4883898390143004266">アプリで現在地を特定しやすいように、Google の位置情報サービスを使用して、より高い精度の位置情報をアプリに提供します。Google は位置情報を定期的に収集し、このデータを匿名の方法で活用して位置情報の精度や位置情報を利用したサービスを改善します。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Google ドライブにバックアップします。これにより、いつでも簡単にデータを復元したり端末を切り替えたりできます。バックアップ対象には、アプリのデータが含まれます。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />アプリのデータとは、（デベロッパーの設定に基づいて）アプリで保存されたデータのことで、これには連絡先、メッセージ、写真など機密情報になり得るデータも含まれます。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />バックアップ データは、Google ドライブの保存容量にはカウントされません。<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />このサービスは [設定] でオフにできます。<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6 倍</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">システム ビューアで開く</translation>
@@ -2815,7 +2812,6 @@
 <translation id="5324780743567488672">ユーザーの現在地情報を使用して自動的にタイムゾーンを設定する</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5327570636534774768">この端末は別のドメインの管理対象として指定されています。デモモードを設定する前にそのドメインのプロビジョニングを解除してください。</translation>
-<translation id="532776649628038357">同意する</translation>
 <translation id="532943162177641444">「<ph name="PHONE_NAME" />」で通知をタップして、この端末で使用できるモバイル アクセス ポイントを設定してください。</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="5329945517224105597">アシスタントが画面上のアイテムに関連したおすすめ情報や操作を提案します。この機能はアシスタントの設定で変更できます。</translation>
@@ -2929,7 +2925,6 @@
 <translation id="5488093641312826914">「<ph name="COPIED_ITEM_NAME" />」がコピーされました</translation>
 <translation id="5488468185303821006">シークレット モードでの実行を許可する</translation>
 <translation id="5489435190927933437"><ph name="DOMAIN" /> 用に保存されているパスワード</translation>
-<translation id="5491110079163012109">システムデータを送信します（診断データと端末およびアプリの使用状況データを Google に自動送信します）。この設定は所有者によって指定されており、所有者は、この端末の診断データと使用状況データを Google に送信するよう選択している可能性があります。これは設定で確認できます。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">画面オン</translation>
 <translation id="5494362494988149300">ダウンロードしたら開く(&amp;D)</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
@@ -3274,6 +3269,7 @@
 <translation id="5990386583461751448">翻訳済み</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{今後もウェブ ブラウジングを続けられるように、管理者にこのアプリケーションの削除を依頼してください。}other{今後もウェブ ブラウジングを続けられるように、管理者にこれらのアプリケーションの削除を依頼してください。}}</translation>
 <translation id="5997337190805127100">サイトアクセスの詳細</translation>
+<translation id="6000758707621254961">「<ph name="SEARCH_TEXT" />」に対する <ph name="RESULT_COUNT" /> 件の検索結果</translation>
 <translation id="6002458620803359783">使用する音声</translation>
 <translation id="6005695835120147974">メディア ルーター</translation>
 <translation id="6006484371116297560">クラシック</translation>
@@ -3523,6 +3519,7 @@
 <translation id="637062427944097960">このファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">再試行</translation>
+<translation id="6377268785556383139">「<ph name="SEARCH_TEXT" />」に対する 1 件の検索結果</translation>
 <translation id="6380143666419481200">同意して続行</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">サイトでは Cookie データの保存と読み込みが可能です</translation>
@@ -3540,6 +3537,7 @@
 <translation id="6405510437656969977">PIN を入力する準備ができたら続行してください</translation>
 <translation id="6406303162637086258">ブラウザ再起動のシミュレート</translation>
 <translation id="6406506848690869874">同期</translation>
+<translation id="6406708970972405507">設定 - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 上にある自分のデータの読み取りと変更</translation>
 <translation id="6410257289063177456">画像ファイル</translation>
 <translation id="6410328738210026208">チャンネルを変更して Powerwash</translation>
@@ -3628,7 +3626,6 @@
 <translation id="6528513914570774834">この端末の他のユーザーにこのネットワークの使用を許可する</translation>
 <translation id="652948702951888897">Chrome 履歴</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> を同期しています...</translation>
-<translation id="6530681427077572136">システムデータを送信します。この端末では現在、診断データと端末およびアプリの使用状況データが Google に自動送信されるように設定されています。この設定は、端末の設定でいつでも変更できます。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">危険なファイルを保存</translation>
 <translation id="6534583978616527129">接続の初期化</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
@@ -3676,7 +3673,6 @@
 <translation id="6610147964972079463">プライベート タブを閉じる</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6613452264606394692">このページをブックマークすると、すばやくこのページに戻ることができます</translation>
-<translation id="6614893213975402384">アップデートとアプリをインストールします。続行すると、Google、携帯通信会社、端末の製造元からのアップデートやアプリも端末で自動的にダウンロードおよびインストールされる場合があることについて、同意したものと見なされます（ダウンロードの際にはモバイルデータ通信が使用される可能性もあります）。こうしたアプリの一部ではアプリ内購入をすすめられる場合があります。こうしたアプリはいつでも削除できます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">表示</translation>
 <translation id="6618097958368085618">続行する</translation>
 <translation id="6619058681307408113">ラインプリンタ デーモン（LPD）</translation>
@@ -3823,6 +3819,7 @@
 <translation id="6840184929775541289">認証局ではない</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">エラー</translation>
+<translation id="6843423766595476978">OK Google の設定が完了しました</translation>
 <translation id="6845038076637626672">最大化して開く</translation>
 <translation id="685040365210406336">変更を行わない</translation>
 <translation id="6851497530878285708">アプリは有効です</translation>
@@ -4049,9 +4046,6 @@
 <translation id="7191454237977785534">名前を付けて保存</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" /> 用に保存されているパスワードはありません</translation>
 <translation id="7196835305346730603">近くの Chromebox を検索しています...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />これは、お使いの端末とその使用状況（電池残量、アプリの利用、ネットワーク接続など）に関する一般的な情報です。データは Google のプロダクトとサービスの改善に使用されます。また一部の集計情報は、Android デベロッパーのようなパートナーが提供するアプリやプロダクトの改善にも役立てられます。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />この機能をオフにしても、端末でシステム アップデートやセキュリティといった重要なサービスに必要な情報が送信されなくなるわけではありません。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />この機能は、[設定] &gt; [Google] に移動し、メニューから [使用状況と診断情報] を選択して管理できます。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Google 検索や Google の最先端技術をブラウジングで活用できます</translation>
 <translation id="7197632491113152433">お使いのアカウントから、この端末で使用できるアプリが <ph name="NUMBER_OF_APPS" /> 個見つかりました。</translation>
 <translation id="7199158086730159431">ヘルプ(&amp;E)</translation>
@@ -4085,6 +4079,7 @@
 <translation id="7246947237293279874">FTP プロキシ</translation>
 <translation id="7248671827512403053">アプリケーション</translation>
 <translation id="725109152065019550">このアカウントでの外部ストレージの使用は、管理者によって無効にされています。</translation>
+<translation id="7251346854160851420">デフォルトの壁紙</translation>
 <translation id="7253521419891527137">詳細(&amp;L)</translation>
 <translation id="7254554697254365959">このページを翻訳できませんでした。</translation>
 <translation id="7254951428499890870">「<ph name="APP_NAME" />」を診断モードで起動してもよろしいですか？</translation>
@@ -4196,6 +4191,7 @@
 <translation id="7417705661718309329">Google マップ</translation>
 <translation id="741906494724992817">このアプリの使用に特別な権限は必要ありません。</translation>
 <translation id="7419433794191666278">Chromebook をスマートフォンと接続します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">ブックマークを削除しました</translation>
 <translation id="7421925624202799674">ページのソースを表示(&amp;V)</translation>
 <translation id="7422192691352527311">環境設定...</translation>
 <translation id="7423098979219808738">最初に確認する</translation>
@@ -4252,9 +4248,6 @@
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="7508545000531937079">スライドショー</translation>
 <translation id="7513029293694390567">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />アプリで現在地を特定しやすいように、Google の位置情報サービスを使用して、より高い精度の位置情報をアプリに提供します。Google は位置情報を定期的に収集し、このデータを匿名の方法で活用して位置情報の精度や位置情報を利用したサービスを改善します。<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Google の位置情報サービスでは、端末の現在地を推定するために、Wi-Fi、モバイル ネットワーク、センサーなどの情報源が使用されます。このサービスは、端末の位置情報の設定がオンの場合に有効です。<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />位置情報をオフにするには、端末でメインの位置情報の設定をオフにします。位置情報の設定では、Wi‑Fi、モバイル ネットワーク、センサーを使用した現在地の特定をオフにすることもできます。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">パスワードを作成 -</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7522255036471229694">「OK Google」と言ってください</translation>
@@ -4360,6 +4353,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{ブックマーク リストに 1 個のアイテムがあります}other{ブックマーク リストに # 個のアイテムがあります}}</translation>
 <translation id="7701040980221191251">なし</translation>
 <translation id="7701869757853594372">USER の操作</translation>
+<translation id="7702574632857388784"><ph name="FILE_NAME" /> をリストから削除</translation>
 <translation id="7702907602086592255">ドメイン</translation>
 <translation id="7704305437604973648">タスク</translation>
 <translation id="7704317875155739195">検索語句や URL をオートコンプリートする</translation>
@@ -4494,7 +4488,6 @@
 <translation id="7851457902707056880">ログインは所有者アカウントのみに制限されています。再起動して、所有者アカウントでログインしてください。30 秒後に自動的に再起動します。</translation>
 <translation id="7851716364080026749">カメラとマイクへのアクセスを常にブロックする</translation>
 <translation id="7853747251428735">その他のツール(&amp;L)</translation>
-<translation id="7856006446339184955">システムデータを送信します。この端末では現在、診断データと端末およびアプリの使用状況データが Google に自動送信されるように設定されています。この<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />は所有者によって指定されています。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">例外を追加</translation>
 <translation id="7857949311770343000">この新しいタブ ページでよろしいですか？</translation>
 <translation id="786073089922909430">サービス: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4755,6 +4748,7 @@
 <translation id="8249296373107784235">中止</translation>
 <translation id="8249672078237421304">母国語以外のページで翻訳ツールを表示する</translation>
 <translation id="8251578425305135684">サムネイルを削除しました。</translation>
+<translation id="8252569384384439529">アップロードしています...</translation>
 <translation id="8253198102038551905">ネットワークのプロパティを表示するには [+] をクリック</translation>
 <translation id="825483282309623688">データを復元するにはインターネット接続が必要です。</translation>
 <translation id="8256319818471787266">スパーキー</translation>
@@ -4821,6 +4815,7 @@
 <translation id="8371695176452482769">お話しください</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8373553483208508744">タブをミュート</translation>
+<translation id="8378714024927312812">組織によって管理されています</translation>
 <translation id="8379878387931047019">この端末では、このウェブサイトからリクエストされているセキュリティ キーのタイプはサポートされていません。</translation>
 <translation id="8382913212082956454">メール アドレスをコピー(&amp;E)</translation>
 <translation id="8386091599636877289">ポリシーが見つかりません。</translation>
@@ -4859,6 +4854,7 @@
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8439506636278576865">この言語のページで翻訳ツールを表示する</translation>
 <translation id="8440630305826533614">Linux アプリ</translation>
+<translation id="8446474770554547328">「OK Google」を 3 回録音すると、音声モデルが作成されてデバイスに保存されます。このモデルの削除や再認識はアシスタントの設定で行います。音声コマンドの表示や削除は Google アクティビティ管理で行います。</translation>
 <translation id="8446884382197647889">詳細</translation>
 <translation id="8447409163267621480">Ctrl キーまたは Alt キーが必要です</translation>
 <translation id="8448729345478502352">画面上のアイテムのサイズを変更します</translation>
@@ -4919,7 +4915,6 @@
 <translation id="8535005006684281994">Netscape 証明書更新 URL</translation>
 <translation id="8538358978858059843">クラウド サービスへのキャストを有効にしますか？</translation>
 <translation id="8539727552378197395">いいえ（HTTP のみ）</translation>
-<translation id="8541166929715485291">システムデータを送信します（診断データと端末およびアプリの使用状況データを Google に自動送信します）。この設定は所有者によって指定されており、所有者は、この端末の診断データと使用状況データを Google に送信することを選択している可能性があります。これは<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />で確認できます。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">パスワードを確認できませんでした。この監視対象ユーザーの管理者によって最近パスワードが変更された可能性があります。パスワードが変更されている場合、新しいパスワードは次回のログインから適用されます。古いパスワードでログインをお試しください。</translation>
 <translation id="8546186510985480118">端末の空き領域が少なくなっています</translation>
 <translation id="8546306075665861288">画像キャッシュ</translation>
@@ -5185,7 +5180,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> のウィンドウを共有しています。</translation>
 <translation id="8946359700442089734">この <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスでデバッグ機能が完全に有効になっていませんでした。</translation>
 <translation id="894871326938397531">シークレット モードを終了しますか？</translation>
-<translation id="8952774786254665439">プリンタの詳細オプション</translation>
 <translation id="895347679606913382">開始しています...</translation>
 <translation id="8954952943849489823">移動できませんでした。予期しないエラー: $1</translation>
 <translation id="895586998699996576">$1 画像</translation>
@@ -5327,7 +5321,6 @@
 <translation id="91568222606626347">ショートカットを作成...</translation>
 <translation id="9157697743260533322">すべてのユーザーで自動更新を行うよう設定できませんでした（プリフライト開始エラー: <ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">認証時にネットワーク通信の問題が発生しました。ネットワーク接続を確認して、もう一度お試しください。</translation>
-<translation id="916501514001398070">システムデータを送信します。この端末では現在、診断データと端末およびアプリの使用状況データが Google に自動送信されるように設定されています。この設定は所有者によって指定されています。これに加えて [ウェブとアプリのアクティビティ] をオンにすると、この情報がアカウントに保存され、[マイ アクティビティ] で管理できるようになります。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">ピクチャー イン ピクチャー</translation>
 <translation id="9168436347345867845">後で行う</translation>
 <translation id="9169496697824289689">キーボード ショートカットの表示</translation>

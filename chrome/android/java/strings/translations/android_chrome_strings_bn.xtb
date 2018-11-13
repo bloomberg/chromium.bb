@@ -938,7 +938,6 @@
 <translation id="8073388330009372546">নতুন ট্যাবে ছবি খুলুন</translation>
 <translation id="8084114998886531721">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="8087000398470557479">এই সামগ্রী Google দ্বারা বিতরণ করা <ph name="DOMAIN_NAME" /> থেকে এসেছে।</translation>
-<translation id="8087980556724996220">অটো-ফিল অ্যাসিস্ট্যান্ট <ph name="DURATION_SECONDS" /> সেকেন্ডে বন্ধ হবে…</translation>
 <translation id="8103578431304235997">ছদ্মবেশী ট্যাব</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">সম্পর্কিত পৃষ্ঠাগুলি সাজেস্ট করুন</translation>
@@ -1027,7 +1026,6 @@
 <translation id="8812260976093120287">কিছু ওয়েবসাইটে আপনি উপরের সমর্থিত পেমেন্ট অ্যাপ্লিকেশান দিয়ে অর্থপ্রদান করতে পারেন।</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome এ খুলবে। চালিয়ে যাওয়ার মাধ্যমে আপনি Chrome এর <ph name="BEGIN_LINK1" />পরিষেবার শর্তাবলী<ph name="END_LINK1" /> ও <ph name="BEGIN_LINK2" />গোপনীয়তা বিজ্ঞপ্তি<ph name="END_LINK2" /> এবং <ph name="BEGIN_LINK3" />Family Link এর মাধ্যমে পরিচালিত Google অ্যাকাউন্টের গোপনীয়তা বিজ্ঞপ্তি<ph name="END_LINK3" />র সাথে সম্মত হচ্ছেন।</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
-<translation id="8823704566850948458">পাসওয়ার্ড সাজেস্ট করুন...</translation>
 <translation id="8833831881926404480">একটি সাইট আপনার স্ক্রিন শেয়ার করছে</translation>
 <translation id="883806473910249246">কন্টেন্ট ডাউনলোড করার সময় একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="8840953339110955557">এই পৃষ্ঠাটি হয়ত অনলাইন ভার্সনের থেকে আলাদা হতে পারে।</translation>
@@ -1075,7 +1073,6 @@
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন</translation>
 <translation id="9204836675896933765">১টি ফাইল বাকি</translation>
 <translation id="9206873250291191720">আ</translation>
-<translation id="9218033835049520260">শক্তিশালী পাসওয়ার্ড সাজেস্ট করুন...</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="932599481871055447">ডেটা সেভ করুন এবং দ্রুত ব্রাউজ করুন</translation>

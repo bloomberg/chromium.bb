@@ -397,6 +397,7 @@
 <translation id="4058278702844053247">正在加载网页</translation>
 <translation id="4065205963140826639">现在请尝试使用搜索键 + 向右箭头找到“下一个”按钮，然后按搜索键 + 空格键点击该按钮。</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{1个波浪号}other{#个波浪号}}</translation>
+<translation id="4086311032171418648">正在停止学习模式。</translation>
 <translation id="409334809956508737">上一个对象</translation>
 <translation id="4099274309791143834">包含子菜单</translation>
 <translation id="4101527861445851766">已选中的复选框</translation>
@@ -499,6 +500,7 @@
 <translation id="4877261390094455813">输入搜索查询内容。</translation>
 <translation id="4886524826165775965">第<ph name="INDEX" />项，共<ph name="TOTAL" />项</translation>
 <translation id="489907760999452556">内部链接</translation>
+<translation id="4915087353619183190">正在启动学习模式。要了解该模式的功能，请按 qwerty 键或可刷新的盲文键，也可以使用触摸手势。按 Ctrl+W 键或按 Esc 键即可退出。</translation>
 <translation id="492295894462528572">前言</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953585991029886728">编辑文本</translation>

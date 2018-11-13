@@ -775,13 +775,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3047732214002457234">Styr, hvordan Chrome-oprydning rapporterer data til Google</translation>
 <translation id="304775240152542058">Politikken styrer kommandolinjeparametre, der skal åbnes i den alternative browser.
 
-      Hvis politikken ikke konfigureres, er det kun webadressen der passeres som en kommandolinjeparameter.
+      Hvis politikken ikke konfigureres, er det kun webadressen, der videregives som en kommandolinjeparameter.
 
-      Hvis politikken er konfigureret med en liste over strenge, passeres hver streng til den alternative browser som en separat kommandolinjeparameter. I Windows tilknyttes parametre med mellemrum. I Mac OS X og Linux kan en parameter indeholde mellemrum og stadig blive behandlet som en enkelt parameter.
+      Hvis politikken er konfigureret med en liste over strenge, videregives hver streng til den alternative browser som en separat kommandolinjeparameter. I Windows tilknyttes parametre med mellemrum. I Mac OS X og Linux kan en parameter indeholde mellemrum og stadig blive behandlet som en enkelt parameter.
 
       Hvis et element indeholder ${url}, erstattes det med webadressen til den side, der skal åbnes.
 
-      Hvis intet element indeholder ${url}, tilføjes webadressen i slutningen af kommandolinjen.
+      Hvis ingen elementer indeholder ${url}, tilføjes webadressen i slutningen af kommandolinjen.
 
       Variabler for miljøet udvides. I Windows erstattes %ABC% med variabelværdien for ABC-miljøet. I Mac OS X og Linux erstattes ${ABC} med variabelværdien for ABC-miljøet.</translation>
 <translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgetermerkene og søgemaskinen i stedet for kun søgewebadressen.
