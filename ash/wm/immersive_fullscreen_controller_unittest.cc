@@ -370,6 +370,8 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
 
 // Test mouse event processing for top-of-screen reveal triggering.
 TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
+  // Create 2nd display for off screen test.
+  UpdateDisplay("800x600, 800x600");
   // Set up initial state.
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());

@@ -748,26 +748,31 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   aura::Window* contents_window =
       keyboard::KeyboardController::Get()->GetKeyboardWindow();
-  contents_window->SetBounds(gfx::Rect());
   contents_window->Show();
+  keyboard::KeyboardController::Get()->ShowKeyboard(false);
 
   // Make sure no pending mouse events in the queue.
   RunAllPendingInMessageLoop();
 
+  // TODO(oshima|yhanada): This simply make sure that targeting logic works, but
+  // doesn't mean it'll deliver the event to the target. Fix this to make this
+  // more reliable.
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
 
   ui::test::EventGenerator event_generator(root_window, contents_window);
   event_generator.ClickLeftButton();
-  int expected_mouse_presses = 1;
-  EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
+  EXPECT_EQ(2, handler.num_mouse_events());
 
   for (int block_reason = FIRST_BLOCK_REASON;
        block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
+    SCOPED_TRACE(base::StringPrintf("Reason: %d", block_reason));
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+    handler.Reset();
     event_generator.ClickLeftButton();
-    expected_mouse_presses++;
-    EXPECT_EQ(expected_mouse_presses, handler.num_mouse_events() / 2);
+    // Click may generate CAPTURE_CHANGED event so make sure it's more than
+    // 2 (press,release);
+    EXPECT_LE(2, handler.num_mouse_events());
     UnblockUserSession();
   }
   root_window->RemovePreTargetHandler(&handler);

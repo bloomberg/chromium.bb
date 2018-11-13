@@ -60,7 +60,7 @@ TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::CAPTURE_REGION));
 
-  const gfx::Rect selection(100, 200, 300, 400);
+  const gfx::Rect selection(100, 200, 300, 399);
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->EnterPenPointerMode();
   event_generator->MoveTouch(selection.origin());
