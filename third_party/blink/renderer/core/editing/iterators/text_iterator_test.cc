@@ -69,6 +69,12 @@ TextIteratorBehavior EmitsSmallXForTextSecurityBehavior() {
       .Build();
 }
 
+TextIteratorBehavior EmitsCharactersBetweenAllVisiblePositionsBehavior() {
+  return TextIteratorBehavior::Builder()
+      .SetEmitsCharactersBetweenAllVisiblePositions(true)
+      .Build();
+}
+
 struct DOMTree : NodeTraversal {
   using PositionType = Position;
   using TextIteratorType = TextIterator;
@@ -189,8 +195,7 @@ TEST_F(TextIteratorTest, IgnoreAltTextInTextControls) {
   static const char* input = "<p>Hello <input type='text' value='value'>!</p>";
   SetBodyContent(input);
   EXPECT_EQ("[Hello ][][!]", Iterate<DOMTree>(EmitsImageAltTextBehavior()));
-  EXPECT_EQ("[Hello ][][\n][value][\n][!]",
-            Iterate<FlatTree>(EmitsImageAltTextBehavior()));
+  EXPECT_EQ("[Hello ][][!]", Iterate<FlatTree>(EmitsImageAltTextBehavior()));
 }
 
 TEST_F(TextIteratorTest, DisplayAltTextInImageControls) {
@@ -204,7 +209,7 @@ TEST_F(TextIteratorTest, NotEnteringTextControls) {
   static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
   SetBodyContent(input);
   EXPECT_EQ("[Hello ][][!]", Iterate<DOMTree>());
-  EXPECT_EQ("[Hello ][][\n][input][\n][!]", Iterate<FlatTree>());
+  EXPECT_EQ("[Hello ][][!]", Iterate<FlatTree>());
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOption) {
@@ -212,7 +217,7 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOption) {
   SetBodyContent(input);
   EXPECT_EQ("[Hello ][\n][input][!]",
             Iterate<DOMTree>(EntersTextControlsBehavior()));
-  EXPECT_EQ("[Hello ][][\n][input][\n][!]",
+  EXPECT_EQ("[Hello ][\n][input][\n][!]",
             Iterate<FlatTree>(EntersTextControlsBehavior()));
 }
 
@@ -224,10 +229,8 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex) {
   SetBodyContent(input);
   EXPECT_EQ("[\n][Beginning of range][\n][Under DOM nodes][\n][End of range]",
             Iterate<DOMTree>(EntersTextControlsBehavior()));
-  EXPECT_EQ(
-      "[][\n][Beginning of range][\n][][\n][Under DOM nodes][\n][][\n][End of "
-      "range]",
-      Iterate<FlatTree>(EntersTextControlsBehavior()));
+  EXPECT_EQ("[Beginning of range][\n][Under DOM nodes][\n][End of range]",
+            Iterate<FlatTree>(EntersTextControlsBehavior()));
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTree) {
@@ -545,6 +548,7 @@ TEST_F(TextIteratorTest, WhitespaceCollapseForReplacedElements) {
   SetBodyContent(body_content);
   EXPECT_EQ("[Some text ][][Some more text]",
             Iterate<DOMTree>(CollapseTrailingSpaceBehavior()));
+  // <input type=button> is not text control element
   EXPECT_EQ("[Some text ][][Button text][Some more text]",
             Iterate<FlatTree>(CollapseTrailingSpaceBehavior()));
 }
@@ -1141,6 +1145,15 @@ TEST_P(ParameterizedTextIteratorTest, HiddenFirstLetterInPre) {
       "body::first-letter{visibility:hidden} body{white-space:pre}");
   SetBodyContent("foo");
   EXPECT_EQ("[oo]", Iterate<DOMTree>());
+}
+
+TEST_P(ParameterizedTextIteratorTest, TextOffsetMappingAndFlatTree) {
+  // Tests that TextOffsetMapping should skip text control even though it runs
+  // on flat tree.
+  SetBodyContent("foo <input value='bla bla. bla bla.'> bar");
+  EXPECT_EQ(
+      "[foo ][,][ bar]",
+      Iterate<FlatTree>(EmitsCharactersBetweenAllVisiblePositionsBehavior()));
 }
 
 }  // namespace text_iterator_test

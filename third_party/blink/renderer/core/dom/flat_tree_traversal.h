@@ -60,6 +60,9 @@ class CORE_EXPORT FlatTreeTraversal {
   static Node* Next(const Node&);
   static Node* Next(const Node&, const Node* stay_within);
   static Node* Previous(const Node&);
+  // Returns the previous of |node| in preorder. When |stay_within| is given,
+  // returns nullptr if the previous is not a descendant of |stay_within|.
+  static Node* Previous(const Node& node, const Node* stay_within);
 
   static Node* FirstChild(const Node&);
   static Node* LastChild(const Node&);
@@ -280,6 +283,17 @@ inline Node* FlatTreeTraversal::TraversePrevious(const Node& node) {
     return previous;
   }
   return TraverseParent(node);
+}
+
+inline Node* FlatTreeTraversal::Previous(const Node& node,
+                                         const Node* stay_within) {
+  if (!stay_within)
+    return Previous(node);
+  DCHECK(IsDescendantOf(node, *stay_within));
+  Node* previous = Previous(node);
+  if (previous == stay_within)
+    return nullptr;
+  return previous;
 }
 
 inline Node* FlatTreeTraversal::FirstChild(const Node& node) {

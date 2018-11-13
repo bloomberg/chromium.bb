@@ -204,6 +204,9 @@ class CORE_EXPORT TextOffsetMapping final {
  private:
   TextOffsetMapping(const InlineContents&, const TextIteratorBehavior&);
 
+  template <typename Traverser>
+  static InlineContents FindInlineContentsInternal(const Node*, Traverser);
+
   const TextIteratorBehavior behavior_;
   const EphemeralRangeInFlatTree range_;
   const String text16_;

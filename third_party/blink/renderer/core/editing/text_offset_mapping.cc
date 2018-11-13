@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
@@ -233,11 +234,11 @@ TextOffsetMapping::ForwardRange TextOffsetMapping::ForwardRangeOf(
 }
 
 // static
-TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
-    const PositionInFlatTree& position) {
-  // TODO(xiaochengh): Make this function not cross text control boundaries.
-  for (const Node* node = position.NodeAsRangeLastNode(); node;
-       node = FlatTreeTraversal::Previous(*node)) {
+template <typename Traverser>
+TextOffsetMapping::InlineContents TextOffsetMapping::FindInlineContentsInternal(
+    const Node* start_node,
+    Traverser traverser) {
+  for (const Node* node = start_node; node; node = traverser(*node)) {
     const InlineContents inline_contents = ComputeInlineContentsFromNode(*node);
     if (inline_contents.IsNotNull())
       return inline_contents;
@@ -246,18 +247,78 @@ TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
 }
 
 // static
+TextOffsetMapping::InlineContents TextOffsetMapping::FindBackwardInlineContents(
+    const PositionInFlatTree& position) {
+  const Node* previous_node = position.NodeAsRangeLastNode();
+  if (!previous_node)
+    return InlineContents();
+
+  if (const TextControlElement* enclosing_text_control =
+          EnclosingTextControl(position)) {
+    if (!FlatTreeTraversal::IsDescendantOf(*previous_node,
+                                           *enclosing_text_control)) {
+      // The first position in a text control reaches here.
+      return InlineContents();
+    }
+
+    return TextOffsetMapping::FindInlineContentsInternal(
+        previous_node, [enclosing_text_control](const Node& node) {
+          return FlatTreeTraversal::Previous(node, enclosing_text_control);
+        });
+  }
+
+  auto previous_skipping_text_control = [](const Node& node) -> const Node* {
+    DCHECK(!EnclosingTextControl(&node));
+    const Node* previous = FlatTreeTraversal::Previous(node);
+    const TextControlElement* previous_text_control =
+        EnclosingTextControl(previous);
+    if (!previous_text_control)
+      return previous;
+    return previous_text_control;
+  };
+
+  if (const TextControlElement* last_enclosing_text_control =
+          EnclosingTextControl(previous_node)) {
+    // Example, <input value=foo><span>bar</span>, span@beforeAnchor
+    return TextOffsetMapping::FindInlineContentsInternal(
+        last_enclosing_text_control, previous_skipping_text_control);
+  }
+  return TextOffsetMapping::FindInlineContentsInternal(
+      previous_node, previous_skipping_text_control);
+}
+
+// static
 // Note: "doubleclick-whitespace-img-crash.html" call |NextWordPosition())
 // with AfterNode(IMG) for <body><img></body>
 TextOffsetMapping::InlineContents TextOffsetMapping::FindForwardInlineContents(
     const PositionInFlatTree& position) {
-  // TODO(xiaochengh): Make this function not cross text control boundaries.
-  for (const Node* node = position.NodeAsRangeFirstNode(); node;
-       node = FlatTreeTraversal::Next(*node)) {
-    const InlineContents inline_contents = ComputeInlineContentsFromNode(*node);
-    if (inline_contents.IsNotNull())
-      return inline_contents;
+  const Node* next_node = position.NodeAsRangeFirstNode();
+  if (!next_node)
+    return InlineContents();
+
+  if (const TextControlElement* enclosing_text_control =
+          EnclosingTextControl(position)) {
+    if (!FlatTreeTraversal::IsDescendantOf(*next_node,
+                                           *enclosing_text_control)) {
+      // The last position in a text control reaches here.
+      return InlineContents();
+    }
+
+    return TextOffsetMapping::FindInlineContentsInternal(
+        next_node, [enclosing_text_control](const Node& node) {
+          return FlatTreeTraversal::Next(node, enclosing_text_control);
+        });
   }
-  return InlineContents();
+
+  auto next_skipping_text_control = [](const Node& node) {
+    DCHECK(!EnclosingTextControl(&node));
+    if (IsTextControl(node))
+      return FlatTreeTraversal::NextSkippingChildren(node);
+    return FlatTreeTraversal::Next(node);
+  };
+  DCHECK(!EnclosingTextControl(next_node));
+  return TextOffsetMapping::FindInlineContentsInternal(
+      next_node, next_skipping_text_control);
 }
 
 // ----
