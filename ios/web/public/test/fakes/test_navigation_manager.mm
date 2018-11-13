@@ -169,6 +169,11 @@ void TestNavigationManager::Restore(
   NOTREACHED();
 }
 
+void TestNavigationManager::AddRestoreCompletionCallback(
+    base::OnceClosure callback) {
+  NOTREACHED();
+}
+
 void TestNavigationManager::CopyStateFromAndPrune(
     const NavigationManager* source) {
   NOTREACHED();

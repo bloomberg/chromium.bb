@@ -398,6 +398,11 @@ void NavigationManagerImpl::LoadIfNecessary() {
   delegate_->LoadIfNecessary();
 }
 
+void NavigationManagerImpl::AddRestoreCompletionCallback(
+    base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 void NavigationManagerImpl::WillRestore(size_t item_count) {
   // It should be uncommon for the user to have more than 100 items in their
   // session, so bucketing 100+ logs together is fine.
