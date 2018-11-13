@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -225,9 +224,8 @@ public class ActivityTabTaskDescriptionHelper {
      */
     public void updateTaskDescription(String label, Bitmap icon) {
         int color = mDefaultThemeColor;
-        TabThemeColorHelper tabTheme = TabThemeColorHelper.get(mCurrentTab);
-        if (mCurrentTab != null && !tabTheme.isDefaultColor()) {
-            color = tabTheme.getColor();
+        if (mCurrentTab != null && !mCurrentTab.isDefaultThemeColor()) {
+            color = mCurrentTab.getThemeColor();
         }
         ApiCompatibilityUtils.setTaskDescription(mActivity, label, icon, color);
     }

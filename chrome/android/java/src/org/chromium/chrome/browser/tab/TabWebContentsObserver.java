@@ -186,6 +186,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void didFailLoad(
                 boolean isMainFrame, int errorCode, String description, String failingUrl) {
+            mTab.updateThemeColorIfNeeded(true);
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
                 observers.next().onDidFailLoad(
@@ -242,6 +243,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             }
 
             if (errorCode != 0) {
+                mTab.updateThemeColorIfNeeded(true);
                 if (isInMainFrame) mTab.didFailPageLoad(errorCode);
 
                 recordErrorInPolicyAuditor(url, errorDescription, errorCode);
@@ -283,13 +285,14 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void didChangeThemeColor(int color) {
-            TabThemeColorHelper.get(mTab).updateIfNeeded(true);
+            mTab.updateThemeColorIfNeeded(true);
         }
 
         @Override
         public void didAttachInterstitialPage() {
             InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
             mTab.showRenderedPage();
+            mTab.updateThemeColorIfNeeded(false);
 
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
@@ -308,6 +311,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void didDetachInterstitialPage() {
             InfoBarContainer.get(mTab).setVisibility(View.VISIBLE);
+            mTab.updateThemeColorIfNeeded(false);
 
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
