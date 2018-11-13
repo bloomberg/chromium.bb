@@ -116,12 +116,12 @@ PreviousPositionOf(const VisiblePositionInFlatTree&,
 // TODO(yoichio): Replace |startOfWord| to |startOfWordPosition| because
 // returned Position should be canonicalized with |previousBoundary()| by
 // TextItetator.
-CORE_EXPORT Position StartOfWordPosition(const VisiblePosition&,
+CORE_EXPORT Position StartOfWordPosition(const Position&,
                                          EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition StartOfWord(const VisiblePosition&,
                                         EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
-StartOfWordPosition(const VisiblePositionInFlatTree&,
+StartOfWordPosition(const PositionInFlatTree&,
                     EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 StartOfWord(const VisiblePositionInFlatTree&,

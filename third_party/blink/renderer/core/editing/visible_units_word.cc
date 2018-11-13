@@ -136,44 +136,46 @@ PositionInFlatTree PreviousWordPositionInternal(
   return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
-unsigned StartWordBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  TRACE_EVENT0("blink", "startWordBoundary");
-  DCHECK(offset);
-  if (may_have_more_context &&
-      !StartOfLastWordBoundaryContext(characters, offset)) {
-    need_more_context = true;
-    return 0;
-  }
-  need_more_context = false;
-  U16_BACK_1(characters, 0, offset);
-  return FindWordStartBoundary(characters, length, offset);
-}
-
-template <typename Strategy>
-PositionTemplate<Strategy> StartOfWordAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c,
+PositionInFlatTree StartOfWordPositionInternal(
+    const PositionInFlatTree& position,
     EWordSide side) {
-  DCHECK(c.IsValid()) << c;
-  // TODO(yosin) This returns a null VP for c at the start of the document
-  // and |side| == |kPreviousWordIfOnBoundary|
-  VisiblePositionTemplate<Strategy> p = c;
-  if (side == kNextWordIfOnBoundary) {
-    // at paragraph end, the startofWord is the current position
-    if (IsEndOfParagraph(c))
-      return c.DeepEquivalent();
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
 
-    p = NextPositionOf(c);
-    if (p.IsNull())
-      return c.DeepEquivalent();
-  }
-  return PreviousBoundary(p, StartWordBoundary);
+   public:
+    Finder(EWordSide side) : side_(side) {}
+
+   private:
+    Position Find(const String text, unsigned offset) final {
+      DCHECK_LE(offset, text.length());
+      if (!is_first_time_)
+        return FindInternal(text, offset);
+      is_first_time_ = false;
+      if (side_ == kNextWordIfOnBoundary) {
+        if (offset == text.length())
+          return Position::After(text.length());
+        return FindInternal(text, offset + 1);
+      }
+      if (!offset)
+        return Position::Before(offset);
+      return FindInternal(text, offset);
+    }
+
+    static Position FindInternal(const String text, unsigned offset) {
+      DCHECK_LE(offset, text.length());
+      TextBreakIterator* it =
+          WordBreakIterator(text.Characters16(), text.length());
+      const int result = it->preceding(offset);
+      if (result == kTextBreakDone)
+        return Position();
+      return Position::Before(result);
+    }
+
+    const EWordSide side_;
+    bool is_first_time_ = true;
+  } finder(side);
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
-
 }  // namespace
 
 PositionInFlatTree EndOfWordPosition(const PositionInFlatTree& start,
@@ -236,23 +238,28 @@ PositionWithAffinity PreviousWordPosition(const Position& start) {
   return ToPositionInDOMTreeWithAffinity(prev);
 }
 
-Position StartOfWordPosition(const VisiblePosition& position, EWordSide side) {
-  return StartOfWordAlgorithm<EditingStrategy>(position, side);
+PositionInFlatTree StartOfWordPosition(const PositionInFlatTree& position,
+                                       EWordSide side) {
+  const PositionInFlatTree start = StartOfWordPositionInternal(position, side);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+             PositionInFlatTreeWithAffinity(start), position)
+      .GetPosition();
+}
+
+Position StartOfWordPosition(const Position& position, EWordSide side) {
+  return ToPositionInDOMTree(
+      StartOfWordPosition(ToPositionInFlatTree(position), side));
 }
 
 VisiblePosition StartOfWord(const VisiblePosition& position, EWordSide side) {
-  return CreateVisiblePosition(StartOfWordPosition(position, side));
-}
-
-PositionInFlatTree StartOfWordPosition(
-    const VisiblePositionInFlatTree& position,
-    EWordSide side) {
-  return StartOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
+  return CreateVisiblePosition(
+      StartOfWordPosition(position.DeepEquivalent(), side));
 }
 
 VisiblePositionInFlatTree StartOfWord(const VisiblePositionInFlatTree& position,
                                       EWordSide side) {
-  return CreateVisiblePosition(StartOfWordPosition(position, side));
+  return CreateVisiblePosition(
+      StartOfWordPosition(position.DeepEquivalent(), side));
 }
 
 }  // namespace blink
