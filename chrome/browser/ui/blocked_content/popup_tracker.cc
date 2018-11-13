@@ -15,14 +15,16 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-void PopupTracker::CreateForWebContents(content::WebContents* contents,
-                                        content::WebContents* opener) {
+PopupTracker* PopupTracker::CreateForWebContents(content::WebContents* contents,
+                                                 content::WebContents* opener) {
   DCHECK(contents);
   DCHECK(opener);
-  if (!FromWebContents(contents)) {
-    contents->SetUserData(UserDataKey(),
-                          base::WrapUnique(new PopupTracker(contents, opener)));
+  auto* tracker = FromWebContents(contents);
+  if (!tracker) {
+    tracker = new PopupTracker(contents, opener);
+    contents->SetUserData(UserDataKey(), base::WrapUnique(tracker));
   }
+  return tracker;
 }
 
 PopupTracker::~PopupTracker() = default;
@@ -61,10 +63,16 @@ void PopupTracker::WebContentsDestroyed() {
   }
 
   if (opener_source_id_ != ukm::kInvalidSourceId) {
+    const int kMaxInteractions = 100;
+    int capped_interactions = num_interactions_ > kMaxInteractions
+                                  ? kMaxInteractions
+                                  : num_interactions_;
     ukm::builders::Popup_Closed(opener_source_id_)
         .SetEngagementTime(ukm::GetExponentialBucketMinForUserTiming(
             total_foreground_duration.InMilliseconds()))
         .SetUserInitiatedClose(web_contents()->GetClosedByUserGesture())
+        .SetTrusted(is_trusted_)
+        .SetNumInteractions(capped_interactions)
         .Record(ukm::UkmRecorder::Get());
   }
 }
@@ -92,4 +100,11 @@ void PopupTracker::OnVisibilityChanged(content::Visibility visibility) {
     visibility_tracker_.OnHidden();
   else
     visibility_tracker_.OnShown();
+}
+
+void PopupTracker::DidGetUserInteraction(
+    const blink::WebInputEvent::Type type) {
+  // TODO(csharrison): It would be nice if ctrl-W could be filtered out here,
+  // but the initial ctrl key press is registered as a kRawKeyDown.
+  num_interactions_++;
 }

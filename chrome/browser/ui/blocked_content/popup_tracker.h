@@ -26,9 +26,11 @@ class ScopedVisibilityTracker;
 class PopupTracker : public content::WebContentsObserver,
                      public content::WebContentsUserData<PopupTracker> {
  public:
-  static void CreateForWebContents(content::WebContents* contents,
-                                   content::WebContents* opener);
+  static PopupTracker* CreateForWebContents(content::WebContents* contents,
+                                            content::WebContents* opener);
   ~PopupTracker() override;
+
+  void set_is_trusted(bool is_trusted) { is_trusted_ = is_trusted; }
 
  private:
   friend class content::WebContentsUserData<PopupTracker>;
@@ -40,6 +42,7 @@ class PopupTracker : public content::WebContentsObserver,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
   // Will be unset until the first navigation commits. Will be set to the total
   // time the contents was visible at commit time.
@@ -50,10 +53,16 @@ class PopupTracker : public content::WebContentsObserver,
 
   ScopedVisibilityTracker visibility_tracker_;
 
+  // The number of user interactions occuring in this popup tab.
+  int num_interactions_ = 0;
+
   // The id of the web contents that created the popup at the time of creation.
   // SourceIds are permanent so it's okay to use at any point so long as it's
   // not invalid.
   const ukm::SourceId opener_source_id_;
+
+  bool is_trusted_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PopupTracker);
 };
 
