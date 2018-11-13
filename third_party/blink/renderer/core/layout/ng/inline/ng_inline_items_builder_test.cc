@@ -57,6 +57,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
       }
       builder.Append(input.text, input.layout_text->Style(), input.layout_text);
     }
+    builder.ExitBlock();
     text_ = builder.ToString();
     ValidateItems();
     CheckReuseItemsProducesSameResult(inputs);
@@ -111,6 +112,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
       }
     }
 
+    reuse_builder.ExitBlock();
     String reuse_text = reuse_builder.ToString();
     EXPECT_EQ(text_, reuse_text);
   }
