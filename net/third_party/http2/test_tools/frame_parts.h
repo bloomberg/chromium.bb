@@ -12,6 +12,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <vector>
 
 #include "base/logging.h"

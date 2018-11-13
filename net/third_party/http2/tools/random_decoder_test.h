@@ -12,6 +12,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -236,7 +237,7 @@ class RandomDecoderTest : public ::testing::Test {
     return ValidateDoneAndOffset(offset, validator);
   }
 
-  // Expose |random_| as Http2Random so callers do not have to care about which
+  // Expose |random_| as Http2Random so callers don't have to care about which
   // sub-class of Http2Random is used, nor can they rely on the specific
   // sub-class that RandomDecoderTest uses.
   Http2Random& Random() { return random_; }

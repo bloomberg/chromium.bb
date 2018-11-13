@@ -17,10 +17,6 @@
 #include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// It's rather time consuming to decode large buffers one at a time,
-// especially with the log level cranked up. So, by default we don't do
-// that unless explicitly requested.
-
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;

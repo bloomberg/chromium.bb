@@ -135,9 +135,8 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
   AssertionResult DecodePayloadAndValidateSeveralWays(
       Http2StringPiece payload,
       const FrameParts& expected) {
-    Validator validator = [&expected, this](
-                              const DecodeBuffer& input,
-                              DecodeStatus status) -> AssertionResult {
+    auto validator = [&expected, this](const DecodeBuffer& input,
+                                       DecodeStatus status) -> AssertionResult {
       VERIFY_EQ(status, DecodeStatus::kDecodeDone);
       VERIFY_AND_RETURN_SUCCESS(VerifyCollected(expected));
     };

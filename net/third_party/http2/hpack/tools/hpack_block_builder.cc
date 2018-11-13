@@ -63,6 +63,7 @@ void HpackBlockBuilder::AppendEntryTypeAndVarint(HpackEntryType entry_type,
       HTTP2_BUG << "Unreached, entry_type=" << entry_type;
       high_bits = 0;
       prefix_length = 0;
+      break;
   }
   AppendHighBitsAndVarint(high_bits, prefix_length, varint);
 }

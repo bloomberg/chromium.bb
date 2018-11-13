@@ -4,8 +4,7 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_block_decoder.h"
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <sstream>
 
 #include "base/logging.h"

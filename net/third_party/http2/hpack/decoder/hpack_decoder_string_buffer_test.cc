@@ -6,6 +6,7 @@
 
 // Tests of HpackDecoderStringBuffer.
 
+#include <initializer_list>
 #include <sstream>
 
 #include "base/logging.h"

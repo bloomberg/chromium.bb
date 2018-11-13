@@ -13,6 +13,8 @@
 // split across buffer boundaries, than the cost of buffering upon
 // those rare occurrences is small, which then simplifies the callers.
 
+#include <cstdint>
+
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_http2_structures.h"
