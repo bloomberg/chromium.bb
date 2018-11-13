@@ -30,10 +30,15 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
-// TODO(posciak): remove this once V4L2 headers are updated.
-#define V4L2_PIX_FMT_MT21 v4l2_fourcc('M', 'T', '2', '1')
-#ifndef V4L2_BUF_FLAG_LAST
-#define V4L2_BUF_FLAG_LAST 0x00100000
+// TODO(mojahsu): remove this once V4L2 headers are updated.
+#ifndef V4L2_PIX_FMT_JPEG_RAW
+#define V4L2_PIX_FMT_JPEG_RAW v4l2_fourcc('J', 'P', 'G', 'R')
+#endif
+#ifndef V4L2_CID_JPEG_LUMA_QUANTIZATION
+#define V4L2_CID_JPEG_LUMA_QUANTIZATION (V4L2_CID_JPEG_CLASS_BASE + 5)
+#endif
+#ifndef V4L2_CID_JPEG_CHROMA_QUANTIZATION
+#define V4L2_CID_JPEG_CHROMA_QUANTIZATION (V4L2_CID_JPEG_CLASS_BASE + 6)
 #endif
 
 namespace media {
@@ -310,6 +315,7 @@ class MEDIA_GPU_EXPORT V4L2Device
     kEncoder,
     kImageProcessor,
     kJpegDecoder,
+    kJpegEncoder,
   };
 
   // Create and initialize an appropriate V4L2Device instance for the current
@@ -433,8 +439,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Return true if image processing is supported, false otherwise.
   virtual bool IsImageProcessingSupported() = 0;
 
-  // Return true if JPEG decoding is supported, false otherwise.
+  // Return true if JPEG codec is supported, false otherwise.
   virtual bool IsJpegDecodingSupported() = 0;
+  virtual bool IsJpegEncodingSupported() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;

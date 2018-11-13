@@ -16,6 +16,7 @@ namespace media {
 // JPEG encoder interface.
 class MEDIA_EXPORT JpegEncodeAccelerator {
  public:
+  static constexpr int32_t kInvalidBitstreamBufferId = -1;
   enum Status {
     ENCODE_OK,
 
@@ -91,7 +92,8 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
   // Client::NotifyError() callback.
   // Parameters:
   //  |video_frame| contains the YUV image to be encoded.
-  //  |quality| of JPEG image.
+  //  |quality| of JPEG image. The range is from 1~100. High value means high
+  //  quality.
   //  |exif_buffer| contains Exif data to be inserted into JPEG image. If it's
   //  nullptr, the JFIF APP0 segment will be inserted.
   //  |output_buffer| that contains output buffer for encoded result. Clients

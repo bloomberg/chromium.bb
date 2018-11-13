@@ -75,6 +75,7 @@ class GenericV4L2Device : public V4L2Device {
   bool IsImageProcessingSupported() override;
 
   bool IsJpegDecodingSupported() override;
+  bool IsJpegEncodingSupported() override;
 
  private:
   // Vector of video device node paths and corresponding pixelformats supported
