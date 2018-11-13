@@ -3702,7 +3702,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="6522797484310591766">Jetzt anmelden</translation>
 <translation id="6527303717912515753">Teilen</translation>
-<translation id="6528513914570774834">Anderen Nutzern dieses Geräts erlauben, dieses Netzwerk zu verwenden</translation>
+<translation id="6528513914570774834">Anderen Nutzern des Geräts erlauben, dieses Netzwerk zu verwenden</translation>
 <translation id="652948702951888897">Chrome-Verlauf</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> wird synchronisiert...</translation>
 <translation id="6530681427077572136">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Sie können diese Berechtigung jederzeit in den Geräteeinstellungen ändern. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
@@ -5340,7 +5340,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9020362265352758658">4-fach</translation>
 <translation id="9021662811137657072">Virus gefunden</translation>
 <translation id="9022847679183471841">Dieses Konto wird bereits von <ph name="AVATAR_NAME" /> auf diesem Computer verwendet.</translation>
-<translation id="9023009238991294202">Andere Nutzer dieses Geräts können dieses Netzwerk verwenden.</translation>
+<translation id="9023009238991294202">Andere Nutzer des Geräts können dieses Netzwerk verwenden.</translation>
 <translation id="9024127637873500333">In &amp;neuem Tab öffnen</translation>
 <translation id="9024158959543687197">Fehler beim Bereitstellen der Freigabe. Überprüfen Sie die Dateifreigabe-URL und versuchen Sie es noch einmal.</translation>
 <translation id="9024331582947483881">Vollbild</translation>
