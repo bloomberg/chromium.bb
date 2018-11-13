@@ -52,6 +52,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail(
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['linux', 'nvidia'], bug=874620)
+    self.Fail(
+        'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
+        ['win', 'nvidia', 'opengl'], bug=874620)
 
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
@@ -80,6 +83,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
         ['linux', 'nvidia'], bug=772651)
+    self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
+        ['android', 'nvidia'], bug=772651)
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)

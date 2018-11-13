@@ -116,6 +116,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'vulkan'], bug=798117)
     self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
         ['linux', 'nvidia'], bug=798117)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['android', 'nvidia'], bug=798117)
     self.Fail('conformance/glsl/bugs/' +
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
@@ -867,10 +869,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'],
         bug=663071)
-    # TODO(fserb): uncomment this once the overall self.Fail is removed above.
-    # self.Fail('conformance/offscreencanvas/' +
-    #     'context-attribute-preserve-drawing-buffer.html',
-    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=693135)
+    self.Fail('conformance/offscreencanvas/' +
+        'context-attribute-preserve-drawing-buffer.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=693135)
     self.Fail('WebglExtension_EXT_sRGB',
         ['android',
          ('qualcomm', 'Adreno (TM) 420'), ('qualcomm', 'Adreno (TM) 430')])
