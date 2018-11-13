@@ -30,8 +30,8 @@ gfx::Rect ContainerFullscreenBehavior::GetOccludedBounds(
   return occluded_bounds_;
 }
 
-ContainerType ContainerFullscreenBehavior::GetType() const {
-  return ContainerType::FULLSCREEN;
+mojom::ContainerType ContainerFullscreenBehavior::GetType() const {
+  return mojom::ContainerType::kFullscreen;
 }
 
 void ContainerFullscreenBehavior::SetOccludedBounds(

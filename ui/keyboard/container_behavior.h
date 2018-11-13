@@ -8,8 +8,8 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/keyboard_export.h"
+#include "ui/keyboard/public/keyboard_controller_types.mojom.h"
 
 namespace aura {
 class Window;
@@ -90,7 +90,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual bool HandlePointerEvent(const ui::LocatedEvent& event,
                                   const display::Display& current_display) = 0;
 
-  virtual ContainerType GetType() const = 0;
+  virtual mojom::ContainerType GetType() const = 0;
 
   // Removing focus from a text field should cause the keyboard to be dismissed.
   virtual bool TextBlurHidesKeyboard() const = 0;

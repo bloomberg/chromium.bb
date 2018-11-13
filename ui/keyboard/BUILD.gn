@@ -141,7 +141,7 @@ build_closure("inputview") {
 mojom("mojom") {
   sources = [
     "public/keyboard_config.mojom",
-    "public/keyboard_enable_flag.mojom",
+    "public/keyboard_controller_types.mojom",
   ]
 }
 

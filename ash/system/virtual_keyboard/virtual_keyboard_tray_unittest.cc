@@ -28,8 +28,9 @@ class VirtualKeyboardTrayTest : public AshTestBase {
     keyboard_controller()->LoadKeyboardWindowInBackground();
     // Wait for the keyboard window to load.
     base::RunLoop().RunUntilIdle();
-    keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
-                                            base::nullopt, base::DoNothing());
+    keyboard_controller()->SetContainerType(
+        keyboard::mojom::ContainerType::kFloating, base::nullopt,
+        base::DoNothing());
   }
 
   keyboard::KeyboardController* keyboard_controller() {

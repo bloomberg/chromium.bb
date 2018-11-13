@@ -160,6 +160,14 @@ void ChromeKeyboardControllerClient::HideKeyboard(
   keyboard_controller_ptr_->HideKeyboard(reason);
 }
 
+void ChromeKeyboardControllerClient::SetContainerType(
+    keyboard::mojom::ContainerType container_type,
+    const base::Optional<gfx::Rect>& target_bounds,
+    base::OnceCallback<void(bool)> callback) {
+  keyboard_controller_ptr_->SetContainerType(container_type, target_bounds,
+                                             std::move(callback));
+}
+
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
   DCHECK(cached_keyboard_config_);
   if (cached_keyboard_config_->overscroll_behavior !=

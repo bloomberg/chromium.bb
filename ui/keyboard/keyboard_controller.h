@@ -21,7 +21,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/keyboard/container_behavior.h"
-#include "ui/keyboard/container_type.h"
 #include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
@@ -29,7 +28,7 @@
 #include "ui/keyboard/keyboard_ukm_recorder.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/public/keyboard_config.mojom.h"
-#include "ui/keyboard/public/keyboard_enable_flag.mojom.h"
+#include "ui/keyboard/public/keyboard_controller_types.mojom.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
 
@@ -212,7 +211,7 @@ class KEYBOARD_EXPORT KeyboardController
   // Does not do anything if there is no keyboard window.
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
 
-  ContainerType GetActiveContainerType() const {
+  mojom::ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }
 
@@ -234,8 +233,8 @@ class KEYBOARD_EXPORT KeyboardController
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
-  void SetContainerType(ContainerType type,
-                        base::Optional<gfx::Rect> target_bounds,
+  void SetContainerType(mojom::ContainerType type,
+                        const base::Optional<gfx::Rect>& target_bounds,
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard draggable rect.
@@ -357,7 +356,7 @@ class KEYBOARD_EXPORT KeyboardController
   // time ago.
   void ShowKeyboardIfWithinTransientBlurThreshold();
 
-  void SetContainerBehaviorInternal(ContainerType type);
+  void SetContainerBehaviorInternal(mojom::ContainerType type);
 
   // Records that keyboard was shown on the currently focused UKM source.
   void RecordUkmKeyboardShown();

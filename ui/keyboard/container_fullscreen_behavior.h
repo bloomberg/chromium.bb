@@ -22,7 +22,7 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
       const gfx::Rect& requested_bounds_in_screen_coords) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
-  ContainerType GetType() const override;
+  mojom::ContainerType GetType() const override;
   void SetOccludedBounds(const gfx::Rect& occluded_bounds_in_window) override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;

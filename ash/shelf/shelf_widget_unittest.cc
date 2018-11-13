@@ -551,8 +551,9 @@ class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
     const gfx::Rect keyboard_bounds(0, 0, 1, 1);
-    keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
-                                            keyboard_bounds, base::DoNothing());
+    keyboard_controller()->SetContainerType(
+        keyboard::mojom::ContainerType::kFloating, keyboard_bounds,
+        base::DoNothing());
   }
 
   keyboard::KeyboardController* keyboard_controller() {

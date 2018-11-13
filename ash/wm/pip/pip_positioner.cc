@@ -94,7 +94,7 @@ std::vector<gfx::Rect> CollectCollisionRects(const display::Display& display) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->IsEnabled() &&
       keyboard_controller->GetActiveContainerType() ==
-          keyboard::ContainerType::FLOATING &&
+          keyboard::mojom::ContainerType::kFloating &&
       keyboard_controller->GetRootWindow() == root_window &&
       !keyboard_controller->visual_bounds_in_screen().IsEmpty()) {
     rects.push_back(keyboard_controller->visual_bounds_in_screen());
@@ -191,7 +191,7 @@ gfx::Rect PipPositioner::GetMovementArea(const display::Display& display) {
   // Include keyboard if it's not floating.
   if (keyboard_controller->IsEnabled() &&
       keyboard_controller->GetActiveContainerType() !=
-          keyboard::ContainerType::FLOATING) {
+          keyboard::mojom::ContainerType::kFloating) {
     gfx::Rect keyboard_bounds = keyboard_controller->visual_bounds_in_screen();
     work_area.Subtract(keyboard_bounds);
   }

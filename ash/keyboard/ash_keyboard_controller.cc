@@ -156,6 +156,14 @@ void AshKeyboardController::HideKeyboard(mojom::HideReason reason) {
   }
 }
 
+void AshKeyboardController::SetContainerType(
+    keyboard::mojom::ContainerType container_type,
+    const base::Optional<gfx::Rect>& target_bounds,
+    SetContainerTypeCallback callback) {
+  keyboard_controller_->SetContainerType(container_type, target_bounds,
+                                         std::move(callback));
+}
+
 void AshKeyboardController::OnSessionStateChanged(
     session_manager::SessionState state) {
   if (!keyboard_controller_->IsKeyboardEnableRequested())
