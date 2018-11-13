@@ -33,9 +33,12 @@ source_set("wayland") {
     "scoped_wl.h",
     "server.cc",
     "server.h",
+    "server_util.cc",
     "server_util.h",
     "zcr_notification_shell.cc",
     "zcr_notification_shell.h",
+    "zwp_text_input_manager.cc",
+    "zwp_text_input_manager.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
