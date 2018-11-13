@@ -99,7 +99,7 @@ class PasswordAccessorySheetViewBinder {
         protected void bind(Item item) {
             super.bind(item);
             getTextView().setTransformationMethod(
-                    item.isPassword() ? new PasswordTransformationMethod() : null);
+                    item.isObfuscated() ? new PasswordTransformationMethod() : null);
             getTextView().setText(item.getCaption());
             getTextView().setContentDescription(item.getContentDescription());
             if (item.getItemSelectedCallback() != null) {
@@ -153,7 +153,7 @@ class PasswordAccessorySheetViewBinder {
 
             // Setting the background to selectableItemBackground resets the padding to 0 on
             // Jelly Bean, so the padding should be set after the background.
-            if (!item.isPassword()) {
+            if (!item.isObfuscated()) {
                 setIconForBitmap(null); // Set the default icon, then try to get a better one.
                 item.fetchFavicon(itemView.getContext().getResources().getDimensionPixelSize(
                                           R.dimen.keyboard_accessory_suggestion_icon_size),

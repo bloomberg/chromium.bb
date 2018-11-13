@@ -37,6 +37,11 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
+using autofill::AccessorySheetData;
+using autofill::FillingStatus;
+using autofill::FooterCommand;
+using autofill::PasswordForm;
+using autofill::UserInfo;
 using autofill::FillingStatus;
 using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
@@ -149,10 +154,10 @@ class AccessorySheetDataBuilder {
   // Appends a field to the last UserInfo object.
   AccessorySheetDataBuilder& AppendField(const base::string16& display_text,
                                          const base::string16& a11y_description,
-                                         bool is_password,
+                                         bool is_obfuscated,
                                          bool selectable) {
     accessory_sheet_data_.mutable_user_info_list().back().add_field(
-        UserInfo::Field(display_text, a11y_description, is_password,
+        UserInfo::Field(display_text, a11y_description, is_obfuscated,
                         selectable));
     return *this;
   }
@@ -255,7 +260,7 @@ void PrintTo(const UserInfo::Field& field, std::ostream* os) {
   *os << "(display text: \"" << base::UTF16ToUTF8(field.display_text())
       << "\", a11y_description: \""
       << base::UTF16ToUTF8(field.a11y_description()) << "\", is "
-      << (field.is_password() ? "" : "not ") << "a password, is "
+      << (field.is_obfuscated() ? "" : "not ") << "obfuscated, is "
       << (field.selectable() ? "" : "not ") << "selectable)";
 }
 

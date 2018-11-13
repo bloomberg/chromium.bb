@@ -4,13 +4,15 @@
 
 #include "components/autofill/core/browser/accessory_sheet_data.h"
 
+namespace autofill {
+
 UserInfo::Field::Field(const base::string16& display_text,
                        const base::string16& a11y_description,
-                       bool is_password,
+                       bool is_obfuscated,
                        bool selectable)
     : display_text_(display_text),
       a11y_description_(a11y_description),
-      is_password_(is_password),
+      is_obfuscated_(is_obfuscated),
       selectable_(selectable) {}
 
 UserInfo::Field::Field(const Field& field) = default;
@@ -26,7 +28,8 @@ UserInfo::Field& UserInfo::Field::operator=(Field&& field) = default;
 bool UserInfo::Field::operator==(const UserInfo::Field& field) const {
   return display_text_ == field.display_text_ &&
          a11y_description_ == field.a11y_description_ &&
-         is_password_ == field.is_password_ && selectable_ == field.selectable_;
+         is_obfuscated_ == field.is_obfuscated_ &&
+         selectable_ == field.selectable_;
 }
 
 UserInfo::UserInfo() = default;
@@ -84,3 +87,5 @@ bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
   return title_ == data.title_ && user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
 }
+
+}  // namespace autofill

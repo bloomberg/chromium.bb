@@ -115,10 +115,10 @@ class PasswordAccessoryBridge {
 
     @CalledByNative
     private static void addFieldToUserInfo(Object objUserInfo, String displayText,
-            String a11yDescription, boolean isPassword, boolean selectable) {
+            String a11yDescription, boolean isObfuscated, boolean selectable) {
         ((UserInfo) objUserInfo)
                 .getFields()
-                .add(new UserInfo.Field(displayText, a11yDescription, isPassword, selectable));
+                .add(new UserInfo.Field(displayText, a11yDescription, isObfuscated, selectable));
     }
 
     @CalledByNative
@@ -146,13 +146,14 @@ class PasswordAccessoryBridge {
                         assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
                         KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
                                 AccessoryTabType.PASSWORDS,
-                                item.isPassword() ? AccessorySuggestionType.PASSWORD
-                                                  : AccessorySuggestionType.USERNAME);
-                        nativeOnFillingTriggered(mNativeView, item.isPassword(), item.getCaption());
+                                item.isObfuscated() ? AccessorySuggestionType.PASSWORD
+                                                    : AccessorySuggestionType.USERNAME);
+                        nativeOnFillingTriggered(
+                                mNativeView, item.isObfuscated(), item.getCaption());
                     };
                 }
                 items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
-                        field.isPassword(), itemSelectedCallback, this ::fetchFavicon));
+                        field.isObfuscated(), itemSelectedCallback, this ::fetchFavicon));
             }
         }
 
@@ -179,7 +180,7 @@ class PasswordAccessoryBridge {
     private native void nativeOnFaviconRequested(long nativePasswordAccessoryViewAndroid,
             int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
-            long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
+            long nativePasswordAccessoryViewAndroid, boolean isObfuscated, String textToFill);
     private native void nativeOnOptionSelected(
             long nativePasswordAccessoryViewAndroid, String selectedOption);
     private native void nativeOnGenerationRequested(long nativePasswordAccessoryViewAndroid);

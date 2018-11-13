@@ -9,10 +9,10 @@
 
 #include "base/strings/string16.h"
 
+namespace autofill {
+
 // Represents user data to be shown on the manual fallback UI (e.g. a Profile,
-// or a Credit Card, or the credentials for a website),
-// TODO(crbug.com/902425): Add a member to represent the field type and remove
-//                         the |is_password| field.
+// or a Credit Card, or the credentials for a website).
 class UserInfo {
  public:
   // Represents a selectable item, such as the username or a credit card
@@ -21,7 +21,7 @@ class UserInfo {
    public:
     Field(const base::string16& display_text,
           const base::string16& a11y_description,
-          bool is_password,
+          bool is_obfuscated,
           bool selectable);
     Field(const Field& field);
     Field(Field&& field);
@@ -35,7 +35,7 @@ class UserInfo {
 
     const base::string16& a11y_description() const { return a11y_description_; }
 
-    bool is_password() const { return is_password_; }
+    bool is_obfuscated() const { return is_obfuscated_; }
 
     bool selectable() const { return selectable_; }
 
@@ -44,7 +44,7 @@ class UserInfo {
    private:
     base::string16 display_text_;
     base::string16 a11y_description_;
-    bool is_password_;
+    bool is_obfuscated_;
     bool selectable_;
   };
 
@@ -130,5 +130,7 @@ class AccessorySheetData {
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;
 };
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ACCESSORY_SHEET_DATA_H_

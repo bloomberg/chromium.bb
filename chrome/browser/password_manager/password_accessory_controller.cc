@@ -32,7 +32,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
+using autofill::AccessorySheetData;
+using autofill::FooterCommand;
 using autofill::PasswordForm;
+using autofill::UserInfo;
 
 namespace {
 
