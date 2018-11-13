@@ -13,62 +13,25 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/objc/identity_manager_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-class IdentityManagerObserver;
-}  // namespace
-
-@interface BookmarkPromoController ()<SigninPromoViewConsumer> {
+@interface BookmarkPromoController ()<SigninPromoViewConsumer,
+                                      IdentityManagerObserverBridgeDelegate> {
   bool _isIncognito;
   ios::ChromeBrowserState* _browserState;
-  std::unique_ptr<IdentityManagerObserver> _identityManagerObserver;
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserverBridge;
 }
 
 // Mediator to use for the sign-in promo view displayed in the bookmark view.
 @property(nonatomic, readwrite, strong)
     SigninPromoViewMediator* signinPromoViewMediator;
 
-// IdentityManagerObserver Callbacks
-
-// Called when a user signs into Google services such as sync.
-- (void)onPrimaryAccountSetWithAccountId:(const std::string&)account_id
-                                username:(const std::string&)username;
-
-// Called when the currently signed-in user for a user has been signed out.
-- (void)onPrimaryAccountClearedWithAccountId:(const std::string&)account_id
-                                    username:(const std::string&)username;
-
 @end
-
-namespace {
-class IdentityManagerObserver : public identity::IdentityManager::Observer {
- public:
-  IdentityManagerObserver(BookmarkPromoController* controller)
-      : controller_(controller) {}
-
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
-    [controller_
-        onPrimaryAccountSetWithAccountId:primary_account_info.account_id
-                                username:primary_account_info.email];
-  }
-
-  void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override {
-    [controller_
-        onPrimaryAccountClearedWithAccountId:previous_primary_account_info
-                                                 .account_id
-                                    username:previous_primary_account_info
-                                                 .email];
-  }
-
- private:
-  __weak BookmarkPromoController* controller_;
-};
-}  // namespace
 
 @implementation BookmarkPromoController
 
@@ -88,10 +51,9 @@ class IdentityManagerObserver : public identity::IdentityManager::Observer {
     _isIncognito = browserState->IsOffTheRecord();
     if (!_isIncognito) {
       _browserState = browserState;
-      _identityManagerObserver.reset(new IdentityManagerObserver(self));
-      identity::IdentityManager* identityManager =
-          IdentityManagerFactory::GetForBrowserState(_browserState);
-      identityManager->AddObserver(_identityManagerObserver.get());
+      _identityManagerObserverBridge.reset(
+          new identity::IdentityManagerObserverBridge(
+              IdentityManagerFactory::GetForBrowserState(_browserState), self));
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
           initWithBrowserState:_browserState
                    accessPoint:signin_metrics::AccessPoint::
@@ -106,12 +68,8 @@ class IdentityManagerObserver : public identity::IdentityManager::Observer {
 
 - (void)dealloc {
   [_signinPromoViewMediator signinPromoViewRemoved];
-  if (!_isIncognito) {
-    DCHECK(_browserState);
-    identity::IdentityManager* identityManager =
-        IdentityManagerFactory::GetForBrowserState(_browserState);
-    identityManager->RemoveObserver(_identityManagerObserver.get());
-  }
+  if (!_isIncognito)
+    _identityManagerObserverBridge.reset();
 }
 
 - (void)hidePromoCell {
@@ -143,18 +101,16 @@ class IdentityManagerObserver : public identity::IdentityManager::Observer {
   }
 }
 
-#pragma mark - IdentityManagerObserver
+#pragma mark - IdentityManagerObserverBridgeDelegate
 
 // Called when a user signs into Google services such as sync.
-- (void)onPrimaryAccountSetWithAccountId:(const std::string&)account_id
-                                username:(const std::string&)username {
+- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo {
   if (!self.signinPromoViewMediator.isSigninInProgress)
     self.shouldShowSigninPromo = NO;
 }
 
 // Called when the currently signed-in user for a user has been signed out.
-- (void)onPrimaryAccountClearedWithAccountId:(const std::string&)account_id
-                                    username:(const std::string&)username {
+- (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
   [self updateShouldShowSigninPromo];
 }
 
