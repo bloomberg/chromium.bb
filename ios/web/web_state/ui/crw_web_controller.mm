@@ -2293,7 +2293,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (_webView) {
       WKSnapshotConfiguration* configuration =
           [[WKSnapshotConfiguration alloc] init];
-      configuration.rect = rect;
+      configuration.rect = [_webView convertRect:rect fromView:self.view];
       [_webView
           takeSnapshotWithConfiguration:configuration
                       completionHandler:^(UIImage* snapshot, NSError* error) {

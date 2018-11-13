@@ -22,7 +22,8 @@ class WebState;
 
 // Returns the edge insets to use to crop the snapshot for |webState| during
 // generation. If the snapshot should not be cropped, then UIEdgeInsetsZero
-// can be returned.
+// can be returned.  The returned insets should be in the coordinate system of
+// the view returned by |-viewForWebState:|.
 - (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState;
 
 // Returns the list of SnapshotOverlays that should be rendered over the
@@ -41,6 +42,7 @@ class WebState;
 // other actions necessary after a snapshot has been captured.
 - (void)didUpdateSnapshotForWebState:(web::WebState*)webState
                            withImage:(UIImage*)snapshot;
+
 // Returns the base view to be snapshotted.
 - (UIView*)viewForWebState:(web::WebState*)webState;
 

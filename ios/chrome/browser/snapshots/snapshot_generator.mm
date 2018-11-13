@@ -220,13 +220,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_webState);
+  UIView* snapshotView = [self.delegate viewForWebState:_webState];
   CGRect snapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
-  // WebState's |TakeSnapshot()| accepts a |rect| in the web view's coordinate
-  // space, but |-snapshotFrameVisibleFrameOnly:| returns a frame in the BVC's
-  // coordinate space.
-  CGRect webViewSnapshotFrame =
-      CGRectMake(0, 0, snapshotFrame.size.width, snapshotFrame.size.height);
-  if (CGRectIsEmpty(webViewSnapshotFrame)) {
+  snapshotFrame =
+      [_webState->GetView() convertRect:snapshotFrame fromView:snapshotView];
+  if (CGRectIsEmpty(snapshotFrame)) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                base::BindOnce(^{
@@ -235,11 +233,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     }
     return;
   }
-  CGSize size = webViewSnapshotFrame.size;
+  CGSize size = snapshotFrame.size;
   DCHECK(std::isnormal(size.width) && (size.width > 0))
-      << ": webViewSnapshotFrame.size.width=" << size.width;
+      << ": snapshotFrame.size.width=" << size.width;
   DCHECK(std::isnormal(size.height) && (size.height > 0))
-      << ": webViewSnapshotFrame.size.height=" << size.height;
+      << ": snapshotFrame.size.height=" << size.height;
   NSArray<SnapshotOverlay*>* overlays =
       [_delegate snapshotOverlaysForWebState:_webState];
   UIImage* snapshot =
@@ -258,7 +256,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   [_delegate willUpdateSnapshotForWebState:_webState];
   __weak SnapshotGenerator* weakSelf = self;
   _webState->TakeSnapshot(
-      webViewSnapshotFrame, base::BindOnce(^(gfx::Image image) {
+      snapshotFrame, base::BindOnce(^(gfx::Image image) {
         SnapshotGenerator* strongSelf = weakSelf;
         if (!strongSelf || !_webState)
           return;
