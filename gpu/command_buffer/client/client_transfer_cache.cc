@@ -78,6 +78,21 @@ void ClientTransferCache::AddTransferCacheEntry(uint32_t type,
                                          shm_offset, size);
 }
 
+void ClientTransferCache::StartTransferCacheEntry(
+    uint32_t type,
+    uint32_t id,
+    base::OnceCallback<void(ClientDiscardableHandle)> create_entry_cb) {
+  DCHECK(!mapped_ptr_);
+  EntryKey key(type, id);
+
+  base::AutoLock hold(lock_);
+
+  // Call |create_entry_cb| while |lock_| is held so that in case another thread
+  // tries to lock the cache entry later, it can assume that the creation of the
+  // service-side cache entry has been triggered.
+  std::move(create_entry_cb).Run(CreateDiscardableHandle(key));
+}
+
 ClientDiscardableHandle ClientTransferCache::CreateDiscardableHandle(
     const EntryKey& key) {
   lock_.AssertAcquired();
