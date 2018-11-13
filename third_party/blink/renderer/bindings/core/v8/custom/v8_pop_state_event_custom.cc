@@ -38,9 +38,9 @@
 namespace blink {
 
 namespace {
-// |kSymbolKey| is a key for a cached attribute for History.state.
+// |kHistoryStateSymbolKey| is a key for a cached attribute for History.state.
 // TODO(peria): Do not use this cached attribute directly.
-constexpr char kSymbolKey[] = "History#State";
+constexpr char kHistoryStateSymbolKey[] = "History#State";
 }
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return
@@ -94,7 +94,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(
   bool is_same_state = history->IsSameAsCurrentState(event->SerializedState());
   if (is_same_state) {
     V8PrivateProperty::Symbol history_state =
-        V8PrivateProperty::GetSymbol(isolate, kSymbolKey);
+        V8PrivateProperty::GetSymbol(isolate, kHistoryStateSymbolKey);
     v8::Local<v8::Value> v8_history_value =
         ToV8(history, info.Holder(), isolate);
     if (v8_history_value.IsEmpty())
