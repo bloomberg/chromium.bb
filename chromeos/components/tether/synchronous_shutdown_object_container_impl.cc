@@ -154,7 +154,6 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
       connection_preserver_(std::make_unique<ConnectionPreserverImpl>(
           device_sync_client,
           secure_channel_client,
-          asychronous_container->ble_connection_manager(),
           network_state_handler_,
           active_host_.get(),
           tether_host_response_recorder_.get())),

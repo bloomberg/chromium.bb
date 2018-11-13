@@ -24,7 +24,6 @@ class NetworkStateHandler;
 
 namespace tether {
 
-class BleConnectionManager;
 class SecureChannelClient;
 class TetherHostResponseRecorder;
 
@@ -44,7 +43,6 @@ class ConnectionPreserverImpl
   ConnectionPreserverImpl(
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* ble_connection_manager,
       NetworkStateHandler* network_state_handler,
       ActiveHost* active_host,
       TetherHostResponseRecorder* tether_host_response_recorder);
@@ -86,11 +84,9 @@ class ConnectionPreserverImpl
 
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
-  BleConnectionManager* ble_connection_manager_;
   NetworkStateHandler* network_state_handler_;
   ActiveHost* active_host_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
-  const base::UnguessableToken request_id_;
 
   std::unique_ptr<base::OneShotTimer> preserved_connection_timer_;
 
