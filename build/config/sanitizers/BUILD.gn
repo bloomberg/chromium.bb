@@ -202,9 +202,7 @@ config("default_sanitizer_ldflags") {
     }
 
     if (use_sanitizer_coverage) {
-      # TODO(crbug.com/892167): Remove the is_mac check when new instrumentation
-      # works on Mac.
-      if (use_libfuzzer && !is_mac) {
+      if (use_libfuzzer) {
         ldflags += [ "-fsanitize=fuzzer-no-link" ]
       } else {
         ldflags += [ "-fsanitize-coverage=$sanitizer_coverage_flags" ]
@@ -402,9 +400,7 @@ config("coverage_flags") {
     # Used by sandboxing code to allow coverage dump to be written on the disk.
     defines = [ "SANITIZER_COVERAGE" ]
 
-    # TODO(crbug.com/892167): Remove the is_mac check when new instrumentation
-    # works on Mac.
-    if (use_libfuzzer && !is_mac) {
+    if (use_libfuzzer) {
       cflags += [ "-fsanitize=fuzzer-no-link" ]
     } else {
       cflags += [
