@@ -19,6 +19,14 @@ FakeSyncService::FakeSyncService()
 
 FakeSyncService::~FakeSyncService() = default;
 
+syncer::SyncUserSettings* FakeSyncService::GetUserSettings() {
+  return nullptr;
+}
+
+const syncer::SyncUserSettings* FakeSyncService::GetUserSettings() const {
+  return nullptr;
+}
+
 int FakeSyncService::GetDisableReasons() const {
   return DISABLE_REASON_NOT_SIGNED_IN;
 }

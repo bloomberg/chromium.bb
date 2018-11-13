@@ -41,6 +41,8 @@ class TestSyncService : public SyncService {
   void SetNonEmptyLastCycleSnapshot();
 
   // SyncService implementation.
+  syncer::SyncUserSettings* GetUserSettings() override;
+  const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;

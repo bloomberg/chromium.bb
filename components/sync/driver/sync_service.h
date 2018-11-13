@@ -123,9 +123,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   ~SyncService() override {}
 
-  // TODO(crbug.com/884159): Remove the default impls and migrate tests over.
-  virtual SyncUserSettings* GetUserSettings();
-  virtual const SyncUserSettings* GetUserSettings() const;
+  virtual SyncUserSettings* GetUserSettings() = 0;
+  virtual const SyncUserSettings* GetUserSettings() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // BASIC STATE ACCESS
