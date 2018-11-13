@@ -536,17 +536,26 @@ CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange& range,
   return ConsumeIdent(range);
 }
 
-CSSCustomIdentValue* ConsumeCustomIdentWithToken(const CSSParserToken& token) {
+CSSCustomIdentValue* ConsumeCustomIdentWithToken(
+    const CSSParserToken& token,
+    const CSSParserContext& context) {
   if (token.GetType() != kIdentToken || IsCSSWideKeyword(token.Value()))
     return nullptr;
+
+  if (EqualIgnoringASCIICase(token.Value(), "default"))
+    context.Count(WebFeature::kDefaultInCustomIdent);
+
   return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
 }
 
-CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range) {
+CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
+                                        const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken ||
       IsCSSWideKeyword(range.Peek().Value()))
     return nullptr;
-  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace());
+
+  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace(),
+                                     context);
 }
 
 CSSStringValue* ConsumeString(CSSParserTokenRange& range) {
@@ -1475,7 +1484,7 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,
                               const CSSParserContext* context) {
   const CSSParserToken& name_token = args.ConsumeIncludingWhitespace();
-  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token);
+  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token, *context);
   if (!name)
     return nullptr;
 

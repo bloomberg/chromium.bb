@@ -14,7 +14,7 @@ const CSSValue* Page::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeCustomIdent(range);
+  return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
 }  // namespace CSSLonghand

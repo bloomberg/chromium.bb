@@ -15,9 +15,9 @@ const int kCounterIncrementDefaultValue = 1;
 
 const CSSValue* CounterIncrement::ParseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeCounter(range,
+  return css_parsing_utils::ConsumeCounter(range, context,
                                            kCounterIncrementDefaultValue);
 }
 

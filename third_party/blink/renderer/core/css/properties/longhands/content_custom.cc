@@ -35,9 +35,11 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
   return attr_value;
 }
 
-CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
+CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
+                                const CSSParserContext& context,
+                                bool counters) {
   CSSCustomIdentValue* identifier =
-      css_property_parser_helpers::ConsumeCustomIdent(args);
+      css_property_parser_helpers::ConsumeCustomIdent(args, context);
   if (!identifier)
     return nullptr;
 
@@ -96,10 +98,11 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
             css_property_parser_helpers::ConsumeFunction(range), context);
       } else if (range.Peek().FunctionId() == CSSValueCounter) {
         parsed_value = ConsumeCounterContent(
-            css_property_parser_helpers::ConsumeFunction(range), false);
+            css_property_parser_helpers::ConsumeFunction(range), context,
+            false);
       } else if (range.Peek().FunctionId() == CSSValueCounters) {
         parsed_value = ConsumeCounterContent(
-            css_property_parser_helpers::ConsumeFunction(range), true);
+            css_property_parser_helpers::ConsumeFunction(range), context, true);
       }
       if (!parsed_value)
         return nullptr;

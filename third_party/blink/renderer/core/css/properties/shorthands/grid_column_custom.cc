@@ -17,7 +17,7 @@ namespace CSSShorthand {
 bool GridColumn::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   const StylePropertyShorthand& shorthand =
@@ -27,7 +27,7 @@ bool GridColumn::ParseShorthand(
   CSSValue* start_value = nullptr;
   CSSValue* end_value = nullptr;
   if (!css_parsing_utils::ConsumeGridItemPositionShorthand(
-          important, range, start_value, end_value)) {
+          important, range, context, start_value, end_value)) {
     return false;
   }
 

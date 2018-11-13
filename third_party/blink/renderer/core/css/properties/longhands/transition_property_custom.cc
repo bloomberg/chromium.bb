@@ -15,10 +15,10 @@ namespace CSSLonghand {
 
 const CSSValue* TransitionProperty::ParseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueList* list = css_property_parser_helpers::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumeTransitionProperty, range);
+      css_parsing_utils::ConsumeTransitionProperty, range, context);
   if (!list || !css_parsing_utils::IsValidPropertyList(*list))
     return nullptr;
   return list;

@@ -534,7 +534,7 @@ CSSValue* ConsumeAnimationName(CSSParserTokenRange& range,
     return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
   }
 
-  return css_property_parser_helpers::ConsumeCustomIdent(range);
+  return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
 CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
@@ -1258,14 +1258,16 @@ CSSValue* ConsumeGapLength(CSSParserTokenRange& range,
       range, context.Mode(), kValueRangeNonNegative);
 }
 
-CSSValue* ConsumeCounter(CSSParserTokenRange& range, int default_value) {
+CSSValue* ConsumeCounter(CSSParserTokenRange& range,
+                         const CSSParserContext& context,
+                         int default_value) {
   if (range.Peek().Id() == CSSValueNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
     CSSCustomIdentValue* counter_name =
-        css_property_parser_helpers::ConsumeCustomIdent(range);
+        css_property_parser_helpers::ConsumeCustomIdent(range, context);
     if (!counter_name)
       return nullptr;
     int value = default_value;
@@ -1670,17 +1672,20 @@ CSSValue* ConsumeGridTrackSize(CSSParserTokenRange& range,
   return ConsumeGridBreadth(range, css_parser_mode);
 }
 
-CSSCustomIdentValue* ConsumeCustomIdentForGridLine(CSSParserTokenRange& range) {
+CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueSpan ||
       range.Peek().Id() == CSSValueDefault)
     return nullptr;
-  return css_property_parser_helpers::ConsumeCustomIdent(range);
+  return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
 // Appends to the passed in CSSGridLineNamesValue if any, otherwise creates a
 // new one.
 CSSGridLineNamesValue* ConsumeGridLineNames(
     CSSParserTokenRange& range,
+    const CSSParserContext& context,
     CSSGridLineNamesValue* line_names = nullptr) {
   CSSParserTokenRange range_copy = range;
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kLeftBracketToken)
@@ -1688,7 +1693,7 @@ CSSGridLineNamesValue* ConsumeGridLineNames(
   if (!line_names)
     line_names = CSSGridLineNamesValue::Create();
   while (CSSCustomIdentValue* line_name =
-             ConsumeCustomIdentForGridLine(range_copy))
+             ConsumeCustomIdentForGridLine(range_copy, context))
     line_names->Append(*line_name);
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kRightBracketToken)
     return nullptr;
@@ -1697,6 +1702,7 @@ CSSGridLineNamesValue* ConsumeGridLineNames(
 }
 
 bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
+                                    const CSSParserContext& context,
                                     CSSParserMode css_parser_mode,
                                     CSSValueList& list,
                                     bool& is_auto_repeat,
@@ -1725,7 +1731,7 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
   }
   if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args))
     return false;
-  CSSGridLineNamesValue* line_names = ConsumeGridLineNames(args);
+  CSSGridLineNamesValue* line_names = ConsumeGridLineNames(args, context);
   if (line_names)
     repeated_values->Append(*line_names);
 
@@ -1738,7 +1744,7 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
       all_tracks_are_fixed_sized = IsGridTrackFixedSized(*track_size);
     repeated_values->Append(*track_size);
     ++number_of_tracks;
-    line_names = ConsumeGridLineNames(args);
+    line_names = ConsumeGridLineNames(args, context);
     if (line_names)
       repeated_values->Append(*line_names);
   }
@@ -1783,7 +1789,7 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
   do {
     // Handle leading <custom-ident>*.
     bool has_previous_line_names = line_names;
-    line_names = ConsumeGridLineNames(range, line_names);
+    line_names = ConsumeGridLineNames(range, context, line_names);
     if (line_names && !has_previous_line_names)
       template_rows_value_list->Append(*line_names);
 
@@ -1802,7 +1808,7 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
     template_rows_value_list->Append(*value);
 
     // This will handle the trailing/leading <custom-ident>* in the grammar.
-    line_names = ConsumeGridLineNames(range);
+    line_names = ConsumeGridLineNames(range, context);
     if (line_names)
       template_rows_value_list->Append(*line_names);
   } while (!range.AtEnd() && !(range.Peek().GetType() == kDelimiterToken &&
@@ -1812,7 +1818,7 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return false;
     template_columns = ConsumeGridTrackList(
-        range, context.Mode(), TrackListType::kGridTemplateNoRepeat);
+        range, context, context.Mode(), TrackListType::kGridTemplateNoRepeat);
     if (!template_columns || !range.AtEnd())
       return false;
   } else {
@@ -1825,7 +1831,8 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
   return true;
 }
 
-CSSValue* ConsumeGridLine(CSSParserTokenRange& range) {
+CSSValue* ConsumeGridLine(CSSParserTokenRange& range,
+                          const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
 
@@ -1834,17 +1841,17 @@ CSSValue* ConsumeGridLine(CSSParserTokenRange& range) {
   CSSPrimitiveValue* numeric_value =
       css_property_parser_helpers::ConsumeInteger(range);
   if (numeric_value) {
-    grid_line_name = ConsumeCustomIdentForGridLine(range);
+    grid_line_name = ConsumeCustomIdentForGridLine(range, context);
     span_value = css_property_parser_helpers::ConsumeIdent<CSSValueSpan>(range);
   } else {
     span_value = css_property_parser_helpers::ConsumeIdent<CSSValueSpan>(range);
     if (span_value) {
       numeric_value = css_property_parser_helpers::ConsumeInteger(range);
-      grid_line_name = ConsumeCustomIdentForGridLine(range);
+      grid_line_name = ConsumeCustomIdentForGridLine(range, context);
       if (!numeric_value)
         numeric_value = css_property_parser_helpers::ConsumeInteger(range);
     } else {
-      grid_line_name = ConsumeCustomIdentForGridLine(range);
+      grid_line_name = ConsumeCustomIdentForGridLine(range, context);
       if (grid_line_name) {
         numeric_value = css_property_parser_helpers::ConsumeInteger(range);
         span_value =
@@ -1883,11 +1890,12 @@ CSSValue* ConsumeGridLine(CSSParserTokenRange& range) {
 }
 
 CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
+                               const CSSParserContext& context,
                                CSSParserMode css_parser_mode,
                                TrackListType track_list_type) {
   bool allow_grid_line_names = track_list_type != TrackListType::kGridAuto;
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-  CSSGridLineNamesValue* line_names = ConsumeGridLineNames(range);
+  CSSGridLineNamesValue* line_names = ConsumeGridLineNames(range, context);
   if (line_names) {
     if (!allow_grid_line_names)
       return nullptr;
@@ -1902,8 +1910,8 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
     if (range.Peek().FunctionId() == CSSValueRepeat) {
       if (!allow_repeat)
         return nullptr;
-      if (!ConsumeGridTrackRepeatFunction(range, css_parser_mode, *values,
-                                          is_auto_repeat,
+      if (!ConsumeGridTrackRepeatFunction(range, context, css_parser_mode,
+                                          *values, is_auto_repeat,
                                           all_tracks_are_fixed_sized))
         return nullptr;
       if (is_auto_repeat && seen_auto_repeat)
@@ -1918,7 +1926,7 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
     }
     if (seen_auto_repeat && !all_tracks_are_fixed_sized)
       return nullptr;
-    line_names = ConsumeGridLineNames(range);
+    line_names = ConsumeGridLineNames(range, context);
     if (line_names) {
       if (!allow_grid_line_names)
         return nullptr;
@@ -1997,27 +2005,29 @@ bool ParseGridTemplateAreasRow(const String& grid_row_names,
 }
 
 CSSValue* ConsumeGridTemplatesRowsOrColumns(CSSParserTokenRange& range,
+                                            const CSSParserContext& context,
                                             CSSParserMode css_parser_mode) {
   if (range.Peek().Id() == CSSValueNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return ConsumeGridTrackList(range, css_parser_mode,
+  return ConsumeGridTrackList(range, context, css_parser_mode,
                               TrackListType::kGridTemplate);
 }
 
 bool ConsumeGridItemPositionShorthand(bool important,
                                       CSSParserTokenRange& range,
+                                      const CSSParserContext& context,
                                       CSSValue*& start_value,
                                       CSSValue*& end_value) {
   // Input should be nullptrs.
   DCHECK(!start_value);
   DCHECK(!end_value);
 
-  start_value = ConsumeGridLine(range);
+  start_value = ConsumeGridLine(range, context);
   if (!start_value)
     return false;
 
   if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
-    end_value = ConsumeGridLine(range);
+    end_value = ConsumeGridLine(range, context);
     if (!end_value)
       return false;
   } else {
@@ -2055,14 +2065,15 @@ bool ConsumeGridTemplateShorthand(bool important,
 
   // 2- <grid-template-rows> / <grid-template-columns>
   if (!template_rows) {
-    template_rows = ConsumeGridTrackList(range, context.Mode(),
+    template_rows = ConsumeGridTrackList(range, context, context.Mode(),
                                          TrackListType::kGridTemplate);
   }
 
   if (template_rows) {
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return false;
-    template_columns = ConsumeGridTemplatesRowsOrColumns(range, context.Mode());
+    template_columns =
+        ConsumeGridTemplatesRowsOrColumns(range, context, context.Mode());
     if (!template_columns || !range.AtEnd())
       return false;
 
@@ -2502,7 +2513,8 @@ CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
   return list;
 }
 
-CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range) {
+CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
+                                    const CSSParserContext& context) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() != kIdentToken)
     return nullptr;
@@ -2518,7 +2530,7 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range) {
     range.ConsumeIncludingWhitespace();
     return CSSCustomIdentValue::Create(unresolved_property);
   }
-  return css_property_parser_helpers::ConsumeCustomIdent(range);
+  return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
 bool IsValidPropertyList(const CSSValueList& value_list) {

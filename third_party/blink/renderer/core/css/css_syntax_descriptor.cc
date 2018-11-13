@@ -194,7 +194,7 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::kTransformList:
       return ConsumeTransformList(range, *context);
     case CSSSyntaxType::kCustomIdent:
-      return ConsumeCustomIdent(range);
+      return ConsumeCustomIdent(range, *context);
     default:
       NOTREACHED();
       return nullptr;

@@ -554,4 +554,14 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyCyUnitlessUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
+TEST_F(CSSPropertyUseCounterTest, CSSPropertyAnimationNameCustomIdentUseCount) {
+  WebFeature feature = WebFeature::kDefaultInCustomIdent;
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyAnimationName, "initial");
+  // css-wide keywords in custom ident other than default should not register.
+  EXPECT_FALSE(IsCounted(feature));
+  ParseProperty(CSSPropertyAnimationName, "default");
+  EXPECT_TRUE(IsCounted(feature));
+}
+
 }  // namespace blink
