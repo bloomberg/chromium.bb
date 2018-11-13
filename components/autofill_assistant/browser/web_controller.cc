@@ -4,11 +4,13 @@
 
 #include "components/autofill_assistant/browser/web_controller.h"
 
+#include <math.h>
 #include <algorithm>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -16,6 +18,8 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -23,6 +27,13 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
+// Time between two periodic box model checks.
+static constexpr base::TimeDelta kPeriodicBoxModelCheckInterval =
+    base::TimeDelta::FromMilliseconds(200);
+
+// Timeout after roughly 10 seconds (50*200ms).
+static int kPeriodicBoxModelCheckRounds = 50;
+
 const char* const kGetBoundingClientRectAsList =
     R"(function(node) {
       const r = node.getBoundingClientRect();
@@ -239,16 +250,34 @@ void WebController::OnVisualStateCallback(
     return;
   }
 
-  devtools_client_->GetDOM()->GetBoxModel(
-      dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
-      base::BindOnce(&WebController::OnGetBoxModelForClickOrTap,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     is_a_click));
+  // Set 'point_x' and 'point_y' to -1 to force one round of stable check.
+  GetAndWaitBoxModelStable(std::move(callback), object_id, is_a_click,
+                           /* point_x= */ -1, /* point_y= */ -1,
+                           kPeriodicBoxModelCheckRounds);
 }
 
-void WebController::OnGetBoxModelForClickOrTap(
+void WebController::GetAndWaitBoxModelStable(
     base::OnceCallback<void(bool)> callback,
+    std::string object_id,
     bool is_a_click,
+    int point_x,
+    int point_y,
+    int remaining_rounds) {
+  devtools_client_->GetDOM()->GetBoxModel(
+      dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
+      base::BindOnce(&WebController::OnGetBoxModelForStableCheck,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     object_id, is_a_click, point_x, point_y,
+                     remaining_rounds));
+}
+
+void WebController::OnGetBoxModelForStableCheck(
+    base::OnceCallback<void(bool)> callback,
+    std::string object_id,
+    bool is_a_click,
+    int point_x,
+    int point_y,
+    int remaining_rounds,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
     DLOG(ERROR) << "Failed to get box model.";
@@ -259,8 +288,38 @@ void WebController::OnGetBoxModelForClickOrTap(
   // Click or tap at the center of the element.
   const std::vector<double>* content_box = result->GetModel()->GetContent();
   DCHECK_EQ(content_box->size(), 8u);
-  double x = ((*content_box)[0] + (*content_box)[2]) * 0.5;
-  double y = ((*content_box)[3] + (*content_box)[5]) * 0.5;
+  int x = round((round((*content_box)[0]) + round((*content_box)[2])) * 0.5);
+  int y = round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
+
+  if (x == point_x && y == point_y) {
+    // Note that there is still a chance that the element's position has been
+    // changed after the last call of GetBoxModel, however, it might be safe to
+    // assume the element's position will not be changed before issuing click or
+    // tap event after stable for kPeriodicBoxModelCheckInterval. In addition,
+    // checking again after issuing click or tap event doesn't help since the
+    // change may be expected.
+    TapOrClickOnCoordinates(std::move(callback), is_a_click, x, y);
+    return;
+  }
+
+  if (remaining_rounds <= 0) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebController::GetAndWaitBoxModelStable,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     object_id, is_a_click, x, y, --remaining_rounds),
+      kPeriodicBoxModelCheckInterval);
+}
+
+void WebController::TapOrClickOnCoordinates(
+    base::OnceCallback<void(bool)> callback,
+    bool is_a_click,
+    int x,
+    int y) {
   if (is_a_click) {
     devtools_client_->GetInput()->DispatchMouseEvent(
         input::DispatchMouseEventParams::Builder()
@@ -291,9 +350,15 @@ void WebController::OnGetBoxModelForClickOrTap(
 
 void WebController::OnDispatchPressMouseEvent(
     base::OnceCallback<void(bool)> callback,
-    double x,
-    double y,
+    int x,
+    int y,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
+  if (!result) {
+    DLOG(ERROR) << "Failed to dispatch mouse left button pressed event.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
   devtools_client_->GetInput()->DispatchMouseEvent(
       input::DispatchMouseEventParams::Builder()
           .SetX(x)

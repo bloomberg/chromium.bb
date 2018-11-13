@@ -212,14 +212,28 @@ class WebController {
                              std::string object_id,
                              bool is_a_click,
                              bool state);
-  void OnGetBoxModelForClickOrTap(
+  void GetAndWaitBoxModelStable(base::OnceCallback<void(bool)> callback,
+                                std::string object_id,
+                                bool is_a_click,
+                                int point_x,
+                                int point_y,
+                                int remaining_rounds);
+  void OnGetBoxModelForStableCheck(
       base::OnceCallback<void(bool)> callback,
+      std::string object_id,
       bool is_a_click,
+      int point_x,
+      int point_y,
+      int remaining_rounds,
       std::unique_ptr<dom::GetBoxModelResult> result);
+  void TapOrClickOnCoordinates(base::OnceCallback<void(bool)> callback,
+                               bool is_a_click,
+                               int x,
+                               int y);
   void OnDispatchPressMouseEvent(
       base::OnceCallback<void(bool)> callback,
-      double x,
-      double y,
+      int x,
+      int y,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchReleaseMouseEvent(
       base::OnceCallback<void(bool)> callback,
