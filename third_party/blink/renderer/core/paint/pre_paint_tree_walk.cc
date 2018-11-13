@@ -158,7 +158,7 @@ bool HasBlockingTouchEventHandler(const LocalFrame& frame,
   const auto* blocking = registry.EventHandlerTargets(
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   const auto* blocking_low_latency = registry.EventHandlerTargets(
-      EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+      EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency);
   return blocking->Contains(&target) || blocking_low_latency->Contains(&target);
 }
 
