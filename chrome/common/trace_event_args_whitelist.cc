@@ -21,6 +21,7 @@ struct WhitelistEntry {
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
+const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
@@ -44,6 +45,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
     {"ui", "QueryLinkedFontsFromRegistry", nullptr},
     {"ui", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
     {nullptr, nullptr, nullptr}};
