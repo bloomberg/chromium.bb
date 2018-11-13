@@ -70,7 +70,7 @@ EventDispatcher::EventDispatcher(Node& node, Event& event)
 void EventDispatcher::DispatchScopedEvent(Node& node, Event& event) {
   // We need to set the target here because it can go away by the time we
   // actually fire the event.
-  event.SetTarget(EventPath::EventTargetRespectingTargetRules(node));
+  event.SetTarget(&EventPath::EventTargetRespectingTargetRules(node));
   ScopedEventQueue::Instance()->EnqueueEvent(event);
 }
 
@@ -192,7 +192,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
     }
   }
 
-  event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
+  event_->SetTarget(&EventPath::EventTargetRespectingTargetRules(*node_));
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
@@ -306,7 +306,7 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
 inline void EventDispatcher::DispatchEventPostProcess(
     Node* activation_target,
     EventDispatchHandlingState* pre_dispatch_event_handler_result) {
-  event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
+  event_->SetTarget(&EventPath::EventTargetRespectingTargetRules(*node_));
   // https://dom.spec.whatwg.org/#concept-event-dispatch
   // 14. Unset event’s dispatch flag, stop propagation flag, and stop immediate
   // propagation flag.
