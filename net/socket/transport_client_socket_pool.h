@@ -154,10 +154,6 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
-  // If host resolution is currently underway, change the priority of the host
-  // resolver request.
-  void ChangePriorityInternal(RequestPriority priority) override;
-
   void CopyConnectionAttemptsFromSockets();
 
   scoped_refptr<TransportSocketParams> params_;
@@ -238,7 +234,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
       bool include_nested_pools) const override;
   base::TimeDelta ConnectionTimeout() const override;
 
-  // LowerLayeredPool implementation.
+  // HigherLayeredPool implementation.
   bool IsStalled() const override;
   void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
