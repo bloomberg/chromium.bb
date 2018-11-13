@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -20,6 +21,44 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
+
+namespace {
+String GetImageUrl(const LayoutObject& object) {
+  if (object.IsImage()) {
+    const ImageResourceContent* cached_image =
+        ToLayoutImage(&object)->CachedImage();
+    return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
+  }
+  if (object.IsVideo()) {
+    const ImageResourceContent* cached_image =
+        ToLayoutVideo(&object)->CachedImage();
+    return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
+  }
+  DCHECK(object.IsSVGImage());
+  const LayoutImageResource* image_resource =
+      ToLayoutSVGImage(&object)->ImageResource();
+  const ImageResourceContent* cached_image = image_resource->CachedImage();
+  return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
+}
+
+bool IsLoaded(const LayoutObject& object) {
+  if (object.IsImage()) {
+    const ImageResourceContent* cached_image =
+        ToLayoutImage(&object)->CachedImage();
+    return cached_image ? cached_image->IsLoaded() : false;
+  }
+  if (object.IsVideo()) {
+    const ImageResourceContent* cached_image =
+        ToLayoutVideo(&object)->CachedImage();
+    return cached_image ? cached_image->IsLoaded() : false;
+  }
+  DCHECK(object.IsSVGImage());
+  const LayoutImageResource* image_resource =
+      ToLayoutSVGImage(&object)->ImageResource();
+  const ImageResourceContent* cached_image = image_resource->CachedImage();
+  return cached_image ? cached_image->IsLoaded() : false;
+}
+}  // namespace
 
 // Set a big enough limit for the number of nodes to ensure memory usage is
 // capped. Exceeding such limit will deactivate the algorithm.
@@ -236,18 +275,6 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   if (size_zero_ids_.Contains(node_id))
     return;
 
-  ImageResourceContent* cachedImg;
-  if (object.IsSVGImage()) {
-    const LayoutImageResource* imageResource =
-        ToLayoutSVGImage(&object)->ImageResource();
-    if (imageResource)
-      cachedImg = imageResource->CachedImage();
-  } else {
-    DCHECK(object.IsImage() || object.IsVideo());
-    // Both image and video can be casted to LayoutImage, since LayoutVideo
-    // inherits from LayoutImage.
-    cachedImg = ToLayoutImage(&object)->CachedImage();
-  }
   if (!id_record_map_.Contains(node_id)) {
     recorded_node_count_++;
     if (recorded_node_count_ < kImageNodeNumberLimit) {
@@ -269,8 +296,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       }
       std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
       record->node_id = node_id;
-      record->image_url =
-          !cachedImg ? "" : cachedImg->Url().StrippedForUseAsReferrer();
+      record->image_url = GetImageUrl(object);
       // Mind that first_size has to be assigned at the push of
       // largest_image_heap_ since it's the sorting key.
       record->first_size = rect_size;
@@ -285,8 +311,8 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     }
   }
 
-  if (id_record_map_.Contains(node_id) &&
-      IsJustLoaded(cachedImg, *id_record_map_.at(node_id))) {
+  if (id_record_map_.Contains(node_id) && !id_record_map_.at(node_id)->loaded &&
+      IsLoaded(object)) {
     records_pending_timing_.push(node_id);
     ImageRecord* record = id_record_map_.at(node_id);
     record->frame_index = frame_index_;
@@ -300,12 +326,6 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     record->first_paint_index = ++first_paint_index_max_;
     latest_image_heap_.push(record->AsWeakPtr());
   }
-}
-
-bool ImagePaintTimingDetector::IsJustLoaded(
-    const ImageResourceContent* cachedImg,
-    const ImageRecord& record) const {
-  return cachedImg && cachedImg->IsLoaded() && !record.loaded;
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
