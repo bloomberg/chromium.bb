@@ -430,10 +430,13 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   debug::Alias(&maximum);
   debug::Alias(&bucket_count);
   debug::Alias(&checksum);
+  debug::Alias(&current);
 
   while (bucket_count > ++bucket_index) {
     double log_current;
     log_current = log(static_cast<double>(current));
+    CHECK_EQ(current, static_cast<Sample>(std::round(exp(log_current))));
+    debug::Alias(&log_current);
     // Calculate the count'th root of the range.
     log_ratio = (log_max - log_current) / (bucket_count - bucket_index);
     // See where the next bucket would start.
