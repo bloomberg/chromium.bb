@@ -98,13 +98,6 @@ void ElementArea::OnGetElementPosition(const std::vector<std::string>& selector,
   for (auto& position : element_positions_) {
     if (position.selector == selector) {
       // found == false, has all coordinates set to 0.0, which clears the area.
-      if (position.rect.left == rect.left && position.rect.top == rect.top &&
-          position.rect.right == rect.right &&
-          position.rect.bottom == rect.bottom) {
-        // Avoid reporting unnecessary updates
-        return;
-      }
-
       position.rect = rect;
       ReportUpdate();
       return;

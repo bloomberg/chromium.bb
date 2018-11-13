@@ -22,6 +22,9 @@ import android.view.View;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +40,8 @@ import java.util.List;
  *
  * <p>TODO(crbug.com/806868): Consider merging this view with the overlay.
  */
-public class TouchEventFilter extends View implements ChromeFullscreenManager.FullscreenListener {
+public class TouchEventFilter
+        extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
     /**
      * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
      * {@link @TAP_TRACKING_DURATION_MS} in the unallowed area.
@@ -74,6 +78,32 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
 
     /** Times, in millisecond, of unexpected taps detected outside of the allowed area. */
     private final List<Long> mUnexpectedTapTimes = new ArrayList<>();
+
+    /** True while scrolling. */
+    private boolean mScrolling;
+
+    /**
+     * Scrolling offset to use while scrolling right after scrolling.
+     *
+     * <p>This value shifts the touchable area by that many pixels while scrolling.
+     */
+    private int mScrollOffsetY;
+
+    /**
+     * Offset reported at the beginning of a scroll.
+     *
+     * <p>This is used to interpret the offsets reported by subsequent calls to {@link
+     * #onScrollOffsetOrExtentChanged} or {@link #onScrollEnded}.
+     */
+    private int mInitialScrollOffsetY;
+
+    /**
+     * Current offset that applies on mTouchableArea.
+     *
+     * <p>This value shifts the touchable area by that many pixels after the end of a scroll and
+     * before the next update, which resets this value.
+     */
+    private int mOffsetY;
 
     public TouchEventFilter(Context context) {
         this(context, null, 0);
@@ -112,10 +142,12 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
     }
 
     /** Initializes dependencies. */
-    public void init(Client client, ChromeFullscreenManager fullscreenManager) {
+    public void init(
+            Client client, ChromeFullscreenManager fullscreenManager, WebContents webContents) {
         mClient = client;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
+        GestureListenerManager.fromWebContents(webContents).addListener(this);
     }
 
     /** Sets the color to be used for unusable areas. */
@@ -130,10 +162,15 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
      * @param rectangles rectangles defining the area that can be used, may be empty
      */
     public void updateTouchableArea(boolean enabled, List<RectF> rectangles) {
+        if (mEnabled == enabled && mScrolling || mTouchableArea.equals(rectangles)) {
+            return;
+        }
         mEnabled = enabled;
         setAlpha(mEnabled ? 1.0f : 0.0f);
+
         mTouchableArea.clear();
         mTouchableArea.addAll(rectangles);
+        mOffsetY = 0;
         invalidate();
     }
 
@@ -158,7 +195,7 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
                 }
                 int height = yBottom - yTop;
                 boolean allowed = isInTouchableArea(((float) event.getX()) / getWidth(),
-                        ((float) event.getY() - yTop) / height);
+                        (((float) event.getY() - yTop + mScrollOffsetY + mOffsetY) / height));
                 if (!allowed) {
                     mGestureDetector.onTouchEvent(event);
                     return true; // handled
@@ -193,9 +230,9 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
         int height = yBottom - yTop;
         for (RectF rect : mTouchableArea) {
             mDrawRect.left = rect.left * width - mPaddingPx;
-            mDrawRect.top = yTop + rect.top * height - mPaddingPx;
+            mDrawRect.top = yTop + rect.top * height - mPaddingPx - mScrollOffsetY - mOffsetY;
             mDrawRect.right = rect.right * width + mPaddingPx;
-            mDrawRect.bottom = yTop + rect.bottom * height + mPaddingPx;
+            mDrawRect.bottom = yTop + rect.bottom * height + mPaddingPx - mScrollOffsetY - mOffsetY;
             if (mDrawRect.left <= 0 && mDrawRect.right >= width) {
                 // Rounded corners look strange in the case where the rectangle takes exactly the
                 // width of the screen.
@@ -226,6 +263,39 @@ public class TouchEventFilter extends View implements ChromeFullscreenManager.Fu
 
     @Override
     public void onUpdateViewportSize() {
+        invalidate();
+    }
+
+    @Override
+    public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
+        mScrolling = true;
+        mInitialScrollOffsetY = scrollOffsetY;
+        mScrollOffsetY = 0;
+        invalidate();
+    }
+
+    @Override
+    public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+        if (!mScrolling) {
+            // onScrollOffsetOrExtentChanged will be called alone, without onScrollStarted during a
+            // Javascript-initiated scroll.
+            //
+            // TODO(crbug.com/806868): Consider handling these as well, for smoother
+            // Javascript-initiated scrolling.
+            return;
+        }
+        mScrollOffsetY = scrollOffsetY - mInitialScrollOffsetY;
+        invalidate();
+    }
+
+    @Override
+    public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
+        if (!mScrolling) {
+            return;
+        }
+        mOffsetY += (scrollOffsetY - mInitialScrollOffsetY);
+        mScrollOffsetY = 0;
+        mScrolling = false;
         invalidate();
     }
 
