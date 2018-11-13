@@ -261,10 +261,17 @@ ax::mojom::Role AXLayoutObject::DetermineAccessibilityRole() {
 Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (IsDetached())
     return nullptr;
-  if (GetLayoutObject()->IsAnonymousBlock() &&
-      GetLayoutObject()->ContainingBlock()) {
-    return GetLayoutObject()->ContainingBlock()->GetNode();
+
+  if (layout_object_->IsListMarker())
+    return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
+
+  if (layout_object_->IsLayoutNGListMarker())
+    return ToLayoutNGListMarker(layout_object_)->ListItem()->GetNode();
+
+  if (layout_object_->IsAnonymousBlock() && layout_object_->ContainingBlock()) {
+    return layout_object_->ContainingBlock()->GetNode();
   }
+
   return GetNode();
 }
 
@@ -326,6 +333,9 @@ bool AXLayoutObject::IsEditable() const {
   if (GetLayoutObject()->IsTextControl())
     return true;
 
+  // Contrary to Firefox, we mark editable all auto-generated content, such as
+  // list bullets and soft line breaks, that are contained within an editable
+  // container.
   if (HasEditableStyle(*node))
     return true;
 
@@ -368,6 +378,9 @@ bool AXLayoutObject::IsRichlyEditable() const {
     return !EqualIgnoringASCIICase("false", editable);
   }
 
+  // Contrary to Firefox, we mark richly editable all auto-generated content,
+  // such as list bullets and soft line breaks, that are contained within a
+  // richly editable container.
   if (HasRichlyEditableStyle(*node))
     return true;
 

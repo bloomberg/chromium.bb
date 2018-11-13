@@ -21,6 +21,6 @@ rootWebArea
 ++++++++++++inlineTextBox name='Always expose editable tables as tables.'
 ++++list editable richlyEditable
 ++++++listItem editable richlyEditable
-++++++++listMarker name='1. '
+++++++++listMarker editable richlyEditable name='1. '
 ++++++++staticText editable richlyEditable name='Editable list item.' TreeData.textSelEndOffset=19
 ++++++++++inlineTextBox name='Editable list item.'
