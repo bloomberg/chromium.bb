@@ -398,6 +398,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4058278702844053247">Una carga de página en curso</translation>
 <translation id="4065205963140826639">Usa la combinación Búsqueda + flecha a la derecha ahora para encontrar el botón Siguiente. Luego presiona Búsqueda + barra espaciadora para hacer clic en él.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tilde}other{# tildes}}</translation>
+<translation id="4086311032171418648">Se está deteniendo el modo de aprendizaje.</translation>
 <translation id="409334809956508737">Objeto anterior</translation>
 <translation id="4099274309791143834">con submenú</translation>
 <translation id="4101527861445851766">Una casilla de verificación marcada</translation>
@@ -500,6 +501,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4877261390094455813">Ingresa una búsqueda.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Vínculo interno</translation>
+<translation id="4915087353619183190">Se está iniciando el modo de aprendizaje. Presiona una tecla del teclado QWERTY, una tecla de la línea braille o un gesto táctil para conocer su función. Presiona Ctrl+W o Esc para salir.</translation>
 <translation id="492295894462528572">Prefacio</translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4953585991029886728">Editar texto</translation>

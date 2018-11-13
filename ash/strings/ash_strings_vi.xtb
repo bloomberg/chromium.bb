@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
 <translation id="2292698582925480719">Tỷ lệ hiển thị</translation>
+<translation id="2302092602801625023">Tài khoản này do Family Link quản lý</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
 <translation id="2339073806695260576">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng con trỏ laser hoặc kính lúp.</translation>
 <translation id="2341729377289034582">Đã khóa theo chiều dọc</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Khóa</translation>
 <translation id="3798670284305777884">Loa (bên trong)</translation>
+<translation id="3799080171973636491">Bạn đã nhấn phím tắt của tính năng phóng to toàn màn hình. Bạn có muốn bật tính năng này không?</translation>
 <translation id="380165613292957338">Xin chào, tôi có thể trợ giúp gì?</translation>
 <translation id="383629559565718788">Hiển thị các tùy chọn cài đặt bàn phím</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
@@ -196,6 +198,7 @@
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4292681942966152062">Đang kích hoạt <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Bạn đã nhấn phím tắt của chế độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Kính lúp</translation>
@@ -203,6 +206,7 @@
 <translation id="435527878592612277">Chọn ảnh của bạn</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4379531060876907730">Đây là các công cụ bút dành cho bút cảm ứng</translation>
+<translation id="4389184120735010762">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
@@ -391,6 +395,7 @@
 <translation id="7886169021410746335">Điều chỉnh các tùy chọn cài đặt quyền riêng tư</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Gửi email</translation>
+<translation id="7897375687985782769">Bạn đã nhấn phím tắt để xoay màn hình. Bạn có muốn xoay màn hình không?</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7933084174919150729">Bạn chỉ có thể sử dụng Trợ lý Google cho hồ sơ chính.</translation>
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -456,6 +461,7 @@
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">Đang sử dụng <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>

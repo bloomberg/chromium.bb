@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">ಬ್ಲೂಟೂತ್‌ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2268813581635650749">ಎಲ್ಲವನ್ನೂ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2292698582925480719">ಪ್ರಮಾಣ ತೋರಿಸಿ</translation>
+<translation id="2302092602801625023">ಈ ಖಾತೆಯನ್ನು Family Link ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="2303600792989757991">ಟಾಗಲ್ ವಿಂಡೋ ಅವಲೋಕನ</translation>
 <translation id="2339073806695260576">ಟಿಪ್ಪಣಿ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲು, ಲೇಸರ್‌ ಪಾಯಿಂಟರ್ ಬಳಸಲು ಅಥವಾ ಭೂತಗನ್ನಡಿ ಬಳಸಲು ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="2341729377289034582">ಪರದೆಯು ಲಂಬವಾಗಿ ತೋರುವಂತೆ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="3798670284305777884">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
+<translation id="3799080171973636491">ನೀವು ಪೂರ್ಣ ಪರದೆ ವರ್ಧಕದ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="380165613292957338">ಹಾಯ್, ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?</translation>
 <translation id="383629559565718788">ಕೀಬೋರ್ಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3846575436967432996">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">ನೀವು ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್‌ನ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">ವರ್ಧಕ ಮಸೂರ</translation>
 <translation id="4351433414020964307">ಸಹಾಯಕವು ಲೋಡ್ ಆಗುತ್ತಿದೆ...</translation>
 <translation id="435527878592612277">ನಿಮ್ಮ ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="4378551569595875038">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4379531060876907730">ಇವುಗಳು ನಿಮ್ಮ ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳಾಗಿವೆ</translation>
+<translation id="4389184120735010762">ನೀವು ಡಾಕ್ ಮಾಡಿದ ವರ್ಧಕದ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
 <translation id="4450893287417543264">ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ</translation>
@@ -391,6 +395,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7886169021410746335">ಗೌಪ್ಯತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="7886277072580235377">ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡುವಾಗ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸೆಶನ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ಇಮೇಲ್‌ ಕಳುಹಿಸಿ</translation>
+<translation id="7897375687985782769">ನೀವು ಪರದೆಯನ್ನು ತಿರುಗಿಸಲು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಪರದೆಯನ್ನು ತಿರುಗಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7933084174919150729">ಪ್ರಾಥಮಿಕ ಪ್ರೊಫೈಲ್‌ಗೆ ಮಾತ್ರ Google ಸಹಾಯಕ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ಮತ್ತು <ph name="SECOND_PARENT_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
@@ -456,6 +461,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8921624153894383499">Google ಸಹಾಯಕವು ಈ ಭಾಷೆಯನ್ನು ಮಾತನಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="8938800817013097409">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿನ ಬಲ ಪೋರ್ಟ್‌)</translation>
 <translation id="8940956008527784070">ಬ್ಯಾಟರಿ ಕಡಿಮೆ (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="899350903320462459">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು <ph name="LOGIN_ID" /> ನಂತೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ನಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="9029474291399787231">Adobe Flash Player ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ</translation>

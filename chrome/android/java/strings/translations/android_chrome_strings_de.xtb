@@ -944,7 +944,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8084114998886531721">Gespeichertes Passwort</translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
-<translation id="8087980556724996220">Autofill Assistant wird in <ph name="DURATION_SECONDS" /> s gestoppt…</translation>
 <translation id="8103578431304235997">Inkognito-Tab</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Ähnliche Seiten vorschlagen</translation>
@@ -1033,7 +1032,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8812260976093120287">Auf manchen Websites können Sie über Ihr Gerät mit den obigen unterstützten Zahlungs-Apps bezahlen.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> wird in Chrome geöffnet. Wenn Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome sowie den <ph name="BEGIN_LINK3" />Datenschutzhinweisen für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" /> zu.</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
-<translation id="8823704566850948458">Passwort vorschlagen…</translation>
 <translation id="8833831881926404480">Eine Website teilt Ihren Bildschirm</translation>
 <translation id="883806473910249246">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="8840953339110955557">Diese Seite unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
@@ -1081,7 +1079,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Starkes Passwort vorschlagen…</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Privat</translation>
 <translation id="932599481871055447">Geringerer Datenverbrauch und schnelleres Surfen</translation>

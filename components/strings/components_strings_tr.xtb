@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Tamamlanmak üzere</translation>
 <translation id="5932224571077948991">Site, araya giren veya yanıltıcı reklamlar gösteriyor</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
+<translation id="5946937721014915347"><ph name="SITE_NAME" /> açılıyor…</translation>
 <translation id="5951495562196540101">Tüketici hesabına kaydedilemiyor (paket lisans mevcut).</translation>
 <translation id="5966151627327109289">Çoğu sitedeki oturumunuzu kapatır. <ph name="SITE" /> ve diğer bazı sitelerden alınan korunan içeriğe erişiminizi kaybedebilirsiniz.</translation>
 <translation id="5967592137238574583">İletişim Bilgilerini Düzenleyin</translation>
@@ -863,7 +864,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Bu ödemeler bir defalık alınabileceği gibi yinelenen ödemeler de olabilir ve bu durum açıkça belli olmayabilir.</translation>
 <translation id="7029809446516969842">Şifreler</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Bu kart ve fatura adresi, farklı cihazlarda daha hızlı ödeme yapabilmeniz için Google Hesabınıza kaydedilir.}other{Bu kartlar ve fatura adresleri, farklı cihazlarda daha hızlı ödeme yapabilmeniz için Google Hesabınıza kaydedilir.}}</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> alan adına erişmeyi denediniz, ancak sunucu, geçerlilik dönemi güvenilir olmayacak kadar uzun olan bir sertifika sundu.</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7064851114919012435">İletişim bilgileri</translation>
@@ -950,7 +950,6 @@ Ek ayrıntılar:
 <translation id="7549584377607005141">Bu Web sayfasının düzgün şekilde görüntülenmesi için, önceden girdiğiniz veriler gerekiyor. Bu verileri tekrar gönderebilirsiniz, ancak bunu yaptığınızda bu sayfanın daha önce gerçekleştirdiği işlemler de tekrar edilir.</translation>
 <translation id="7552846755917812628">Aşağıdaki ipuçlarını deneyin:</translation>
 <translation id="7554791636758816595">Yeni Sekme</translation>
-<translation id="7560085949372856518">Sonraki adımda, Google Hesabınıza hangi kartların kaydedileceğini seçebilirsiniz.</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="7567204685887185387">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası hileli bir şekilde yayınlanmış olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="7569952961197462199">Kredi kartı Chrome'dan kaldırılsın mı?</translation>
@@ -1119,7 +1118,6 @@ Ek ayrıntılar:
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8728672262656704056">Gizli moda geçtiniz</translation>
 <translation id="8730621377337864115">Bitti</translation>
-<translation id="8733831205558190772">Tüm kartlarınız tek bir yerde</translation>
 <translation id="8738058698779197622">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Chromium bu sertifikaları doğrulayamaz.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ana makinesinin &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt; bulunamadı. Sorun teşhis ediliyor.</translation>
 <translation id="874846938927089722">Kabul Edilen Kredi Kartları ve Ön Ödemeli Kartlar</translation>
@@ -1140,7 +1138,6 @@ Ek ayrıntılar:
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8874824191258364635">Geçerli bir kart numarası girin</translation>
-<translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>
 <translation id="8891727572606052622">Geçersiz proxy modu.</translation>
 <translation id="8892964541482452187">Sekme değiştirme düğmesi, bu sekmeye geçmek için enter tuşuna basın</translation>
 <translation id="8903921497873541725">Yakınlaştır</translation>
@@ -1201,6 +1198,7 @@ Ek ayrıntılar:
 <translation id="935608979562296692">FORMU TEMİZLE</translation>
 <translation id="936602727769022409">Google Hesabınıza erişimi kaybedebilirsiniz. Chromium, şifrenizi hemen değiştirmenizi önerir. Oturum açmanız istenecektir.</translation>
 <translation id="939736085109172342">Yeni klasör</translation>
+<translation id="945855313015696284">Aşağıdaki bilgileri kontrol edin ve geçersiz kartları silin</translation>
 <translation id="951104842009476243">Kabul Edilen Banka ve Ön Ödemeli Kartlar</translation>
 <translation id="962484866189421427">Bu içerik başka bir şeyi taklit eden aldatıcı uygulamalar yükleyebilir veya sizi izlemek için kullanılabilecek veriler toplayabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Resmi Derleme</translation>

@@ -863,7 +863,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Ta terećenja mogu biti jednokratna ili ponavljajuća i možda nisu odmah vidljiva.</translation>
 <translation id="7029809446516969842">Zaporke</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Ova kartica i pripadajuća adresa za naplatu spremit će se na vaš Google račun radi brže provjere među uređajima.}one{Ove kartice i pripadajuće adrese za naplatu spremit će se na vaš Google račun radi brže provjere među uređajima.}few{Ove kartice i pripadajuće adrese za naplatu spremit će se na vaš Google račun radi brže provjere među uređajima.}other{Ove kartice i pripadajuće adrese za naplatu spremit će se na vaš Google račun radi brže provjere među uređajima.}}</translation>
 <translation id="7050187094878475250">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat koji nije pouzdan zbog predugog razdoblja valjanosti.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podaci za kontakt</translation>
@@ -950,7 +949,6 @@ Dodatne pojedinosti:
 <translation id="7549584377607005141">Ova web-stranica zahtijeva podatke koje ste ranije unijeli da bi se pravilno prikazala. Te podatke možete poslati ponovo, ali time ćete ponoviti sve radnje koje je ta stranica prethodno izvela.</translation>
 <translation id="7552846755917812628">Pokušajte učiniti sljedeće:</translation>
 <translation id="7554791636758816595">Nova kartica</translation>
-<translation id="7560085949372856518">U sljedećem koraku možete odabrati kartice koje će se spremiti na vaš Google račun.</translation>
 <translation id="7564049878696755256">Mogli biste izgubiti pristup svojem <ph name="ORG_NAME" /> računu ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
@@ -1119,7 +1117,6 @@ Dodatne pojedinosti:
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8728672262656704056">Radite u anonimnom načinu</translation>
 <translation id="8730621377337864115">Gotovo</translation>
-<translation id="8733831205558190772">Sve kartice na jednom mjestu</translation>
 <translation id="8738058698779197622">Za uspostavu sigurne veze sat mora biti točno postavljen. To je zato što certifikati koje web-lokacije upotrebljavaju za međusobnu identifikaciju vrijede samo određeno vrijeme. Budući da sat na vašem uređaju nije točan, Chromium ne može potvrditi te certifikate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS adresa&lt;/abbr&gt; hosta <ph name="HOST_NAME" /> nije pronađena. U tijeku je dijagnosticiranje problema.</translation>
 <translation id="874846938927089722">Prihvaćene kreditne i pretplatne kartice</translation>
@@ -1140,7 +1137,6 @@ Dodatne pojedinosti:
 <translation id="8866481888320382733">Pogreška pri analizi postavki pravila</translation>
 <translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8874824191258364635">Unesite važeći broj kreditne kartice</translation>
-<translation id="8876793034577346603">Mrežna konfiguracija nije uspješno analizirana.</translation>
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="8892964541482452187">Gumb za promjenu kartice, pritisnite Enter za prebacivanje na tu karticu</translation>
 <translation id="8903921497873541725">Povećaj</translation>

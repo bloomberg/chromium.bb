@@ -729,6 +729,7 @@
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="5939518447894949180">Restablecer</translation>
+<translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
 <translation id="5966151627327109289">Esta acción te hace salir de la mayoría de los sitios. Es posible que ya no puedas acceder al contenido protegido de <ph name="SITE" /> y otros sitios.</translation>
 <translation id="5967592137238574583">Editar la información de contacto</translation>
@@ -864,7 +865,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Estos cargos pueden ser únicos o recurrentes, y es posible que no sean evidentes.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Esta tarjeta y su dirección de facturación se guardarán en tu Cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}other{Estas tarjetas y sus direcciones de facturación se guardarán en tu Cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}}</translation>
 <translation id="7050187094878475250">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
@@ -951,7 +951,6 @@ Detalles adicionales:
 <translation id="7549584377607005141">Esta página web necesita los datos ingresados anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero ten en cuenta que se repetirán las acciones que la página haya realizado anteriormente.</translation>
 <translation id="7552846755917812628">Intenta las siguientes sugerencias:</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
-<translation id="7560085949372856518">En el siguiente paso, puedes elegir qué tarjetas guardar en tu Cuenta de Google.</translation>
 <translation id="7564049878696755256">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
@@ -1120,7 +1119,6 @@ Detalles adicionales:
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8728672262656704056">Estás en modo incógnito</translation>
 <translation id="8730621377337864115">Listo</translation>
-<translation id="8733831205558190772">Todas tus tarjetas en un solo lugar</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chromium no puede verificar estos certificados.</translation>
 <translation id="8740359287975076522">No se encontró <ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt;. Se está diagnosticando el problema.</translation>
 <translation id="874846938927089722">Tarjetas de crédito y prepago aceptadas</translation>
@@ -1141,7 +1139,6 @@ Detalles adicionales:
 <translation id="8866481888320382733">Error al analizar la configuración de la política</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8874824191258364635">Ingresa un número de tarjeta válido</translation>
-<translation id="8876793034577346603">No se pudo analizar la configuración de red.</translation>
 <translation id="8891727572606052622">Modo proxy no válido</translation>
 <translation id="8892964541482452187">Botón para cambiar de pestaña; presiona Intro para cambiar a esta pestaña</translation>
 <translation id="8903921497873541725">Acercar</translation>
@@ -1202,6 +1199,7 @@ Detalles adicionales:
 <translation id="935608979562296692">BORRAR FORMULARIO</translation>
 <translation id="936602727769022409">Podrías perder el acceso a tu Cuenta de Google. Chromium te recomienda cambiar la contraseña ahora. Deberás acceder a la cuenta.</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
+<translation id="945855313015696284">Comprueba la información que se muestra a continuación y borra las tarjetas que no sean válidas</translation>
 <translation id="951104842009476243">Tarjetas de débito y prepago aceptadas</translation>
 <translation id="962484866189421427">Este contenido podría intentar instalar apps engañosas que se hagan pasar por otro tipo de contenido o que recopilen datos que se usen para rastrearte. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build oficial</translation>

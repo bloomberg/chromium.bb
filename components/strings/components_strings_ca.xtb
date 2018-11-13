@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Ja queda poc</translation>
 <translation id="5932224571077948991">El lloc web mostra anuncis intrusius o enganyosos</translation>
 <translation id="5939518447894949180">Restableix</translation>
+<translation id="5946937721014915347">S'està obrint <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">El dispositiu no es pot inscriure amb un compte de consumidor (hi ha una llicència associada disponible).</translation>
 <translation id="5966151627327109289">Et tanca la sessió de la majoria de llocs web. Pot ser que deixis de tenir accés al contingut protegit del lloc web <ph name="SITE" /> i d'altres llocs web.</translation>
 <translation id="5967592137238574583">Edita la informació de contacte</translation>
@@ -863,7 +864,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Aquests càrrecs poden ser únics o periòdics i és possible que no s'indiquin d'una manera evident.</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Aquesta targeta i l'adreça de facturació associada es desaran al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}other{Aquestes targetes i les adreces de facturació associades es desaran al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}}</translation>
 <translation id="7050187094878475250">Heu provat de connectar-vos a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa gran per poder confiar-hi.</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7064851114919012435">Informació de contacte</translation>
@@ -950,7 +950,6 @@ Detalls addicionals:
 <translation id="7549584377607005141">Aquesta pàgina web necessita dades que heu introduït anteiorment per poder mostrar-la correctament. Podeu tornar a enviar les dades, però es tornarà a repetir qualsevol acció que la pàgina hagi dut a terme prèviament.</translation>
 <translation id="7552846755917812628">Prova els consells següents:</translation>
 <translation id="7554791636758816595">Pestanya nova</translation>
-<translation id="7560085949372856518">Al pas següent pots triar quines targetes vols desar al Compte de Google.</translation>
 <translation id="7564049878696755256">Podries perdre l'accés al compte de <ph name="ORG_NAME" /> o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="7567204685887185387">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi emès de manera fraudulenta. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="7569952961197462199">Voleu suprimir la targeta de crèdit de Chrome?</translation>
@@ -1118,7 +1117,6 @@ Detalls addicionals:
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8728672262656704056">Has passat al mode d'incògnit</translation>
 <translation id="8730621377337864115">Fet</translation>
-<translation id="8733831205558190772">Totes les targetes en un sol lloc</translation>
 <translation id="8738058698779197622">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chromium no pot verificar aquests certificats.</translation>
 <translation id="8740359287975076522">No s'ha trobat l'&lt;abbr id="dnsDefinition"&gt;adreça DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. S'està diagnosticant el problema.</translation>
 <translation id="874846938927089722">Targetes de crèdit i de prepagament acceptades</translation>
@@ -1139,7 +1137,6 @@ Detalls addicionals:
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>
-<translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="8892964541482452187">Botó per canviar de pestanya; prem Retorn per canviar a aquesta pestanya</translation>
 <translation id="8903921497873541725">Amplia</translation>
@@ -1200,6 +1197,7 @@ Detalls addicionals:
 <translation id="935608979562296692">ESBORRA EL FORMULARI</translation>
 <translation id="936602727769022409">Podries perdre l'accés al Compte de Google. Chromium et recomana que canviïs la contrasenya ara. Se't demanarà que iniciïs la sessió.</translation>
 <translation id="939736085109172342">Carpeta nova</translation>
+<translation id="945855313015696284">Consulta la informació següent i suprimeix les targetes que no siguin vàlides</translation>
 <translation id="951104842009476243">Targetes de dèbit i de prepagament acceptades</translation>
 <translation id="962484866189421427">Pot ser que aquest contingut provi d'instal·lar aplicacions enganyoses que es facin passar per d'altres o que recullin dades que podrien utilitzar-se per fer un seguiment de la teva activitat. <ph name="BEGIN_LINK" />Mostra igualment<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Muntatge oficial</translation>

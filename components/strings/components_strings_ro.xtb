@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Aproape finalizat</translation>
 <translation id="5932224571077948991">Site-ul afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="5939518447894949180">Resetează</translation>
+<translation id="5946937721014915347">Se deschide <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
 <translation id="5966151627327109289">Te deconectează de pe majoritatea site-urilor. Este posibil să pierzi accesul la conținutul protejat de pe <ph name="SITE" /> și de pe alte site-uri.</translation>
 <translation id="5967592137238574583">Editează informațiile de contact</translation>
@@ -863,7 +864,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Aceste costuri pot fi unice sau recurente și ascunse.</translation>
 <translation id="7029809446516969842">Parole</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Acest card și adresa de facturare asociată vor fi salvate în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}few{Aceste carduri și adresele de facturare asociate vor fi salvate în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}other{Aceste carduri și adresele de facturare asociate vor fi salvate în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}}</translation>
 <translation id="7050187094878475250">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat a cărui perioadă de validitate este prea lungă pentru a fi de încredere.</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7064851114919012435">Informații de contact</translation>
@@ -950,7 +950,6 @@ Detalii suplimentare:
 <translation id="7549584377607005141">Pentru a fi afișată corespunzător, această pagină web necesită date pe care le-ați introdus anterior. Puteți trimite aceste date din nou, dar astfel veți repeta orice acțiuni realizate anterior de această pagină.</translation>
 <translation id="7552846755917812628">Încearcă următoarele sfaturi:</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
-<translation id="7560085949372856518">La pasul următor, poți alege ce carduri să salvezi în Contul tău Google.</translation>
 <translation id="7564049878696755256">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
@@ -1119,7 +1118,6 @@ Detalii suplimentare:
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8728672262656704056">Ai trecut în modul incognito</translation>
 <translation id="8730621377337864115">Terminat</translation>
-<translation id="8733831205558190772">Toate cardurile tale într-un singur loc</translation>
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; pentru <ph name="HOST_NAME" /> nu a putut fi găsită. Se diagnostichează problema.</translation>
 <translation id="874846938927089722">Carduri de credit și preplătite acceptate</translation>
@@ -1140,7 +1138,6 @@ Detalii suplimentare:
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="8874824191258364635">Introdu un număr de card valid</translation>
-<translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="8892964541482452187">Butonul Comută între file, apasă pe Enter pentru a comuta la această filă</translation>
 <translation id="8903921497873541725">Mărește</translation>
@@ -1201,6 +1198,7 @@ Detalii suplimentare:
 <translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>
 <translation id="936602727769022409">Este posibil să pierzi accesul la Contul Google. Chromium îți recomandă să îți schimbi parola acum. Ți se va cere să te conectezi.</translation>
 <translation id="939736085109172342">Dosar nou</translation>
+<translation id="945855313015696284">Verifică informațiile de mai jos și șterge cardurile nevalide</translation>
 <translation id="951104842009476243">Carduri de debit și preplătite acceptate</translation>
 <translation id="962484866189421427">Acest conținut poate încerca să instaleze aplicații înșelătoare care pretind a fi altceva sau colectează date care pot fi folosite pentru a te urmări. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Versiune oficială</translation>

@@ -936,7 +936,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8084114998886531721">Contraseña guardada</translation>
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
-<translation id="8087980556724996220">El Asistente de Autocompletar se detendrá en <ph name="DURATION_SECONDS" /> segundos…</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
@@ -1025,7 +1024,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8812260976093120287">En algunos sitios web, puedes realizar pagos en tu dispositivo con las aplicaciones compatibles mencionadas anteriormente.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> se abrirá en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google gestionadas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Marcadores</translation>
-<translation id="8823704566850948458">Sugerir contraseña...</translation>
 <translation id="8833831881926404480">Un sitio web está compartiendo tu pantalla</translation>
 <translation id="883806473910249246">No se ha podido descargar el contenido.</translation>
 <translation id="8840953339110955557">Esta página puede ser distinta de la versión online.</translation>
@@ -1073,7 +1071,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Sugerir contraseña segura...</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932599481871055447">Ahorra datos y navega más rápido</translation>

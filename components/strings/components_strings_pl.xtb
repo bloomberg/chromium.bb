@@ -864,7 +864,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Może to być opłata jednorazowa lub cykliczna, a informacje o niej mogą nie być wyraźnie podane.</translation>
 <translation id="7029809446516969842">Hasła</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Ta karta i związany z nią adres rozliczeniowy zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}few{Te karty i związane z nimi adresy rozliczeniowe zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}many{Te karty i związane z nimi adresy rozliczeniowe zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}other{Te karty i związane z nimi adresy rozliczeniowe zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}}</translation>
 <translation id="7050187094878475250">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat, którego okres ważności jest za długi, by był wiarygodny.</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
@@ -951,7 +950,6 @@ Dodatkowe informacje:
 <translation id="7549584377607005141">Do poprawnego wyświetlenia tej strony internetowej wymagane są dane wpisane przez Ciebie wcześniej. Możesz wysłać je ponownie, ale spowoduje to powtórzenie wszystkich działań wykonanych poprzednio przez stronę.</translation>
 <translation id="7552846755917812628">Skorzystaj z tych wskazówek:</translation>
 <translation id="7554791636758816595">Nowa karta</translation>
-<translation id="7560085949372856518">W następnym kroku możesz wybrać karty, które chcesz zapisać na swoim koncie Google.</translation>
 <translation id="7564049878696755256">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
@@ -1119,7 +1117,6 @@ Dodatkowe informacje:
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728672262656704056">Jesteś w trybie incognito</translation>
 <translation id="8730621377337864115">Gotowe</translation>
-<translation id="8733831205558190772">Wszystkie karty w jednym miejscu</translation>
 <translation id="8738058698779197622">Aby nawiązać bezpieczne połączenie, Twój zegar musi mieć ustawioną prawidłową godzinę. Jest to wymagane, ponieważ certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Ponieważ zegar Twojego urządzenia nie jest ustawiony prawidłowo, Chromium nie może zweryfikować tych certyfikatów.</translation>
 <translation id="8740359287975076522">Nie znaleziono &lt;abbr id="dnsDefinition"&gt;adresu DNS&lt;/abbr&gt; serwera <ph name="HOST_NAME" />. Diagnozujemy problem.</translation>
 <translation id="874846938927089722">Akceptowane karty kredytowe i przedpłacone</translation>
@@ -1140,7 +1137,6 @@ Dodatkowe informacje:
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
 <translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8874824191258364635">Wpisz prawidłowy numer karty</translation>
-<translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="8892964541482452187">Przycisk przełączania kart, naciśnij enter, by przełączyć na tę kartę</translation>
 <translation id="8903921497873541725">Powiększ</translation>

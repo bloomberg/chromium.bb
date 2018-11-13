@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
 <translation id="2292698582925480719">表示スケール</translation>
+<translation id="2302092602801625023">このアカウントはファミリー リンクによって管理されています</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
 <translation id="2339073806695260576">シェルフにあるタッチペン ボタンをタップして、メモやスクリーンショットをとったり、レーザー ポインタや虫メガネを使用したりすることができます。</translation>
 <translation id="2341729377289034582">縦に固定</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>
+<translation id="3799080171973636491">拡大鏡（全画面）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="380165613292957338">はい、どんなご用でしょう？</translation>
 <translation id="383629559565718788">キーボード設定を表示</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> を有効化しています</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">ハイ コントラストのキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
 <translation id="435527878592612277">写真を選択</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
+<translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
@@ -391,6 +395,7 @@
 <translation id="7886169021410746335">プライバシー設定を調整する</translation>
 <translation id="7886277072580235377">ログアウトするとインターネット セッションは終了します。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">メールを送って</translation>
+<translation id="7897375687985782769">画面回転のキーボード ショートカットを押しました。画面を回転しますか？</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
@@ -456,6 +461,7 @@
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> を使用しています</translation>
 <translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> で端末のロックを解除してください</translation>
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Adobe Flash Player のアップデートが利用可能</translation>

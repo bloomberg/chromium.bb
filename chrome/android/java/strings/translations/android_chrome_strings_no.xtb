@@ -936,7 +936,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8084114998886531721">Lagret passord</translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
-<translation id="8087980556724996220">Autofill Assistant stopper om <ph name="DURATION_SECONDS" /> sek</translation>
 <translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Foreslå relaterte sider</translation>
@@ -1025,7 +1024,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />merknaden om personvern for Google-kontoer som administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
-<translation id="8823704566850948458">Foreslå passord …</translation>
 <translation id="8833831881926404480">Et nettsted deler skjermen din</translation>
 <translation id="883806473910249246">Det oppsto en feil under nedlastingen av innholdet.</translation>
 <translation id="8840953339110955557">Denne siden kan avvike fra nettversjonen.</translation>
@@ -1073,7 +1071,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9204836675896933765">1 fil gjenstår</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Foreslå sterkt passord …</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="932599481871055447">Spar data og surf raskere</translation>

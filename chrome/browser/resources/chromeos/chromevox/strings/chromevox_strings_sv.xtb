@@ -398,6 +398,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4058278702844053247">En sida som håller på att läsas in</translation>
 <translation id="4065205963140826639">Testa att använda söktangenten + högerpil för att hitta knappen Nästa och tryck sedan på söktangenten + mellanslag för att klicka på den.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tilde}other{# tildetecken}}</translation>
+<translation id="4086311032171418648">Inlärningsläget avslutas.</translation>
 <translation id="409334809956508737">Föregående objekt</translation>
 <translation id="4099274309791143834">med undermeny</translation>
 <translation id="4101527861445851766">En markerad kryssruta</translation>
@@ -500,6 +501,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4877261390094455813">Ange en sökfråga.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Intern länk</translation>
+<translation id="4915087353619183190">Inlärningsläget startas. Tryck på en qwerty-tangent, en uppdateringsbar braille-tangent eller en skärmrörelse för att ta reda på vad den har för funktion. Tryck på Ctrl och w eller Escape när du vill avsluta.</translation>
 <translation id="492295894462528572">Förord</translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4953585991029886728">Textinmatning</translation>

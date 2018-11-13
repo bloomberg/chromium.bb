@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">ಪುಟ ಲೋಡ್ ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="4065205963140826639">ಮುಂದೆ ಬಟನ್ ಹುಡುಕುವುದಕ್ಕಾಗಿ ಇದೀಗ ಹುಡುಕಾಟ + ಬಲಗಡೆ ಬಾಣ ಬಳಸಲು ಪ್ರಯತ್ನಿಸಿ, ನಂತರ ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಹುಡುಕಾಟ + ಸ್ಪೇಸ್ ಒತ್ತಿ.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ಟಿಲ್ಡ್‌}one{# ಟಿಲ್ಡ್‌ಗಳು}other{# ಟಿಲ್ಡ್‌ಗಳು}}</translation>
+<translation id="4086311032171418648">ಕಲಿಕೆ ಮೋಡ್ ನಿಲ್ಲಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="409334809956508737">ಹಿಂದಿನ ವಿಷಯ</translation>
 <translation id="4099274309791143834">ಉಪಮೆನುವಿನೊಂದಿಗೆ</translation>
 <translation id="4101527861445851766">ಗುರುತಿಸಲಾದ ಚೆಕ್‌ಬಾಕ್ಸ್‌</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">ಹುಡುಕಾಟದ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">ಆಂತರಿಕ ಲಿಂಕ್</translation>
+<translation id="4915087353619183190">ಕಲಿಕೆ ಮೋಡ್ ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತಿದೆ. ಅದರ ಕಾರ್ಯವಿಧಾನವನ್ನು ತಿಳಿದುಕೊಳ್ಳಲು ಕ್ವೆರ್ಟಿ ಕೀ, ರಿಫ್ರೆಶ್ ಮಾಡಬಹುದಾದ ಬ್ರೈಲ್ ಕೀಯನ್ನು ಒತ್ತಿರಿ ಅಥವಾ ಸನ್ನೆಯನ್ನು ಸ್ಪರ್ಶಿಸಿ. ನಿರ್ಗಮಿಸಲು w ಅಥವಾ escape ಜೊತೆಗೆ control ಒತ್ತಿರಿ.</translation>
 <translation id="492295894462528572">ಮುನ್ನುಡಿ</translation>
 <translation id="495170559598752135">ಕ್ರಿಯೆಗಳು</translation>
 <translation id="4953585991029886728">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ</translation>

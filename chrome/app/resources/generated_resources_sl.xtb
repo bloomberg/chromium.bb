@@ -166,7 +166,6 @@
     Na naslednjem zaslonu nam pošljite povratne informacije, da bomo lahko odpravili težavo.</translation>
 <translation id="1217668622537098248">Povrnitev na levi klik po dejanju</translation>
 <translation id="121783623783282548">Gesli se ne ujemata.</translation>
-<translation id="1218860753635451122">Če kliknete gumb »Strinjam se«, se strinjate z obdelavo, ki je opisana zgoraj za te Googlove storitve.</translation>
 <translation id="1219533395013150448">Pomočnik uporablja te posnetke za ustvarjanje glasovne modela, ki je shranjen v napravi. Model lahko izbrišete ali znova usposobite v nastavitvah Pomočnika. Glasovne ukaze si lahko ogledate ali jih izbrišete v Googlovih kontrolnikih za dejavnost.</translation>
 <translation id="122082903575839559">Algoritem podpisa potrdila</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 s šifriranjem RSA</translation>
@@ -846,7 +845,6 @@
 <translation id="2239921694246509981">Dodajanje zaščitene osebe</translation>
 <translation id="2241053333139545397">Branje in spreminjanje vaših podatkov na več spletnih mestih</translation>
 <translation id="2242687258748107519">Podatki o datoteki</translation>
-<translation id="2243194103992005307">Če želite odstraniti aplikacije, pojdite v »Nastavitve« &gt; »Aplikacije« ali odprite Upravitelja aplikacij. Nato se dotaknite aplikacije, ki jo želite odstraniti (morda boste morali s prstom povleči v desno ali levo, da jo boste našli). Nato se dotaknite »Odstrani« ali »Onemogoči«.</translation>
 <translation id="224940702122312781">Ta stran bo prenesla večje količine podatkov.</translation>
 <translation id="2249605167705922988">npr. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Odpri s sistemskim pregledovalnikom</translation>
@@ -1101,7 +1099,6 @@
 <translation id="2643698698624765890">Razširitve lahko upravljate tako, da v meniju »Windows« kliknete »Extensions«.</translation>
 <translation id="264810637653812429">Najdena ni bila nobena združljiva naprava.</translation>
 <translation id="2649045351178520408">Base64 kodiran ASCII, veriga potrdil</translation>
-<translation id="2651353619134567122">Pošiljanje podatkov o sistemu. Ta naprava trenutno samodejno pošilja diagnostične podatke ter podatke o uporabi naprav in aplikacij Googlu. To nastavitev lahko kadar koli spremenite v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" /> naprave. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK2" />Več o tem<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Iskanje ni uspelo</translation>
 <translation id="2653266418988778031">Če izbrišete potrdilo overitelja potrdil, brskalnik ne zaupa več potrdilom, ki jih je izdal ta overitelj.</translation>
 <translation id="2653659639078652383">Pošlji</translation>
@@ -1420,7 +1417,6 @@
 <translation id="3141318088920353606">Poslušanje ...</translation>
 <translation id="3141917231319778873">Dana zahteva ni podprta za to napravo: »<ph name="DEVICE_NAME" />«.</translation>
 <translation id="3143515551205905069">Prekliči sinhronizacijo</translation>
-<translation id="3143695347784622594">Pošiljanje podatkov o sistemu. Samodejno pošiljanje diagnostičnih podatkov ter podatkov o uporabi naprav in aplikacij Googlu. To nastavitev lahko kadar koli spremenite v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" /> naprave. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK2" />Več o tem<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">KONČANO</translation>
 <translation id="3144647712221361880">Odpiranje povezave kot</translation>
 <translation id="3146006635381699911">Sredstva predstavitvenega načina brez povezave niso na voljo.</translation>
@@ -1996,7 +1992,6 @@
 <translation id="3982375475032951137">Nastavite brskalnik v nekaj preprostih korakih</translation>
 <translation id="3983586614702900908">naprave neznanega prodajalca</translation>
 <translation id="3984159763196946143">Ni bilo mogoče zagnati predstavitvenega načina</translation>
-<translation id="3985261842049607969">Varnostno kopiranje v Google Drive. Po želji lahko preprosto obnovite podatke ali napravo zamenjate z drugo. Varnostne kopije vključujejo podatke aplikacij. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Shranjeni podatki</translation>
 <translation id="3987938432087324095">Ni bilo razumljivo.</translation>
 <translation id="3988996860813292272">Izbira časovnega pasu</translation>
@@ -2535,11 +2530,6 @@
 <translation id="4883274597792587930">Poiščite ime, natisnjeno na hrbtni strani ključa</translation>
 <translation id="4883436287898674711">Vsa spletna mesta <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Upravitelj opravil</translation>
-<translation id="4883898390143004266">Pomagajte aplikacijam ugotoviti lokacijo. Uporabite Googlovo lokacijsko storitev za izboljšanje natančnosti lokacije za aplikacije. Google bo morda občasno zbiral podatke o lokacijah ter jih na anonimen način uporabil za izboljšanje natančnosti zaznavanja lokacije in izpopolnjevanje storitev, ki pri delovanju uporabljajo lokacijo. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Varnostno kopiranje v Google Drive. Po želji lahko preprosto obnovite podatke ali napravo zamenjate z drugo. Varnostne kopije vključujejo podatke aplikacij.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Podatki aplikacij so lahko kateri koli podatki, ki jih je shranila aplikacija (glede na nastavitve razvijalca), vključno z morebitno občutljivimi podatki, kot so stiki, sporočila in fotografije.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Varnostno kopirani podatki se ne štejejo v omejitev prostora za shranjevanje v Googlu Drive.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />To storitev lahko izklopite v nastavitvah.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6 x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Odpri s sistemskim pregledovalnikom</translation>
@@ -2822,7 +2812,6 @@
 <translation id="5324780743567488672">Samodejna nastavitev časovnega pasu na podlagi vaše lokacije</translation>
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5327570636534774768">Ta naprava je označena, da jo upravlja druga domena. Tej domeni onemogočite uporabo naprave, preden nastavite predstavitveni način.</translation>
-<translation id="532776649628038357">Strinjam se</translation>
 <translation id="532943162177641444">Dotaknite se obvestila v telefonu <ph name="PHONE_NAME" />, če želite nastaviti mobilno dostopno točko, ki jo lahko uporablja ta naprava.</translation>
 <translation id="5329858601952122676">&amp;Izbriši</translation>
 <translation id="5329945517224105597">Pomočnik vam lahko ponudi ustreznejše predloge in določena dejanja, povezana z vsebino vašega zaslona. To lahko spremenite v nastavitvah Pomočnika.</translation>
@@ -2936,7 +2925,6 @@
 <translation id="5488093641312826914">Element »<ph name="COPIED_ITEM_NAME" />« je kopiran</translation>
 <translation id="5488468185303821006">Omogoči v načinu brez beleženja zgodovine</translation>
 <translation id="5489435190927933437">Shranjena gesla za <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Pošiljanje podatkov o sistemu. Samodejno pošiljanje diagnostičnih podatkov ter podatkov o uporabi naprav in aplikacij Googlu. To nastavitev je uveljavil lastnik. Lastnik se morda odloči Googlu poslati diagnostične podatke in podatke o uporabi za to napravo. To si je mogoče ogledati v nastavitvah. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">zaslon je vklopljen</translation>
 <translation id="5494362494988149300">Odpri, ko je &amp;končano</translation>
 <translation id="5494920125229734069">Izberi vse</translation>
@@ -3639,7 +3627,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6528513914570774834">Omogoči drugim uporabnikom te naprave uporabo tega omrežja</translation>
 <translation id="652948702951888897">Zgodovina v Chromu</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> – sinhroniziranje ...</translation>
-<translation id="6530681427077572136">Pošiljanje podatkov o sistemu. Ta naprava trenutno samodejno pošilja diagnostične podatke in podatke o uporabi naprav in aplikacij Googlu. To je mogoče kadar koli spremeniti v nastavitvah naprave. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Obdrži nevarno datoteko</translation>
 <translation id="6534583978616527129">Inicializacija povezave</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Opomba:<ph name="END_BOLD" /> Omogočite samo, če veste, kaj delate, ali če je bilo to zahtevano od vas, ker lahko zbiranje podatkov zmanjša učinkovitost delovanja.</translation>
@@ -3687,7 +3674,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6610147964972079463">Zapri zasebne zavihke</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6613452264606394692">Hitro se vrnite na to stran tako, da jo dodate med zaznamke</translation>
-<translation id="6614893213975402384">Namestitev posodobitev in aplikacij. Če nadaljujete, se strinjate, da lahko ta naprava tudi samodejno prenese in namesti posodobitve ter aplikacije, ki jih zagotavljajo Google, vaš operater in proizvajalec vaše naprave – morda s prenosom podatkov v mobilnih omrežjih. Nekatere od teh aplikacij morda ponujajo nakupe v aplikaciji. Te aplikacije lahko kadar koli odstranite. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
 <translation id="6618097958368085618">Vseeno obdrži</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4061,9 +4047,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7191454237977785534">Shrani datoteko kot</translation>
 <translation id="7193374945610105795">Za <ph name="ORIGIN" /> ni shranjenih gesel</translation>
 <translation id="7196835305346730603">Iskanje Chromeboxov v bližini ...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />To so splošni podatki o napravi in tem, kako jo uporabljate (na primer raven napolnjenosti akumulatorja, raba aplikacij in omrežne povezave). Uporabljeni bodo za izboljšanje Googlovih izdelkov in storitev za vse. Nekateri združeni podatki bodo pomagali tudi partnerjem, na primer razvijalcem za Android, pri izboljšanju aplikacij in izdelkov.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Izklop te funkcije ne vpliva na zmožnost naprave, da pošilja podatke, potrebne za ključne storitve, kot so posodobitve in varnost sistema.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />To funkcijo je mogoče nadzirati v »Nastavitve &gt; Google«. V meniju izberite »Uporaba in diagnostični podatki«.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Vsakič brskajte z Iskanjem Google in Googlovimi pametnimi rešitvami</translation>
 <translation id="7197632491113152433">V računu smo našli toliko aplikacij, ki jih je mogoče uporabljati v tej napravi: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="7199158086730159431">Pomoč</translation>
@@ -4265,9 +4248,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7507930499305566459">Potrdilo odzivnika stanja</translation>
 <translation id="7508545000531937079">Diaprojekcija</translation>
 <translation id="7513029293694390567">Samodejna prijava v spletna mesta s shranjenimi poverilnicami. Ko je to onemogočeno, boste morali potrditi pred vsako prijavo v spletno mesto.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Pomagajte aplikacijam ugotoviti lokacijo. Uporabite Googlovo lokacijsko storitev za izboljšanje natančnosti lokacije za aplikacije. Google bo morda občasno zbiral podatke o lokacijah ter jih na anonimen način uporabil za izboljšanje natančnosti zaznavanja lokacije in izpopolnjevanje storitev, ki pri delovanju uporabljajo lokacijo.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Googlova lokacijska storitev si pri določanju lokacije vaše naprave pomaga z viri, kot so omrežja Wi-Fi, mobilna omrežja in tipala. Ta storitev je aktivna, ko je nastavitev lokacije v napravi vklopljena.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Zaznavanje lokacije lahko izklopite tako, da v napravi izklopite glavno lokacijsko nastavitev. V lokacijskih nastavitvah lahko izklopite tudi uporabo omrežij Wi‑Fi, mobilnih omrežij in tipal za zaznavanje lokacije.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Ustvarjanje gesla –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Izgovorite »Ok Google«</translation>
@@ -4508,7 +4488,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7851457902707056880">Prijava je omejena na račun lastnika. Znova zaženite napravo in se prijavite z računom lastnika. Naprava se bo samodejno znova zagnala čez 30 sekund.</translation>
 <translation id="7851716364080026749">Vedno blokiraj dostop do kamere in mikrofona</translation>
 <translation id="7853747251428735">Več &amp;orodij</translation>
-<translation id="7856006446339184955">Pošiljanje podatkov o sistemu. Ta naprava trenutno samodejno pošilja diagnostične podatke ter podatke o uporabi naprav in aplikacij Googlu. To <ph name="BEGIN_LINK1" />nastavitev<ph name="END_LINK1" /> je uveljavil lastnik. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK2" />Več o tem<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Dodaj izjemo</translation>
 <translation id="7857949311770343000">Ste pričakovali takšen nov zavihek s povezavami?</translation>
 <translation id="786073089922909430">Storitev: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4936,7 +4915,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8535005006684281994">Spletni naslov podaljšanja Netscapeovega potrdila</translation>
 <translation id="8538358978858059843">Želite omogočiti oblačne storitve za Google Cast?</translation>
 <translation id="8539727552378197395">Ne (samo http)</translation>
-<translation id="8541166929715485291">Pošiljanje podatkov o sistemu. Samodejno pošiljanje diagnostičnih podatkov ter podatkov o uporabi naprav in aplikacij Googlu. To nastavitev je uveljavil lastnik. Lastnik se morda odloči Googlu poslati diagnostične podatke in podatke o uporabi za to napravo. To si je mogoče ogledati v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" />. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK2" />Več o tem<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Vašega gesla žal ni bilo mogoče preveriti. Upravitelj tega zaščitenega uporabnika je morda pred kratkim spremenil geslo. V tem primeru bo novo geslo uporabljeno ob naslednji prijavi. Poskusite uporabiti staro geslo.</translation>
 <translation id="8546186510985480118">V napravi primanjkuje prostora</translation>
 <translation id="8546306075665861288">Predpomnilnik slik</translation>
@@ -5202,7 +5180,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8944964446326379280">Aplikacija <ph name="APP_NAME" /> je v skupno rabo z zavihkom <ph name="TAB_NAME" /> dala okno.</translation>
 <translation id="8946359700442089734">V tej napravi niso bile v celoti omogočene funkcije za odpravljanje napak: <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="894871326938397531">Izklop načina brez belež. zgod.?</translation>
-<translation id="8952774786254665439">Dodatne možnosti tiskalnika</translation>
 <translation id="895347679606913382">Začetek ...</translation>
 <translation id="8954952943849489823">Premikanje ni uspelo, nepričakovana napaka: $1</translation>
 <translation id="895586998699996576">Slika $1</translation>
@@ -5344,7 +5321,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="91568222606626347">Ustvari bližnjico ...</translation>
 <translation id="9157697743260533322">Nastavitev samodejnih posodobitev za vse uporabnike ni uspela (napaka preverjanj pred zagonom: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ojej!  Težava z omrežno komunikacijo med preverjanjem pristnosti.  Preverite omrežno povezavo in poskusite znova.</translation>
-<translation id="916501514001398070">Pošiljanje podatkov o sistemu. Ta naprava trenutno samodejno pošilja diagnostične podatke ter podatke o uporabi naprav in aplikacij Googlu. To nastavitev je uveljavil lastnik. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9168436347345867845">Pozneje</translation>
 <translation id="9169496697824289689">Ogled bližnjičnih tipk</translation>

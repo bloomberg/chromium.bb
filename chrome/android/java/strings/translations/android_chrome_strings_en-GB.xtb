@@ -944,7 +944,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084114998886531721">Saved password</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
-<translation id="8087980556724996220">Auto-fill Assistant will stop in <ph name="DURATION_SECONDS" /> s…</translation>
 <translation id="8103578431304235997">Incognito Tab</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Suggest related pages</translation>
@@ -1031,7 +1030,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
-<translation id="8823704566850948458">Suggest password...</translation>
 <translation id="8833831881926404480">A site is sharing your screen</translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8840953339110955557">This page may differ from the online version.</translation>
@@ -1079,7 +1077,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9204836675896933765">1 file left</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Suggest strong password...</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">Save data and browse faster</translation>

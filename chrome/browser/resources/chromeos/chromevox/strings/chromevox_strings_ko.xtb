@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">페이지 로드 진행 중</translation>
 <translation id="4065205963140826639">검색+오른쪽 화살표를 사용하여 다음 버튼을 찾은 후 검색+Space를 눌러 클릭하세요.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{물결표}other{물결표 #개}}</translation>
+<translation id="4086311032171418648">학습 모드를 중지합니다.</translation>
 <translation id="409334809956508737">이전 객체</translation>
 <translation id="4099274309791143834">하위 메뉴 포함</translation>
 <translation id="4101527861445851766">선택된 체크박스</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">검색어를 입력하세요.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">내부 링크</translation>
+<translation id="4915087353619183190">학습 모드를 시작합니다. 쿼티 키, 새로고침할 수 있는 점자 키, 터치 동작을 눌러 기능을 확인하세요. Control 키와 W를 누르거나 Esc 키로 종료하세요.</translation>
 <translation id="492295894462528572">서문</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4953585991029886728">텍스트 수정</translation>

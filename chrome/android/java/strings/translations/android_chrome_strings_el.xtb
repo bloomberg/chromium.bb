@@ -944,7 +944,6 @@
 <translation id="8073388330009372546">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="8084114998886531721">Αποθηκευμένος κωδικός πρόσβασης</translation>
 <translation id="8087000398470557479">Αυτό το περιεχόμενο προέρχεται από το <ph name="DOMAIN_NAME" /> και παρέχεται από την Google.</translation>
-<translation id="8087980556724996220">Η λειτουργία του Βοηθού αυτόματης συμπλήρωσης θα διακοπεί σε <ph name="DURATION_SECONDS" /> δ.</translation>
 <translation id="8103578431304235997">Καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Προτάσεις για σχετικές σελίδες</translation>
@@ -1033,7 +1032,6 @@
 <translation id="8812260976093120287">Σε ορισμένους ιστοτόπους, μπορείτε να πληρώσετε χρησιμοποιώντας τις παραπάνω υποστηριζόμενες εφαρμογές πληρωμών στη συσκευή σας.</translation>
 <translation id="8816439037877937734">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
-<translation id="8823704566850948458">Πρόταση για κωδικό πρόσβασης…</translation>
 <translation id="8833831881926404480">Κάποιος ιστότοπος μοιράζεται την οθόνη σας</translation>
 <translation id="883806473910249246">Παρουσιάστηκε σφάλμα κατά τη λήψη του περιεχομένου.</translation>
 <translation id="8840953339110955557">Αυτή η σελίδα μπορεί να διαφέρει από την έκδοση στο διαδίκτυο.</translation>
@@ -1081,7 +1079,6 @@
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
 <translation id="9204836675896933765">1 αρχείο απομένει</translation>
 <translation id="9206873250291191720">Α</translation>
-<translation id="9218033835049520260">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="9219103736887031265">Εικόνες</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="932599481871055447">Εξοικονομήστε δεδομένα και περιηγηθείτε πιο γρήγορα</translation>

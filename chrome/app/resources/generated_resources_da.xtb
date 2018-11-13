@@ -166,7 +166,6 @@
     På næste skærm kan du sende feedback og hjælpe os med at løse problemet.</translation>
 <translation id="1217668622537098248">Vend tilbage til venstreklik efter handling</translation>
 <translation id="121783623783282548">Adgangskoderne stemmer ikke overens.</translation>
-<translation id="1218860753635451122">Når du klikker på knappen "Jeg accepterer", accepterer du den behandling, der er beskrevet ovenfor, for disse Google-tjenester.</translation>
 <translation id="1219533395013150448">Google Assistent bruger disse optagelser til at oprette din stemmemodel, som gemmes på din enhed. Slet eller genoptræn stemmemodellen i indstillingerne for Google Assistent. Se eller slet talekommandoer i Google Aktivitetsadministration.</translation>
 <translation id="122082903575839559">Algoritme for certifikatsignatur</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
@@ -843,7 +842,6 @@
 <translation id="2239921694246509981">Tilføj administreret person</translation>
 <translation id="2241053333139545397">Læse og redigere dine data på en række websites</translation>
 <translation id="2242687258748107519">Filoplysninger</translation>
-<translation id="2243194103992005307">Hvis du vil fjerne apps, skal du gå til Indstillinger &gt; Apps eller Administration af apps. Tryk derefter på den app, du vil afinstallere (du skal muligvis stryge til højre eller til venstre for at finde appen). Tryk derefter på Afinstaller eller Deaktiver.</translation>
 <translation id="224940702122312781">Denne side bruger mange data.</translation>
 <translation id="2249605167705922988">f.eks. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Åbn med standardvisningsprogram</translation>
@@ -1099,7 +1097,6 @@
 <translation id="2643698698624765890">Administrer dine udvidelser ved at klikke på Udvidelser i menuen Vindue.</translation>
 <translation id="264810637653812429">Der blev ikke fundet nogen kompatible enheder.</translation>
 <translation id="2649045351178520408">Base64-kodet ASCII, certifikatkæde</translation>
-<translation id="2651353619134567122">Send systemdata. Denne enhed sender i øjeblikket diagnostik og data om enheds- og appforbrug til Google. Du kan til enhver tid ændre dette i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" /> på din enhed. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Søgningen mislykkedes</translation>
 <translation id="2653266418988778031">Hvis du sletter et certifikat med certificeringsautoritet (CA), vil din browser ikke længere have tillid til certifikater, der er udstedt af denne CA.</translation>
 <translation id="2653659639078652383">Indsend</translation>
@@ -1418,7 +1415,6 @@
 <translation id="3141318088920353606">Lytter...</translation>
 <translation id="3141917231319778873">Den angivne anmodning understøttes ikke på: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3143515551205905069">Annuller synkronisering</translation>
-<translation id="3143695347784622594">Send systemdata. Send automatisk diagnostik og data om enheds- og appforbrug til Google. Du kan til enhver tid ændre dette i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" /> på din enhed. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">UDFØR</translation>
 <translation id="3144647712221361880">Åbn linket som</translation>
 <translation id="3146006635381699911">Ressourcerne for offlinedemotilstand er utilgængelige.</translation>
@@ -1994,7 +1990,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3982375475032951137">Konfigurer din browser ved et hjælp af et par enkle trin</translation>
 <translation id="3983586614702900908">enheder fra en ukendt leverandør</translation>
 <translation id="3984159763196946143">Demotilstand kunne ikke startes</translation>
-<translation id="3985261842049607969">Sikkerhedskopiér til Google Drev. Du kan til enhver tid nemt gendanne dine data eller skifte til en anden enhed. Din backup omfatter appdata. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Sparede data</translation>
 <translation id="3987938432087324095">Det forstod jeg ikke.</translation>
 <translation id="3988996860813292272">Vælg tidszone</translation>
@@ -2296,7 +2291,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4524832533047962394">Den medfølgende tilstand for tilmelding understøttes ikke af denne version af operativsystemet. Sørg for, at du kører den nyeste version.</translation>
 <translation id="4525382759303819021">Få de seneste opdateringer og anbefalinger om apps i Play Butik</translation>
 <translation id="4530494379350999373">Origin</translation>
-<translation id="4533846798469727141">Sig derefter "Hey Google"</translation>
+<translation id="4533846798469727141">Sig "Hey Google"</translation>
 <translation id="4533985347672295764">CPU-tid</translation>
 <translation id="4534661889221639075">Prøv igen.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
@@ -2533,11 +2528,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4883274597792587930">Find navnet, der står på bagsiden af din nøgle</translation>
 <translation id="4883436287898674711">Alle websites på <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Jobliste</translation>
-<translation id="4883898390143004266">Hjælp apps med at finde placeringer. Brug Googles placeringstjeneste til at forbedre placeringer i apps. Google kan med jævne mellemrum indsamle placeringsdata og bruge oplysningerne anonymt til at gøre placeringen mere nøjagtig og forbedre placeringsbaserede tjenester. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Sikkerhedskopiér til Google Drev. Du kan til enhver tid nemt gendanne dine data eller skifte til en anden enhed. Din backup omfatter appdata.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Appdata kan være alle former for data, som en app har gemt (baseret på udviklerens indstillinger). Det kan bl.a. være potentielt følsomme data som f.eks. kontakter, beskeder og billeder.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Sikkerhedskopierede data tæller ikke med i din kvote for Drev-lagerplads.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Du kan deaktivere denne tjeneste i Indstillinger.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Åbn med standardvisningsprogram</translation>
@@ -2820,7 +2810,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5324780743567488672">Indstil tidszonen automatisk ved hjælp af din placering</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5327570636534774768">Denne enhed er markeret til administration af et andet domæne. Enheden skal deprovisioneres fra dette domæne, før demotilstand konfigureres.</translation>
-<translation id="532776649628038357">Jeg accepterer</translation>
 <translation id="532943162177641444">Tryk på underretningen på din <ph name="PHONE_NAME" /> for at konfigurere det mobilhotspot, der kan anvendes af denne enhed.</translation>
 <translation id="5329858601952122676">&amp;Slet</translation>
 <translation id="5329945517224105597">Assistenten kan tilbyde flere relevante forslag og specifikke handlinger i forhold til det, der vises på din skærm. Du kan ændre dette i indstillingerne for Assistent</translation>
@@ -2934,7 +2923,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5488093641312826914">"<ph name="COPIED_ITEM_NAME" />" er kopieret</translation>
 <translation id="5488468185303821006">Tillad i inkognito</translation>
 <translation id="5489435190927933437">Gemte adgangskoder til <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Send systemdata. Send automatisk diagnostik og data om enheds- og appforbrug til Google. Denne indstilling håndhæves af ejeren. Ejeren kan vælge at sende diagnostik og forbrugsdata for denne enhed til Google. Du kan muligvis se dette i indstillingerne. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">skærmen er tændt</translation>
 <translation id="5494362494988149300">Åbn når &amp;færdigt</translation>
 <translation id="5494920125229734069">Vælg alle</translation>
@@ -3637,7 +3625,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6528513914570774834">Giv andre brugere af denne enhed tilladelse til at bruge dette netværk</translation>
 <translation id="652948702951888897">Chrome-historik</translation>
 <translation id="653019979737152879">Synkroniserer <ph name="FILE_NAME" />...</translation>
-<translation id="6530681427077572136">Send systemdata. Denne enhed sender i øjeblikket diagnostik og data om enheds- og appforbrug til Google. Du kan til enhver tid ændre dette i indstillingerne på din enhed. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Behold farlig fil</translation>
 <translation id="6534583978616527129">Initialiser forbindelsen</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Bemærk:<ph name="END_BOLD" /> Aktivér kun, hvis du ved hvad du gør, eller hvis du er blevet bedt om at gøre det, eftersom dataregistrering kan reducere ydeevnen.</translation>
@@ -3685,7 +3672,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6610147964972079463">Luk private faner</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6613452264606394692">Tilføj denne side som bogmærke, så du hurtigt kan vende tilbage hertil</translation>
-<translation id="6614893213975402384">Installer opdateringer og apps. Hvis du fortsætter, accepterer du, at denne enhed også kan downloade og installere opdateringer og apps automatisk fra Google, dit mobilselskab og producenten af din enhed. Dette kan ske ved hjælp af mobildata. Nogle af disse apps tilbyder muligvis køb i appen. Du kan til enhver tid fjerne disse apps. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Vis mig</translation>
 <translation id="6618097958368085618">Behold alligevel</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -3875,7 +3861,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6916590542764765824">Administrer udvidelser</translation>
 <translation id="6920989436227028121">Åbn som almindelig fane</translation>
 <translation id="6921709132208495314">Stop med at bruge data på denne side</translation>
-<translation id="6922128026973287222">Gem dine data, og få en hurtigere browseroplevelse med Googles datasparefunktion. Klik for at få flere oplysninger.</translation>
+<translation id="6922128026973287222">Spar på dataforbruget, og få en hurtigere browseroplevelse med Googles datasparefunktion. Klik for at få flere oplysninger.</translation>
 <translation id="6923132443355966645">Rul/klik</translation>
 <translation id="6923633482430812883">Delingen kunne ikke anvendes. Tjek, at den filserver, du opretter forbindelse til, understøtter SMBv2 eller nyere.</translation>
 <translation id="6930242544192836755">Varighed</translation>
@@ -4059,9 +4045,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7191454237977785534">Gem fil som</translation>
 <translation id="7193374945610105795">Der er ikke gemt nogen adgangskoder til <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Søger efter Chromeboxes i nærheden...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Dette er generelle oplysninger om din enhed og om, hvordan du bruger den (f.eks. batteriniveau, appforbrug og netværksforbindelse). Dataene bruges til at forbedre Googles produkter og tjenester for alle. Visse samlede oplysninger hjælper også partnere som f.eks. Android-udviklere med at forbedre deres apps og produkter.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Hvis du deaktiverer denne funktion, påvirker det ikke enhedens evne til at sende de oplysninger, der skal bruges til vigtige tjenester som f.eks. systemopdateringer og sikkerhed.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Du kan administrere denne funktion i Indstillinger &gt; Google. Vælg Brug og diagnostik i menuen.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Få adgang til Google Søgning og Google-intelligens, hver gang du browser</translation>
 <translation id="7197632491113152433">Vi fandt <ph name="NUMBER_OF_APPS" /> apps på din konto, der kan bruges på denne enhed.</translation>
 <translation id="7199158086730159431">Få H&amp;jælp</translation>
@@ -4263,9 +4246,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7507930499305566459">Certifikat for statussvar</translation>
 <translation id="7508545000531937079">Diasshow</translation>
 <translation id="7513029293694390567">Log automatisk ind på websites ved hjælp af gemte loginoplysninger. Hvis funktionen er slået fra, bliver du bedt om bekræftelse, hver gang du vil logge ind på et website.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Hjælp apps med at finde placeringer. Brug Googles placeringstjeneste til at forbedre placeringer i apps. Google kan med jævne mellemrum indsamle placeringsdata og bruge oplysningerne anonymt til at gøre placeringen mere nøjagtig og forbedre placeringsbaserede tjenester.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Googles placeringstjeneste bruger kilder som f.eks. Wi-Fi, mobilnetværk og sensorer til at fastslå din enheds placering. Tjenesten er aktiv, når indstillingen Placering er aktiveret på din enhed.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Du kan deaktivere Placering ved at deaktivere den primære indstilling for Placering på din enhed. Du kan også deaktivere brugen af Wi-Fi, mobilnetværk og sensorer i forbindelse med Placering i placeringsindstillingerne.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Opret en adgangskode –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sig "Ok Google".</translation>
@@ -4505,7 +4485,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7851457902707056880">Login er begrænset til ejerens konto. Genstart, og log ind med ejerens konto. Maskinen genstartes automatisk om 30 sekunder.</translation>
 <translation id="7851716364080026749">Bloker altid adgang til kamera og mikrofon</translation>
 <translation id="7853747251428735">Flere værktø&amp;jer</translation>
-<translation id="7856006446339184955">Send systemdata. Denne enhed sender i øjeblikket diagnostik og data om enheds- og appforbrug til Google. Denne <ph name="BEGIN_LINK1" />indstilling<ph name="END_LINK1" /> håndhæves af ejeren. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Tilføj undtagelse</translation>
 <translation id="7857949311770343000">Er dette den forventede side Ny fane?</translation>
 <translation id="786073089922909430">Tjeneste: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4933,7 +4912,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8535005006684281994">Webadresse for fornyelse af Netscape-certifikat</translation>
 <translation id="8538358978858059843">Vil du aktivere skytjenester til Cast?</translation>
 <translation id="8539727552378197395">Nej (HttpOnly)</translation>
-<translation id="8541166929715485291">Send systemdata. Send automatisk diagnostik og data om enheds- og appforbrug til Google. Denne indstilling håndhæves af ejeren. Ejeren kan vælge at sende diagnostik og forbrugsdata for denne enhed til Google. Du kan se dette i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" />. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Din adgangskode kunne desværre ikke bekræftes. Administratoren for denne administrerede bruger kan have ændret adgangskoden for nylig. Hvis det er tilfældet, gælder den nye adgangskode, næste gang du logger på. Prøv at bruge din gamle adgangskode.</translation>
 <translation id="8546186510985480118">Der er næsten ikke mere plads på enheden</translation>
 <translation id="8546306075665861288">Billedcache</translation>
@@ -5200,7 +5178,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8944964446326379280"><ph name="APP_NAME" /> deler et vindue med <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Fejlfindingsfunktionerne blev ikke aktiveret korrekt på denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed.</translation>
 <translation id="894871326938397531">Afslut inkognitotilstand?</translation>
-<translation id="8952774786254665439">Avancerede printerindstillinger</translation>
 <translation id="895347679606913382">Begynder...</translation>
 <translation id="8954952943849489823">Flytningen mislykkedes. Uventet fejl: $1</translation>
 <translation id="895586998699996576">$1 billede</translation>
@@ -5342,7 +5319,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="91568222606626347">Opret genvej...</translation>
 <translation id="9157697743260533322">Automatiske opdateringer kunne ikke konfigureres for alle brugere (fejl ved forhåndsopstart: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Der opstod et problem med netværkskommunikationen under godkendelsen. Kontrollér din netværksforbindelse, og prøv igen.</translation>
-<translation id="916501514001398070">Send systemdata. Denne enhed sender i øjeblikket diagnostik og data om enheds- og appforbrug til Google. Indstillingen håndhæves af ejeren. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Integreret billede</translation>
 <translation id="9168436347345867845">Gør det senere</translation>
 <translation id="9169496697824289689">Se tastaturgenveje</translation>

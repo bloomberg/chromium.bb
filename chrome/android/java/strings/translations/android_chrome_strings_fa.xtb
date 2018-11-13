@@ -943,7 +943,6 @@
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8084114998886531721">گذرواژه ذخیره‌شده</translation>
 <translation id="8087000398470557479">‏این محتوا از <ph name="DOMAIN_NAME" /> است و توسط Google ارائه می‌شود.</translation>
-<translation id="8087980556724996220">تکمیل خودکار «دستیار» ظرف <ph name="DURATION_SECONDS" /> ثانیه متوقف خواهد شد…</translation>
 <translation id="8103578431304235997">برگه ناشناس</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">پیشنهاد صفحه‌های مرتبط</translation>
@@ -1032,7 +1031,6 @@
 <translation id="8812260976093120287">در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده بالا در دستگاهتان پرداخت کنید.</translation>
 <translation id="8816439037877937734">‏<ph name="APP_NAME" /> در Chrome باز خواهد شد. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family<ph name="END_LINK3" /> موافقت می‌کنید.</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
-<translation id="8823704566850948458">پیشنهاد گذرواژه…</translation>
 <translation id="8833831881926404480">سایتی درحال به‌اشتراک گذاشتن صفحه‌تان است</translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
 <translation id="8840953339110955557">ممکن است این صفحه با نسخه آنلاین متفاوت باشد.</translation>
@@ -1080,7 +1078,6 @@
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">پیشنهاد گذرواژه قوی…</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="932599481871055447">ذخیره داده و مرور سریع‌تر</translation>

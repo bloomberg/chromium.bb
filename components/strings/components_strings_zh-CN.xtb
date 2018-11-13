@@ -725,6 +725,7 @@
 <translation id="5922853866070715753">即将完成</translation>
 <translation id="5932224571077948991">网站展示过侵扰性或误导性广告</translation>
 <translation id="5939518447894949180">重置</translation>
+<translation id="5946937721014915347">正在打开 <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">无法通过消费者帐号注册（有封装的许可）。</translation>
 <translation id="5966151627327109289">会致使您从大多数网站退出。您可能会无法再访问 <ph name="SITE" /> 及一些其他网站上的受保护内容。</translation>
 <translation id="5967592137238574583">修改联系信息</translation>
@@ -859,7 +860,6 @@
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{此卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以便在所有设备上更快捷地结帐。}other{这些卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以便在所有设备上更快捷地结帐。}}</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7064851114919012435">联系信息</translation>
@@ -946,7 +946,6 @@
 <translation id="7549584377607005141">此网页需要使用您之前输入的数据才能正常显示。您可以重新发送这些数据，不过，这么做会重复执行此网页之前执行过的所有操作。</translation>
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
 <translation id="7554791636758816595">新标签页</translation>
-<translation id="7560085949372856518">在下一步中，您可以选择要将哪些卡保存到您的 Google 帐号内。</translation>
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
@@ -1115,7 +1114,6 @@
 <translation id="8725066075913043281">重试</translation>
 <translation id="8728672262656704056">您已进入无痕模式</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="8733831205558190772">将您的所有卡汇集于一处</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="874846938927089722">接受的信用卡和预付卡</translation>
@@ -1136,7 +1134,6 @@
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8874824191258364635">请输入有效的信用卡号</translation>
-<translation id="8876793034577346603">无法解析网络配置。</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="8892964541482452187">标签页切换按钮，按 Enter 键可切换到此标签页</translation>
 <translation id="8903921497873541725">放大</translation>
@@ -1197,6 +1194,7 @@
 <translation id="935608979562296692">清除表单内容</translation>
 <translation id="936602727769022409">您可能会无法再访问自己的 Google 帐号。Chromium 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="939736085109172342">新建文件夹</translation>
+<translation id="945855313015696284">请查看下面的信息，并删除所有无效卡片</translation>
 <translation id="951104842009476243">接受的借记卡和预付卡</translation>
 <translation id="962484866189421427">此内容可能会尝试安装欺骗性应用，而这些应用能够冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">正式版本</translation>

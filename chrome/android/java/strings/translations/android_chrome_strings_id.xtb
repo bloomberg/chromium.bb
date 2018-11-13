@@ -944,7 +944,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084114998886531721">Sandi tersimpan</translation>
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
-<translation id="8087980556724996220">Asisten IsiOtomatis akan berhenti dalam <ph name="DURATION_SECONDS" />d…</translation>
 <translation id="8103578431304235997">Tab Penyamaran</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sarankan halaman terkait</translation>
@@ -1033,7 +1032,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="8812260976093120287">Di beberapa situs, Anda dapat membayar dengan aplikasi pembayaran yang didukung di atas pada perangkat Anda.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> akan terbuka di Chrome. Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Notifikasi<ph name="END_LINK2" /> Chrome, dan <ph name="BEGIN_LINK3" />Pemberitahuan Privasi untuk Akun Google yang Dikelola dengan Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bookmark</translation>
-<translation id="8823704566850948458">Sarankan sandi...</translation>
 <translation id="8833831881926404480">Satu situs sedang membagikan layar Anda</translation>
 <translation id="883806473910249246">Terjadi error saat mendownload konten.</translation>
 <translation id="8840953339110955557">Halaman ini mungkin berbeda dengan versi onlinenya.</translation>
@@ -1081,7 +1079,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Sarankan sandi yang kuat…</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="932327136139879170">Beranda</translation>
 <translation id="932599481871055447">Hemat data dan akses lebih cepat</translation>

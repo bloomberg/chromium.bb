@@ -166,7 +166,7 @@
     Välj Skicka feedback på nästa skärm så att vi kan försöka åtgärda problemet.</translation>
 <translation id="1217668622537098248">Återgå till att vänsterklicka efter åtgärden</translation>
 <translation id="121783623783282548">Lösenorden matchar inte.</translation>
-<translation id="1218860753635451122">När du klickar på Jag godkänner samtycker du till att dessa tjänster från Google bearbetas enligt beskrivningen ovan.</translation>
+<translation id="1219533395013150448">Med hjälp av dessa inspelningar skapar assistenten en röstmodell som sparas på enheten. Du raderar eller tränar om modellen i inställningarna för assistenten. Visa eller radera röstkommandon i aktivitetsinställningarna för Google.</translation>
 <translation id="122082903575839559">Certifikatets signaturalgoritm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Endast markering</translation>
@@ -616,6 +616,7 @@
 <translation id="1880905663253319515">Vill du ta bort certifikatet <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1886996562706621347">Tillåt att webbplatser begär att bli standardhanterare för protokoll (rekommenderas)</translation>
 <translation id="1887442540531652736">Inloggningsfel</translation>
+<translation id="1887597546629269384">Säg ”Hey Google” igen</translation>
 <translation id="1887850431809612466">Revision av maskinvara</translation>
 <translation id="1889984860246851556">Öppna proxyinställningarna</translation>
 <translation id="1890674179660343635">&lt;span&gt;Id: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -713,6 +714,7 @@
 <translation id="2048653237708779538">Åtgärden är inte tillgänglig</translation>
 <translation id="204914487372604757">Skapa genväg</translation>
 <translation id="2050339315714019657">Stående</translation>
+<translation id="2052369079215022979">Hanteras av organisationen</translation>
 <translation id="2053312383184521053">Data om läget inaktiv</translation>
 <translation id="205560151218727633">Logotyp för Google Assistent</translation>
 <translation id="2058456167109518507">En enhet har upptäckts</translation>
@@ -842,7 +844,6 @@
 <translation id="2239921694246509981">Lägg till kontrollerad person</translation>
 <translation id="2241053333139545397">Läs och ändra dina uppgifter på ett antal webbplatser</translation>
 <translation id="2242687258748107519">Filinformation</translation>
-<translation id="2243194103992005307">Om du vill ta bort appar öppnar du Inställningar &gt; Appar eller Apphanteraren. Tryck sedan på appen du vill avinstallera (du kanske måste svepa åt höger eller vänster för att hitta appen). Tryck sedan på Avinstallera eller Inaktivera.</translation>
 <translation id="224940702122312781">Den här sidan använder mycket data.</translation>
 <translation id="2249605167705922988">till exempel 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Öppna med systemvisningsprogrammet</translation>
@@ -900,6 +901,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">Skriv ett nytt namn</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vill kopplas</translation>
+<translation id="2342740338116612727">Bokmärkena har lagts till</translation>
 <translation id="2344028582131185878">Automatiska nedladdningar</translation>
 <translation id="2345723121311404059">1 sida till <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">Användning av Hangouts och Cast for Education regleras av Googles sekretesspolicy.</translation>
@@ -1096,7 +1098,6 @@
 <translation id="2643698698624765890">Hantera tillägg genom att klicka på Tillägg på menyn Fönster.</translation>
 <translation id="264810637653812429">Inga kompatibla enheter hittades.</translation>
 <translation id="2649045351178520408">Base64-kodad ASCII, certifikatkedja</translation>
-<translation id="2651353619134567122">Skicka systemdata. Diagnostik- och användningsdata för enheten och appar skickas för närvarande till Google från den här enheten. Du kan när som helst ändra detta i <ph name="BEGIN_LINK1" />enhetsinställningarna<ph name="END_LINK1" />. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK2" />Läs mer<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Sökningen misslyckades</translation>
 <translation id="2653266418988778031">Om du tar bort ett certifikat från en certifikatutfärdare (CU) kommer webbläsaren inte längre att lita på certifikat som utfärdas av denna CU.</translation>
 <translation id="2653659639078652383">Skicka</translation>
@@ -1415,7 +1416,6 @@
 <translation id="3141318088920353606">Lyssnar …</translation>
 <translation id="3141917231319778873">Den angivna förfrågan stöds inte för: <ph name="DEVICE_NAME" />.</translation>
 <translation id="3143515551205905069">Avbryt synkronisering</translation>
-<translation id="3143695347784622594">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Du kan när som helst ändra detta i <ph name="BEGIN_LINK1" />enhetsinställningarna<ph name="END_LINK1" />. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK2" />Learn More<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">KLART</translation>
 <translation id="3144647712221361880">Öppna länk som</translation>
 <translation id="3146006635381699911">Offlineresurser för demoläge saknas.</translation>
@@ -1679,6 +1679,7 @@
 <translation id="3550915441744863158">Chrome uppdateras automatiskt så att du alltid har den senaste versionen</translation>
 <translation id="3551320343578183772">Stäng flik</translation>
 <translation id="3552780134252864554">Rensas vis avslutning</translation>
+<translation id="3553146918065661815">Visa en varning innan du avslutar med ⌘Q</translation>
 <translation id="3555812735919707620">Ta bort tillägg</translation>
 <translation id="3556000484321257665">Sökmotorn har ändrats till <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Det gick inte att installera policyn på enheten.</translation>
@@ -1749,6 +1750,7 @@
 <translation id="3651488188562686558">Koppla från Wi-Fi</translation>
 <translation id="3652817283076144888">Initierar</translation>
 <translation id="3653160965917900914">Filresurser i nätverk</translation>
+<translation id="3653842108912548333">Få åtkomst till assistenten med Voice Match</translation>
 <translation id="3653999333232393305">Fortsätt tillåta <ph name="HOST" /> att använda din mikrofon</translation>
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent åtkomst till en fil.}other{Den har permanent åtkomst till # filer.}}</translation>
@@ -1989,7 +1991,6 @@
 <translation id="3982375475032951137">Konfigurera webbläsaren med några enkla steg</translation>
 <translation id="3983586614702900908">enheter från en okänd leverantör</translation>
 <translation id="3984159763196946143">Det gick inte att starta demoläget</translation>
-<translation id="3985261842049607969">Säkerhetskopiera till Google Drive. Återställ enkelt data eller byt enhet när som helst. Säkerhetskopian innehåller appdata. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Sparar data</translation>
 <translation id="3987938432087324095">Det gick inte att uppfatta vad du sade.</translation>
 <translation id="3988996860813292272">Välj tidszon</translation>
@@ -2291,6 +2292,7 @@
 <translation id="4524832533047962394">Det angivna registreringsläget stöds inte av den här versionen av operativsystemet. Kontrollera att du har den senaste versionen.</translation>
 <translation id="4525382759303819021">Få de senaste uppdateringarna och rekommendationerna för appar i Play Butik</translation>
 <translation id="4530494379350999373">Ursprung</translation>
+<translation id="4533846798469727141">Säg nu ”Hey Google”</translation>
 <translation id="4533985347672295764">CPU-tid</translation>
 <translation id="4534661889221639075">Försök igen.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
@@ -2527,11 +2529,6 @@
 <translation id="4883274597792587930">Leta reda på namnet som står på nyckelns baksida</translation>
 <translation id="4883436287898674711">Alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="48838266408104654">&amp;Aktivitetshanteraren</translation>
-<translation id="4883898390143004266">Gör det lättare för appar att hitta din plats. Förbättra platsens exakthet med hjälp av Googles platstjänster. Google kan med jämna mellanrum samla in data som används anonymt i syfte att förbättra platsangivelsens exakthet och platsbaserade tjänster. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Säkerhetskopiera till Google Drive. Återställ enkelt data eller byt enhet när som helst. Säkerhetskopian innehåller appdata.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Appdata är all data som har sparats i en app (utifrån utvecklarens inställningar), bland annat data som kan vara känslig, till exempel kontakter, meddelanden och foton.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Säkerhetskopierad data räknas inte in i lagringsutrymmet på Drive.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Du kan inaktivera den här tjänsten i inställningarna.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Öppna med systemvisningsprogrammet</translation>
@@ -2814,7 +2811,6 @@
 <translation id="5324780743567488672">Ange tidszon automatiskt genom att använda din plats</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5327570636534774768">Enheten hanteras av en annan domän. Avregistrera enheten från den domänen innan du konfigurerar demoläge.</translation>
-<translation id="532776649628038357">Jag godkänner</translation>
 <translation id="532943162177641444">Konfigurera den trådlösa surfzonen som den här enheten ska kunna använda genom att trycka på aviseringen på din <ph name="PHONE_NAME" />.</translation>
 <translation id="5329858601952122676">&amp;Ta bort</translation>
 <translation id="5329945517224105597">Assistenten kan ge dig mer användbara förslag och specifika åtgärder som är relaterade till det som visas på skärmen. Du kan ändra detta under inställningarna för assistenten.</translation>
@@ -2928,7 +2924,6 @@
 <translation id="5488093641312826914"><ph name="COPIED_ITEM_NAME" /> har kopierats</translation>
 <translation id="5488468185303821006">Tillåt i inkognito</translation>
 <translation id="5489435190927933437">Sparade lösenord för <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Ägaren har låst inställningen. Ägaren kan välja att skicka diagnostik- och användningsdata för enheten till Google. Du kan visa detta i inställningarna. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">skärm på</translation>
 <translation id="5494362494988149300">Öppna när nedladdning är &amp;klar</translation>
 <translation id="5494920125229734069">Markera alla</translation>
@@ -3273,6 +3268,7 @@
 <translation id="5990386583461751448">Översatt</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Be administratören att ta bort den här appen så att du kan fortsätta att surfa på internet.}other{Be administratören att ta bort de här apparna så att du kan fortsätta att surfa på internet.}}</translation>
 <translation id="5997337190805127100">Läs mer om webbplatsåtkomst</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultat för <ph name="SEARCH_TEXT" /></translation>
 <translation id="6002458620803359783">Önskade röster</translation>
 <translation id="6005695835120147974">Medierouter</translation>
 <translation id="6006484371116297560">Klassiskt</translation>
@@ -3522,6 +3518,7 @@
 <translation id="637062427944097960">Filen öppnades på ett annat skrivbord. Byt till <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om du vill visa den.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Försök igen</translation>
+<translation id="6377268785556383139">1 resultat för <ph name="SEARCH_TEXT" /></translation>
 <translation id="6380143666419481200">Godkänn och fortsätt</translation>
 <translation id="6384275966486438344">Ändra sökinställningarna till: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Webbplatser får spara och läsa uppgifter i cookies</translation>
@@ -3539,6 +3536,7 @@
 <translation id="6405510437656969977">Fortsätt när du är redo att ange pinkoden</translation>
 <translation id="6406303162637086258">Simulera omstart av webbläsaren</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
+<translation id="6406708970972405507">Inställningar – <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">Läs och ändra dina uppgifter på <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> och <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Bildfiler</translation>
 <translation id="6410328738210026208">Byt kanal och Powerwash</translation>
@@ -3627,7 +3625,6 @@
 <translation id="6528513914570774834">Tillåt att andra användare på den här enheten kan använda det här nätverket</translation>
 <translation id="652948702951888897">Chrome-historik</translation>
 <translation id="653019979737152879">Synkroniserar <ph name="FILE_NAME" /> ...</translation>
-<translation id="6530681427077572136">Skicka systemdata. Diagnostik- och användningsdata för enheten och appar skickas för närvarande till Google från den här enheten. Du kan när som helst ändra detta i enhetsinställningarna. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Behåll den farliga filen</translation>
 <translation id="6534583978616527129">Initiera anslutningen</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Obs!<ph name="END_BOLD" /> Aktivera endast om du vet vad du gör eller om du har blivit ombedd att göra det eftersom insamling av data kan försämra resultatet.</translation>
@@ -3675,7 +3672,6 @@
 <translation id="6610147964972079463">Stäng privata flikar</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6613452264606394692">Hitta snabbt tillbaka hit med ett bokmärke</translation>
-<translation id="6614893213975402384">Installera uppdateringar och appar. Genom att fortsätta godkänner du att enheten kan ladda ned och installera uppdateringar och appar automatiskt från Google, operatören och enhetstillverkaren, eventuellt genom att använda mobildata. Det kan hända att några av apparna erbjuder köp i appen. Du kan när som helst ta bort dessa appar. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Visa mig</translation>
 <translation id="6618097958368085618">Behåll ändå</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -3822,6 +3818,7 @@
 <translation id="6840184929775541289">Är inte en certifikatutfärdare</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">Fel</translation>
+<translation id="6843423766595476978">Ok Google är klart att använda</translation>
 <translation id="6845038076637626672">Öppna maximerad</translation>
 <translation id="685040365210406336">Ändra ingenting</translation>
 <translation id="6851497530878285708">Appaktivering</translation>
@@ -4048,9 +4045,6 @@
 <translation id="7191454237977785534">Spara filen som</translation>
 <translation id="7193374945610105795">Inga lösenord har sparats för <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Söker efter Chromeboxes i närheten ...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Detta är allmän information om din enhet och hur du använder den (till exempel batterinivå, appanvändning och nätverksanslutning). Med hjälp av dessa uppgifter kan vi förbättra Googles produkter och tjänster för alla. En del sammanställd information kan även hjälpa våra partner, till exempel Android-utvecklare, att förbättra sina appar och produkter.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Enheten kan fortfarande skicka den information som behövs för viktiga tjänster, som systemuppdateringar och säkerhet, även om du inaktiverar funktionen.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Du kan styra funktionen under Inställningar &gt; Google. Välj Användning och diagnostik i menyn.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Få Google Sök och Google-teknik varje gång du surfar</translation>
 <translation id="7197632491113152433">Vi hittade <ph name="NUMBER_OF_APPS" /> appar i ditt konto som kan användas på den här enheten.</translation>
 <translation id="7199158086730159431">Få h&amp;jälp</translation>
@@ -4084,6 +4078,7 @@
 <translation id="7246947237293279874">FTP-proxy</translation>
 <translation id="7248671827512403053">Program</translation>
 <translation id="725109152065019550">Administratören har inaktiverat extern lagring för ditt konto.</translation>
+<translation id="7251346854160851420">Standardbakgrund</translation>
 <translation id="7253521419891527137">&amp;Läs mer</translation>
 <translation id="7254554697254365959">Det gick inte att översätta sidan.</translation>
 <translation id="7254951428499890870">Vill du starta <ph name="APP_NAME" /> i diagnosläge?</translation>
@@ -4194,6 +4189,7 @@
 <translation id="7417705661718309329">Google-karta</translation>
 <translation id="741906494724992817">Appen kräver inga särskilda behörigheter.</translation>
 <translation id="7419433794191666278">Anslut Chromebook till mobilen. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">Bokmärkena har tagits bort</translation>
 <translation id="7421925624202799674">Visa &amp;sidkälla</translation>
 <translation id="7422192691352527311">Inställningar...</translation>
 <translation id="7423098979219808738">Fråga först</translation>
@@ -4250,9 +4246,6 @@
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7508545000531937079">Bildvisning</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Gör det lättare för appar att hitta din plats. Förbättra platsens exakthet med hjälp av Googles platstjänster. Google kan med jämna mellanrum samla in data som används anonymt i syfte att förbättra platsangivelsens exakthet och platsbaserade tjänster.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />I Googles platstjänster används källor som Wi-Fi, mobilnätverk och sensorer för att beräkna enhetens plats. Tjänsten är aktiv när inställningen Plats har aktiverats på enheten.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Du kan inaktivera tjänsten genom att inaktivera huvudinställningen för Plats på enheten. Du kan även inaktivera användningen av Wi-Fi, mobila nätverk och sensorer för plats i platsinställningarna.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Skapa ett lösenord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Säg ”Ok Google”</translation>
@@ -4358,6 +4351,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{1 objekt i listan med bokmärken}other{# objekt i listan med bokmärken}}</translation>
 <translation id="7701040980221191251">Inget</translation>
 <translation id="7701869757853594372">USER-handtag</translation>
+<translation id="7702574632857388784">Ta bort <ph name="FILE_NAME" /> från listan</translation>
 <translation id="7702907602086592255">Domän</translation>
 <translation id="7704305437604973648">Åtgärd</translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
@@ -4492,7 +4486,6 @@
 <translation id="7851457902707056880">Inloggning kan bara göras med ägarkontot. Starta om och logga in med ägarkontot. Datorn kommer att startas om automatiskt om 30 sekunder.</translation>
 <translation id="7851716364080026749">Blockera alltid åtkomst till kamera och mikrofon</translation>
 <translation id="7853747251428735">Fler verk&amp;tyg</translation>
-<translation id="7856006446339184955">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Ägaren har låst <ph name="BEGIN_LINK1" />inställningen<ph name="END_LINK1" />. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK2" />Läs mer<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Lägg till undantag</translation>
 <translation id="7857949311770343000">Var det den här nya fliksidan du väntade dig?</translation>
 <translation id="786073089922909430">Tjänst: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4753,6 +4746,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8249296373107784235">Avbryt</translation>
 <translation id="8249672078237421304">Erbjud att översätta sidor som är på ett språk som du inte kan läsa</translation>
 <translation id="8251578425305135684">Miniatyren har tagits bort.</translation>
+<translation id="8252569384384439529">Laddar upp …</translation>
 <translation id="8253198102038551905">Klicka på + för att hämta nätverksegenskaperna</translation>
 <translation id="825483282309623688">Du behöver en internetanslutning för att kunna återställa data.</translation>
 <translation id="8256319818471787266">Ludde</translation>
@@ -4819,6 +4813,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8371695176452482769">Prata nu</translation>
 <translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="8373553483208508744">Stäng av ljud från flikar</translation>
+<translation id="8378714024927312812">Hanteras av organisationen</translation>
 <translation id="8379878387931047019">Enheten stöder inte den typ av säkerhetsnyckel som begärs av webbplatsen</translation>
 <translation id="8382913212082956454">Kopiera &amp;e-postadress</translation>
 <translation id="8386091599636877289">Policyn hittades inte.</translation>
@@ -4857,6 +4852,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8439506636278576865">Erbjud att översätta sidor på detta språk</translation>
 <translation id="8440630305826533614">Linux-appar</translation>
+<translation id="8446474770554547328">När ”Ok Google” har spelats in tre gånger skapas din röstmodell som sedan sparas på enheten. Du raderar eller tränar om modellen i inställningarna för assistenten. Visa eller radera röstkommandon i aktivitetsinställningarna för Google.</translation>
 <translation id="8446884382197647889">Läs mer</translation>
 <translation id="8447409163267621480">Ctrl- eller alt-tangenten måste finnas med</translation>
 <translation id="8448729345478502352">Gör objekt på skärmen mindre eller större</translation>
@@ -4917,7 +4913,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8535005006684281994">Förnyelseadress för Netscape-certifikat</translation>
 <translation id="8538358978858059843">Vill du aktivera molntjänster för Cast-funktionen?</translation>
 <translation id="8539727552378197395">Nej (HttpOnly)</translation>
-<translation id="8541166929715485291">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Ägaren har låst inställningen. Ägaren kan välja att skicka diagnostik- och användningsdata för enheten till Google. Du kan visa detta i <ph name="BEGIN_LINK1" />inställningarna<ph name="END_LINK1" />. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK2" />Läs mer<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Det gick inte att verifiera lösenordet. Den som hanterar denna kontrollerade användare kan ha ändrat lösenordet nyligen. I så fall kommer det nya lösenordet att börja gälla nästa gång du loggar in. Testa med det gamla lösenordet.</translation>
 <translation id="8546186510985480118">Enheten har ont om diskutrymme</translation>
 <translation id="8546306075665861288">Cacheminne för bilder</translation>
@@ -5183,7 +5178,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8944964446326379280"><ph name="APP_NAME" /> delar ett fönster med <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Felsökningsfunktionerna aktiverades inte helt på den här <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten.</translation>
 <translation id="894871326938397531">Inaktivera inkognitoläget?</translation>
-<translation id="8952774786254665439">Avancerade skrivaralternativ</translation>
 <translation id="895347679606913382">Startar...</translation>
 <translation id="8954952943849489823">Flytten misslyckades. Oväntat fel: $1</translation>
 <translation id="895586998699996576">$1-bild</translation>
@@ -5325,7 +5319,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="91568222606626347">Skapa genväg ...</translation>
 <translation id="9157697743260533322">Det gick inte att konfigurera automatiska uppdateringar för alla användare (preliminärt startfel: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppsan! Ett nätverkskommunikationsproblem uppstod under autentiseringen. Kontrollera nätverksanslutningen och försök igen.</translation>
-<translation id="916501514001398070">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Ägaren har låst inställningen. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Bild-i-bild</translation>
 <translation id="9168436347345867845">Gör det senare</translation>
 <translation id="9169496697824289689">Visa kortkommandon</translation>

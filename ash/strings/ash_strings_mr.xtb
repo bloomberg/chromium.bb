@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">ब्लूटूथ अक्षम</translation>
 <translation id="2268813581635650749">सर्व साइन आउट करा</translation>
 <translation id="2292698582925480719">स्केल दाखवा</translation>
+<translation id="2302092602801625023">हे खाते Family Link द्वारे व्यवस्थापित केले जाते</translation>
 <translation id="2303600792989757991">विंडो विहंगावलोकन टॉगल करा</translation>
 <translation id="2339073806695260576">नोट व स्क्रीनशॉट घेण्यासाठी, तसेच लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="2341729377289034582">उभ्या दिशेने लॉक केले</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="3798670284305777884">स्पीकर (अंतर्गत)</translation>
+<translation id="3799080171973636491">तुम्ही फुल-स्क्रीन मॅग्निफायरसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="380165613292957338">हाय, मला तुमची कशी मदत करता येईल?</translation>
 <translation id="383629559565718788">कीबोर्ड सेटिंग्ज दाखवा</translation>
 <translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> अ‍ॅक्टिव्हेट करत आहे</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">तुम्ही उच्च कॉंट्रास्टसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
 <translation id="435527878592612277">तुमचा फोटो निवडा</translation>
 <translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
 <translation id="4379531060876907730">ही तुमची स्टायलस टूल आहेत</translation>
+<translation id="4389184120735010762">तुम्ही डॉक मॅग्निफायरसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME" /> सह आपल्या स्क्रीनचे नियंत्रण शेअर करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4450893287417543264">पुन्हा दाखवू नका</translation>
@@ -390,6 +394,7 @@
 <translation id="7886169021410746335">गोपनीयता सेटिंग्ज अॅडजस्ट करा</translation>
 <translation id="7886277072580235377">तुम्ही साइन आउट केल्यावर तुमचे इंटरनेट सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ईमेल पाठवा</translation>
+<translation id="7897375687985782769">तुम्ही स्क्रीन रोटेशनसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला स्क्रीन फिरवायची आहे का?</translation>
 <translation id="7904094684485781019">या खात्याच्या अॅडमिनिस्ट्रेटराने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
@@ -455,6 +460,7 @@
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>

@@ -166,7 +166,6 @@
     Lähetä meille palautetta seuraavalla ruudulla, jotta voimme korjata ongelman.</translation>
 <translation id="1217668622537098248">Palaa ykkösklikkaukseen toiminnon jälkeen</translation>
 <translation id="121783623783282548">Salasanat eivät täsmää.</translation>
-<translation id="1218860753635451122">Kun klikkaat Hyväksyn-painiketta, hyväksyt tietojen käsittelyn Google-palveluissa edellä kuvatuilla tavoilla.</translation>
 <translation id="1219533395013150448">Assistant luo näiden äänitteiden avulla äänimallin, joka tallennetaan laitteellesi. Voit poistaa mallin tai kouluttaa sen uudelleen Assistantin asetuksissa. Jos haluat katsella tai poistaa puhekomentoja, avaa Googlen Toimintojen hallinta.</translation>
 <translation id="122082903575839559">Varmenteen allekirjoitusalgoritmi</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 ja RSA-salaus</translation>
@@ -846,7 +845,6 @@
 <translation id="2239921694246509981">Lisää valvottu käyttäjä</translation>
 <translation id="2241053333139545397">lukea ja muuttaa tietojasi useilla eri sivustoilla</translation>
 <translation id="2242687258748107519">Tiedoston tiedot</translation>
-<translation id="2243194103992005307">Jos haluat poistaa sovelluksia, valitse Asetukset &gt; Sovellukset tai Sovellusten hallinta. Valitse poistettava sovellus (jos sovellusta ei näy, pyyhkäise oikealle tai vasemmalle). Valitse sitten Poista tai Poista käytöstä.</translation>
 <translation id="224940702122312781">Tämä sivu käyttää paljon dataa.</translation>
 <translation id="2249605167705922988">esim. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Avaa järjestelmän oletussovelluksessa</translation>
@@ -1102,7 +1100,6 @@
 <translation id="2643698698624765890">Hallinnoi laajennuksiasi valitsemalla Ikkuna-valikosta Laajennukset.</translation>
 <translation id="264810637653812429">Yhteensopivia laitteita ei löytynyt.</translation>
 <translation id="2649045351178520408">Base64-koodattu ASCII, varmenneketju</translation>
-<translation id="2651353619134567122">Lähetä järjestelmädataa. Tämä laite lähettää tällä hetkellä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Voit muokata tätä asetusta milloin tahansa laitteesi <ph name="BEGIN_LINK1" />asetuksista<ph name="END_LINK1" />. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Haku epäonnistui</translation>
 <translation id="2653266418988778031">Jos poistat varmenteen myöntäjän varmenteen, selaimesi ei enää luota tämän myöntäjän varmenteisiin.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
@@ -1421,7 +1418,6 @@
 <translation id="3141318088920353606">Kuunnellaan…</translation>
 <translation id="3141917231319778873">Annettua pyyntöä ei tueta laitteella <ph name="DEVICE_NAME" />.</translation>
 <translation id="3143515551205905069">Peruuta synkronointi</translation>
-<translation id="3143695347784622594">Lähetä järjestelmädataa. Lähetä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Voit muokata tätä asetusta milloin tahansa laitteesi <ph name="BEGIN_LINK1" />asetuksista<ph name="END_LINK1" />. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">VALMIS</translation>
 <translation id="3144647712221361880">Avaa linkki käyttäjänä</translation>
 <translation id="3146006635381699911">Esittelytilan offline-resursseja ei ole saatavilla.</translation>
@@ -1994,7 +1990,6 @@
 <translation id="3982375475032951137">Asenna selain parilla yksinkertaisella vaiheella</translation>
 <translation id="3983586614702900908">tuntemattoman myyjän laitteet</translation>
 <translation id="3984159763196946143">Demotilan käynnistys epäonnistui</translation>
-<translation id="3985261842049607969">Varmuuskopioi Google Driveen. Palauta dataa tai vaihda laitetta helposti milloin tahansa. Varmuuskopio sisältää sovellusdatan. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Datan säästö</translation>
 <translation id="3987938432087324095">En saanut selvää.</translation>
 <translation id="3988996860813292272">Valitse aikavyöhyke</translation>
@@ -2533,11 +2528,6 @@
 <translation id="4883274597792587930">Katso avaimen nimi sen takaa</translation>
 <translation id="4883436287898674711">Kaikki verkkotunnuksen <ph name="WEBSITE_1" /> sivustot</translation>
 <translation id="48838266408104654">&amp;Tehtävänhallinta</translation>
-<translation id="4883898390143004266">Auta sovelluksia tunnistamaan sijainti. Googlen sijaintipalvelut voivat auttaa sovelluksia sijainnin määrittämisessä. Google voi ajoittain kerätä sijaintitietoja ja käyttää niitä ei-yksilöivästi sijainnin tarkkuuden ja sijaintiin perustuvien palvelujen kehittämiseen. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Varmuuskopioi Google Driveen. Palauta dataa tai vaihda laitetta helposti milloin tahansa. Varmuuskopio sisältää sovellusdatan.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Sovellusdata voi olla mitä tahansa dataa, jota sovellus on tallentanut (kehittäjän asetusten perusteella), mukaan lukien mahdollisesti arkaluontoista dataa, kuten yhteystietoja, viestejä ja valokuvia.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Varmuuskopioitu data ei kuluta Drivessa käytettävissä olevaa tallennustilaasi.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Voit poistaa tämän palvelun käytöstä asetuksissa.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Avaa järjestelmän oletussovelluksessa</translation>
@@ -2820,7 +2810,6 @@
 <translation id="5324780743567488672">Aseta aikavyöhyke automaattisesti käyttämällä sijaintiasi.</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5327570636534774768">Laite on merkitty toisen verkkotunnuksen ylläpitämäksi. Poista siltä toisen verkkotunnuksen oikeudet ennen esittelytilan määrittämistä.</translation>
-<translation id="532776649628038357">Hyväksyn</translation>
 <translation id="532943162177641444">Avaa <ph name="PHONE_NAME" /> ja kosketa siinä näkyvää ilmoitusta, niin mobiili-hotspot määritetään tämän laitteen käyttöön.</translation>
 <translation id="5329858601952122676">&amp;Poista</translation>
 <translation id="5329945517224105597">Assistant voi näyttää osuvampia näytöllä näkyviin asioihin liittyviä ehdotuksia ja toimintoja. Voit muuttaa tätä Assistantin asetuksissa.</translation>
@@ -2934,7 +2923,6 @@
 <translation id="5488093641312826914"><ph name="COPIED_ITEM_NAME" /> kopioitu</translation>
 <translation id="5488468185303821006">Salli incognito-tilassa</translation>
 <translation id="5489435190927933437">Tallennetut salasanat: <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Lähetä järjestelmädataa. Lähetä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Omistaja on ottanut tämän asetuksen käyttöön. Omistaja voi lähettää tätä laitetta koskevaa diagnostiikka- ja käyttödataa Googlelle. Voit katsella tätä asetuksissa. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">näyttö päällä</translation>
 <translation id="5494362494988149300">Avaa, kun val&amp;mis</translation>
 <translation id="5494920125229734069">Valitse kaikki</translation>
@@ -3638,7 +3626,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6528513914570774834">Anna muiden laitteen käyttäjien käyttää tätä verkkoa</translation>
 <translation id="652948702951888897">Chromen historia</translation>
 <translation id="653019979737152879">Synkronoidaan kohdetta <ph name="FILE_NAME" />…</translation>
-<translation id="6530681427077572136">Lähetä järjestelmädataa. Tämä laite lähettää tällä hetkellä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Voit muokata tätä asetusta milloin tahansa laitteesi asetuksista. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Pidä haitallinen tiedosto</translation>
 <translation id="6534583978616527129">Yhteyden alustaminen</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Huomaa:<ph name="END_BOLD" /> Ota tämä asetus käyttöön vain, jos tiedät mitä olet tekemässä tai jos sinua on pyydetty ottamaan asetus käyttöön. Tietojen kerääminen voi heikentää tehokkuutta.</translation>
@@ -3686,7 +3673,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6610147964972079463">Sulje yksityiset välilehdet</translation>
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6613452264606394692">Lisää sivu kirjanmerkiksi, niin voit palata tähän nopeasti.</translation>
-<translation id="6614893213975402384">Asenna päivityksiä ja sovelluksia. Jatkamalla hyväksyt, että laite voi automaattisesti ladata ja asentaa Googlen, operaattorisi tai laitevalmistajan päivityksiä ja sovelluksia, mahdollisesti mobiilidatayhteyden välityksellä. Jotkin näistä sovelluksista tarjoavat sovelluksen sisäisiä ostoksia. Voit poistaa nämä sovellukset milloin tahansa. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Näytä</translation>
 <translation id="6618097958368085618">Säilytä silti</translation>
 <translation id="6619058681307408113">Line Printer Daemon ‑protokolla (LPD)</translation>
@@ -4060,9 +4046,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7191454237977785534">Tallenna tiedosto nimellä</translation>
 <translation id="7193374945610105795">Sivustolla <ph name="ORIGIN" /> ei ole tallennettuja salasanoja</translation>
 <translation id="7196835305346730603">Etsitään lähellä olevia Chromeboxeja…</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Nämä ovat yleisiä tietoja laitteesta ja sen käytöstä (esim. akun varaustaso, sovellusten käyttö ja verkkoyhteydet). Tietojen avulla parannetaan Googlen tuotteita ja palveluja kaikkien käyttäjien hyväksi. Jotkin kootuista tiedoista auttavat myös kumppaneitamme, kuten Android-kehittäjiä, parantamaan sovelluksiaan ja tuotteitaan.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Tämän ominaisuuden käytöstä poistaminen ei estä laitetta lähettämästä tietoja, joita tarvitaan olennaisten palvelujen (esim. järjestelmäpäivitysten ja suojauksen) käyttämiseen.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Voit hallinnoida tätä ominaisuutta kohdassa Asetukset &gt; Google. Valitse valikosta Käyttö‑ ja diagnostiikkatiedot.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Käytä Google Hakua ja Googlen älykkäitä ratkaisuja selatessasi</translation>
 <translation id="7197632491113152433">Löysimme tililtäsi <ph name="NUMBER_OF_APPS" /> sovellusta, joita voidaan käyttää tällä laitteella.</translation>
 <translation id="7199158086730159431">Pyydä ohj&amp;eita</translation>
@@ -4264,9 +4247,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7507930499305566459">Tilavastausvarmenne</translation>
 <translation id="7508545000531937079">Diaesitys</translation>
 <translation id="7513029293694390567">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Auta sovelluksia tunnistamaan sijainti. Googlen sijaintipalvelut voivat auttaa sovelluksia sijainnin määrittämisessä. Google voi ajoittain kerätä sijaintidataa ja käyttää niitä ei-yksilöivästi sijainnin tarkkuuden ja sijaintiin perustuvien palvelujen kehittämiseen.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Googlen sijaintipalvelut pyrkivät arvioimaan laitteen sijainnin esim. Wi-Fi- ja mobiiliverkkojen sekä anturien avulla. Palvelu on aktiivinen, kun laitteen sijaintiasetus on käytössä.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Voit poistaa palvelun käytöstä poistamalla laitteen sijaintiasetuksen käytöstä. Voit myös poistaa käytöstä Wi-Fi- ja mobiiliverkkojen sekä anturien käytön sijainnin määrityksessä.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Luo salasana –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sano ”Ok Google”.</translation>
@@ -4506,7 +4486,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7851457902707056880">Kirjautuminen on sallittu vain omistajatilillä. Käynnistä tietokone uudelleen ja kirjaudu omistajatilillä. Tietokone käynnistetään uudelleen 30 sekunnin kuluttua.</translation>
 <translation id="7851716364080026749">Estä kameran ja mikrofonin käyttö aina</translation>
 <translation id="7853747251428735">&amp;Lisää työkaluja</translation>
-<translation id="7856006446339184955">Lähetä järjestelmädataa. Tämä laite lähettää tällä hetkellä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Omistaja on ottanut tämän <ph name="BEGIN_LINK1" />asetuksen<ph name="END_LINK1" /> käyttöön. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Lisää poikkeus</translation>
 <translation id="7857949311770343000">Onko tämä haluamasi Uusi välilehti -sivu?</translation>
 <translation id="786073089922909430">Palvelu: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4934,7 +4913,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8535005006684281994">Netscape-varmenteen uusimis-URL</translation>
 <translation id="8538358978858059843">Otetaanko Cast-pilvipalvelut käyttöön?</translation>
 <translation id="8539727552378197395">Ei (HttpOnly)</translation>
-<translation id="8541166929715485291">Lähetä järjestelmädataa. Lähetä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Omistaja on ottanut tämän asetuksen käyttöön. Omistaja voi lähettää tätä laitetta koskeva diagnostiikka- ja käyttödataa Googlelle. Voit katsella tätä <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK2" />Lisätietoja<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Salasanaasi ei voi vahvistaa. Tämän valvotun käyttäjän valvoja on saattanut vaihtaa salasanan äskettäin. Jos näin on, uusi salasana otetaan käyttöön seuraavan sisäänkirjautumisen yhteydessä. Yritä käyttää vanhaa salasanaa.</translation>
 <translation id="8546186510985480118">Laitteen tallennustila on vähissä</translation>
 <translation id="8546306075665861288">Kuvavälimuisti</translation>
@@ -5200,7 +5178,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8944964446326379280"><ph name="APP_NAME" /> jakaa ikkunan välilehdelle <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Virheenkorjausominaisuudet eivät olleet täysin käytössä tällä <ph name="IDS_SHORT_PRODUCT_NAME" />-laitteella.</translation>
 <translation id="894871326938397531">Poistutaanko incognito-tilasta?</translation>
-<translation id="8952774786254665439">Tulostimen lisäasetukset</translation>
 <translation id="895347679606913382">Käynnistää...</translation>
 <translation id="8954952943849489823">Siirto epäonnistui, odottamaton virhe: $1</translation>
 <translation id="895586998699996576">Kuvatiedosto ($1)</translation>
@@ -5342,7 +5319,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="91568222606626347">Luo pikakuvake…</translation>
 <translation id="9157697743260533322">Automaattisten päivitysten käyttöönotto kaikille käyttäjille epäonnistui (käynnistysvirhe valmistelun aikana: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">Hups! Todennuksen aikana tapahtui verkkovirhe. Tarkista internetyhteytesi ja yritä uudelleen.</translation>
-<translation id="916501514001398070">Lähetä järjestelmädataa. Tämä laite lähettää tällä hetkellä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="9168436347345867845">Myöhemmin</translation>
 <translation id="9169496697824289689">Näytä pikanäppäimet</translation>

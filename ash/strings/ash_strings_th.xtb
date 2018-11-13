@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">ปิดใช้งานบลูทูธแล้ว</translation>
 <translation id="2268813581635650749">ออกจากระบบทั้งหมด</translation>
 <translation id="2292698582925480719">ระดับการแสดงผล</translation>
+<translation id="2302092602801625023">บัญชีนี้จัดการโดย Family Link</translation>
 <translation id="2303600792989757991">ภาพรวมการสลับหน้าต่าง</translation>
 <translation id="2339073806695260576">แตะปุ่มสไตลัสในชั้นวางเพื่อจดโน้ต บันทึกภาพหน้าจอ ใช้ตัวชี้เลเซอร์ หรือแว่นขยาย</translation>
 <translation id="2341729377289034582">ล็อกไว้ที่แนวตั้งแล้ว</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ล็อก</translation>
 <translation id="3798670284305777884">ลำโพง (ภายใน)</translation>
+<translation id="3799080171973636491">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ จะเปิดแว่นขยายไหม</translation>
 <translation id="380165613292957338">สวัสดี มีอะไรให้ฉันช่วยไหม</translation>
 <translation id="383629559565718788">แสดงการตั้งค่าแป้นพิมพ์</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
@@ -196,6 +198,7 @@
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4292681942966152062">กำลังเปิดใช้งาน<ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง จะเปิดคอนทราสต์สูงไหม</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">แว่นขยาย</translation>
@@ -203,6 +206,7 @@
 <translation id="435527878592612277">เลือกรูปภาพของคุณ</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4379531060876907730">นี่คือเครื่องมือสไตลัส</translation>
+<translation id="4389184120735010762">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4450893287417543264">ไม่ต้องแสดงอีก</translation>
@@ -391,6 +395,7 @@
 <translation id="7886169021410746335">ปรับการตั้งค่าความเป็นส่วนตัว</translation>
 <translation id="7886277072580235377">ระบบจะล้างเซสชันอินเทอร์เน็ตของคุณเมื่อออกจากระบบ <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ส่งอีเมล</translation>
+<translation id="7897375687985782769">คุณกดแป้นพิมพ์ลัดสำหรับการหมุนหน้าจอ จะหมุนหน้าจอไหม</translation>
 <translation id="7904094684485781019">ผู้ดูแลระบบของบัญชีนี้ไม่อนุญาตการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="7933084174919150729">Google Assistant ใช้งานได้กับโปรไฟล์หลักเท่านั้น</translation>
 <translation id="79341161159229895">บัญชีที่จัดการโดย <ph name="FIRST_PARENT_EMAIL" /> และ <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -456,6 +461,7 @@
 <translation id="8921624153894383499">Google Assistant ยังพูดภาษานี้ไม่ได้</translation>
 <translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">กำลังใช้<ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">ปลดล็อกอุปกรณ์โดยใช้ <ph name="LOGIN_ID" /> เพื่อดำเนินการแจ้งเตือน</translation>
 <translation id="8995603266996330174">จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">มีอัปเดต Adobe Flash Player พร้อมใช้งาน</translation>

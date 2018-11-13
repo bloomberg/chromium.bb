@@ -944,7 +944,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8073388330009372546">Ava pilt uuel vahelehel</translation>
 <translation id="8084114998886531721">Salvestatud parool</translation>
 <translation id="8087000398470557479">See sisu pärineb domeenilt <ph name="DOMAIN_NAME" /> ja seda pakub Google.</translation>
-<translation id="8087980556724996220">Assistendi automaatne täitmine lõpeb <ph name="DURATION_SECONDS" /> s pärast …</translation>
 <translation id="8103578431304235997">Inkognito vaheleht</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Seotud lehtede soovitamine</translation>
@@ -1033,7 +1032,6 @@ Uute litsentside hankimiseks looge Interneti-ühendus ja esitage allalaaditud si
 <translation id="8812260976093120287">Mõnel veebisaidil saate maksta ülalolevate teie seadmes toetatud makserakendustega.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> avaneb Chrome'is. Jätkates nõustute Chrome'i <ph name="BEGIN_LINK1" />teenusetingimuste<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />privaatsusteatisega<ph name="END_LINK2" /> ning <ph name="BEGIN_LINK3" />Family Linkiga hallatavate Google'i kontode privaatsusteatisega<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
-<translation id="8823704566850948458">Soovita parooli …</translation>
 <translation id="8833831881926404480">Sait jagab teie ekraani</translation>
 <translation id="883806473910249246">Sisu allalaadimisel ilmnes viga.</translation>
 <translation id="8840953339110955557">Leht võib veebiversioonist erineda.</translation>
@@ -1081,7 +1079,6 @@ Uute litsentside hankimiseks looge Interneti-ühendus ja esitage allalaaditud si
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Soovita tugevat parooli …</translation>
 <translation id="9219103736887031265">Pildid</translation>
 <translation id="932327136139879170">Kodu</translation>
 <translation id="932599481871055447">Säästke andmemahtu ja sirvige kiiremini</translation>

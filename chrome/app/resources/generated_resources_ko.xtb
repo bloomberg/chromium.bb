@@ -166,7 +166,7 @@
     다음 화면에서 Google이 문제를 해결할 수 있도록 의견을 보내주시기 바랍니다.</translation>
 <translation id="1217668622537098248">작업 후 왼쪽 클릭으로 되돌리기</translation>
 <translation id="121783623783282548">비밀번호가 일치하지 않습니다.</translation>
-<translation id="1218860753635451122">'동의' 버튼을 클릭하면 이 Google 서비스와 관련하여 상기한 바와 같이 처리함에 동의하는 것으로 간주됩니다.</translation>
+<translation id="1219533395013150448">어시스턴트는 이 녹음을 사용하여 음성 모델을 생성하며, 음성 모델은 기기에 저장됩니다. 어시스턴트 설정에서 모델을 삭제하거나 다시 학습시키세요. Google 활동 제어에서 음성 명령을 확인하거나 삭제할 수 있습니다.</translation>
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
 <translation id="1221024147024329929">PKCS #1 MD2(RSA 암호화 사용)</translation>
 <translation id="1221825588892235038">선택 영역만</translation>
@@ -617,6 +617,7 @@
 <translation id="1880905663253319515">인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="1886996562706621347">사이트에서 프로토콜 기본 핸들러로 사용할지 여부를 묻도록 허용(권장)</translation>
 <translation id="1887442540531652736">로그인 오류</translation>
+<translation id="1887597546629269384">"Hey Google"이라고 다시 말하세요.</translation>
 <translation id="1887850431809612466">하드웨어 버전</translation>
 <translation id="1889984860246851556">프록시 설정 열기</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -714,6 +715,7 @@
 <translation id="2048653237708779538">실행할 수 없는 작업</translation>
 <translation id="204914487372604757">바로가기 만들기</translation>
 <translation id="2050339315714019657">세로 방향</translation>
+<translation id="2052369079215022979">조직에서 관리</translation>
 <translation id="2053312383184521053">유휴 상태 데이터</translation>
 <translation id="205560151218727633">Google 어시스턴트 로고</translation>
 <translation id="2058456167109518507">기기가 검색됨</translation>
@@ -843,7 +845,6 @@
 <translation id="2239921694246509981">관리 대상 사용자 추가</translation>
 <translation id="2241053333139545397">여러 웹사이트의 데이터를 읽고 변경</translation>
 <translation id="2242687258748107519">파일 정보</translation>
-<translation id="2243194103992005307">앱을 삭제하려면 설정 &gt; 앱 또는 애플리케이션 관리자로 이동합니다. 그런 다음 제거하려는 앱을 탭합니다(앱을 찾으려면 오른쪽이나 왼쪽으로 스와이프해야 할 수 있음). 그런 다음 제거 또는 사용 중지를 탭합니다.</translation>
 <translation id="224940702122312781">이 페이지는 많은 양의 데이터를 사용합니다.</translation>
 <translation id="2249605167705922988">예: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">시스템 뷰어로 열기</translation>
@@ -901,6 +902,7 @@
 <translation id="2336381494582898602">파워워시</translation>
 <translation id="2339120501444485379">새 이름 입력</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" />에서 페어링하려고 함</translation>
+<translation id="2342740338116612727">북마크 추가됨</translation>
 <translation id="2344028582131185878">자동 다운로드</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" />에서 1페이지 인쇄</translation>
 <translation id="2347644257713614136">행아웃 및 교육용 Cast 사용에는 Google 개인정보처리방침이 적용됩니다.</translation>
@@ -1097,7 +1099,6 @@
 <translation id="2643698698624765890">창 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
 <translation id="264810637653812429">호환되는 기기가 없습니다.</translation>
 <translation id="2649045351178520408">Base64-인코딩 ASCII, 인증서 체인</translation>
-<translation id="2651353619134567122">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 이 설정은 언제든지 기기 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 변경할 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">검색 실패</translation>
 <translation id="2653266418988778031">인증 기관(CA) 인증서를 삭제하면 브라우저가 해당 CA에서 발급된 인증서를 더 이상 신뢰하지 않습니다.</translation>
 <translation id="2653659639078652383">제출</translation>
@@ -1416,7 +1417,6 @@
 <translation id="3141318088920353606">듣는 중...</translation>
 <translation id="3141917231319778873">기기(<ph name="DEVICE_NAME" />)에서 지원하지 않는 요청입니다.</translation>
 <translation id="3143515551205905069">동기화 취소</translation>
-<translation id="3143695347784622594">시스템 데이터를 전송합니다. 이 기능을 사용 설정하면 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송합니다. 이 설정은 언제든지 기기 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 변경할 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">완료</translation>
 <translation id="3144647712221361880">다음으로 링크 열기</translation>
 <translation id="3146006635381699911">오프라인 데모 모드 리소스를 사용할 수 없습니다.</translation>
@@ -1680,6 +1680,7 @@
 <translation id="3550915441744863158">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="3551320343578183772">탭 닫기</translation>
 <translation id="3552780134252864554">종료 시 삭제됨</translation>
+<translation id="3553146918065661815">⌘Q로 종료하기 전 경고 표시</translation>
 <translation id="3555812735919707620">확장 프로그램 삭제</translation>
 <translation id="3556000484321257665">검색엔진이 <ph name="URL" />(으)로 변경되었습니다.</translation>
 <translation id="3559262020195162408">기기에 정책을 설치하지 못했습니다.</translation>
@@ -1750,6 +1751,7 @@
 <translation id="3651488188562686558">Wi-Fi 연결 해제</translation>
 <translation id="3652817283076144888">초기화 중</translation>
 <translation id="3653160965917900914">네트워크 파일 공유</translation>
+<translation id="3653842108912548333">Voice Match로 어시스턴트에 액세스</translation>
 <translation id="3653999333232393305"><ph name="HOST" />에서 마이크에 액세스하도록 계속 허용</translation>
 <translation id="3654045516529121250">접근성 설정 확인</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{파일 1개에 영구적으로 액세스할 수 있습니다.}other{파일 #개에 영구적으로 액세스할 수 있습니다.}}</translation>
@@ -1990,7 +1992,6 @@
 <translation id="3982375475032951137">몇 단계 만에 간단하게 브라우저를 설정하세요.</translation>
 <translation id="3983586614702900908">알 수 없는 공급업체의 기기</translation>
 <translation id="3984159763196946143">데모 모드를 시작할 수 없음</translation>
-<translation id="3985261842049607969">Google 드라이브에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환하세요. 백업에는 앱 데이터가 포함됩니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">데이터를 절약했습니다</translation>
 <translation id="3987938432087324095">죄송합니다. 인식하지 못했습니다.</translation>
 <translation id="3988996860813292272">시간대 선택</translation>
@@ -2290,6 +2291,7 @@
 <translation id="4524832533047962394">제공된 등록 모드는 이 버전의 운영체제에서 지원되지 않습니다. 최신 버전을 실행하고 있는지 확인하세요.</translation>
 <translation id="4525382759303819021">Play 스토어 앱에서 최신 업데이트 및 추천받기</translation>
 <translation id="4530494379350999373">오리진</translation>
+<translation id="4533846798469727141">이제 "Hey Google"이라고 말하세요.</translation>
 <translation id="4533985347672295764">CPU 시간</translation>
 <translation id="4534661889221639075">다시 시도하세요.</translation>
 <translation id="4535127706710932914">기본 프로필</translation>
@@ -2526,11 +2528,6 @@
 <translation id="4883274597792587930">키 뒷면에 인쇄된 이름을 확인하세요.</translation>
 <translation id="4883436287898674711">모든 <ph name="WEBSITE_1" /> 사이트</translation>
 <translation id="48838266408104654">작업 관리자(&amp;T)</translation>
-<translation id="4883898390143004266">앱에서 위치를 찾을 수 있게 도와주세요. Google의 위치 서비스로 앱 위치를 개선합니다. Google에서 위치 정확도와 위치 기반 서비스를 개선하기 위해 위치 데이터를 주기적으로 수집하여 익명으로 사용할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Google 드라이브에 백업합니다. 언제든지 간편하게 데이터를 복원하거나 다른 기기로 전환하세요. 백업에는 앱 데이터가 포함됩니다.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />앱 데이터에는 민감한 데이터일 가능성이 있는 연락처, 메시지, 사진 등 앱에서 개발자 설정에 따라 저장한 모든 데이터가 포함될 수 있습니다.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />백업 데이터는 드라이브 저장용량에 포함되지 않습니다.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />설정에서 이 서비스를 사용 중지할 수 있습니다.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6배</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">시스템 뷰어로 열기</translation>
@@ -2813,7 +2810,6 @@
 <translation id="5324780743567488672">사용자 위치를 사용하여 자동으로 시간대 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5327570636534774768">이 기기는 다른 도메인에서 관리하는 것으로 표시되어 있습니다. 데모 모드를 설정하기 전에 관련 도메인에서 기기의 프로비저닝을 해제하세요.</translation>
-<translation id="532776649628038357">동의</translation>
 <translation id="532943162177641444">이 기기에서 사용할 수 있는 모바일 핫스팟을 설정하려면 <ph name="PHONE_NAME" />에서 알림을 탭하세요.</translation>
 <translation id="5329858601952122676">삭제(&amp;D)</translation>
 <translation id="5329945517224105597">어시스턴트가 관련성이 더욱 높은 추천과 화면의 내용과 관련된 구체적인 작업을 제안할 수 있습니다. 이는 어시스턴트 설정에서 변경할 수 있습니다.</translation>
@@ -2927,7 +2923,6 @@
 <translation id="5488093641312826914">'<ph name="COPIED_ITEM_NAME" />'이(가) 복사됨</translation>
 <translation id="5488468185303821006">시크릿 모드에서 허용</translation>
 <translation id="5489435190927933437"><ph name="DOMAIN" />에 저장된 비밀번호</translation>
-<translation id="5491110079163012109">시스템 데이터를 전송합니다. 이 기능을 사용 설정하면 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송합니다. 이 설정은 소유자가 지정했습니다. 소유자는 이 기기의 진단 및 사용 데이터를 Google로 전송하도록 선택할 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">화면 켜짐</translation>
 <translation id="5494362494988149300">완료되면 열기(&amp;D)</translation>
 <translation id="5494920125229734069">모두 선택</translation>
@@ -3272,6 +3267,7 @@
 <translation id="5990386583461751448">번역됨</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}other{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}}</translation>
 <translation id="5997337190805127100">사이트 액세스 권한 자세히 알아보기</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' 검색결과 <ph name="RESULT_COUNT" />개</translation>
 <translation id="6002458620803359783">선호하는 음성</translation>
 <translation id="6005695835120147974">미디어 라우터</translation>
 <translation id="6006484371116297560">기본</translation>
@@ -3521,6 +3517,7 @@
 <translation id="637062427944097960">파일이 다른 데스크톱에서 열려 있습니다. 파일을 보려면 <ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)(으)로 이동하세요.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">다시 시도</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' 검색결과 1개</translation>
 <translation id="6380143666419481200">동의 및 계속</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">사이트에서 쿠키 데이터를 저장하고 읽을 수 있음</translation>
@@ -3538,6 +3535,7 @@
 <translation id="6405510437656969977">PIN을 입력할 준비가 되면 계속하세요.</translation>
 <translation id="6406303162637086258">브라우저 다시 시작 시뮬레이션</translation>
 <translation id="6406506848690869874">동기화</translation>
+<translation id="6406708970972405507">설정 - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />의 데이터를 읽고 변경</translation>
 <translation id="6410257289063177456">이미지 파일</translation>
 <translation id="6410328738210026208">채널 변경 및 Powerwash</translation>
@@ -3626,7 +3624,6 @@
 <translation id="6528513914570774834">이 기기의 다른 사용자가 이 네트워크를 사용하도록 허용</translation>
 <translation id="652948702951888897">Chrome 방문 기록</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" />을(를) 동기화하는 중...</translation>
-<translation id="6530681427077572136">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 언제든지 기기 설정에서 변경할 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 계정에 이 정보가 저장되므로 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">위험한 파일 보관</translation>
 <translation id="6534583978616527129">연결 초기화</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />참고:<ph name="END_BOLD" /> 데이터 수집으로 인해 성능이 감소할 수 있으므로 확신이 있는 경우 또는 요청을 받은 경우에만 사용하도록 설정합니다.</translation>
@@ -3674,7 +3671,6 @@
 <translation id="6610147964972079463">비공개 탭 닫기</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6613452264606394692">이 페이지를 북마크에 추가하여 빠르게 다시 방문하세요.</translation>
-<translation id="6614893213975402384">업데이트 및 앱을 설치합니다. 계속하면 이 기기에서도 Google, 이동통신사, 기기 제조업체로부터 업데이트와 앱을 자동으로 다운로드하고 설치하는 데 동의하는 것으로 간주됩니다(이때 모바일 데이터가 사용될 수도 있음). 일부 앱에서는 인앱 구매가 제공될 수도 있습니다. 이러한 앱은 언제든지 삭제할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">표시</translation>
 <translation id="6618097958368085618">보관</translation>
 <translation id="6619058681307408113">라인 프린터 데몬(LPD)</translation>
@@ -3821,6 +3817,7 @@
 <translation id="6840184929775541289">인증 기관 아님</translation>
 <translation id="6840313690797192085">$1PB</translation>
 <translation id="6841186874966388268">오류</translation>
+<translation id="6843423766595476978">Ok Google 설정 완료</translation>
 <translation id="6845038076637626672">최대화 상태로 열기</translation>
 <translation id="685040365210406336">변경하지 않음</translation>
 <translation id="6851497530878285708">앱 사용 설정됨</translation>
@@ -4047,9 +4044,6 @@
 <translation id="7191454237977785534">다른 이름으로 저장</translation>
 <translation id="7193374945610105795"><ph name="ORIGIN" />의 비밀번호가 저장되지 않음</translation>
 <translation id="7196835305346730603">근처의 Chromebox를 검색하는 중...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />기기 및 기기 사용 방식에 관한 일반적인 정보입니다(예: 배터리 수준, 앱 사용, 네트워크 연결). 이 데이터는 Google 제품 및 서비스 개선에 사용되며 일부 집계 정보는 Android 개발자 등의 파트너가 앱 및 제품을 개선하도록 돕는 데도 사용됩니다.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />이 기능을 사용 중지해도 기기에서 시스템 업데이트 및 보안과 같은 필수 서비스에 필요한 정보를 전송하는 데는 영향을 미치지 않습니다.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />설정 &gt; Google에서 이 기능을 관리할 수 있습니다. 메뉴에서 사용 및 진단을 선택하세요.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Google 검색을 비롯한 Google 제품으로 스마트하게 탐색하세요</translation>
 <translation id="7197632491113152433">이 기기에서 사용할 수 있는 앱을 계정에서 <ph name="NUMBER_OF_APPS" />개 찾았습니다.</translation>
 <translation id="7199158086730159431">도움말 보기</translation>
@@ -4083,6 +4077,7 @@
 <translation id="7246947237293279874">FTP 프록시</translation>
 <translation id="7248671827512403053">애플리케이션</translation>
 <translation id="725109152065019550">관리자가 계정에서 외부 저장소를 사용 중지했습니다.</translation>
+<translation id="7251346854160851420">기본 배경화면</translation>
 <translation id="7253521419891527137">자세히 알아보기(&amp;L)</translation>
 <translation id="7254554697254365959">페이지를 번역할 수 없습니다.</translation>
 <translation id="7254951428499890870">'<ph name="APP_NAME" />'을(를) 진단 모드로 실행하시겠습니까?</translation>
@@ -4193,6 +4188,7 @@
 <translation id="7417705661718309329">Google 지도</translation>
 <translation id="741906494724992817">이 앱에는 특별한 권한이 필요하지 않습니다.</translation>
 <translation id="7419433794191666278">Chromebook에 휴대전화를 연결하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">북마크 삭제됨</translation>
 <translation id="7421925624202799674">페이지 소스 보기(&amp;V)</translation>
 <translation id="7422192691352527311">환경설정...</translation>
 <translation id="7423098979219808738">우선 확인</translation>
@@ -4249,9 +4245,6 @@
 <translation id="7507930499305566459">상태 응답자 인증서</translation>
 <translation id="7508545000531937079">슬라이드쇼</translation>
 <translation id="7513029293694390567">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 확인 요청 메시지가 표시됩니다.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />앱에서 위치를 찾을 수 있게 도와주세요. Google의 위치 서비스로 앱 위치를 개선합니다. Google에서 위치 정확도와 위치 기반 서비스를 개선하기 위해 위치 데이터를 주기적으로 수집하여 익명으로 사용할 수 있습니다.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Google 위치 서비스는 Wi-Fi, 모바일 네트워크, 센서와 같은 소스를 활용하여 기기의 위치를 추정합니다. 이 서비스는 기기의 위치 설정이 사용 설정되어 있으면 활성화됩니다.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />기기에서 기본 위치 설정을 사용 중지하면 위치를 사용 중지할 수 있습니다. 또한 위치 설정에서 위치를 추정하는 데 Wi-Fi, 모바일 네트워크, 센서를 사용하지 않도록 할 수도 있습니다.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">비밀번호 만들기 -</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7522255036471229694">"Ok Google"이라고 말하세요.</translation>
@@ -4357,6 +4350,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{북마크 목록에 1개 항목이 있음}other{북마크 목록에 #개 항목이 있음}}</translation>
 <translation id="7701040980221191251">없음</translation>
 <translation id="7701869757853594372">사용자 처리</translation>
+<translation id="7702574632857388784">목록에서 <ph name="FILE_NAME" /> 삭제</translation>
 <translation id="7702907602086592255">도메인</translation>
 <translation id="7704305437604973648">작업</translation>
 <translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
@@ -4491,7 +4485,6 @@
 <translation id="7851457902707056880">로그인이 소유자 계정으로만 제한되었습니다. 다시 부팅하여 소유자 계정으로 로그인하세요. 컴퓨터가 30초 뒤에 자동으로 다시 부팅됩니다.</translation>
 <translation id="7851716364080026749">카메라 및 마이크 액세스 항상 차단</translation>
 <translation id="7853747251428735">도구 더보기(&amp;L)</translation>
-<translation id="7856006446339184955">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 이 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />은 소유자가 지정했습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">예외 추가</translation>
 <translation id="7857949311770343000">설정한 새 탭 페이지가 맞습니까?</translation>
 <translation id="786073089922909430">서비스: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4752,6 +4745,7 @@
 <translation id="8249296373107784235">중단</translation>
 <translation id="8249672078237421304">이 언어로 된 페이지에 대한 번역 옵션 제공</translation>
 <translation id="8251578425305135684">미리보기 이미지가 삭제되었습니다.</translation>
+<translation id="8252569384384439529">업로드 중...</translation>
 <translation id="8253198102038551905">'+'를 클릭하여 네트워크 속성 보기</translation>
 <translation id="825483282309623688">데이터를 복원하려면 인터넷 연결이 필요합니다.</translation>
 <translation id="8256319818471787266">멍멍이</translation>
@@ -4818,6 +4812,7 @@
 <translation id="8371695176452482769">말하세요</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="8373553483208508744">탭 음소거</translation>
+<translation id="8378714024927312812">조직에서 관리</translation>
 <translation id="8379878387931047019">이 기기는 이 웹사이트에서 요청하는 유형의 보안 키를 지원하지 않습니다.</translation>
 <translation id="8382913212082956454">이메일 주소 복사(&amp;E)</translation>
 <translation id="8386091599636877289">정책을 찾을 수 없습니다.</translation>
@@ -4856,6 +4851,7 @@
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8439506636278576865">이 언어로 된 페이지에 대한 번역 옵션 제공</translation>
 <translation id="8440630305826533614">Linux 앱</translation>
+<translation id="8446474770554547328">"Ok Google"을 세 번 녹음하면 음성 모델이 생성되어 기기에 저장됩니다. 어시스턴트 설정에서 모델을 삭제하거나 다시 학습시키세요. Google 활동 제어에서 음성 명령을 확인하거나 삭제할 수 있습니다.</translation>
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8447409163267621480">Ctrl 또는 Alt 중 하나를 포함해야 합니다</translation>
 <translation id="8448729345478502352">화면에 표시되는 항목을 축소 또는 확대합니다.</translation>
@@ -4916,7 +4912,6 @@
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>
 <translation id="8538358978858059843">Cast에 클라우드 서비스를 사용하시겠습니까?</translation>
 <translation id="8539727552378197395">허용 안함(Http만)</translation>
-<translation id="8541166929715485291">시스템 데이터를 전송합니다. 이 기능을 사용 설정하면 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송합니다. 이 설정은 소유자가 지정했습니다. 소유자는 이 기기의 진단 및 사용 데이터를 Google로 전송하도록 선택할 수 있습니다. 이는 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 볼 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 계정에 이 정보가 저장되므로 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">비밀번호를 확인할 수 없습니다. 이 관리 대상 사용자의 관리자가 최근에 비밀번호를 변경했을 수 있습니다. 비밀번호를 변경했다면 다음에 로그인할 때 새로운 비밀번호를 사용해야 합니다. 이전 비밀번호를 사용해 보세요.</translation>
 <translation id="8546186510985480118">기기에 저장 공간 부족</translation>
 <translation id="8546306075665861288">이미지 캐시</translation>
@@ -5182,7 +5177,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) 창을 공유 중입니다.</translation>
 <translation id="8946359700442089734">이 <ph name="IDS_SHORT_PRODUCT_NAME" /> 기기에서 디버깅 기능의 사용 설정을 완료하지 못했습니다.</translation>
 <translation id="894871326938397531">시크릿 모드를 종료할까요?</translation>
-<translation id="8952774786254665439">고급 프린터 옵션</translation>
 <translation id="895347679606913382">다운로드 시작...</translation>
 <translation id="8954952943849489823">이동에 실패했습니다. 예기치 않은 오류: $1</translation>
 <translation id="895586998699996576">$1 이미지</translation>
@@ -5324,7 +5318,6 @@
 <translation id="91568222606626347">바로가기 만들기...</translation>
 <translation id="9157697743260533322">모든 사용자에 대해 자동 업데이트를 설정하지 못했습니다(프리플라이트 실행 오류: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">인증하는 중에 네트워크 통신 문제가 발생했습니다.  네트워크 연결을 확인한 뒤 다시 시도해 주세요.</translation>
-<translation id="916501514001398070">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 이 설정은 소유자가 지정했습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">PIP 모드</translation>
 <translation id="9168436347345867845">나중에</translation>
 <translation id="9169496697824289689">단축키 보기</translation>

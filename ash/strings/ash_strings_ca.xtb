@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
 <translation id="2292698582925480719">Escala de visualització</translation>
+<translation id="2302092602801625023">Family Link gestiona aquest compte</translation>
 <translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
 <translation id="2339073806695260576">Toca el botó del llapis òptic al prestatge per escriure una nota, fer una captura de pantalla o bé utilitzar-lo com a punter làser o lupa.</translation>
 <translation id="2341729377289034582">Bloquejada en vertical</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloqueja</translation>
 <translation id="3798670284305777884">Altaveu (intern)</translation>
+<translation id="3799080171973636491">Has premut la tecla de drecera de la lupa de pantalla completa. Vols activar-la?</translation>
 <translation id="380165613292957338">Hola, en què et puc ajudar?</translation>
 <translation id="383629559565718788">Mostra la configuració del teclat</translation>
 <translation id="3846575436967432996">No hi ha informació de xarxa disponible</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4292681942966152062">S'està activant <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Has premut la tecla de drecera de l'alt contrast. Vols activar-lo?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">L'Assistent s'està carregant...</translation>
 <translation id="435527878592612277">Selecciona la teva foto</translation>
 <translation id="4378551569595875038">S'està connectant...</translation>
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
+<translation id="4389184120735010762">Has premut la tecla de drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
@@ -390,6 +394,7 @@
 <translation id="7886169021410746335">Ajustar la configuració de privadesa</translation>
 <translation id="7886277072580235377">Les dades de la sessió a Internet s'esborraran en tancar-la. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envia un correu electrònic</translation>
+<translation id="7897375687985782769">Has premut la tecla de drecera de la rotació de la pantalla. Vols girar la pantalla?</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7933084174919150729">L'Assistent de Google només està disponible per al perfil principal.</translation>
 <translation id="79341161159229895">Compte gestionat per <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -455,6 +460,7 @@
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">S'està utilitzant <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Desbloqueja el dispositiu com a <ph name="LOGIN_ID" /> per dur a terme l'acció que indica la notificació</translation>
 <translation id="8995603266996330174">Gestionat per <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Hi ha disponible una actualització d'Adobe Flash Player</translation>

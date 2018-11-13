@@ -859,7 +859,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Může se jednat o jednorázové nebo opakované poplatky, které nemusejí být jasně patrné.</translation>
 <translation id="7029809446516969842">Hesla</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Tato karta a její fakturační adresa se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}few{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}many{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}other{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}}</translation>
 <translation id="7050187094878475250">Pokusili jste se připojit k doméně <ph name="DOMAIN" />, ale server předložil certifikát, který má příliš dlouhé období platnosti a je proto nedůvěryhodný.</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
@@ -945,7 +944,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7549584377607005141">Tato stránka potřebuje ke správnému zobrazení data, která jste zadali dříve. Tyto údaje můžete odeslat znovu, ale zopakujete tím všechny akce, které tato stránka již předtím provedla.</translation>
 <translation id="7552846755917812628">Vyzkoušejte následující tipy:</translation>
 <translation id="7554791636758816595">Nová karta</translation>
-<translation id="7560085949372856518">V dalším kroku můžete zvolit, které karty chcete uložit do svého účtu Google.</translation>
 <translation id="7564049878696755256">Mohli byste ztratit přístup k účtu <ph name="ORG_NAME" /> nebo by mohlo dojít k odcizení vaší identity. Doporučujeme vám okamžitě změnit heslo.</translation>
 <translation id="7567204685887185387">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě vydán podvodně. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="7569952961197462199">Odstranit platební kartu z Chromu?</translation>
@@ -1114,7 +1112,6 @@ Další podrobnosti:
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8728672262656704056">Jste v anonymním režimu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
-<translation id="8733831205558190772">Všechny platební karty na jediném místě</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
 <translation id="874846938927089722">Přijímané kreditní a předplacené karty</translation>
@@ -1135,7 +1132,6 @@ Další podrobnosti:
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
 <translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8874824191258364635">Zadejte platné číslo karty</translation>
-<translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="8892964541482452187">Tlačítko přepínání karet. Stisknutím klávesy Enter přejdete na tuto kartu.</translation>
 <translation id="8903921497873541725">Přiblížit</translation>

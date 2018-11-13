@@ -166,7 +166,6 @@
     Auf dem nächsten Bildschirm können Sie uns Feedback geben und uns damit bei der Lösung des Problems helfen.</translation>
 <translation id="1217668622537098248">Nach Aktion zu Linksklick zurückkehren</translation>
 <translation id="121783623783282548">Die Passwörter stimmen nicht überein.</translation>
-<translation id="1218860753635451122">Wenn Sie auf die Schaltfläche "Ich stimme zu" klicken, willigen Sie in die oben für diese Google-Dienste beschriebene Verarbeitung Ihrer Daten ein.</translation>
 <translation id="1219533395013150448">Anhand dieser Aufnahmen erstellt Assistant Ihr Sprachmodell, das auf dem Gerät gespeichert wird. Sie können das Modell in den Assistant-Einstellungen löschen oder neu trainieren. Sprachbefehle lassen sich in den Google-Aktivitätseinstellungen einsehen oder löschen.</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 mit RSA-Verschlüsselung</translation>
@@ -843,7 +842,6 @@
 <translation id="2239921694246509981">Betreuten Nutzer hinzufügen</translation>
 <translation id="2241053333139545397">Eigene Daten auf verschiedenen Websites lesen und ändern</translation>
 <translation id="2242687258748107519">Dateiinformationen</translation>
-<translation id="2243194103992005307">Sie können Apps deinstallieren, indem Sie zu "Einstellungen" &gt; "Apps" gehen oder den Anwendungsmanager aufrufen. Tippen Sie dann auf die App, die Sie deinstallieren möchten, und wählen Sie "Deinstallieren" oder "Deaktivieren" aus. Möglicherweise müssen Sie nach rechts oder links wischen, um die App zu finden.</translation>
 <translation id="224940702122312781">Diese Seite verbraucht eine große Menge an Daten.</translation>
 <translation id="2249605167705922988">z. B. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mit System Viewer öffnen</translation>
@@ -1096,7 +1094,6 @@
 <translation id="2643698698624765890">Klicken Sie zum Verwalten Ihrer Erweiterungen im Menü "Fenster" auf "Erweiterungen".</translation>
 <translation id="264810637653812429">Es wurden keine kompatiblen Geräte gefunden.</translation>
 <translation id="2649045351178520408">Base64-codierter ASCII-Code, Zertifikatkette</translation>
-<translation id="2651353619134567122">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Sie können diese Berechtigung jederzeit in den <ph name="BEGIN_LINK1" />Geräteeinstellungen<ph name="END_LINK1" /> ändern. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Fehler bei der Suche</translation>
 <translation id="2653266418988778031">Wenn Sie das Zertifikat einer Zertifizierungsstelle (CA) löschen, vertraut Ihr Server keinen von dieser Zertifizierungsstelle ausgestellten Zertifikaten mehr.</translation>
 <translation id="2653659639078652383">Senden</translation>
@@ -1415,7 +1412,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3141318088920353606">Jetzt sprechen…</translation>
 <translation id="3141917231319778873">Die Anfrage an folgendes Gerät wird nicht unterstützt: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3143515551205905069">Synchronisierung abbrechen</translation>
-<translation id="3143695347784622594">Systemdaten senden. Diagnosedaten sowie Geräte- und App-Nutzungsdaten werden automatisch an Google gesendet. Diese Berechtigung können Sie jederzeit in den <ph name="BEGIN_LINK1" />Geräteeinstellungen<ph name="END_LINK1" /> ändern. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">Fertig</translation>
 <translation id="3144647712221361880">Link öffnen als</translation>
 <translation id="3146006635381699911">Ressourcen für Offlinedemomodus nicht verfügbar.</translation>
@@ -1991,7 +1987,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3982375475032951137">Sie können Ihren Browser mit ein paar einfachen Schritten einrichten</translation>
 <translation id="3983586614702900908">Geräte von einem unbekannten Anbieter</translation>
 <translation id="3984159763196946143">Demomodus konnte nicht gestartet werden</translation>
-<translation id="3985261842049607969">In Google Drive sichern. Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. Ihre Sicherung enthält App-Daten. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Datennutzung reduziert</translation>
 <translation id="3987938432087324095">Dies wurde nicht verstanden.</translation>
 <translation id="3988996860813292272">Zeitzone auswählen</translation>
@@ -2530,11 +2525,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4883274597792587930">Den Namen finden Sie auf der Rückseite Ihres Schlüssels</translation>
 <translation id="4883436287898674711">Alle <ph name="WEBSITE_1" />-Websites</translation>
 <translation id="48838266408104654">&amp;Taskmanager</translation>
-<translation id="4883898390143004266">Apps helfen, den Standort zu ermitteln. Apps dürfen den Standortdienst von Google nutzen. Google kann in regelmäßigen Abständen anonymisierte Standortdaten erfassen und diese zur Verbesserung von Standortbestimmung und standortbasierten Diensten verwenden. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />In Google Drive sichern. Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. Ihre Sicherung enthält App-Daten.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />App-Daten können alle Daten sein, die von einer App basierend auf den Entwicklereinstellungen gespeichert wurden, einschließlich potenziell vertraulicher Daten wie Kontakten, Nachrichten und Fotos.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Die Sicherungsdaten werden nicht auf Ihr Google Drive-Speicherkontingent angerechnet.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Sie können diesen Dienst unter "Einstellungen" deaktivieren.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6-fach</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Mit System Viewer öffnen</translation>
@@ -2817,7 +2807,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5324780743567488672">Zeitzone automatisch anhand des Standorts einstellen</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5327570636534774768">Dieses Gerät ist für die Verwaltung durch eine andere Domain markiert. Heben Sie die Bereitstellung von dieser Domain aus auf, bevor Sie den Demomodus einrichten.</translation>
-<translation id="532776649628038357">Ich stimme zu</translation>
 <translation id="532943162177641444">Tippen Sie auf die Benachrichtigung auf Ihrem <ph name="PHONE_NAME" />, um einen mobilen Hotspot einzurichten, den dieses Gerät nutzen kann.</translation>
 <translation id="5329858601952122676">&amp;Löschen</translation>
 <translation id="5329945517224105597">Google Assistant kann Ihnen bessere Vorschläge und passende Aktionen zu den Inhalten auf Ihrem Bildschirm anzeigen. Sie können dies in den Einstellungen von Assistant ändern.</translation>
@@ -2931,7 +2920,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5488093641312826914">"<ph name="COPIED_ITEM_NAME" />" kopiert</translation>
 <translation id="5488468185303821006">Im Inkognitomodus zulassen</translation>
 <translation id="5489435190927933437">Gespeicherte Passwörter für <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Systemdaten senden. Diagnosedaten sowie Geräte- und App-Nutzungsdaten werden automatisch an Google gesendet. Diese Einstellung wird durch den Eigentümer erzwungen. Der Eigentümer kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Sie können das in den Einstellungen überprüfen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">Bildschirm an</translation>
 <translation id="5494362494988149300">Nach &amp;Fertigstellung öffnen</translation>
 <translation id="5494920125229734069">Alle auswählen</translation>
@@ -3630,10 +3618,9 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="6522797484310591766">Jetzt anmelden</translation>
 <translation id="6527303717912515753">Teilen</translation>
-<translation id="6528513914570774834">Anderen Nutzern dieses Geräts erlauben, dieses Netzwerk zu verwenden</translation>
+<translation id="6528513914570774834">Anderen Nutzern des Geräts erlauben, dieses Netzwerk zu verwenden</translation>
 <translation id="652948702951888897">Chrome-Verlauf</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> wird synchronisiert...</translation>
-<translation id="6530681427077572136">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Sie können diese Berechtigung jederzeit in den Geräteeinstellungen ändern. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Schädliche Datei beibehalten</translation>
 <translation id="6534583978616527129">Verbindung herstellen</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Hinweis:<ph name="END_BOLD" /> Aktivieren Sie diese Option nur dann, wenn Sie dazu aufgefordert wurden und sich sicher sind, dass es unbedenklich ist. Die Datenerfassung kann die Leistung verringern.</translation>
@@ -3681,7 +3668,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6610147964972079463">Private Tabs schließen</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6613452264606394692">Speichern Sie diese Seite als Lesezeichen, um schnell wieder hierher zurückzukehren</translation>
-<translation id="6614893213975402384">Updates und Apps installieren. Wenn Sie fortfahren, stimmen Sie zu, dass dieses Gerät automatisch Updates und Apps von Google, Ihrem Mobilfunkanbieter und dem Hersteller Ihres Geräts herunterladen und installieren darf, möglicherweise über eine mobile Datenverbindung. Einige dieser Apps bieten eventuell In-App-Käufe an. Diese Apps können Sie jederzeit entfernen. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Zeigen</translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4055,9 +4041,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
 <translation id="7193374945610105795">Für <ph name="ORIGIN" /> sind keine Passwörter gespeichert</translation>
 <translation id="7196835305346730603">Suche nach Chromebox-Geräten in der Nähe läuft...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Dies sind allgemeine Informationen zu Ihrem Gerät und dessen Nutzung, zum Beispiel zum Ladestatus des Akkus, zur App-Nutzung und zur Netzwerkkonnektivität. Die Daten werden verwendet, um Google-Produkte und -Dienste für alle Nutzer zu verbessern. Einige zusammengefasste Informationen helfen auch Partnern wie Android-Entwicklern dabei, ihre Apps und Produkte zu verbessern.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Wenn Sie diese Funktion deaktivieren, kann Ihr Gerät dennoch die Informationen senden, die für wichtige Dienste wie Systemupdates und Sicherheitsmerkmale erforderlich sind.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Sie können diese Funktion unter "Einstellungen" &gt; "Google" steuern. Wählen Sie im angezeigten Menü "Nutzung &amp; Diagnose" aus.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Cleverer suchen und surfen mit Google</translation>
 <translation id="7197632491113152433">Wir haben <ph name="NUMBER_OF_APPS" /> Apps in Ihrem Konto gefunden, die auf diesem Gerät verwendet werden können.</translation>
 <translation id="7199158086730159431">H&amp;ilfe erhalten</translation>
@@ -4259,9 +4242,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7507930499305566459">Zertifikat für Statusantwortdienst</translation>
 <translation id="7508545000531937079">Diashow</translation>
 <translation id="7513029293694390567">Sie werden mithilfe gespeicherter Anmeldedaten automatisch auf Websites angemeldet. Wenn diese Funktion deaktiviert ist, werden Sie bei jeder Anmeldung auf einer Website nach einer Bestätigung gefragt.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Apps helfen, den Standort zu ermitteln. Apps dürfen den Standortdienst von Google nutzen. Google kann in regelmäßigen Abständen anonymisierte Standortdaten erfassen und diese zur Verbesserung von Standortbestimmung und standortbasierten Diensten verwenden.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Der Standortdienst von Google nutzt Quellen wie WLANs, Mobilfunknetze und Sensoren, um den Standort Ihres Geräts zu bestimmen. Der Dienst ist aktiv, wenn die Standorteinstellung Ihres Geräts aktiviert ist.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Sie können die Standortermittlung deaktivieren, indem Sie die Haupteinstellung "Standort" auf Ihrem Gerät deaktivieren. In den Standorteinstellungen können Sie auch die Nutzung von WLANs, Mobilfunknetzen und Sensoren für die Standortbestimmung deaktivieren.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Passwort erstellen –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sagen Sie "Ok Google".</translation>
@@ -4502,7 +4482,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7851457902707056880">Die Anmeldung ist nur über das Eigentümerkonto möglich. Bitte starten Sie das Gerät neu und melden Sie sich dann mit dem Eigentümerkonto an. Das Gerät wird in 30 Sekunden automatisch neu gestartet.</translation>
 <translation id="7851716364080026749">Zugriff auf Kamera und Mikrofon immer blockieren</translation>
 <translation id="7853747251428735">Weitere Too&amp;ls</translation>
-<translation id="7856006446339184955">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Diese <ph name="BEGIN_LINK1" />Einstellung<ph name="END_LINK1" /> wird vom Eigentümer erzwungen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Ausnahme hinzufügen</translation>
 <translation id="7857949311770343000">Ist das die "Neuer Tab"-Seite, die Sie erwartet hatten?</translation>
 <translation id="786073089922909430">Dienst: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4930,7 +4909,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8535005006684281994">Verlängerungs-URL für Netscape-Zertifikate</translation>
 <translation id="8538358978858059843">Streaming zu Clouddiensten aktivieren?</translation>
 <translation id="8539727552378197395">Nein (nur HTTP)</translation>
-<translation id="8541166929715485291">Systemdaten senden. Diagnosedaten sowie Geräte- und App-Nutzungsdaten werden automatisch an Google gesendet. Diese Einstellung wird vom Eigentümer erzwungen. Der Eigentümer kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Sie können das in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> überprüfen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Ihr Passwort konnte nicht bestätigt werden. Der Verwalter dieses betreuten Nutzers hat das Passwort möglicherweise vor Kurzem geändert. In diesem Fall wird das neue Passwort bei der nächsten Anmeldung wirksam. Versuchen Sie, sich mit Ihrem alten Passwort anzumelden.</translation>
 <translation id="8546186510985480118">Ihr Gerät hat wenig freien Speicherplatz</translation>
 <translation id="8546306075665861288">Bilder-Cache</translation>
@@ -5196,7 +5174,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8944964446326379280"><ph name="APP_NAME" /> teilt ein Fenster mit <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Die Debugging-Funktionen wurden auf diesem <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät nicht vollständig aktiviert.</translation>
 <translation id="894871326938397531">Inkognitomodus deaktivieren?</translation>
-<translation id="8952774786254665439">Erweiterte Druckeroptionen</translation>
 <translation id="895347679606913382">Wird gestartet...</translation>
 <translation id="8954952943849489823">Unerwarteter Fehler beim Verschieben: $1</translation>
 <translation id="895586998699996576">$1-Bild</translation>
@@ -5240,7 +5217,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9020362265352758658">4-fach</translation>
 <translation id="9021662811137657072">Virus gefunden</translation>
 <translation id="9022847679183471841">Dieses Konto wird bereits von <ph name="AVATAR_NAME" /> auf diesem Computer verwendet.</translation>
-<translation id="9023009238991294202">Andere Nutzer dieses Geräts können dieses Netzwerk verwenden.</translation>
+<translation id="9023009238991294202">Andere Nutzer des Geräts können dieses Netzwerk verwenden.</translation>
 <translation id="9024127637873500333">In &amp;neuem Tab öffnen</translation>
 <translation id="9024158959543687197">Fehler beim Bereitstellen der Freigabe. Überprüfen Sie die Dateifreigabe-URL und versuchen Sie es noch einmal.</translation>
 <translation id="9025098623496448965">OK, zurück zur Anmeldeseite</translation>
@@ -5339,7 +5316,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="91568222606626347">Verknüpfung erstellen...</translation>
 <translation id="9157697743260533322">Automatische Updates für alle Nutzer konnten nicht eingerichtet werden (Preflight-Startfehler: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppla! Während der Authentifizierung ist ein Kommunikationsproblem mit dem Netzwerk aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
-<translation id="916501514001398070">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Diese Einstellung wird durch den Eigentümer erzwungen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Bild-in-Bild</translation>
 <translation id="9168436347345867845">Später</translation>
 <translation id="9169496697824289689">Tastenkombinationen ansehen</translation>

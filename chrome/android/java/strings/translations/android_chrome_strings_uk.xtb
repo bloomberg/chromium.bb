@@ -944,7 +944,6 @@
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8084114998886531721">Збережений пароль</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
-<translation id="8087980556724996220">Асистент автозаповнення припинить роботу через <ph name="DURATION_SECONDS" /> с…</translation>
 <translation id="8103578431304235997">Анонімна вкладка</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Пропонувати схожі сторінки</translation>
@@ -1033,7 +1032,6 @@
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="8823704566850948458">Запропонувати пароль…</translation>
 <translation id="8833831881926404480">Сайт показує ваш екран</translation>
 <translation id="883806473910249246">Не вдалося завантажити вміст.</translation>
 <translation id="8840953339110955557">Ця сторінка може відрізнятися від онлайн-версії.</translation>
@@ -1081,7 +1079,6 @@
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Запропонувати надійний пароль…</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="932599481871055447">Заощаджуйте трафік і відкривайте веб-сторінки швидше</translation>

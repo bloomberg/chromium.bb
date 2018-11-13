@@ -944,7 +944,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="8084114998886531721">Mentett jelszó</translation>
 <translation id="8087000398470557479">Ez a Google által megjelenített tartalom a(z) <ph name="DOMAIN_NAME" /> domainről származik.</translation>
-<translation id="8087980556724996220">Az automatikus kitöltési segéd <ph name="DURATION_SECONDS" /> másodperc múlva leáll…</translation>
 <translation id="8103578431304235997">Inkognitólap</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Kapcsolódó oldalak ajánlása</translation>
@@ -1033,7 +1032,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8812260976093120287">Bizonyos webhelyeken fizethet eszközén a fenti támogatott fizetési alkalmazásokkal.</translation>
 <translation id="8816439037877937734">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />A Family Link szolgáltatással kezelt Google-fiókokra vonatkozó Adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
-<translation id="8823704566850948458">Jelszó ajánlása…</translation>
 <translation id="8833831881926404480">Az egyik webhely jelenleg megosztja a képernyőt</translation>
 <translation id="883806473910249246">Hiba történt a tartalom letöltésekor.</translation>
 <translation id="8840953339110955557">Az oldal eltérhet az online változattól.</translation>
@@ -1081,7 +1079,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9204836675896933765">1 fájl maradt</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Erős jelszó ajánlása…</translation>
 <translation id="9219103736887031265">Képek</translation>
 <translation id="932327136139879170">Főoldal</translation>
 <translation id="932599481871055447">Csökkentheti az adatforgalmat, és gyorsabban böngészhet</translation>

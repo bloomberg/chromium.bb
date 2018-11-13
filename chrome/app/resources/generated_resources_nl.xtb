@@ -166,7 +166,6 @@
     Op het volgende scherm kun je feedback verzenden om ons te helpen bij het oplossen van het probleem.</translation>
 <translation id="1217668622537098248">Terugzetten naar klikken met linkermuisknop na actie</translation>
 <translation id="121783623783282548">De wachtwoorden komen niet overeen.</translation>
-<translation id="1218860753635451122">Door op de knop 'Ik ga akkoord' te klikken, ga je akkoord met de bovengenoemde verwerking voor deze Google-services.</translation>
 <translation id="1219533395013150448">Je Assistent gebruikt deze opnamen om je spraakmodel te maken. Dit model wordt opgeslagen op je apparaat. Je kunt het model verwijderen of opnieuw trainen in de instellingen van de Assistent. Bekijk of verwijder je spraakactiviteit in de activiteitsopties van Google.</translation>
 <translation id="122082903575839559">Algoritme voor handtekening van certificaat</translation>
 <translation id="1221024147024329929">PKCS nr. 1 MD2 met RSA-encryptie</translation>
@@ -846,7 +845,6 @@
 <translation id="2239921694246509981">Persoon met beperkte rechten toevoegen</translation>
 <translation id="2241053333139545397">Je gegevens lezen en wijzigen op een aantal websites</translation>
 <translation id="2242687258748107519">Bestandsinformatie</translation>
-<translation id="2243194103992005307">Als je apps wilt verwijderen, ga je naar Instellingen &gt; Apps of App-beheer. Tik op de app die je wilt verwijderen (je moet mogelijk naar rechts of links vegen om de app te vinden). Tik vervolgens op Verwijderen of Uitschakelen.</translation>
 <translation id="224940702122312781">Deze pagina gebruikt veel data.</translation>
 <translation id="2249605167705922988">bijv. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Openen met systeemviewer</translation>
@@ -1101,7 +1099,6 @@
 <translation id="2643698698624765890">Je kunt je extensies beheren door in het paginamenu te klikken op 'Extensies'.</translation>
 <translation id="264810637653812429">Geen geschikte apparaten gevonden.</translation>
 <translation id="2649045351178520408">Base64 Encoded ASCII, certificaatketen</translation>
-<translation id="2651353619134567122">Systeemgegevens verzenden. Dit apparaat verzendt momenteel automatisch diagnostische en app- en gebruiksgegevens naar Google. Je kunt dit op elk gewenst moment wijzigen in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> van je apparaat. Als je 'Web- en app-activiteit' hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Zoeken is mislukt</translation>
 <translation id="2653266418988778031">Als je een certificaat van een certificeringsinstantie verwijdert, vertrouwt je browser geen certificaten meer die door die certificeringsinstantie zijn verleend.</translation>
 <translation id="2653659639078652383">Verzenden</translation>
@@ -1420,7 +1417,6 @@
 <translation id="3141318088920353606">Luisteren...</translation>
 <translation id="3141917231319778873">Het opgegeven verzoek wordt niet ondersteund voor: <ph name="DEVICE_NAME" />.</translation>
 <translation id="3143515551205905069">Synchronisatie annuleren</translation>
-<translation id="3143695347784622594">Systeemgegevens verzenden. Automatisch diagnostische en app- en gebruiksgegevens verzenden naar Google. Je kunt dit op elk gewenst moment wijzigen in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> van je apparaat. Als je 'Web- en app-activiteit' hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">GEREED</translation>
 <translation id="3144647712221361880">Link openen als</translation>
 <translation id="3146006635381699911">Bronnen voor offline demomodus niet beschikbaar.</translation>
@@ -1996,7 +1992,6 @@
 <translation id="3982375475032951137">Stel je browser in een paar eenvoudige stappen in</translation>
 <translation id="3983586614702900908">apparaten van een onbekende leverancier</translation>
 <translation id="3984159763196946143">Kan demomodus niet starten</translation>
-<translation id="3985261842049607969">Back-up maken naar Google Drive. Gemakkelijk je gegevens herstellen of elk gewenst moment van apparaat wisselen. Je back-up omvat app-gegevens. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Mobiel dataverbruik bespaard</translation>
 <translation id="3987938432087324095">Sorry, dat heb ik niet verstaan.</translation>
 <translation id="3988996860813292272">Tijdzone selecteren</translation>
@@ -2535,11 +2530,6 @@
 <translation id="4883274597792587930">Zoek de naam op de achterkant van je sleutel</translation>
 <translation id="4883436287898674711">Alle sites op <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Taakbeheer</translation>
-<translation id="4883898390143004266">Apps je locatie laten vaststellen. Zorg dat apps gemakkelijker je locatie kunnen vinden met de locatieservice van Google. Google kan periodiek locatiegegevens verzamelen en deze op een anonieme manier gebruiken om de locatienauwkeurigheid en locatiegebaseerde services te verbeteren. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Een back-up maken op Google Drive. Gemakkelijk je gegevens herstellen of op elk gewenst moment van apparaat wisselen. Je back-up omvat app-gegevens.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />App-gegevens kunnen alle gegevens omvatten die een app heeft opgeslagen (op basis van de instellingen van de ontwikkelaar), waaronder potentieel gevoelige gegevens zoals contacten, berichten en foto's.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Back-upgegevens tellen niet mee voor je opslagquotum voor Drive.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Je kunt deze service uitschakelen via Instellingen.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Openen met Systeemviewer</translation>
@@ -2823,7 +2813,6 @@
 <translation id="5324780743567488672">Tijdzone automatisch instellen op basis van je locatie</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5327570636534774768">Dit apparaat is gemarkeerd voor beheer door een ander domein. Schrijf het apparaat uit dit domein uit voordat je de demomodus instelt.</translation>
-<translation id="532776649628038357">Ik ga akkoord</translation>
 <translation id="532943162177641444">Tik op de melding op je <ph name="PHONE_NAME" /> om de mobiele hotspot in te stellen die door dit apparaat kan worden gebruikt.</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
 <translation id="5329945517224105597">Je Assistent kan meer relevante suggesties en specifieke acties laten zien die gerelateerd zijn aan de content op je scherm. Dit kun je wijzigen in de Assistent-instellingen.</translation>
@@ -2937,7 +2926,6 @@
 <translation id="5488093641312826914">'<ph name="COPIED_ITEM_NAME" />' gekopieerd</translation>
 <translation id="5488468185303821006">Toestaan in incognitomodus</translation>
 <translation id="5489435190927933437">Opgeslagen wachtwoorden voor <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Systeemgegevens verzenden. Automatisch diagnostische en app- en gebruiksgegevens naar Google verzenden. Deze instelling wordt afgedwongen door de eigenaar. De eigenaar kan ervoor kiezen diagnostische en gebruiksgegevens van dit apparaat naar Google te verzenden. Je kunt dit bekijken in de instellingen. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">scherm aan</translation>
 <translation id="5494362494988149300">Openen wanneer geree&amp;d</translation>
 <translation id="5494920125229734069">Alles selecteren</translation>
@@ -3639,7 +3627,6 @@
 <translation id="6528513914570774834">Andere gebruikers van dit apparaat toestaan om dit netwerk te gebruiken</translation>
 <translation id="652948702951888897">Chrome-geschiedenis</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> synchroniseren...</translation>
-<translation id="6530681427077572136">Systeemgegevens verzenden. Dit apparaat verzendt momenteel automatisch diagnostische en app- en gebruiksgegevens naar Google. Je kunt dit op elk gewenst moment wijzigen in de instellingen van je apparaat. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Gevaarlijk bestand behouden</translation>
 <translation id="6534583978616527129">De verbinding wordt geïnitialiseerd</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Opmerking:<ph name="END_BOLD" /> schakel dit alleen in als je weet wat je doet of als je bent gevraagd dit te doen, omdat het verzamelen van gegevens kan leiden tot verminderde prestaties.</translation>
@@ -3687,7 +3674,6 @@
 <translation id="6610147964972079463">Privétabbladen sluiten</translation>
 <translation id="6612358246767739896">Beveiligde content</translation>
 <translation id="6613452264606394692">Keer hier snel terug door een bladwijzer voor deze pagina in te stellen</translation>
-<translation id="6614893213975402384">Updates en apps installeren. Als je doorgaat, ga je ermee akkoord dat dit apparaat ook automatisch updates en apps van Google, je provider en de fabrikant van dit apparaat kan downloaden en installeren, en dat hiervoor mogelijk mobiele data worden gebruikt. Sommige van deze apps kunnen in-app-aankopen aanbieden. Je kunt deze apps op elk gewenst moment verwijderen. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Weergeven</translation>
 <translation id="6618097958368085618">Toch behouden</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4061,9 +4047,6 @@
 <translation id="7191454237977785534">Bestand opslaan als</translation>
 <translation id="7193374945610105795">Geen wachtwoorden opgeslagen voor <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Zoeken naar Chromeboxes in de omgeving...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Dit zijn algemene gegevens over je apparaat en hoe je het apparaat gebruikt (zoals de batterijstatus, het app-gebruik en de netwerkverbinding). De gegevens worden gebruikt om de producten en services van Google voor iedereen te verbeteren. Sommige samengevoegde gegevens helpen ook partners (zoals Android-ontwikkelaars) om hun apps en producten beter te maken.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Als je deze functie uitschakelt, kan je apparaat nog steeds de gegevens verzenden die nodig zijn voor essentiële services, zoals systeemupdates en beveiliging.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Je kunt deze functie beheren via Instellingen &gt; Google. Selecteer 'Gebruik en diagnostische gegevens' in het menu.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Google Zoeken en slimme Google-functies standaard instellen voor browsen</translation>
 <translation id="7197632491113152433">We hebben in je account <ph name="NUMBER_OF_APPS" /> apps gevonden die op dit apparaat kunnen worden gebruikt.</translation>
 <translation id="7199158086730159431">H&amp;ulp vragen</translation>
@@ -4265,9 +4248,6 @@
 <translation id="7507930499305566459">Certificaat voor statusbeantwoorder</translation>
 <translation id="7508545000531937079">Diavoorstelling</translation>
 <translation id="7513029293694390567">Automatisch inloggen bij websites met de opgeslagen gegevens. Als de functie is uitgeschakeld, wordt elke keer om bevestiging gevraagd voordat je inlogt bij een website.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Apps je locatie laten vaststellen. Zorg dat apps je gemakkelijker locatie kunnen vinden met de locatieservice van Google. Als onderdeel van deze service kan Google periodiek locatiegegevens verzamelen en deze gegevens op een anonieme manier gebruiken om de locatienauwkeurigheid en locatiegebaseerde services te verbeteren.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />De locatieservice van Google maakt gebruik van bronnen zoals wifi, mobiele netwerken en sensoren om de locatie van je apparaat te schatten. Deze service is actief wanneer de instelling Locatie van je apparaat is ingeschakeld.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Je kunt Locatie uitschakelen door de hoofdinstelling Locatie op je apparaat uit te schakelen. Je kunt het gebruik van wifi, mobiele netwerken en sensoren voor locaties ook uitschakelen via de locatie-instellingen.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Een wachtwoord maken –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Zeg "Oké Google"</translation>
@@ -4507,7 +4487,6 @@
 <translation id="7851457902707056880">Er kan alleen worden ingelogd met het account van de eigenaar. Start het apparaat opnieuw op en log in met het account van de eigenaar. Het apparaat wordt over 30 seconden automatisch opnieuw opgestart.</translation>
 <translation id="7851716364080026749">Toegang tot de camera en microfoon altijd blokkeren</translation>
 <translation id="7853747251428735">Meer hu&amp;lpprogramma's</translation>
-<translation id="7856006446339184955">Systeemgegevens verzenden. Dit apparaat verzendt momenteel diagnostische en app- en gebruiksgegevens automatisch naar Google. Deze <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> wordt afgedwongen door de eigenaar. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Uitzondering toevoegen</translation>
 <translation id="7857949311770343000">Is dit de nieuwe pagina met tabbladen die je had verwacht?</translation>
 <translation id="786073089922909430">Service: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4935,7 +4914,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8535005006684281994">URL voor verlengen van Netscape-certificaat</translation>
 <translation id="8538358978858059843">Cloudservices inschakelen voor Cast?</translation>
 <translation id="8539727552378197395">Nee (HttpOnly)</translation>
-<translation id="8541166929715485291">Systeemgegevens verzenden. Automatisch diagnostische en app- en gebruiksgegevens verzenden naar Google. Deze instelling wordt afgedwongen door de eigenaar. De eigenaar kan ervoor kiezen diagnostische en gebruiksgegevens van dit apparaat naar Google te verzenden. Je kunt dit bekijken in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" />. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Je wachtwoord kan niet worden geverifieerd. De beheerder van deze gebruiker met beperkte rechten heeft het wachtwoord misschien recent gewijzigd. Als dit het geval is, wordt het nieuwe wachtwoord toegepast wanneer je weer inlogt. Probeer je oude wachtwoord te gebruiken.</translation>
 <translation id="8546186510985480118">Weinig ruimte beschikbaar op het apparaat</translation>
 <translation id="8546306075665861288">Cachegeheugen met afbeeldingen</translation>
@@ -5202,7 +5180,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8944964446326379280"><ph name="APP_NAME" /> deelt een venster met <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Foutopsporingsfuncties zijn niet volledig ingeschakeld op dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat.</translation>
 <translation id="894871326938397531">Incognitomodus verlaten?</translation>
-<translation id="8952774786254665439">Geavanceerde printeropties</translation>
 <translation id="895347679606913382">Starten...</translation>
 <translation id="8954952943849489823">Verplaatsen mislukt. Onverwachte fout: $1</translation>
 <translation id="895586998699996576">$1-afbeelding</translation>
@@ -5344,7 +5321,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="91568222606626347">Snelle link maken…</translation>
 <translation id="9157697743260533322">Kan automatische updates niet instellen voor alle gebruikers (lanceringsfout bij pre-flight-procedure: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Er is een netwerkcommunicatieprobleem opgetreden tijdens de verificatie. Controleer je netwerkverbinding en probeer het opnieuw.</translation>
-<translation id="916501514001398070">Systeemgegevens verzenden. Dit apparaat verzendt momenteel diagnostische app- en gebruiksgegevens automatisch naar Google. Deze instelling wordt afgedwongen door de eigenaar. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Scherm-in-scherm</translation>
 <translation id="9168436347345867845">Later doen</translation>
 <translation id="9169496697824289689">Sneltoetsen bekijken</translation>

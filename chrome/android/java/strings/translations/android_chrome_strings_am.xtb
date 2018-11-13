@@ -944,7 +944,6 @@
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="8084114998886531721">የተቀመጠ ይለፍ ቃል</translation>
 <translation id="8087000398470557479">ይህ ይዘት ከ<ph name="DOMAIN_NAME" /> የመጣ ነው፣ የተላከው በGoogle ነው።</translation>
-<translation id="8087980556724996220">ራስ-ሙላ በ<ph name="DURATION_SECONDS" /> ሴ ውስጥ ይቆማል…</translation>
 <translation id="8103578431304235997">ማንነት የማያሳውቅ ትር</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">ተዛማጅ ገጾችን ይጠቁሙ</translation>
@@ -1033,7 +1032,6 @@
 <translation id="8812260976093120287">በአንዳንድ ድር ጣቢያዎች ላይ ከላይ ባሉ የሚደገፉ የክፍያ መተግበሪያዎች በመሣሪያዎ ላይ መክፈል ይችላሉ።</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> በChrome ውስጥ ይከፈታል። በመቀጠልዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" />፣ እና በ<ph name="BEGIN_LINK3" />በFamily Link የሚተዳደሩ የGoogle መለያዎች ግላዊነት ማስታወቂያ<ph name="END_LINK3" /> ተስማምተዋል።</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
-<translation id="8823704566850948458">የይለፍ ቃል ጠቁም...</translation>
 <translation id="8833831881926404480">አንድ ጣቢያ ማያ ገጽዎን እያጋራ ነው</translation>
 <translation id="883806473910249246">ይዘቱን በማውረድ ላይ ሳለ አንድ ስህተት ተከስቷል።</translation>
 <translation id="8840953339110955557">ይህ ገጽ ከመስመር ላይ ስሪቱ የተለየ ሊሆን ይችላል።</translation>
@@ -1081,7 +1079,6 @@
 <translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>
 <translation id="9204836675896933765">1 ፋይል ቀርቷል</translation>
 <translation id="9206873250291191720">አ</translation>
-<translation id="9218033835049520260">ጠንካራ የይለፍ ቃል ጠቁም...</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
 <translation id="932327136139879170">መነሻ</translation>
 <translation id="932599481871055447">ውሂብ ይቆጥቡና በበለጠ ፍጥነት ያስሱ</translation>

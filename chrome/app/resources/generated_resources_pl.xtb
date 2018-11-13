@@ -166,7 +166,6 @@
     Na następnym ekranie wyślij opinię, by pomóc nam naprawić ten problem.</translation>
 <translation id="1217668622537098248">Przywróć działanie po kliknięciu lewego przycisku myszy</translation>
 <translation id="121783623783282548">Hasła nie są zgodne.</translation>
-<translation id="1218860753635451122">Klikając przycisk „Zgadzam się”, wyrażasz zgodę na opisane powyżej przetwarzanie danych w przypadku tych usług Google.</translation>
 <translation id="1219533395013150448">Asystent używa tych nagrań do utworzenia modelu Twojego głosu. Model możesz usunąć lub utworzyć ponownie w ustawieniach Asystenta. Polecenia głosowe możesz przejrzeć i usunąć w ustawieniach zarządzania aktywnością w Google.</translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
 <translation id="1221024147024329929">PKCS #1, MD2 z szyfrowaniem RSA</translation>
@@ -846,7 +845,6 @@
 <translation id="2239921694246509981">Dodaj nadzorowaną osobę</translation>
 <translation id="2241053333139545397">Odczytywanie i modyfikowanie Twoich danych na wielu stronach</translation>
 <translation id="2242687258748107519">Informacje o pliku</translation>
-<translation id="2243194103992005307">Aby usunąć aplikacje, otwórz Ustawienia &gt; Aplikacje lub Menedżer aplikacji. Następnie kliknij aplikację, którą chcesz odinstalować (jeśli to konieczne, przesuń palcem w prawo lub w lewo, by ją znaleźć), a potem kliknij Odinstaluj lub Wyłącz.</translation>
 <translation id="224940702122312781">Ta strona będzie przesyłać bardzo dużo danych.</translation>
 <translation id="2249605167705922988">np. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Otwórz w przeglądarce systemowej</translation>
@@ -1101,7 +1099,6 @@
 <translation id="2643698698624765890">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Okno.</translation>
 <translation id="264810637653812429">Nie znaleziono zgodnych urządzeń.</translation>
 <translation id="2649045351178520408">Plik ASCII z kodowaniem Base64, łańcuch certyfikatów</translation>
-<translation id="2651353619134567122">Wysyłanie danych systemowych. To urządzenie obecnie automatycznie wysyła do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. Możesz to zmienić w dowolnym momencie w <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> urządzenia. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Błąd wyszukiwania</translation>
 <translation id="2653266418988778031">Jeśli usuniesz certyfikat urzędu certyfikacji, Twoja przeglądarka nie będzie już ufać żadnym certyfikatom wydanym przez ten urząd certyfikacji.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
@@ -1420,7 +1417,6 @@
 <translation id="3141318088920353606">Słucham…</translation>
 <translation id="3141917231319778873">Brak obsługi tego żądania do: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="3143515551205905069">Anuluj synchronizację</translation>
-<translation id="3143695347784622594">Wysyłanie danych systemowych. Automatycznie wysyłaj do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. Możesz to zmienić w dowolnym momencie w <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> urządzenia. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">GOTOWE</translation>
 <translation id="3144647712221361880">Otwórz link jako</translation>
 <translation id="3146006635381699911">Zasoby trybu demonstracyjnego offline są niedostępne.</translation>
@@ -1996,7 +1992,6 @@
 <translation id="3982375475032951137">Skonfiguruj przeglądarkę w kilku prostych krokach</translation>
 <translation id="3983586614702900908">urządzenia od nieznanego dostawcy</translation>
 <translation id="3984159763196946143">Nie udało się uruchomić trybu demonstracyjnego</translation>
-<translation id="3985261842049607969">Zapisywanie kopii zapasowych na Dysku Google. Łatwo przywróć dane lub zmień urządzenie, gdy tylko zechcesz. Kopie zapasowe zawierają dane aplikacji. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="3987348946546879621">Zmniejszono zużycie danych</translation>
 <translation id="3987938432087324095">Nie rozumiem.</translation>
 <translation id="3988996860813292272">Wybierz strefę czasową</translation>
@@ -2535,11 +2530,6 @@
 <translation id="4883274597792587930">Nazwę klucza znajdziesz z tyłu jego obudowy</translation>
 <translation id="4883436287898674711">Wszystkie strony <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Menedżer zadań</translation>
-<translation id="4883898390143004266">Łatwiejsze określanie lokalizacji przez aplikacje. Aplikacje będą dokładniej określać lokalizację, jeśli włączysz usługi lokalizacyjne Google. Google może okresowo gromadzić dane o lokalizacji i używać ich anonimowo, by zwiększyć dokładność lokalizacji oraz usprawnić działanie związanych z nią usług. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
-<translation id="4884740091792292473"><ph name="BEGIN_PARAGRAPH1" />Zapisuj kopie zapasowe na Dysku Google. Łatwo przywróć dane lub zmień urządzenie, gdy tylko zechcesz. Kopie zapasowe zawierają dane aplikacji.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Dane aplikacje obejmują wszystkie dane zapisane przez aplikację (zgodnie z ustawieniami programisty), w tym dane potencjalnie poufne, takie jak kontakty, wiadomości i zdjęcia.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Dane kopii zapasowej nie wliczają się do limitu miejsca na Dysku.<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Możesz wyłączyć tę usługę w Ustawieniach.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Otwórz w przeglądarce systemowej</translation>
@@ -2822,7 +2812,6 @@
 <translation id="5324780743567488672">Ustaw strefę czasową automatycznie na podstawie lokalizacji</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5327570636534774768">To urządzenie jest oznaczone jako zarządzane przez inną domenę. Wyrejestruj je z tamtej domeny, zanim skonfigurujesz tryb demonstracyjny.</translation>
-<translation id="532776649628038357">Zgadzam się</translation>
 <translation id="532943162177641444">Kliknij powiadomienie na telefonie <ph name="PHONE_NAME" />, by skonfigurować mobilny hotspot, z którego może korzystać to urządzenie.</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
 <translation id="5329945517224105597">Asystent może przekazywać Ci sugestie i podpowiadać działania związane z tym, co widać na ekranie. Możesz to zmienić w ustawieniach Asystenta.</translation>
@@ -2936,7 +2925,6 @@
 <translation id="5488093641312826914">Skopiowano: „<ph name="COPIED_ITEM_NAME" />”</translation>
 <translation id="5488468185303821006">Zezwalaj w trybie incognito</translation>
 <translation id="5489435190927933437">Zapisane hasła do <ph name="DOMAIN" /></translation>
-<translation id="5491110079163012109">Wysyłanie danych systemowych. Automatycznie wysyłaj do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. To ustawienie jest wybierane przez właściciela urządzenia. Może on wybrać, czy te dane będą wysyłane z urządzenia do Google. Wybraną opcję możesz zobaczyć w ustawieniach. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, te dane będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">ekran włączony</translation>
 <translation id="5494362494988149300">Otwórz po &amp;zakończeniu</translation>
 <translation id="5494920125229734069">Wybierz wszystko</translation>
@@ -3638,7 +3626,6 @@
 <translation id="6528513914570774834">Zezwól innym użytkownikom tego urządzenia na używanie tej sieci</translation>
 <translation id="652948702951888897">Historia Chrome</translation>
 <translation id="653019979737152879">Synchronizuję <ph name="FILE_NAME" />...</translation>
-<translation id="6530681427077572136">Wysyłanie danych systemowych. To urządzenie obecnie automatycznie wysyła do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. Możesz to zmienić w dowolnym momencie w ustawieniach urządzenia. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Zachowaj niebezpieczny plik</translation>
 <translation id="6534583978616527129">Zainicjuj połączenie</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> włącz tę opcję, tylko jeśli dokładnie wiesz, co robisz, lub ktoś Cię o to poprosił – zbieranie danych może obniżyć wydajność.</translation>
@@ -3686,7 +3673,6 @@
 <translation id="6610147964972079463">Zamknij karty prywatne</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6613452264606394692">Dodaj tę stronę do zakładek, by szybko na nią wrócić</translation>
-<translation id="6614893213975402384">Instalowanie aktualizacji i aplikacji. Przechodząc dalej, zgadzasz się, że urządzenie może też automatycznie pobierać i instalować aktualizacje oraz aplikacje od Google, Twojego operatora i producenta urządzenia oraz że może się to odbywać z użyciem komórkowej transmisji danych. Niektóre z tych aplikacji mogą oferować zakupy w aplikacji. Te aplikacje możesz w dowolnym momencie usunąć. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="6615455863669487791">Pokaż mi</translation>
 <translation id="6618097958368085618">Zachowaj mimo to</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4060,9 +4046,6 @@
 <translation id="7191454237977785534">Zapisz plik jako</translation>
 <translation id="7193374945610105795">Nie zapisano żadnych haseł do <ph name="ORIGIN" /></translation>
 <translation id="7196835305346730603">Szukam Chromeboxów w pobliżu...</translation>
-<translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Są to ogólne informacje o urządzeniu i jego użytkowaniu (w tym o poziomie naładowania baterii, używaniu aplikacji i jakości połączeń sieciowych). Wykorzystamy je do ulepszania produktów i usług Google dla wszystkich użytkowników. Niektóre informacje zbiorcze pomagają też naszym partnerom (takim jak programiści aplikacji na Androida) ulepszać ich usługi i aplikacje.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Wyłączenie tej funkcji nie wpływa na możliwość wysyłania przez urządzenie informacji potrzebnych do działania ważnych usług, na przykład zabezpieczeń czy aktualizacji systemu.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Działanie tej funkcji możesz skonfigurować w opcji Ustawienia &gt; Google. Wybierz w menu Użycie i diagnostyka.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7197190419934240522">Korzystaj z wyszukiwarki i innych inteligentnych usług Google na każdej stronie, którą otwierasz</translation>
 <translation id="7197632491113152433">Na tym urządzeniu możesz używać <ph name="NUMBER_OF_APPS" /> aplikacji, które znaleźliśmy na Twoim koncie.</translation>
 <translation id="7199158086730159431">Uzyskaj p&amp;omoc</translation>
@@ -4264,9 +4247,6 @@
 <translation id="7507930499305566459">Certyfikat obiektu odpowiadającego w zakresie stanu</translation>
 <translation id="7508545000531937079">Pokaz slajdów</translation>
 <translation id="7513029293694390567">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Jeśli ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o potwierdzenie.</translation>
-<translation id="7515154058529101840"><ph name="BEGIN_PARAGRAPH1" />Ułatw aplikacjom określanie lokalizacji. Używaj do tego usługi lokalizacyjnej Google. Google może okresowo gromadzić dane i używać ich anonimowo, by zwiększyć dokładność lokalizacji oraz usprawnić działanie związanych z nią usług.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />Usługa lokalizacyjna Google określa lokalizację urządzenia na podstawie takich źródeł jak sieci Wi-Fi i komórkowe oraz czujniki. Ta usługa jest aktywna, gdy na urządzeniu jest włączona Lokalizacja.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Aby wyłączyć tę usługę, wyłącz główne ustawienie Lokalizacja na urządzeniu. Możesz też wyłączyć w ustawieniach lokalizacji korzystanie z sieci Wi‑Fi, sieci komórkowych i czujników przy określaniu lokalizacji.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Utwórz hasło –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Powiedz „OK Google”</translation>
@@ -4507,7 +4487,6 @@
 <translation id="7851457902707056880">Logowanie zostało ograniczone tylko do konta właściciela. Uruchom ponownie i zaloguj się na nie. Komputer automatycznie uruchomi się ponownie za 30 sekund.</translation>
 <translation id="7851716364080026749">Zawsze blokuj dostęp do kamery i mikrofonu</translation>
 <translation id="7853747251428735">Więcej narzę&amp;dzi</translation>
-<translation id="7856006446339184955">Wysyłanie danych systemowych. Obecnie to urządzenie automatycznie wysyła do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. To <ph name="BEGIN_LINK1" />ustawienie<ph name="END_LINK1" /> jest wybierane przez właściciela urządzenia. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Dodaj wyjątek</translation>
 <translation id="7857949311770343000">Czy to oczekiwana strona nowej karty?</translation>
 <translation id="786073089922909430">Usługa: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4936,7 +4915,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8535005006684281994">Adres URL odnowienia certyfikatu firmy Netscape</translation>
 <translation id="8538358978858059843">Włączyć usługi w chmurze na potrzeby Cast?</translation>
 <translation id="8539727552378197395">Nie (HttpOnly)</translation>
-<translation id="8541166929715485291">Wysyłanie danych systemowych. Automatycznie wysyłaj do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. To ustawienie jest wybierane przez właściciela urządzenia. Może on wybrać, czy te dane będą wysyłane do Google. Wybraną opcję możesz zobaczyć w <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" />. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="8545575359873600875">Nie udało się zweryfikować Twojego hasła. Menedżer tego nadzorowanego użytkownika mógł ostatnio je zmienić. Jeśli tak się stało, nowe hasło zostanie zastosowane przy następnym logowaniu. Użyj swojego starego hasła.</translation>
 <translation id="8546186510985480118">Na urządzeniu jest mało miejsca</translation>
 <translation id="8546306075665861288">Pamięć podręczna grafiki</translation>
@@ -5202,7 +5180,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8944964446326379280"><ph name="APP_NAME" /> udostępnia okno karcie <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Funkcje debugowania nie zostały w pełni włączone na urządzeniu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="894871326938397531">Zamknąć tryb incognito?</translation>
-<translation id="8952774786254665439">Zaawansowane opcje drukarki</translation>
 <translation id="895347679606913382">Zaczynam...</translation>
 <translation id="8954952943849489823">Przenoszenie nie powiodło się, nieoczekiwany błąd: $1</translation>
 <translation id="895586998699996576">Plik graficzny ($1)</translation>
@@ -5344,7 +5321,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="91568222606626347">Utwórz skrót...</translation>
 <translation id="9157697743260533322">Nie można skonfigurować automatycznych aktualizacji dla wszystkich użytkowników (błąd uruchomienia procesu wstępnego: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Podczas uwierzytelniania wystąpił problem z komunikacją sieciową. Sprawdź połączenie z siecią i spróbuj ponownie.</translation>
-<translation id="916501514001398070">Wysyłanie danych systemowych. Obecnie to urządzenie automatycznie wysyła do Google dane diagnostyczne oraz dotyczące używania urządzenia i aplikacji. To ustawienie jest wybierane przez właściciela urządzenia. Jeśli masz włączoną dodatkowo Aktywność w internecie i aplikacjach, dane te będą zapisywane na Twoim koncie, co umożliwi Ci zarządzanie nimi na stronie Moja aktywność. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Obraz w obrazie</translation>
 <translation id="9168436347345867845">Później</translation>
 <translation id="9169496697824289689">Pokaż skróty klawiszowe</translation>
