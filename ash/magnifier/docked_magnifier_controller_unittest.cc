@@ -121,6 +121,14 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
               gfx::ToFlooredPoint(point_of_interest_in_root_f));
   }
 
+  void TouchPoint(const gfx::Point& touch_point_in_screen) {
+    // TODO(oshima): Currently touch event doesn't update the
+    // event dispatcher in the event generator. Fix it and use
+    // touch event insteead.
+    auto* generator = GetEventGenerator();
+    generator->GestureTapAt(touch_point_in_screen);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -326,7 +334,7 @@ TEST_F(DockedMagnifierTest, TouchEvents) {
   // Generate some touch events in both displays and expect the magnifier
   // viewport moves accordingly.
   gfx::Point touch_point(200, 350);
-  GetEventGenerator()->PressMoveAndReleaseTouchTo(touch_point);
+  TouchPoint(touch_point);
   const views::Widget* viewport_widget =
       controller()->GetViewportWidgetForTesting();
   EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());
@@ -334,7 +342,8 @@ TEST_F(DockedMagnifierTest, TouchEvents) {
 
   // Touch a new point in the other display.
   touch_point = gfx::Point(900, 200);
-  GetEventGenerator()->PressMoveAndReleaseTouchTo(touch_point);
+  TouchPoint(touch_point);
+
   // New viewport widget is created in the second display.
   ASSERT_NE(viewport_widget, controller()->GetViewportWidgetForTesting());
   viewport_widget = controller()->GetViewportWidgetForTesting();
