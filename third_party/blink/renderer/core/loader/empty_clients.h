@@ -265,22 +265,21 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidFinishLoad() override {}
   void DispatchDidChangeThemeColor() override {}
 
-  NavigationPolicy DecidePolicyForNavigation(
-      const ResourceRequest&,
-      Document* origin_document,
-      DocumentLoader*,
-      WebNavigationType,
-      NavigationPolicy,
-      bool,
-      WebFrameLoadType,
-      bool,
-      WebTriggeringEventInfo,
-      HTMLFormElement*,
-      ContentSecurityPolicyDisposition,
-      mojom::blink::BlobURLTokenPtr,
-      base::TimeTicks,
-      const String&,
-      mojom::blink::NavigationInitiatorPtr) override;
+  void BeginNavigation(const ResourceRequest&,
+                       Document* origin_document,
+                       DocumentLoader*,
+                       WebNavigationType,
+                       NavigationPolicy,
+                       bool,
+                       WebFrameLoadType,
+                       bool,
+                       WebTriggeringEventInfo,
+                       HTMLFormElement*,
+                       ContentSecurityPolicyDisposition,
+                       mojom::blink::BlobURLTokenPtr,
+                       base::TimeTicks,
+                       const String&,
+                       mojom::blink::NavigationInitiatorPtr) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 

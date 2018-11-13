@@ -330,6 +330,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
     // its own WebURLLoaderFactoryWithMock. (crbug.com/751425)
     return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
+  void BeginNavigation(NavigationPolicyInfo& info) override;
 
  private:
   static int loads_in_progress_;

@@ -654,7 +654,7 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
 }
 #endif
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
+TEST_F(RenderViewImplTest, BeginNavigation) {
   WebUITestWebUIControllerFactory factory;
   WebUIControllerFactory::RegisterFactory(&factory);
 
@@ -671,11 +671,9 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  blink::WebNavigationPolicy policy =
-      frame()->DecidePolicyForNavigation(policy_info);
+  frame()->BeginNavigation(policy_info);
   // If this is a renderer-initiated navigation that just begun, it should
   // stop and be sent to the browser.
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
   EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
@@ -685,8 +683,10 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   form_policy_info.navigation_type = blink::kWebNavigationTypeFormSubmitted;
   form_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
   form_request.SetHTTPMethod("POST");
-  policy = frame()->DecidePolicyForNavigation(form_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(form_policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that popup links to WebUI URLs also are sent to browser.
   blink::WebURLRequest popup_request(GURL("chrome://foo"));
@@ -695,11 +695,13 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   popup_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_policy_info.default_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
-  policy = frame()->DecidePolicyForNavigation(popup_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(popup_policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
+TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
   RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
   view()->OnSetRendererPrefs(prefs);
@@ -720,13 +722,14 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
   for (size_t i = 0; i < arraysize(kNavTypes); ++i) {
     policy_info.navigation_type = kNavTypes[i];
 
-    blink::WebNavigationPolicy policy =
-        frame()->DecidePolicyForNavigation(policy_info);
-    EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+    render_thread_->sink().ClearMessages();
+    frame()->BeginNavigation(policy_info);
+    EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+        FrameHostMsg_OpenURL::ID));
   }
 }
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
+TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
 
@@ -736,9 +739,10 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
 
-  blink::WebNavigationPolicy policy =
-      frame()->DecidePolicyForNavigation(policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Navigations to WebUI URLs will also be sent to browser process.
   blink::WebURLRequest webui_request(GURL("chrome://foo"));
@@ -746,8 +750,10 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       webui_request);
   webui_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   webui_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  policy = frame()->DecidePolicyForNavigation(webui_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(webui_policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that form posts to data URLs will be sent to the browser process.
   blink::WebURLRequest data_request(GURL("data:text/html,foo"));
@@ -756,8 +762,10 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   data_policy_info.navigation_type = blink::kWebNavigationTypeFormSubmitted;
   data_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
   data_request.SetHTTPMethod("POST");
-  policy = frame()->DecidePolicyForNavigation(data_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(data_policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that a popup that creates a view first and then navigates to a
   // normal HTTP URL will be sent to the browser process, even though the
@@ -774,9 +782,11 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   popup_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_policy_info.default_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
-  policy = static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
-               ->DecidePolicyForNavigation(popup_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
+      ->BeginNavigation(popup_policy_info);
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   CloseRenderView(new_view);
 }
@@ -800,21 +810,45 @@ class AlwaysForkingRenderViewTest : public RenderViewImplTest {
   };
 };
 
-TEST_F(AlwaysForkingRenderViewTest, DecideNavigationPolicyDoesNotForkEmptyUrl) {
+TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
+  GURL example_url("http://example.com");
+  GURL empty_url("");
+  GURL blank_url("about:blank");
+
+  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+
   // Empty url should never fork.
-  blink::WebURLRequest request(GURL(""));
+  blink::WebURLRequest request(empty_url);
   blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  blink::WebNavigationPolicy policy =
-      frame()->DecidePolicyForNavigation(policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
+  frame()->BeginNavigation(policy_info);
+  // Check that we committed synchronously.
+  EXPECT_EQ(
+      blank_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+}
 
-  // About blank should never fork as well.
-  blink::WebURLRequest about_request(GURL("about:blank"));
+TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
+  GURL example_url("http://example.com");
+  GURL blank_url("about:blank");
+
+  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+
+  // About blank should never fork.
+  blink::WebURLRequest about_request(blank_url);
   blink::WebLocalFrameClient::NavigationPolicyInfo about_info(about_request);
   about_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  policy = frame()->DecidePolicyForNavigation(about_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
+  frame()->BeginNavigation(about_info);
+  // Check that we committed synchronously.
+  EXPECT_EQ(
+      blank_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
 }
 
 // This test verifies that when device emulation is enabled, RenderFrameProxy

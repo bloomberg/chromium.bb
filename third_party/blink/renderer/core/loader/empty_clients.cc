@@ -94,7 +94,7 @@ String EmptyChromeClient::AcceptLanguages() {
   return String();
 }
 
-NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
+void EmptyLocalFrameClient::BeginNavigation(
     const ResourceRequest&,
     Document* origin_document,
     DocumentLoader*,
@@ -109,9 +109,7 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     mojom::blink::BlobURLTokenPtr,
     base::TimeTicks,
     const String&,
-    mojom::blink::NavigationInitiatorPtr) {
-  return kNavigationPolicyIgnore;
-}
+    mojom::blink::NavigationInitiatorPtr) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 

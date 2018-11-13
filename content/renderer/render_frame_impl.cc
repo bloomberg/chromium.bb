@@ -1928,7 +1928,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // ShowCreatedFullscreenWidget. Would it be simpler to have the
   // CreateFullscreenWidget mojo method implicitly show the window, and skip the
   // subsequent step?
-  widget->Show(blink::kWebNavigationPolicyIgnore);
+  widget->Show(blink::kWebNavigationPolicyCurrentTab);
   return widget;
 }
 
@@ -5973,8 +5973,7 @@ void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
       BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
-WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
-    NavigationPolicyInfo& info) {
+void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
   // This method is only called for renderer initiated navigations, which
   // may have originated from a link-click, script, drag-n-drop operation, etc.
 
@@ -6007,7 +6006,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
           this, true /* is_content_initiated */,
           render_view_was_created_by_renderer, frame_, info.url_request,
           info.navigation_type, info.default_policy, false /* is_redirect */)) {
-    return blink::kWebNavigationPolicyIgnore;
+    return;
   }
 #endif
 
@@ -6016,7 +6015,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
     OpenURL(info, /*is_history_navigation_in_new_child=*/false);
-    return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
+    return;  // Suppress the load here.
   }
 
   // Back/forward navigations in newly created subframes should be sent to the
@@ -6049,15 +6048,14 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         // nothing else. It'd be nice if it could go through the placeholder
         // DocumentLoader path, too.
         frame_->MarkAsLoading();
-        return blink::kWebNavigationPolicyIgnore;
-      } else {
-        // Client redirects during an initial history load should attempt to
-        // cancel the history navigation.  They will create a provisional
-        // document loader, causing the history load to be ignored in
-        // NavigateInternal, and this IPC will try to cancel any cross-process
-        // history load.
-        GetFrameHost()->CancelInitialHistoryLoad();
+        return;
       }
+      // Client redirects during an initial history load should attempt to
+      // cancel the history navigation.  They will create a provisional
+      // document loader, causing the history load to be ignored in
+      // NavigateInternal, and this IPC will try to cancel any cross-process
+      // history load.
+      GetFrameHost()->CancelInitialHistoryLoad();
     }
   }
 
@@ -6106,7 +6104,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
     if (should_fork) {
       OpenURL(info, /*is_history_navigation_in_new_child=*/false);
-      return blink::kWebNavigationPolicyIgnore;  // Suppress the load here.
+      return;  // Suppress the load here.
     }
   }
 
@@ -6126,7 +6124,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     if (!frame_->DispatchBeforeUnloadEvent(info.navigation_type ==
                                            blink::kWebNavigationTypeReload) ||
         !weak_self) {
-      return blink::kWebNavigationPolicyIgnore;
+      return;
     }
   }
 
@@ -6144,11 +6142,23 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     // If the navigation is not synchronous, send it to the browser.  This
     // includes navigations with no request being sent to the network stack.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
-      BeginNavigation(info);
-      return blink::kWebNavigationPolicyIgnore;
+      BeginNavigationInternal(info);
     } else {
-      return blink::kWebNavigationPolicyCurrentTab;
+      // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
+      auto navigation_params = std::make_unique<blink::WebNavigationParams>();
+      navigation_params->navigation_timings.input_start = info.input_start;
+      // We need the provider to be non-null, otherwise Blink crashes, even
+      // though the provider should not be used for any actual networking.
+      navigation_params->service_worker_network_provider =
+          BuildServiceWorkerNetworkProviderForNavigation(
+              nullptr /* request_params */,
+              nullptr /* controller_service_worker_info */);
+      frame_->CommitNavigation(
+          info.url_request, info.frame_load_type, blink::WebHistoryItem(),
+          info.is_client_redirect, base::UnguessableToken::Create(),
+          std::move(navigation_params), BuildDocumentState());
     }
+    return;
   }
 
   if (info.default_policy == blink::kWebNavigationPolicyDownload) {
@@ -6160,7 +6170,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   } else {
     OpenURL(info, /*is_history_navigation_in_new_child=*/false);
   }
-  return blink::kWebNavigationPolicyIgnore;
 }
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
@@ -6665,7 +6674,7 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }
 }  // namespace
 
-void RenderFrameImpl::BeginNavigation(NavigationPolicyInfo& info) {
+void RenderFrameImpl::BeginNavigationInternal(NavigationPolicyInfo& info) {
   auto navigation_params = std::make_unique<blink::WebNavigationParams>();
   navigation_params->navigation_timings.input_start = info.input_start;
   // We need the provider to be non-null, otherwise Blink crashes, even though

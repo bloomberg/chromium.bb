@@ -645,8 +645,7 @@ class CONTENT_EXPORT RenderFrameImpl
                    CrossOriginRedirects cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
-  blink::WebNavigationPolicy DecidePolicyForNavigation(
-      NavigationPolicyInfo& info) override;
+  void BeginNavigation(NavigationPolicyInfo& info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
@@ -1176,7 +1175,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
-  void BeginNavigation(NavigationPolicyInfo& info);
+  void BeginNavigationInternal(NavigationPolicyInfo& info);
 
   // Loads a data url.
   void LoadDataURL(

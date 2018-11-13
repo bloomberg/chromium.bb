@@ -104,6 +104,10 @@ void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
   }
 }
 
+void WorkerShadowPage::BeginNavigation(NavigationPolicyInfo& info) {
+  NOTREACHED();
+}
+
 bool WorkerShadowPage::WasInitialized() const {
   return state_ == State::kInitialized;
 }

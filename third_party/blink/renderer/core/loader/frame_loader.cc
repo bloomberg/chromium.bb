@@ -938,7 +938,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     LocalFrame::ConsumeTransientUserActivation(frame_);
   }
 
-  policy = Client()->DecidePolicyForNavigation(
+  Client()->BeginNavigation(
       resource_request, origin_document, nullptr /* document_loader */,
       navigation_type, policy, has_transient_activation, frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
@@ -946,19 +946,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
       request.HrefTranslate().GetString(), std::move(navigation_initiator));
-
-  // 'beforeunload' can be fired above, which can detach this frame from inside
-  // the event handler.
-  if (!frame_->GetPage())
-    return;
-
-  if (policy == kNavigationPolicyIgnore)
-    return;
-
-  DCHECK(policy == kNavigationPolicyCurrentTab);
-  CommitNavigation(resource_request, SubstituteData(), request.ClientRedirect(),
-                   base::UnguessableToken::Create(), frame_load_type, nullptr,
-                   nullptr, nullptr);
 }
 
 void FrameLoader::CommitNavigation(

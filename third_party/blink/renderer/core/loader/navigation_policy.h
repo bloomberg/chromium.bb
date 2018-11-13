@@ -39,7 +39,6 @@ class Event;
 struct WebWindowFeatures;
 
 enum NavigationPolicy {
-  kNavigationPolicyIgnore,
   kNavigationPolicyDownload,
   kNavigationPolicyCurrentTab,
   kNavigationPolicyNewBackgroundTab,

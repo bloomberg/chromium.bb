@@ -4463,16 +4463,15 @@ class TestReloadDoesntRedirectWebFrameClient
   ~TestReloadDoesntRedirectWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  WebNavigationPolicy DecidePolicyForNavigation(
-      NavigationPolicyInfo& info) override {
+  void BeginNavigation(NavigationPolicyInfo& info) override {
     EXPECT_FALSE(info.is_client_redirect);
-    return kWebNavigationPolicyCurrentTab;
+    TestWebFrameClient::BeginNavigation(info);
   }
 };
 
 TEST_F(WebFrameTest, ReloadDoesntSetRedirect) {
   // Test for case in http://crbug.com/73104. Reloading a frame very quickly
-  // would sometimes call decidePolicyForNavigation with isRedirect=true
+  // would sometimes call BeginNavigation with isRedirect=true
   RegisterMockedHttpURLLoad("form.html");
 
   TestReloadDoesntRedirectWebFrameClient web_frame_client;
@@ -7369,25 +7368,24 @@ class TestNewWindowWebViewClient
 class TestNewWindowWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
-  TestNewWindowWebFrameClient() : decide_policy_call_count_(0) {}
+  TestNewWindowWebFrameClient() : begin_navigation_call_count_(0) {}
   ~TestNewWindowWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  WebNavigationPolicy DecidePolicyForNavigation(
-      NavigationPolicyInfo& info) override {
+  void BeginNavigation(NavigationPolicyInfo& info) override {
     if (ignore_navigations_) {
-      decide_policy_call_count_++;
-      return kWebNavigationPolicyIgnore;
+      begin_navigation_call_count_++;
+      return;
     }
-    return info.default_policy;
+    TestWebFrameClient::BeginNavigation(info);
   }
 
-  int DecidePolicyCallCount() const { return decide_policy_call_count_; }
+  int BeginNavigationCallCount() const { return begin_navigation_call_count_; }
   void IgnoreNavigations() { ignore_navigations_ = true; }
 
  private:
   bool ignore_navigations_ = false;
-  int decide_policy_call_count_;
+  int begin_navigation_call_count_;
 };
 
 TEST_F(WebFrameTest, ModifiedClickNewWindow) {
@@ -7427,8 +7425,8 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
 
-  // decidePolicyForNavigation should be called for the ctrl+click.
-  EXPECT_EQ(1, web_frame_client.DecidePolicyCallCount());
+  // BeginNavigation should be called for the ctrl+click.
+  EXPECT_EQ(1, web_frame_client.BeginNavigationCallCount());
 }
 
 TEST_F(WebFrameTest, BackToReload) {
@@ -12446,16 +12444,15 @@ class TestFallbackWebFrameClient
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }
-  WebNavigationPolicy DecidePolicyForNavigation(
-      NavigationPolicyInfo& info) override {
-    if (child_client_ || KURL(info.url_request.Url()) == BlankURL())
-      return kWebNavigationPolicyCurrentTab;
-
+  void BeginNavigation(NavigationPolicyInfo& info) override {
+    if (child_client_ || KURL(info.url_request.Url()) == BlankURL()) {
+      TestWebFrameClient::BeginNavigation(info);
+      return;
+    }
     Frame()->CreatePlaceholderDocumentLoader(
         info.url_request, info.frame_load_type, info.navigation_type,
         info.is_client_redirect, base::UnguessableToken::Create(), nullptr,
         nullptr);
-    return kWebNavigationPolicyIgnore;
   }
 
  private:

@@ -194,7 +194,6 @@ NavigationPolicy NavigationPolicyForCreateWindow(
   return user_policy;
 }
 
-STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyDownload, kNavigationPolicyDownload);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyCurrentTab, kNavigationPolicyCurrentTab);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyNewBackgroundTab,

@@ -110,7 +110,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidFinishLoad() override;
 
   void DispatchDidChangeThemeColor() override;
-  NavigationPolicy DecidePolicyForNavigation(
+  void BeginNavigation(
       const ResourceRequest&,
       Document* origin_document,
       DocumentLoader*,

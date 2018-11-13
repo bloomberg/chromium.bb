@@ -27,7 +27,6 @@ const char file_test_prefix[] = "(file test):";
 const char data_url_pattern[] = "data:";
 const std::string::size_type data_url_pattern_size =
     sizeof(data_url_pattern) - 1;
-const char* kPolicyIgnore = "Ignore";
 const char* kPolicyDownload = "download";
 const char* kPolicyCurrentTab = "current tab";
 const char* kPolicyNewBackgroundTab = "new background tab";
@@ -67,8 +66,6 @@ std::string URLDescription(const GURL& url) {
 const char* WebNavigationPolicyToString(
     const blink::WebNavigationPolicy& policy) {
   switch (policy) {
-    case blink::kWebNavigationPolicyIgnore:
-      return kPolicyIgnore;
     case blink::kWebNavigationPolicyDownload:
       return kPolicyDownload;
     case blink::kWebNavigationPolicyCurrentTab:

@@ -484,7 +484,7 @@ void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
     web_frame_->Client()->DidChangeThemeColor();
 }
 
-NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
+void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
     Document* origin_document,
     DocumentLoader* document_loader,
@@ -502,18 +502,13 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     const String& href_translate,
     mojom::blink::NavigationInitiatorPtr navigation_initiator) {
   if (!web_frame_->Client())
-    return kNavigationPolicyIgnore;
-
-  WebDocumentLoaderImpl* web_document_loader =
-      WebDocumentLoaderImpl::FromDocumentLoader(document_loader);
+    return;
 
   WrappedResourceRequest wrapped_resource_request(request);
   WebLocalFrameClient::NavigationPolicyInfo navigation_info(
       wrapped_resource_request);
   navigation_info.navigation_type = type;
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
-  // TODO(dgozman): remove this after some Canary coverage.
-  CHECK(!web_document_loader || !web_document_loader->GetExtraData());
   navigation_info.has_user_gesture = has_transient_activation;
   navigation_info.frame_load_type = frame_load_type;
   navigation_info.is_client_redirect = is_client_redirect;
@@ -581,9 +576,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
 
   navigation_info.href_translate = href_translate;
 
-  WebNavigationPolicy web_policy =
-      web_frame_->Client()->DecidePolicyForNavigation(navigation_info);
-  return static_cast<NavigationPolicy>(web_policy);
+  web_frame_->Client()->BeginNavigation(navigation_info);
 }
 
 void LocalFrameClientImpl::DispatchWillSendSubmitEvent(HTMLFormElement* form) {
