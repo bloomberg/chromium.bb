@@ -448,6 +448,25 @@ void ReadableStream::LockAndDisturb(ScriptState* script_state,
   ReadableStreamOperations::DefaultReaderRead(script_state, reader);
 }
 
+void ReadableStream::Serialize(ScriptState* script_state,
+                               MessagePort* port,
+                               ExceptionState& exception_state) {
+  ReadableStreamOperations::Serialize(
+      script_state, GetInternalStream(script_state), port, exception_state);
+}
+
+// static
+ReadableStream* ReadableStream::Deserialize(ScriptState* script_state,
+                                            MessagePort* port,
+                                            ExceptionState& exception_state) {
+  ScriptValue internal_stream = ReadableStreamOperations::Deserialize(
+      script_state, port, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return CreateFromInternalStream(script_state, internal_stream,
+                                  exception_state);
+}
+
 ScriptValue ReadableStream::GetInternalStream(ScriptState* script_state) const {
   return ScriptValue(script_state,
                      object_.NewLocal(script_state->GetIsolate()));

@@ -130,29 +130,19 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
     DCHECK(result);
   };
 
-  v8::Local<v8::Value> message_channel = ObjectGet(global, "MessageChannel");
+  v8::Local<v8::Value> message_port = ObjectGet(global, "MessagePort");
 
-  // Some Worklets don't have MessageChannel. In this case, serialization will
+  // Some Worklets don't have MessagePort. In this case, serialization will
   // be disabled.
-  if (message_channel->IsUndefined())
+  if (message_port->IsUndefined())
     return;
-
-  Bind("MessageChannel", message_channel);
-
-  v8::Local<v8::Value> message_channel_prototype =
-      GetPrototype(message_channel);
-  Bind("MessageChannel_port1_get",
-       GetOwnPDGet(message_channel_prototype, "port1"));
-  Bind("MessageChannel_port2_get",
-       GetOwnPDGet(message_channel_prototype, "port2"));
 
   v8::Local<v8::Value> event_target_prototype =
       GetPrototype(ObjectGet(global, "EventTarget"));
   Bind("EventTarget_addEventListener",
        ObjectGet(event_target_prototype, "addEventListener"));
 
-  v8::Local<v8::Value> message_port_prototype =
-      GetPrototype(ObjectGet(global, "MessagePort"));
+  v8::Local<v8::Value> message_port_prototype = GetPrototype(message_port);
   Bind("MessagePort_postMessage",
        ObjectGet(message_port_prototype, "postMessage"));
   Bind("MessagePort_close", ObjectGet(message_port_prototype, "close"));

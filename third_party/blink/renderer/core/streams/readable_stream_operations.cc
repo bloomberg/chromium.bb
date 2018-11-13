@@ -268,43 +268,37 @@ ScriptValue ReadableStreamOperations::Tee(ScriptState* script_state,
   return ScriptValue(script_state, result);
 }
 
-MessagePort* ReadableStreamOperations::ReadableStreamSerialize(
-    ScriptState* script_state,
-    ScriptValue stream,
-    ExceptionState& exception_state) {
+void ReadableStreamOperations::Serialize(ScriptState* script_state,
+                                         ScriptValue stream,
+                                         MessagePort* port,
+                                         ExceptionState& exception_state) {
+  DCHECK(port);
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
   DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
   v8::TryCatch block(script_state->GetIsolate());
-  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  v8::Local<v8::Value> port_v8_value = ToV8(port, script_state);
+  DCHECK(!port_v8_value.IsEmpty());
+  v8::Local<v8::Value> args[] = {stream.V8Value(), port_v8_value};
   ScriptValue result(
       script_state,
       V8ScriptRunner::CallExtra(script_state, "ReadableStreamSerialize", args));
   if (block.HasCaught()) {
     exception_state.RethrowV8Exception(block.Exception());
-    return nullptr;
+    return;
   }
-  if (result.IsEmpty()) {
-    DCHECK(script_state->GetIsolate()->IsExecutionTerminating());
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Serialize failed because execution is terminating");
-    return nullptr;
-  }
-
-  return V8MessagePort::ToImpl(
-      result.V8Value()->ToObject(script_state->GetContext()).ToLocalChecked());
+  return;
 }
 
-ScriptValue ReadableStreamOperations::ReadableStreamDeserialize(
+ScriptValue ReadableStreamOperations::Deserialize(
     ScriptState* script_state,
     MessagePort* port,
     ExceptionState& exception_state) {
   DCHECK(port);
   DCHECK(RuntimeEnabledFeatures::TransferableStreamsEnabled());
   auto* isolate = script_state->GetIsolate();
-  v8::Local<v8::Context> context = script_state->GetContext();
-  v8::Local<v8::Value> port_v8 = ToV8(port, context->Global(), isolate);
   v8::TryCatch block(isolate);
+  v8::Local<v8::Value> port_v8 = ToV8(port, script_state);
+  DCHECK(!port_v8.IsEmpty());
   v8::Local<v8::Value> args[] = {port_v8};
   ScriptValue result(script_state,
                      V8ScriptRunner::CallExtra(
@@ -314,7 +308,7 @@ ScriptValue ReadableStreamOperations::ReadableStreamDeserialize(
     return ScriptValue();
   }
   if (result.IsEmpty()) {
-    DCHECK(script_state->GetIsolate()->IsExecutionTerminating());
+    DCHECK(isolate->IsExecutionTerminating());
     return ScriptValue();
   }
   DCHECK(IsReadableStreamForDCheck(script_state, result));

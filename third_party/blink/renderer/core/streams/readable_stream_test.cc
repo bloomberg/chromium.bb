@@ -9,12 +9,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -73,6 +75,11 @@ readAll(stream);
         return ToCoreString(result.As<v8::String>());
       }
 
+      // Need to run the event loop for the Serialize test to pass messages
+      // through the MessagePort.
+      test::RunPendingTasks();
+
+      // Allow Promises to resolve.
       v8::MicrotasksScope::PerformCheckpoint(isolate);
     }
     NOTREACHED();
@@ -390,6 +397,37 @@ TEST_F(ReadableStreamTest, LockAndDisturb) {
             base::make_optional(true));
   EXPECT_EQ(stream->IsDisturbed(script_state, exception_state),
             base::make_optional(true));
+}
+
+TEST_F(ReadableStreamTest, Serialize) {
+  RuntimeEnabledFeatures::SetTransferableStreamsEnabled(true);
+
+  V8TestingScope scope;
+  auto* script_state = scope.GetScriptState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  ASSERT_TRUE(stream);
+
+  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+
+  stream->Serialize(script_state, channel->port1(), ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION));
+
+  auto* transferred = ReadableStream::Deserialize(
+      script_state, channel->port2(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(transferred);
+
+  underlying_source->Enqueue(
+      ScriptValue(script_state, V8String(script_state->GetIsolate(), "hello")));
+  underlying_source->Enqueue(
+      ScriptValue(script_state, V8String(script_state->GetIsolate(), ", bye")));
+  underlying_source->Close();
+
+  EXPECT_EQ(ReadAll(scope, transferred),
+            base::make_optional<String>("hello, bye"));
 }
 
 }  // namespace

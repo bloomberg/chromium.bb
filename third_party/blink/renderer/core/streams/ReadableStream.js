@@ -1041,24 +1041,24 @@
   // Functions for transferable streams.
   //
 
-  function ReadableStreamSerialize(readable) {
+  // The |port| which is passed to this function must be a MessagePort which is
+  // attached by a MessageChannel to the |port| that will be passed to
+  // ReadableStreamDeserialize.
+  function ReadableStreamSerialize(readable, port) {
     // assert(IsReadableStream(readable),
     //        `! IsReadableStream(_readable_) is true`);
     if (IsReadableStreamLocked(readable)) {
       throw new TypeError(errCannotTransferLockedStream);
     }
 
-    if (!binding.MessageChannel) {
+    if (!binding.MessagePort_postMessage) {
       throw new TypeError(errCannotTransferUnsupportedContext);
     }
 
-    const mc = new binding.MessageChannel();
-    const writable = CreateCrossRealmTransformWritable(
-        callFunction(binding.MessageChannel_port1_get, mc));
+    const writable = CreateCrossRealmTransformWritable(port);
     const promise =
           ReadableStreamPipeTo(readable, writable, false, false, false);
     markPromiseAsHandled(promise);
-    return callFunction(binding.MessageChannel_port2_get, mc);
   }
 
   function ReadableStreamDeserialize(port) {
