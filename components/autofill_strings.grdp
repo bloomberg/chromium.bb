@@ -256,10 +256,10 @@
       Continue
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT" desc="The body text for a bubble that offers users to start the process of migrating local cards to cloud.">
-      In the next step, you can choose which cards to save to your Google Account.
+      In the next step, you can choose which cards to save
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
-      All your cards in one place
+      Use your cards in more places
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated.">
       You're all set!
@@ -269,8 +269,8 @@
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER" desc="The body text for a dialog that offers to migrate local cards into the cloud. [ICU Syntax]">
       {NUM_CARDS, plural,
-      =1 {This card and its billing address will be saved to your Google Account for faster checkout across devices.}
-      other {These cards and their billing addresses will be saved to your Google Account for faster checkout across devices.}}
+      =1 {This card and its billing address will be saved to your Google Account so you can check out faster wherever you're signed in}
+      other {These cards and their billing addresses will be saved to your Google Account so you can check out faster wherever you're signed in}}
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated. [ICU Syntax]">
       {NUM_CARDS, plural,
