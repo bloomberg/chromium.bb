@@ -51,7 +51,7 @@ class UiControllerAndroid : public UiController,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
   void HideDetails() override;
-  void ShowDetails(const DetailsProto& details) override;
+  bool ShowDetails(const DetailsProto& details) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;
   void UpdateTouchableArea(bool enabled,

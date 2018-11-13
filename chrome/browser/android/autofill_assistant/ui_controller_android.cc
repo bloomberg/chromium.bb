@@ -289,7 +289,7 @@ void UiControllerAndroid::HideDetails() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-void UiControllerAndroid::ShowDetails(const DetailsProto& details) {
+bool UiControllerAndroid::ShowDetails(const DetailsProto& details) {
   int year = details.datetime().date().year();
   int month = details.datetime().date().month();
   int day = details.datetime().date().day();
@@ -298,7 +298,7 @@ void UiControllerAndroid::ShowDetails(const DetailsProto& details) {
   int second = details.datetime().time().second();
 
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onShowDetails(
+  return Java_AutofillAssistantUiController_onShowDetails(
       env, java_autofill_assistant_ui_controller_,
       base::android::ConvertUTF8ToJavaString(env, details.title()),
       base::android::ConvertUTF8ToJavaString(env, details.url()),

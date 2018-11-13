@@ -76,8 +76,11 @@ class UiController {
   // Hide contextual information.
   virtual void HideDetails() = 0;
 
-  // Show contextual information.
-  virtual void ShowDetails(const DetailsProto& details) = 0;
+  // Show contextual information. Returns false if the contextual information is
+  // not similar to the current one.
+  // TODO(806868): Pass details to the native side instead of comparing on the
+  // Java side.
+  virtual bool ShowDetails(const DetailsProto& details) = 0;
 
   // Show the progress bar with |message| and set it at |progress|%.
   virtual void ShowProgressBar(int progress, const std::string& message) = 0;

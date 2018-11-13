@@ -50,7 +50,7 @@ class MockUiController : public UiController {
            const std::string& title,
            const std::vector<std::string>& supported_basic_card_networks));
   MOCK_METHOD0(HideDetails, void());
-  MOCK_METHOD1(ShowDetails, void(const DetailsProto& details));
+  MOCK_METHOD1(ShowDetails, bool(const DetailsProto& details));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
   MOCK_METHOD0(HideProgressBar, void());
   MOCK_METHOD2(UpdateTouchableArea,
