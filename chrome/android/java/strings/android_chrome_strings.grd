@@ -3929,8 +3929,8 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
        <message name="IDS_AUTOFILL_ASSISTANT_ONBOARDING_TITLE" desc="Onboarding title for the autofill assistant.">
         Fast checkout
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant. DURATION_SECONDS is a number representing a duration in seconds, which is why it is appended with 's'.">
-        Autofill Assistant will stop in <ph name="DURATION_SECONDS">%1$s<ex>3</ex></ph>s…
+      <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant.">
+        Autofill Assistant stopping
       </message>
       <message name="IDS_INIT_OK" desc="Init screen confirmation text.">
         Let's go
