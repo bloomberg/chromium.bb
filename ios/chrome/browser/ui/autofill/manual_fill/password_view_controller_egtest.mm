@@ -260,6 +260,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the passwords view controller appears on screen.
 - (void)testPasswordsViewControllerIsPresented {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -276,6 +280,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the passwords view controller contains the "Manage Passwords..."
 // action.
 - (void)testPasswordsViewControllerContainsManagePasswordsAction {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -291,6 +299,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the "Manage Passwords..." action works.
 - (void)testManagePasswordsActionOpensPasswordSettings {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -310,6 +322,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is not present when presenting UI.
 - (void)testPasswordControllerPauses {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // For the search bar to appear in password settings at least one password is
   // needed.
   SaveExamplePasswordForm();
@@ -339,6 +355,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is resumed after selecting other
 // password.
 - (void)testPasswordControllerResumes {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // For this test one password is needed.
   SaveExamplePasswordForm();
 
@@ -381,6 +401,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is resumed after dismissing "Other
 // Passwords".
 - (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -415,6 +439,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissPasswordController {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   if (IsIPadIdiom()) {
     // The keyboard icon is never present in iPads.
     return;
@@ -446,6 +474,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the outside
 // the popover on iPad.
 - (void)testIPadTappingOutsidePopOverDismissPasswordController {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   if (!IsIPadIdiom()) {
     return;
   }
@@ -478,6 +510,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard.
 - (void)testTappingKeyboardDismissPasswordControllerPopOver {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   if (!IsIPadIdiom()) {
     return;
   }
@@ -507,6 +543,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testPasswordControllerKeepsRightSize {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -534,6 +574,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller stays on rotation.
 - (void)testPasswordControllerSupportsRotation {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -556,6 +600,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that content is injected in iframe messaging.
 - (void)testPasswordControllerSupportsIFrameMessaging {
+  // TODO(crbug.com/904885): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Iframe messaging is not supported on iOS < 11.3.
   if (!base::ios::IsRunningOnOrLater(11, 3, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iOS < 11.3");

@@ -33,6 +33,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
 #import "ios/web/public/test/http_server/delayed_response_provider.h"
@@ -534,6 +535,10 @@ void AssertIsShowingDistillablePage(bool online) {
   FLAKY_testSavingToReadingListAndLoadNormal
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadNormal {
+  // TODO(crbug.com/874649): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -581,6 +586,10 @@ void AssertIsShowingDistillablePage(bool online) {
   FLAKY_testSavingToReadingListAndLoadNoNetwork
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadNoNetwork {
+  // TODO(crbug.com/874649): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
