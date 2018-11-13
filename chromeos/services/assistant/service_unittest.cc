@@ -225,8 +225,6 @@ class ServiceTest : public service_manager::test::ServiceTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { service_manager::test::ServiceTest::TearDown(); }
-
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
     fake_identity_manager_ = std::make_unique<FakeIdentityManager>();

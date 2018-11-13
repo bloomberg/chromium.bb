@@ -44,8 +44,6 @@ class ShillIPConfigClientTest : public ShillClientUnittestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { ShillClientUnittestBase::TearDown(); }
-
  protected:
   std::unique_ptr<ShillIPConfigClient> client_;
 };

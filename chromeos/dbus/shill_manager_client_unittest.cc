@@ -60,8 +60,6 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { ShillClientUnittestBase::TearDown(); }
-
  protected:
   std::unique_ptr<ShillManagerClient> client_;
 };
