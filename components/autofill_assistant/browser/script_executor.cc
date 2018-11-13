@@ -232,8 +232,8 @@ void ScriptExecutor::HideDetails() {
   delegate_->GetUiController()->HideDetails();
 }
 
-void ScriptExecutor::ShowDetails(const DetailsProto& details) {
-  delegate_->GetUiController()->ShowDetails(details);
+bool ScriptExecutor::ShowDetails(const DetailsProto& details) {
+  return delegate_->GetUiController()->ShowDetails(details);
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {

@@ -103,15 +103,10 @@ class AutofillAssistantUiDelegate {
     private final boolean mIsRightToLeftLayout;
     private ValueAnimator mDetailsPulseAnimation = null;
 
-    @Nullable
-    private Details mDetails;
-    private String mStatusMessage;
     private AutofillAssistantPaymentRequest mPaymentRequest;
 
     /**
      * This is a client interface that relays interactions from the UI.
-     *
-     * Java version of the native autofill_assistant::UiDelegate.
      */
     public interface Client extends TouchEventFilter.Client {
         /**
@@ -144,6 +139,16 @@ class AutofillAssistantUiDelegate {
          * @param guid The GUID of the selected card.
          */
         void onCardSelected(String guid);
+
+        /**
+         * Returns current details.
+         */
+        Details getDetails();
+
+        /**
+         * Returns current status message.
+         */
+        String getStatusMessage();
 
         /**
          * Used to access information relevant for debugging purposes.
@@ -203,6 +208,8 @@ class AutofillAssistantUiDelegate {
         private final String mDescription;
         private final boolean mIsFinal;
 
+        private static final Details EMPTY_DETAILS = new Details("", "", null, "", false);
+
         public Details(String title, String url, @Nullable Date date, String description,
                 boolean isFinal) {
             this.mTitle = title;
@@ -250,6 +257,45 @@ class AutofillAssistantUiDelegate {
         boolean isEmpty() {
             return mTitle.isEmpty() && mUrl.isEmpty() && mDescription.isEmpty() && mDate == null;
         }
+
+        /**
+         * Returns true  {@code details} are similar to {@code this}. In order for details to be
+         * similar the conditions apply:
+         *
+         * <p>
+         * <ul>
+         *   <li> Same date.
+         *   <li> TODO(crbug.com/806868): 60% of characters match within title.
+         * </ul>
+         */
+        boolean isSimilarTo(AutofillAssistantUiDelegate.Details details) {
+            if (this.isEmpty() || details.isEmpty()) {
+                return true;
+            }
+
+            return this.getDate().equals(details.getDate());
+        }
+
+        static Details getEmptyDetails() {
+            return EMPTY_DETAILS;
+        }
+
+        /**
+         * Merges {@code oldDetails} with the {@code newDetails} filling the missing fields. The
+         * distinction is important, as the fields from old version take precedence, with the
+         * exception of isFinal field.
+         */
+        static Details merge(Details oldDetails, Details newDetails) {
+            String title =
+                    oldDetails.getTitle().isEmpty() ? newDetails.getTitle() : oldDetails.getTitle();
+            String url = oldDetails.getUrl().isEmpty() ? newDetails.getUrl() : oldDetails.getUrl();
+            Date date = oldDetails.getDate() == null ? newDetails.getDate() : oldDetails.getDate();
+            String description = oldDetails.getDescription().isEmpty()
+                    ? newDetails.getDescription()
+                    : oldDetails.getDescription();
+            boolean isFinal = newDetails.isFinal();
+            return new Details(title, url, date, description, isFinal);
+        }
     }
 
     // Names borrowed from :
@@ -285,8 +331,8 @@ class AutofillAssistantUiDelegate {
                         -> HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity,
                                 Profile.getLastUsedProfile(), mActivity.getActivityTab().getUrl(),
                                 FEEDBACK_CATEGORY_TAG,
-                                FeedbackContext.buildContextString(
-                                        mActivity, mClient, mDetails, mStatusMessage, 4)));
+                                FeedbackContext.buildContextString(mActivity, mClient,
+                                        client.getDetails(), client.getStatusMessage(), 4)));
         mCarouselScroll = mBottomBar.findViewById(R.id.carousel_scroll);
         mChipsViewContainer = mCarouselScroll.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
@@ -325,11 +371,7 @@ class AutofillAssistantUiDelegate {
      * @param message Message to display.
      */
     public void showStatusMessage(@Nullable String message) {
-        /// keep a copy of the most recent status message for feedback purposes
-        mStatusMessage = message;
-
         show();
-
         mStatusMessageView.setText(message);
     }
 
@@ -511,9 +553,6 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show contextual information. */
     public void showDetails(Details details) {
-        // keep a copy of most recent movie details for feedback purposes
-        mDetails = details;
-
         Drawable defaultImage = AppCompatResources.getDrawable(
                 mActivity, R.drawable.autofill_assistant_default_details);
 

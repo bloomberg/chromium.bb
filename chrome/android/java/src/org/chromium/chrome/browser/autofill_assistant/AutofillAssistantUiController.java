@@ -60,11 +60,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Display the final message for that long before shutting everything down. */
     private static final long GRACEFUL_SHUTDOWN_DELAY_MS = 5000;
 
-    private static final String RFC_3339_FORMAT = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ";
+    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     private final WebContents mWebContents;
     private final UiDelegateHolder mUiDelegateHolder;
     private final String mInitialUrl;
+
+    // TODO(crbug.com/806868): Move mCurrentDetails and mStatusMessage to a Model (refactor to MVC).
+    AutofillAssistantUiDelegate.Details mCurrentDetails =
+            AutofillAssistantUiDelegate.Details.getEmptyDetails();
+    private String mStatusMessage;
 
     /**
      * Native pointer to the UIController.
@@ -118,11 +123,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
 
-        AutofillAssistantUiDelegate.Details initialDetails = makeDetailsFromParameters(parameters);
-        if (!initialDetails.isEmpty()) {
-            mUiDelegateHolder.performUiOperation(
-                    uiDelegate -> uiDelegate.showDetails(initialDetails));
-        }
+        maybeUpdateDetails(makeDetailsFromParameters(parameters));
 
         Tab activityTab = activity.getActivityTab();
         mWebContents = activityTab.getWebContents();
@@ -160,6 +161,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @Override
     public void onDismiss() {
         mUiDelegateHolder.dismiss(R.string.autofill_assistant_stopped);
+    }
+
+    @Override
+    public AutofillAssistantUiDelegate.Details getDetails() {
+        return mCurrentDetails;
+    }
+
+    @Override
+    public String getStatusMessage() {
+        return mStatusMessage;
     }
 
     @Override
@@ -222,7 +233,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
             if (key.contains("DATETIME")) {
                 try {
-                    date = new SimpleDateFormat(RFC_3339_FORMAT, Locale.getDefault())
+                    // The parameter contains the timezone shift from the current location, that we
+                    // don't care about.
+                    date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
                                    .parse(parameters.get(key));
                 } catch (ParseException e) {
                     // Ignore.
@@ -241,6 +254,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onShowStatusMessage(String message) {
+        mStatusMessage = message;
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showStatusMessage(message));
     }
 
@@ -339,17 +353,38 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         });
     }
 
+    /**
+     * Updates the currently shown details.
+     *
+     * @return false if details were rejected.
+     */
+    private boolean maybeUpdateDetails(AutofillAssistantUiDelegate.Details newDetails) {
+        if (!mCurrentDetails.isSimilarTo(newDetails)) {
+            return false;
+        }
+
+        if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
+            // No update on UI needed.
+            return true;
+        }
+
+        mCurrentDetails = AutofillAssistantUiDelegate.Details.merge(mCurrentDetails, newDetails);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(mCurrentDetails));
+        return true;
+    }
+
     @CalledByNative
     private void onHideDetails() {
         mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideDetails);
     }
 
     @CalledByNative
-    private void onShowDetails(String title, String url, String description, int year, int month,
+    private boolean onShowDetails(String title, String url, String description, int year, int month,
             int day, int hour, int minute, int second) {
         Date date;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
+            calendar.clear();
             // Month in Java Date is 0-based, but the one we receive from the server is 1-based.
             calendar.set(year, month - 1, day, hour, minute, second);
             date = calendar.getTime();
@@ -357,9 +392,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             date = null;
         }
 
-        mUiDelegateHolder.performUiOperation(uiDelegate
-                -> uiDelegate.showDetails(new AutofillAssistantUiDelegate.Details(
-                        title, url, date, description, /* isFinal= */ true)));
+        return maybeUpdateDetails(new AutofillAssistantUiDelegate.Details(
+                title, url, date, description, /* isFinal= */ true));
     }
 
     @CalledByNative

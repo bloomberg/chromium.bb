@@ -21,12 +21,12 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
                                               ProcessActionCallback callback) {
   if (!proto_.show_details().has_details()) {
     delegate->HideDetails();
+    UpdateProcessedAction(ACTION_APPLIED);
+    std::move(callback).Run(std::move(processed_action_proto_));
   } else {
-    delegate->ShowDetails(proto_.show_details().details());
+    bool result = delegate->ShowDetails(proto_.show_details().details());
+    UpdateProcessedAction(result ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+    std::move(callback).Run(std::move(processed_action_proto_));
   }
-
-  UpdateProcessedAction(ACTION_APPLIED);
-  std::move(callback).Run(std::move(processed_action_proto_));
 }
-
 }  // namespace autofill_assistant
