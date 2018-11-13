@@ -35,15 +35,27 @@ class LocationBarModelImpl : public LocationBarModel {
       bool ignore_editing) const override;
   bool IsSecurityInfoInitialized() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
-  base::string16 GetSecureVerboseText() const override;
+  base::string16 GetSecureDisplayText() const override;
   base::string16 GetSecureAccessibilityText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
 
  private:
-  // Get the security text describing the current security state.
-  base::string16 GetSecureText() const;
+  struct SecureChipText {
+    base::string16 display_text_;
+    base::string16 accessibility_label_;
+    SecureChipText(base::string16 display_text,
+                   base::string16 accessibility_label)
+        : display_text_(display_text),
+          accessibility_label_(accessibility_label) {}
+    SecureChipText(base::string16 display_text)
+        : display_text_(display_text), accessibility_label_(display_text) {}
+  };
+
+  // Get the security chip labels for the current security state.
+  SecureChipText GetSecureChipText() const;
+
   base::string16 GetFormattedURL(
       url_formatter::FormatUrlTypes format_types) const;
 

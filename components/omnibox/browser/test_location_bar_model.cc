@@ -51,7 +51,7 @@ const gfx::VectorIcon& TestLocationBarModel::GetVectorIcon() const {
   return *icon_;
 }
 
-base::string16 TestLocationBarModel::GetSecureVerboseText() const {
+base::string16 TestLocationBarModel::GetSecureDisplayText() const {
   return base::string16();
 }
 

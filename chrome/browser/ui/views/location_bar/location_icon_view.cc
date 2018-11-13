@@ -96,13 +96,12 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     return;
   }
 
-  security_state::SecurityLevel security_level =
-      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
-  if (label()->text().empty() && (security_level == security_state::EV_SECURE ||
-                                  security_level == security_state::SECURE)) {
-    node_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kDescription,
-        l10n_util::GetStringUTF8(IDS_SECURE_VERBOSE_STATE));
+  // If no display text exists, ensure that the accessibility label is added.
+  auto accessibility_label = base::UTF16ToUTF8(
+      delegate_->GetLocationBarModel()->GetSecureAccessibilityText());
+  if (label()->text().empty() && !accessibility_label.empty()) {
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                  accessibility_label);
   }
 
   IconLabelBubbleView::GetAccessibleNodeData(node_data);
@@ -141,7 +140,7 @@ bool LocationIconView::ShouldShowText() const {
       return true;
   }
 
-  return !location_bar_model->GetSecureVerboseText().empty();
+  return !location_bar_model->GetSecureDisplayText().empty();
 }
 
 base::string16 LocationIconView::GetText() const {
@@ -166,7 +165,7 @@ base::string16 LocationIconView::GetText() const {
       return extension_name;
   }
 
-  return delegate_->GetLocationBarModel()->GetSecureVerboseText();
+  return delegate_->GetLocationBarModel()->GetSecureDisplayText();
 }
 
 bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
