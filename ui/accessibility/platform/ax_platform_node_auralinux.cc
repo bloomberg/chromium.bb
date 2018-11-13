@@ -2027,7 +2027,7 @@ void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
-  gfx::Rect rect_size = gfx::ToEnclosingRect(GetData().location);
+  gfx::Rect rect_size = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
   if (width)
     *width = rect_size.width();
   if (height)

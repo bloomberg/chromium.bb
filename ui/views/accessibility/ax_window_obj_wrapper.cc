@@ -94,7 +94,9 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
                                     base::UTF16ToUTF8(window_->GetTitle()));
   if (!window_->IsVisible())
     out_node_data->AddState(ax::mojom::State::kInvisible);
-  out_node_data->location = gfx::RectF(window_->GetBoundsInScreen());
+
+  out_node_data->relative_bounds.bounds =
+      gfx::RectF(window_->GetBoundsInScreen());
   std::string* child_ax_tree_id_ptr = window_->GetProperty(ui::kChildAXTreeID);
   if (child_ax_tree_id_ptr && ui::AXTreeID::FromString(*child_ax_tree_id_ptr) !=
                                   ui::AXTreeIDUnknown()) {

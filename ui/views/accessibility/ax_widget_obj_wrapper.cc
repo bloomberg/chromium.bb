@@ -52,7 +52,8 @@ void AXWidgetObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
       ax::mojom::StringAttribute::kName,
       base::UTF16ToUTF8(
           widget_->widget_delegate()->GetAccessibleWindowTitle()));
-  out_node_data->location = gfx::RectF(widget_->GetWindowBoundsInScreen());
+  out_node_data->relative_bounds.bounds =
+      gfx::RectF(widget_->GetWindowBoundsInScreen());
   out_node_data->state = 0;
 }
 

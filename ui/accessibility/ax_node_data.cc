@@ -206,10 +206,7 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   stringlist_attributes = other.stringlist_attributes;
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
-  location = other.location;
-  offset_container_id = other.offset_container_id;
-  if (other.transform)
-    transform.reset(new gfx::Transform(*other.transform));
+  relative_bounds = other.relative_bounds;
 }
 
 AXNodeData& AXNodeData::operator=(AXNodeData other) {
@@ -225,12 +222,7 @@ AXNodeData& AXNodeData::operator=(AXNodeData other) {
   stringlist_attributes = other.stringlist_attributes;
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
-  location = other.location;
-  offset_container_id = other.offset_container_id;
-  if (other.transform)
-    transform.reset(new gfx::Transform(*other.transform));
-  else
-    transform.reset(nullptr);
+  relative_bounds = other.relative_bounds;
   return *this;
 }
 
@@ -725,17 +717,17 @@ std::string AXNodeData::ToString() const {
 
   result += StateBitfieldToString(state);
 
-  result += " (" + base::NumberToString(location.x()) + ", " +
-            base::NumberToString(location.y()) + ")-(" +
-            base::NumberToString(location.width()) + ", " +
-            base::NumberToString(location.height()) + ")";
+  result += " (" + base::NumberToString(relative_bounds.bounds.x()) + ", " +
+            base::NumberToString(relative_bounds.bounds.y()) + ")-(" +
+            base::NumberToString(relative_bounds.bounds.width()) + ", " +
+            base::NumberToString(relative_bounds.bounds.height()) + ")";
 
-  if (offset_container_id != -1)
-    result +=
-        " offset_container_id=" + base::NumberToString(offset_container_id);
+  if (relative_bounds.offset_container_id != -1)
+    result += " offset_container_id=" +
+              base::NumberToString(relative_bounds.offset_container_id);
 
-  if (transform && !transform->IsIdentity())
-    result += " transform=" + transform->ToString();
+  if (relative_bounds.transform && !relative_bounds.transform->IsIdentity())
+    result += " transform=" + relative_bounds.transform->ToString();
 
   for (const std::pair<ax::mojom::IntAttribute, int32_t>& int_attribute :
        int_attributes) {

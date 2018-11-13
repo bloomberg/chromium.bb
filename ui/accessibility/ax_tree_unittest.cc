@@ -231,19 +231,19 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   root.id = 1;
   root.role = ax::mojom::Role::kDialog;
   root.AddState(ax::mojom::State::kFocusable);
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
   AXNodeData button;
   button.id = 2;
   button.role = ax::mojom::Role::kButton;
-  button.location = gfx::RectF(20, 20, 200, 30);
+  button.relative_bounds.bounds = gfx::RectF(20, 20, 200, 30);
 
   AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.role = ax::mojom::Role::kCheckBox;
-  checkbox.location = gfx::RectF(20, 50, 200, 30);
+  checkbox.relative_bounds.bounds = gfx::RectF(20, 50, 200, 30);
 
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -923,10 +923,10 @@ TEST(AXTreeTest, GetBoundsBasic) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(2);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(100, 10, 400, 300);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(100, 10, 400, 300);
   AXTree tree(tree_update);
 
   EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
@@ -940,16 +940,17 @@ TEST(AXTreeTest, EmptyNodeBoundsIsUnionOfChildren) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF();  // Deliberately empty.
+  tree_update.nodes[1].relative_bounds.bounds =
+      gfx::RectF();  // Deliberately empty.
   tree_update.nodes[1].child_ids.push_back(3);
   tree_update.nodes[1].child_ids.push_back(4);
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(100, 10, 400, 20);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(100, 10, 400, 20);
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(200, 30, 400, 20);
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(200, 30, 400, 20);
 
   AXTree tree(tree_update);
   EXPECT_EQ("(100, 10) size (500 x 40)", GetBoundsAsString(tree, 2));
@@ -962,20 +963,21 @@ TEST(AXTreeTest, EmptyNodeNotOffscreenEvenIfAllChildrenOffscreen) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   tree_update.nodes[0].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF();  // Deliberately empty.
+  tree_update.nodes[1].relative_bounds.bounds =
+      gfx::RectF();  // Deliberately empty.
   tree_update.nodes[1].child_ids.push_back(3);
   tree_update.nodes[1].child_ids.push_back(4);
   // Both children are offscreen
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(900, 10, 400, 20);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(900, 10, 400, 20);
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(1000, 30, 400, 20);
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(1000, 30, 400, 20);
 
   AXTree tree(tree_update);
   EXPECT_FALSE(IsNodeOffscreen(tree, 2));
@@ -989,17 +991,17 @@ TEST(AXTreeTest, GetBoundsWithTransform) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 400, 300);
-  tree_update.nodes[0].transform.reset(new gfx::Transform());
-  tree_update.nodes[0].transform->Scale(2.0, 2.0);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 400, 300);
+  tree_update.nodes[0].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[0].relative_bounds.transform->Scale(2.0, 2.0);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(20, 10, 50, 5);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(20, 10, 50, 5);
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
-  tree_update.nodes[2].transform.reset(new gfx::Transform());
-  tree_update.nodes[2].transform->Scale(2.0, 2.0);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[2].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[2].relative_bounds.transform->Scale(2.0, 2.0);
 
   AXTree tree(tree_update);
   EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
@@ -1014,17 +1016,17 @@ TEST(AXTreeTest, GetBoundsWithContainerId) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(100, 50, 600, 500);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(100, 50, 600, 500);
   tree_update.nodes[1].child_ids.push_back(3);
   tree_update.nodes[1].child_ids.push_back(4);
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].offset_container_id = 2;
-  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[2].relative_bounds.offset_container_id = 2;
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
 
   AXTree tree(tree_update);
   EXPECT_EQ("(120, 80) size (50 x 5)", GetBoundsAsString(tree, 3));
@@ -1038,16 +1040,16 @@ TEST(AXTreeTest, GetBoundsWithScrolling) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(100, 50, 600, 500);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(100, 50, 600, 500);
   tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 5);
   tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 10);
   tree_update.nodes[1].child_ids.push_back(3);
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].offset_container_id = 2;
-  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[2].relative_bounds.offset_container_id = 2;
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
 
   AXTree tree(tree_update);
   EXPECT_EQ("(115, 70) size (50 x 5)", GetBoundsAsString(tree, 3));
@@ -1058,15 +1060,15 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[1].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(300, 200, 100, 100);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(300, 200, 100, 100);
   tree_update.nodes[1].child_ids.push_back(3);
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF();
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF();
 
   AXTree tree(tree_update);
   EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
@@ -1085,7 +1087,7 @@ TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(5);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
   tree_update.nodes[0].child_ids.push_back(2);
@@ -1094,16 +1096,17 @@ TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
   tree_update.nodes[0].child_ids.push_back(5);
   // Cropped in the top left
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(-100, -100, 150, 150);
+  tree_update.nodes[1].relative_bounds.bounds =
+      gfx::RectF(-100, -100, 150, 150);
   // Cropped in the bottom right
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(700, 500, 150, 150);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(700, 500, 150, 150);
   // Offscreen on the top
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(50, -200, 150, 150);
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(50, -200, 150, 150);
   // Offscreen on the bottom
   tree_update.nodes[4].id = 5;
-  tree_update.nodes[4].location = gfx::RectF(50, 700, 150, 150);
+  tree_update.nodes[4].relative_bounds.bounds = gfx::RectF(50, 700, 150, 150);
 
   AXTree tree(tree_update);
   EXPECT_EQ("(0, 0) size (50 x 50)", GetBoundsAsString(tree, 2));
@@ -1124,32 +1127,32 @@ TEST(AXTreeTest, GetBoundsSetsOffscreenIfClipsChildren) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(5);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
 
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(0, 0, 200, 200);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(0, 0, 200, 200);
   tree_update.nodes[1].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
   tree_update.nodes[1].child_ids.push_back(4);
 
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(0, 0, 200, 200);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(0, 0, 200, 200);
   tree_update.nodes[2].child_ids.push_back(5);
 
   // Clipped by its parent
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(250, 250, 100, 100);
-  tree_update.nodes[3].offset_container_id = 2;
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(250, 250, 100, 100);
+  tree_update.nodes[3].relative_bounds.offset_container_id = 2;
 
   // Outside of its parent, but its parent does not clip children,
   // so it should not be offscreen.
   tree_update.nodes[4].id = 5;
-  tree_update.nodes[4].location = gfx::RectF(250, 250, 100, 100);
-  tree_update.nodes[4].offset_container_id = 3;
+  tree_update.nodes[4].relative_bounds.bounds = gfx::RectF(250, 250, 100, 100);
+  tree_update.nodes[4].relative_bounds.offset_container_id = 3;
 
   AXTree tree(tree_update);
   EXPECT_TRUE(IsNodeOffscreen(tree, 4));
@@ -1161,7 +1164,7 @@ TEST(AXTreeTest, GetBoundsUpdatesOffscreen) {
   tree_update.root_id = 1;
   tree_update.nodes.resize(5);
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   tree_update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   tree_update.nodes[0].AddBoolAttribute(
       ax::mojom::BoolAttribute::kClipsChildren, true);
@@ -1171,16 +1174,16 @@ TEST(AXTreeTest, GetBoundsUpdatesOffscreen) {
   tree_update.nodes[0].child_ids.push_back(5);
   // Fully onscreen
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].location = gfx::RectF(10, 10, 150, 150);
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(10, 10, 150, 150);
   // Cropped in the bottom right
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].location = gfx::RectF(700, 500, 150, 150);
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(700, 500, 150, 150);
   // Offscreen on the top
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].location = gfx::RectF(50, -200, 150, 150);
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(50, -200, 150, 150);
   // Offscreen on the bottom
   tree_update.nodes[4].id = 5;
-  tree_update.nodes[4].location = gfx::RectF(50, 700, 150, 150);
+  tree_update.nodes[4].relative_bounds.bounds = gfx::RectF(50, 700, 150, 150);
 
   AXTree tree(tree_update);
   EXPECT_FALSE(IsNodeOffscreen(tree, 2));

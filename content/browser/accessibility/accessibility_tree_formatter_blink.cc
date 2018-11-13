@@ -141,7 +141,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
 
   dict->SetString("internalRole", ui::ToString(node.GetData().role));
 
-  gfx::Rect bounds = gfx::ToEnclosingRect(node.GetData().location);
+  gfx::Rect bounds =
+      gfx::ToEnclosingRect(node.GetData().relative_bounds.bounds);
   dict->SetInteger("boundsX", bounds.x());
   dict->SetInteger("boundsY", bounds.y());
   dict->SetInteger("boundsWidth", bounds.width());
@@ -155,8 +156,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("pageBoundsHeight", page_bounds.height());
 
   dict->SetBoolean("transform",
-                   node.GetData().transform &&
-                   !node.GetData().transform->IsIdentity());
+                   node.GetData().relative_bounds.transform &&
+                       !node.GetData().relative_bounds.transform->IsIdentity());
 
   gfx::Rect unclipped_bounds = node.GetPageBoundsRect(&offscreen, false);
   dict->SetInteger("unclippedBoundsX", unclipped_bounds.x());

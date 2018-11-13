@@ -166,7 +166,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     }
   }
 
-  data->location = gfx::RectF(view_->GetBoundsInScreen());
+  data->relative_bounds.bounds = gfx::RectF(view_->GetBoundsInScreen());
   data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                            view_->GetClassName());
 

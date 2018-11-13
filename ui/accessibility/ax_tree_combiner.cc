@@ -91,8 +91,9 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
       node.child_ids[j] = MapId(tree_id, node.child_ids[j]);
 
     // Map the container id.
-    if (node.offset_container_id > 0)
-      node.offset_container_id = MapId(tree_id, node.offset_container_id);
+    if (node.relative_bounds.offset_container_id > 0)
+      node.relative_bounds.offset_container_id =
+          MapId(tree_id, node.relative_bounds.offset_container_id);
 
     // Map other int attributes that refer to node IDs.
     for (size_t j = 0; j < node.int_attributes.size(); ++j) {

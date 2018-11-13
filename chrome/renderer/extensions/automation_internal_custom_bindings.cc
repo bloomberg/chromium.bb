@@ -649,8 +649,9 @@ void AutomationInternalCustomBindings::AddRoutes() {
         }
 
         // Use character offsets to compute the local bounds of this subrange.
-        gfx::RectF local_bounds(0, 0, node->data().location.width(),
-                                node->data().location.height());
+        gfx::RectF local_bounds(0, 0,
+                                node->data().relative_bounds.bounds.width(),
+                                node->data().relative_bounds.bounds.height());
         std::string name =
             node->data().GetStringAttribute(ax::mojom::StringAttribute::kName);
         std::vector<int> character_offsets = node->data().GetIntListAttribute(

@@ -1315,7 +1315,7 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
 
   // ax::mojom::Action::kScrollToMakeVisible wants a target rect in *local*
   // coords.
-  gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
+  gfx::Rect r = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
   r -= r.OffsetFromOrigin();
   switch (scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
@@ -1546,7 +1546,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   COM_OBJECT_VALIDATE();
-  gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
+  gfx::Rect r = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
   r -= r.OffsetFromOrigin();
 
   AXActionData action_data;

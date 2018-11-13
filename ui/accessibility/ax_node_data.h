@@ -16,11 +16,8 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
-
-namespace gfx {
-class Transform;
-};
 
 namespace ui {
 
@@ -181,22 +178,7 @@ struct AX_EXPORT AXNodeData {
   base::StringPairs html_attributes;
   std::vector<int32_t> child_ids;
 
-  // TODO(dmazzoni): replace the following three members with a single
-  // instance of AXRelativeBounds.
-
-  // The id of an ancestor node in the same AXTree that this object's
-  // bounding box is relative to, or -1 if there's no offset container.
-  int32_t offset_container_id = -1;
-
-  // The relative bounding box of this node.
-  gfx::RectF location;
-
-  // An additional transform to apply to position this object and its subtree.
-  // NOTE: this member is a std::unique_ptr because it's rare and gfx::Transform
-  // takes up a fair amount of space. The assignment operator and copy
-  // constructor both make a duplicate of the owned pointer, so it acts more
-  // like a member than a pointer.
-  std::unique_ptr<gfx::Transform> transform;
+  AXRelativeBounds relative_bounds;
 };
 
 }  // namespace ui

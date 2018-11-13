@@ -628,16 +628,16 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
   root.id = 0;
   root.child_ids.push_back(1);
   root.child_ids.push_back(2);
-  root.location = gfx::RectF(0, 0, 30, 30);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
 
   AXNodeData node1;
   node1.id = 1;
-  node1.location = gfx::RectF(0, 0, 10, 10);
+  node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
 
   AXNodeData node2;
   node2.id = 2;
-  node2.location = gfx::RectF(20, 20, 10, 10);
+  node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
   node2.SetName("Name2");
 
   Init(root, node1, node2);
@@ -668,12 +668,12 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kWindow;
-  root.location = gfx::RectF(10, 40, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(10, 40, 800, 600);
   root.child_ids.push_back(2);
 
   AXNodeData child;
   child.id = 2;
-  child.location = gfx::RectF(100, 150, 200, 200);
+  child.relative_bounds.bounds = gfx::RectF(100, 150, 200, 200);
   Init(root, child);
 
   TestAXNodeWrapper::SetGlobalCoordinateOffset(gfx::Vector2d(100, 200));

@@ -27,7 +27,7 @@ AXSystemCaretWin::AXSystemCaretWin(gfx::AcceleratedWidget event_target)
   data_.AddState(ax::mojom::State::kInvisible);
   // According to MSDN, "Edit" should be the name of the caret object.
   data_.SetName(L"Edit");
-  data_.offset_container_id = -1;
+  data_.relative_bounds.offset_container_id = -1;
 
   if (event_target_) {
     ::NotifyWinEvent(EVENT_OBJECT_CREATE, event_target_, OBJID_CARET,
@@ -74,8 +74,8 @@ void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
   gfx::RectF new_location(bounds);
   // Avoid redundant caret move events (if the location stays the same), but
   // always fire when it's made visible again.
-  if (data_.location != new_location || newly_visible) {
-    data_.location = new_location;
+  if (data_.relative_bounds.bounds != new_location || newly_visible) {
+    data_.relative_bounds.bounds = new_location;
     ::NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, event_target_, OBJID_CARET,
                      -caret_->GetUniqueId());
   }
@@ -84,7 +84,7 @@ void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
 void AXSystemCaretWin::Hide() {
   if (!data_.HasState(ax::mojom::State::kInvisible)) {
     data_.AddState(ax::mojom::State::kInvisible);
-    data_.location.set_width(0);
+    data_.relative_bounds.bounds.set_width(0);
     if (event_target_) {
       ::NotifyWinEvent(EVENT_OBJECT_HIDE, event_target_, OBJID_CARET,
                        -caret_->GetUniqueId());
@@ -111,11 +111,11 @@ gfx::NativeViewAccessible AXSystemCaretWin::GetParent() {
 
 gfx::Rect AXSystemCaretWin::GetClippedScreenBoundsRect() const {
   // We could optionally add clipping here if ever needed.
-  return ToEnclosingRect(data_.location);
+  return ToEnclosingRect(data_.relative_bounds.bounds);
 }
 
 gfx::Rect AXSystemCaretWin::GetUnclippedScreenBoundsRect() const {
-  return ToEnclosingRect(data_.location);
+  return ToEnclosingRect(data_.relative_bounds.bounds);
 }
 
 gfx::AcceleratedWidget

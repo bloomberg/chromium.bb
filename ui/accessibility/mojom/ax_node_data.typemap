@@ -11,9 +11,5 @@ sources = [
 ]
 public_deps = [
   "//ui/accessibility",
-  "//ui/gfx",
-  "//ui/gfx/geometry/mojo",
-  "//ui/gfx/geometry/mojo:struct_traits",
-  "//ui/gfx/mojo",
 ]
 type_mappings = [ "ax.mojom.AXNodeData=ui::AXNodeData" ]

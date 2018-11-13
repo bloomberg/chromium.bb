@@ -173,7 +173,7 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
   // If |bounds| is uninitialized, which is not the same as empty,
   // start with the node bounds.
   if (bounds.width() == 0 && bounds.height() == 0) {
-    bounds = node->data().location;
+    bounds = node->data().relative_bounds.bounds;
 
     // If the node bounds is empty (either width or height is zero),
     // try to compute good bounds from the children.
@@ -187,12 +187,13 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
       }
     }
   } else {
-    bounds.Offset(node->data().location.x(), node->data().location.y());
+    bounds.Offset(node->data().relative_bounds.bounds.x(),
+                  node->data().relative_bounds.bounds.y());
   }
 
   while (node != nullptr) {
-    if (node->data().transform)
-      node->data().transform->TransformRect(&bounds);
+    if (node->data().relative_bounds.transform)
+      node->data().relative_bounds.transform->TransformRect(&bounds);
     const AXNode* container;
 
     // Normally we apply any transforms and offsets for each node and
@@ -202,13 +203,13 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     if (bounds.width() == 0 && bounds.height() == 0)
       container = node->parent();
     else
-      container = GetFromId(node->data().offset_container_id);
+      container = GetFromId(node->data().relative_bounds.offset_container_id);
     if (!container && container != root())
       container = root();
     if (!container || container == node)
       break;
 
-    gfx::RectF container_bounds = container->data().location;
+    gfx::RectF container_bounds = container->data().relative_bounds.bounds;
     bounds.Offset(container_bounds.x(), container_bounds.y());
 
     // If we don't have any size yet, take the size from this ancestor.

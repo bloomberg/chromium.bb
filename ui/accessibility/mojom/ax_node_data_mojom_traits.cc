@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/mojom/ax_node_data_mojom_traits.h"
+#include "ui/accessibility/mojom/ax_relative_bounds.mojom-shared.h"
+#include "ui/accessibility/mojom/ax_relative_bounds_mojom_traits.h"
 
 namespace mojo {
 
@@ -78,16 +80,6 @@ StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData>::html_attributes(
 }
 
 // static
-gfx::Transform
-StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData>::transform(
-    const ui::AXNodeData& p) {
-  if (p.transform)
-    return *p.transform;
-  else
-    return gfx::Transform();
-}
-
-// static
 bool StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData>::Read(
     ax::mojom::AXNodeDataDataView data,
     ui::AXNodeData* out) {
@@ -143,16 +135,8 @@ bool StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData>::Read(
   if (!data.ReadChildIds(&out->child_ids))
     return false;
 
-  out->offset_container_id = data.offset_container_id();
-
-  if (!data.ReadLocation(&out->location))
+  if (!data.ReadRelativeBounds(&out->relative_bounds))
     return false;
-
-  gfx::Transform transform;
-  if (!data.ReadTransform(&transform))
-    return false;
-  if (!transform.IsIdentity())
-    out->transform.reset(new gfx::Transform(transform));
 
   return true;
 }
