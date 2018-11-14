@@ -17,23 +17,26 @@ group("test") {
   ]
 }
 
-group("webview_cts_tests") {
-  _py_files = read_file("//android_webview/tools/run_cts.pydeps", "list lines")
-  deps = [
-    "//android_webview:system_webview_apk",
-  ]
+if (public_android_sdk) {
+  group("webview_cts_tests") {
+    _py_files =
+        read_file("//android_webview/tools/run_cts.pydeps", "list lines")
+    deps = [
+      "//android_webview:system_webview_apk",
+    ]
 
-  data_deps = [
-    "//build/android:logdog_wrapper_py",
-    "//build/android:test_runner_py",
-  ]
+    data_deps = [
+      "//build/android:logdog_wrapper_py",
+      "//build/android:test_runner_py",
+    ]
 
-  # Filter out comments.
-  set_sources_assignment_filter([ "#*" ])
-  sources = _py_files
+    # Filter out comments.
+    set_sources_assignment_filter([ "#*" ])
+    sources = _py_files
 
-  data = sources
-  data += [ "//android_webview/tools/cts_config/" ]
+    data = sources
+    data += [ "//android_webview/tools/cts_config/" ]
+  }
 }
 
 android_apk("webview_instrumentation_apk") {
