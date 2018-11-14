@@ -150,11 +150,12 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //             DOMString.
   if (event.IsBeforeUnloadEvent() &&
       event.type() == event_type_names::kBeforeunload) {
-    DCHECK(result_for_beforeunload);
-    event.preventDefault();
-    BeforeUnloadEvent* before_unload_event = ToBeforeUnloadEvent(&event);
-    if (before_unload_event->returnValue().IsEmpty())
-      before_unload_event->setReturnValue(result_for_beforeunload);
+    if (result_for_beforeunload) {
+      event.preventDefault();
+      BeforeUnloadEvent* before_unload_event = ToBeforeUnloadEvent(&event);
+      if (before_unload_event->returnValue().IsEmpty())
+        before_unload_event->setReturnValue(result_for_beforeunload);
+    }
   } else if (!IsOnBeforeUnloadEventHandler()) {
     if (special_error_event_handling && v8_return_value->IsBoolean() &&
         v8_return_value.As<v8::Boolean>()->Value())
