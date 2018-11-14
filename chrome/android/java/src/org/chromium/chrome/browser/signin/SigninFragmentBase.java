@@ -547,13 +547,16 @@ public abstract class SigninFragmentBase
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ADD_ACCOUNT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data == null) return;
+            String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            if (addedAccountName == null) return;
+
+            // Found the account name, dismiss the account picker dialog if it is shown.
             AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
             if (accountPickerFragment != null) {
                 accountPickerFragment.dismiss();
             }
 
-            String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-            if (addedAccountName == null) return;
             // Wait for the account cache to be updated and select newly-added account.
             AccountManagerFacade.get().waitForPendingUpdates(() -> {
                 mAccountSelectionPending = true;
