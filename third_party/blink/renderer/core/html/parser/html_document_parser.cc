@@ -1211,8 +1211,9 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
 }
 
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
-  PreloadRequestStream requests =
-      scanner->Scan(GetDocument()->ValidBaseElementURL(), nullptr);
+  bool seen_csp_meta_tag = false;
+  PreloadRequestStream requests = scanner->Scan(
+      GetDocument()->ValidBaseElementURL(), nullptr, seen_csp_meta_tag);
   preloader_->TakeAndPreload(requests);
 }
 

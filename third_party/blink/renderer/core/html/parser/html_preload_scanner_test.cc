@@ -61,6 +61,12 @@ struct CORSTestCase {
   network::mojom::FetchCredentialsMode credentials_mode;
 };
 
+struct CSPTestCase {
+  const char* base_url;
+  const char* input_html;
+  bool should_see_csp_tag;
+};
+
 struct NonceTestCase {
   const char* base_url;
   const char* input_html;
@@ -253,7 +259,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
 
     preloader.PreloadRequestVerification(
@@ -265,7 +272,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
     preloader.PreconnectRequestVerification(test_case.preconnected_host,
                                             test_case.cross_origin);
@@ -275,7 +283,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
 
     if (test_case.expected_referrer) {
@@ -294,20 +303,29 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
-
     preloader.CORSRequestVerification(&GetDocument(), test_case.request_mode,
                                       test_case.credentials_mode);
+  }
+
+  void Test(CSPTestCase test_case) {
+    HTMLMockHTMLResourcePreloader preloader;
+    KURL base_url(test_case.base_url);
+    seen_csp_meta_tag_ = false;
+    scanner_->AppendToEnd(String(test_case.input_html));
+    scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
+    EXPECT_EQ(test_case.should_see_csp_tag, seen_csp_meta_tag_);
   }
 
   void Test(NonceTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
-
     preloader.NonceRequestVerification(test_case.nonce);
   }
 
@@ -315,7 +333,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
 
     preloader.ContextVerification(test_case.is_image_set);
@@ -326,7 +345,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url("http://example.test/");
     scanner_->AppendToEnd(String(test_case.input_html));
-    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
 
     preloader.CheckNumberOfIntegrityConstraints(
@@ -335,6 +355,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
 
  private:
   std::unique_ptr<HTMLPreloadScanner> scanner_;
+  bool seen_csp_meta_tag_ = false;
 };
 
 TEST_F(HTMLPreloadScannerTest, testImages) {
@@ -882,6 +903,22 @@ TEST_F(HTMLPreloadScannerTest, testCORS) {
        network::mojom::FetchRequestMode::kCORS,
        network::mojom::FetchCredentialsMode::kInclude},
   };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.input_html);
+    Test(test_case);
+  }
+}
+
+TEST_F(HTMLPreloadScannerTest, testCSP) {
+  CSPTestCase test_cases[] = {
+      {"http://example.test",
+       "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src "
+       "https:\">",
+       true},
+      {"http://example.test",
+       "<meta name=\"viewport\" content=\"width=device-width\">", false},
+      {"http://example.test", "<img src=\"example.gif\">", false}};
 
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(test_case.input_html);

@@ -949,7 +949,8 @@ void HTMLPreloadScanner::AppendToEnd(const SegmentedString& source) {
 
 PreloadRequestStream HTMLPreloadScanner::Scan(
     const KURL& starting_base_element_url,
-    ViewportDescriptionWrapper* viewport) {
+    ViewportDescriptionWrapper* viewport,
+    bool& has_csp_meta_tag) {
   // HTMLTokenizer::updateStateFor only works on the main thread.
   DCHECK(IsMainThread());
 
@@ -967,13 +968,14 @@ PreloadRequestStream HTMLPreloadScanner::Scan(
     if (token_.GetType() == HTMLToken::kStartTag)
       tokenizer_->UpdateStateFor(
           AttemptStaticStringCreation(token_.GetName(), kLikely8Bit));
-    bool is_csp_meta_tag = false;
-    scanner_.Scan(token_, source_, requests, viewport, &is_csp_meta_tag);
+    bool seen_csp_meta_tag = false;
+    scanner_.Scan(token_, source_, requests, viewport, &seen_csp_meta_tag);
+    has_csp_meta_tag |= seen_csp_meta_tag;
     token_.Clear();
     // Don't preload anything if a CSP meta tag is found. We should rarely find
     // them here because the HTMLPreloadScanner is only used for the synchronous
     // parsing path.
-    if (is_csp_meta_tag) {
+    if (seen_csp_meta_tag) {
       // Reset the tokenizer, to avoid re-scanning tokens that we are about to
       // start parsing.
       source_.Clear();

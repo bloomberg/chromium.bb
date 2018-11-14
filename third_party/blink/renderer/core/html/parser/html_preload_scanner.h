@@ -189,7 +189,8 @@ class CORE_EXPORT HTMLPreloadScanner {
 
   void AppendToEnd(const SegmentedString&);
   PreloadRequestStream Scan(const KURL& document_base_element_url,
-                            ViewportDescriptionWrapper*);
+                            ViewportDescriptionWrapper*,
+                            bool& has_csp_meta_tag);
 
  private:
   HTMLPreloadScanner(const HTMLParserOptions&,
