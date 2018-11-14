@@ -18,7 +18,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -75,7 +74,6 @@ constexpr int kNonEmptyHeight = 1;
 
 constexpr char kMonitoringWarningClassName[] = "MonitoringWarning";
 constexpr int kSpacingBetweenMonitoringWarningIconAndLabelDp = 8;
-constexpr int kMonitoringWarningIconSizeDp = 20;
 
 views::Label* CreateLabel(const base::string16& text, SkColor color) {
   auto* label = new views::Label(text);
@@ -181,21 +179,13 @@ class SelectionButtonView : public LoginButton {
   DISALLOW_COPY_AND_ASSIGN(SelectionButtonView);
 };
 
-// Container for the device monitoring warning.  Contains the warning icon on
-// the left side, and text on the right side.
+// Container for the device monitoring warning.
 class MonitoringWarningView : public NonAccessibleView {
  public:
   MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
-
-    views::ImageView* image = new views::ImageView();
-    image->SetImage(gfx::CreateVectorIcon(
-        vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp, SK_ColorRED));
-    image->SetPreferredSize(
-        gfx::Size(kMonitoringWarningIconSizeDp, kMonitoringWarningIconSizeDp));
-    AddChildView(image);
 
     const base::string16 label_text = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
