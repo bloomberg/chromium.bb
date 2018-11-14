@@ -2004,8 +2004,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGInflowChildData& child_data,
     const NGLogicalSize child_available_size,
     const base::Optional<LayoutUnit> floats_bfc_block_offset) {
+  const ComputedStyle& style = Style();
   WritingMode child_writing_mode = child.IsInline()
-                                       ? Style().GetWritingMode()
+                                       ? style.GetWritingMode()
                                        : child.Style().GetWritingMode();
 
   NGConstraintSpaceBuilder space_builder(ConstraintSpace(), child_writing_mode,
@@ -2056,8 +2057,10 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // PositionListMarker() requires a first line baseline.
     if (container_builder_.UnpositionedListMarker()) {
       space_builder.AddBaselineRequest(
-          {NGBaselineAlgorithmType::kFirstLine, Style().GetFontBaseline()});
+          {NGBaselineAlgorithmType::kFirstLine, style.GetFontBaseline()});
     }
+  } else {
+    space_builder.SetTextDirection(style.Direction());
   }
   space_builder.SetClearanceOffset(clearance_offset);
   if (child_data.force_clearance)
