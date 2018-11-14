@@ -16,12 +16,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "build/build_config.h"
 
 namespace base {
 
 // TODO(kraynov): https://crbug.com/828835
 // Consider going away from using MessageLoop in the renderer process.
-class MessageLoop;
+class MessageLoopBase;
 
 namespace sequence_manager {
 namespace internal {
@@ -33,14 +34,14 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   ~ThreadControllerImpl() override;
 
   static std::unique_ptr<ThreadControllerImpl> Create(
-      MessageLoop* message_loop,
+      MessageLoopBase* message_loop_base,
       const TickClock* time_source);
 
   // ThreadController:
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task) override;
   void ScheduleWork() override;
-  void BindToCurrentThread(MessageLoop* message_loop) override;
+  void BindToCurrentThread(MessageLoopBase* message_loop_base) override;
   void BindToCurrentThread(std::unique_ptr<MessagePump> message_pump) override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
@@ -48,6 +49,7 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   bool RunsTasksInCurrentSequence() override;
   const TickClock* GetClock() override;
   void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) override;
+  scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() override;
   void RestoreDefaultTaskRunner() override;
   void AddNestingObserver(RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
@@ -55,19 +57,22 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
   MessagePump* GetBoundMessagePump() const override;
+#if defined(OS_IOS)
+  void AttachToMessagePump() override;
+#endif
 
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
  protected:
-  ThreadControllerImpl(MessageLoop* message_loop,
+  ThreadControllerImpl(MessageLoopBase* message_loop_base,
                        scoped_refptr<SingleThreadTaskRunner> task_runner,
                        const TickClock* time_source);
 
   // TODO(altimin): Make these const. Blocked on removing
   // lazy initialisation support.
-  MessageLoop* message_loop_;
+  MessageLoopBase* message_loop_base_;
   scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   RunLoop::NestingObserver* nesting_observer_ = nullptr;

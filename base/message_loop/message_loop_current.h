@@ -23,7 +23,8 @@ class TestWebThreadBundle;
 
 namespace base {
 
-class MessageLoop;
+class MessageLoopBase;
+class MessageLoopImpl;
 
 namespace sequence_manager {
 class LazyThreadControllerForTest;
@@ -112,7 +113,7 @@ class BASE_EXPORT MessageLoopCurrent {
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
   // instead of MessageLoopCurrent::Get()->task_runner().
-  const scoped_refptr<SingleThreadTaskRunner>& task_runner() const;
+  scoped_refptr<SingleThreadTaskRunner> task_runner() const;
 
   // Forwards to MessageLoop::SetTaskRunner().
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop
@@ -172,7 +173,7 @@ class BASE_EXPORT MessageLoopCurrent {
     ~ScopedNestableTaskAllower();
 
    private:
-    MessageLoop* const loop_;
+    MessageLoopBase* const loop_;
     const bool old_state_;
   };
 
@@ -186,20 +187,20 @@ class BASE_EXPORT MessageLoopCurrent {
   // level.
   bool IsIdleForTesting();
 
+ protected:
   // Binds |current| to the current thread. It will from then on be the
   // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant
   // to be invoked by the MessageLoop itself.
-  static void BindToCurrentThreadInternal(MessageLoop* current);
+  static void BindToCurrentThreadInternal(MessageLoopBase* current);
 
   // Unbinds |current| from the current thread. Must be invoked on the same
   // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
   // meant to be invoked by the MessageLoop itself.
-  static void UnbindFromCurrentThreadInternal(MessageLoop* current);
+  static void UnbindFromCurrentThreadInternal(MessageLoopBase* current);
 
- protected:
-  explicit MessageLoopCurrent(MessageLoop* current) : current_(current) {}
+  explicit MessageLoopCurrent(MessageLoopBase* current) : current_(current) {}
 
-  friend class MessageLoop;
+  friend class MessageLoopImpl;
   friend class MessagePumpLibeventTest;
   friend class ScheduleWorkTest;
   friend class Thread;
@@ -208,14 +209,12 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
 
-  static MessagePump* GetMessagePumpForMessageLoop(MessageLoop* loop);
-
   // Return the pointer to MessageLoop for internal needs.
   // All other callers should call MessageLoopCurrent::Get().
   // TODO(altimin): Remove this.
-  MessageLoop* ToMessageLoopDeprecated() const { return current_; }
+  MessageLoopBase* ToMessageLoopBaseDeprecated() const { return current_; }
 
-  MessageLoop* current_;
+  MessageLoopBase* current_;
 };
 
 #if !defined(OS_NACL)
@@ -266,12 +265,10 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
  private:
-  MessageLoopCurrentForUI(MessageLoop* current, MessagePumpForUI* pump)
-      : MessageLoopCurrent(current), pump_(pump) {
-    DCHECK(pump_);
-  }
+  explicit MessageLoopCurrentForUI(MessageLoopBase* current)
+      : MessageLoopCurrent(current) {}
 
-  MessagePumpForUI* const pump_;
+  MessagePumpForUI* GetMessagePumpForUI() const;
 };
 
 #endif  // !defined(OS_NACL)
@@ -317,12 +314,10 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 #endif  // !defined(OS_NACL_SFI)
 
  private:
-  MessageLoopCurrentForIO(MessageLoop* current, MessagePumpForIO* pump)
-      : MessageLoopCurrent(current), pump_(pump) {
-    DCHECK(pump_);
-  }
+  explicit MessageLoopCurrentForIO(MessageLoopBase* current)
+      : MessageLoopCurrent(current) {}
 
-  MessagePumpForIO* const pump_;
+  MessagePumpForIO* GetMessagePumpForIO() const;
 };
 
 }  // namespace base

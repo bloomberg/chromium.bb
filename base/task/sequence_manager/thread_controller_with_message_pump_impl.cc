@@ -10,6 +10,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_pump_mac.h"
+#endif
+
 namespace base {
 namespace sequence_manager {
 namespace internal {
@@ -66,7 +70,7 @@ void ThreadControllerWithMessagePumpImpl::SetSequencedTaskSource(
 }
 
 void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
-    MessageLoop* message_loop) {
+    MessageLoopBase* message_loop_base) {
   NOTREACHED()
       << "ThreadControllerWithMessagePumpImpl doesn't support MessageLoops";
 }
@@ -161,14 +165,22 @@ void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   if (associated_thread_->thread_id == kInvalidThreadId) {
     // Save task runner, it will be set in BindToCurrentThread.
-    task_runner_to_set_ = task_runner;
+    task_runner_to_set_ = std::move(task_runner);
   } else {
     // Only one ThreadTaskRunnerHandle can exist at any time,
     // so reset the old one.
     main_thread_only().thread_task_runner_handle.reset();
     main_thread_only().thread_task_runner_handle =
         std::make_unique<ThreadTaskRunnerHandle>(task_runner);
+    AutoLock lock(task_runner_lock_);
+    task_runner_ = std::move(task_runner);
   }
+}
+
+scoped_refptr<SingleThreadTaskRunner>
+ThreadControllerWithMessagePumpImpl::GetDefaultTaskRunner() {
+  AutoLock lock(task_runner_lock_);
+  return task_runner_;
 }
 
 void ThreadControllerWithMessagePumpImpl::RestoreDefaultTaskRunner() {
@@ -368,6 +380,12 @@ ThreadControllerWithMessagePumpImpl::AcquirePumpReadLockIfNeeded() {
 MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
   return pump_.get();
 }
+
+#if defined(OS_IOS)
+void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
+  static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+}
+#endif
 
 }  // namespace internal
 }  // namespace sequence_manager

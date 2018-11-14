@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -32,6 +33,10 @@ class MessageLoopTaskRunnerTest : public testing::Test {
 
   MessageLoop* MessageLoopForThread(base::Thread* thread) {
     return thread->message_loop();
+  }
+
+  MessageLoopBase* MessageLoopBaseForThread(base::Thread* thread) {
+    return thread->message_loop()->GetMessageLoopBase();
   }
 
  protected:
@@ -59,26 +64,26 @@ class MessageLoopTaskRunnerTest : public testing::Test {
   // threading mistake sneaks into the PostTaskAndReplyRelay implementation.
   class LoopRecorder : public RefCountedThreadSafe<LoopRecorder> {
    public:
-    LoopRecorder(MessageLoop** run_on,
-                 MessageLoop** deleted_on,
+    LoopRecorder(MessageLoopBase** run_on,
+                 MessageLoopBase** deleted_on,
                  int* destruct_order)
         : run_on_(run_on),
           deleted_on_(deleted_on),
           destruct_order_(destruct_order) {}
 
     void RecordRun() {
-      *run_on_ = MessageLoopCurrent::Get()->ToMessageLoopDeprecated();
+      *run_on_ = MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated();
     }
 
    private:
     friend class RefCountedThreadSafe<LoopRecorder>;
     ~LoopRecorder() {
-      *deleted_on_ = MessageLoopCurrent::Get()->ToMessageLoopDeprecated();
+      *deleted_on_ = MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated();
       *destruct_order_ = g_order.GetNext();
     }
 
-    MessageLoop** run_on_;
-    MessageLoop** deleted_on_;
+    MessageLoopBase** run_on_;
+    MessageLoopBase** deleted_on_;
     int* destruct_order_;
   };
 
@@ -107,11 +112,11 @@ class MessageLoopTaskRunnerTest : public testing::Test {
 AtomicSequenceNumber MessageLoopTaskRunnerTest::g_order;
 
 TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_Basic) {
-  MessageLoop* task_run_on = nullptr;
-  MessageLoop* task_deleted_on = nullptr;
+  MessageLoopBase* task_run_on = nullptr;
+  MessageLoopBase* task_deleted_on = nullptr;
   int task_delete_order = -1;
-  MessageLoop* reply_run_on = nullptr;
-  MessageLoop* reply_deleted_on = nullptr;
+  MessageLoopBase* reply_run_on = nullptr;
+  MessageLoopBase* reply_deleted_on = nullptr;
   int reply_delete_order = -1;
 
   scoped_refptr<LoopRecorder> task_recorder =
@@ -132,19 +137,19 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_Basic) {
   UnblockTaskThread();
   RunLoop().Run();
 
-  EXPECT_EQ(MessageLoopForThread(&task_thread_), task_run_on);
-  EXPECT_EQ(MessageLoopForThread(&task_thread_), task_deleted_on);
-  EXPECT_EQ(current_loop_.get(), reply_run_on);
-  EXPECT_EQ(current_loop_.get(), reply_deleted_on);
+  EXPECT_EQ(MessageLoopBaseForThread(&task_thread_), task_run_on);
+  EXPECT_EQ(MessageLoopBaseForThread(&task_thread_), task_deleted_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), reply_run_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), reply_deleted_on);
   EXPECT_LT(task_delete_order, reply_delete_order);
 }
 
 TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
-  MessageLoop* task_run_on = nullptr;
-  MessageLoop* task_deleted_on = nullptr;
+  MessageLoopBase* task_run_on = nullptr;
+  MessageLoopBase* task_deleted_on = nullptr;
   int task_delete_order = -1;
-  MessageLoop* reply_run_on = nullptr;
-  MessageLoop* reply_deleted_on = nullptr;
+  MessageLoopBase* reply_run_on = nullptr;
+  MessageLoopBase* reply_deleted_on = nullptr;
   int reply_delete_order = -1;
 
   scoped_refptr<LoopRecorder> task_recorder =
@@ -174,11 +179,11 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
 }
 
 TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_SameLoop) {
-  MessageLoop* task_run_on = nullptr;
-  MessageLoop* task_deleted_on = nullptr;
+  MessageLoopBase* task_run_on = nullptr;
+  MessageLoopBase* task_deleted_on = nullptr;
   int task_delete_order = -1;
-  MessageLoop* reply_run_on = nullptr;
-  MessageLoop* reply_deleted_on = nullptr;
+  MessageLoopBase* reply_run_on = nullptr;
+  MessageLoopBase* reply_deleted_on = nullptr;
   int reply_delete_order = -1;
 
   scoped_refptr<LoopRecorder> task_recorder =
@@ -199,10 +204,10 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_SameLoop) {
 
   RunLoop().Run();
 
-  EXPECT_EQ(current_loop_.get(), task_run_on);
-  EXPECT_EQ(current_loop_.get(), task_deleted_on);
-  EXPECT_EQ(current_loop_.get(), reply_run_on);
-  EXPECT_EQ(current_loop_.get(), reply_deleted_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), task_run_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), task_deleted_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), reply_run_on);
+  EXPECT_EQ(current_loop_->GetMessageLoopBase(), reply_deleted_on);
   EXPECT_LT(task_delete_order, reply_delete_order);
 }
 
@@ -211,11 +216,11 @@ TEST_F(MessageLoopTaskRunnerTest,
        DISABLED_PostTaskAndReply_DeadReplyTaskRunnerBehavior) {
   // Annotate the scope as having memory leaks to suppress heapchecker reports.
   ANNOTATE_SCOPED_MEMORY_LEAK;
-  MessageLoop* task_run_on = nullptr;
-  MessageLoop* task_deleted_on = nullptr;
+  MessageLoopBase* task_run_on = nullptr;
+  MessageLoopBase* task_deleted_on = nullptr;
   int task_delete_order = -1;
-  MessageLoop* reply_run_on = nullptr;
-  MessageLoop* reply_deleted_on = nullptr;
+  MessageLoopBase* reply_run_on = nullptr;
+  MessageLoopBase* reply_deleted_on = nullptr;
   int reply_delete_order = -1;
 
   scoped_refptr<LoopRecorder> task_recorder =
@@ -248,8 +253,8 @@ TEST_F(MessageLoopTaskRunnerTest,
   // Even if the reply task runner is already gone, the original task should
   // already be deleted. However, the reply which hasn't executed yet should
   // leak to avoid thread-safety issues.
-  EXPECT_EQ(task_loop, task_run_on);
-  EXPECT_EQ(task_loop, task_deleted_on);
+  EXPECT_EQ(task_loop->GetMessageLoopBase(), task_run_on);
+  EXPECT_EQ(task_loop->GetMessageLoopBase(), task_deleted_on);
   EXPECT_FALSE(reply_run_on);
   ASSERT_FALSE(reply_deleted_on);
 

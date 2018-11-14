@@ -174,7 +174,8 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
     start_time_ = mock_clock_.NowTicks();
 
     manager_ = SequenceManagerForTest::Create(
-        message_loop_.get(), ThreadTaskRunnerHandle::Get(), &mock_clock_);
+        message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
+        &mock_clock_);
   }
 
   void SetUpWithMessagePump() {
@@ -3209,7 +3210,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization, DefaultTaskRunnerSupport) {
       MakeRefCounted<TestSimpleTaskRunner>();
   {
     std::unique_ptr<SequenceManagerForTest> manager =
-        SequenceManagerForTest::Create(&message_loop,
+        SequenceManagerForTest::Create(message_loop.GetMessageLoopBase(),
                                        message_loop.task_runner(), nullptr);
     manager->SetDefaultTaskRunner(custom_task_runner);
     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
@@ -3412,7 +3413,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   EXPECT_THAT(default_task_queue.get(), testing::NotNull());
 
   std::unique_ptr<MessageLoop> message_loop(new MessageLoop());
-  manager->BindToMessageLoop(message_loop.get());
+  manager->BindToMessageLoop(message_loop->GetMessageLoopBase());
 
   // Check that task posting works.
   std::vector<EnqueueOrder> run_order;

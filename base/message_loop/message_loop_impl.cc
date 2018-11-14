@@ -231,6 +231,22 @@ void MessageLoopImpl::Controller::AfterOperation() {
 //------------------------------------------------------------------------------
 
 MessageLoopImpl::~MessageLoopImpl() {
+  // Clean up any unprocessed tasks, but take care: deleting a task could
+  // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
+  // limit on the number of times we will allow a deleted task to generate more
+  // tasks.  Normally, we should only pass through this loop once or twice.  If
+  // we end up hitting the loop limit, then it is probably due to one task that
+  // is being stubborn.  Inspect the queues to see who is left.
+  bool tasks_remain;
+  for (int i = 0; i < 100; ++i) {
+    DeletePendingTasks();
+    // If we end up with empty queues, then break out of the loop.
+    tasks_remain = HasTasks();
+    if (!tasks_remain)
+      break;
+  }
+  DCHECK(!tasks_remain);
+
 #if defined(OS_WIN)
   if (in_high_res_mode_)
     Time::ActivateHighResolutionTimer(false);
@@ -253,6 +269,14 @@ MessageLoopImpl::~MessageLoopImpl() {
   // serialize ScheduleWork() call and as such that optimization isn't worth it.
   message_loop_controller_->DisconnectFromParent();
   underlying_task_runner_->Shutdown();
+
+  // Let interested parties have one last shot at accessing this.
+  for (auto& observer : destruction_observers_)
+    observer.WillDestroyCurrentMessageLoop();
+
+  // OK, now make it so that no one can find us.
+  if (IsBoundToCurrentThread())
+    MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
 
 // TODO(gab): Migrate TaskObservers to RunLoop as part of separating concerns
@@ -292,8 +316,9 @@ bool MessageLoopImpl::IsIdleForTesting() {
 
 //------------------------------------------------------------------------------
 
-MessageLoopImpl::MessageLoopImpl()
-    : message_loop_controller_(
+MessageLoopImpl::MessageLoopImpl(MessageLoopBase::Type type)
+    : type_(type),
+      message_loop_controller_(
           new Controller(this)),  // Ownership transferred on the next line.
       underlying_task_runner_(MakeRefCounted<internal::MessageLoopTaskRunner>(
           WrapUnique(message_loop_controller_))),
@@ -319,6 +344,11 @@ void MessageLoopImpl::BindToCurrentThread(std::unique_ptr<MessagePump> pump) {
       &sequence_local_storage_map_);
 
   RunLoop::RegisterDelegateForCurrentThread(this);
+  MessageLoopCurrent::BindToCurrentThreadInternal(this);
+}
+
+bool MessageLoopImpl::IsType(MessageLoopBase::Type type) const {
+  return type_ == type;
 }
 
 std::string MessageLoopImpl::GetThreadName() const {
@@ -342,6 +372,41 @@ void MessageLoopImpl::SetTaskRunner(
     task_runner_ = std::move(task_runner);
     SetThreadTaskRunnerHandle();
   }
+}
+
+scoped_refptr<SingleThreadTaskRunner> MessageLoopImpl::GetTaskRunner() {
+  return task_runner_;
+}
+
+void MessageLoopImpl::AddDestructionObserver(
+    DestructionObserver* destruction_observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  destruction_observers_.AddObserver(destruction_observer);
+}
+
+void MessageLoopImpl::RemoveDestructionObserver(
+    DestructionObserver* destruction_observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  destruction_observers_.RemoveObserver(destruction_observer);
+}
+
+bool MessageLoopImpl::IsBoundToCurrentThread() const {
+  return MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated() == this;
+}
+
+MessagePump* MessageLoopImpl::GetMessagePump() const {
+  return pump_.get();
+}
+
+#if defined(OS_IOS)
+void MessageLoopImpl::AttachToMessagePump() {
+  DCHECK_EQ(type_, MessageLoopBase::TYPE_UI);
+  static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+}
+#endif  // defined(OS_IOS)
+
+void MessageLoopImpl::SetTimerSlack(TimerSlack timer_slack) {
+  pump_->SetTimerSlack(timer_slack);
 }
 
 void MessageLoopImpl::Run(bool application_tasks_allowed) {
@@ -462,10 +527,14 @@ bool MessageLoopImpl::HasTasks() {
 }
 
 void MessageLoopImpl::SetTaskExecutionAllowed(bool allowed) {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
+  if (allowed)
+    pump_->ScheduleWork();
   task_execution_allowed_ = allowed;
 }
 
 bool MessageLoopImpl::IsTaskExecutionAllowed() const {
+  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   return task_execution_allowed_;
 }
 

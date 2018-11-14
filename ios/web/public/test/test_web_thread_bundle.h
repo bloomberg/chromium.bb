@@ -32,9 +32,7 @@
 #include "base/macros.h"
 
 namespace base {
-namespace test {
-class ScopedTaskEnvironment;
-}  // namespace test
+class MessageLoop;
 }  // namespace base
 
 namespace web {
@@ -60,7 +58,7 @@ class TestWebThreadBundle {
  private:
   void Init(int options);
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> io_thread_;
 

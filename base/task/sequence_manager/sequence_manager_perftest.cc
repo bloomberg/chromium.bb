@@ -148,7 +148,7 @@ class SequenceManagerWithMessageLoopPerfTestDelegate
   explicit SequenceManagerWithMessageLoopPerfTestDelegate(const char* name)
       : name_(name), message_loop_(new MessageLoopType()) {
     SetSequenceManager(SequenceManagerForTest::Create(
-        message_loop_.get(), message_loop_->task_runner(),
+        message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
         DefaultTickClock::GetInstance()));
   }
 

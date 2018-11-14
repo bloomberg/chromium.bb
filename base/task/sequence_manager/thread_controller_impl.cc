@@ -20,14 +20,14 @@ namespace sequence_manager {
 namespace internal {
 
 ThreadControllerImpl::ThreadControllerImpl(
-    MessageLoop* message_loop,
+    MessageLoopBase* message_loop_base,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* time_source)
-    : message_loop_(message_loop),
+    : message_loop_base_(message_loop_base),
       task_runner_(task_runner),
       associated_thread_(AssociatedThreadId::CreateUnbound()),
-      message_loop_task_runner_(message_loop ? message_loop->task_runner()
-                                             : nullptr),
+      message_loop_task_runner_(
+          message_loop_base ? message_loop_base->GetTaskRunner() : nullptr),
       time_source_(time_source),
       weak_factory_(this) {
   immediate_do_work_closure_ =
@@ -49,10 +49,11 @@ ThreadControllerImpl::MainSequenceOnly::MainSequenceOnly() = default;
 ThreadControllerImpl::MainSequenceOnly::~MainSequenceOnly() = default;
 
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
-    MessageLoop* message_loop,
+    MessageLoopBase* message_loop_base,
     const TickClock* time_source) {
   return WrapUnique(new ThreadControllerImpl(
-      message_loop, message_loop ? message_loop->task_runner() : nullptr,
+      message_loop_base,
+      message_loop_base ? message_loop_base->GetTaskRunner() : nullptr,
       time_source));
 }
 
@@ -65,9 +66,9 @@ void ThreadControllerImpl::SetSequencedTaskSource(
 }
 
 void ThreadControllerImpl::SetTimerSlack(TimerSlack timer_slack) {
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTimerSlack(timer_slack);
+  message_loop_base_->SetTimerSlack(timer_slack);
 }
 
 void ThreadControllerImpl::ScheduleWork() {
@@ -141,26 +142,32 @@ void ThreadControllerImpl::SetDefaultTaskRunner(
 #if DCHECK_IS_ON()
   default_task_runner_set_ = true;
 #endif
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTaskRunner(task_runner);
+  message_loop_base_->SetTaskRunner(task_runner);
+}
+
+scoped_refptr<SingleThreadTaskRunner>
+ThreadControllerImpl::GetDefaultTaskRunner() {
+  return message_loop_base_->GetTaskRunner();
 }
 
 void ThreadControllerImpl::RestoreDefaultTaskRunner() {
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTaskRunner(message_loop_task_runner_);
+  message_loop_base_->SetTaskRunner(message_loop_task_runner_);
 }
 
-void ThreadControllerImpl::BindToCurrentThread(MessageLoop* message_loop) {
-  DCHECK(!message_loop_);
-  DCHECK(message_loop);
+void ThreadControllerImpl::BindToCurrentThread(
+    MessageLoopBase* message_loop_base) {
+  DCHECK(!message_loop_base_);
+  DCHECK(message_loop_base);
 #if DCHECK_IS_ON()
   DCHECK(!default_task_runner_set_) << "This would undo SetDefaultTaskRunner";
 #endif
-  message_loop_ = message_loop;
-  task_runner_ = message_loop->task_runner();
-  message_loop_task_runner_ = message_loop->task_runner();
+  message_loop_base_ = message_loop_base;
+  task_runner_ = message_loop_base->GetTaskRunner();
+  message_loop_task_runner_ = message_loop_base->GetTaskRunner();
 }
 
 void ThreadControllerImpl::BindToCurrentThread(
@@ -321,6 +328,12 @@ bool ThreadControllerImpl::IsTaskExecutionAllowed() const {
 MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
   return nullptr;
 }
+
+#if defined(OS_IOS)
+void ThreadControllerImpl::AttachToMessagePump() {
+  NOTREACHED();
+}
+#endif
 
 }  // namespace internal
 }  // namespace sequence_manager

@@ -14,9 +14,11 @@
 #include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace sequence_manager {
@@ -40,7 +42,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // ThreadController implementation:
   void SetSequencedTaskSource(SequencedTaskSource* task_source) override;
-  void BindToCurrentThread(MessageLoop* message_loop) override;
+  void BindToCurrentThread(MessageLoopBase* message_loop_base) override;
   void BindToCurrentThread(std::unique_ptr<MessagePump> message_pump) override;
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task) override;
@@ -51,6 +53,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   bool RunsTasksInCurrentSequence() override;
   void SetDefaultTaskRunner(
       scoped_refptr<SingleThreadTaskRunner> task_runner) override;
+  scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() override;
   void RestoreDefaultTaskRunner() override;
   void AddNestingObserver(RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
@@ -58,7 +61,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
   MessagePump* GetBoundMessagePump() const override;
-
+#if defined(OS_IOS)
+  void AttachToMessagePump() override;
+#endif
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
@@ -135,6 +140,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // TODO(altimin): Merge with the one in SequenceManager.
   scoped_refptr<AssociatedThreadId> associated_thread_;
   MainThreadOnly main_thread_only_;
+
+  mutable Lock task_runner_lock_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_
+      GUARDED_BY(task_runner_lock_);
 
   // Protects |pump_| and |should_schedule_work_after_bind_| as work can be
   // scheduled from another thread before we create the pump.
