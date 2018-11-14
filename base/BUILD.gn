@@ -2070,6 +2070,7 @@ test("base_perftests") {
     "message_loop/message_pump_perftest.cc",
     "observer_list_perftest.cc",
     "task/sequence_manager/sequence_manager_perftest.cc",
+    "task/task_scheduler/task_scheduler_perftest.cc",
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",
