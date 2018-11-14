@@ -235,6 +235,8 @@ component("vr_common") {
     "location_bar_helper.cc",
     "location_bar_helper.h",
     "platform_controller.h",
+    "platform_controller_for_testing.cc",
+    "platform_controller_for_testing.h",
     "sample_queue.cc",
     "sample_queue.h",
     "scheduler_browser_renderer_interface.h",

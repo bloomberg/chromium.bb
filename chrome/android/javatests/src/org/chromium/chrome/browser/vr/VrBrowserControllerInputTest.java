@@ -339,7 +339,7 @@ public class VrBrowserControllerInputTest {
         Assert.assertTrue("Page did not enter fullscreen",
                 DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
 
-        mController.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> {
@@ -406,10 +406,11 @@ public class VrBrowserControllerInputTest {
         // is not actually visible, we'll hit a DCHECK in the native code.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF());
-        NativeUiUtils.revertToRealInput();
         // Wait for the URL bar to re-appear, which we take as a signal that we've exited omnibox
         // text input mode.
-        NativeUiUtils.performActionAndWaitForVisibilityStatus(UserFriendlyElementName.URL,
-                true /* visible */, () -> { mController.pressReleaseAppButton(); });
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.URL, true /* visible */, () -> {
+                    NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
+                });
     }
 }

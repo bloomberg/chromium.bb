@@ -82,7 +82,44 @@ public class NativeUiUtils {
      */
     public static void clickElement(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                elementName, VrControllerTestAction.CLICK, position);
+                elementName, VrControllerTestAction.CLICK_DOWN, position);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.CLICK_UP, position);
+    }
+
+    /**
+     * Clicks the app button while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void clickAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_DOWN, position);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_UP, position);
+    }
+
+    /**
+     * Presses the app button down while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void pressAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_DOWN, position);
+    }
+
+    /**
+     * Releases the app button while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void releaseAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_UP, position);
     }
 
     /**
