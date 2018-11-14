@@ -384,12 +384,12 @@ const FeatureEntry::FeatureParam kAccountConsistencyDiceFixAuthErrors[] = {
      kAccountConsistencyFeatureMethodDiceFixAuthErrors}};
 
 const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
-    {"Dice", kAccountConsistencyDice, arraysize(kAccountConsistencyDice),
+    {"Dice", kAccountConsistencyDice, base::size(kAccountConsistencyDice),
      nullptr /* variation_id */},
     {"Dice (migration)", kAccountConsistencyDiceMigration,
-     arraysize(kAccountConsistencyDiceMigration), nullptr /* variation_id */},
+     base::size(kAccountConsistencyDiceMigration), nullptr /* variation_id */},
     {"Dice (fix auth errors)", kAccountConsistencyDiceFixAuthErrors,
-     arraysize(kAccountConsistencyDiceFixAuthErrors),
+     base::size(kAccountConsistencyDiceFixAuthErrors),
      nullptr /* variation_id */}};
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -992,7 +992,7 @@ const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
 
 const FeatureEntry::FeatureVariation kDataReductionMainMenuFeatureVariations[] =
     {{"(persistent)", kPersistentMenuItemEnabled,
-      arraysize(kPersistentMenuItemEnabled), nullptr}};
+      base::size(kPersistentMenuItemEnabled), nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::FeatureParam kDetectingHeavyPagesLowThresholdEnabled[] = {
@@ -2038,10 +2038,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"translate-force-trigger-on-english",
      flag_descriptions::kTranslateForceTriggerOnEnglishName,
      flag_descriptions::kTranslateForceTriggerOnEnglishDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         language::kOverrideTranslateTriggerInIndia,
-         kTranslateForceTriggerOnEnglishVariations,
-         language::kOverrideTranslateTriggerInIndia.name)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kOverrideTranslateTriggerInIndia,
+                                    kTranslateForceTriggerOnEnglishVariations,
+                                    "OverrideTranslateTriggerInIndia")},
     {"translate-explicit-ask",
      flag_descriptions::kTranslateExplicitLanguageAskName,
      flag_descriptions::kTranslateExplicitLanguageAskDescription, kOsAndroid,
@@ -2505,10 +2504,9 @@ const FeatureEntry kFeatureEntries[] = {
          offline_pages::kOfflinePagesShowAlternateDinoPageFeature)},
     {"offline-indicator-choice", flag_descriptions::kOfflineIndicatorChoiceName,
      flag_descriptions::kOfflineIndicatorChoiceDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         offline_pages::kOfflineIndicatorFeature,
-         kOfflineIndicatorFeatureVariations,
-         offline_pages::kOfflineIndicatorFeature.name)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(offline_pages::kOfflineIndicatorFeature,
+                                    kOfflineIndicatorFeatureVariations,
+                                    "OfflineIndicator")},
     {"offline-indicator-always-http-probe",
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeName,
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
@@ -2640,7 +2638,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryOrder,
          kContentSuggestionsCategoryOrderFeatureVariations,
-         ntp_snippets::kCategoryOrder.name)},
+         "ContentSuggestionsCategoryOrder")},
     {"content-suggestions-category-ranker",
      flag_descriptions::kContentSuggestionsCategoryRankerName,
      flag_descriptions::kContentSuggestionsCategoryRankerDescription,
@@ -2648,7 +2646,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryRanker,
          kContentSuggestionsCategoryRankerFeatureVariations,
-         ntp_snippets::kCategoryRanker.name)},
+         "ContentSuggestionsCategoryRanker")},
     {"content-suggestions-debug-log",
      flag_descriptions::kContentSuggestionsDebugLogName,
      flag_descriptions::kContentSuggestionsDebugLogDescription, kOsAndroid,
@@ -2690,10 +2688,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-remote-suggestions",
      flag_descriptions::kEnableNtpRemoteSuggestionsName,
      flag_descriptions::kEnableNtpRemoteSuggestionsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         ntp_snippets::kArticleSuggestionsFeature,
-         kRemoteSuggestionsFeatureVariations,
-         ntp_snippets::kArticleSuggestionsFeature.name)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
+                                    kRemoteSuggestionsFeatureVariations,
+                                    "NTPArticleSuggestions")},
     {"enable-ntp-asset-download-suggestions",
      flag_descriptions::kEnableNtpAssetDownloadSuggestionsName,
      flag_descriptions::kEnableNtpAssetDownloadSuggestionsDescription,
@@ -2715,7 +2712,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
-         ntp_snippets::kNotificationsFeature.name)},
+         "ContentSuggestionsNotifications")},
     {"simplified-ntp", flag_descriptions::kSimplifiedNtpName,
      flag_descriptions::kSimplifiedNtpDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSimplifiedNTP)},
