@@ -10,7 +10,7 @@ Shift+Tab:
 DIV:console-key-navigation.js:20 Message #99
 
 Shift+Tab:
-BUTTON:Console settings
+DIV#console-messages.monospace
 
 Tab:
 DIV:console-key-navigation.js:20 Message #99
@@ -29,7 +29,7 @@ Scrolling to top of viewport
 DIV.console-group.console-group-messages
 
 Shift+Tab:
-BUTTON:Console settings
+DIV#console-messages.monospace
 
 Tab:
 DIV.console-group.console-group-messages

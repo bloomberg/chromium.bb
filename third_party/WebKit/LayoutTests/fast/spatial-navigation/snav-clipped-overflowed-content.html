@@ -27,6 +27,13 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
 <script>
+  test(function(t) {
+      assert_true(internals.runtimeFlags.keyboardFocusableScrollersEnabled);
+  }, "Make sure KeyboardFocusableScrollers is set.");
+
+  // These expectations will change once crbug.com/801162 lands:
+  // We want spatnav, to focus the scroller before scrolling it
+  // or searching inside of it, just like seqnav does.
   var resultMap = [
     ["Down", "1"],
     ["Down", "1"],
@@ -40,6 +47,7 @@
     ["Right", "3"],
     ["Right", "4"],
     ["Down", "5"],
+    ["Up", "4"],
     ["Up", "2"],
     ["Up", "2"],
     ["Up", "2"],

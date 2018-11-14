@@ -20,6 +20,12 @@
       case 'Left':
         eventSender.keyDown('ArrowLeft');
         break;
+      case 'Forward':
+        eventSender.keyDown('Tab');
+        break;
+      case 'Backward':
+        eventSender.keyDown('Tab', ['shiftKey']);
+        break;
     }
   }
 
@@ -89,8 +95,9 @@
       }, 'window.testRunner is present.');
     },
 
-    assertFocusMoves: function(expectedMoves) {
-      snav.assertSnavEnabledAndTestable();
+    assertFocusMoves: function(expectedMoves, enableSpatnav=true) {
+      if (enableSpatnav)
+        snav.assertSnavEnabledAndTestable();
       gAsyncTest = async_test("Focus movements:\n" +
           JSON.stringify(expectedMoves).replace(/],/g, ']\n') + '\n');
 

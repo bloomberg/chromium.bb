@@ -6,6 +6,6 @@ function inject_input() {
   }).then(function() {
     return touchScrollInTarget('#target0', 'up');
   }).then(function() {
-    return touchTapInTarget('#btnComplete');
+    btnComplete.click();
   });
 }

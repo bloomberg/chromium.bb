@@ -2231,7 +2231,6 @@ void Element::RecalcStyle(StyleRecalcChange change) {
   }
 
   if (ShouldCallRecalcStyleForChildren(change)) {
-
     UpdatePseudoElement(kPseudoIdBefore, change);
 
     if (change > kUpdatePseudoElements || ChildNeedsStyleRecalc()) {
@@ -3218,7 +3217,9 @@ bool Element::SupportsFocus() const {
          IsRootEditableElement(*this) ||
          (IsShadowHost(this) && AuthorShadowRoot() &&
           AuthorShadowRoot()->delegatesFocus()) ||
-         SupportsSpatialNavigationFocus();
+         SupportsSpatialNavigationFocus() ||
+         (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+          IsScrollableNode(this));
 }
 
 bool Element::SupportsSpatialNavigationFocus() const {
