@@ -38,6 +38,9 @@
 -keepclasseswithmembers class * {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
+-keepclasseswithmembers,includedescriptorclasses class * {
+  native <methods>;
+}
 
 # Remove methods annotated with this if their return value is unused.
 -assumenosideeffects class ** {

@@ -470,7 +470,6 @@ action("cronet_combine_proguard_flags") {
   script = "//components/cronet/tools/generate_proguard_file.py"
   sources = [
     "//base/android/proguard/chromium_code.flags",
-    "//base/android/proguard/explicit_jni_registration.flags",
     "//components/cronet/android/cronet_impl_native_proguard.cfg",
   ]
   outputs = [
