@@ -48,7 +48,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
      * @param onTouchListener An {@link OnTouchListener} that is triggered when the menu button is
      *                        clicked.
      */
-    void setTouchListener(OnTouchListener onTouchListener) {
+    public void setTouchListener(OnTouchListener onTouchListener) {
         mMenuImageButton.setOnTouchListener(onTouchListener);
     }
 
@@ -113,7 +113,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
     /**
      * @return Whether the update badge is showing.
      */
-    boolean isShowingAppMenuUpdateBadge() {
+    public boolean isShowingAppMenuUpdateBadge() {
         return mUpdateBadgeView.getVisibility() == View.VISIBLE;
     }
 
@@ -149,7 +149,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
         return mMenuImageButton;
     }
 
-    void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
+    public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
         mThemeColorProvider.addObserver(this);
     }
@@ -160,7 +160,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
         setUseLightDrawables(ColorUtils.shouldUseLightForegroundOnBackground(primaryColor));
     }
 
-    void destroy() {
+    public void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeObserver(this);
             mThemeColorProvider = null;
