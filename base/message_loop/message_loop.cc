@@ -190,14 +190,6 @@ MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
 
   // Bound in BindToCurrentThread();
   DETACH_FROM_THREAD(bound_thread_checker_);
-
-  if (type_ == MessageLoop::TYPE_UI) {
-    // Only track idle metrics in MessageLoopForUI to avoid too much contention
-    // logging the histogram (https://crbug.com/860801) -- there's typically
-    // only one UI thread per process and, for practical purposes, restricting
-    // the MessageLoop diagnostic metrics to it yields similar information.
-    message_loop_impl_->SetShouldRecordIdleMetrics(true);
-  }
 }
 
 void MessageLoop::BindToCurrentThread() {
