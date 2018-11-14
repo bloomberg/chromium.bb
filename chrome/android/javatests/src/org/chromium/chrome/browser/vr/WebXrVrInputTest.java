@@ -300,7 +300,6 @@ public class WebXrVrInputTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testScreenTapsRegisteredOnCardboard_WebXr() throws InterruptedException {
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -397,8 +396,7 @@ public class WebXrVrInputTest {
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
-        controller.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
         framework.assertNoJavaScriptErrors();
     }
@@ -477,8 +475,7 @@ public class WebXrVrInputTest {
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
 
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
-        controller.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         Assert.assertFalse("App button left Chrome",
                 ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
@@ -557,8 +554,7 @@ public class WebXrVrInputTest {
         framework.enterSessionWithUserGestureOrFail();
         // Wait for page to stop submitting frames.
         framework.waitOnJavaScriptStep();
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
-        controller.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
         framework.assertNoJavaScriptErrors();
     }
@@ -742,7 +738,6 @@ public class WebXrVrInputTest {
     private void testAppButtonLongPressDisplaysPermissionsImpl() throws InterruptedException {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         EmbeddedTestServer server = mTestRule.getTestServer();
         boolean teardownServer = false;
         if (server == null) {
@@ -767,12 +762,13 @@ public class WebXrVrInputTest {
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */,
-                () -> { controller.sendAppButtonToggleEvent(); });
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {
+                    NativeUiUtils.pressAppButton(UserFriendlyElementName.NONE, new PointF());
+                });
         // The toast should automatically disappear after ~5 second after the button is pressed,
         // regardless of whether it's released or not.
         SystemClock.sleep(1000);
-        controller.sendAppButtonToggleEvent();
+        NativeUiUtils.releaseAppButton(UserFriendlyElementName.NONE, new PointF());
         SystemClock.sleep(3500);
         // Make sure it's still present shortly before we expect it to disappear.
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
@@ -781,8 +777,9 @@ public class WebXrVrInputTest {
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
         // Do the same, but make sure the toast disappears even with the button still held.
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */,
-                () -> { controller.sendAppButtonToggleEvent(); });
+                UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {
+                    NativeUiUtils.pressAppButton(UserFriendlyElementName.NONE, new PointF());
+                });
         SystemClock.sleep(4500);
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});

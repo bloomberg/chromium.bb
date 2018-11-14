@@ -14,7 +14,9 @@ namespace vr {
 // element names for interaction during testing.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum class UserFriendlyElementName : int {
-  kUrl = 0,          // URL bar
+  kNone = 0,         // A special "element" that causes the controller to point
+                     // straight forward.
+  kUrl,              // URL bar
   kBackButton,       // Back button on the URL bar
   kForwardButton,    // Forward button in the overflow menu
   kReloadButton,     // Reload button in the overflow menu
@@ -68,13 +70,14 @@ enum class UiTestOperationResult : int {
 // element using simulated controller input during testing.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum class VrControllerTestAction : int {
-  kClick,
   kHover,
   kEnableMockedInput,
   kRevertToRealInput,
   kClickDown,
   kClickUp,
   kMove,
+  kAppDown,
+  kAppUp,
 };
 
 // These are used to specify what type of keyboard input should be performed

@@ -15,6 +15,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -316,7 +317,6 @@ public class VrBrowserTransitionTest {
     private void reEntryFromVrBrowserImpl(String url, WebXrVrTestFramework framework)
             throws InterruptedException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
 
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
@@ -324,7 +324,7 @@ public class VrBrowserTransitionTest {
         framework.executeStepAndWait("stepVerifyFirstPresent()");
         // The bug did not reproduce with vrDisplay.exitPresent(), so it might not reproduce with
         // session.end(). Instead, use the controller to exit.
-        controller.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         framework.executeStepAndWait("stepVerifyMagicWindow()");
 
         framework.enterSessionWithUserGestureOrFail();
