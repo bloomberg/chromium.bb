@@ -12,7 +12,7 @@ from chromite.cbuildbot.stages import firmware_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
-class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
+class BuildSpecBuilder(generic_builders.Builder):
   """Builder that generates new buildspecs.
 
   This build does four things.
@@ -22,11 +22,13 @@ class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
     4) Launch child builds based on the buildspec.
   """
 
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run."""
+    return self._GetStageInstance(workspace_stages.WorkspaceSyncStage,
+                                  build_root=self._run.options.workspace)
+
   def RunStages(self):
     """Run the stages."""
-    self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=self._run.options.workspace)
-
     self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
                    build_root=self._run.options.workspace)
 
