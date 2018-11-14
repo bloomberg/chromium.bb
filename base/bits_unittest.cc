@@ -118,8 +118,6 @@ TEST(BitsTest, CountTrailingeZeroBits32) {
   EXPECT_EQ(4u, CountTrailingZeroBits(uint32_t{0xf0f0f0f0}));
 }
 
-#if defined(ARCH_CPU_64_BITS)
-
 TEST(BitsTest, CountLeadingZeroBits64) {
   EXPECT_EQ(64u, CountLeadingZeroBits(uint64_t{0}));
   EXPECT_EQ(63u, CountLeadingZeroBits(uint64_t{1}));
@@ -137,8 +135,6 @@ TEST(BitsTest, CountTrailingeZeroBits64) {
   }
   EXPECT_EQ(4u, CountTrailingZeroBits(uint64_t{0xf0f0f0f0f0f0f0f0}));
 }
-
-#endif  // ARCH_CPU_64_BITS
 
 TEST(BitsTest, CountLeadingZeroBitsSizeT) {
 #if defined(ARCH_CPU_64_BITS)
