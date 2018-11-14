@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -50,14 +50,13 @@ class CustomTabToolbarAnimationDelegate {
     CustomTabToolbarAnimationDelegate(View securityButton, final View titleUrlContainer) {
         mSecurityButton = securityButton;
         mTitleUrlContainer = titleUrlContainer;
-        mSecurityButtonWidth = securityButton.getResources()
-                .getDimensionPixelSize(R.dimen.location_bar_icon_width);
+        mSecurityButtonWidth = securityButton.getResources().getDimensionPixelSize(
+                R.dimen.location_bar_icon_width);
 
         titleUrlContainer.setTranslationX(-mSecurityButtonWidth);
 
         mSecurityButtonShowAnimator = new AnimatorSet();
-        Animator translateRight = ObjectAnimator.ofFloat(titleUrlContainer,
-                View.TRANSLATION_X, 0);
+        Animator translateRight = ObjectAnimator.ofFloat(titleUrlContainer, View.TRANSLATION_X, 0);
         translateRight.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         translateRight.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
 
@@ -83,8 +82,8 @@ class CustomTabToolbarAnimationDelegate {
             }
         });
 
-        Animator translateLeft = ObjectAnimator.ofFloat(titleUrlContainer,
-                View.TRANSLATION_X, -mSecurityButtonWidth);
+        Animator translateLeft = ObjectAnimator.ofFloat(
+                titleUrlContainer, View.TRANSLATION_X, -mSecurityButtonWidth);
         translateLeft.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         translateLeft.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
         mSecurityButtonHideAnimator.playSequentially(fadeOut, translateLeft);
@@ -143,17 +142,24 @@ class CustomTabToolbarAnimationDelegate {
                 mUrlBar.setTranslationX(oldLoc[0] - newLoc[0]);
                 mUrlBar.setTranslationY(oldLoc[1] - newLoc[1]);
 
-                mUrlBar.animate().scaleX(1f).scaleY(1f).translationX(0).translationY(0)
+                mUrlBar.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .translationX(0)
+                        .translationY(0)
                         .setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS)
                         .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                         .setListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animation) {
-                                mTitleBar.animate().alpha(1f)
-                                    .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE)
-                                    .setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS).start();
+                                mTitleBar.animate()
+                                        .alpha(1f)
+                                        .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE)
+                                        .setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS)
+                                        .start();
                             }
-                        }).start();
+                        })
+                        .start();
             }
         });
     }

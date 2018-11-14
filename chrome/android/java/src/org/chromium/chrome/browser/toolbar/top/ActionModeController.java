@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -20,7 +20,6 @@ import org.chromium.chrome.R;
  * manages a {@link ToolbarActionModeCallback}.
  */
 public class ActionModeController {
-
     private static final int SLIDE_DURATION_MS = 200;
 
     private ToolbarActionModeCallback mToolbarActionModeCallback;
@@ -48,7 +47,6 @@ public class ActionModeController {
      * action mode is showing.
      */
     public interface ActionBarDelegate {
-
         /**
          * Sets the top margin of the control container.
          * @param margin The new top margin of the control container.
@@ -143,9 +141,12 @@ public class ActionModeController {
     public void startShowAnimation() {
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
 
-        mCurrentAnimation = ObjectAnimator.ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY,
-                (int) (Math.max(0, queryCurrentActionBarHeight() - mTabStripHeight))).setDuration(
-                SLIDE_DURATION_MS);
+        mCurrentAnimation =
+                ObjectAnimator
+                        .ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY,
+                                (int) (Math.max(
+                                        0, queryCurrentActionBarHeight() - mTabStripHeight)))
+                        .setDuration(SLIDE_DURATION_MS);
 
         mCurrentAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -159,8 +160,8 @@ public class ActionModeController {
             public void onAnimationUpdate(ValueAnimator animation) {
                 ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
                 if (actionBar != null) {
-                    animation.setIntValues((int) (Math.max(0,
-                            queryCurrentActionBarHeight() - mTabStripHeight)));
+                    animation.setIntValues(
+                            (int) (Math.max(0, queryCurrentActionBarHeight() - mTabStripHeight)));
                 }
             }
         });
@@ -177,8 +178,8 @@ public class ActionModeController {
         if (!mShowingActionMode) return;
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
 
-        mCurrentAnimation = ObjectAnimator.ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY,
-                0).setDuration(SLIDE_DURATION_MS);
+        mCurrentAnimation = ObjectAnimator.ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY, 0)
+                                    .setDuration(SLIDE_DURATION_MS);
 
         mCurrentAnimation.addListener(new AnimatorListenerAdapter() {
             @Override

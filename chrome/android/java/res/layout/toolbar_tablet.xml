@@ -6,7 +6,7 @@
 <!-- The toolbar containing the URL bar, back button, and NTP button.
 -->
 
-<org.chromium.chrome.browser.toolbar.ToolbarTablet
+<org.chromium.chrome.browser.toolbar.top.ToolbarTablet
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -92,4 +92,4 @@
 
         </org.chromium.chrome.browser.toolbar.MenuButton>
     </LinearLayout>
-</org.chromium.chrome.browser.toolbar.ToolbarTablet>
+</org.chromium.chrome.browser.toolbar.top.ToolbarTablet>

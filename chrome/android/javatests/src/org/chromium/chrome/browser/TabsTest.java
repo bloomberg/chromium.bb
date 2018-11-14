@@ -61,7 +61,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
-import org.chromium.chrome.browser.toolbar.ToolbarPhone;
+import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;

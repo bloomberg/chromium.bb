@@ -14,9 +14,9 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.Toolbar;
-import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.top.Toolbar;
+import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

@@ -15,9 +15,12 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 
 import java.util.List;
 
-class TabCountProvider {
+/**
+ * Provides the number of open regular tabs for display in the tab switcher icon.
+ */
+public class TabCountProvider {
     /** An observer that is notified of changes to the number of open tabs. */
-    interface TabCountObserver {
+    public interface TabCountObserver {
         /**
          * @param tabCount Number of open tabs in the selected tab model.
          * @param isIncognito Whether the selected tab model is incognito.
@@ -51,14 +54,14 @@ class TabCountProvider {
     /**
      * @param observer The observer that will have events broadcast to.
      */
-    void addObserver(TabCountObserver observer) {
+    public void addObserver(TabCountObserver observer) {
         mTabCountObservers.addObserver(observer);
     }
 
     /**
      * @param observer The observer that will be removed.
      */
-    void removeObserver(TabCountObserver observer) {
+    public void removeObserver(TabCountObserver observer) {
         mTabCountObservers.removeObserver(observer);
     }
 

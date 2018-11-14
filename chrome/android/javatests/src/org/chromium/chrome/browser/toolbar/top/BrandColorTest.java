@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.annotation.TargetApi;
 import android.graphics.Color;
@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -62,31 +63,28 @@ public class BrandColorTest {
 
     private static String getUrlWithBrandColor(String brandColor) {
         String brandColorMetaTag = TextUtils.isEmpty(brandColor)
-                ? "" : "<meta name='theme-color' content='" + brandColor + "'>";
-        return UrlUtils.encodeHtmlDataUri(
-                "<html>"
+                ? ""
+                : "<meta name='theme-color' content='" + brandColor + "'>";
+        return UrlUtils.encodeHtmlDataUri("<html>"
                 + "  <head>"
-                + "    " + brandColorMetaTag
-                + "  </head>"
+                + "    " + brandColorMetaTag + "  </head>"
                 + "  <body>"
-                + "    Theme color set to " + brandColor
-                + "  </body>"
+                + "    Theme color set to " + brandColor + "  </body>"
                 + "</html>");
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
-        CriteriaHelper.pollUiThread(new Criteria(
-                "The toolbar background doesn't contain the right color") {
-            @Override
-            public boolean isSatisfied() {
-                if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
-                return mToolbarDataProvider.getPrimaryColor()
-                        == mToolbar.getBackgroundDrawable().getColor();
-            }
-        });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && !SysUtils.isLowEndDevice()) {
+        CriteriaHelper.pollUiThread(
+                new Criteria("The toolbar background doesn't contain the right color") {
+                    @Override
+                    public boolean isSatisfied() {
+                        if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
+                        return mToolbarDataProvider.getPrimaryColor()
+                                == mToolbar.getBackgroundDrawable().getColor();
+                    }
+                });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !SysUtils.isLowEndDevice()) {
             final int expectedStatusBarColor;
             if (mSupportsDarkStatusIcons) {
                 expectedStatusBarColor = brandColor == mDefaultColor ? Color.WHITE : brandColor;
