@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
@@ -52,29 +53,22 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
   HasVisibleLocationBarForBrowser(browser());
 }
 
-// Disabled. See https://crbug.com/845389 - this regressed somewhere between
-// r545258 and r559030 (suspect: r549698), but it may be obsolete soon.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
-                       DISABLED_TabFullscreenHasLocationBar) {
-  ui::test::ScopedFakeNSWindowFullscreen faker;
-
-  // TODO(tapted): This should use ShowBubble(). However, on 10.9 it triggers a
-  // DCHECK failure in cr_setPatternPhase:forView:. See http://crbug.com/802107.
-  auto prompt =
-      std::make_unique<PermissionPromptImpl>(browser(), test_delegate());
+                       TabFullscreenHasLocationBar) {
+  FullscreenNotificationObserver fullscreen_observer;
+  ShowBubble(browser());
   EXPECT_TRUE(HasVisibleLocationBarForBrowser(browser()));
 
   FullscreenController* controller =
       browser()->exclusive_access_manager()->fullscreen_controller();
   controller->EnterFullscreenModeForTab(
       browser()->tab_strip_model()->GetActiveWebContents(), GURL());
-  faker.FinishTransition();
-
+  fullscreen_observer.Wait();
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(browser()));
+
   controller->ExitFullscreenModeForTab(
       browser()->tab_strip_model()->GetActiveWebContents());
-  faker.FinishTransition();
-
+  fullscreen_observer.Wait();
   EXPECT_TRUE(HasVisibleLocationBarForBrowser(browser()));
 }
 
