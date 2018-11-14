@@ -410,9 +410,9 @@ void DomainReliabilityMonitor::MaybeHandleHeader(
   std::string ignored_header_value;
   if (request.response_info.headers->EnumerateHeader(
           &iter, kHeaderNameString, &ignored_header_value)) {
-    LOG(WARNING) << "Request to " << request.url << " had (at least) two "
-                 << kHeaderNameString << " headers: \"" << header_value
-                 << "\" and \"" << ignored_header_value << "\".";
+    DLOG(WARNING) << "Request to " << request.url << " had (at least) two "
+                  << kHeaderNameString << " headers: \"" << header_value
+                  << "\" and \"" << ignored_header_value << "\".";
     return;
   }
 
@@ -430,9 +430,9 @@ void DomainReliabilityMonitor::MaybeHandleHeader(
       context_manager_.ClearConfig(origin);
       break;
     case DomainReliabilityHeader::PARSE_ERROR:
-      LOG(WARNING) << "Request to " << request.url << " had invalid "
-                   << kHeaderNameString << " header \"" << header_value
-                   << "\".";
+      DLOG(WARNING) << "Request to " << request.url << " had invalid "
+                    << kHeaderNameString << " header \"" << header_value
+                    << "\".";
       break;
   }
 }
