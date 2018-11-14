@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -41,6 +41,10 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.MenuButton;
+import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
@@ -280,7 +284,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /** Notified that the menu was shown. */
-    protected void onMenuShown() {}
+    public void onMenuShown() {}
 
     /**
      *  This function handles native dependent initialization for this class
@@ -299,14 +303,14 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * @return The view containing the menu button and menu button badge.
      */
-    protected View getMenuButtonWrapper() {
+    public View getMenuButtonWrapper() {
         return mMenuButtonWrapper;
     }
 
     /**
      * @return The {@link ImageButton} containing the menu button.
      */
-    protected ImageButton getMenuButton() {
+    public ImageButton getMenuButton() {
         return mMenuButton;
     }
 
@@ -354,10 +358,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Add the toolbar's progress bar to the view hierarchy.
      */
     protected void addProgressBarToHierarchy() {
-        ViewGroup controlContainer =
-                (ViewGroup) getRootView().findViewById(R.id.control_container);
-        int progressBarPosition = UiUtils.insertAfter(
-                controlContainer, mProgressBar, (View) getParent());
+        ViewGroup controlContainer = (ViewGroup) getRootView().findViewById(R.id.control_container);
+        int progressBarPosition =
+                UiUtils.insertAfter(controlContainer, mProgressBar, (View) getParent());
         assert progressBarPosition >= 0;
         mProgressBar.setProgressBarContainer(controlContainer);
     }
@@ -365,7 +368,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * @return The provider for toolbar related data.
      */
-    protected ToolbarDataProvider getToolbarDataProvider() {
+    @VisibleForTesting
+    public ToolbarDataProvider getToolbarDataProvider() {
         return mToolbarDataProvider;
     }
 
@@ -397,44 +401,44 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * {@link org.chromium.chrome.browser.widget.findinpage.FindToolbar} state changes.
      * @param showing Whether or not the {@code FindToolbar} will be showing.
      */
-    protected void handleFindLocationBarStateChange(boolean showing) {
+    public void handleFindLocationBarStateChange(boolean showing) {
         mFindInPageToolbarShowing = showing;
     }
 
     /**
      * Cleans up any code as necessary.
      */
-    public void destroy() { }
+    public void destroy() {}
 
     /**
      * Sets the delegate to handle visibility of browser controls.
      */
     public void setBrowserControlsVisibilityDelegate(
-            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) { }
+            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {}
 
     /**
      * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.
      * @param listener The callback that will be notified when the TabSwitcher button is pressed.
      */
-    public void setOnTabSwitcherClickHandler(OnClickListener listener) { }
+    public void setOnTabSwitcherClickHandler(OnClickListener listener) {}
 
     /**
      * Sets the OnClickListener that will be notified when the New Tab button is pressed.
      * @param listener The callback that will be notified when the New Tab button is pressed.
      */
-    public void setOnNewTabClickHandler(OnClickListener listener) { }
+    public void setOnNewTabClickHandler(OnClickListener listener) {}
 
     /**
      * Sets the OnClickListener that will be notified when the bookmark button is pressed.
      * @param listener The callback that will be notified when the bookmark button is pressed.
      */
-    public void setBookmarkClickHandler(OnClickListener listener) { }
+    public void setBookmarkClickHandler(OnClickListener listener) {}
 
     /**
      * Sets the OnClickListener to notify when the close button is pressed in a custom tab.
      * @param listener The callback that will be notified when the close button is pressed.
      */
-    public void setCustomTabCloseClickHandler(OnClickListener listener) { }
+    public void setCustomTabCloseClickHandler(OnClickListener listener) {}
 
     /**
      * Sets the OnClickListener to notify when the incognito button is pressed.
@@ -445,7 +449,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * Sets whether the urlbar should be hidden on first page load.
      */
-    public void setUrlBarHidden(boolean hide) { }
+    public void setUrlBarHidden(boolean hide) {}
 
     /**
      * @return The name of the publisher of the content if it can be reliably extracted, or null
@@ -458,28 +462,28 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * Tells the Toolbar to update what buttons it is currently displaying.
      */
-    public void updateButtonVisibility() { }
+    public void updateButtonVisibility() {}
 
     /**
      * Gives inheriting classes the chance to update the visibility of the
      * back button.
      * @param canGoBack Whether or not the current tab has any history to go back to.
      */
-    protected void updateBackButtonVisibility(boolean canGoBack) { }
+    public void updateBackButtonVisibility(boolean canGoBack) {}
 
     /**
      * Gives inheriting classes the chance to update the visibility of the
      * forward button.
      * @param canGoForward Whether or not the current tab has any history to go forward to.
      */
-    protected void updateForwardButtonVisibility(boolean canGoForward) { }
+    public void updateForwardButtonVisibility(boolean canGoForward) {}
 
     /**
      * Gives inheriting classes the chance to update the visibility of the
      * reload button.
      * @param isReloading Whether or not the current tab is loading.
      */
-    protected void updateReloadButtonVisibility(boolean isReloading) { }
+    public void updateReloadButtonVisibility(boolean isReloading) {}
 
     /**
      * Gives inheriting classes the chance to update the visual status of the
@@ -487,26 +491,26 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param isBookmarked Whether or not the current tab is already bookmarked.
      * @param editingAllowed Whether or not bookmarks can be modified (added, edited, or removed).
      */
-    protected void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) { }
+    public void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {}
 
     /**
      * Gives inheriting classes the chance to respond to accessibility state changes.
      * @param enabled Whether or not accessibility is enabled.
      */
-    protected void onAccessibilityStatusChanged(boolean enabled) { }
+    public void onAccessibilityStatusChanged(boolean enabled) {}
 
     /**
      * Gives inheriting classes the chance to do the necessary UI operations after Chrome is
      * restored to a previously saved state.
      */
-    protected void onStateRestored() { }
+    public void onStateRestored() {}
 
     /**
      * Gives inheriting classes the chance to update home button UI if home button preference is
      * changed.
      * @param homeButtonEnabled Whether or not home button is enabled in preference.
      */
-    protected void onHomeButtonUpdate(boolean homeButtonEnabled) { }
+    public void onHomeButtonUpdate(boolean homeButtonEnabled) {}
 
     /**
      * Triggered when the current tab or model has changed.
@@ -515,7 +519,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * tabs but no normal tabs will still allow you to select the normal model), this should
      * not guarantee that the model's current tab is non-null.
      */
-    protected void onTabOrModelChanged() {
+    public void onTabOrModelChanged() {
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         if (ntp != null) {
             getLocationBar().onTabLoadingNTP(ntp);
@@ -528,13 +532,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * For extending classes to override and carry out the changes related with the primary color
      * for the current tab changing.
      */
-    protected void onPrimaryColorChanged(boolean shouldAnimate) { }
+    public void onPrimaryColorChanged(boolean shouldAnimate) {}
 
     /**
      * Sets the icon drawable that the close button in the toolbar (if any) should show, or hides
      * it if {@code drawable} is {@code null}.
      */
-    public void setCloseButtonImageResource(@Nullable Drawable drawable) { }
+    public void setCloseButtonImageResource(@Nullable Drawable drawable) {}
 
     /**
      * Adds a custom action button to the toolbar layout, if it is supported.
@@ -571,7 +575,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * Triggered when the content view for the specified tab has changed.
      */
-    protected void onTabContentViewChanged() {
+    public void onTabContentViewChanged() {
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         if (ntp != null) getLocationBar().onTabLoadingNTP(ntp);
     }
@@ -587,12 +591,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     @Override
-    public void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost) { }
+    public void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost) {}
 
     /**
      * @param attached Whether or not the web content is attached to the view heirarchy.
      */
-    protected void setContentAttached(boolean attached) { }
+    public void setContentAttached(boolean attached) {}
 
     /**
      * Gives inheriting classes the chance to show or hide the TabSwitcher mode of this toolbar.
@@ -602,26 +606,26 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      *                       finished (which can be detected by a call to
      *                       {@link #onTabSwitcherTransitionFinished()}).
      */
-    protected void setTabSwitcherMode(
-            boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) { }
+    public void setTabSwitcherMode(
+            boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {}
 
     /**
      * Gives inheriting classes the chance to update their state when the TabSwitcher transition has
      * finished.
      */
-    protected void onTabSwitcherTransitionFinished() { }
+    public void onTabSwitcherTransitionFinished() {}
 
     /**
      * Gives inheriting classes the chance to observe tab count changes.
      * @param tabCountProvider The {@link TabCountProvider} subclasses can observe.
      */
-    protected void setTabCountProvider(TabCountProvider tabCountProvider) {}
+    public void setTabCountProvider(TabCountProvider tabCountProvider) {}
 
     /**
      * Gives inheriting classes the chance to update themselves based on default search engine
      * changes.
      */
-    protected void onDefaultSearchEngineChanged() { }
+    public void onDefaultSearchEngineChanged() {}
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
@@ -644,13 +648,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         outRect.set(container.getPaddingLeft(), container.getPaddingTop(),
                 container.getWidth() - container.getPaddingRight(),
                 container.getHeight() - container.getPaddingBottom());
-        ViewUtils.getRelativeDrawPosition(
-                this, getLocationBar().getContainerView(), mTempPosition);
+        ViewUtils.getRelativeDrawPosition(this, getLocationBar().getContainerView(), mTempPosition);
         outRect.offset(mTempPosition[0], mTempPosition[1]);
     }
 
     @Override
-    public void setTextureCaptureMode(boolean textureMode) { }
+    public void setTextureCaptureMode(boolean textureMode) {}
 
     @Override
     public boolean shouldIgnoreSwipeGesture() {
@@ -670,7 +673,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Triggered when the URL input field has gained or lost focus.
      * @param hasFocus Whether the URL field has gained focus.
      */
-    protected void onUrlFocusChange(boolean hasFocus) {
+    public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
     }
 
@@ -691,13 +694,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * Notified when a navigation to a different page has occurred.
      */
-    protected void onNavigatedToDifferentPage() {
-    }
+    public void onNavigatedToDifferentPage() {}
 
     /**
      * Starts load progress.
      */
-    protected void startLoadProgress() {
+    public void startLoadProgress() {
         mProgressBar.start();
     }
 
@@ -705,7 +707,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Sets load progress.
      * @param progress The load progress between 0 and 1.
      */
-    protected void setLoadProgress(float progress) {
+    public void setLoadProgress(float progress) {
         mProgressBar.setProgress(progress);
     }
 
@@ -714,21 +716,21 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param delayed Whether hiding progress bar should be delayed to give enough time for user to
      *                        recognize the last state.
      */
-    protected void finishLoadProgress(boolean delayed) {
+    public void finishLoadProgress(boolean delayed) {
         mProgressBar.finish(delayed);
     }
 
     /**
      * @return True if the progress bar is started.
      */
-    protected boolean isProgressStarted() {
+    public boolean isProgressStarted() {
         return mProgressBar.isStarted();
     }
 
     /**
      * Finish any toolbar animations.
      */
-    public void finishAnimations() { }
+    public void finishAnimations() {}
 
     /**
      * @return The current View showing in the Tab.
@@ -838,8 +840,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         // Set initial states.
         mMenuButton.setAlpha(0.f);
 
-        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createHideUpdateBadgeAnimation(
-                mMenuButton, mMenuBadge);
+        mMenuBadgeAnimatorSet =
+                UpdateMenuItemHelper.createHideUpdateBadgeAnimation(mMenuButton, mMenuBadge);
 
         mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -898,8 +900,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuBadge.setAlpha(0.f);
         mMenuBadge.setVisibility(View.VISIBLE);
 
-        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createShowUpdateBadgeAnimation(
-                mMenuButton, mMenuBadge);
+        mMenuBadgeAnimatorSet =
+                UpdateMenuItemHelper.createShowUpdateBadgeAnimation(mMenuButton, mMenuBadge);
 
         mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override

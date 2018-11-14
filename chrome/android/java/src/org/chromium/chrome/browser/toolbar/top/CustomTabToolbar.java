@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -56,6 +56,8 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -327,8 +329,8 @@ public class CustomTabToolbar
                     getResources().getDimension(R.dimen.custom_tabs_url_text_size));
             mUrlBar.setVisibility(View.VISIBLE);
             LayoutParams lp = (LayoutParams) mTitleBar.getLayoutParams();
-            lp.bottomMargin = getResources()
-                    .getDimensionPixelSize(R.dimen.custom_tabs_toolbar_vertical_padding);
+            lp.bottomMargin = getResources().getDimensionPixelSize(
+                    R.dimen.custom_tabs_toolbar_vertical_padding);
             mTitleBar.setLayoutParams(lp);
             mTitleBar.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     getResources().getDimension(R.dimen.custom_tabs_title_text_size));
@@ -374,7 +376,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    protected void onNavigatedToDifferentPage() {
+    public void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
         setTitleToPageTitle();
         if (mState == STATE_TITLE_ONLY) {
@@ -482,8 +484,8 @@ public class CustomTabToolbar
 
         int titleTextColor = mUseDarkColors
                 ? ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text)
-                : ApiCompatibilityUtils.getColor(resources,
-                        R.color.url_emphasis_light_default_text);
+                : ApiCompatibilityUtils.getColor(
+                          resources, R.color.url_emphasis_light_default_text);
         mTitleBar.setTextColor(titleTextColor);
 
         if (getProgressBar() != null) {
@@ -491,10 +493,10 @@ public class CustomTabToolbar
                         getResources(), false, getBackground().getColor())) {
                 getProgressBar().setThemeColor(getBackground().getColor(), false);
             } else {
-                getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(resources,
-                        R.color.progress_bar_background));
-                getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(resources,
-                        R.color.progress_bar_foreground));
+                getProgressBar().setBackgroundColor(
+                        ApiCompatibilityUtils.getColor(resources, R.color.progress_bar_background));
+                getProgressBar().setForegroundColor(
+                        ApiCompatibilityUtils.getColor(resources, R.color.progress_bar_foreground));
             }
         }
     }
@@ -532,8 +534,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {
-    }
+    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {}
 
     @Override
     public void updateSecurityIcon() {
@@ -566,7 +567,7 @@ public class CustomTabToolbar
      * for the current tab changing.
      */
     @Override
-    protected void onPrimaryColorChanged(boolean shouldAnimate) {
+    public void onPrimaryColorChanged(boolean shouldAnimate) {
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
 
         final ColorDrawable background = getBackground();
@@ -575,8 +576,8 @@ public class CustomTabToolbar
 
         if (background.getColor() == finalColor) return;
 
-        mBrandColorTransitionAnimation = ValueAnimator.ofFloat(0, 1)
-                .setDuration(ToolbarPhone.THEME_COLOR_TRANSITION_DURATION);
+        mBrandColorTransitionAnimation = ValueAnimator.ofFloat(0, 1).setDuration(
+                ToolbarPhone.THEME_COLOR_TRANSITION_DURATION);
         mBrandColorTransitionAnimation.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         mBrandColorTransitionAnimation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
@@ -645,21 +646,21 @@ public class CustomTabToolbar
                 int widthMeasureSpec;
                 int heightMeasureSpec;
                 if (childLayoutParams.width == LayoutParams.WRAP_CONTENT) {
-                    widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredWidth(), MeasureSpec.AT_MOST);
+                    widthMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.AT_MOST);
                 } else if (childLayoutParams.width == LayoutParams.MATCH_PARENT) {
-                    widthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredWidth(), MeasureSpec.EXACTLY);
+                    widthMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY);
                 } else {
                     widthMeasureSpec = MeasureSpec.makeMeasureSpec(
                             childLayoutParams.width, MeasureSpec.EXACTLY);
                 }
                 if (childLayoutParams.height == LayoutParams.WRAP_CONTENT) {
-                    heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredHeight(), MeasureSpec.AT_MOST);
+                    heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.AT_MOST);
                 } else if (childLayoutParams.height == LayoutParams.MATCH_PARENT) {
-                    heightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            getMeasuredHeight(), MeasureSpec.EXACTLY);
+                    heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY);
                 } else {
                     heightMeasureSpec = MeasureSpec.makeMeasureSpec(
                             childLayoutParams.height, MeasureSpec.EXACTLY);
@@ -718,8 +719,8 @@ public class CustomTabToolbar
                     getContext(), v, v.getContentDescription());
         }
         if (v == mTitleUrlContainer) {
-            ClipboardManager clipboard = (ClipboardManager) getContext()
-                    .getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager clipboard =
+                    (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
             Tab tab = getCurrentTab();
             if (tab == null) return false;
             String url = tab.getOriginalUrl();
@@ -794,7 +795,7 @@ public class CustomTabToolbar
     public void removeAppMenuUpdateBadge(boolean animate) {}
 
     @Override
-    protected void setAppMenuUpdateBadgeToVisible(boolean animate) {}
+    public void setAppMenuUpdateBadgeToVisible(boolean animate) {}
 
     @Override
     public View getMenuButtonWrapper() {
@@ -820,7 +821,7 @@ public class CustomTabToolbar
     public void setMenuButtonHighlight(boolean highlight) {}
 
     @Override
-    protected void setMenuButtonHighlightDrawable(boolean highlighting) {}
+    public void setMenuButtonHighlightDrawable(boolean highlighting) {}
 
     @Override
     public int getUrlContainerMarginEnd() {

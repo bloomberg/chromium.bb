@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 /**
  * The overflow menu button.
  */
-class MenuButton extends FrameLayout implements ThemeColorObserver {
+public class MenuButton extends FrameLayout implements ThemeColorObserver {
     /** The {@link ImageButton} for the menu button. */
     private ImageButton mMenuImageButton;
 
@@ -68,7 +68,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      *                if the update type does not require a badge.
      * TODO(crbug.com/865801): Clean this up when MenuButton and UpdateMenuItemHelper is MVCed.
      */
-    void setUpdateBadgeVisibilityIfValidState(boolean visible) {
+    public void setUpdateBadgeVisibilityIfValidState(boolean visible) {
         switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
             case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
             // Intentional fall through.
@@ -92,12 +92,12 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      * Sets the visual type of update badge to use (if any).
      * @param useLightDrawables Whether the light drawable should be used.
      */
-    void setUseLightDrawables(boolean useLightDrawables) {
+    public void setUseLightDrawables(boolean useLightDrawables) {
         mUseLightDrawables = useLightDrawables;
         updateImageResources();
     }
 
-    void updateImageResources() {
+    public void updateImageResources() {
         Drawable drawable;
         if (mUseLightDrawables) {
             drawable = UpdateMenuItemHelper.getInstance().getLightBadgeDrawable(
@@ -121,7 +121,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      * Sets the content description for the menu button.
      * @param isUpdateBadgeVisible Whether the update menu badge is visible.
      */
-    void updateContentDescription(boolean isUpdateBadgeVisible) {
+    public void updateContentDescription(boolean isUpdateBadgeVisible) {
         if (isUpdateBadgeVisible) {
             switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
                 case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.os.Build;
 import android.view.ActionMode;
@@ -13,7 +13,6 @@ import android.view.MenuItem;
  * A custom ActionMode.Callback that handles copy, paste selection in omnibox and toolbar.
  */
 public class ToolbarActionModeCallback implements ActionMode.Callback {
-
     private ActionModeController mActionModeController;
 
     private boolean mMovedToolbar;

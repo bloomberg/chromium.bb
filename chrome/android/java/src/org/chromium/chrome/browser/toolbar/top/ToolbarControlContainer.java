@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -223,9 +223,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
             // Erase the canvas because assets drawn are not fully opaque and therefore painting
             // twice would be bad.
             canvas.save();
-            canvas.clipRect(
-                    0, 0,
-                    mToolbarContainer.getWidth(), mToolbarContainer.getHeight());
+            canvas.clipRect(0, 0, mToolbarContainer.getWidth(), mToolbarContainer.getHeight());
             canvas.drawColor(0, PorterDuff.Mode.CLEAR);
             canvas.restore();
             dirtyRect.set(0, 0, mToolbarContainer.getWidth(), mToolbarContainer.getHeight());

@@ -11,8 +11,7 @@ import android.view.View.OnKeyListener;
 /**
  * This is an abstract class to override keyboard navigation behavior for views.
  */
-abstract class KeyboardNavigationListener implements OnKeyListener {
-
+public abstract class KeyboardNavigationListener implements OnKeyListener {
     public KeyboardNavigationListener() {
         super();
     }

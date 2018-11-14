@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -32,7 +32,10 @@ import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
+import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
+import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -90,8 +93,8 @@ public class ToolbarTablet extends ToolbarLayout
      */
     public ToolbarTablet(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mStartPaddingWithButtons = getResources().getDimensionPixelOffset(
-                R.dimen.tablet_toolbar_start_padding);
+        mStartPaddingWithButtons =
+                getResources().getDimensionPixelOffset(R.dimen.tablet_toolbar_start_padding);
         mStartPaddingWithoutButtons =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
     }
@@ -368,8 +371,8 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     private void updateSwitcherButtonVisibility(boolean enabled) {
-        mAccessibilitySwitcherButton.setVisibility(mShowTabStack || enabled
-                ? View.VISIBLE : View.GONE);
+        mAccessibilitySwitcherButton.setVisibility(
+                mShowTabStack || enabled ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -440,7 +443,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    protected void onTabContentViewChanged() {
+    public void onTabContentViewChanged() {
         super.onTabContentViewChanged();
         updateNtp();
     }
@@ -454,31 +457,31 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    protected void updateBackButtonVisibility(boolean canGoBack) {
+    public void updateBackButtonVisibility(boolean canGoBack) {
         boolean enableButton = canGoBack && !mIsInTabSwitcherMode;
         mBackButton.setEnabled(enableButton);
         mBackButton.setFocusable(enableButton);
     }
 
     @Override
-    protected void updateForwardButtonVisibility(boolean canGoForward) {
+    public void updateForwardButtonVisibility(boolean canGoForward) {
         boolean enableButton = canGoForward && !mIsInTabSwitcherMode;
         mForwardButton.setEnabled(enableButton);
         mForwardButton.setFocusable(enableButton);
     }
 
     @Override
-    protected void updateReloadButtonVisibility(boolean isReloading) {
+    public void updateReloadButtonVisibility(boolean isReloading) {
         if (isReloading) {
             mReloadButton.getDrawable().setLevel(
                     getResources().getInteger(R.integer.reload_button_level_stop));
-            mReloadButton.setContentDescription(getContext().getString(
-                    R.string.accessibility_btn_stop_loading));
+            mReloadButton.setContentDescription(
+                    getContext().getString(R.string.accessibility_btn_stop_loading));
         } else {
             mReloadButton.getDrawable().setLevel(
                     getResources().getInteger(R.integer.reload_button_level_reload));
-            mReloadButton.setContentDescription(getContext().getString(
-                    R.string.accessibility_btn_refresh));
+            mReloadButton.setContentDescription(
+                    getContext().getString(R.string.accessibility_btn_refresh));
         }
         ApiCompatibilityUtils.setImageTintList(
                 mReloadButton, isIncognito() ? mLightModeTint : mDarkModeTint);
@@ -486,7 +489,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    protected void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
+    public void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             // Non-incognito mode shows a blue filled star.
@@ -494,20 +497,19 @@ public class ToolbarTablet extends ToolbarLayout
                     isIncognito() ? mLightModeTint
                                   : AppCompatResources.getColorStateList(
                                             getContext(), R.color.blue_mode_tint));
-            mBookmarkButton.setContentDescription(getContext().getString(
-                    R.string.edit_bookmark));
+            mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
             ApiCompatibilityUtils.setImageTintList(
                     mBookmarkButton, isIncognito() ? mLightModeTint : mDarkModeTint);
-            mBookmarkButton.setContentDescription(getContext().getString(
-                    R.string.accessibility_menu_bookmark));
+            mBookmarkButton.setContentDescription(
+                    getContext().getString(R.string.accessibility_menu_bookmark));
         }
         mBookmarkButton.setEnabled(editingAllowed);
     }
 
     @Override
-    protected void setTabSwitcherMode(
+    public void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
         if (mShowTabStack && inTabSwitcherMode) {
             mIsInTabSwitcherMode = true;
@@ -531,16 +533,15 @@ public class ToolbarTablet extends ToolbarLayout
 
     @Override
     public void onTabCountChanged(int numberOfTabs, boolean isIncognito) {
-        mAccessibilitySwitcherButton.setContentDescription(
-                getResources().getQuantityString(
-                        R.plurals.accessibility_toolbar_btn_tabswitcher_toggle,
-                        numberOfTabs, numberOfTabs));
+        mAccessibilitySwitcherButton.setContentDescription(getResources().getQuantityString(
+                R.plurals.accessibility_toolbar_btn_tabswitcher_toggle, numberOfTabs,
+                numberOfTabs));
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito);
     }
 
     @Override
-    protected void setTabCountProvider(TabCountProvider tabCountProvider) {
+    public void setTabCountProvider(TabCountProvider tabCountProvider) {
         tabCountProvider.addObserver(this);
     }
 
@@ -566,7 +567,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    protected void onHomeButtonUpdate(boolean homeButtonEnabled) {
+    public void onHomeButtonUpdate(boolean homeButtonEnabled) {
         mHomeButton.setVisibility(homeButtonEnabled ? VISIBLE : GONE);
     }
 
@@ -647,15 +648,16 @@ public class ToolbarTablet extends ToolbarLayout
      */
     public int getStartPaddingDifferenceForButtonVisibilityAnimation() {
         // If the home button is visible then the padding doesn't change.
-        return mHomeButton.getVisibility() == View.VISIBLE ? 0
+        return mHomeButton.getVisibility() == View.VISIBLE
+                ? 0
                 : mStartPaddingWithButtons - mStartPaddingWithoutButtons;
     }
 
     private void runToolbarButtonsVisibilityAnimation(boolean visible) {
         if (mButtonVisibilityAnimators != null) mButtonVisibilityAnimators.cancel();
 
-        mButtonVisibilityAnimators = visible ? buildShowToolbarButtonsAnimation()
-                : buildHideToolbarButtonsAnimation();
+        mButtonVisibilityAnimators =
+                visible ? buildShowToolbarButtonsAnimation() : buildHideToolbarButtonsAnimation();
         mButtonVisibilityAnimators.start();
     }
 

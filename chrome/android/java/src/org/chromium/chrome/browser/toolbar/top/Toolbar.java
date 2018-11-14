@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar;
+package org.chromium.chrome.browser.toolbar.top;
 
 import android.graphics.Rect;
 import android.view.View;
@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
  * this interface should be used rather than {@link ToolbarLayout} and extending classes.
  */
 public interface Toolbar {
-
     /**
      * Calculates the {@link Rect} that represents the content area of the location bar.  This
      * rect will be relative to the toolbar.
