@@ -238,11 +238,13 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void TestLayerTreeFrameSink::OnBeginFrame(
-    const BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
-  for (const auto& pair : feedbacks)
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
+void TestLayerTreeFrameSink::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    const gfx::PresentationFeedback& feedback) {
+  client_->DidPresentCompositorFrame(presentation_token, feedback);
+}
+
+void TestLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   external_begin_frame_source_.OnBeginFrame(args);
 }
 

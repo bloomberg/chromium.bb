@@ -56,10 +56,13 @@ TEST(SurfaceTest, PresentationCallback) {
             .SetFrameToken(2)
             .SetRequestPresentationFeedback(true)
             .Build();
+    EXPECT_CALL(client, DidPresentCompositorFrame(
+                            1, testing::Field(
+                                   &gfx::PresentationFeedback::flags,
+                                   gfx::PresentationFeedback::Flags::kFailure)))
+        .Times(1);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    ASSERT_EQ(1u, support->presentation_feedbacks().size());
-    EXPECT_EQ(1u, support->presentation_feedbacks().begin()->first);
     testing::Mock::VerifyAndClearExpectations(&client);
   }
 }

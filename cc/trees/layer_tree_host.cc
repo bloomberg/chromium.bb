@@ -312,7 +312,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
     pending_presentation_time_callbacks_.push_back(base::DoNothing());
   sync_tree->AddPresentationCallbacks(
       std::move(pending_presentation_time_callbacks_));
-  pending_presentation_time_callbacks_.clear();
 
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);

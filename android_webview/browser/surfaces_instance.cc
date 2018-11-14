@@ -220,9 +220,7 @@ std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
   return child_ranges;
 }
 
-void SurfacesInstance::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+void SurfacesInstance::OnBeginFrame(const viz::BeginFrameArgs& args) {}
 
 void SurfacesInstance::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
