@@ -555,9 +555,6 @@ bool MessageLoopImpl::DoIdleWork() {
   if (ShouldQuitWhenIdle()) {
     pump_->Quit();
   } else if (task_execution_allowed_) {
-    if (should_record_idle_metrics_)
-      pending_task_queue_.ReportMetricsOnIdle();
-
 #if defined(OS_WIN)
     // On Windows we activate the high resolution timer so that the wait
     // _if_ triggered by the timer happens with good resolution. If we don't
@@ -576,11 +573,6 @@ bool MessageLoopImpl::DoIdleWork() {
 
   // When we return we will do a kernel wait for more tasks.
   return false;
-}
-
-void MessageLoopImpl::SetShouldRecordIdleMetrics(
-    bool should_record_idle_metrics) {
-  should_record_idle_metrics_ = should_record_idle_metrics;
 }
 
 }  // namespace base

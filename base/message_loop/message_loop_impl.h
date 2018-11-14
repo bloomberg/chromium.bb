@@ -96,8 +96,6 @@ class BASE_EXPORT MessageLoopImpl : public MessagePump::Delegate,
   // Runs the specified PendingTask.
   void RunTask(PendingTask* pending_task);
 
-  void SetShouldRecordIdleMetrics(bool should_record_idle_metrics);
-
   // Configure various members and bind this message loop to the current thread.
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
 
@@ -224,8 +222,6 @@ class BASE_EXPORT MessageLoopImpl : public MessagePump::Delegate,
   // Instantiated in BindToCurrentThread().
   std::unique_ptr<internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       scoped_set_sequence_local_storage_map_for_current_thread_;
-
-  bool should_record_idle_metrics_ = false;
 
   // Verifies that calls are made on the thread on which BindToCurrentThread()
   // was invoked.
