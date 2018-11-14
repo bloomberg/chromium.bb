@@ -865,6 +865,10 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
+      'ANGLE GPU Win10 Release (Intel HD 630)',
+      'ANGLE GPU Win10 Release (NVIDIA)',
+      'Dawn GPU Win10 Release (Intel HD 630)',
+      'Dawn GPU Win10 Release (NVIDIA)',
       'Optional Android Release (Nexus 5X)',
       'Optional Linux Release (Intel HD 630)',
       'Optional Linux Release (NVIDIA)',
@@ -873,8 +877,6 @@ class BBJSONGenerator(object):
       'Optional Mac Retina Release (NVIDIA)',
       'Optional Win10 Release (Intel HD 630)',
       'Optional Win10 Release (NVIDIA)',
-      'Dawn GPU Win10 Release (Intel HD 630)',
-      'Dawn GPU Win10 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
       # chromium.fyi
       'linux-blink-rel-dummy',
