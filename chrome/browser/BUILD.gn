@@ -4096,6 +4096,8 @@ jumbo_split_static_library("browser") {
 
   if (enable_offline_pages) {
     sources += [
+      "offline_pages/auto_fetch_page_load_watcher.cc",
+      "offline_pages/auto_fetch_page_load_watcher.h",
       "offline_pages/background_loader_offliner.cc",
       "offline_pages/background_loader_offliner.h",
       "offline_pages/download_archive_manager.cc",

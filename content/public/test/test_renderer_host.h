@@ -260,6 +260,8 @@ class RenderViewHostTestHarness : public testing::Test {
   // context.
   virtual BrowserContext* GetBrowserContext();
 
+  TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
+
 #if defined(USE_AURA)
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
 #endif

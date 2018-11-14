@@ -21,8 +21,11 @@ OfflinePageAutoFetcherServiceFactory::GetInstance() {
 OfflinePageAutoFetcherService*
 OfflinePageAutoFetcherServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<OfflinePageAutoFetcherService*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+  KeyedService* service =
+      GetInstance()->GetServiceForBrowserContext(context, true);
+  if (!service)
+    return nullptr;
+  return static_cast<OfflinePageAutoFetcherService*>(service);
 }
 
 OfflinePageAutoFetcherServiceFactory::OfflinePageAutoFetcherServiceFactory()

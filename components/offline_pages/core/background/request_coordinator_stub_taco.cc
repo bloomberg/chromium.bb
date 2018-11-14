@@ -88,14 +88,40 @@ void RequestCoordinatorStubTaco::SetRequestCoordinatorDelegate(
 }
 
 void RequestCoordinatorStubTaco::CreateRequestCoordinator() {
-  request_coordinator_ = std::make_unique<RequestCoordinator>(
+  CHECK(!request_coordinator_)
+      << "CreateRequestCoordinator can be called only once";
+  owned_request_coordinator_ = std::make_unique<RequestCoordinator>(
       std::move(policy_), std::move(offliner_), std::move(queue_),
       std::move(scheduler_), network_quality_tracker_.get(),
       std::move(ukm_reporter_), std::move(active_tab_info_));
+  request_coordinator_ = owned_request_coordinator_.get();
 }
 
 RequestCoordinator* RequestCoordinatorStubTaco::request_coordinator() {
   CHECK(request_coordinator_);
-  return request_coordinator_.get();
+  return request_coordinator_;
 }
+
+base::RepeatingCallback<std::unique_ptr<KeyedService>(content::BrowserContext*)>
+RequestCoordinatorStubTaco::FactoryFunction() {
+  return base::BindRepeating(
+      &RequestCoordinatorStubTaco::InternalFactoryFunction, GetWeakPtr());
+}
+
+// static
+std::unique_ptr<KeyedService>
+RequestCoordinatorStubTaco::InternalFactoryFunction(
+    base::WeakPtr<RequestCoordinatorStubTaco> taco,
+    content::BrowserContext* context) {
+  if (!taco)
+    return nullptr;
+  // Call CreateRequestCoordinator if it hasn't already been called.
+  if (!taco->request_coordinator_) {
+    taco->CreateRequestCoordinator();
+  }
+  // This function can only be used once.
+  CHECK(taco->owned_request_coordinator_);
+  return std::move(taco->owned_request_coordinator_);
+}
+
 }  // namespace offline_pages
