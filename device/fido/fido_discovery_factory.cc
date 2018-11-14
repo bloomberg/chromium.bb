@@ -33,19 +33,6 @@ std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
   return nullptr;
 #else
 
-#if defined(OS_WIN)
-  // On platforms where the Windows webauthn.dll is present, access to USB
-  // devices is blocked and we use a special authenticator that forwards
-  // requests to the Windows WebAuthn API instead.
-  if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
-      WinWebAuthnApi::GetDefault()->IsAvailable()) {
-    return std::make_unique<WinNativeCrossPlatformAuthenticatorDiscovery>(
-        WinWebAuthnApi::GetDefault(),
-        // TODO(martinkr): Inject the window from which the request originated.
-        GetForegroundWindow());
-  }
-#endif  // defined(OS_WIN)
-
   DCHECK(connector);
   return std::make_unique<FidoHidDiscovery>(connector);
 #endif  // !defined(OS_ANDROID)
@@ -74,12 +61,12 @@ std::unique_ptr<FidoDiscoveryBase> CreateFidoDiscoveryImpl(
   return nullptr;
 }
 
-}  // namespace
-
 std::unique_ptr<FidoDiscoveryBase> CreateCableDiscoveryImpl(
     std::vector<CableDiscoveryData> cable_data) {
   return std::make_unique<FidoCableDiscovery>(std::move(cable_data));
 }
+
+}  // namespace
 
 // static
 FidoDiscoveryFactory::FactoryFuncPtr FidoDiscoveryFactory::g_factory_func_ =
@@ -101,6 +88,26 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::CreateCable(
     std::vector<CableDiscoveryData> cable_data) {
   return (*g_cable_factory_func_)(std::move(cable_data));
 }
+
+//  static
+#if defined(OS_WIN)
+std::unique_ptr<FidoDiscoveryBase>
+FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
+  if (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
+      !WinWebAuthnApi::GetDefault()->IsAvailable()) {
+    return nullptr;
+  }
+  return std::make_unique<WinWebAuthnApiAuthenticatorDiscovery>(
+      WinWebAuthnApi::GetDefault(),
+      // TODO(martinkr): Inject the window from which the request
+      // originated. Windows uses this parameter to center the
+      // dialog over the parent. The dialog should be centered
+      // over the originating Chrome Window; the foreground window
+      // may have changed to something else since the request was
+      // issued.
+      GetForegroundWindow());
+}
+#endif  // defined(OS_WIN)
 
 // ScopedFidoDiscoveryFactory -------------------------------------------------
 

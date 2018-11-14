@@ -62,10 +62,6 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 #endif
 }
 
-bool IsWebAuthnUiEnabled() {
-  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI);
-}
-
 }  // namespace
 
 #if defined(OS_MACOSX)
@@ -267,6 +263,11 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
+  if (data.disable_embedder_ui) {
+    disable_ui_ = true;
+    return;
+  }
+
   if (!IsWebAuthnUiEnabled())
     return;
 
@@ -282,11 +283,14 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
     const device::FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this so that requests for BLE authenticators are
-  // not dispatched immediately if WebAuthN UI is enabled.
+  // TODO(hongjunchoi): Change this so that requests for BLE authenticators
+  // are not dispatched immediately if WebAuthN UI is enabled.
   if (!IsWebAuthnUiEnabled())
     return false;
 
+  // On macOS, a native dialog is shown for the Touch ID authenticator
+  // immediately after dispatch to that authenticator. This dialog must not
+  // be triggered before Chrome's WebAuthn UI has advanced accordingly.
   return authenticator.AuthenticatorTransport() &&
          *authenticator.AuthenticatorTransport() ==
              device::FidoTransportProtocol::kInternal;
@@ -383,4 +387,11 @@ ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceAddresses()
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   return prefs->GetList(kWebAuthnBlePairedMacAddressesPrefName);
+}
+
+bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUiEnabled() const {
+  // UI can be disabled via flag or by the request handler for certain
+  // requests (e.g. on Windows, where the native API renders its own UI).
+  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI) &&
+         !disable_ui_;
 }

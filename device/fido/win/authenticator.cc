@@ -39,7 +39,11 @@ base::string16 OptionalGURLToUTF16(const base::Optional<GURL>& in) {
 
 }  // namespace
 
-WinNativeCrossPlatformAuthenticator::WinNativeCrossPlatformAuthenticator(
+// static
+const char WinWebAuthnApiAuthenticator::kAuthenticatorId[] =
+    "WinWebAuthnApiAuthenticator";
+
+WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
     WinWebAuthnApi* win_api,
     HWND current_window)
     : FidoAuthenticator(),
@@ -50,18 +54,18 @@ WinNativeCrossPlatformAuthenticator::WinNativeCrossPlatformAuthenticator(
   CoCreateGuid(&cancellation_id_);
 }
 
-WinNativeCrossPlatformAuthenticator::~WinNativeCrossPlatformAuthenticator() {
+WinWebAuthnApiAuthenticator::~WinWebAuthnApiAuthenticator() {
   // Cancel in order to dismiss any pending API request and UI dialog and shut
   // down |thread_|.
   Cancel();
 }
 
-void WinNativeCrossPlatformAuthenticator::InitializeAuthenticator(
+void WinWebAuthnApiAuthenticator::InitializeAuthenticator(
     base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-void WinNativeCrossPlatformAuthenticator::MakeCredential(
+void WinWebAuthnApiAuthenticator::MakeCredential(
     CtapMakeCredentialRequest request,
     MakeCredentialCallback callback) {
   DCHECK(!thread_);
@@ -78,22 +82,21 @@ void WinNativeCrossPlatformAuthenticator::MakeCredential(
   thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking,
+          &WinWebAuthnApiAuthenticator::MakeCredentialBlocking,
           // Because |thread_| and its task runner are owned by this
           // authenticator instance, binding to Unretained(this) here is
           // fine. If the instance got destroyed before invocation of the
           // task, so would the task. Once the task is running, destruction
           // of the authenticator instance blocks on the thread exiting.
           base::Unretained(this), std::move(request),
-          base::BindOnce(&WinNativeCrossPlatformAuthenticator::
-                             InvokeMakeCredentialCallback,
-                         weak_factory_.GetWeakPtr(), std::move(callback)),
+          base::BindOnce(
+              &WinWebAuthnApiAuthenticator::InvokeMakeCredentialCallback,
+              weak_factory_.GetWeakPtr(), std::move(callback)),
           base::SequencedTaskRunnerHandle::Get()));
 }
 
-void WinNativeCrossPlatformAuthenticator::GetAssertion(
-    CtapGetAssertionRequest request,
-    GetAssertionCallback callback) {
+void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
+                                               GetAssertionCallback callback) {
   DCHECK(!thread_);
   if (thread_) {
     return;
@@ -104,7 +107,7 @@ void WinNativeCrossPlatformAuthenticator::GetAssertion(
   thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &WinNativeCrossPlatformAuthenticator::GetAssertionBlocking,
+          &WinWebAuthnApiAuthenticator::GetAssertionBlocking,
           // Because |thread_| and its task runner are owned by this
           // authenticator instance, binding to Unretained(this) here is
           // fine. If the instance got destroyed before invocation of the
@@ -112,7 +115,7 @@ void WinNativeCrossPlatformAuthenticator::GetAssertion(
           // of the authenticator instance blocks on the thread exiting.
           base::Unretained(this), std::move(request),
           base::BindOnce(
-              &WinNativeCrossPlatformAuthenticator::InvokeGetAssertionCallback,
+              &WinWebAuthnApiAuthenticator::InvokeGetAssertionCallback,
               weak_factory_.GetWeakPtr(), std::move(callback)),
           base::SequencedTaskRunnerHandle::Get()));
 }
@@ -120,7 +123,7 @@ void WinNativeCrossPlatformAuthenticator::GetAssertion(
 // Invokes the blocking WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL API call. This
 // method is run on |thread_|. Note that the destructor for this class blocks
 // on |thread_| shutdown.
-void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
+void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
     CtapMakeCredentialRequest request,
     MakeCredentialCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_runner) {
@@ -190,11 +193,10 @@ void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{exclude_list.size(), exclude_list.data()},
       WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
-      // Forcibly set authenticator attachment to cross-platform in order to
-      // avoid triggering the platform authenticator option, which is
-      // generally displayed first in the Windows UI.
+      // TODO(martinkr): Plumb authenticator attachment into
+      // CtapMakeCredentialRequest and set here.
       use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
-                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
+                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
       request.resident_key_required(),
       ToWinUserVerificationRequirement(request.user_verification()),
       WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT, 0 /* flags */,
@@ -270,7 +272,7 @@ void WinNativeCrossPlatformAuthenticator::MakeCredentialBlocking(
 // Invokes the blocking WEBAUTHN_AUTHENTICATOR_GET_ASSERTION API call. This
 // method is run on |thread_|. Note that the destructor for this class blocks
 // on |thread_| shutdown.
-void WinNativeCrossPlatformAuthenticator::GetAssertionBlocking(
+void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
     CtapGetAssertionRequest request,
     GetAssertionCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_runner) {
@@ -298,8 +300,10 @@ void WinNativeCrossPlatformAuthenticator::GetAssertionBlocking(
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{allow_list.size(), allow_list.data()},
       WEBAUTHN_EXTENSIONS{0, nullptr},
+      // TODO(martinkr): Plumb authenticator attachment into
+      // CtapMakeCredentialRequest and set here.
       use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
-                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
+                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
       ToWinUserVerificationRequirement(request.user_verification()),
       0,                                          // flags
       use_u2f_only_ ? rp_id16.c_str() : nullptr,  // pwszU2fAppId
@@ -333,7 +337,7 @@ void WinNativeCrossPlatformAuthenticator::GetAssertionBlocking(
       base::BindOnce(std::move(callback), status, std::move(response)));
 }
 
-void WinNativeCrossPlatformAuthenticator::Cancel() {
+void WinWebAuthnApiAuthenticator::Cancel() {
   if (!thread_ || operation_cancelled_.IsSet()) {
     return;
   }
@@ -345,31 +349,31 @@ void WinNativeCrossPlatformAuthenticator::Cancel() {
   thread_->Stop();
 }
 
-std::string WinNativeCrossPlatformAuthenticator::GetId() const {
-  return "WinNativeCrossPlatformAuthenticator";
+std::string WinWebAuthnApiAuthenticator::GetId() const {
+  return kAuthenticatorId;
 }
 
-base::string16 WinNativeCrossPlatformAuthenticator::GetDisplayName() const {
-  return L"WinNativeCrossPlatformAuthenticator";
+base::string16 WinWebAuthnApiAuthenticator::GetDisplayName() const {
+  return base::UTF8ToUTF16(GetId());
 }
 
-bool WinNativeCrossPlatformAuthenticator::IsInPairingMode() const {
+bool WinWebAuthnApiAuthenticator::IsInPairingMode() const {
   return false;
 }
 
-bool WinNativeCrossPlatformAuthenticator::IsPaired() const {
+bool WinWebAuthnApiAuthenticator::IsPaired() const {
   return false;
 }
 
 base::Optional<FidoTransportProtocol>
-WinNativeCrossPlatformAuthenticator::AuthenticatorTransport() const {
+WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   // The Windows API could potentially use any external or
   // platform authenticator.
   return base::nullopt;
 }
 
 const base::Optional<AuthenticatorSupportedOptions>&
-WinNativeCrossPlatformAuthenticator::Options() const {
+WinWebAuthnApiAuthenticator::Options() const {
   // The request can potentially be fulfilled by any device that Windows
   // communicates with, so returning AuthenticatorSupportedOptions really
   // doesn't make much sense.
@@ -378,12 +382,11 @@ WinNativeCrossPlatformAuthenticator::Options() const {
   return no_options;
 }
 
-base::WeakPtr<FidoAuthenticator>
-WinNativeCrossPlatformAuthenticator::GetWeakPtr() {
+base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void WinNativeCrossPlatformAuthenticator::InvokeMakeCredentialCallback(
+void WinWebAuthnApiAuthenticator::InvokeMakeCredentialCallback(
     MakeCredentialCallback cb,
     CtapDeviceResponseCode status,
     base::Optional<AuthenticatorMakeCredentialResponse> response) {
@@ -394,7 +397,7 @@ void WinNativeCrossPlatformAuthenticator::InvokeMakeCredentialCallback(
   }
   std::move(cb).Run(status, std::move(response));
 }
-void WinNativeCrossPlatformAuthenticator::InvokeGetAssertionCallback(
+void WinWebAuthnApiAuthenticator::InvokeGetAssertionCallback(
     GetAssertionCallback cb,
     CtapDeviceResponseCode status,
     base::Optional<AuthenticatorGetAssertionResponse> response) {

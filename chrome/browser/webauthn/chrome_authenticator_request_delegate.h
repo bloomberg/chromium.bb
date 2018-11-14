@@ -106,6 +106,7 @@ class ChromeAuthenticatorRequestDelegate
   void AddFidoBleDeviceToPairedList(std::string device_address);
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
   const base::ListValue* GetPreviouslyPairedFidoBleDeviceAddresses() const;
+  bool IsWebAuthnUiEnabled() const;
 
   content::RenderFrameHost* const render_frame_host_;
   AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
@@ -118,6 +119,11 @@ class ChromeAuthenticatorRequestDelegate
       transient_dialog_model_holder_;
   base::OnceClosure cancel_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
+
+  // If in the TransportAvailabilityInfo reported by the request handler,
+  // disable_embedder_ui is set, this will be set to true. No UI must be
+  // rendered and all request handler callbacks will be ignored.
+  bool disable_ui_ = false;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_;
 

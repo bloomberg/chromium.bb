@@ -6,18 +6,17 @@
 
 namespace device {
 
-WinNativeCrossPlatformAuthenticatorDiscovery::
-    WinNativeCrossPlatformAuthenticatorDiscovery(
-        WinWebAuthnApi* const win_webauthn_api,
-        HWND parent_window)
+WinWebAuthnApiAuthenticatorDiscovery::WinWebAuthnApiAuthenticatorDiscovery(
+    WinWebAuthnApi* const win_webauthn_api,
+    HWND parent_window)
     : FidoDiscoveryBase(FidoTransportProtocol::kUsbHumanInterfaceDevice),
       win_webauthn_api_(win_webauthn_api),
       parent_window_(parent_window) {}
 
-WinNativeCrossPlatformAuthenticatorDiscovery::
-    ~WinNativeCrossPlatformAuthenticatorDiscovery() = default;
+WinWebAuthnApiAuthenticatorDiscovery::~WinWebAuthnApiAuthenticatorDiscovery() =
+    default;
 
-void WinNativeCrossPlatformAuthenticatorDiscovery::Start() {
+void WinWebAuthnApiAuthenticatorDiscovery::Start() {
   DCHECK(!authenticator_);
   if (!observer()) {
     return;
@@ -29,7 +28,7 @@ void WinNativeCrossPlatformAuthenticatorDiscovery::Start() {
   }
 
   observer()->DiscoveryStarted(this, true /* success */);
-  authenticator_ = std::make_unique<WinNativeCrossPlatformAuthenticator>(
+  authenticator_ = std::make_unique<WinWebAuthnApiAuthenticator>(
       WinWebAuthnApi::GetDefault(), parent_window_);
   observer()->AuthenticatorAdded(this, authenticator_.get());
 }

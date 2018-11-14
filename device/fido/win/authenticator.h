@@ -20,15 +20,17 @@
 
 namespace device {
 
-// WinNativeCrossPlatformAuthenticator forwards WebAuthn requests to external
+// WinWebAuthnApiAuthenticator forwards WebAuthn requests to external
 // authenticators via the native Windows WebAuthentication API
 // (webauthn.dll).
-class COMPONENT_EXPORT(DEVICE_FIDO) WinNativeCrossPlatformAuthenticator
+class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
     : public FidoAuthenticator {
  public:
-  WinNativeCrossPlatformAuthenticator(WinWebAuthnApi* win_api,
-                                      HWND current_window);
-  ~WinNativeCrossPlatformAuthenticator() override;
+  // The return value of |GetId|.
+  static const char kAuthenticatorId[];
+
+  WinWebAuthnApiAuthenticator(WinWebAuthnApi* win_api, HWND current_window);
+  ~WinWebAuthnApiAuthenticator() override;
 
   // Forces the Windows WebAuthn API not to communicate with CTAP2 devices for
   // this request. Dual-protocol devices will use U2F.
@@ -84,8 +86,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinNativeCrossPlatformAuthenticator
 
   GUID cancellation_id_ = {};
   base::AtomicFlag operation_cancelled_;
-  base::WeakPtrFactory<WinNativeCrossPlatformAuthenticator> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(WinNativeCrossPlatformAuthenticator);
+  base::WeakPtrFactory<WinWebAuthnApiAuthenticator> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(WinWebAuthnApiAuthenticator);
 };
 
 }  // namespace device

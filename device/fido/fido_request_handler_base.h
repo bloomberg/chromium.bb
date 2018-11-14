@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
+#include "build/build_config.h"
 #include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -87,6 +88,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     bool has_recognized_mac_touch_id_credential = false;
     bool is_ble_powered = false;
     bool can_power_on_ble_adapter = false;
+
+    // If true, dispatch of the request cannot be controlled by
+    // the embedder. The embedder must not display a UI for this
+    // request and must ignore all subsequent invocations of the
+    // TransportAvailabilityObserver interface methods.
+    bool disable_embedder_ui = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) TransportAvailabilityObserver {
@@ -201,6 +208,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
  private:
   friend class FidoRequestHandlerTest;
 
+  void InitDiscoveries(
+      const base::flat_set<FidoTransportProtocol>& available_transports);
+#if defined(OS_WIN)
+  void InitDiscoveriesWin(
+      const base::flat_set<FidoTransportProtocol>& available_transports);
+#endif
+
   // FidoDiscoveryBase::Observer
   void AuthenticatorAdded(FidoDiscoveryBase* discovery,
                           FidoAuthenticator* authenticator) final;
@@ -232,6 +246,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // TODO(martinkr): Inject platform authenticators through a new
   // FidoDiscoveryBase specialization and hold ownership there.
   std::unique_ptr<FidoAuthenticator> platform_authenticator_;
+  service_manager::Connector* const connector_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
