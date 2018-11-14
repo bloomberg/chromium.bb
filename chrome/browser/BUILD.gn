@@ -2561,6 +2561,7 @@ jumbo_split_static_library("browser") {
       "//rlz:rlz_utils",
       "//sandbox",
       "//sandbox:sandbox_buildflags",
+      "//services/identity/public/cpp",
       "//services/proxy_resolver:lib",
       "//third_party/android_opengl/etc1",
       "//third_party/android_tools:cpu_features",
