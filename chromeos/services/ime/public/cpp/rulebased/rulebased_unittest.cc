@@ -162,6 +162,48 @@ TEST_F(RulebasedImeTest, Transforms) {
   EXPECT_EQ("..ba", transformed);
 }
 
+TEST_F(RulebasedImeTest, PredictTransform) {
+  const char* transforms[] = {
+      u8"10",        u8"A",           u8"([aeou])\u001d?`",
+      u8"\\1\u0300", u8"[\\[\\]]{2}", u8"ʘ"};
+  auto data = rulebased::RulesData::Create(us::kKeyMap, false, transforms,
+                                           base::size(transforms), nullptr);
+  bool res = data->PredictTransform("..x", -1);
+  EXPECT_FALSE(res);
+  res = data->PredictTransform(u8"..0", -1);
+  EXPECT_FALSE(res);
+  res = data->PredictTransform(u8"..1", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..100", -1);
+  EXPECT_FALSE(res);
+
+  res = data->PredictTransform(u8"..a", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..a\u001d", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..a\u001d`", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..a`", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..a``", -1);
+
+  EXPECT_FALSE(res);
+  res = data->PredictTransform(u8"..[", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..]", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..[]", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..][", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..[][", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..[][][", -1);
+  EXPECT_TRUE(res);
+  res = data->PredictTransform(u8"..[][][)", -1);
+  EXPECT_FALSE(res);
+}
+
 TEST_F(RulebasedImeTest, Transforms_deva_phone) {
   auto data = rulebased::RulesData::GetById("deva_phone");
   std::string transformed;

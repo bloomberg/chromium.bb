@@ -58,6 +58,10 @@ class RulesData {
 
   bool HasTransform() const { return transform_re_merged_.get(); }
 
+  // Predicts whether there will be future transform matches with the given
+  // states of the context string and transat pos.
+  bool PredictTransform(const std::string& str, int transat) const;
+
   bool MatchHistoryPrune(const std::string& str) const;
 
  private:
@@ -71,6 +75,9 @@ class RulesData {
   // The merged regexp to do the quick check of whether certain text can match
   // one of the defined transform rules.
   std::unique_ptr<re2::RE2> transform_re_merged_;
+
+  // The regexp used to check whether there would be future transform matches.
+  std::unique_ptr<re2::RE2> prefix_re_;
 
   // The history prune regexp which is only used by client code of RulesData.
   std::unique_ptr<re2::RE2> history_prune_re_;

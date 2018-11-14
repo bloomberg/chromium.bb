@@ -67,12 +67,6 @@ ProcessKeyResult Engine::ProcessKey(const std::string& code,
     return res;
   }
 
-  if (code == "Space") {
-    res.commit_text = context_ + key_char;
-    Reset();
-    return res;
-  }
-
   // Deals with the transforms.
   std::string composition;
   // If history exists, use history to match first.
@@ -109,6 +103,15 @@ ProcessKeyResult Engine::ProcessKey(const std::string& code,
     transat_ = composition.size();
   } else {
     context_ += key_char;
+  }
+
+  if (!current_data_->PredictTransform(context_, transat_) ||
+      (!history_ambi_.empty() &&
+       !current_data_->PredictTransform(history_context_ + history_ambi_,
+                                        history_transat_))) {
+    res.commit_text = context_;
+    Reset();
+    return res;
   }
 
   // Returns the result according to the current state.
