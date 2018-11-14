@@ -72,12 +72,14 @@ const char kPrefetchJpeg[] = "/prerender/image.jpeg";
 const char kPrefetchLoaderPath[] = "/prerender/prefetch_loader.html";
 const char kPrefetchLoopPage[] = "/prerender/prefetch_loop.html";
 const char kPrefetchMetaCSP[] = "/prerender/prefetch_meta_csp.html";
+const char kPrefetchNostorePage[] = "/prerender/prefetch_nostore_page.html";
 const char kPrefetchPage[] = "/prerender/prefetch_page.html";
 const char kPrefetchPage2[] = "/prerender/prefetch_page2.html";
 const char kPrefetchPageBigger[] = "/prerender/prefetch_page_bigger.html";
 const char kPrefetchPng[] = "/prerender/image.png";
 const char kPrefetchPng2[] = "/prerender/image2.png";
 const char kPrefetchPngRedirect[] = "/prerender/image-redirect.png";
+const char kPrefetchRecursePage[] = "/prerender/prefetch_recurse.html";
 const char kPrefetchResponseHeaderCSP[] =
     "/prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "/prerender/prefetch.js";
@@ -479,6 +481,24 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   PrefetchFromFile(kPrefetchPage2, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPage2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
+}
+
+// Checks that a prefetch does not recursively prefetch.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, NoPrefetchRecursive) {
+  // A prefetch of a page with a prefetch of the image page should not load the
+  // image page.
+  PrefetchFromFile(kPrefetchRecursePage,
+                   FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchRecursePage), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchNostorePage), 0);
+
+  // When the first page is loaded, the image page should be prefetched. The
+  // test may finish before the prerender is torn down, so
+  // IgnorePrerenderContents() is called to skip the final status check.
+  prerender_contents_factory()->IgnorePrerenderContents();
+  ui_test_utils::NavigateToURL(current_browser(),
+                               src_server()->GetURL(kPrefetchRecursePage));
+  WaitForRequestCount(src_server()->GetURL(kPrefetchNostorePage), 1);
 }
 
 // Checks a prefetch to a nonexisting page.
