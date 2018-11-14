@@ -12,7 +12,7 @@ from chromite.cbuildbot.stages import firmware_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
-class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
+class BuildSpecBuilder(generic_builders.Builder):
   """Builder that generates new buildspecs.
 
   This build does four things.
@@ -22,18 +22,19 @@ class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
     4) Launch child builds based on the buildspec.
   """
 
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run."""
+    return self._GetStageInstance(workspace_stages.WorkspaceSyncStage,
+                                  build_root=self._run.options.workspace)
+
   def RunStages(self):
     """Run the stages."""
-    workspace_dir = self._run.options.workspace
-
-    self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     # TODO(dgarrett): Schedule slaves based on version defined.
 
@@ -53,22 +54,20 @@ class FirmwareBranchBuilder(BuildSpecBuilder):
     """Run the stages."""
     super(FirmwareBranchBuilder, self).RunStages()
 
-    workspace_dir = self._run.options.workspace
-
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     for board in self._run.config.boards:
       self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
       self._RunStage(workspace_stages.WorkspaceBuildPackagesStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
       self._RunStage(firmware_stages.FirmwareArchiveStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
 
@@ -84,12 +83,10 @@ class FactoryBranchBuilder(BuildSpecBuilder):
     """Run the stages."""
     super(FactoryBranchBuilder, self).RunStages()
 
-    workspace_dir = self._run.options.workspace
-
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     for board in self._run.config.boards:
       self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
