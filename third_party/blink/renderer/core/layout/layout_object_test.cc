@@ -893,13 +893,13 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
   Document* iframe_doc = frame_owner_element->contentDocument();
   Element* target = iframe_doc->getElementById("target");
   HitTestResult result = target->GetLayoutObject()->HitTestForOcclusion();
-  EXPECT_TRUE(result.InnerNode() == target);
+  EXPECT_EQ(result.InnerNode(), target);
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   result = target->GetLayoutObject()->HitTestForOcclusion();
-  EXPECT_TRUE(result.InnerNode() == occluder);
+  EXPECT_EQ(result.InnerNode(), occluder);
 }
 
 }  // namespace blink
