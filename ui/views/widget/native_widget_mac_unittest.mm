@@ -2206,11 +2206,8 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 
     widget_ = CreateTopLevelPlatformWidget();
 
-    // It's not a bug if the native view has a different number of subviews,
-    // but the rest of this test assumes it. It may or may not be worth
-    // removing that assumption at some point.
-    ASSERT_EQ(0u,
-              [[widget_->GetNativeView().GetNativeNSView() subviews] count]);
+    starting_subviews_.reset(
+        [[widget_->GetNativeView().GetNativeNSView() subviews] copy]);
 
     native_host_parent_ = new View();
     widget_->GetContentsView()->AddChildView(native_host_parent_);
@@ -2224,7 +2221,9 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     }
     EXPECT_EQ(kNativeViewCount, native_host_parent_->child_count());
     EXPECT_NSEQ([widget_->GetNativeView().GetNativeNSView() subviews],
-                (@[ hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view() ]));
+                ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                  hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
+                ]]));
   }
 
   void TearDown() override {
@@ -2236,9 +2235,12 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     return widget_->GetNativeView().GetNativeNSView();
   }
 
+  NSArray<NSView*>* GetStartingSubviews() { return starting_subviews_; }
+
   Widget* widget_ = nullptr;
   View* native_host_parent_ = nullptr;
   std::vector<std::unique_ptr<NativeHostHolder>> hosts_;
+  base::scoped_nsobject<NSArray<NSView*>> starting_subviews_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacViewsOrderTest);
@@ -2249,22 +2251,30 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 TEST_F(NativeWidgetMacViewsOrderTest, NativeViewAttached) {
   hosts_[1]->Detach();
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[0]->view(), hosts_[2]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[0]->view(), hosts_[2]->view()
+              ]]));
 
   hosts_[1]->AttachNativeView();
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
+              ]]));
 }
 
 // Tests that NativeViews order changes according to views::View hierarchy.
 TEST_F(NativeWidgetMacViewsOrderTest, ReorderViews) {
   native_host_parent_->ReorderChildView(hosts_[2]->host(), 1);
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[0]->view(), hosts_[2]->view(), hosts_[1]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[0]->view(), hosts_[2]->view(), hosts_[1]->view()
+              ]]));
 
   native_host_parent_->RemoveChildView(hosts_[2]->host());
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[0]->view(), hosts_[1]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[0]->view(), hosts_[1]->view()
+              ]]));
 
   View* new_parent = new View();
   native_host_parent_->RemoveChildView(hosts_[1]->host());
@@ -2272,11 +2282,15 @@ TEST_F(NativeWidgetMacViewsOrderTest, ReorderViews) {
   new_parent->AddChildView(hosts_[1]->host());
   new_parent->AddChildView(hosts_[2]->host());
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
+              ]]));
 
   native_host_parent_->ReorderChildView(new_parent, 0);
   EXPECT_NSEQ([GetContentNativeView() subviews],
-              (@[ hosts_[1]->view(), hosts_[2]->view(), hosts_[0]->view() ]));
+              ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
+                hosts_[1]->view(), hosts_[2]->view(), hosts_[0]->view()
+              ]]));
 }
 
 // Test that unassociated native views stay on top after reordering.
@@ -2284,15 +2298,17 @@ TEST_F(NativeWidgetMacViewsOrderTest, UnassociatedViewsIsAbove) {
   base::scoped_nsobject<NSView> child_view([[NSView alloc] init]);
   [GetContentNativeView() addSubview:child_view];
   EXPECT_NSEQ(
-      [GetContentNativeView() subviews], (@[
+      [GetContentNativeView() subviews],
+      ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
         hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view(), child_view
-      ]));
+      ]]));
 
   native_host_parent_->ReorderChildView(hosts_[2]->host(), 1);
   EXPECT_NSEQ(
-      [GetContentNativeView() subviews], (@[
+      [GetContentNativeView() subviews],
+      ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
         hosts_[0]->view(), hosts_[2]->view(), hosts_[1]->view(), child_view
-      ]));
+      ]]));
 }
 
 // Test -[NSWindowDelegate windowShouldClose:].
