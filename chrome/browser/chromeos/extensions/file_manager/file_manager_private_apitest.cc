@@ -30,7 +30,6 @@
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
@@ -364,8 +363,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         crostini::prefs::kCrostiniEnabled, true);
     scoped_feature_list->InitWithFeatures(
         {features::kCrostini, features::kExperimentalCrostiniUI}, {});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kCrostiniFiles);
     // Profile must be signed in with email for crostini.
     identity::SetPrimaryAccount(
         SigninManagerFactory::GetForProfileIfExists(browser()->profile()),

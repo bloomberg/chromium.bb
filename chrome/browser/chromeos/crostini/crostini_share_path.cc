@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
@@ -230,9 +229,9 @@ void CrostiniSharePath::SharePath(
     bool persist,
     base::OnceCallback<void(bool, std::string)> callback) {
   DCHECK(callback);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kCrostiniFiles)) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles)) {
     std::move(callback).Run(false, "Flag crostini-files not enabled");
+    return;
   }
   CallSeneschalSharePath(vm_name, path, persist, std::move(callback));
 }
@@ -270,10 +269,8 @@ void CrostiniSharePath::UnsharePath(
 
 std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
   std::vector<base::FilePath> result;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kCrostiniFiles)) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles))
     return result;
-  }
   const base::ListValue* shared_paths =
       profile_->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   for (const auto& path : *shared_paths) {
