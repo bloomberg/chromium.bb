@@ -314,7 +314,6 @@ CGFloat ToolbarHeight() {
     _fakeLocationBar.userInteractionEnabled = NO;
     _fakeLocationBar.backgroundColor =
         [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
-    _fakeLocationBar.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
     _fakeLocationBar.translatesAutoresizingMaskIntoConstraints = NO;
   }
   return _fakeLocationBar;
