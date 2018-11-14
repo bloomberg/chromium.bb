@@ -234,7 +234,7 @@ std::unique_ptr<DomainReliabilityHeader> DomainReliabilityHeader::Parse(
       include_subdomains = true;
       got_include_subdomains = true;
     } else {
-      LOG(WARNING) << "Ignoring unknown NEL header directive " << name << ".";
+      DLOG(WARNING) << "Ignoring unknown NEL header directive " << name << ".";
     }
   }
 

@@ -36,8 +36,8 @@ void DomainReliabilityContextManager::SetConfig(
   std::string key = origin.host();
 
   if (!contexts_.count(key) && !removed_contexts_.count(key)) {
-    LOG(WARNING) << "Ignoring NEL header for unknown origin " << origin.spec()
-                 << ".";
+    DLOG(WARNING) << "Ignoring NEL header for unknown origin " << origin.spec()
+                  << ".";
     return;
   }
 
