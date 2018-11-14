@@ -8,7 +8,7 @@
 """Script to generate chromium.perf.json in
 the src/testing/buildbot directory and benchmark.csv in the src/tools/perf
 directory. Maintaining these files by hand is too unwieldy.
-Note: chromium.perf.fyi.json is updated manuall for now until crbug.com/757933
+Note: chromium.perf.fyi.json is updated manually for now until crbug.com/757933
 is complete.
 """
 import argparse
@@ -308,6 +308,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
           'isolate': 'media_perftests',
           'num_shards': 1,
           'telemetry': False,
@@ -346,7 +351,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--test-shard-map-filename=win_7_perf_map.json',
           ],
         },
-        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
         {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
@@ -382,7 +391,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--assert-gpu-compositing',
           ],
         },
-        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
         {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
@@ -440,12 +453,12 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
-          'isolate': 'load_library_perf_tests',
+          'isolate': 'performance_browser_tests',
           'num_shards': 1,
           'telemetry': False,
         },
         {
-          'isolate': 'performance_browser_tests',
+          'isolate': 'load_library_perf_tests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -468,6 +481,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--test-shard-map-filename=linux-perf_map.json',
               '--assert-gpu-compositing',
           ],
+        },
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
         },
         {
           'isolate': 'load_library_perf_tests',
@@ -512,6 +530,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--assert-gpu-compositing',
           ],
           'num_shards': 26
+        },
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
         },
         {
           'isolate': 'net_perftests',
