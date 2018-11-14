@@ -25,13 +25,16 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 // Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
 extern const base::Feature kUseMultiloginEndpoint;
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace signin {
 class AccountReconcilorDelegate;
@@ -96,7 +99,7 @@ class AccountReconcilor : public KeyedService,
 
   AccountReconcilor(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
@@ -229,8 +232,6 @@ class AccountReconcilor : public KeyedService,
   }
 
   // Register and unregister with dependent services.
-  void RegisterWithSigninManager();
-  void UnregisterWithSigninManager();
   void RegisterWithTokenService();
   void UnregisterWithTokenService();
   void RegisterWithCookieManagerService();
@@ -307,8 +308,8 @@ class AccountReconcilor : public KeyedService,
   // The ProfileOAuth2TokenService associated with this reconcilor.
   ProfileOAuth2TokenService* token_service_;
 
-  // The SigninManager associated with this reconcilor.
-  SigninManagerBase* signin_manager_;
+  // The IdentityManager associated with this reconcilor.
+  identity::IdentityManager* identity_manager_;
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;

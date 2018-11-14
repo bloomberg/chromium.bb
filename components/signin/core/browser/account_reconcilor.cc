@@ -28,6 +28,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using signin::AccountReconcilorDelegate;
 
@@ -180,13 +181,13 @@ AccountReconcilor::ScopedSyncedDataDeletion::~ScopedSyncedDataDeletion() {
 
 AccountReconcilor::AccountReconcilor(
     ProfileOAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninClient* client,
     GaiaCookieManagerService* cookie_manager_service,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : delegate_(std::move(delegate)),
       token_service_(token_service),
-      signin_manager_(signin_manager),
+      identity_manager_(identity_manager),
       client_(client),
       cookie_manager_service_(cookie_manager_service),
       registered_with_token_service_(false),
@@ -453,7 +454,7 @@ void AccountReconcilor::StartReconcile() {
                                  base::Unretained(this)));
   }
 
-  const std::string& account_id = signin_manager_->GetAuthenticatedAccountId();
+  const std::string& account_id = identity_manager_->GetPrimaryAccountId();
   if (token_service_->RefreshTokenHasError(account_id) &&
       delegate_->ShouldAbortReconcileIfPrimaryHasError()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: primary has error, abort.";
@@ -548,7 +549,7 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
       << "Ignore " << accounts.size() - verified_gaia_accounts.size()
       << " unverified account(s).";
 
-  std::string primary_account = signin_manager_->GetAuthenticatedAccountId();
+  std::string primary_account = identity_manager_->GetPrimaryAccountId();
   // Revoking tokens for secondary accounts causes the AccountTracker to
   // completely remove them from Chrome.
   // Revoking the token for the primary account is not supported (it should be
@@ -582,8 +583,7 @@ void AccountReconcilor::OnGaiaCookieDeletedByUserAction() {
   if (!delegate_->ShouldRevokeTokensOnCookieDeleted())
     return;
 
-  const std::string& primary_account =
-      signin_manager_->GetAuthenticatedAccountId();
+  const std::string& primary_account = identity_manager_->GetPrimaryAccountId();
   // Revoke secondary tokens.
   RevokeAllSecondaryTokens(
       token_service_, AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
@@ -663,7 +663,7 @@ void AccountReconcilor::FinishReconcile(
     VLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";
     // Really messed up state.  Blow away the gaia cookie completely and
     // rebuild it, making sure the primary account as specified by the
-    // SigninManager is the first session in the gaia cookie.
+    // IdentityManager is the first session in the gaia cookie.
     PerformLogoutAllAccountsAction();
     gaia_accounts.clear();
   }

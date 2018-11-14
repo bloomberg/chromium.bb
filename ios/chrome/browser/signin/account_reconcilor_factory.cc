@@ -12,9 +12,10 @@
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace ios {
 
@@ -24,8 +25,8 @@ AccountReconcilorFactory::AccountReconcilorFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 AccountReconcilorFactory::~AccountReconcilorFactory() {}
@@ -46,16 +47,16 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForBrowserState(chrome_browser_state);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   std::unique_ptr<AccountReconcilor> reconcilor(new AccountReconcilor(
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(
           chrome_browser_state),
-      signin_manager,
+      identity_manager,
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<signin::MirrorAccountReconcilorDelegate>(
-          signin_manager)));
+          identity_manager)));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }

@@ -7,15 +7,16 @@
 
 #include "base/macros.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace signin {
 
 // AccountReconcilorDelegate specialized for Mirror.
-class MirrorAccountReconcilorDelegate : public AccountReconcilorDelegate,
-                                        public SigninManagerBase::Observer {
+class MirrorAccountReconcilorDelegate
+    : public AccountReconcilorDelegate,
+      public identity::IdentityManager::Observer {
  public:
-  MirrorAccountReconcilorDelegate(SigninManagerBase* signin_manager);
+  MirrorAccountReconcilorDelegate(identity::IdentityManager* identity_manager);
   ~MirrorAccountReconcilorDelegate() override;
 
  private:
@@ -37,13 +38,12 @@ class MirrorAccountReconcilorDelegate : public AccountReconcilorDelegate,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const signin::MultiloginMode mode) const override;
 
-  // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // IdentityManager::Observer:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
-  SigninManagerBase* signin_manager_;
+  identity::IdentityManager* identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorAccountReconcilorDelegate);
 };
