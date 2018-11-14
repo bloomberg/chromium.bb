@@ -124,6 +124,9 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
           callback_id));
 
   if (result_status != RESULT_STATUS_SUCCESS) {
+    CHECK(callback);              // Remove after fixing crbug.com/889972
+    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
     if (result_status == RESULT_STATUS_TIMEOUT) {
       ReportUmaResult(UMA_STATUS_TIMEOUT);
       VLOG(1) << "Safe browsing API call timed-out";
@@ -138,10 +141,16 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
 
   // Shortcut for safe, so we don't have to parse JSON.
   if (metadata_str == "{}") {
+    CHECK(callback);              // Remove after fixing crbug.com/889972
+    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
     ReportUmaResult(UMA_STATUS_SAFE);
     RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
                           ThreatMetadata());
   } else {
+    CHECK(callback);              // Remove after fixing crbug.com/889972
+    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
     // Unsafe, assuming we can parse the JSON.
     SBThreatType worst_threat;
     ThreatMetadata threat_metadata;
