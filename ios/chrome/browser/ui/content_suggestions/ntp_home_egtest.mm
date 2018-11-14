@@ -361,11 +361,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint previousPosition = omnibox.bounds.origin;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Navigate and come back.
   [[EarlGrey selectElementWithMatcher:
@@ -396,11 +392,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   NSString* URL = base::SysUTF8ToNSString(pageURL.spec());
   // Tap the fake omnibox, type the URL in the real omnibox and navigate to the
   // page.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([URL stringByAppendingString:@"\n"])];
 
@@ -458,11 +451,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint origin = collectionView.contentOffset;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Offset after the fake omnibox has been tapped.
   CGPoint offsetAfterTap = collectionView.contentOffset;
@@ -509,11 +498,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint origin = collectionView.contentOffset;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Unfocus the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -570,6 +555,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
+}
+
+// Taps the fake omnibox and waits for the real omnibox to be visible.
+- (void)focusFakebox {
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
 }
 
 @end
