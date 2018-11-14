@@ -26,10 +26,10 @@ SafeJsonParserImpl::SafeJsonParserImpl(
       error_callback_(error_callback) {
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  service_manager::Identity identity(
-      mojom::kServiceName, base::nullopt /* instance_group */,
-      batch_id.value_or(base::Token::CreateRandom()));
-  connector->BindInterface(identity, &json_parser_ptr_);
+  connector->BindInterface(
+      service_manager::ServiceFilter::ByNameWithId(
+          mojom::kServiceName, batch_id.value_or(base::Token::CreateRandom())),
+      &json_parser_ptr_);
 }
 
 SafeJsonParserImpl::~SafeJsonParserImpl() = default;

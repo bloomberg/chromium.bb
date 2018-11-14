@@ -347,9 +347,8 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     connector_ = service_manager::Connector::Create(&request_);
     fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::Identity(device::mojom::kServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
         base::Bind(&device::FakeHidManager::AddBinding,
                    base::Unretained(fake_hid_manager_.get())));
@@ -1914,9 +1913,8 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     connector_ = service_manager::Connector::Create(&request_);
     fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::Identity(device::mojom::kServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
         base::Bind(&device::FakeHidManager::AddBinding,
                    base::Unretained(fake_hid_manager_.get())));

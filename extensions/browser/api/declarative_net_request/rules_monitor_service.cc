@@ -186,8 +186,8 @@ class RulesMonitorService::FileSequenceState {
     IndexAndPersistRulesCallback ruleset_reindexed_callback = base::BindOnce(
         &FileSequenceState::OnRulesetReindexed, weak_factory_.GetWeakPtr(),
         std::move(info), result, std::move(ui_callback));
-    IndexAndPersistRules(connector_.get(), nullptr /*identity*/, *extension,
-                         std::move(ruleset_reindexed_callback));
+    IndexAndPersistRules(connector_.get(), base::nullopt /* decoder_batch_id */,
+                         *extension, std::move(ruleset_reindexed_callback));
   }
 
   // Callback invoked when the JSON ruleset is reindexed.

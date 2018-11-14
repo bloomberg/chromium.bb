@@ -168,9 +168,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   blink_interface_provider_.reset(
       new BlinkInterfaceProviderImpl(connector_.get()));
 
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(mojom::kBrowserServiceName),
+  connector_->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(mojom::kBrowserServiceName),
       blink::mojom::ClipboardHost::Name_,
       base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
                           weak_factory_.GetWeakPtr()));

@@ -24,9 +24,8 @@ void BindNamedInterface(base::WeakPtr<service_manager::Connector> connector,
     return;
 
   connector->BindInterface(
-      service_manager::Identity(mojom::kBrowserServiceName,
-                                base::nullopt /* instance_group */),
-      name, std::move(handle));
+      service_manager::ServiceFilter::ByName(mojom::kBrowserServiceName), name,
+      std::move(handle));
 }
 
 }  // namespace

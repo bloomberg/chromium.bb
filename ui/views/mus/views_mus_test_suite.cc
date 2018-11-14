@@ -128,7 +128,8 @@ class ServiceManagerConnection {
         std::make_unique<DefaultService>(), mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(
         service_manager::Identity(GetTestName(),
-                                  service_manager::kSystemInstanceGroup),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(service), nullptr);
     service_manager_connector_ = context_->connector()->Clone();
     service_manager_identity_ = context_->identity();

@@ -45,10 +45,11 @@ SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
 
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  service_manager::Identity identity(
-      mojom::kServiceName, base::nullopt /* instance_group */,
-      batch_id.is_zero() ? base::Token::CreateRandom() : batch_id);
-  connector->BindInterface(identity, &xml_parser_ptr_);
+  connector->BindInterface(
+      service_manager::ServiceFilter::ByNameWithId(
+          mojom::kServiceName,
+          batch_id.is_zero() ? base::Token::CreateRandom() : batch_id),
+      &xml_parser_ptr_);
 
   // Unretained(this) is safe as the xml_parser_ptr_ is owned by this class.
   xml_parser_ptr_.set_connection_error_handler(base::BindOnce(

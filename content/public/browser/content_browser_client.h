@@ -1005,7 +1005,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to have a list of services started after the
   // in-process Service Manager has been initialized.
-  virtual std::vector<service_manager::Identity> GetStartupServices();
+  virtual std::vector<std::string> GetStartupServices();
 
   // Allows to override the visibility state of a RenderFrameHost.
   // |visibility_state| should not be null. It will only be set if needed.

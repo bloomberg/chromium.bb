@@ -2726,8 +2726,9 @@ class NetErrorHelperCoreAvailableOfflineContentTest
  public:
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
-    test_api_.OverrideBinderForTesting(
-        service_manager::Identity(content::mojom::kBrowserServiceName),
+    render_thread()->GetConnector()->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            content::mojom::kBrowserServiceName),
         chrome::mojom::AvailableOfflineContentProvider::Name_,
         base::BindRepeating(&FakeAvailableOfflineContentProvider::AddBinding,
                             base::Unretained(&fake_provider_)));
@@ -2735,8 +2736,6 @@ class NetErrorHelperCoreAvailableOfflineContentTest
 
  protected:
   FakeAvailableOfflineContentProvider fake_provider_;
-  service_manager::Connector::TestApi test_api_{
-      render_thread()->GetConnector()};
   base::HistogramTester histogram_tester_;
 };
 
@@ -2916,8 +2915,9 @@ class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
     // Override PageAutoFetcherHelper so that it talks to
     // FakeOfflinePageAutoFetcher. This is a bit roundabout because
     // we do not create a RenderFrame in this fixture.
-    test_api_.OverrideBinderForTesting(
-        service_manager::Identity(content::mojom::kBrowserServiceName),
+    render_thread()->GetConnector()->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            content::mojom::kBrowserServiceName),
         chrome::mojom::OfflinePageAutoFetcher::Name_,
         base::BindRepeating(&FakeOfflinePageAutoFetcher::AddBinding,
                             base::Unretained(&fake_fetcher_)));
@@ -2931,8 +2931,6 @@ class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
 
  protected:
   FakeOfflinePageAutoFetcher fake_fetcher_;
-  service_manager::Connector::TestApi test_api_{
-      render_thread()->GetConnector()};
 };
 
 TEST_F(NetErrorHelperCoreAutoFetchTest, NotAllowed) {

@@ -190,9 +190,8 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
   ForwardingAudioStreamFactoryTest()
       : connector_(service_manager::Connector::Create(&connector_request_)),
         broker_factory_(std::make_unique<MockBrokerFactory>()) {
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(audio::mojom::kServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
         audio::mojom::StreamFactory::Name_,
         base::BindRepeating(&ForwardingAudioStreamFactoryTest::BindFactory,
                             base::Unretained(this)));

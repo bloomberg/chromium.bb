@@ -54,7 +54,8 @@ class JsonFileSanitizerTest : public testing::Test {
   void CreateAndStartSanitizer(const std::set<base::FilePath>& file_paths) {
     sanitizer_ = JsonFileSanitizer::CreateAndStart(
         test_data_decoder_service_.connector(),
-        service_manager::Identity(data_decoder::mojom::kServiceName),
+        service_manager::ServiceFilter::ByName(
+            data_decoder::mojom::kServiceName),
         file_paths,
         base::BindOnce(&JsonFileSanitizerTest::SanitizationDone,
                        base::Unretained(this)));

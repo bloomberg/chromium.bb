@@ -52,24 +52,22 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
 }  // namespace
 
 ScopedFakePluginRegistry::ScopedFakePluginRegistry() {
-  service_manager::Identity browser_id(
-      Platform::Current()->GetBrowserServiceName());
   const char* interface_name = mojom::blink::PluginRegistry::Name_;
-  service_manager::Connector::TestApi test_api(
-      Platform::Current()->GetConnector());
-  DCHECK(!test_api.HasBinderOverride(browser_id, interface_name));
-  test_api.OverrideBinderForTesting(
-      browser_id, interface_name,
+  service_manager::Connector* connector = Platform::Current()->GetConnector();
+  auto browser_service_filter = service_manager::ServiceFilter::ByName(
+      Platform::Current()->GetBrowserServiceName());
+  DCHECK(!connector->HasBinderOverrideForTesting(browser_service_filter,
+                                                 interface_name));
+  connector->OverrideBinderForTesting(
+      browser_service_filter, interface_name,
       WTF::BindRepeating(&FakePluginRegistryImpl::Bind));
 }
 
 ScopedFakePluginRegistry::~ScopedFakePluginRegistry() {
-  service_manager::Identity browser_id(
-      Platform::Current()->GetBrowserServiceName());
-  const char* interface_name = mojom::blink::PluginRegistry::Name_;
-  service_manager::Connector::TestApi test_api(
-      Platform::Current()->GetConnector());
-  test_api.ClearBinderOverride(browser_id, interface_name);
+  Platform::Current()->GetConnector()->ClearBinderOverrideForTesting(
+      service_manager::ServiceFilter::ByName(
+          Platform::Current()->GetBrowserServiceName()),
+      mojom::blink::PluginRegistry::Name_);
 }
 
 }  // namespace blink

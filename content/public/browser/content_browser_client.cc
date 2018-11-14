@@ -668,9 +668,8 @@ ContentBrowserClient::GetExtraServiceManifests() {
   return std::vector<ContentBrowserClient::ServiceManifestInfo>();
 }
 
-std::vector<service_manager::Identity>
-ContentBrowserClient::GetStartupServices() {
-  return std::vector<service_manager::Identity>();
+std::vector<std::string> ContentBrowserClient::GetStartupServices() {
+  return std::vector<std::string>();
 }
 
 ::rappor::RapporService* ContentBrowserClient::GetRapporService() {

@@ -63,8 +63,10 @@ class ServiceManager {
   void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
 
   // Directly requests that the Service Manager start a new instance for
-  // |identity| if one is not already running.
-  void StartService(const Identity& identity);
+  // |service_name| if one is not already running.
+  //
+  // TODO(https://crbug.com/904240): Remove this method.
+  void StartService(const std::string& service_name);
 
   // Creates a service instance for |identity|. This is intended for use by the
   // Service Manager's embedder to register instances directly, without

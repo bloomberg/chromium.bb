@@ -357,7 +357,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
                      mojo::ScopedMessagePipeHandle handle) {
     service_manager::BindSourceInfo source(
         service_manager::Identity(content::mojom::kBrowserServiceName,
-                                  service_manager::kSystemInstanceGroup),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         service_manager::CapabilitySet());
     static_cast<service_manager::mojom::Service*>(pref_service_context_.get())
         ->OnBindInterface(source, interface_name, std::move(handle),

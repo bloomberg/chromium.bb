@@ -101,9 +101,8 @@ void ChromeKeyboardControllerClientTestHelper::Initialize(
   // ash::mojom::KeyboardController and bind to AshKeyboardController.
   service_manager::mojom::ConnectorRequest request;
   connector_ = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(ash::mojom::kServiceName),
+  connector_->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
       ash::mojom::KeyboardController::Name_, bind_callback);
 
   // Provide the local connector to ChromeKeyboardControllerClient.
