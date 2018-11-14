@@ -70,7 +70,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     std::string name_;
   };
 
-  ProducerClient();
+  // Returns the process-wide instance of the ProducerClient.
+  static ProducerClient* Get();
+
   ~ProducerClient() override;
 
   static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
@@ -125,7 +127,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   static void ResetTaskRunnerForTesting();
 
+ protected:
+  // protected for testing.
+  ProducerClient();
+
  private:
+  friend class base::NoDestructor<ProducerClient>;
+
   void CommitDataOnSequence(mojom::CommitDataRequestPtr request);
   void AddDataSourceOnSequence(DataSourceBase*);
   void RegisterDataSourceWithHost(DataSourceBase* data_source);
