@@ -54,17 +54,17 @@ class DomainReliabilityMonitorTest : public testing::Test {
   typedef DomainReliabilityMonitor::RequestInfo RequestInfo;
 
   DomainReliabilityMonitorTest()
-      : pref_task_runner_(new base::TestSimpleTaskRunner()),
+      : main_task_runner(new base::TestSimpleTaskRunner()),
         network_task_runner_(new base::TestSimpleTaskRunner()),
         url_request_context_getter_(
             new net::TestURLRequestContextGetter(network_task_runner_)),
         time_(new MockTime()),
         monitor_("test-reporter",
                  DomainReliabilityContext::UploadAllowedCallback(),
-                 pref_task_runner_,
+                 main_task_runner,
                  network_task_runner_,
                  std::unique_ptr<MockableTime>(time_)) {
-    monitor_.MoveToNetworkThread();
+    monitor_.InitializeOnNetworkThread();
     monitor_.InitURLRequestContext(url_request_context_getter_);
     monitor_.SetDiscardUploads(false);
   }
@@ -104,7 +104,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     return monitor_.AddContextForTesting(std::move(config));
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> pref_task_runner_;
+  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner;
   scoped_refptr<base::TestSimpleTaskRunner> network_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   MockTime* time_;

@@ -174,7 +174,8 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
   if (io_data_->lazy_params_->domain_reliability_monitor)
-    io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
+    io_data_->lazy_params_->domain_reliability_monitor
+        ->InitializeOnNetworkThread();
 
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
