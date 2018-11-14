@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
-#include <map>
-#include <utility>
 
 #include "base/environment.h"
 #include "base/memory/singleton.h"
@@ -77,25 +75,6 @@ static G_CONST_RETURN gchar* atk_util_auralinux_get_toolkit_version(void) {
   return "1.0";
 }
 
-static std::map<guint, std::pair<AtkKeySnoopFunc, gpointer>>
-    g_key_snoop_function_map;
-
-static guint atk_util_add_key_event_listener(AtkKeySnoopFunc key_snoop_function,
-                                             gpointer data) {
-  static guint current_key_event_listener_id = 0;
-
-  current_key_event_listener_id++;
-  g_key_snoop_function_map[current_key_event_listener_id] =
-      std::make_pair(key_snoop_function, data);
-  return current_key_event_listener_id;
-}
-
-static void atk_util_remove_key_event_listener(guint listener_id) {
-  auto it = g_key_snoop_function_map.find(listener_id);
-  if (it != g_key_snoop_function_map.end())
-    g_key_snoop_function_map.erase(it);
-}
-
 static void atk_util_auralinux_class_init(AtkUtilAuraLinuxClass *klass) {
   AtkUtilClass *atk_class;
   gpointer data;
@@ -106,8 +85,6 @@ static void atk_util_auralinux_class_init(AtkUtilAuraLinuxClass *klass) {
   atk_class->get_root = atk_util_auralinux_get_root;
   atk_class->get_toolkit_name = atk_util_auralinux_get_toolkit_name;
   atk_class->get_toolkit_version = atk_util_auralinux_get_toolkit_version;
-  atk_class->add_key_event_listener = atk_util_add_key_event_listener;
-  atk_class->remove_key_event_listener = atk_util_remove_key_event_listener;
 }
 
 G_END_DECLS
@@ -152,33 +129,5 @@ void AtkUtilAuraLinux::InitializeForTesting() {
 
   InitializeAsync();
 }
-
-// static
-DiscardAtkKeyEvent AtkUtilAuraLinux::HandleAtkKeyEvent(
-    AtkKeyEventStruct* key_event) {
-  DCHECK(key_event);
-
-  if (!GetInstance()->ShouldEnableAccessibility())
-    return DiscardAtkKeyEvent::Retain;
-
-  GetInstance()->InitializeAsync();
-
-  bool discard = false;
-  for (auto it = g_key_snoop_function_map.begin();
-       it != g_key_snoop_function_map.end(); it++) {
-    AtkKeySnoopFunc key_snoop_function = it->second.first;
-    gpointer data = it->second.second;
-    if (key_snoop_function(key_event, data) != 0)
-      discard = true;
-  }
-  return discard ? DiscardAtkKeyEvent::Discard : DiscardAtkKeyEvent::Retain;
-}
-
-#if !defined(USE_X11)
-DiscardAtkKeyEvent AtkUtilAuraLinux::HandleKeyEvent(
-    const ui::KeyEvent& ui_key_event) {
-  NOTREACHED();
-}
-#endif
 
 }  // namespace ui
