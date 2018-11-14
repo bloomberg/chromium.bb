@@ -106,29 +106,29 @@ mDNSs32 mDNSPlatformUTC() {
 }
 
 void mDNSPlatformWriteDebugMsg(const char* msg) {
-  DVLOG(3) << __func__ << ": " << msg;
+  OSP_DVLOG(3) << __func__ << ": " << msg;
 }
 
 void mDNSPlatformWriteLogMsg(const char* ident,
                              const char* msg,
                              mDNSLogLevel_t loglevel) {
-  VLOG(2) << __func__ << ": " << msg;
+  OSP_VLOG(2) << __func__ << ": " << msg;
 }
 
 TCPSocket* mDNSPlatformTCPSocket(mDNS* const m,
                                  TCPSocketFlags flags,
                                  mDNSIPPort* port) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return nullptr;
 }
 
 TCPSocket* mDNSPlatformTCPAccept(TCPSocketFlags flags, int sd) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return nullptr;
 }
 
 int mDNSPlatformTCPGetFD(TCPSocket* sock) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return 0;
 }
 
@@ -139,50 +139,50 @@ mStatus mDNSPlatformTCPConnect(TCPSocket* sock,
                                mDNSInterfaceID InterfaceID,
                                TCPConnectionCallback callback,
                                void* context) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return mStatus_NoError;
 }
 
 void mDNSPlatformTCPCloseConnection(TCPSocket* sock) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 long mDNSPlatformReadTCP(TCPSocket* sock,
                          void* buf,
                          unsigned long buflen,
                          mDNSBool* closed) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return 0;
 }
 
 long mDNSPlatformWriteTCP(TCPSocket* sock, const char* msg, unsigned long len) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return 0;
 }
 
 UDPSocket* mDNSPlatformUDPSocket(mDNS* const m,
                                  const mDNSIPPort requestedport) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return nullptr;
 }
 
 void mDNSPlatformUDPClose(UDPSocket* sock) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 void mDNSPlatformReceiveBPF_fd(mDNS* const m, int fd) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 void mDNSPlatformUpdateProxyList(mDNS* const m,
                                  const mDNSInterfaceID InterfaceID) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 void mDNSPlatformSendRawPacket(const void* const msg,
                                const mDNSu8* const end,
                                mDNSInterfaceID InterfaceID) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 void mDNSPlatformSetLocalAddressCacheEntry(mDNS* const m,
@@ -194,12 +194,12 @@ void mDNSPlatformSourceAddrForDest(mDNSAddr* const src,
                                    const mDNSAddr* const dst) {}
 
 mStatus mDNSPlatformTLSSetupCerts(void) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return mStatus_NoError;
 }
 
 void mDNSPlatformTLSTearDownCerts(void) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 void mDNSPlatformSetDNSConfig(mDNS* const m,
@@ -228,12 +228,12 @@ void mDNSPlatformSendWakeupPacket(mDNS* const m,
                                   char* EthAddr,
                                   char* IPAddr,
                                   int iteration) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
 }
 
 mDNSBool mDNSPlatformValidRecordForInterface(AuthRecord* rr,
                                              const NetworkInterfaceInfo* intf) {
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return mDNStrue;
 }
 

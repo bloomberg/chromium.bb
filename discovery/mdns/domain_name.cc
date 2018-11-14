@@ -21,10 +21,10 @@ DomainName DomainName::GetLocalDomain() {
 bool DomainName::Append(const DomainName& first,
                         const DomainName& second,
                         DomainName* result) {
-  CHECK(first.domain_name_.size());
-  CHECK(second.domain_name_.size());
-  DCHECK_EQ(first.domain_name_.back(), 0);
-  DCHECK_EQ(second.domain_name_.back(), 0);
+  OSP_CHECK(first.domain_name_.size());
+  OSP_CHECK(second.domain_name_.size());
+  OSP_DCHECK_EQ(first.domain_name_.back(), 0);
+  OSP_DCHECK_EQ(second.domain_name_.back(), 0);
   if ((first.domain_name_.size() + second.domain_name_.size() - 1) >
       kDomainNameMaxLength) {
     return false;
@@ -42,7 +42,7 @@ bool DomainName::Append(const DomainName& first,
 DomainName::DomainName() : domain_name_{0} {}
 DomainName::DomainName(std::vector<uint8_t>&& domain_name)
     : domain_name_(std::move(domain_name)) {
-  CHECK_LE(domain_name_.size(), kDomainNameMaxLength);
+  OSP_CHECK_LE(domain_name_.size(), kDomainNameMaxLength);
 }
 DomainName::DomainName(const DomainName&) = default;
 DomainName::DomainName(DomainName&&) = default;
@@ -70,8 +70,8 @@ bool DomainName::EndsWithLocalDomain() const {
 }
 
 bool DomainName::Append(const DomainName& after) {
-  CHECK(after.domain_name_.size());
-  DCHECK_EQ(after.domain_name_.back(), 0);
+  OSP_CHECK(after.domain_name_.size());
+  OSP_DCHECK_EQ(after.domain_name_.back(), 0);
   if ((domain_name_.size() + after.domain_name_.size() - 1) >
       kDomainNameMaxLength) {
     return false;
@@ -82,12 +82,12 @@ bool DomainName::Append(const DomainName& after) {
 }
 
 std::vector<std::string> DomainName::GetLabels() const {
-  DCHECK_GT(domain_name_.size(), 0);
+  OSP_DCHECK_GT(domain_name_.size(), 0);
   std::vector<std::string> result;
   auto it = domain_name_.begin();
   while (*it != 0) {
-    DCHECK_LT(it - domain_name_.begin(), kDomainNameMaxLength);
-    DCHECK_LT((it + 1 + *it) - domain_name_.begin(), kDomainNameMaxLength);
+    OSP_DCHECK_LT(it - domain_name_.begin(), kDomainNameMaxLength);
+    OSP_DCHECK_LT((it + 1 + *it) - domain_name_.begin(), kDomainNameMaxLength);
     result.emplace_back(it + 1, it + 1 + *it);
     it += 1 + *it;
   }
@@ -101,7 +101,7 @@ bool DomainNameComparator::operator()(const DomainName& a,
 
 std::ostream& operator<<(std::ostream& os, const DomainName& domain_name) {
   const auto& data = domain_name.domain_name();
-  DCHECK_GT(data.size(), 0);
+  OSP_DCHECK_GT(data.size(), 0);
   auto it = data.begin();
   while (*it != 0) {
     size_t length = *it++;

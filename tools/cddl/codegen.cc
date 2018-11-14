@@ -1251,9 +1251,9 @@ namespace {
     /* Encoder-specific errors, so it's fine to check these even in the \
      * parser.                                                          \
      */                                                                 \
-    DCHECK_NE(error, CborErrorTooFewItems);                             \
-    DCHECK_NE(error, CborErrorTooManyItems);                            \
-    DCHECK_NE(error, CborErrorDataTooLarge);                            \
+    OSP_DCHECK_NE(error, CborErrorTooFewItems);                             \
+    OSP_DCHECK_NE(error, CborErrorTooManyItems);                            \
+    OSP_DCHECK_NE(error, CborErrorDataTooLarge);                            \
     if (error != CborNoError && error != CborErrorOutOfMemory)          \
       return what;                                                      \
   }

@@ -70,13 +70,13 @@ bool StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket) {
 
 bool WatchNetworkChange(EventWaiterPtr waiter) {
   // TODO(btolsch): Implement network change watching.
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return false;
 }
 
 bool StopWatchingNetworkChange(EventWaiterPtr waiter) {
   // TODO(btolsch): Implement stop network change watching.
-  UNIMPLEMENTED();
+  OSP_UNIMPLEMENTED();
   return false;
 }
 

@@ -88,12 +88,12 @@ IPAddress::operator bool() const {
 }
 
 void IPAddress::CopyToV4(uint8_t x[4]) const {
-  // DCHECK(version_ == Version::kV4);
+  // OSP_DCHECK(version_ == Version::kV4);
   std::memcpy(x, bytes_.data(), 4);
 }
 
 void IPAddress::CopyToV6(uint8_t x[16]) const {
-  // DCHECK(version_ == Version::kV6);
+  // OSP_DCHECK(version_ == Version::kV6);
   std::memcpy(x, bytes_.data(), 16);
 }
 

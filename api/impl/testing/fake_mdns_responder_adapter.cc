@@ -19,8 +19,8 @@ mdns::PtrEvent MakePtrEvent(const std::string& service_instance,
   const auto labels = std::vector<std::string>{service_instance, service_type,
                                                service_protocol, kLocalDomain};
   mdns::DomainName full_instance_name;
-  CHECK(mdns::DomainName::FromLabels(labels.begin(), labels.end(),
-                                     &full_instance_name));
+  OSP_CHECK(mdns::DomainName::FromLabels(labels.begin(), labels.end(),
+                                         &full_instance_name));
   mdns::PtrEvent result{
       mdns::QueryEventHeader{mdns::QueryEventHeader::Type::kAdded, socket},
       full_instance_name};
@@ -36,12 +36,12 @@ mdns::SrvEvent MakeSrvEvent(const std::string& service_instance,
   const auto instance_labels = std::vector<std::string>{
       service_instance, service_type, service_protocol, kLocalDomain};
   mdns::DomainName full_instance_name;
-  CHECK(mdns::DomainName::FromLabels(
+  OSP_CHECK(mdns::DomainName::FromLabels(
       instance_labels.begin(), instance_labels.end(), &full_instance_name));
   const auto host_labels = std::vector<std::string>{hostname, kLocalDomain};
   mdns::DomainName domain_name;
-  CHECK(mdns::DomainName::FromLabels(host_labels.begin(), host_labels.end(),
-                                     &domain_name));
+  OSP_CHECK(mdns::DomainName::FromLabels(host_labels.begin(), host_labels.end(),
+                                         &domain_name));
   mdns::SrvEvent result{
       mdns::QueryEventHeader{mdns::QueryEventHeader::Type::kAdded, socket},
       full_instance_name, domain_name, port};
@@ -56,8 +56,8 @@ mdns::TxtEvent MakeTxtEvent(const std::string& service_instance,
   const auto labels = std::vector<std::string>{service_instance, service_type,
                                                service_protocol, kLocalDomain};
   mdns::DomainName full_instance_name;
-  CHECK(mdns::DomainName::FromLabels(labels.begin(), labels.end(),
-                                     &full_instance_name));
+  OSP_CHECK(mdns::DomainName::FromLabels(labels.begin(), labels.end(),
+                                         &full_instance_name));
   mdns::TxtEvent result{
       mdns::QueryEventHeader{mdns::QueryEventHeader::Type::kAdded, socket},
       full_instance_name, txt_lines};
@@ -69,7 +69,7 @@ mdns::AEvent MakeAEvent(const std::string& hostname,
                         platform::UdpSocketPtr socket) {
   const auto labels = std::vector<std::string>{hostname, kLocalDomain};
   mdns::DomainName domain_name;
-  CHECK(
+  OSP_CHECK(
       mdns::DomainName::FromLabels(labels.begin(), labels.end(), &domain_name));
   mdns::AEvent result{
       mdns::QueryEventHeader{mdns::QueryEventHeader::Type::kAdded, socket},
@@ -82,7 +82,7 @@ mdns::AaaaEvent MakeAaaaEvent(const std::string& hostname,
                               platform::UdpSocketPtr socket) {
   const auto labels = std::vector<std::string>{hostname, kLocalDomain};
   mdns::DomainName domain_name;
-  CHECK(
+  OSP_CHECK(
       mdns::DomainName::FromLabels(labels.begin(), labels.end(), &domain_name));
   mdns::AaaaEvent result{
       mdns::QueryEventHeader{mdns::QueryEventHeader::Type::kAdded, socket},
@@ -141,7 +141,7 @@ void FakeMdnsResponderAdapter::AddAaaaEvent(mdns::AaaaEvent&& aaaa_event) {
 }
 
 bool FakeMdnsResponderAdapter::Init() {
-  CHECK(!running_);
+  OSP_CHECK(!running_);
   running_ = true;
   return true;
 }
@@ -201,7 +201,7 @@ void FakeMdnsResponderAdapter::OnDataReceived(
     const uint8_t* data,
     size_t length,
     platform::UdpSocketPtr receiving_socket) {
-  CHECK(false) << "Tests should not drive this class with packets";
+  OSP_CHECK(false) << "Tests should not drive this class with packets";
 }
 
 int FakeMdnsResponderAdapter::RunTasks() {
@@ -221,7 +221,7 @@ std::vector<mdns::AEvent> FakeMdnsResponderAdapter::TakeAResponses() {
   for (auto it = query_it; it != a_events_.end(); ++it) {
     result.push_back(std::move(*it));
   }
-  LOG_INFO << "taking " << result.size() << " a response(s)";
+  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
   a_events_.erase(query_it, a_events_.end());
   return result;
 }
@@ -240,7 +240,7 @@ std::vector<mdns::AaaaEvent> FakeMdnsResponderAdapter::TakeAaaaResponses() {
   for (auto it = query_it; it != aaaa_events_.end(); ++it) {
     result.push_back(std::move(*it));
   }
-  LOG_INFO << "taking " << result.size() << " a response(s)";
+  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
   aaaa_events_.erase(query_it, aaaa_events_.end());
   return result;
 }
@@ -264,7 +264,7 @@ std::vector<mdns::PtrEvent> FakeMdnsResponderAdapter::TakePtrResponses() {
   for (auto it = query_it; it != ptr_events_.end(); ++it) {
     result.push_back(std::move(*it));
   }
-  LOG_INFO << "taking " << result.size() << " ptr response(s)";
+  OSP_LOG_INFO << "taking " << result.size() << " ptr response(s)";
   ptr_events_.erase(query_it, ptr_events_.end());
   return result;
 }
@@ -283,7 +283,7 @@ std::vector<mdns::SrvEvent> FakeMdnsResponderAdapter::TakeSrvResponses() {
   for (auto it = query_it; it != srv_events_.end(); ++it) {
     result.push_back(std::move(*it));
   }
-  LOG_INFO << "taking " << result.size() << " srv response(s)";
+  OSP_LOG_INFO << "taking " << result.size() << " srv response(s)";
   srv_events_.erase(query_it, srv_events_.end());
   return result;
 }
@@ -302,7 +302,7 @@ std::vector<mdns::TxtEvent> FakeMdnsResponderAdapter::TakeTxtResponses() {
   for (auto it = query_it; it != txt_events_.end(); ++it) {
     result.push_back(std::move(*it));
   }
-  LOG_INFO << "taking " << result.size() << " txt response(s)";
+  OSP_LOG_INFO << "taking " << result.size() << " txt response(s)";
   txt_events_.erase(query_it, txt_events_.end());
   return result;
 }
@@ -340,7 +340,8 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
 
   auto canonical_service_type = service_type;
   if (!canonical_service_type.EndsWithLocalDomain())
-    CHECK(canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
+    OSP_CHECK(
+        canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
   auto maybe_inserted = ptr_queries_.insert(canonical_service_type);
   if (maybe_inserted.second) {
@@ -400,7 +401,8 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
     const mdns::DomainName& service_type) {
   auto canonical_service_type = service_type;
   if (!canonical_service_type.EndsWithLocalDomain())
-    CHECK(canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
+    OSP_CHECK(
+        canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
   auto it = ptr_queries_.find(canonical_service_type);
   if (it == ptr_queries_.end())

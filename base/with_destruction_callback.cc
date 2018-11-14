@@ -19,7 +19,7 @@ WithDestructionCallback::~WithDestructionCallback() {
 void WithDestructionCallback::SetDestructionCallback(
     WithDestructionCallback::DestructionCallbackFunctionPointer function,
     void* state) {
-  DCHECK(!destruction_callback_function_);
+  OSP_DCHECK(!destruction_callback_function_);
   destruction_callback_function_ = function;
   destruction_callback_state_ = state;
 }

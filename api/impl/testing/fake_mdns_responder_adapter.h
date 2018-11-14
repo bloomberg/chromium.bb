@@ -68,7 +68,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
   };
 
   class LifetimeObserver {
-  public:
+   public:
     virtual ~LifetimeObserver() = default;
 
     virtual void OnDestroyed() = 0;
@@ -118,7 +118,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
 
   bool SetHostLabel(const std::string& host_label) override;
 
-  // TODO(btolsch): Reject/CHECK events that don't match any registered
+  // TODO(btolsch): Reject/OSP_CHECK events that don't match any registered
   // interface?
   bool RegisterInterface(const platform::InterfaceInfo& interface_info,
                          const platform::IPSubnet& interface_address,

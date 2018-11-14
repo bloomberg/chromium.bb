@@ -41,9 +41,9 @@ void MdnsResponderService::SetServiceConfig(
     uint16_t port,
     const std::vector<platform::InterfaceIndex> whitelist,
     const std::vector<std::string>& txt_lines) {
-  DCHECK(!hostname.empty());
-  DCHECK(!instance.empty());
-  DCHECK_NE(0, port);
+  OSP_DCHECK(!hostname.empty());
+  OSP_DCHECK(!instance.empty());
+  OSP_DCHECK_NE(0, port);
   service_hostname_ = hostname;
   service_instance_name_ = instance;
   service_port_ = port;
@@ -182,15 +182,15 @@ void MdnsResponderService::StartListening() {
     }
   }
   mdns::DomainName service_type;
-  CHECK(mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end(),
-                                     &service_type));
+  OSP_CHECK(mdns::DomainName::FromLabels(service_type_.begin(),
+                                         service_type_.end(), &service_type));
   mdns_responder_->StartPtrQuery(service_type);
 }
 
 void MdnsResponderService::StopListening() {
   mdns::DomainName service_type;
-  CHECK(mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end(),
-                                     &service_type));
+  OSP_CHECK(mdns::DomainName::FromLabels(service_type_.begin(),
+                                         service_type_.end(), &service_type));
   for (const auto& hostname : hostname_watchers_) {
     mdns_responder_->StopAQuery(hostname.first);
     mdns_responder_->StopAaaaQuery(hostname.first);
@@ -232,10 +232,10 @@ void MdnsResponderService::StartService() {
   }
   mdns_responder_->SetHostLabel(service_hostname_);
   mdns::DomainName domain_name;
-  CHECK(mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1,
-                                     &domain_name))
+  OSP_CHECK(mdns::DomainName::FromLabels(&service_hostname_,
+                                         &service_hostname_ + 1, &domain_name))
       << "bad hostname configured: " << service_hostname_;
-  CHECK(domain_name.Append(mdns::DomainName::GetLocalDomain()));
+  OSP_CHECK(domain_name.Append(mdns::DomainName::GetLocalDomain()));
   mdns_responder_->RegisterService(service_instance_name_, service_type_[0],
                                    service_type_[1], domain_name, service_port_,
                                    service_txt_lines_);

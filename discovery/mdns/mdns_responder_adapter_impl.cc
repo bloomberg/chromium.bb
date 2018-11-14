@@ -34,7 +34,7 @@ uint16_t GetNetworkOrderPort(const mDNSOpaque16& port) {
   return port.b[0] << 8 | port.b[1];
 }
 
-#if DCHECK_IS_ON()
+#if OSP_DCHECK_IS_ON()
 bool IsValidServiceName(const std::string& service_name) {
   // Service name requirements come from RFC 6335:
   //  - No more than 16 characters.
@@ -65,7 +65,7 @@ bool IsValidServiceProtocol(const std::string& protocol) {
   // RFC 6763 requires _tcp be used for TCP services and _udp for all others.
   return protocol == "_tcp" || protocol == "_udp";
 }
-#endif  // if DCHECK_IS_ON()
+#endif  // if OSP_DCHECK_IS_ON()
 
 void MakeSubnetMaskFromPrefixLengthV4(uint8_t mask[4], uint8_t prefix_length) {
   for (int i = 0; i < 4; prefix_length -= 8, ++i) {
@@ -117,13 +117,13 @@ MdnsResponderErrorCode MapMdnsError(int err) {
     default:
       break;
   }
-  DLOG_WARN << "unmapped mDNSResponder error: " << err;
+  OSP_DLOG_WARN << "unmapped mDNSResponder error: " << err;
   return MdnsResponderErrorCode::kUnknownError;
 }
 
 std::vector<std::string> ParseTxtResponse(const uint8_t data[256],
                                           uint16_t length) {
-  DCHECK(length <= 256);
+  OSP_DCHECK(length <= 256);
   if (length == 0)
     return {};
 
@@ -143,7 +143,7 @@ std::vector<std::string> ParseTxtResponse(const uint8_t data[256],
 }
 
 void MdnsStatusCallback(mDNS* mdns, mStatus result) {
-  LOG_INFO << "status good? " << (result == mStatus_NoError);
+  OSP_LOG_INFO << "status good? " << (result == mStatus_NoError);
 }
 
 }  // namespace
@@ -227,7 +227,7 @@ bool MdnsResponderAdapterImpl::RegisterInterface(
   info.McastTxRx = 1;
   platform_storage_.sockets.push_back(socket);
   auto result = mDNS_RegisterInterface(&mdns_, &info, mDNSfalse);
-  LOG_IF(WARN, result != mStatus_NoError)
+  OSP_LOG_IF(WARN, result != mStatus_NoError)
       << "mDNS_RegisterInterface failed: " << result;
   return result == mStatus_NoError;
 }
@@ -240,7 +240,7 @@ bool MdnsResponderAdapterImpl::DeregisterInterface(
 
   const auto it = std::find(platform_storage_.sockets.begin(),
                             platform_storage_.sockets.end(), socket);
-  DCHECK(it != platform_storage_.sockets.end());
+  OSP_DCHECK(it != platform_storage_.sockets.end());
   platform_storage_.sockets.erase(it);
   if (info_it->second.RR_A.namestorage.c[0]) {
     mDNS_Deregister(&mdns_, &info_it->second.RR_A);
@@ -342,7 +342,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAQuery(
   question.QuestionCallback = &MdnsResponderAdapterImpl::AQueryCallback;
   question.QuestionContext = this;
   const auto err = mDNS_StartQuery(&mdns_, &question);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -377,7 +377,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAaaaQuery(
   question.QuestionCallback = &MdnsResponderAdapterImpl::AaaaQueryCallback;
   question.QuestionContext = this;
   const auto err = mDNS_StartQuery(&mdns_, &question);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -420,7 +420,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartPtrQuery(
   question.QuestionCallback = &MdnsResponderAdapterImpl::PtrQueryCallback;
   question.QuestionContext = this;
   const auto err = mDNS_StartQuery(&mdns_, &question);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -455,7 +455,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartSrvQuery(
   question.QuestionCallback = &MdnsResponderAdapterImpl::SrvQueryCallback;
   question.QuestionContext = this;
   const auto err = mDNS_StartQuery(&mdns_, &question);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -490,7 +490,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartTxtQuery(
   question.QuestionCallback = &MdnsResponderAdapterImpl::TxtQueryCallback;
   question.QuestionContext = this;
   const auto err = mDNS_StartQuery(&mdns_, &question);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StartQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -502,7 +502,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopAQuery(
 
   const auto err = mDNS_StopQuery(&mdns_, &entry->second);
   a_questions_.erase(entry);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -514,7 +514,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopAaaaQuery(
 
   const auto err = mDNS_StopQuery(&mdns_, &entry->second);
   aaaa_questions_.erase(entry);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -526,7 +526,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopPtrQuery(
 
   const auto err = mDNS_StopQuery(&mdns_, &entry->second);
   ptr_questions_.erase(entry);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -538,7 +538,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopSrvQuery(
 
   const auto err = mDNS_StopQuery(&mdns_, &entry->second);
   srv_questions_.erase(entry);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -550,7 +550,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopTxtQuery(
 
   const auto err = mDNS_StopQuery(&mdns_, &entry->second);
   txt_questions_.erase(entry);
-  LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
+  OSP_LOG_IF(WARN, err != mStatus_NoError) << "mDNS_StopQuery failed: " << err;
   return MapMdnsError(err);
 }
 
@@ -561,8 +561,8 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::RegisterService(
     const DomainName& target_host,
     uint16_t target_port,
     const std::vector<std::string>& lines) {
-  DCHECK(IsValidServiceName(service_name));
-  DCHECK(IsValidServiceProtocol(service_protocol));
+  OSP_DCHECK(IsValidServiceName(service_name));
+  OSP_DCHECK(IsValidServiceProtocol(service_protocol));
   service_records_.push_back(MakeUnique<ServiceRecordSet>());
   auto* service_record = service_records_.back().get();
   domainlabel instance;
@@ -646,9 +646,9 @@ void MdnsResponderAdapterImpl::AQueryCallback(mDNS* m,
                                               DNSQuestion* question,
                                               const ResourceRecord* answer,
                                               QC_result added) {
-  DCHECK(question);
-  DCHECK(answer);
-  DCHECK_EQ(answer->rrtype, kDNSType_A);
+  OSP_DCHECK(question);
+  OSP_DCHECK(answer);
+  OSP_DCHECK_EQ(answer->rrtype, kDNSType_A);
   DomainName domain(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
@@ -656,14 +656,14 @@ void MdnsResponderAdapterImpl::AQueryCallback(mDNS* m,
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
-  DCHECK(adapter);
+  OSP_DCHECK(adapter);
   auto event_type = QueryEventHeader::Type::kAddedNoCache;
   if (added == QC_add) {
     event_type = QueryEventHeader::Type::kAdded;
   } else if (added == QC_rmv) {
     event_type = QueryEventHeader::Type::kRemoved;
   } else {
-    DCHECK_EQ(added, QC_addnocache);
+    OSP_DCHECK_EQ(added, QC_addnocache);
   }
   adapter->a_responses_.emplace_back(
       QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
@@ -676,9 +676,9 @@ void MdnsResponderAdapterImpl::AaaaQueryCallback(mDNS* m,
                                                  DNSQuestion* question,
                                                  const ResourceRecord* answer,
                                                  QC_result added) {
-  DCHECK(question);
-  DCHECK(answer);
-  DCHECK_EQ(answer->rrtype, kDNSType_A);
+  OSP_DCHECK(question);
+  OSP_DCHECK(answer);
+  OSP_DCHECK_EQ(answer->rrtype, kDNSType_A);
   DomainName domain(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
@@ -686,14 +686,14 @@ void MdnsResponderAdapterImpl::AaaaQueryCallback(mDNS* m,
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
-  DCHECK(adapter);
+  OSP_DCHECK(adapter);
   auto event_type = QueryEventHeader::Type::kAddedNoCache;
   if (added == QC_add) {
     event_type = QueryEventHeader::Type::kAdded;
   } else if (added == QC_rmv) {
     event_type = QueryEventHeader::Type::kRemoved;
   } else {
-    DCHECK_EQ(added, QC_addnocache);
+    OSP_DCHECK_EQ(added, QC_addnocache);
   }
   adapter->aaaa_responses_.emplace_back(
       QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
@@ -706,23 +706,23 @@ void MdnsResponderAdapterImpl::PtrQueryCallback(mDNS* m,
                                                 DNSQuestion* question,
                                                 const ResourceRecord* answer,
                                                 QC_result added) {
-  DCHECK(question);
-  DCHECK(answer);
-  DCHECK_EQ(answer->rrtype, kDNSType_PTR);
+  OSP_DCHECK(question);
+  OSP_DCHECK(answer);
+  OSP_DCHECK_EQ(answer->rrtype, kDNSType_PTR);
   DomainName result(std::vector<uint8_t>(
       answer->rdata->u.name.c,
       answer->rdata->u.name.c + DomainNameLength(&answer->rdata->u.name)));
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
-  DCHECK(adapter);
+  OSP_DCHECK(adapter);
   auto event_type = QueryEventHeader::Type::kAddedNoCache;
   if (added == QC_add) {
     event_type = QueryEventHeader::Type::kAdded;
   } else if (added == QC_rmv) {
     event_type = QueryEventHeader::Type::kRemoved;
   } else {
-    DCHECK_EQ(added, QC_addnocache);
+    OSP_DCHECK_EQ(added, QC_addnocache);
   }
   adapter->ptr_responses_.emplace_back(
       QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
@@ -735,9 +735,9 @@ void MdnsResponderAdapterImpl::SrvQueryCallback(mDNS* m,
                                                 DNSQuestion* question,
                                                 const ResourceRecord* answer,
                                                 QC_result added) {
-  DCHECK(question);
-  DCHECK(answer);
-  DCHECK_EQ(answer->rrtype, kDNSType_SRV);
+  OSP_DCHECK(question);
+  OSP_DCHECK(answer);
+  OSP_DCHECK_EQ(answer->rrtype, kDNSType_SRV);
   DomainName service(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
@@ -748,14 +748,14 @@ void MdnsResponderAdapterImpl::SrvQueryCallback(mDNS* m,
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
-  DCHECK(adapter);
+  OSP_DCHECK(adapter);
   auto event_type = QueryEventHeader::Type::kAddedNoCache;
   if (added == QC_add) {
     event_type = QueryEventHeader::Type::kAdded;
   } else if (added == QC_rmv) {
     event_type = QueryEventHeader::Type::kRemoved;
   } else {
-    DCHECK_EQ(added, QC_addnocache);
+    OSP_DCHECK_EQ(added, QC_addnocache);
   }
   adapter->srv_responses_.emplace_back(
       QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
@@ -769,9 +769,9 @@ void MdnsResponderAdapterImpl::TxtQueryCallback(mDNS* m,
                                                 DNSQuestion* question,
                                                 const ResourceRecord* answer,
                                                 QC_result added) {
-  DCHECK(question);
-  DCHECK(answer);
-  DCHECK_EQ(answer->rrtype, kDNSType_TXT);
+  OSP_DCHECK(question);
+  OSP_DCHECK(answer);
+  OSP_DCHECK_EQ(answer->rrtype, kDNSType_TXT);
   DomainName service(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
@@ -779,14 +779,14 @@ void MdnsResponderAdapterImpl::TxtQueryCallback(mDNS* m,
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
-  DCHECK(adapter);
+  OSP_DCHECK(adapter);
   auto event_type = QueryEventHeader::Type::kAddedNoCache;
   if (added == QC_add) {
     event_type = QueryEventHeader::Type::kAdded;
   } else if (added == QC_rmv) {
     event_type = QueryEventHeader::Type::kRemoved;
   } else {
-    DCHECK_EQ(added, QC_addnocache);
+    OSP_DCHECK_EQ(added, QC_addnocache);
   }
   adapter->txt_responses_.emplace_back(
       QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
@@ -799,7 +799,7 @@ void MdnsResponderAdapterImpl::ServiceCallback(mDNS* m,
                                                ServiceRecordSet* service_record,
                                                mStatus result) {
   if (result == mStatus_MemFree) {
-    DLOG_INFO << "free service record";
+    OSP_DLOG_INFO << "free service record";
     auto* adapter = reinterpret_cast<MdnsResponderAdapterImpl*>(
         service_record->ServiceContext);
     auto& service_records = adapter->service_records_;

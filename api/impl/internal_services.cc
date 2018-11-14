@@ -46,8 +46,8 @@ bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
     const IPAddress broadcast_address =
         IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
     if (!JoinUdpMulticastGroup(socket, broadcast_address, ifindex)) {
-      LOG_ERROR << "join multicast group failed for interface " << ifindex
-                << ": " << platform::GetLastErrorString();
+      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
+                    << ": " << platform::GetLastErrorString();
       break;
     }
 
@@ -55,8 +55,8 @@ bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
                                            ? kMulticastIPv6ListeningEndpoint
                                            : kMulticastListeningEndpoint;
     if (!BindUdpSocket(socket, listen_endpoint, ifindex)) {
-      LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                << platform::GetLastErrorString();
+      OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
+                    << platform::GetLastErrorString();
       break;
     }
 
@@ -64,7 +64,8 @@ bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
   } while (false);
 
   if (platform::GetLastError() == EADDRINUSE) {
-    LOG_ERROR << "Is there a mDNS service, such as Bonjour, already running?";
+    OSP_LOG_ERROR
+        << "Is there a mDNS service, such as Bonjour, already running?";
   }
   return false;
 }
@@ -78,7 +79,7 @@ int g_instance_ref_count = 0;
 
 // static
 void InternalServices::RunEventLoopOnce() {
-  CHECK(g_instance) << "No listener or publisher is alive.";
+  OSP_CHECK(g_instance) << "No listener or publisher is alive.";
   g_instance->mdns_service_.HandleNewEvents(
       platform::OnePlatformLoopIteration(g_instance->internal_service_waiter_));
 }
@@ -124,11 +125,11 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
   const bool do_filter_using_whitelist = !whitelist.empty();
   std::vector<platform::InterfaceIndex> index_list;
   for (const auto& interface : addrinfo) {
-    VLOG(1) << "Found interface: " << interface;
+    OSP_VLOG(1) << "Found interface: " << interface;
     if (do_filter_using_whitelist &&
         std::find(whitelist.begin(), whitelist.end(), interface.info.index) ==
             whitelist.end()) {
-      VLOG(1) << "Ignoring interface not in whitelist: " << interface.info;
+      OSP_VLOG(1) << "Ignoring interface not in whitelist: " << interface.info;
       continue;
     }
     if (!interface.addresses.empty())
@@ -175,7 +176,7 @@ InternalServices::InternalServices()
                     std::make_unique<MdnsResponderAdapterImplFactory>(),
                     std::make_unique<InternalPlatformLinkage>(this)),
       internal_service_waiter_(platform::CreateEventWaiter()) {
-  DCHECK(internal_service_waiter_);
+  OSP_DCHECK(internal_service_waiter_);
 }
 
 InternalServices::~InternalServices() {
@@ -193,7 +194,7 @@ void InternalServices::DeregisterMdnsSocket(platform::UdpSocketPtr socket) {
 // static
 InternalServices* InternalServices::ReferenceSingleton() {
   if (!g_instance) {
-    CHECK_EQ(g_instance_ref_count, 0);
+    OSP_CHECK_EQ(g_instance_ref_count, 0);
     g_instance = new InternalServices();
   }
   ++g_instance_ref_count;
@@ -202,8 +203,8 @@ InternalServices* InternalServices::ReferenceSingleton() {
 
 // static
 void InternalServices::DereferenceSingleton(void* instance) {
-  CHECK_EQ(static_cast<InternalServices*>(instance), g_instance);
-  CHECK_GT(g_instance_ref_count, 0);
+  OSP_CHECK_EQ(static_cast<InternalServices*>(instance), g_instance);
+  OSP_CHECK_GT(g_instance_ref_count, 0);
   --g_instance_ref_count;
   if (g_instance_ref_count == 0) {
     delete g_instance;

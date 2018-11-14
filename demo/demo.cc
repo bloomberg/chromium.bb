@@ -26,7 +26,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  LOG_INFO << "caught SIGINT, exiting...";
+  OSP_LOG_INFO << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -46,28 +46,28 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  LOG_INFO << "signal handlers setup";
-  LOG_INFO << "pid: " << getpid();
+  OSP_LOG_INFO << "signal handlers setup";
+  OSP_LOG_INFO << "pid: " << getpid();
 }
 
 class ListenerObserver final : public ScreenListener::Observer {
  public:
   ~ListenerObserver() override = default;
-  void OnStarted() override { LOG_INFO << "listener started!"; }
-  void OnStopped() override { LOG_INFO << "listener stopped!"; }
-  void OnSuspended() override { LOG_INFO << "listener suspended!"; }
-  void OnSearching() override { LOG_INFO << "listener searching!"; }
+  void OnStarted() override { OSP_LOG_INFO << "listener started!"; }
+  void OnStopped() override { OSP_LOG_INFO << "listener stopped!"; }
+  void OnSuspended() override { OSP_LOG_INFO << "listener suspended!"; }
+  void OnSearching() override { OSP_LOG_INFO << "listener searching!"; }
 
   void OnScreenAdded(const ScreenInfo& info) override {
-    LOG_INFO << "found! " << info.friendly_name;
+    OSP_LOG_INFO << "found! " << info.friendly_name;
   }
   void OnScreenChanged(const ScreenInfo& info) override {
-    LOG_INFO << "changed! " << info.friendly_name;
+    OSP_LOG_INFO << "changed! " << info.friendly_name;
   }
   void OnScreenRemoved(const ScreenInfo& info) override {
-    LOG_INFO << "removed! " << info.friendly_name;
+    OSP_LOG_INFO << "removed! " << info.friendly_name;
   }
-  void OnAllScreensRemoved() override { LOG_INFO << "all removed!"; }
+  void OnAllScreensRemoved() override { OSP_LOG_INFO << "all removed!"; }
   void OnError(ScreenListenerError) override {}
   void OnMetrics(ScreenListener::Metrics) override {}
 };
@@ -76,9 +76,9 @@ class PublisherObserver final : public ScreenPublisher::Observer {
  public:
   ~PublisherObserver() override = default;
 
-  void OnStarted() override { LOG_INFO << "publisher started!"; }
-  void OnStopped() override { LOG_INFO << "publisher stopped!"; }
-  void OnSuspended() override { LOG_INFO << "publisher suspended!"; }
+  void OnStarted() override { OSP_LOG_INFO << "publisher started!"; }
+  void OnStopped() override { OSP_LOG_INFO << "publisher stopped!"; }
+  void OnSuspended() override { OSP_LOG_INFO << "publisher suspended!"; }
 
   void OnError(ScreenPublisherError) override {}
   void OnMetrics(ScreenPublisher::Metrics) override {}

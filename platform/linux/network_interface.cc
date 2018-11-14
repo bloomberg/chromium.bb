@@ -36,7 +36,7 @@ constexpr int kNetlinkRecvmsgBufSize = 8192;
 std::string GetInterfaceName(const char* kernel_name) {
   std::string name;
   size_t name_len = strnlen(kernel_name, IFNAMSIZ);
-  CHECK_LT(name_len, IFNAMSIZ);
+  OSP_CHECK_LT(name_len, IFNAMSIZ);
   name.assign(kernel_name, name_len);
   return name;
 }
@@ -59,7 +59,7 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   struct iwreq wr;
   static_assert(sizeof(wr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
-  CHECK_LT(ifname.size(), IFNAMSIZ);
+  OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
   strncpy(wr.ifr_name, ifname.c_str(), IFNAMSIZ);
   if (ioctl(s.get(), SIOCGIWNAME, &wr) != -1)
     return InterfaceInfo::Type::kWifi;
@@ -69,7 +69,7 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   struct ifreq ifr;
   static_assert(sizeof(ifr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
-  CHECK_LT(ifname.size(), IFNAMSIZ);
+  OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
   strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ);
   ifr.ifr_data = &ecmd;
   if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1)
@@ -90,7 +90,7 @@ void GetInterfaceAttributes(struct rtattr* rta,
       info->name =
           GetInterfaceName(reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFLA_ADDRESS) {
-      CHECK_EQ(sizeof(info->hardware_address), RTA_PAYLOAD(rta));
+      OSP_CHECK_EQ(sizeof(info->hardware_address), RTA_PAYLOAD(rta));
       std::memcpy(info->hardware_address, RTA_DATA(rta),
                   sizeof(info->hardware_address));
     }
@@ -136,13 +136,13 @@ void GetIPv4Address(struct rtattr* rta,
   IPAddress local;
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFA_LABEL) {
-      DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
+      OSP_DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_ADDRESS) {
-      DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
+      OSP_DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
       *address = IPAddress(IPAddress::Version::kV4,
                            static_cast<uint8_t*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_LOCAL) {
-      DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
+      OSP_DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
       have_local = true;
       local = IPAddress(IPAddress::Version::kV4,
                         static_cast<uint8_t*>(RTA_DATA(rta)));
@@ -166,13 +166,13 @@ void GetIPv6Address(struct rtattr* rta,
   IPAddress local;
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFA_LABEL) {
-      DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
+      OSP_DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_ADDRESS) {
-      DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
+      OSP_DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
       *address = IPAddress(IPAddress::Version::kV6,
                            static_cast<uint8_t*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_LOCAL) {
-      DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
+      OSP_DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
       have_local = true;
       local = IPAddress(IPAddress::Version::kV6,
                         static_cast<uint8_t*>(RTA_DATA(rta)));
@@ -185,8 +185,8 @@ void GetIPv6Address(struct rtattr* rta,
 std::vector<InterfaceInfo> GetLinkInfo() {
   ScopedFd fd(socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE));
   if (!fd) {
-    LOG_WARN << "netlink socket() failed: " << errno << " - "
-             << strerror(errno);
+    OSP_LOG_WARN << "netlink socket() failed: " << errno << " - "
+                 << strerror(errno);
     return {};
   }
 
@@ -214,8 +214,8 @@ std::vector<InterfaceInfo> GetLinkInfo() {
                          /* msg_controllen */ 0,
                          /* msg_flags */ 0};
     if (sendmsg(fd.get(), &msg, 0) < 0) {
-      LOG_ERROR << "netlink sendmsg() failed: " << errno << " - "
-                << strerror(errno);
+      OSP_LOG_ERROR << "netlink sendmsg() failed: " << errno << " - "
+                    << strerror(errno);
       return {};
     }
   }
@@ -247,10 +247,10 @@ std::vector<InterfaceInfo> GetLinkInfo() {
           break;
         } else if (netlink_header->nlmsg_type == NLMSG_ERROR) {
           done = true;
-          LOG_ERROR << "netlink error msg: "
-                    << reinterpret_cast<struct nlmsgerr*>(
-                           NLMSG_DATA(netlink_header))
-                           ->error;
+          OSP_LOG_ERROR << "netlink error msg: "
+                        << reinterpret_cast<struct nlmsgerr*>(
+                               NLMSG_DATA(netlink_header))
+                               ->error;
           continue;
         } else if ((netlink_header->nlmsg_flags & NLM_F_MULTI) == 0) {
           // If this is not a multi-part message, we don't need to wait for an
@@ -285,8 +285,8 @@ std::vector<InterfaceAddresses> GetAddressInfo(
     const std::vector<InterfaceInfo>& info_list) {
   ScopedFd fd(socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE));
   if (!fd) {
-    LOG_ERROR << "netlink socket() failed: " << errno << " - "
-              << strerror(errno);
+    OSP_LOG_ERROR << "netlink socket() failed: " << errno << " - "
+                  << strerror(errno);
     return {};
   }
 
@@ -314,7 +314,7 @@ std::vector<InterfaceAddresses> GetAddressInfo(
                          /* msg_controllen */ 0,
                          /* msg_flags */ 0};
     if (sendmsg(fd.get(), &msg, 0) < 0) {
-      LOG_ERROR << "sendmsg failed: " << errno << " - " << strerror(errno);
+      OSP_LOG_ERROR << "sendmsg failed: " << errno << " - " << strerror(errno);
       return {};
     }
   }
@@ -344,10 +344,10 @@ std::vector<InterfaceAddresses> GetAddressInfo(
           break;
         } else if (netlink_header->nlmsg_type == NLMSG_ERROR) {
           done = true;
-          LOG_ERROR << "netlink error msg: "
-                    << reinterpret_cast<struct nlmsgerr*>(
-                           NLMSG_DATA(netlink_header))
-                           ->error;
+          OSP_LOG_ERROR << "netlink error msg: "
+                        << reinterpret_cast<struct nlmsgerr*>(
+                               NLMSG_DATA(netlink_header))
+                               ->error;
           continue;
         } else if ((netlink_header->nlmsg_flags & NLM_F_MULTI) == 0) {
           // If this is not a multi-part message, we don't need to wait for an
@@ -363,8 +363,8 @@ std::vector<InterfaceAddresses> GetAddressInfo(
         InterfaceAddresses* addresses = GetAddressesForIndex(
             &address_list, info_list, interface_address->ifa_index);
         if (!addresses) {
-          DVLOG(1) << "skipping address for interface "
-                   << interface_address->ifa_index;
+          OSP_DVLOG(1) << "skipping address for interface "
+                       << interface_address->ifa_index;
           continue;
         }
 
@@ -385,8 +385,8 @@ std::vector<InterfaceAddresses> GetAddressInfo(
                          IFA_PAYLOAD(netlink_header), addresses->info.name,
                          &address.address);
         } else {
-          LOG_ERROR << "Unknown address family: "
-                    << interface_address->ifa_family;
+          OSP_LOG_ERROR << "Unknown address family: "
+                        << interface_address->ifa_family;
         }
       }
     }

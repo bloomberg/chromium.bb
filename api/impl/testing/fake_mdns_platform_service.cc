@@ -16,7 +16,7 @@ FakeMdnsPlatformService::~FakeMdnsPlatformService() = default;
 std::vector<MdnsPlatformService::BoundInterface>
 FakeMdnsPlatformService::RegisterInterfaces(
     const std::vector<platform::InterfaceIndex>& whitelist) {
-  CHECK(registered_interfaces_.empty());
+  OSP_CHECK(registered_interfaces_.empty());
   if (whitelist.empty()) {
     registered_interfaces_ = interfaces_;
   } else {
@@ -39,7 +39,7 @@ void FakeMdnsPlatformService::DeregisterInterfaces(
                            [index](const BoundInterface& interface) {
                              return interface.interface_info.index == index;
                            });
-    CHECK(it != registered_interfaces_.end())
+    OSP_CHECK(it != registered_interfaces_.end())
         << "Must deregister a previously returned interface: " << index;
     registered_interfaces_.erase(it);
   }

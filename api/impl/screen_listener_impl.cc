@@ -9,7 +9,7 @@
 namespace openscreen {
 namespace {
 
-#if DCHECK_IS_ON()
+#if OSP_DCHECK_IS_ON()
 bool IsTransitionValid(ScreenListener::State from, ScreenListener::State to) {
   switch (from) {
     case ScreenListener::State::kStopped:
@@ -34,8 +34,8 @@ bool IsTransitionValid(ScreenListener::State from, ScreenListener::State to) {
              to == ScreenListener::State::kSearching ||
              to == ScreenListener::State::kStopping;
     default:
-      DCHECK(false) << "unknown ScreenListener::State value: "
-                    << static_cast<int>(from);
+      OSP_DCHECK(false) << "unknown ScreenListener::State value: "
+                        << static_cast<int>(from);
       break;
   }
   return false;
@@ -49,7 +49,7 @@ ScreenListenerImpl::Delegate::~Delegate() = default;
 
 void ScreenListenerImpl::Delegate::SetListenerImpl(
     ScreenListenerImpl* listener) {
-  DCHECK(!listener_);
+  OSP_DCHECK(!listener_);
   listener_ = listener;
 }
 
@@ -145,14 +145,14 @@ const std::vector<ScreenInfo>& ScreenListenerImpl::GetScreens() const {
 }
 
 void ScreenListenerImpl::SetState(State state) {
-  DCHECK(IsTransitionValid(state_, state));
+  OSP_DCHECK(IsTransitionValid(state_, state));
   state_ = state;
   if (observer_)
     MaybeNotifyObserver();
 }
 
 void ScreenListenerImpl::MaybeNotifyObserver() {
-  DCHECK(observer_);
+  OSP_DCHECK(observer_);
   switch (state_) {
     case State::kRunning:
       observer_->OnStarted();

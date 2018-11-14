@@ -57,7 +57,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  LOG_INFO << "caught SIGINT, exiting...";
+  OSP_LOG_INFO << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -92,8 +92,8 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  LOG_INFO << "signal handlers setup";
-  LOG_INFO << "pid: " << getpid();
+  OSP_LOG_INFO << "signal handlers setup";
+  OSP_LOG_INFO << "pid: " << getpid();
 }
 
 std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
@@ -102,20 +102,20 @@ std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
   for (const auto ifindex : index_list) {
     auto* socket = platform::CreateUdpSocketIPv4();
     if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)) {
-      LOG_ERROR << "join multicast group failed for interface " << ifindex
-                << ": " << platform::GetLastErrorString();
+      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
+                    << ": " << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
     if (!BindUdpSocket(socket, IPEndpoint{IPAddress{0, 0, 0, 0}, 5353},
                        ifindex)) {
-      LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                << platform::GetLastErrorString();
+      OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
+                    << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
 
-    LOG_INFO << "listening on interface " << ifindex;
+    OSP_LOG_INFO << "listening on interface " << ifindex;
     fds.push_back(socket);
   }
   return fds;
@@ -148,13 +148,13 @@ std::vector<platform::UdpSocketPtr> RegisterInterfaces(
 }
 
 void LogService(const Service& s) {
-  LOG_INFO << "PTR: (" << s.service_instance << ")";
-  LOG_INFO << "SRV: " << s.domain_name << ":" << s.port;
-  LOG_INFO << "TXT:";
+  OSP_LOG_INFO << "PTR: (" << s.service_instance << ")";
+  OSP_LOG_INFO << "SRV: " << s.domain_name << ":" << s.port;
+  OSP_LOG_INFO << "TXT:";
   for (const auto& l : s.txt) {
-    LOG_INFO << " | " << l;
+    OSP_LOG_INFO << " | " << l;
   }
-  LOG_INFO << "A: " << s.address;
+  OSP_LOG_INFO << "A: " << s.address;
 }
 
 void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
@@ -174,7 +174,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         // PTR may be removed and added without updating related entries (SRV
         // and friends) so this simple logic is actually broken, but I don't
         // want to do a better design or pointer hell for just a demo.
-        LOG_WARN << "ptr-remove: " << ptr_event.service_instance;
+        OSP_LOG_WARN << "ptr-remove: " << ptr_event.service_instance;
         if (it != g_services->end())
           g_services->erase(it);
 
@@ -194,7 +194,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         it->second.port = srv_event.port;
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
-        LOG_WARN << "srv-remove: " << srv_event.service_instance;
+        OSP_LOG_WARN << "srv-remove: " << srv_event.service_instance;
         it->second.domain_name = mdns::DomainName();
         it->second.port = 0;
         break;
@@ -211,7 +211,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         it->second.txt = std::move(txt_event.txt_info);
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
-        LOG_WARN << "txt-remove: " << txt_event.service_instance;
+        OSP_LOG_WARN << "txt-remove: " << txt_event.service_instance;
         it->second.txt.clear();
         break;
     }
@@ -234,7 +234,7 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
         it->second.address = a_event.address;
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
-        LOG_WARN << "a-remove: " << a_event.domain_name;
+        OSP_LOG_WARN << "a-remove: " << a_event.domain_name;
         it->second.address = IPAddress(0, 0, 0, 0);
         break;
     }
@@ -250,8 +250,8 @@ void BrowseDemo(const std::string& service_name,
   std::vector<std::string> labels{service_name, service_protocol};
   if (!mdns::DomainName::FromLabels(labels.begin(), labels.end(),
                                     &service_type)) {
-    LOG_ERROR << "bad domain labels: " << service_name << ", "
-              << service_protocol;
+    OSP_LOG_ERROR << "bad domain labels: " << service_name << ", "
+                  << service_protocol;
     return;
   }
 
@@ -261,7 +261,7 @@ void BrowseDemo(const std::string& service_name,
   mdns_adapter->SetHostLabel("gigliorononomicon");
   auto addrinfo = platform::GetInterfaceAddresses();
   for (const auto& ifa : addrinfo) {
-    LOG_INFO << "Found interface: " << ifa;
+    OSP_LOG_INFO << "Found interface: " << ifa;
   }
   auto sockets = RegisterInterfaces(addrinfo, mdns_adapter.get());
   if (!service_instance.empty()) {
@@ -278,7 +278,7 @@ void BrowseDemo(const std::string& service_name,
   while (!g_done) {
     HandleEvents(mdns_adapter.get());
     if (g_dump_services) {
-      LOG_INFO << "num services: " << g_services->size();
+      OSP_LOG_INFO << "num services: " << g_services->size();
       for (const auto& s : *g_services) {
         LogService(s.second);
       }
@@ -292,7 +292,7 @@ void BrowseDemo(const std::string& service_name,
                                    packet.socket);
     }
   }
-  LOG_INFO << "num services: " << g_services->size();
+  OSP_LOG_INFO << "num services: " << g_services->size();
   for (const auto& s : *g_services) {
     LogService(s.second);
   }

@@ -9,7 +9,7 @@
 namespace openscreen {
 namespace {
 
-#if DCHECK_IS_ON()
+#if OSP_DCHECK_IS_ON()
 bool IsTransitionValid(ScreenPublisher::State from, ScreenPublisher::State to) {
   using State = ScreenPublisher::State;
   switch (from) {
@@ -25,7 +25,7 @@ bool IsTransitionValid(ScreenPublisher::State from, ScreenPublisher::State to) {
     case State::kSuspended:
       return to == State::kRunning || to == State::kStopping;
     default:
-      DCHECK(false) << "unknown State value: " << static_cast<int>(from);
+      OSP_DCHECK(false) << "unknown State value: " << static_cast<int>(from);
       break;
   }
   return false;
@@ -39,7 +39,7 @@ ScreenPublisherImpl::Delegate::~Delegate() = default;
 
 void ScreenPublisherImpl::Delegate::SetPublisherImpl(
     ScreenPublisherImpl* publisher) {
-  DCHECK(!publisher_);
+  OSP_DCHECK(!publisher_);
   publisher_ = publisher;
 }
 
@@ -91,14 +91,14 @@ void ScreenPublisherImpl::UpdateFriendlyName(const std::string& friendly_name) {
 }
 
 void ScreenPublisherImpl::SetState(State state) {
-  DCHECK(IsTransitionValid(state_, state));
+  OSP_DCHECK(IsTransitionValid(state_, state));
   state_ = state;
   if (observer_)
     MaybeNotifyObserver();
 }
 
 void ScreenPublisherImpl::MaybeNotifyObserver() {
-  DCHECK(observer_);
+  OSP_DCHECK(observer_);
   switch (state_) {
     case State::kRunning:
       observer_->OnStarted();
