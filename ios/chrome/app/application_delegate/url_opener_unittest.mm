@@ -7,19 +7,14 @@
 #import <Foundation/Foundation.h>
 
 #include "ios/chrome/app/application_delegate/app_state.h"
-#include "ios/chrome/app/application_delegate/app_state_testing.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
-#include "ios/chrome/app/main_application_delegate.h"
 #include "ios/chrome/app/main_controller.h"
-#include "ios/chrome/app/main_controller_private.h"
+#import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
-#import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -28,116 +23,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-#pragma mark - Tab Switcher Mock
-
-// This mocks either a iPad tab switcher controller or a iPhone stack view
-// controller.
-@interface URLOpenerOCMockComplexTypeHandler : OCMockComplexTypeHelper
-@end
-
-@implementation URLOpenerOCMockComplexTypeHandler
-
-typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
-                                                    NSUInteger,
-                                                    ui::PageTransition);
-
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                                  withURL:(const GURL&)url
-                                  atIndex:(NSUInteger)position
-                               transition:(ui::PageTransition)transition {
-  static_cast<mock_gurl_nsuinteger_pagetransition>(
-      [self blockForSelector:_cmd])(url, position, transition);
-  id mockTab = [OCMockObject mockForClass:[Tab class]];
-  return mockTab;
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
-  static_cast<mock_gurl_nsuinteger_pagetransition>(
-      [self blockForSelector:_cmd])(url, position, transition);
-  id mockTab = [OCMockObject mockForClass:[Tab class]];
-  return mockTab;
-}
-
-@end
-
-#pragma mark - BrowserViewController Mock
-
-// Mock BVC class to use for test cases where OCMock gets handled incorrectly
-// by UIViewController.
-@interface URLOpenerMockBVC : UIViewController
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-@property(nonatomic, assign) GURL tabURL;
-@property(nonatomic, assign) NSUInteger position;
-@property(nonatomic, assign) ui::PageTransition transition;
-@property(nonatomic, assign)
-    ProceduralBlock foregroundTabWasAddedCompletionBlock;
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition;
-- (void)expectNewForegroundTab;
-- (void)setActive:(BOOL)active;
-- (TabModel*)tabModel;
-- (void)appendTabAddedCompletion:(ProceduralBlock)completion;
-- (void)browserStateDestroyed;
-- (void)shutdown;
-@end
-
-@implementation URLOpenerMockBVC
-@synthesize browserState = _browserState;
-@synthesize tabURL = _tabURL;
-@synthesize position = _position;
-@synthesize transition = _transition;
-@synthesize foregroundTabWasAddedCompletionBlock =
-    _foregroundTabWasAddedCompletionBlock;
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
-  self.tabURL = url;
-  self.position = position;
-  self.transition = transition;
-  return nil;
-}
-
-- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox {
-  if (completion)
-    completion();
-}
-
-- (void)expectNewForegroundTab {
-  // no-op.
-}
-
-- (void)setActive:(BOOL)active {
-  // no-op
-}
-
-- (void)setPrimary:(BOOL)primary {
-  // no-op
-}
-
-- (TabModel*)tabModel {
-  return nil;
-}
-
-- (void)appendTabAddedCompletion:(ProceduralBlock)completion {
-  self.foregroundTabWasAddedCompletionBlock = completion;
-}
-
-- (void)browserStateDestroyed {
-  // no-op
-}
-
-- (void)shutdown {
-  // no-op
-}
-
-@end
 
 class URLOpenerTest : public PlatformTest {
  protected:
@@ -182,86 +67,6 @@ class URLOpenerTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   MainController* main_controller_;
 };
-
-TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
-  // The tab switcher controller should be dismissed with a new tab containing
-  // the external URL.
-  NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
-  ChromeAppStartupParameters* params =
-      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
-                                                 fromSourceApplication:nil];
-
-  id bvcMock = [[URLOpenerMockBVC alloc] init];
-
-  id tabSwitcherController;
-  tabSwitcherController = [[URLOpenerOCMockComplexTypeHandler alloc]
-      initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]];
-
-  id block = [(id) ^ (const GURL& url, NSUInteger position,
-                      ui::PageTransition transition) {
-    EXPECT_EQ(url, [params externalURL]);
-    EXPECT_EQ(NSNotFound, static_cast<NSInteger>(position));
-    EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-  } copy];
-  SEL dismissSelector =
-      @selector(dismissWithNewTabAnimationToModel:withURL:atIndex:transition:);
-  [tabSwitcherController onSelector:dismissSelector callBlockExpectation:block];
-
-  // Setup main controller.
-  MainController* controller = GetMainController();
-  controller.browserViewInformation.mainBVC = bvcMock;
-  controller.tabSwitcher = tabSwitcherController;
-  controller.tabSwitcherActive = YES;
-
-  id mainApplicationDelegate =
-      [OCMockObject mockForClass:[MainApplicationDelegate class]];
-
-  AppState* appState =
-      [[AppState alloc] initWithBrowserLauncher:controller
-                             startupInformation:controller
-                            applicationDelegate:mainApplicationDelegate];
-  controller.appState = appState;
-
-  NSDictionary<NSString*, id>* options = nil;
-  [URLOpener openURL:url
-       applicationActive:YES
-                 options:options
-               tabOpener:controller
-      startupInformation:controller];
-
-  EXPECT_OCMOCK_VERIFY(tabSwitcherController);
-}
-
-TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
-  NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
-  URLOpenerMockBVC* bvc_mock = [[URLOpenerMockBVC alloc] init];
-  URLOpenerMockBVC* otr_bvc_mock = [[URLOpenerMockBVC alloc] init];
-  bvc_mock.browserState = GetChromeBrowserState();
-
-  // Setup main controller.
-  MainController* controller = GetMainController();
-  controller.browserViewInformation.mainBVC =
-      static_cast<BrowserViewController*>(bvc_mock);
-  controller.browserViewInformation.otrBVC =
-      static_cast<BrowserViewController*>(otr_bvc_mock);
-  controller.browserViewInformation.currentBVC =
-      static_cast<BrowserViewController*>(bvc_mock);
-
-  NSDictionary<NSString*, id>* options = nil;
-  [URLOpener openURL:url
-       applicationActive:YES
-                 options:options
-               tabOpener:controller
-      startupInformation:controller];
-
-  EXPECT_EQ(GURL("http://www.google.com/"), [bvc_mock tabURL]);
-  EXPECT_EQ(0, static_cast<NSInteger>([bvc_mock position]));
-  EXPECT_TRUE(PageTransitionCoreTypeIs([bvc_mock transition],
-                                       ui::PAGE_TRANSITION_LINK));
-
-  EXPECT_FALSE([otr_bvc_mock tabURL].is_valid());
-}
 
 TEST_F(URLOpenerTest, HandleOpenURL) {
   // A set of tests for robustness of
