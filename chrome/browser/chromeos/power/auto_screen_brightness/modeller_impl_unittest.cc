@@ -9,6 +9,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -536,6 +538,44 @@ TEST_F(ModellerImplTest, MinTrainingDataPointsRequired) {
   EXPECT_EQ(1u, modeller_->NumberTrainingDataPointsForTesting());
 
   EXPECT_FALSE(test_observer_->trained_curve_received());
+}
+
+// Global curve specified by valid experiment parameter.
+TEST_F(ModellerImplTest, GlobaCurveFromValidExperimentParam) {
+  const std::string global_curve_spec("1,10\n2,20\n3,30");
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kAutoScreenBrightness, {{"global_curve", global_curve_spec}});
+
+  const MonotoneCubicSpline expected_global_curve({1, 2, 3}, {10, 20, 30});
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+  EXPECT_EQ(modeller_->GetGlobalCurveForTesting(), expected_global_curve);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              expected_global_curve,
+                              base::nullopt /* personal_curve */);
+}
+
+// Global curve specified by invalid experiment parameter leads to default curve
+// instead.
+TEST_F(ModellerImplTest, GlobaCurveFromInvalidExperimentParam) {
+  const std::string global_curve_spec("1,10");
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kAutoScreenBrightness, {{"global_curve", global_curve_spec}});
+
+  // Defined by default values.
+  const MonotoneCubicSpline expected_global_curve({0, 100}, {50, 100});
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess);
+  EXPECT_EQ(modeller_->GetGlobalCurveForTesting(), expected_global_curve);
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              expected_global_curve,
+                              base::nullopt /* personal_curve */);
 }
 
 }  // namespace auto_screen_brightness
