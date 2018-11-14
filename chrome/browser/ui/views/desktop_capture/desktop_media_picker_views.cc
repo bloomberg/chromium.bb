@@ -299,6 +299,12 @@ views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
   return list_views_[0];
 }
 
+int DesktopMediaPickerDialogView::GetDefaultDialogButton() const {
+  // To prevent permissions being accepted accidentally, permission prompts
+  // should not be accepted as the default action.
+  return ui::DIALOG_BUTTON_CANCEL;
+}
+
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
