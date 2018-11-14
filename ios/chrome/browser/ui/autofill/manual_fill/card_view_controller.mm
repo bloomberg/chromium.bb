@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_view_controller.h"
 
 #include "base/ios/ios_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -35,6 +36,8 @@ NSString* const CardTableViewAccessibilityIdentifier =
 #pragma mark - ManualFillCardConsumer
 
 - (void)presentCards:(NSArray<ManualFillCardItem*>*)cards {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.PresentedOptions.CreditCards",
+                           cards.count);
   [self presentDataItems:(NSArray<TableViewItem*>*)cards];
 }
 
