@@ -37,6 +37,8 @@ source_set("wayland") {
     "server_util.h",
     "wayland_input_delegate.cc",
     "wayland_input_delegate.h",
+    "wayland_pointer_delegate.cc",
+    "wayland_pointer_delegate.h",
     "zcr_notification_shell.cc",
     "zcr_notification_shell.h",
     "zwp_text_input_manager.cc",
