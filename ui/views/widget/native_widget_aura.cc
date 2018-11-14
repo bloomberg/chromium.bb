@@ -175,7 +175,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   window_->Init(params.layer_type);
   // Set name after layer init so it propagates to layer.
-  window_->SetName(params.name);
+  if (!params.name.empty())
+    window_->SetName(params.name);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
