@@ -325,7 +325,7 @@ IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
 }
 
 void IndexAndPersistRules(service_manager::Connector* connector,
-                          service_manager::Identity* identity,
+                          const base::Optional<base::Token>& decoder_batch_id,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback) {
   DCHECK(IsAPIAvailable());
@@ -351,10 +351,10 @@ void IndexAndPersistRules(service_manager::Connector* connector,
       base::BindRepeating(&OnSafeJSONParserError, repeating_callback,
                           GetJSONRulesetFilename(extension));
 
-  if (identity) {
+  if (decoder_batch_id) {
     data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,
                                              success_callback, error_callback,
-                                             *identity->instance_id());
+                                             *decoder_batch_id);
   } else {
     data_decoder::SafeJsonParser::Parse(connector, json_contents,
                                         success_callback, error_callback);

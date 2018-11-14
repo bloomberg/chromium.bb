@@ -205,9 +205,8 @@ void FakeHidManager::RemoveDevice(const std::string device_guid) {
 ScopedFakeHidManager::ScopedFakeHidManager() {
   service_manager::mojom::ConnectorRequest request;
   connector_ = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
+  connector_->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
       device::mojom::HidManager::Name_,
       base::BindRepeating(&FakeHidManager::AddBinding, base::Unretained(this)));
 }

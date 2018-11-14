@@ -15,6 +15,7 @@
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 namespace base {
 class CommandLine;
@@ -172,6 +173,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   std::unique_ptr<service_manager::ServiceManager> service_manager_;
   std::unique_ptr<content::ServiceManagerConnection>
       service_manager_connection_;
+  service_manager::Identity utility_service_instance_identity_;
 
   base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_;
 

@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -16,6 +17,14 @@ using RunningServiceInfoPtr = service_manager::mojom::RunningServiceInfoPtr;
 using ServiceManagerListenerRequest =
     service_manager::mojom::ServiceManagerListenerRequest;
 
+service_manager::Identity MakeFakeId(const std::string& service_name) {
+  // The details of this Identity don't really matter. Name is used for test
+  // expectations, and in general the last token should be unique, hence the
+  // randomization.
+  return service_manager::Identity{service_name, base::Token{1, 1},
+                                   base::Token{}, base::Token::CreateRandom()};
+}
+
 RunningServiceInfoPtr MakeTestServiceInfo(
     const service_manager::Identity& identity,
     uint32_t pid) {
@@ -27,11 +36,11 @@ RunningServiceInfoPtr MakeTestServiceInfo(
 
 TEST(ProcessMapTest, PresentInInit) {
   // Add a dummy entry so that the actual |ids| indexes are 1-based.
-  std::vector<service_manager::Identity> ids{service_manager::Identity()};
+  std::vector<service_manager::Identity> ids{MakeFakeId("id0")};
   std::vector<RunningServiceInfoPtr> instances;
   ProcessMap process_map(nullptr);
   for (uint32_t i = 1; i <= 3; i++) {
-    ids.push_back(service_manager::Identity(base::StringPrintf("id%d", i)));
+    ids.push_back(MakeFakeId(base::StringPrintf("id%d", i)));
     instances.push_back(MakeTestServiceInfo(ids.back(), i /* pid */));
   }
   process_map.OnInit(std::move(instances));
@@ -46,8 +55,8 @@ TEST(ProcessMapTest, PresentInInit) {
 
 TEST(ProcessMapTest, NullsInInitIgnored) {
   ProcessMap process_map(nullptr);
-  service_manager::Identity id1("id1");
-  service_manager::Identity id2("id2");
+  service_manager::Identity id1 = MakeFakeId("id1");
+  service_manager::Identity id2 = MakeFakeId("id2");
 
   std::vector<RunningServiceInfoPtr> instances;
   instances.push_back(MakeTestServiceInfo(id1, base::kNullProcessId));
@@ -64,7 +73,7 @@ TEST(ProcessMapTest, NullsInInitIgnored) {
 
 TEST(ProcessMapTest, TypicalCase) {
   ProcessMap process_map(nullptr);
-  service_manager::Identity id1("id1");
+  service_manager::Identity id1 = MakeFakeId("id1");
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(id1));
   process_map.OnInit(std::vector<RunningServiceInfoPtr>());
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(id1));
@@ -78,7 +87,7 @@ TEST(ProcessMapTest, TypicalCase) {
 
   // Adding a separate service with a different identity should have no effect
   // on the first identity registered.
-  service_manager::Identity id2("id2");
+  service_manager::Identity id2 = MakeFakeId("id2");
   process_map.OnServiceCreated(MakeTestServiceInfo(id2, 2 /* pid */));
   process_map.OnServicePIDReceived(id2, 2 /* pid */);
   EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
@@ -90,7 +99,7 @@ TEST(ProcessMapTest, TypicalCase) {
   EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
 
   // Unknown identities return a null pid.
-  service_manager::Identity id3("id3");
+  service_manager::Identity id3 = MakeFakeId("id3");
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(id3));
 }
 

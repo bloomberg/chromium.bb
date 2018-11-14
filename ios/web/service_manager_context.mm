@@ -133,7 +133,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
-                                  service_manager::kSystemInstanceGroup),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(packaged_services_service), nullptr);
   }
 

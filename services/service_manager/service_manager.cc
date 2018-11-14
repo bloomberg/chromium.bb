@@ -1209,17 +1209,11 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     instance->CallOnBindInterface(&params);
 }
 
-void ServiceManager::StartService(const Identity& identity) {
+void ServiceManager::StartService(const std::string& service_name) {
   auto params = std::make_unique<ConnectParams>();
   params->set_source(CreateServiceManagerIdentity());
-
-  Identity target_identity = identity;
-  if (!target_identity.instance_group())
-    target_identity.set_instance_group(kSystemInstanceGroup);
-  if (!target_identity.instance_id())
-    target_identity.set_instance_id(base::Token{});
-  params->set_target(target_identity);
-
+  params->set_target(
+      Identity(service_name, kSystemInstanceGroup, base::Token{}));
   Connect(std::move(params));
 }
 

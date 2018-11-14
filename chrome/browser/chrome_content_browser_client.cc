@@ -3929,10 +3929,9 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
   });
 }
 
-std::vector<service_manager::Identity>
-ChromeContentBrowserClient::GetStartupServices() {
+std::vector<std::string> ChromeContentBrowserClient::GetStartupServices() {
 #if defined(OS_ANDROID)
-  return {service_manager::Identity("download_manager")};
+  return {"download_manager"};
 #else
   return {};
 #endif

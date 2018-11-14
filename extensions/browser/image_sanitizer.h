@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service_filter.h"
 
 class SkBitmap;
 
@@ -56,9 +56,9 @@ class ImageSanitizer {
   // their parent dir or an kImagePathError will be reported to |done_callback|.
   // These relative paths are resolved against |image_dir|.
   // |connector| should be a connector to the ServiceManager usable on the
-  // current thread. |identity| is used when accessing the data decoder service
-  // which is used internally to decode images. It lets callers potentially
-  // share a process when doing unrelated data decoding operations.
+  // current thread. |service_filter| is used when accessing the data decoder
+  // service which is used internally to decode images. It lets callers
+  // potentially share a process when doing unrelated data decoding operations.
   // |done_callback| is invoked asynchronously when all images have been
   // sanitized or if an error occurred.
   // If the returned ImageSanitizer instance is deleted, |done_callback| and
@@ -66,7 +66,7 @@ class ImageSanitizer {
   // (some background tasks may still run).
   static std::unique_ptr<ImageSanitizer> CreateAndStart(
       service_manager::Connector* connector,
-      const service_manager::Identity& identity,
+      const service_manager::ServiceFilter& service_filter,
       const base::FilePath& image_dir,
       const std::set<base::FilePath>& image_relative_paths,
       ImageDecodedCallback image_decoded_callback,
@@ -81,7 +81,7 @@ class ImageSanitizer {
                  SanitizationDoneCallback done_callback);
 
   void Start(service_manager::Connector* connector,
-             const service_manager::Identity& identity);
+             const service_manager::ServiceFilter& service_filter);
 
   void ImageFileRead(
       const base::FilePath& image_path,

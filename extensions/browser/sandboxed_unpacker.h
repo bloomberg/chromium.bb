@@ -23,7 +23,7 @@
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service_filter.h"
 
 class SkBitmap;
 
@@ -274,11 +274,11 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // The decoded install icon.
   SkBitmap install_icon_;
 
-  // The identity used to connect to the data decoder service. It is unique to
-  // this SandboxedUnpacker instance so that data decoder operations for
+  // The ServiceFilter used to connect to the data decoder service. It is unique
+  // to this SandboxedUnpacker instance so that data decoder operations for
   // unpacking this extension share the same process, and so that no unrelated
   // data decoder operation use that process.
-  service_manager::Identity data_decoder_identity_;
+  const service_manager::ServiceFilter data_decoder_service_filter_;
 
   // The JSONParser interface pointer from the data decoder service.
   data_decoder::mojom::JsonParserPtr json_parser_ptr_;

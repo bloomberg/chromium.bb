@@ -382,15 +382,18 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    GetConnector()->BindInterface(chrome::mojom::kServiceName,
-                                  &startup_metric_host);
+    GetConnector()->BindInterface(
+        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
+        &startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
 #if defined(OS_WIN)
   // Bind the ModuleEventSink interface.
-  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
-                                        &module_event_sink_);
+  thread->GetConnector()->BindInterface(
+      service_manager::ServiceFilter::ByName(
+          content::mojom::kBrowserServiceName),
+      &module_event_sink_);
 
   // Rebind the ModuleEventSink to the IO task runner.
   // The use of base::Unretained() is safe here because |module_event_sink_|
@@ -1079,8 +1082,8 @@ void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   service_binding_.GetConnector()->BindInterface(
-      service_manager::Identity(chrome::mojom::kServiceName), interface_name,
-      std::move(interface_pipe));
+      service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
+      interface_name, std::move(interface_pipe));
 }
 
 #if BUILDFLAG(ENABLE_NACL)

@@ -43,9 +43,8 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
 
     service_manager::mojom::ConnectorRequest ignored_request;
     auto connector = service_manager::Connector::Create(&ignored_request);
-    service_manager::Connector::TestApi connector_test_api(connector.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(mojom::kServiceName),
+    connector->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SystemInfo::Name_,
         base::BindRepeating(
             &AudioSystemToServiceAdapterTestBase::BindSystemInfoRequest,
@@ -407,9 +406,8 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
   std::unique_ptr<service_manager::Connector> GetConnector() {
     service_manager::mojom::ConnectorRequest ignored_request;
     auto connector = service_manager::Connector::Create(&ignored_request);
-    service_manager::Connector::TestApi connector_test_api(connector.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(mojom::kServiceName),
+    connector->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SystemInfo::Name_,
         base::BindRepeating(
             &AudioSystemToServiceAdapterDisconnectTest::BindSystemInfoRequest,

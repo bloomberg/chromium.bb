@@ -329,16 +329,15 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid.ToString();
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
-  service_manager::Identity identity(media::mojom::kCdmServiceName,
-                                     base::nullopt /* instance_group */,
-                                     cdm_guid);
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
 
   media::mojom::CdmServicePtr cdm_service;
-  connector->BindInterface(identity, &cdm_service);
+  connector->BindInterface(service_manager::ServiceFilter::ByNameWithId(
+                               media::mojom::kCdmServiceName, cdm_guid),
+                           &cdm_service);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().

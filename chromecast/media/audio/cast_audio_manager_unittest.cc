@@ -97,9 +97,9 @@ class CastAudioManagerTest : public testing::Test {
   void CreateConnectorForTesting() {
     connector_ = CreateConnector();
     // Override the MultiroomManager interface for testing.
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(chromecast::mojom::kChromecastServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            chromecast::mojom::kChromecastServiceName),
         mojom::MultiroomManager::Name_,
         base::BindRepeating(&CastAudioManagerTest::BindMultiroomManager,
                             base::Unretained(this)));

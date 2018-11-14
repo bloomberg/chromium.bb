@@ -56,7 +56,7 @@ int WriteFile(const base::FilePath& path,
 // static
 std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
     service_manager::Connector* connector,
-    const service_manager::Identity& identity,
+    const service_manager::ServiceFilter& service_filter,
     const base::FilePath& image_dir,
     const std::set<base::FilePath>& image_paths,
     ImageDecodedCallback image_decoded_callback,
@@ -64,7 +64,7 @@ std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
   std::unique_ptr<ImageSanitizer> sanitizer(new ImageSanitizer(
       image_dir, image_paths, std::move(image_decoded_callback),
       std::move(done_callback)));
-  sanitizer->Start(connector, identity);
+  sanitizer->Start(connector, service_filter);
   return sanitizer;
 }
 
@@ -81,8 +81,9 @@ ImageSanitizer::ImageSanitizer(
 
 ImageSanitizer::~ImageSanitizer() = default;
 
-void ImageSanitizer::Start(service_manager::Connector* connector,
-                           const service_manager::Identity& identity) {
+void ImageSanitizer::Start(
+    service_manager::Connector* connector,
+    const service_manager::ServiceFilter& service_filter) {
   if (image_paths_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ImageSanitizer::ReportSuccess,
@@ -90,7 +91,7 @@ void ImageSanitizer::Start(service_manager::Connector* connector,
     return;
   }
 
-  connector->BindInterface(identity, &image_decoder_ptr_);
+  connector->BindInterface(service_filter, &image_decoder_ptr_);
   image_decoder_ptr_.set_connection_error_handler(
       base::BindOnce(&ImageSanitizer::ReportError, weak_factory_.GetWeakPtr(),
                      Status::kServiceError, base::FilePath()));

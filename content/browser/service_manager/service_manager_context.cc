@@ -151,7 +151,11 @@ void StartServiceInUtilityProcess(
     DCHECK(!process_name.empty());
     impl->SetName(process_name);
     impl->SetMetricsName(service_name);
-    impl->SetServiceIdentity(service_manager::Identity(service_name));
+    // NOTE: This is not the service instance's real Identity. For all current
+    // practical purposes however, only the name is relevant.
+    impl->SetServiceIdentity(service_manager::Identity(
+        service_name, service_manager::kSystemInstanceGroup, base::Token{},
+        base::Token{1, 1}));
     impl->SetSandboxType(sandbox_type);
     impl->Start();
     impl->SetLaunchCallback(
@@ -439,11 +443,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
             this));
   }
 
-  void StartServices(std::vector<service_manager::Identity> identities) {
+  void StartServices(std::vector<std::string> service_names) {
     service_manager_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&InProcessServiceManagerContext ::
                                       StartServicesOnServiceManagerThread,
-                                  this, std::move(identities)));
+                                  this, std::move(service_names)));
   }
 
  private:
@@ -474,7 +478,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
-                                  service_manager::kSystemInstanceGroup),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(packaged_services_service), nullptr);
     service_manager_->SetInstanceQuitCallback(
         base::Bind(&OnInstanceQuitOnServiceManagerThread,
@@ -505,12 +510,12 @@ class ServiceManagerContext::InProcessServiceManagerContext
   }
 
   void StartServicesOnServiceManagerThread(
-      std::vector<service_manager::Identity> identities) {
+      std::vector<std::string> service_names) {
     if (!service_manager_)
       return;
 
-    for (const auto& identity : identities)
-      service_manager_->StartService(identity);
+    for (const auto& service_name : service_names)
+      service_manager_->StartService(service_name);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner>

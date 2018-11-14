@@ -159,7 +159,8 @@ class ImageSanitizerTest : public testing::Test {
       ImageSanitizer::SanitizationDoneCallback done_callback) {
     sanitizer_ = ImageSanitizer::CreateAndStart(
         connector_.get(),
-        service_manager::Identity(data_decoder::mojom::kServiceName),
+        service_manager::ServiceFilter::ByName(
+            data_decoder::mojom::kServiceName),
         temp_dir_.GetPath(), image_relative_paths,
         std::move(image_decoded_callback), std::move(done_callback));
   }
