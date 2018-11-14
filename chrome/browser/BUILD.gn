@@ -4002,11 +4002,34 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (enable_message_center) {
+  if (enable_feed_in_chrome) {
     sources += [
-      "notifications/notification_platform_bridge_message_center.cc",
-      "notifications/notification_platform_bridge_message_center.h",
+      "android/feed/feed_content_bridge.cc",
+      "android/feed/feed_content_bridge.h",
+      "android/feed/feed_host_service_factory.cc",
+      "android/feed/feed_host_service_factory.h",
+      "android/feed/feed_image_loader_bridge.cc",
+      "android/feed/feed_image_loader_bridge.h",
+      "android/feed/feed_journal_bridge.cc",
+      "android/feed/feed_journal_bridge.h",
+      "android/feed/feed_lifecycle_bridge.cc",
+      "android/feed/feed_lifecycle_bridge.h",
+      "android/feed/feed_logging_bridge.cc",
+      "android/feed/feed_logging_bridge.h",
+      "android/feed/feed_network_bridge.cc",
+      "android/feed/feed_network_bridge.h",
+      "android/feed/feed_offline_bridge.cc",
+      "android/feed/feed_offline_bridge.h",
+      "android/feed/feed_scheduler_bridge.cc",
+      "android/feed/feed_scheduler_bridge.h",
+      "android/feed/history/feed_history_helper.cc",
+      "android/feed/history/feed_history_helper.h",
     ]
+    deps += [ "//components/feed/content:feed_content" ]
+  }
+
+  if (enable_isolated_xr_service) {
+    deps += [ "//device/vr/public/mojom" ]
   }
 
   if (enable_library_cdms) {
@@ -4051,6 +4074,13 @@ jumbo_split_static_library("browser") {
         "//media/mojo/services",
       ]
     }
+  }
+
+  if (enable_message_center) {
+    sources += [
+      "notifications/notification_platform_bridge_message_center.cc",
+      "notifications/notification_platform_bridge_message_center.h",
+    ]
   }
 
   if (enable_nacl) {
@@ -4368,6 +4398,17 @@ jumbo_split_static_library("browser") {
     ]
   }
 
+  if (enable_simple_browser_service_in_process) {
+    deps += [
+      "//services/content/simple_browser",
+      "//services/content/simple_browser/public/mojom",
+    ]
+  }
+
+  if (enable_simple_browser_service_out_of_process) {
+    deps += [ "//services/content/simple_browser/public/mojom" ]
+  }
+
   if (enable_spellcheck) {
     sources += [
       "spellchecker/spell_check_host_chrome_impl.cc",
@@ -4400,17 +4441,6 @@ jumbo_split_static_library("browser") {
     if (!is_android) {
       deps += [ "//third_party/hunspell" ]
     }
-  }
-
-  if (enable_simple_browser_service_out_of_process) {
-    deps += [ "//services/content/simple_browser/public/mojom" ]
-  }
-
-  if (enable_simple_browser_service_in_process) {
-    deps += [
-      "//services/content/simple_browser",
-      "//services/content/simple_browser/public/mojom",
-    ]
   }
 
   if (enable_supervised_users) {
@@ -4498,10 +4528,6 @@ jumbo_split_static_library("browser") {
     deps += [ "//chrome/browser/vr:vr_common" ]
   }
 
-  if (enable_isolated_xr_service) {
-    deps += [ "//device/vr/public/mojom" ]
-  }
-
   if (enable_wayland_server) {
     deps += [
       "//components/exo",
@@ -4556,32 +4582,6 @@ jumbo_split_static_library("browser") {
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
-  }
-
-  if (enable_feed_in_chrome) {
-    sources += [
-      "android/feed/feed_content_bridge.cc",
-      "android/feed/feed_content_bridge.h",
-      "android/feed/feed_host_service_factory.cc",
-      "android/feed/feed_host_service_factory.h",
-      "android/feed/feed_image_loader_bridge.cc",
-      "android/feed/feed_image_loader_bridge.h",
-      "android/feed/feed_journal_bridge.cc",
-      "android/feed/feed_journal_bridge.h",
-      "android/feed/feed_lifecycle_bridge.cc",
-      "android/feed/feed_lifecycle_bridge.h",
-      "android/feed/feed_logging_bridge.cc",
-      "android/feed/feed_logging_bridge.h",
-      "android/feed/feed_network_bridge.cc",
-      "android/feed/feed_network_bridge.h",
-      "android/feed/feed_offline_bridge.cc",
-      "android/feed/feed_offline_bridge.h",
-      "android/feed/feed_scheduler_bridge.cc",
-      "android/feed/feed_scheduler_bridge.h",
-      "android/feed/history/feed_history_helper.cc",
-      "android/feed/history/feed_history_helper.h",
-    ]
-    deps += [ "//components/feed/content:feed_content" ]
   }
 }
 
