@@ -25,7 +25,6 @@ function autoStep() {
  */
 function RemoteCall(extensionId) {
   this.extensionId_ = extensionId;
-  this.testRuntimeLoaded_ = false;
 
   /**
    * Tristate holding the cached result of isStepByStepEnabled_().
@@ -53,25 +52,6 @@ RemoteCall.prototype.isStepByStepEnabled_ = function() {
 };
 
 /**
- * Asks the extension under test to load its testing functions.
- * @private
- * @return {Promise<bool>}
- */
-RemoteCall.prototype.ensureLoaded_ = function() {
-  if (this.testRuntimeLoaded_)
-    return Promise.resolve(true);
-
-  return new Promise((fulfill) => {
-    chrome.runtime.sendMessage(
-        this.extensionId_, {enableTesting: true}, {}, (/** bool */ success) => {
-          chrome.test.assertTrue(success);
-          this.testRuntimeLoaded_ = success;
-          fulfill(success);
-        });
-  });
-};
-
-/**
  * Calls a remote test util in the Files app's extension. See:
  * registerRemoteTestUtils in test_util_base.js.
  *
@@ -85,8 +65,7 @@ RemoteCall.prototype.ensureLoaded_ = function() {
  */
 RemoteCall.prototype.callRemoteTestUtil = function(
     func, appId, args, opt_callback) {
-  return this.ensureLoaded_()
-      .then(this.isStepByStepEnabled_.bind(this))
+  return this.isStepByStepEnabled_()
       .then((stepByStep) => {
         if (!stepByStep)
           return false;
