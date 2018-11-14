@@ -2161,7 +2161,7 @@ if (is_win) {
 }
 
 if (is_win || is_mac) {
-  if (current_cpu == "x64") {
+  if (current_cpu == "x64" || (current_cpu == "arm64" && is_win)) {
     # Must be a shared library so that it can be unloaded during testing.
     shared_library("base_profiler_test_support_library") {
       sources = [

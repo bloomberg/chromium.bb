@@ -12,6 +12,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/win/scoped_handle.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -24,6 +25,18 @@ struct RUNTIME_FUNCTION {
 };
 using PRUNTIME_FUNCTION = RUNTIME_FUNCTION*;
 #endif  // !defined(_WIN64)
+
+#if defined(ARCH_CPU_64_BITS)
+inline ULONG64 ContextPC(CONTEXT* context) {
+#if defined(ARCH_CPU_X86_64)
+  return context->Rip;
+#elif defined(ARCH_CPU_ARM64)
+  return context->Pc;
+#else
+#error Unsupported Windows 64-bit Arch
+#endif
+}
+#endif
 
 // Traits class to adapt GenericScopedHandle for HMODULES.
 class ModuleHandleTraits : public win::HandleTraits {
