@@ -62,7 +62,7 @@ class SequenceManager {
   // CreateUnboundSequenceManager(nullptr). Must not be called in any other
   // circumstances. Note it's assumed |message_loop| outlives the
   // SequenceManager.
-  virtual void BindToMessageLoop(MessageLoop* message_loop) = 0;
+  virtual void BindToMessageLoop(MessageLoopBase* message_loop_base) = 0;
 
   // Finishes the initialization for a SequenceManager created via
   // CreateUnboundSequenceManagerWithPump(). Must not be called in any other
@@ -158,7 +158,7 @@ class SequenceManager {
   // Returns true iff this SequenceManager has no immediate work to do
   // (tasks with unexpired delay are fine, tasks with zero delay and
   // expired delay are not).
-  virtual bool IsIdleForTesting() const = 0;
+  virtual bool IsIdleForTesting() = 0;
 
   // The total number of posted tasks that haven't executed yet.
   virtual size_t GetPendingTaskCountForTesting() const = 0;
@@ -188,7 +188,7 @@ CreateSequenceManagerOnCurrentThreadWithPump(MessageLoop::Type type);
 // Remove when we get rid of MessageLoop.
 // TODO(scheduler-dev): Change this to CreateUnboundSequenceManagerWithPump.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoop* message_loop);
+    MessageLoopBase* message_loop_base);
 
 }  // namespace sequence_manager
 }  // namespace base

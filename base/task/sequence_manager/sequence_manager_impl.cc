@@ -43,8 +43,8 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThreadWithPump(
 }
 
 std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoop* message_loop) {
-  return internal::SequenceManagerImpl::CreateUnbound(message_loop);
+    MessageLoopBase* message_loop_base) {
+  return internal::SequenceManagerImpl::CreateUnbound(message_loop_base);
 }
 
 namespace internal {
@@ -132,6 +132,10 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   // Let interested parties have one last shot at accessing this.
   for (auto& observer : main_thread_only().destruction_observers)
     observer.WillDestroyCurrentMessageLoop();
+
+  // OK, now make it so that no one can find us.
+  if (GetMessagePump())
+    MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
 
 SequenceManagerImpl::AnyThread::AnyThread() = default;
@@ -150,8 +154,8 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl>
 SequenceManagerImpl::CreateOnCurrentThread() {
-  auto manager =
-      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopDeprecated());
+  std::unique_ptr<SequenceManagerImpl> manager =
+      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated());
   manager->BindToCurrentThread();
   manager->CompleteInitializationOnBoundThread();
   return manager;
@@ -159,9 +163,9 @@ SequenceManagerImpl::CreateOnCurrentThread() {
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
-    MessageLoop* message_loop) {
+    MessageLoopBase* message_loop_base) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerImpl::Create(message_loop,
+      ThreadControllerImpl::Create(message_loop_base,
                                    DefaultTickClock::GetInstance()),
       MessageLoop::Type::TYPE_DEFAULT));
 }
@@ -175,8 +179,9 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnboundWithPump(
       type));
 }
 
-void SequenceManagerImpl::BindToMessageLoop(MessageLoop* message_loop) {
-  controller_->BindToCurrentThread(message_loop);
+void SequenceManagerImpl::BindToMessageLoop(
+    MessageLoopBase* message_loop_base) {
+  controller_->BindToCurrentThread(message_loop_base);
   CompleteInitializationOnBoundThread();
 }
 
@@ -194,6 +199,8 @@ void SequenceManagerImpl::BindToCurrentThread() {
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
   main_thread_only().nesting_observer_registered_ = true;
+  if (GetMessagePump())
+    MessageLoopCurrent::BindToCurrentThreadInternal(this);
 }
 
 void SequenceManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
@@ -844,7 +851,13 @@ bool SequenceManagerImpl::IsTaskExecutionAllowed() const {
   return controller_->IsTaskExecutionAllowed();
 }
 
-bool SequenceManagerImpl::IsIdleForTesting() const {
+#if defined(OS_IOS)
+void SequenceManagerImpl::AttachToMessagePump() {
+  return controller_->AttachToMessagePump();
+}
+#endif
+
+bool SequenceManagerImpl::IsIdleForTesting() {
   LazyNow lazy_now(controller_->GetClock());
   return DelayTillNextTask(&lazy_now) != TimeDelta();
 }
@@ -869,7 +882,11 @@ void SequenceManagerImpl::RemoveDestructionObserver(
 
 void SequenceManagerImpl::SetTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  NOTREACHED();
+  controller_->SetDefaultTaskRunner(task_runner);
+}
+
+scoped_refptr<SingleThreadTaskRunner> SequenceManagerImpl::GetTaskRunner() {
+  return controller_->GetDefaultTaskRunner();
 }
 
 std::string SequenceManagerImpl::GetThreadName() const {

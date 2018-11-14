@@ -8,6 +8,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/test/scoped_task_environment.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/web_thread_impl.h"
@@ -45,7 +47,12 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   ui_thread_.reset();
   base::RunLoop().RunUntilIdle();
 
-  scoped_task_environment_.reset();
+  message_loop_.reset();
+
+  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->Shutdown();
+  base::TaskScheduler::GetInstance()->JoinForTesting();
+  base::TaskScheduler::SetInstance(nullptr);
 
   WebThreadImpl::ResetTaskExecutorForTesting();
 }
@@ -53,26 +60,35 @@ TestWebThreadBundle::~TestWebThreadBundle() {
 void TestWebThreadBundle::Init(int options) {
   WebThreadImpl::CreateTaskExecutor();
 
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          options & TestWebThreadBundle::IO_MAINLOOP
-              ? base::test::ScopedTaskEnvironment::MainThreadType::IO
-              : base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  // TODO(crbug.com/903803): Use ScopedTaskEnviroment here instead.
+  message_loop_ = std::make_unique<base::MessageLoop>(
+      options & TestWebThreadBundle::IO_MAINLOOP ? base::MessageLoop::TYPE_IO
+                                                 : base::MessageLoop::TYPE_UI);
 
   // TODO(crbug.com/826465): TestWebThread won't need MessageLoop*
   // once modernized to match its //content equivalent.
-  ui_thread_.reset(new TestWebThread(
-      WebThread::UI,
-      base::MessageLoopCurrent::Get()->ToMessageLoopDeprecated()));
+  ui_thread_.reset(new TestWebThread(WebThread::UI, message_loop_.get()));
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
     io_thread_.reset(new TestWebThread(WebThread::IO));
     io_thread_->StartIOThread();
   } else {
-    io_thread_.reset(new TestWebThread(
-        WebThread::IO,
-        base::MessageLoopCurrent::Get()->ToMessageLoopDeprecated()));
+    io_thread_.reset(new TestWebThread(WebThread::IO, message_loop_.get()));
   }
+
+  // Copied from ScopedTaskEnvironment::ScopedTaskEnvironment.
+  // TODO(crbug.com/821034): Bring ScopedTaskEnvironment back in
+  // TestWebThreadBundle.
+  constexpr int kMaxThreads = 2;
+  const base::TimeDelta kSuggestedReclaimTime = base::TimeDelta::Max();
+  const base::SchedulerWorkerPoolParams worker_pool_params(
+      kMaxThreads, kSuggestedReclaimTime);
+  base::TaskScheduler::SetInstance(
+      std::make_unique<base::internal::TaskSchedulerImpl>(
+          "ScopedTaskEnvironment"));
+  base::TaskScheduler::GetInstance()->Start(
+      {worker_pool_params, worker_pool_params, worker_pool_params,
+       worker_pool_params});
 }
 
 }  // namespace web

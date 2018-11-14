@@ -10,10 +10,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 
-class MessageLoop;
+class MessageLoopBase;
 class MessagePump;
 class TickClock;
 struct PendingTask;
@@ -70,12 +71,12 @@ class ThreadController {
   virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
 
   // Completes delayed initialization of unbound ThreadControllers.
-  // BindToCurrentThread(MessageLoop*) or BindToCurrentThread(MessagePump*)
+  // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)
   // may only be called once.
-  virtual void BindToCurrentThread(MessageLoop* message_loop) = 0;
+  virtual void BindToCurrentThread(MessageLoopBase* message_loop_base) = 0;
 
   // Completes delayed initialization of unbound ThreadControllers.
-  // BindToCurrentThread(MessageLoop*) or BindToCurrentThread(MessagePump*)
+  // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)
   // may only be called once.
   virtual void BindToCurrentThread(
       std::unique_ptr<MessagePump> message_pump) = 0;
@@ -87,6 +88,13 @@ class ThreadController {
   // Returns the MessagePump we're bound to if any.
   virtual MessagePump* GetBoundMessagePump() const = 0;
 
+#if defined(OS_IOS)
+  // On iOS, the main message loop cannot be Run().  Instead call
+  // AttachToMessagePump(), which connects this ThreadController to the
+  // UI thread's CFRunLoop and allows PostTask() to work.
+  virtual void AttachToMessagePump() = 0;
+#endif
+
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager
   // with MessageLoop.
@@ -94,6 +102,7 @@ class ThreadController {
   virtual bool RunsTasksInCurrentSequence() = 0;
   virtual const TickClock* GetClock() = 0;
   virtual void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) = 0;
+  virtual scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() = 0;
   virtual void RestoreDefaultTaskRunner() = 0;
   virtual void AddNestingObserver(RunLoop::NestingObserver* observer) = 0;
   virtual void RemoveNestingObserver(RunLoop::NestingObserver* observer) = 0;

@@ -34,6 +34,7 @@
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -73,7 +74,8 @@ class BASE_EXPORT SequenceManagerImpl
     : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
-      public RunLoop::NestingObserver {
+      public RunLoop::NestingObserver,
+      public MessageLoopBase {
  public:
   using Observer = SequenceManager::Observer;
 
@@ -94,15 +96,15 @@ class BASE_EXPORT SequenceManagerImpl
   //
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
-      MessageLoop* message_loop);
+      MessageLoopBase* message_loop_base);
 
   static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
       MessageLoop::Type type);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
-  void BindToMessageLoop(MessageLoop* message_loop) override;
-  void BindToMessagePump(std::unique_ptr<MessagePump> message_loop) override;
+  void BindToMessageLoop(MessageLoopBase* message_loop_base) override;
+  void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
@@ -123,34 +125,38 @@ class BASE_EXPORT SequenceManagerImpl
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
   void DeletePendingTasks() override;
   bool HasTasks() override;
-  bool IsIdleForTesting() const override;
   size_t GetPendingTaskCountForTesting() const override;
 
-  // Implementation of SequencedTaskSource:
+  // SequencedTaskSource implementation:
   Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
   bool HasPendingHighResolutionTasks() override;
   bool OnSystemIdle() override;
 
-  // Methods needed for MessageLoopCurrent support.
-  // TOOD(alexclarke): Introduce MessageLoopBase and make SequenceManagerImpl
-  // inherit from it, and mark these as override.
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
+  // MessageLoopBase implementation:
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
   void AddDestructionObserver(
-      MessageLoopCurrent::DestructionObserver* destruction_observer);
+      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
   void RemoveDestructionObserver(
-      MessageLoopCurrent::DestructionObserver* destruction_observer);
+      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
-  void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
-  std::string GetThreadName() const;
-  bool IsBoundToCurrentThread() const;
-  MessagePump* GetMessagePump() const;
-  bool IsType(MessageLoop::Type type) const;
-  void SetAddQueueTimeToTasks(bool enable);
-  void SetTaskExecutionAllowed(bool allowed);
-  bool IsTaskExecutionAllowed() const;
+  void SetTaskRunner(
+      scoped_refptr<SingleThreadTaskRunner> task_runner) override;
+  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
+  scoped_refptr<SingleThreadTaskRunner> GetTaskRunner() override;
+  std::string GetThreadName() const override;
+  bool IsBoundToCurrentThread() const override;
+  MessagePump* GetMessagePump() const override;
+  bool IsType(MessageLoop::Type type) const override;
+  void SetAddQueueTimeToTasks(bool enable) override;
+  void SetTaskExecutionAllowed(bool allowed) override;
+  bool IsTaskExecutionAllowed() const override;
+#if defined(OS_IOS)
+  void AttachToMessagePump() override;
+#endif
+  bool IsIdleForTesting() override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other

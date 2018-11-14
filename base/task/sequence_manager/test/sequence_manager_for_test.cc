@@ -13,21 +13,21 @@ namespace {
 
 class ThreadControllerForTest : public internal::ThreadControllerImpl {
  public:
-  ThreadControllerForTest(MessageLoop* message_loop,
+  ThreadControllerForTest(MessageLoopBase* message_loop_base,
                           scoped_refptr<SingleThreadTaskRunner> task_runner,
                           const TickClock* time_source)
-      : ThreadControllerImpl(message_loop,
+      : ThreadControllerImpl(message_loop_base,
                              std::move(task_runner),
                              time_source) {}
 
   void AddNestingObserver(RunLoop::NestingObserver* observer) override {
-    if (!message_loop_)
+    if (!message_loop_base_)
       return;
     ThreadControllerImpl::AddNestingObserver(observer);
   }
 
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override {
-    if (!message_loop_)
+    if (!message_loop_base_)
       return;
     ThreadControllerImpl::RemoveNestingObserver(observer);
   }
@@ -44,12 +44,12 @@ SequenceManagerForTest::SequenceManagerForTest(
 
 // static
 std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
-    MessageLoop* message_loop,
+    MessageLoopBase* message_loop_base,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* clock) {
   std::unique_ptr<SequenceManagerForTest> manager(
       new SequenceManagerForTest(std::make_unique<ThreadControllerForTest>(
-          message_loop, std::move(task_runner), clock)));
+          message_loop_base, std::move(task_runner), clock)));
   manager->BindToCurrentThread();
   manager->CompleteInitializationOnBoundThread();
   return manager;

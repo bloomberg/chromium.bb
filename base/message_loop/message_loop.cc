@@ -45,6 +45,16 @@ std::unique_ptr<MessagePump> ReturnPump(std::unique_ptr<MessagePump> pump) {
 
 }  // namespace
 
+// Unfortunately since we're not on C++17 we're required to provide an out of
+// line definition.
+constexpr MessageLoop::Type MessageLoop::TYPE_DEFAULT;
+constexpr MessageLoop::Type MessageLoop::TYPE_UI;
+constexpr MessageLoop::Type MessageLoop::TYPE_CUSTOM;
+constexpr MessageLoop::Type MessageLoop::TYPE_IO;
+#if defined(OS_ANDROID)
+constexpr MessageLoop::Type MessageLoop::TYPE_JAVA;
+#endif
+
 MessageLoop::MessageLoop(Type type)
     : MessageLoop(type, MessagePumpFactoryCallback()) {
   BindToCurrentThread();
@@ -72,30 +82,6 @@ MessageLoop::~MessageLoop() {
   DCHECK((!pump_ && !IsBoundToCurrentThread()) ||
          !RunLoop::IsRunningOnCurrentThread());
 #endif  // !defined(OS_IOS)
-
-  // Clean up any unprocessed tasks, but take care: deleting a task could
-  // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
-  // limit on the number of times we will allow a deleted task to generate more
-  // tasks.  Normally, we should only pass through this loop once or twice.  If
-  // we end up hitting the loop limit, then it is probably due to one task that
-  // is being stubborn.  Inspect the queues to see who is left.
-  bool tasks_remain;
-  for (int i = 0; i < 100; ++i) {
-    DeletePendingTasks();
-    // If we end up with empty queues, then break out of the loop.
-    tasks_remain = HasTasks();
-    if (!tasks_remain)
-      break;
-  }
-  DCHECK(!tasks_remain);
-
-  // Let interested parties have one last shot at accessing this.
-  for (auto& observer : destruction_observers_)
-    observer.WillDestroyCurrentMessageLoop();
-
-  // OK, now make it so that no one can find us.
-  if (IsBoundToCurrentThread())
-    MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
 
 // static
@@ -159,16 +145,15 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
 }
 
 bool MessageLoop::IsBoundToCurrentThread() const {
-  return MessageLoopCurrent::Get()->ToMessageLoopDeprecated() == this;
-}
-
-void MessageLoop::SetAddQueueTimeToTasks(bool enable) {
-  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  message_loop_impl_->SetAddQueueTimeToTasks(enable);
+  return message_loop_impl_->IsBoundToCurrentThread();
 }
 
 bool MessageLoop::IsIdleForTesting() {
   return message_loop_impl_->IsIdleForTesting();
+}
+
+MessageLoopBase* MessageLoop::GetMessageLoopBase() {
+  return message_loop_impl_.get();
 }
 
 //------------------------------------------------------------------------------
@@ -182,7 +167,7 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
     : pump_(nullptr),
-      message_loop_impl_(std::make_unique<MessageLoopImpl>()),
+      message_loop_impl_(std::make_unique<MessageLoopImpl>(type)),
       type_(type),
       pump_factory_(std::move(pump_factory)) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
@@ -203,7 +188,6 @@ void MessageLoop::BindToCurrentThread() {
 
   DCHECK(!MessageLoopCurrent::IsSet())
       << "should only have one message loop per thread";
-  MessageLoopCurrent::BindToCurrentThreadInternal(this);
 
   message_loop_impl_->BindToCurrentThread(std::move(pump));
 
@@ -222,11 +206,12 @@ std::unique_ptr<MessagePump> MessageLoop::CreateMessagePump() {
   }
 }
 
+void MessageLoop::SetTimerSlack(TimerSlack timer_slack) {
+  message_loop_impl_->SetTimerSlack(timer_slack);
+}
+
 std::string MessageLoop::GetThreadName() const {
-  DCHECK_NE(kInvalidThreadId, thread_id_)
-      << "GetThreadName() must only be called after BindToCurrentThread()'s "
-      << "side-effects have been synchronized with this thread.";
-  return ThreadIdNameManager::GetInstance()->GetName(thread_id_);
+  return message_loop_impl_->GetThreadName();
 }
 
 const scoped_refptr<SingleThreadTaskRunner>& MessageLoop::task_runner() const {
@@ -245,18 +230,6 @@ void MessageLoop::DeletePendingTasks() {
 
 bool MessageLoop::HasTasks() const {
   return message_loop_impl_->HasTasks();
-}
-
-void MessageLoop::SetTaskExecutionAllowed(bool allowed) {
-  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  if (allowed)
-    pump_->ScheduleWork();
-  message_loop_impl_->SetTaskExecutionAllowed(allowed);
-}
-
-bool MessageLoop::IsTaskExecutionAllowed() const {
-  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  return message_loop_impl_->IsTaskExecutionAllowed();
 }
 
 #if !defined(OS_NACL)
@@ -284,8 +257,7 @@ bool MessageLoopForUI::IsCurrent() {
 
 #if defined(OS_IOS)
 void MessageLoopForUI::Attach() {
-  static_cast<MessagePumpUIApplication*>(pump_)->Attach(
-      message_loop_impl_.get());
+  message_loop_impl_->AttachToMessagePump();
 }
 #endif  // defined(OS_IOS)
 

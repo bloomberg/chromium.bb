@@ -155,7 +155,11 @@ base::TimeTicks SchedulerHelper::NowTicks() const {
 }
 
 void SchedulerHelper::SetTimerSlack(base::TimerSlack timer_slack) {
-  sequence_manager_->SetTimerSlack(timer_slack);
+  if (sequence_manager_) {
+    static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(
+        sequence_manager_.get())
+        ->SetTimerSlack(timer_slack);
+  }
 }
 
 double SchedulerHelper::GetSamplingRateForRecordingCPUTime() const {
