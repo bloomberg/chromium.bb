@@ -1407,6 +1407,52 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Developer options
       </message>
 
+      <!-- Tracing preferences (not translated, since part of developer preferences) -->
+      <message name="IDS_PREFS_TRACING" translateable="false" desc="Title for the Tracing preferences page in Chrome settings, which allows configuring and recording a Chrome performance trace. [CHAR-LIMIT=32]">
+        Tracing
+      </message>
+      <message name="IDS_PREFS_TRACING_PRIVACY_NOTICE" translateable="false" desc="The summary of a text preference that highlights that Chrome traces may contain privacy sensitive content.">
+        Traces may contain user or site data related to the active browsing session, including incognito tabs.
+      </message>
+      <message name="IDS_PREFS_TRACING_START" translateable="false" desc="Caption of a button that starts recording a trace.">
+        Record trace
+      </message>
+      <message name="IDS_PREFS_TRACING_ACTIVE" translateable="false" desc="The title of a preference shown when a Chrome trace is being recorded.">
+        Recording…
+      </message>
+      <message name="IDS_PREFS_TRACING_ACTIVE_SUMMARY" translateable="false" desc="The summary of a text preference shown when a Chrome trace is being recorded.">
+        A trace is being recorded. Use the notification to stop and share the result.
+      </message>
+
+      <!-- Tracing notifications (not translated, since part of developer preferences) -->
+      <message name="IDS_TRACING_NOTIFICATIONS_DISABLED" translateable="false" desc="Message of a toast shown when tracing could not be started because the Chrome app's notifications are disabled.">
+        Please enable Chrome browser notifications to record a trace.
+      </message>
+      <message name="IDS_TRACING_ACTIVE_NOTIFICATION_TITLE" translateable="false" desc="Title of a notification that indicates that a Chrome trace is being recorded.">
+        Chrome trace is being recorded
+      </message>
+      <message name="IDS_TRACING_ACTIVE_NOTIFICATION_MESSAGE" translateable="false" desc="Body of a notification that indicates that a Chrome trace is being recorded, showing the percentage of the trace buffer that has been filled with data.">
+        Trace buffer usage: <ph name="BUFFER_USAGE_PERCENTAGE">%1$d<ex>50</ex></ph>%%
+      </message>
+      <message name="IDS_TRACING_STOPPING_NOTIFICATION_TITLE" translateable="false" desc="Title of a notification that indicates that a Chrome trace is being stopped.">
+        Chrome trace is stopping
+      </message>
+      <message name="IDS_TRACING_STOPPING_NOTIFICATION_MESSAGE" translateable="false" desc="Body of a notification that indicates that a Chrome trace is being stopped.">
+        Trace data is being collected and compressed.
+      </message>
+      <message name="IDS_TRACING_COMPLETE_NOTIFICATION_TITLE" translateable="false" desc="Title of a notification that indicates that a Chrome trace was completed.">
+        Chrome trace is complete
+      </message>
+      <message name="IDS_TRACING_COMPLETE_NOTIFICATION_MESSAGE" translateable="false" desc="Body of a notification that indicates that a Chrome trace was completed and is ready to be downloaded or shared.">
+        The trace is ready to share.
+      </message>
+      <message name="IDS_TRACING_STOP" translateable="false" desc="Caption of a button that stops recording a trace.">
+        Stop recording
+      </message>
+      <message name="IDS_TRACING_ERROR_TOAST" translateable="false" desc="Message of a toast shown when there was an error during tracing.">
+        Error occurred while recording Chrome trace, see log for details.
+      </message>
+
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
         About Chrome
