@@ -176,10 +176,15 @@ class FlagsState {
       bool feature_state,
       base::CommandLine* command_line);
 
-  // Removes all entries from prefs::kEnabledLabsExperiments that are unknown,
-  // to prevent this list to become very long as entries are added and removed.
-  void SanitizeList(FlagsStorage* flags_storage) const;
+  // Sanitizes |enabled_entries| to only contain entries that are defined in the
+  // |feature_entries_| and whose |supported_platforms| matches |platform_mask|.
+  // Pass -1 to |platform_mask| to not do platform filtering.
+  std::set<std::string> SanitizeList(
+      const std::set<std::string>& enabled_entries,
+      int platform_mask) const;
 
+  // Gets sanitized entries from |flags_storage|, filtering out any entries that
+  // don't exist in |feature_entries_|, and updates |flags_storage|.
   void GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
                                 std::set<std::string>* result) const;
 
