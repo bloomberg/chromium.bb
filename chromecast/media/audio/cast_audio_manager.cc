@@ -44,6 +44,7 @@ CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
+    GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     service_manager::Connector* connector,
@@ -51,6 +52,7 @@ CastAudioManager::CastAudioManager(
     : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
                        std::move(backend_factory_getter),
+                       std::move(get_session_id_callback),
                        std::move(browser_task_runner),
                        std::move(media_task_runner),
                        connector,
@@ -61,6 +63,7 @@ CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
+    GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     service_manager::Connector* connector,
@@ -68,6 +71,7 @@ CastAudioManager::CastAudioManager(
     bool force_use_cma_backend_for_output)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       backend_factory_getter_(std::move(backend_factory_getter)),
+      get_session_id_callback_(std::move(get_session_id_callback)),
       browser_task_runner_(std::move(browser_task_runner)),
       media_task_runner_(std::move(media_task_runner)),
       browser_connector_(connector),
@@ -75,6 +79,7 @@ CastAudioManager::CastAudioManager(
       weak_factory_(this) {
   DCHECK(browser_task_runner_->BelongsToCurrentThread());
   DCHECK(backend_factory_getter_);
+  DCHECK(get_session_id_callback_);
   DCHECK(browser_connector_);
   weak_this_ = weak_factory_.GetWeakPtr();
   if (use_mixer)
@@ -134,6 +139,10 @@ CmaBackendFactory* CastAudioManager::cma_backend_factory() {
   return cma_backend_factory_;
 }
 
+std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
+  return get_session_id_callback_.Run(audio_group_id);
+}
+
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(
     const ::media::AudioParameters& params,
     const ::media::AudioManager::LogCallback& log_callback) {
@@ -141,10 +150,10 @@ CmaBackendFactory* CastAudioManager::cma_backend_factory() {
 
   // If |mixer_| exists, return a mixing stream.
   if (mixer_) {
-    return mixer_->MakeStream(params);
+    return mixer_->MakeStream(params, "");
   } else {
     return new CastAudioOutputStream(
-        this, GetConnector(), params,
+        this, GetConnector(), params, "",
         GetMixerServiceConnectionFactoryForOutputStream(params));
   }
 }
@@ -157,10 +166,12 @@ CmaBackendFactory* CastAudioManager::cma_backend_factory() {
 
   // If |mixer_| exists, return a mixing stream.
   if (mixer_) {
-    return mixer_->MakeStream(params);
+    return mixer_->MakeStream(params, device_id);
   } else {
+    // We use device_id as the group_id, because for Chromecast builds they are
+    // one and the same. See the header for more information.
     return new CastAudioOutputStream(
-        this, GetConnector(), params,
+        this, GetConnector(), params, device_id,
         GetMixerServiceConnectionFactoryForOutputStream(params));
   }
 }
@@ -219,14 +230,18 @@ CmaBackendFactory* CastAudioManager::cma_backend_factory() {
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeMixerOutputStream(
-    const ::media::AudioParameters& params) {
+    const ::media::AudioParameters& params,
+    const std::string& device_id) {
   DCHECK(mixer_);
   DCHECK(!mixer_output_stream_);  // Only allow 1 |mixer_output_stream_|.
 
   // Keep a reference to this stream for proper behavior on
   // CastAudioManager::ReleaseOutputStream.
+  //
+  // We use device_id as the group_id, because for Chromecast builds they are
+  // one and the same. See the header for more information.
   mixer_output_stream_.reset(new CastAudioOutputStream(
-      this, GetConnector(), params,
+      this, GetConnector(), params, device_id,
       GetMixerServiceConnectionFactoryForOutputStream(params)));
   return mixer_output_stream_.get();
 }

@@ -30,11 +30,13 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
+#include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/grit/cast_browser_resources.h"
@@ -62,6 +64,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -168,7 +171,16 @@ CastContentBrowserClient::CastContentBrowserClient(
     CastFeatureListCreator* cast_feature_list_creator)
     : cast_browser_main_parts_(nullptr),
       url_request_context_factory_(new URLRequestContextFactory()),
-      cast_feature_list_creator_(cast_feature_list_creator) {}
+      cast_feature_list_creator_(cast_feature_list_creator) {
+  // TODO(awolter): Remove this once the feature is on by default.
+  const std::string extra_enable_features =
+#if defined(OS_ANDROID)
+      features::kAudioServiceAudioStreams.name;
+#else
+      std::string();
+#endif
+  cast_feature_list_creator_->SetExtraEnableFeatures(extra_enable_features);
+}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
@@ -266,11 +278,18 @@ CastContentBrowserClient::CreateAudioManager(
   }
 #endif
 
+  // Create the audio thread and initialize the CastSessionIdMap. We need to
+  // initialize the CastSessionIdMap as soon as possible, so that the task
+  // runner gets set before any calls to it.
+  auto audio_thread = std::make_unique<::media::AudioThreadImpl>();
+  shell::CastSessionIdMap::GetInstance(audio_thread->GetTaskRunner());
+
 #if defined(USE_ALSA)
   return std::make_unique<media::CastAudioManagerAlsa>(
-      std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
+      std::move(audio_thread), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
+      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
@@ -278,9 +297,10 @@ CastContentBrowserClient::CreateAudioManager(
       use_mixer);
 #else
   return std::make_unique<media::CastAudioManager>(
-      std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
+      std::move(audio_thread), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
+      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI}),
       GetMediaTaskRunner(),

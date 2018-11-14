@@ -41,14 +41,16 @@ const std::vector<const base::Feature*>& GetFeatures();
 // overrides from DCS and the command line. |dcs_features| and
 // |dcs_experiment_ids| are read from the PrefService in the browser process.
 // |cmd_line_enable_features| and |cmd_line_disable_features| should be passed
-// to this function, unmodified from the command line.
+// to this function, unmodified from the command line. |extra_enable_features|
+// should contain any extra features to be enabled.
 //
 // This function should be called before the browser's main loop. After this is
 // called, the other functions in this file may be called on any thread.
 void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
-                           const std::string& cmd_line_disable_features);
+                           const std::string& cmd_line_disable_features,
+                           const std::string& extra_enable_features);
 
 // Determine whether or not a feature is enabled. This replaces
 // base::FeatureList::IsEnabled for Cast builds.

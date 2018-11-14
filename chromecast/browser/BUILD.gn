@@ -53,6 +53,8 @@ cast_source_set("browser") {
     "cast_quota_permission_context.h",
     "cast_resource_dispatcher_host_delegate.cc",
     "cast_resource_dispatcher_host_delegate.h",
+    "cast_session_id_map.cc",
+    "cast_session_id_map.h",
     "cast_web_contents_impl.cc",
     "cast_web_contents_impl.h",
     "cast_web_contents_manager.cc",
@@ -495,7 +497,7 @@ cast_source_set("unittests") {
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
     "cast_network_delegate_unittest.cc",
-    "cast_touch_device_manager_unittest.cc",
+    "cast_session_id_map_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
     "network_context_manager_unittest.cc",
@@ -512,6 +514,10 @@ cast_source_set("unittests") {
     "//ui/events/devices:devices",
     "//ui/gl:test_support",
   ]
+
+  if (!is_android) {
+    sources += [ "cast_touch_device_manager_unittest.cc" ]
+  }
 
   if (enable_chromecast_extensions && use_aura) {
     sources += [ "accessibility/touch_exploration_controller_unittest.cc" ]

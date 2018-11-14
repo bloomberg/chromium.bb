@@ -15,6 +15,20 @@
 #include "media/audio/audio_manager_base.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+// NOTE: CastAudioManager receives a |device_id| from the audio service, and
+// passes it to CastAudioOutputStream as a |group_id|.
+//
+// The output stream requires the |group_id| so that it can determine the Cast
+// |session_id| from CastSessionIdMap and pass it to CMA for multizone audio.
+// The output stream does not require a real |device_id|, so we have repurposed
+// the field for Cast devices only, in order to pass the |group_id| through all
+// the layers of the audio stack into the CastAudioOutputStream.
+//
+// At the top end of the audio stack, StreamFactory replaces the |device_id|
+// with the |group_id|. This implementation in StreamFactory must stay as-is, or
+// else multizone audio will be broken for Cast devices using CAOS for their
+// primary audio playback.
+
 namespace chromecast {
 
 namespace media {
@@ -26,10 +40,14 @@ class CmaBackendFactory;
 
 class CastAudioManager : public ::media::AudioManagerBase {
  public:
+  using GetSessionIdCallback =
+      base::RepeatingCallback<std::string(std::string)>;
+
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
+      GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       service_manager::Connector* connector,
@@ -50,6 +68,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
   base::SingleThreadTaskRunner* media_task_runner() {
     return media_task_runner_.get();
   }
+
+  std::string GetSessionId(std::string audio_group_id);
 
   void SetConnectorForTesting(
       std::unique_ptr<service_manager::Connector> connector);
@@ -81,7 +101,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
 
   // Generates a CastAudioOutputStream for |mixer_|.
   virtual ::media::AudioOutputStream* MakeMixerOutputStream(
-      const ::media::AudioParameters& params);
+      const ::media::AudioParameters& params,
+      const std::string& device_id);
 
  private:
   friend class CastAudioMixer;
@@ -94,6 +115,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
+      GetSessionIdCallback get_session_id_callback,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       service_manager::Connector* connector,
@@ -107,6 +129,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const ::media::AudioParameters& params);
 
   base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter_;
+  GetSessionIdCallback get_session_id_callback_;
   CmaBackendFactory* cma_backend_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;

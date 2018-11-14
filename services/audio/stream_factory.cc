@@ -123,10 +123,19 @@ void StreamFactory::CreateOutputStream(
   auto deleter_callback = base::BindOnce(&StreamFactory::DestroyOutputStream,
                                          base::Unretained(this));
 
+  // This is required for multizone audio playback on Cast devices.
+  // See //chromecast/media/cast_audio_manager.h for more information.
+  const std::string device_id_or_group_id =
+#if defined(IS_CHROMECAST)
+      group_id.ToString();
+#else
+      output_device_id;
+#endif
+
   output_streams_.insert(std::make_unique<OutputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_request), std::move(observer), std::move(log),
-      audio_manager_, output_device_id, params, &coordinator_, group_id,
+      audio_manager_, device_id_or_group_id, params, &coordinator_, group_id,
       &stream_monitor_coordinator_,
       processing_id.value_or(base::UnguessableToken())));
   SetStateForCrashing("created output stream");
