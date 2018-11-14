@@ -4,7 +4,7 @@ function inject_input() {
   return touchScrollInTarget('#target0', 'down').then(function() {
     return touchScrollInTarget('#target0', 'right');
   }).then(function() {
-    return touchTapInTarget('#btnComplete');
+    btnComplete.click();
   });
 }
 

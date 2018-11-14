@@ -13,7 +13,7 @@
 <a id="end" href="#">end</a>
 <br><br>
 <a id="1" href="#">1</a>
-<div id="start" tabindex="0">
+<div id="start">
   <br>
   <p>text</p>
 </div>
@@ -23,7 +23,12 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
+
 <script>
+  test(function(t) {
+      assert_true(internals.runtimeFlags.keyboardFocusableScrollersEnabled);
+  }, "Make sure KeyboardFocusableScrollers is set.");
+
   var resultMap = [
     ["Up", "end"],
   ];

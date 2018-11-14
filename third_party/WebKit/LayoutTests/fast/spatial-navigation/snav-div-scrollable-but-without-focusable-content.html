@@ -10,11 +10,11 @@
 </style>
 
 <div><a id="start" href="a"><img src="resources/green.png" width=30 height=30></a></div>
-<div class="scroll">
+<div class="scroll" id="scrollerA">
   <img src="resources/green.png" width=240 height=300>
 </div>
 
-<div class="scroll">
+<div class="scroll" id="scrollerB">
   <img src="resources/green.png" width=240 height=300>
 </div>
 <div><a id="end" href="a"><img src="resources/green.png" width=30 height=30></a></div>
@@ -24,20 +24,26 @@ This test is to test that a scrollable div can scroll and reveal its content eve
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
 <script>
+  test(function(t) {
+      assert_true(internals.runtimeFlags.keyboardFocusableScrollersEnabled);
+  }, "Make sure KeyboardFocusableScrollers is set.");
+
+  // These expectations will change once crbug.com/801162 lands:
+  // We want spatnav, to focus the scroller before scrolling it
+  // or searching inside of it, just like seqnav does.
   var resultMap = [
     ["Down", "start"],
     ["Down", "start"],
     ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
+    ["Down", "scrollerA"],
+    ["Down", "scrollerA"],
+    ["Down", "scrollerA"],
+    ["Down", "scrollerA"],
+    ["Down", "scrollerB"],
+    ["Up"  , "scrollerB"],
+    ["Up"  , "scrollerB"],
+    ["Up"  , "scrollerB"],
+    ["Up"  , "scrollerA"],
     ["Up"  , "start"],
   ];
 
