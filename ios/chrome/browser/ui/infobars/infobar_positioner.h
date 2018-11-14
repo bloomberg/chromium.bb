@@ -14,9 +14,6 @@
 // View to which the popup view should be added as subview.
 - (UIView*)parentView;
 
-// YES if |parentView| is currently visible.
-- (BOOL)isParentViewVisible;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_POSITIONER_H_
