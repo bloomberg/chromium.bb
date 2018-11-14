@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -2045,8 +2046,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case KeyPress: {
-      ui::KeyEvent keydown_event(xev);
-      DispatchKeyEvent(&keydown_event);
+      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
+          ui::DiscardAtkKeyEvent::Discard) {
+        ui::KeyEvent keydown_event(xev);
+        DispatchKeyEvent(&keydown_event);
+      }
       break;
     }
     case KeyRelease: {
@@ -2055,8 +2059,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (!IsActive() && !HasCapture())
         break;
 
-      ui::KeyEvent key_event(xev);
-      DispatchKeyEvent(&key_event);
+      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
+          ui::DiscardAtkKeyEvent::Discard) {
+        ui::KeyEvent key_event(xev);
+        DispatchKeyEvent(&key_event);
+      }
       break;
     }
     case ButtonPress:
