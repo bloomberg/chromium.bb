@@ -1031,7 +1031,6 @@ ContextResult RasterDecoderImpl::Initialize(
 
 const gles2::ContextState* RasterDecoderImpl::GetContextState() {
   if (raster_decoder_context_state_->need_context_state_reset) {
-    raster_decoder_context_state_->need_context_state_reset = false;
     // Returning nullptr to force full state restoration by the caller.  We do
     // this because GrContext changes to GL state are untracked in our state_.
     return nullptr;
@@ -1192,6 +1191,7 @@ void RasterDecoderImpl::RestoreAllAttributes() const {
 void RasterDecoderImpl::RestoreState(const gles2::ContextState* prev_state) {
   TRACE_EVENT1("gpu", "RasterDecoderImpl::RestoreState", "context",
                logger_.GetLogPrefix());
+  raster_decoder_context_state_->need_context_state_reset = false;
   raster_decoder_context_state_->PessimisticallyResetGrContext();
   state_.RestoreState(prev_state);
 }
@@ -1520,7 +1520,6 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
       }
       if (!PermitsInconsistentContextState(command)) {
         if (raster_decoder_context_state_->need_context_state_reset) {
-          raster_decoder_context_state_->need_context_state_reset = false;
           RestoreState(nullptr);
         }
       }
