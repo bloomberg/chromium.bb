@@ -89,6 +89,8 @@
 # Editing response cookies through headers with webRequest is not supported with
 # the network service.
 -ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
+-ExtensionWebRequestApiTest.ChangeHeaderUMAs
+-ExtensionWebRequestApiTest.RemoveHeaderUMAs
 
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.

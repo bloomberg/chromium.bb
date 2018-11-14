@@ -54,6 +54,19 @@ struct IgnoredAction {
 
 using IgnoredActions = std::vector<IgnoredAction>;
 
+// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
+// CHANGE THEIR MEANING.
+enum class WebRequestSpecialRequestHeaderModification {
+  kNone,
+  kAcceptLanguage,
+  kAcceptEncoding,
+  kUserAgent,
+  kCookie,
+  kReferer,
+  kMultiple,
+  kMaxValue = kMultiple,
+};
+
 // Internal representation of the extraInfoSpec parameter on webRequest
 // events, used to specify extra information to be included with network
 // events.

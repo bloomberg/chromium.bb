@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -109,6 +110,9 @@
 using content::WebContents;
 
 namespace extensions {
+
+using extension_web_request_api_helpers::
+    WebRequestSpecialRequestHeaderModification;
 
 namespace {
 
@@ -2263,6 +2267,126 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestMockedClockTest,
   EXPECT_TRUE(redirect_successful_listener.WaitUntilSatisfied());
   EXPECT_EQ(extension_id_1,
             redirect_successful_listener.extension_id_for_message());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ChangeHeaderUMAs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request UMA Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+          var headers = details.requestHeaders;
+          for (var i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() == 'user-agent') {
+              headers[i].value = 'foo';
+              break;
+            }
+          }
+          return {requestHeaders: headers};
+        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'requestHeaders']);
+
+        chrome.webRequest.onHeadersReceived.addListener(function(details) {
+          var headers = details.responseHeaders;
+          for (var i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() == 'set-cookie') {
+              headers[i].value = 'Blah=Blah';
+              break;
+            }
+          }
+          return {responseHeaders: headers};
+        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'responseHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/set-cookie?Foo=Bar"));
+
+  // Changed histograms should record kUserAgent and true.
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SpecialRequestHeadersChanged",
+      WebRequestSpecialRequestHeaderModification::kUserAgent, 1);
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SetCookieResponseHeaderChanged", true, 1);
+
+  // Removed histograms should record kNone and false.
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SpecialRequestHeadersRemoved",
+      WebRequestSpecialRequestHeaderModification::kNone, 1);
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SetCookieResponseHeaderRemoved", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request UMA Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+          var headers = details.requestHeaders;
+          for (var i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() == 'user-agent') {
+              headers.splice(i, 1);
+              break;
+            }
+          }
+          return {requestHeaders: headers};
+        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'requestHeaders']);
+
+        chrome.webRequest.onHeadersReceived.addListener(function(details) {
+          var headers = details.responseHeaders;
+          for (var i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() == 'set-cookie') {
+              headers.splice(i, 1);
+              break;
+            }
+          }
+          return {responseHeaders: headers};
+        }, {urls: ['*://*/set-cookie*']}, ['blocking', 'responseHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/set-cookie?Foo=Bar"));
+
+  // Removed histograms should record kUserAgent and true.
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SpecialRequestHeadersRemoved",
+      WebRequestSpecialRequestHeaderModification::kUserAgent, 1);
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SetCookieResponseHeaderRemoved", true, 1);
+
+  // Changed histograms should record kNone and false.
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SpecialRequestHeadersChanged",
+      WebRequestSpecialRequestHeaderModification::kNone, 1);
+  tester.ExpectUniqueSample(
+      "Extensions.WebRequest.SetCookieResponseHeaderChanged", false, 1);
 }
 
 }  // namespace extensions
