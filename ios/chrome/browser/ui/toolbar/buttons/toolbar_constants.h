@@ -55,7 +55,6 @@ extern const CGFloat kExpandedLocationBarHorizontalMargin;
 extern const CGFloat kContractedLocationBarHorizontalMargin;
 
 // Adaptive Location bar constants.
-extern const CGFloat kAdaptiveLocationBarCornerRadius;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito;
 extern const CGFloat kAdaptiveLocationBarVerticalMargin;

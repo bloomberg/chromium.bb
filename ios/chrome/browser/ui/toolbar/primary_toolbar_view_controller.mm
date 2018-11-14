@@ -110,6 +110,8 @@
 
   self.view.locationBarHeight.constant =
       [self locationBarHeightForFullscreenProgress:1];
+  self.view.locationBarContainer.layer.cornerRadius =
+      self.view.locationBarHeight.constant / 2;
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:1];
 
@@ -149,6 +151,8 @@
       self.traitCollection.preferredContentSizeCategory) {
     self.view.locationBarHeight.constant = [self
         locationBarHeightForFullscreenProgress:self.previousFullscreenProgress];
+    self.view.locationBarContainer.layer.cornerRadius =
+        self.view.locationBarHeight.constant / 2;
   }
 }
 
@@ -183,6 +187,8 @@
   self.view.trailingStackView.alpha = alphaValue;
   self.view.locationBarHeight.constant =
       [self locationBarHeightForFullscreenProgress:progress];
+  self.view.locationBarContainer.layer.cornerRadius =
+      self.view.locationBarHeight.constant / 2;
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:progress];
   self.view.locationBarContainer.backgroundColor =

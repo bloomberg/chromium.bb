@@ -229,8 +229,6 @@
   self.locationBarContainer.backgroundColor =
       [self.buttonFactory.toolbarConfiguration
           locationBarBackgroundColorWithVisibility:1];
-  self.locationBarContainer.layer.cornerRadius =
-      kAdaptiveLocationBarCornerRadius;
   [self.locationBarContainer
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];

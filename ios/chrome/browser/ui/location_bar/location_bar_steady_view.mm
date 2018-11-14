@@ -192,7 +192,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     _locationButton = [[LocationBarSteadyButton alloc] init];
     _locationButton.translatesAutoresizingMaskIntoConstraints = NO;
-    _locationButton.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
     [_locationButton addSubview:_trailingButton];
     [_locationButton addSubview:_locationContainerView];
 

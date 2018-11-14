@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -350,7 +351,9 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     } else {
       topInset = StatusBarHeight();
     }
-    _topToolbarMarginHeight.constant = topInset + kAdaptiveToolbarHeight;
+    _topToolbarMarginHeight.constant =
+        topInset + ToolbarExpandedHeight(
+                       self.traitCollection.preferredContentSizeCategory);
   }
 
   if (IsSplitToolbarMode(self)) {
