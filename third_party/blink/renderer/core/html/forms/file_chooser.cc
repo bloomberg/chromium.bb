@@ -130,7 +130,7 @@ void FileChooser::DidChooseFiles(mojom::blink::FileChooserResultPtr result) {
   }
 
   if (client_)
-    client_->FilesChosen(std::move(files));
+    client_->FilesChosen(std::move(files), result->base_directory);
   DidCloseChooser();
 }
 

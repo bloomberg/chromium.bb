@@ -1650,6 +1650,7 @@ class MockFileSelectListener : public FileSelectListener {
  public:
   MockFileSelectListener() {}
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    const base::FilePath& base_dir,
                     blink::mojom::FileChooserParams::Mode mode) override {}
   void FileSelectionCanceled() override {}
 };

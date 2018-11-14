@@ -18,8 +18,17 @@ class FileSelectListener {
   virtual ~FileSelectListener() {}
 
   // This function should be called if file selection succeeds.
+  // |files| - A list of selected files.
+  // |base_dir| - This has non-empty directory path if |mode| argument is
+  //              kUploadFolder and kUploadFolder is supported by the
+  //              WebContentsDelegate instance. It represents enumeration root
+  //              directory.
+  //              This is an empty FilePath otherwise.
+  // |mode| - kUploadFolder for WebContentsDelegate::EnumerateDirectory(), and
+  //          |params.mode| for WebContentsDelegate::RunFileChooser().
   virtual void FileSelected(
       std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+      const base::FilePath& base_dir,
       blink::mojom::FileChooserParams::Mode mode) = 0;
 
   // This function should be called if a user cancels a file selection

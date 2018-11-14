@@ -214,7 +214,7 @@ TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
   FileChooserFileInfoList files;
   files.push_back(CreateFileChooserFileInfoNative("/native/path/native-file",
                                                   "display-name"));
-  FileList* list = FileInputType::CreateFileList(files, false);
+  FileList* list = FileInputType::CreateFileList(files, base::FilePath());
   ASSERT_TRUE(list);
   EXPECT_EQ(1u, list->length());
 

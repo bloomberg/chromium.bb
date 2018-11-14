@@ -45,7 +45,7 @@ TEST(FileInputTypeTest, createFileList) {
   files.push_back(CreateFileChooserFileInfoFileSystem(
       url, base::Time::FromJsTime(1.0 * kMsPerDay + 3), 64));
 
-  FileList* list = FileInputType::CreateFileList(files, false);
+  FileList* list = FileInputType::CreateFileList(files, base::FilePath());
   ASSERT_TRUE(list);
   ASSERT_EQ(2u, list->length());
 

@@ -259,30 +259,30 @@ void FileInputType::SetValue(const String&,
 }
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
-                                        bool has_webkit_directory_attr) {
+                                        const base::FilePath& base_dir) {
   FileList* file_list(FileList::Create());
   wtf_size_t size = files.size();
 
   // If a directory is being selected, the UI allows a directory to be chosen
-  // and the paths provided here share a root directory somewhere up the tree;
-  // we want to store only the relative paths from that point.
-  if (size && has_webkit_directory_attr) {
-    // Find the common root path.
-    base::FilePath root_path = files[0]->get_native_file()->file_path.DirName();
-    for (wtf_size_t i = 1; i < size; ++i) {
-      while (files[i]->get_native_file()->file_path.value().find(
-                 root_path.value()) != 0)
-        root_path = root_path.DirName();
-    }
-    root_path = root_path.DirName();
+  // and the paths provided here should start with |base_dir|.
+  // We want to store only the relative path starting with the basename of
+  // |base_dir|.
+  if (size && !base_dir.empty()) {
+    base::FilePath root_path = base_dir.DirName();
     int root_length = FilePathToString(root_path).length();
     DCHECK(root_length);
     if (!root_path.EndsWithSeparator())
       root_length += 1;
+    if (base_dir == root_path)
+      root_length = 0;
     for (const auto& file : files) {
       // Normalize backslashes to slashes before exposing the relative path to
       // script.
       String string_path = FilePathToString(file->get_native_file()->file_path);
+      DCHECK(
+          string_path.StartsWithIgnoringASCIICase(FilePathToString(base_dir)))
+          << "A path in a FileChooserFileInfo " << string_path
+          << " should start with " << FilePathToString(base_dir);
       String relative_path =
           string_path.Substring(root_length).Replace('\\', '/');
       file_list->Append(
@@ -384,7 +384,8 @@ void FileInputType::SetFiles(FileList* files) {
   }
 }
 
-void FileInputType::FilesChosen(FileChooserFileInfoList files) {
+void FileInputType::FilesChosen(FileChooserFileInfoList files,
+                                const base::FilePath& base_dir) {
   for (wtf_size_t i = 0; i < files.size();) {
     // Drop files of which names can not be converted to WTF String. We
     // can't expose such files via File API.
@@ -396,8 +397,7 @@ void FileInputType::FilesChosen(FileChooserFileInfoList files) {
     }
     ++i;
   }
-  SetFiles(CreateFileList(files,
-                          GetElement().FastHasAttribute(kWebkitdirectoryAttr)));
+  SetFiles(CreateFileList(files, base_dir));
   if (HasConnectedFileChooser())
     DisconnectFileChooser();
 }
@@ -431,11 +431,11 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
     files.push_back(CreateFileChooserFileInfoNative(path));
 
   if (input.FastHasAttribute(kMultipleAttr)) {
-    FilesChosen(std::move(files));
+    FilesChosen(std::move(files), base::FilePath());
   } else {
     FileChooserFileInfoList first_file_only;
     first_file_only.push_back(std::move(files[0]));
-    FilesChosen(std::move(first_file_only));
+    FilesChosen(std::move(first_file_only), base::FilePath());
   }
 }
 

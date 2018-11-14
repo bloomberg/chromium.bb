@@ -227,6 +227,10 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // The mode of file dialog last shown.
   blink::mojom::FileChooserParams::Mode dialog_mode_;
 
+  // The enumeration root directory for EnumerateDirectory() and
+  // RunFileChooser with kUploadFolder.
+  base::FilePath base_dir_;
+
   // Maintain an active directory enumeration.  These could come from the file
   // select dialog or from drag-and-drop of directories.  There could not be
   // more than one going on at a time.

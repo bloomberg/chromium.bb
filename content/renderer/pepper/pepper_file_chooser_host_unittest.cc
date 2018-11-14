@@ -67,8 +67,8 @@ class MockFileChooser : public FileChooser {
   void ResponseOnOpenFileChooser(std::vector<FileChooserFileInfoPtr> files) {
     DCHECK(callback_);
     DCHECK(params_);
-    std::move(callback_).Run(
-        blink::mojom::FileChooserResult::New(std::move(files)));
+    std::move(callback_).Run(blink::mojom::FileChooserResult::New(
+        std::move(files), base::FilePath()));
     bindings_.FlushForTesting();
   }
 

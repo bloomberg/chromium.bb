@@ -227,6 +227,7 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 }
 
 void FileSelectHelper::StartNewEnumeration(const base::FilePath& path) {
+  base_dir_ = path;
   auto entry = std::make_unique<ActiveDirectoryEnumeration>(path);
   entry->lister_.reset(new net::DirectoryLister(
       path, net::DirectoryLister::NO_SORT_RECURSIVE, this));
@@ -273,7 +274,7 @@ void FileSelectHelper::OnListDone(int error) {
           blink::mojom::NativeFileInfo::New(file_path, base::string16())));
     }
 
-    listener_->FileSelected(std::move(chooser_files),
+    listener_->FileSelected(std::move(chooser_files), base_dir_,
                             FileChooserParams::Mode::kUploadFolder);
     listener_.reset();
     EnumerateDirectoryEnd();
@@ -322,7 +323,7 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
 
 void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
     std::vector<FileChooserFileInfoPtr> list) {
-  listener_->FileSelected(std::move(list), dialog_mode_);
+  listener_->FileSelected(std::move(list), base_dir_, dialog_mode_);
   listener_.reset();
 
   // No members should be accessed from here on.
