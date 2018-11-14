@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 
-#include <memory>
+#include <set>
 #include <sstream>
 #include <utility>
 
@@ -19,6 +19,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -976,6 +977,76 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
 
 void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
   Respond(Error("ML Service connection error"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetAssistantEnabled
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetAssistantEnabledFunction::
+    AutotestPrivateSetAssistantEnabledFunction() {
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  assistant_state_.Init(connection->GetConnector());
+  assistant_state_.AddObserver(this);
+}
+
+AutotestPrivateSetAssistantEnabledFunction::
+    ~AutotestPrivateSetAssistantEnabledFunction() {
+  assistant_state_.RemoveObserver(this);
+}
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetAssistantEnabledFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetAssistantEnabledFunction";
+
+  std::unique_ptr<api::autotest_private::SetAssistantEnabled::Params> params(
+      api::autotest_private::SetAssistantEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (arc::IsAssistantAllowedForProfile(profile) !=
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    return RespondNow(Error("Assistant is not available for the current user"));
+  }
+
+  profile->GetPrefs()->SetBoolean(arc::prefs::kVoiceInteractionEnabled,
+                                  params->enabled);
+  // |NOT_READY| means service not running
+  // |STOPPED| means service running but UI not shown
+  auto new_state = params->enabled
+                       ? ash::mojom::VoiceInteractionState::STOPPED
+                       : ash::mojom::VoiceInteractionState::NOT_READY;
+
+  if (assistant_state_.voice_interaction_state() == new_state)
+    return RespondNow(NoArguments());
+
+  // Assistant service has not responded yet, set up a delayed timer to wait for
+  // it and holder a reference to |this|. Also make sure we stop and respond
+  // when timeout.
+  expected_state_ = new_state;
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      base::BindOnce(&AutotestPrivateSetAssistantEnabledFunction::Timeout,
+                     this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetAssistantEnabledFunction::
+    OnVoiceInteractionStatusChanged(ash::mojom::VoiceInteractionState state) {
+  DCHECK(expected_state_);
+
+  // The service could go through |NOT_READY| then to |STOPPED| during enable
+  // flow if this API is called before the initial state is reported.
+  if (expected_state_ != state)
+    return;
+
+  Respond(NoArguments());
+  expected_state_.reset();
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
+  Respond(Error("Assistant service timed out"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

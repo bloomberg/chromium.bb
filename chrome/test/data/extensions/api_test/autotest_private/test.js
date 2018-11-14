@@ -206,5 +206,10 @@ chrome.test.runTests([
     chrome.autotestPrivate.getPrinterList(function(){
       chrome.test.succeed();
     });
-  }
+  },
+  function setAssistantEnabled() {
+    chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
+        chrome.test.callbackFail(
+            'Assistant is not available for the current user'));
+  },
 ]);
