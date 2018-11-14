@@ -195,15 +195,12 @@ void AwContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   std::string err;
   if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
     err = kThrottledErrorDescription;
   else
     err = net::ErrorToString(error.reason());
-  if (error_description)
-    *error_description = base::ASCIIToUTF16(err);
 
   if (!error_html)
     return;

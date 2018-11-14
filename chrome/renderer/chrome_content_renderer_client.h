@@ -132,15 +132,13 @@ class ChromeContentRendererClient
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
-                        std::string* error_html,
-                        base::string16* error_description) override;
+                        std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
       int http_status,
-      std::string* error_html,
-      base::string16* error_description) override;
+      std::string* error_html) override;
 
   void GetErrorDescription(const blink::WebURLRequest& failed_request,
                            const blink::WebURLError& error,
@@ -284,8 +282,7 @@ class ChromeContentRendererClient
   void PrepareErrorPageInternal(content::RenderFrame* render_frame,
                                 const blink::WebURLRequest& failed_request,
                                 const error_page::Error& error,
-                                std::string* error_html,
-                                base::string16* error_description);
+                                std::string* error_html);
 
   void GetErrorDescriptionInternal(const blink::WebURLRequest& failed_request,
                                    const error_page::Error& error,

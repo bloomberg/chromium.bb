@@ -1142,14 +1142,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::WebNavigationParams> navigation_params,
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
-  void LoadNavigationErrorPageForHttpStatusError(
-      const blink::WebURLRequest& failed_request,
-      const GURL& unreachable_url,
-      int http_status,
-      bool replace,
-      HistoryEntry* entry,
-      std::unique_ptr<blink::WebNavigationParams> navigation_params,
-      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageInternal(
       const std::string& error_html,
       const GURL& error_url,

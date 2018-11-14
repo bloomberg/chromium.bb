@@ -137,8 +137,7 @@ void ShellContentRendererClient::PrepareErrorPage(
     RenderFrame* render_frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   if (error_html && error_html->empty()) {
     *error_html =
         "<head><title>Error</title></head><body>Could not load the requested "
@@ -155,8 +154,7 @@ void ShellContentRendererClient::PrepareErrorPageForHttpStatusError(
     const blink::WebURLRequest& failed_request,
     const GURL& unreachable_url,
     int http_status,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   if (error_html) {
     *error_html =
         "<head><title>Error</title></head><body>Server returned HTTP status " +

@@ -1983,8 +1983,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLRequest& failed_request,
                           const blink::WebURLError& error,
-                          std::string* error_html,
-                          base::string16* error_description) override {
+                          std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
@@ -1993,8 +1992,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
         const blink::WebURLRequest& failed_request,
         const GURL& url,
         int http_status_code,
-        std::string* error_html,
-        base::string16* error_description) override {
+        std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
