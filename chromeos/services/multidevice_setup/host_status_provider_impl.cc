@@ -16,6 +16,14 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
+namespace {
+
+static void RecordMultiDeviceHostStatus(mojom::HostStatus host_status) {
+  UMA_HISTOGRAM_ENUMERATION("MultiDevice.Setup.HostStatus", host_status);
+}
+
+}  // namespace
+
 // static
 HostStatusProviderImpl::Factory*
     HostStatusProviderImpl::Factory::test_factory_ = nullptr;
@@ -64,8 +72,7 @@ HostStatusProviderImpl::HostStatusProviderImpl(
   device_sync_client_->AddObserver(this);
 
   CheckForUpdatedStatusAndNotifyIfChanged();
-  UMA_HISTOGRAM_ENUMERATION("MultiDevice.Setup.HostStatus",
-                            current_status_and_device_.host_status());
+  RecordMultiDeviceHostStatus(current_status_and_device_.host_status());
 }
 
 HostStatusProviderImpl::~HostStatusProviderImpl() {
@@ -115,6 +122,7 @@ void HostStatusProviderImpl::CheckForUpdatedStatusAndNotifyIfChanged() {
   current_status_and_device_ = current_status_and_device;
   NotifyHostStatusChange(current_status_and_device_.host_status(),
                          current_status_and_device_.host_device());
+  RecordMultiDeviceHostStatus(current_status_and_device_.host_status());
 }
 
 HostStatusProvider::HostStatusWithDevice
