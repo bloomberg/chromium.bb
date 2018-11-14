@@ -31,16 +31,6 @@ enum class RemoteSecuritySettingsState {
 // are available.
 void RecordAuthProximityRollingRssi(int rolling_rssi);
 
-// Records the difference between the transmit power and maximum transmit power,
-// upon a successful auth attempt. |transmit_power_delta| should be set to
-// |kUnknownProximityValue| if no Tx power readings are available.
-void RecordAuthProximityTransmitPowerDelta(int transmit_power_delta);
-
-// Records the time elapsed since the last zero RSSI value was read, upon a
-// successful auth attempt.
-void RecordAuthProximityTimeSinceLastZeroRssi(
-    base::TimeDelta time_since_last_zero_rssi);
-
 // Records the phone model used for a successful auth attempt. The model is
 // recorded as a 32-bit hash due to the limits of UMA. |device_model| should be
 // set to |kUnknownDeviceModel| if the device model could not be read.
