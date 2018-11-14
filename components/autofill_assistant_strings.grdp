@@ -17,7 +17,7 @@
       Confirm
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_TERMS" desc="The text for the terms and service acceptance checkbox. Sentence-cased." formatter_data="android_java">
-      I know the terms and conditions and accept them (leave unclicked to read the terms and conditions from the website).
+      I know the terms and conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="ORIGIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> (leave unchecked to read).
     </message>
   </if>
 </grit-part>
