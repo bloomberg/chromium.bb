@@ -216,6 +216,9 @@
         "load:search:baidu": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
+        "load:search:baidu:2018": {
+            "DEFAULT": "system_health_desktop_beec2d8329.wprgo"
+        },
         "load:search:ebay": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },

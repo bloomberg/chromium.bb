@@ -38,6 +38,13 @@ class LoadBaiduStory(_LoadingStory):
           story_tags.YEAR_2016]
 
 
+class LoadBaiduStory2018(_LoadingStory):
+  NAME = 'load:search:baidu:2018'
+  URL = 'https://www.baidu.com/s?word=google'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2018]
+
+
 class LoadYahooStory(_LoadingStory):
   NAME = 'load:search:yahoo'
   URL = 'https://search.yahoo.com/search;_ylt=?p=google'
