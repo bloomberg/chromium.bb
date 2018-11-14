@@ -54,12 +54,16 @@ class EVENTS_EXPORT GestureRecognizer {
   // |source_device_id|, within
   // GestureConfiguration::max_separation_for_gesture_touches_in_pixels of
   // |location|, or NULL if no such point exists.
-  virtual GestureConsumer* GetTargetForLocation(
-      const gfx::PointF& location, int source_device_id) = 0;
+  virtual GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
+                                                int source_device_id) = 0;
 
   // Cancels all touches except those targeted to |not_cancelled|. If
   // |not_cancelled| == nullptr, cancels all touches.
   virtual void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) = 0;
+
+  // Cancels all touches to the specified consumers.
+  virtual void CancelActiveTouchesOn(
+      const std::vector<GestureConsumer*>& consumers) = 0;
 
   // Transfer the gesture stream from the drag source (current_consumer) to the
   // consumer used for dragging (new_consumer). If |transfer_touches_behavior|
