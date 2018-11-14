@@ -427,17 +427,6 @@ function runAfterDoubleTapTimerFired(func) {
   setTimeout(func, doubleTapTimeoutMs);
 }
 
-function runAfterVolumeSliderShowed(func) {
-  // 200ms timer plus 100ms slack.
-  const volumeSliderTimeoutMs = 200 + 100;
-  setTimeout(func, volumeSliderTimeoutMs)
-}
-
-function hoverMuteButtonAndWaitForVolumeSliderTimeout(video, func) {
-  const muteBtn = muteButton(video);
-  hoverOverControl(muteBtn, runAfterVolumeSliderShowed(func));
-}
-
 function hasEnabledFullscreenButton(element) {
   var button = fullscreenButton(element);
   return !button.disabled && button.style.display != "none";
