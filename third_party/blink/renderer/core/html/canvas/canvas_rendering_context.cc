@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -48,16 +47,14 @@ CanvasRenderingContext::CanvasRenderingContext(
   // For wide gamut color spaces, user must explicitly request half float
   // storage. Otherwise, we fall back to sRGB in uint8. Invalid requests fall
   // back to sRGB in uint8 too.
-  if (SharedGpuContext::IsGpuCompositingEnabled()) {
-    if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
-      color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
-      if (creation_attributes_.color_space == kLinearRGBCanvasColorSpaceName)
-        color_params_.SetCanvasColorSpace(kLinearRGBCanvasColorSpace);
-      if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
-        color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
-      else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
-        color_params_.SetCanvasColorSpace(kP3CanvasColorSpace);
-    }
+  if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
+    color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
+    if (creation_attributes_.color_space == kLinearRGBCanvasColorSpaceName)
+      color_params_.SetCanvasColorSpace(kLinearRGBCanvasColorSpace);
+    if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
+      color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
+    else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
+      color_params_.SetCanvasColorSpace(kP3CanvasColorSpace);
   }
 
   if (!creation_attributes_.alpha)
