@@ -1352,6 +1352,7 @@ enum HistogramValue {
   TABS_GOFORWARD = 1289,
   TABS_GOBACK = 1290,
   BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS = 1291,
+  AUTOTESTPRIVATE_SETASSISTANTENABLED = 1292,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

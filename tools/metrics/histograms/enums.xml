@@ -17263,6 +17263,7 @@ Called by update_net_error_codes.py.-->
   <int value="1290" label="TABS_GOBACK"/>
   <int value="1291"
       label="BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS"/>
+  <int value="1292" label="AUTOTESTPRIVATE_SETASSISTANTENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">
