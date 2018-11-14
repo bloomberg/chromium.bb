@@ -1717,12 +1717,15 @@ bool TestRunner::DumpPixelsAsync(
   if (!layout_test_runtime_flags_.is_printing() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDisplayCompositorPixelDump)) {
-    // Because of the plumbing, we should still call the callback with an empty
-    // bitmap, but return true so that the browser also captures the pixels.
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(1, 1);
-    bitmap.eraseColor(0);
-    std::move(callback).Run(bitmap);
+    frame->View()->MainFrameWidget()->RequestPresentationCallbackForTesting(
+        base::BindOnce(
+            [](base::OnceCallback<void(const SkBitmap&)> callback) {
+              SkBitmap bitmap;
+              bitmap.allocN32Pixels(1, 1);
+              bitmap.eraseColor(0);
+              std::move(callback).Run(bitmap);
+            },
+            std::move(callback)));
     return true;
   }
 

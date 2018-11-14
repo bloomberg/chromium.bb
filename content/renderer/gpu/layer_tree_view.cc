@@ -603,6 +603,24 @@ void LayerTreeView::RequestDecode(const cc::PaintImage& image,
   }
 }
 
+void LayerTreeView::RequestPresentationCallback(base::OnceClosure callback) {
+  layer_tree_host_->RequestPresentationTimeForNextFrame(base::BindOnce(
+      [](base::OnceClosure callback,
+         const gfx::PresentationFeedback& feedback) {
+        std::move(callback).Run();
+      },
+      std::move(callback)));
+  SetNeedsForcedRedraw();
+  if (CompositeIsSynchronous()) {
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                       weak_factory_.GetWeakPtr(), /*raster=*/true, nullptr));
+  } else {
+    layer_tree_host_->SetNeedsCommit();
+  }
+}
+
 void LayerTreeView::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
   layer_tree_host_->SetOverscrollBehavior(behavior);
