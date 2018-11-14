@@ -234,6 +234,9 @@
         "load:search:google": {
             "DEFAULT": "system_health_desktop_022.wprgo"
         },
+        "load:search:google:2018": {
+            "DEFAULT": "system_health_desktop_b11350f30f.wprgo"
+        },
         "load:search:taobao": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
