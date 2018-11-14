@@ -555,7 +555,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
                           flags);
   }
 
-  int preview_circle_radius = GetPreviewCircleRadius();
+  const int preview_circle_radius = GetPreviewCircleRadius();
   if (!preview_circle_radius)
     return;
 
@@ -841,6 +841,7 @@ void AppListItemView::SetDragUIState() {
   SetUIState(UI_STATE_DRAGGING);
 }
 
+// static
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& icon_size) {
@@ -850,6 +851,7 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
   return rect;
 }
 
+// static
 gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& title_size) {
@@ -861,6 +863,7 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
   return rect;
 }
 
+// static
 gfx::Rect AppListItemView::GetProgressBarBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& progress_bar_size) {

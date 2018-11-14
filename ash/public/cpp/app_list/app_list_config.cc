@@ -69,7 +69,8 @@ AppListConfig::AppListConfig()
     grid_icon_dimension_ = 64;
     grid_icon_bottom_padding_ = 24;
     grid_title_top_padding_ = 82;
-    grid_title_width_ = 96;
+    grid_title_horizontal_padding_ = 0;
+    grid_title_width_ = grid_tile_width_;
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
     suggestion_chip_icon_dimension_ = 16;
