@@ -45,13 +45,16 @@ static const char* const kCallerScriptParameterName = "CALLER";
 void Controller::CreateForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,
-    std::unique_ptr<std::map<std::string, std::string>> parameters) {
+    std::unique_ptr<std::map<std::string, std::string>> parameters,
+    const std::string& locale,
+    const std::string& country_code) {
   // Get the key early since |client| will be invalidated when moved below.
   GURL server_url(client->GetServerUrl());
   DCHECK(server_url.is_valid());
+
   std::unique_ptr<Service> service = std::make_unique<Service>(
       client->GetApiKey(), server_url, web_contents->GetBrowserContext(),
-      client->GetAccessTokenFetcher());
+      client->GetAccessTokenFetcher(), locale, country_code);
   new Controller(web_contents, std::move(client),
                  WebController::CreateForWebContents(web_contents),
                  std::move(service), std::move(parameters));

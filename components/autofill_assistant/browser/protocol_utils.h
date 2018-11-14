@@ -25,7 +25,8 @@ class ProtocolUtils {
   // |url|.
   static std::string CreateGetScriptsRequest(
       const GURL& url,
-      const std::map<std::string, std::string>& parameters);
+      const std::map<std::string, std::string>& parameters,
+      const ClientContextProto& client_context);
 
   using Scripts = std::map<Script*, std::unique_ptr<Script>>;
   // Parse assistant scripts from the given |response|, which should not be an
@@ -44,12 +45,14 @@ class ProtocolUtils {
       const std::string& script_path,
       const GURL& url,
       const std::map<std::string, std::string>& parameters,
-      const std::string& server_payload);
+      const std::string& server_payload,
+      const ClientContextProto& client_context);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
       const std::string& previous_server_payload,
-      const std::vector<ProcessedActionProto>& processed_actions);
+      const std::vector<ProcessedActionProto>& processed_actions,
+      const ClientContextProto& client_context);
 
   // Parse actions from the given |response|, which can be an empty string.
   //

@@ -43,7 +43,9 @@ class Controller : public ScriptExecutorDelegate,
   static void CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<Client> client,
-      std::unique_ptr<std::map<std::string, std::string>> parameters);
+      std::unique_ptr<std::map<std::string, std::string>> parameters,
+      const std::string& locale,
+      const std::string& country_code);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;

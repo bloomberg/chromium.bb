@@ -33,7 +33,9 @@ class Service {
   Service(const std::string& api_key,
           const GURL& server_url,
           content::BrowserContext* context,
-          AccessTokenFetcher* token_fetcher);
+          AccessTokenFetcher* token_fetcher,
+          const std::string& locale,
+          const std::string& country_code);
   virtual ~Service();
 
   using ResponseCallback =
@@ -89,6 +91,11 @@ class Service {
   void FetchAccessToken();
   void OnFetchAccessToken(bool success, const std::string& access_token);
 
+  // Creates and fills a client context protobuf message.
+  static ClientContextProto CreateClientContext(
+      const std::string& locale,
+      const std::string& country_code);
+
   content::BrowserContext* context_;
   GURL script_server_url_;
   GURL script_action_server_url_;
@@ -111,6 +118,10 @@ class Service {
   // An OAuth 2 token. Empty if not fetched yet or if the token has been
   // invalidated.
   std::string access_token_;
+
+  // The client context is cached here to avoid having to recreate it for
+  // every message.
+  const ClientContextProto client_context_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

@@ -5,12 +5,15 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.accounts.Account;
+import android.content.Context;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -131,7 +134,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
         mUiControllerAndroid =
                 nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
-                        parameters.values().toArray(new String[parameters.size()]));
+                        parameters.values().toArray(new String[parameters.size()]),
+                        LocaleUtils.getDefaultLocaleString(), getCountryIso());
 
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.startOrSkipInitScreen());
 
@@ -631,9 +635,25 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         return null;
     }
 
+    /** Returns the country that the device is currently located in. This currently only works
+     * for devices with active SIM cards. For a more general solution, we should probably use
+     * the LocationManager together with the Geocoder.*/
+    private String getCountryIso() {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.TELEPHONY_SERVICE);
+
+        // According to API, location for CDMA networks is unreliable
+        if (telephonyManager != null
+                && telephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA)
+            return telephonyManager.getNetworkCountryIso();
+        else
+            return null;
+    }
+
     // native methods.
-    private native long nativeInit(
-            WebContents webContents, String[] parameterNames, String[] parameterValues);
+    private native long nativeInit(WebContents webContents, String[] parameterNames,
+            String[] parameterValues, String locale, String countryCode);
     private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeGiveUp(long nativeUiControllerAndroid);

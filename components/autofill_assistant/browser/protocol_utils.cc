@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
@@ -27,7 +26,6 @@
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/version_info/version_info.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
@@ -46,32 +44,18 @@ void AddScriptParametersToProto(
   }
 }
 
-// Fills the destination ClientContextProto fields.
-void FillClientContext(ClientContextProto* destination) {
-  destination->mutable_chrome()->set_chrome_version(
-      version_info::GetProductNameAndVersionForUserAgent());
-
-  base::FieldTrial::ActiveGroups active_groups;
-  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-  for (const auto& group : active_groups) {
-    FieldTrialProto* field_trial =
-        destination->mutable_chrome()->add_active_field_trials();
-    field_trial->set_trial_name(group.trial_name);
-    field_trial->set_group_name(group.group_name);
-  }
-}
-
 }  // namespace
 
 // static
 std::string ProtocolUtils::CreateGetScriptsRequest(
     const GURL& url,
-    const std::map<std::string, std::string>& parameters) {
+    const std::map<std::string, std::string>& parameters,
+    const ClientContextProto& client_context) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  FillClientContext(script_proto.mutable_client_context());
+  script_proto.mutable_client_context()->CopyFrom(client_context);
   AddScriptParametersToProto(parameters,
                              script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
@@ -123,7 +107,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path,
     const GURL& url,
     const std::map<std::string, std::string>& parameters,
-    const std::string& server_payload) {
+    const std::string& server_payload,
+    const ClientContextProto& client_context) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
       request_proto.mutable_initial_request();
@@ -134,7 +119,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->set_policy(PolicyType::SCRIPT);
   AddScriptParametersToProto(
       parameters, initial_request_proto->mutable_script_parameters());
-  FillClientContext(request_proto.mutable_client_context());
+  request_proto.mutable_client_context()->CopyFrom(client_context);
 
   if (!server_payload.empty()) {
     request_proto.set_server_payload(server_payload);
@@ -150,7 +135,8 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
 // static
 std::string ProtocolUtils::CreateNextScriptActionsRequest(
     const std::string& previous_server_payload,
-    const std::vector<ProcessedActionProto>& processed_actions) {
+    const std::vector<ProcessedActionProto>& processed_actions,
+    const ClientContextProto& client_context) {
   ScriptActionRequestProto request_proto;
   request_proto.set_server_payload(previous_server_payload);
   NextScriptActionsRequestProto* next_request =
@@ -158,7 +144,7 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
-  FillClientContext(request_proto.mutable_client_context());
+  request_proto.mutable_client_context()->CopyFrom(client_context);
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
   DCHECK(success);

@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
@@ -56,7 +58,9 @@ namespace autofill_assistant {
 Service::Service(const std::string& api_key,
                  const GURL& server_url,
                  content::BrowserContext* context,
-                 AccessTokenFetcher* access_token_fetcher)
+                 AccessTokenFetcher* access_token_fetcher,
+                 const std::string& locale,
+                 const std::string& country_code)
     : context_(context),
       api_key_(api_key),
       access_token_fetcher_(access_token_fetcher),
@@ -64,6 +68,7 @@ Service::Service(const std::string& api_key,
       auth_enabled_("false" !=
                     base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                         switches::kAutofillAssistantAuth)),
+      client_context_(CreateClientContext(locale, country_code)),
       weak_ptr_factory_(this) {
   DCHECK(server_url.is_valid());
 
@@ -84,9 +89,10 @@ void Service::GetScriptsForUrl(
     ResponseCallback callback) {
   DCHECK(url.is_valid());
 
-  SendRequest(AddLoader(script_server_url_,
-                        ProtocolUtils::CreateGetScriptsRequest(url, parameters),
-                        std::move(callback)));
+  SendRequest(AddLoader(
+      script_server_url_,
+      ProtocolUtils::CreateGetScriptsRequest(url, parameters, client_context_),
+      std::move(callback)));
 }
 
 void Service::GetActions(const std::string& script_path,
@@ -96,10 +102,11 @@ void Service::GetActions(const std::string& script_path,
                          ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
-  SendRequest(AddLoader(script_action_server_url_,
-                        ProtocolUtils::CreateInitialScriptActionsRequest(
-                            script_path, url, parameters, server_payload),
-                        std::move(callback)));
+  SendRequest(AddLoader(
+      script_action_server_url_,
+      ProtocolUtils::CreateInitialScriptActionsRequest(
+          script_path, url, parameters, server_payload, client_context_),
+      std::move(callback)));
 }
 
 void Service::GetNextActions(
@@ -108,10 +115,11 @@ void Service::GetNextActions(
     ResponseCallback callback) {
   DCHECK(!previous_server_payload.empty());
 
-  SendRequest(AddLoader(script_action_server_url_,
-                        ProtocolUtils::CreateNextScriptActionsRequest(
-                            previous_server_payload, processed_actions),
-                        std::move(callback)));
+  SendRequest(AddLoader(
+      script_action_server_url_,
+      ProtocolUtils::CreateNextScriptActionsRequest(
+          previous_server_payload, processed_actions, client_context_),
+      std::move(callback)));
 }
 
 void Service::SendRequest(Loader* loader) {
@@ -244,6 +252,27 @@ void Service::OnFetchAccessToken(bool success,
   for (const auto& entry : loaders_) {
     StartLoader(entry.first);
   }
+}
+
+// static
+ClientContextProto Service::CreateClientContext(
+    const std::string& locale,
+    const std::string& country_code) {
+  ClientContextProto context;
+  context.mutable_chrome()->set_chrome_version(
+      version_info::GetProductNameAndVersionForUserAgent());
+  context.set_locale(locale);
+  context.set_country(country_code);
+
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  for (const auto& group : active_groups) {
+    FieldTrialProto* field_trial =
+        context.mutable_chrome()->add_active_field_trials();
+    field_trial->set_trial_name(group.trial_name);
+    field_trial->set_group_name(group.group_name);
+  }
+  return context;
 }
 
 }  // namespace autofill_assistant
