@@ -84,11 +84,6 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   base::Time last_scan_batch_start_timestamp_;
   base::Time last_scan_end_timestamp_;
-
-  // TODO(crbug.com/904609): Read ignore_wired_networks_ from flag defaulting to
-  // false. Scan for tethering hosts even if there is a wired connection to
-  // allow end-to-end tests to be deployed and run without unplugging ethernet.
-  bool ignore_wired_networks_;
   bool is_screen_locked_;
 
   base::WeakPtrFactory<HostScanSchedulerImpl> weak_ptr_factory_;

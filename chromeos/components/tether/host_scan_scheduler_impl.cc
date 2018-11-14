@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -54,7 +55,6 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
       host_scan_batch_timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ignore_wired_networks_(false),
       is_screen_locked_(session_manager_->IsScreenLocked()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
@@ -84,8 +84,9 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 
 void HostScanSchedulerImpl::AttemptScanIfOffline() {
   const chromeos::NetworkTypePattern network_type_pattern =
-      ignore_wired_networks_ ? chromeos::NetworkTypePattern::Wireless()
-                             : chromeos::NetworkTypePattern::Default();
+      chromeos::switches::ShouldTetherHostScansIgnoreWiredConnections()
+          ? chromeos::NetworkTypePattern::Wireless()
+          : chromeos::NetworkTypePattern::Default();
   const chromeos::NetworkState* first_network =
       network_state_handler_->FirstNetworkByType(network_type_pattern);
   if (IsOnlineOrHasActiveTetherConnection(first_network)) {
