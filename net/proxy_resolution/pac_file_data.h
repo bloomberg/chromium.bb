@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PAC_FILE_DATA_H_
-#define NET_PROXY_PAC_FILE_DATA_H_
+#ifndef NET_PROXY_RESOLUTION_PAC_FILE_DATA_H_
+#define NET_PROXY_RESOLUTION_PAC_FILE_DATA_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -64,4 +64,4 @@ class NET_EXPORT_PRIVATE PacFileData
 
 }  // namespace net
 
-#endif  // NET_PROXY_PAC_FILE_DATA_H_
+#endif  // NET_PROXY_RESOLUTION_PAC_FILE_DATA_H_
