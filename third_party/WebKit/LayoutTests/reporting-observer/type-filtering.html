@@ -15,7 +15,7 @@ async_test(function(test) {
       // |types| option.
       assert_equals(reports.length, 1);
       assert_equals(reports[0].type, "deprecation");
-      assert_equals(reports[0].body.id, "PrefixedWindowURL");
+      assert_equals(reports[0].body.id, "PrefixedRequestAnimationFrame");
     });
 
     test.done();
@@ -23,7 +23,8 @@ async_test(function(test) {
   observer1.observe();
 
   // Generate a deprecation report and an intervention report.
-  window.webkitURL;  // id = "PrefixedWindowURL"
+  // id = "PrefixedRequestAnimationFrame"
+  webkitRequestAnimationFrame(() => {});
   causeIntervention();
 
   observer1.disconnect();
