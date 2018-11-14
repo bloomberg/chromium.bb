@@ -2826,29 +2826,15 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   std::string error_html;
   if (error_page_content.has_value()) {
     error_html = error_page_content.value();
+    // We don't need the actual error page content, but still call this
+    // for any possible side effects.
     GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, nullptr, nullptr);
+                                                     error, nullptr);
   } else {
-    GetContentClient()->renderer()->PrepareErrorPage(
-        this, failed_request, error, &error_html, nullptr);
+    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
+                                                     error, &error_html);
   }
   LoadNavigationErrorPageInternal(error_html, error.url(), replace, entry,
-                                  std::move(navigation_params),
-                                  std::move(navigation_data), &failed_request);
-}
-
-void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
-    const WebURLRequest& failed_request,
-    const GURL& unreachable_url,
-    int http_status,
-    bool replace,
-    HistoryEntry* entry,
-    std::unique_ptr<blink::WebNavigationParams> navigation_params,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
-  std::string error_html;
-  GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-      this, failed_request, unreachable_url, http_status, &error_html, nullptr);
-  LoadNavigationErrorPageInternal(error_html, unreachable_url, replace, entry,
                                   std::move(navigation_params),
                                   std::move(navigation_data), &failed_request);
 }
@@ -3005,8 +2991,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 
   std::string error_html;
   GetContentClient()->renderer()->PrepareErrorPage(
-      this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html,
-      nullptr);
+      this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html);
 
   LoadNavigationErrorPageInternal(
       error_html, error.url(), true /* replace */, nullptr /* history_entry */,
@@ -4574,10 +4559,15 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     navigation_params->service_worker_network_provider =
         BuildServiceWorkerNetworkProviderForNavigation(
             nullptr /* request_params */, nullptr /* controller_info */);
-    LoadNavigationErrorPageForHttpStatusError(
-        frame_->GetDocumentLoader()->GetRequest(), frame_->GetDocument().Url(),
-        http_status_code, true /* replace */, nullptr /* entry */,
-        std::move(navigation_params), std::move(document_state));
+    WebURLRequest failed_request = frame_->GetDocumentLoader()->GetRequest();
+    WebURL unreachable_url = frame_->GetDocument().Url();
+    std::string error_html;
+    GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
+        this, failed_request, unreachable_url, http_status_code, &error_html);
+    LoadNavigationErrorPageInternal(error_html, unreachable_url,
+                                    true /* replace */, nullptr /* entry */,
+                                    std::move(navigation_params),
+                                    std::move(document_state), &failed_request);
   }
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
