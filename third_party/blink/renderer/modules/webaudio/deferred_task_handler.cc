@@ -167,6 +167,7 @@ void DeferredTaskHandler::ProcessAutomaticPullNodes(size_t frames_to_process) {
 
 void DeferredTaskHandler::AddTailProcessingHandler(
     scoped_refptr<AudioHandler> handler) {
+  DCHECK(accepts_tail_processing_);
   AssertGraphOwner();
 
   if (!tail_processing_handlers_.Contains(handler)) {
