@@ -1403,8 +1403,18 @@ void LayoutGrid::PopulateGridPositionsForDirection(
       direction == kForColumns ? offset_between_columns_ : offset_between_rows_;
   auto& positions = is_row_axis ? column_positions_ : row_positions_;
   positions.resize(number_of_lines);
+
   auto border_and_padding =
       is_row_axis ? BorderAndPaddingLogicalLeft() : BorderAndPaddingBefore();
+  if (is_row_axis) {
+    if (StyleRef().IsHorizontalWritingMode() &&
+        !StyleRef().IsLeftToRightDirection())
+      border_and_padding += ScrollbarLogicalWidth();
+  } else {
+    if (StyleRef().GetWritingMode() == WritingMode::kVerticalRl)
+      border_and_padding += ScrollbarLogicalHeight();
+  }
+
   positions[0] = border_and_padding + offset.position_offset;
   if (number_of_lines > 1) {
     // If we have collapsed tracks we just ignore gaps here and add them later
