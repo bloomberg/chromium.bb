@@ -22,6 +22,7 @@
 #include "chrome/common/content_restriction.h"
 #include "net/base/escape.h"
 #include "pdf/pdf.h"
+#include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -49,9 +50,6 @@
 namespace chrome_pdf {
 
 namespace {
-
-const base::Feature kSaveEditedPDFFormExperiment{
-    "SaveEditedPDFForm", base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr char kChromePrint[] = "chrome://print/";
 constexpr char kChromeExtension[] =
@@ -1501,7 +1499,7 @@ void OutOfProcessInstance::GetDocumentPassword(
 void OutOfProcessInstance::Save(const std::string& token) {
   engine_->KillFormFocus();
 
-  if (!base::FeatureList::IsEnabled(kSaveEditedPDFFormExperiment) ||
+  if (!base::FeatureList::IsEnabled(features::kSaveEditedPDFForm) ||
       !edit_mode_) {
     ConsumeSaveToken(token);
     pp::PDF::SaveAs(this);
