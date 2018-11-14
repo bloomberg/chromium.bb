@@ -24,6 +24,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -157,10 +158,19 @@ void RewritePointersToStackMemory(uintptr_t top,
                                   uintptr_t bottom,
                                   CONTEXT* context,
                                   void* stack_copy) {
-#if defined(_WIN64)
+#if defined(ARCH_CPU_64_BITS)
   DWORD64 CONTEXT::*const nonvolatile_registers[] = {
+#if defined(ARCH_CPU_X86_64)
       &CONTEXT::R12, &CONTEXT::R13, &CONTEXT::R14, &CONTEXT::R15, &CONTEXT::Rdi,
-      &CONTEXT::Rsi, &CONTEXT::Rbx, &CONTEXT::Rbp, &CONTEXT::Rsp};
+      &CONTEXT::Rsi, &CONTEXT::Rbx, &CONTEXT::Rbp, &CONTEXT::Rsp
+#elif defined(ARCH_CPU_ARM64)
+      &CONTEXT::X19, &CONTEXT::X20, &CONTEXT::X21, &CONTEXT::X22, &CONTEXT::X23,
+      &CONTEXT::X24, &CONTEXT::X25, &CONTEXT::X26, &CONTEXT::X27, &CONTEXT::X28,
+      &CONTEXT::Fp, &CONTEXT::Lr
+#else
+#error Unsupported Windows 64-bit Arch
+#endif
+  };
 
   // Rewrite pointers in the context.
   for (size_t i = 0; i < size(nonvolatile_registers); ++i) {
@@ -213,9 +223,9 @@ NativeStackSamplerError RecordStack(CONTEXT* context,
   stack->reserve(128);
 
   Win32StackFrameUnwinder frame_unwinder;
-  while (context->Rip) {
+  while (ContextPC(context)) {
     const void* instruction_pointer =
-        reinterpret_cast<const void*>(context->Rip);
+        reinterpret_cast<const void*>(ContextPC(context));
     ScopedModuleHandle module;
     if (!frame_unwinder.TryUnwind(context, &module))
       return NATIVE_STACK_SAMPLER_TRY_UNWIND_FAILED;
@@ -355,8 +365,10 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
       if (!::GetThreadContext(thread_handle, &thread_context))
         return NATIVE_STACK_SAMPLER_GET_THREAD_CONTEXT_FAILED;
 
-#if defined(_WIN64)
+#if defined(ARCH_CPU_X86_64)
       bottom = thread_context.Rsp;
+#elif defined(ARCH_CPU_ARM64)
+      bottom = thread_context.Sp;
 #else
       bottom = thread_context.Esp;
 #endif
