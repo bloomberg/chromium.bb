@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <utility>
-#include <vector>
 
 #include "chrome/services/app_service/app_registry/app_registry.h"
 
@@ -45,29 +44,6 @@ AppRegistry::~AppRegistry() = default;
 
 void AppRegistry::BindRequest(apps::mojom::AppRegistryRequest request) {
   bindings_.AddBinding(this, std::move(request));
-}
-
-void AppRegistry::GetApps(GetAppsCallback callback) {
-  std::vector<apps::mojom::AppInfoPtr> app_infos;
-  const base::DictionaryValue* apps =
-      pref_service_->GetDictionary(kAppRegistryPrefNameSynced);
-
-  for (const auto& item : apps->DictItems()) {
-    auto state = apps::mojom::AppPreferred::kUnknown;
-    const base::Value* value = item.second.FindPathOfType(
-        {kAppRegistryPrefNamePrefs, kAppRegistryPrefKeyPreferred},
-        base::Value::Type::INTEGER);
-    if (value)
-      state = static_cast<apps::mojom::AppPreferred>(value->GetInt());
-
-    auto app_info = apps::mojom::AppInfo::New();
-    app_info->id = item.first;
-    app_info->type = apps::mojom::AppType::kUnknown;
-    app_info->preferred = state;
-    app_infos.push_back(std::move(app_info));
-  }
-
-  std::move(callback).Run(std::move(app_infos));
 }
 
 apps::mojom::AppPreferred AppRegistry::GetIfAppPreferredForTesting(

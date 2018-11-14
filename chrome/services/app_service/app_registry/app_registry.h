@@ -32,7 +32,6 @@ class AppRegistry : public apps::mojom::AppRegistry {
       const std::string& app_id) const;
 
   // mojom::apps::AppRegistry overrides.
-  void GetApps(GetAppsCallback callback) override;
   void SetAppPreferred(const std::string& app_id,
                        apps::mojom::AppPreferred state) override;
 
