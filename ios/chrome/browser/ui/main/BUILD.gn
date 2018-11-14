@@ -5,6 +5,8 @@
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "browser_coordinator.h",
+    "browser_coordinator.mm",
     "browser_view_information.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
@@ -25,6 +27,7 @@ source_set("main") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/public/provider/chrome/browser",
   ]
   public_deps = [

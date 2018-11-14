@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -31,6 +32,12 @@
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   BOOL _isShutdown;
 }
+
+// Coordinator for non-incognito BVC.
+@property(nonatomic, strong) BrowserCoordinator* mainCoordinator;
+
+// Coordinator for incognito BVC.
+@property(nonatomic, strong) BrowserCoordinator* incognitoCoordinator;
 
 // Responsible for maintaining all state related to sharing to other devices.
 // Redeclared readwrite from the readonly declaration in the Testing interface.
@@ -48,22 +55,22 @@
 // result.
 - (TabModel*)buildOtrTabModel:(BOOL)empty;
 
-// Creates the correct BrowserViewController for the corresponding browser state
+// Creates the correct BrowserCoordinator for the corresponding browser state
 // and tab model.
-- (BrowserViewController*)bvcForBrowserState:
-                              (ios::ChromeBrowserState*)browserState
-                                    tabModel:(TabModel*)tabModel;
+- (BrowserCoordinator*)coordinatorForBrowserState:
+                           (ios::ChromeBrowserState*)browserState
+                                         tabModel:(TabModel*)tabModel;
 @end
 
 @implementation BrowserViewWrangler
 
 // Properties defined in the BrowserViewInformation protocol.
-@synthesize mainBVC = _mainBVC;
 @synthesize mainTabModel = _mainTabModel;
-@synthesize otrBVC = _otrBVC;
 @synthesize otrTabModel = _otrTabModel;
 @synthesize currentBVC = _currentBVC;
 // Private properies.
+@synthesize mainCoordinator = _mainCoordinator;
+@synthesize incognitoCoordinator = _incognitoCoordinator;
 @synthesize deviceSharingManager = _deviceSharingManager;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
@@ -85,27 +92,16 @@
 #pragma mark - BrowserViewInformation property implementations
 
 - (BrowserViewController*)mainBVC {
-  if (!_mainBVC) {
+  if (!self.mainCoordinator.viewController) {
     // |_browserState| should always be set before trying to create
-    // |_mainBVC|.
+    // |mainBVC|.
     DCHECK(_browserState);
-    self.mainBVC =
-        [self bvcForBrowserState:_browserState tabModel:self.mainTabModel];
-    DCHECK(_mainBVC);
+    self.mainCoordinator = [self coordinatorForBrowserState:_browserState
+                                                   tabModel:self.mainTabModel];
+    [self.mainCoordinator start];
+    DCHECK(self.mainCoordinator.viewController);
   }
-  return _mainBVC;
-}
-
-- (void)setMainBVC:(BrowserViewController*)mainBVC {
-  if (_mainBVC == mainBVC)
-    return;
-
-  if (_mainBVC) {
-    [_mainBVC browserStateDestroyed];
-    [_mainBVC shutdown];
-  }
-
-  _mainBVC = mainBVC;
+  return self.mainCoordinator.viewController;
 }
 
 - (TabModel*)mainTabModel {
@@ -137,30 +133,20 @@
 }
 
 - (BrowserViewController*)otrBVC {
-  if (!_otrBVC) {
+  if (!self.incognitoCoordinator.viewController) {
     // |_browserState| should always be set before trying to create
-    // |_otrBVC|.
+    // |otrBVC|.
     DCHECK(_browserState);
     ios::ChromeBrowserState* otrBrowserState =
         _browserState->GetOffTheRecordChromeBrowserState();
     DCHECK(otrBrowserState);
-    self.otrBVC =
-        [self bvcForBrowserState:otrBrowserState tabModel:self.otrTabModel];
-    DCHECK(_otrBVC);
+    self.incognitoCoordinator =
+        [self coordinatorForBrowserState:otrBrowserState
+                                tabModel:self.otrTabModel];
+    [self.incognitoCoordinator start];
+    DCHECK(self.incognitoCoordinator.viewController);
   }
-  return _otrBVC;
-}
-
-- (void)setOtrBVC:(BrowserViewController*)otrBVC {
-  if (_otrBVC == otrBVC)
-    return;
-
-  if (_otrBVC) {
-    [_otrBVC browserStateDestroyed];
-    [_otrBVC shutdown];
-  }
-
-  _otrBVC = otrBVC;
+  return self.incognitoCoordinator.viewController;
 }
 
 - (TabModel*)otrTabModel {
@@ -190,7 +176,7 @@
       storageSwitcher:(id<BrowserStateStorageSwitching>)storageSwitcher {
   DCHECK(bvc != nil);
   // |bvc| should be one of the BrowserViewControllers this class already owns.
-  DCHECK(_mainBVC == bvc || _otrBVC == bvc);
+  DCHECK(self.mainBVC == bvc || self.otrBVC == bvc);
   if (self.currentBVC == bvc) {
     return;
   }
@@ -271,11 +257,13 @@
   breakpad::StopMonitoringTabStateForTabModel(self.otrTabModel);
 
   // At this stage, a new OTR BVC shouldn't be lazily constructed by calling the
-  // .otrBVC property getter. Instead, the ivar is accessed directly through the
-  // following code.
-  BOOL otrBVCIsCurrent = self.currentBVC == _otrBVC;
+  // .otrBVC property getter.
+  BOOL otrBVCIsCurrent =
+      self.currentBVC == self.incognitoCoordinator.viewController;
   @autoreleasepool {
-    self.otrBVC = nil;
+    [self.incognitoCoordinator stop];
+    self.incognitoCoordinator = nil;
+
     // There's no guarantee the tab model was ever added to the BVC (or even
     // that the BVC was created), so ensure the tab model gets notified.
     self.otrTabModel = nil;
@@ -327,8 +315,10 @@
   [_mainTabModel browserStateDestroyed];
   [_otrTabModel browserStateDestroyed];
 
-  self.mainBVC = nil;
-  self.otrBVC = nil;
+  [self.mainCoordinator stop];
+  self.mainCoordinator = nil;
+  [self.incognitoCoordinator stop];
+  self.incognitoCoordinator = nil;
 
   _browserState = nullptr;
 }
@@ -374,18 +364,15 @@
   return tabModel;
 }
 
-- (BrowserViewController*)bvcForBrowserState:
-                              (ios::ChromeBrowserState*)browserState
-                                    tabModel:(TabModel*)tabModel {
-  BrowserViewControllerDependencyFactory* factory =
-      [[BrowserViewControllerDependencyFactory alloc]
-          initWithBrowserState:browserState
-                  webStateList:[tabModel webStateList]];
-  return [[BrowserViewController alloc]
-                initWithTabModel:tabModel
-                    browserState:browserState
-               dependencyFactory:factory
-      applicationCommandEndpoint:_applicationCommandEndpoint];
+- (BrowserCoordinator*)coordinatorForBrowserState:
+                           (ios::ChromeBrowserState*)browserState
+                                         tabModel:(TabModel*)tabModel {
+  BrowserCoordinator* coordinator =
+      [[BrowserCoordinator alloc] initWithBaseViewController:nil
+                                                browserState:browserState];
+  coordinator.tabModel = tabModel;
+  coordinator.applicationCommandHandler = _applicationCommandEndpoint;
+  return coordinator;
 }
 
 @end
