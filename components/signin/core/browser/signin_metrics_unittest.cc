@@ -100,8 +100,6 @@ class SigninMetricsTest : public ::testing::Test {
         return "ReSigninInfobar";
       case AccessPoint::ACCESS_POINT_TAB_SWITCHER:
         return "TabSwitcher";
-      case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
-        return "ForceSigninWarning";
       case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
         return "SaveCardBubble";
       case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:

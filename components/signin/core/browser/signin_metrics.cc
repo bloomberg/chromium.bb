@@ -106,10 +106,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
       break;
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromForceSigninWarning"));
-      break;
     case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromSaveCardBubble"));
@@ -189,7 +185,6 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       NOTREACHED() << "Signin_SigninWithDefault_From* user actions"
                    << " are not recorded for access_point "
@@ -263,7 +258,6 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
                    << " are not recorded for access point "
@@ -337,7 +331,6 @@ void RecordSigninNewAccountPreDiceUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountPreDice_From*| user actions should not
@@ -422,7 +415,6 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountNoExistingAccount_From*| user actions should
@@ -503,7 +495,6 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountExistingAccount_From*| user actions should not
@@ -956,7 +947,6 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       break;
     case AccessPoint::ACCESS_POINT_CONTENT_AREA:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
@@ -1088,7 +1078,6 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
                    << " are not recorded for access point "

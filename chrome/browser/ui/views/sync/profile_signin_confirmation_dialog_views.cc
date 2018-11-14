@@ -152,8 +152,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
     return;
 
   const SkColor kPromptBarBackgroundColor =
-      ui::GetSigninConfirmationPromptBarColor(
-          GetNativeTheme(), ui::kSigninConfirmationPromptBarBackgroundAlpha);
+      ui::GetSigninConfirmationPromptBarColor(GetNativeTheme(), 0x0A);
 
   // Create business icon.
   int business_icon_size = 20;
@@ -183,8 +182,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   views::View* prompt_bar = new views::View;
   prompt_bar->SetBorder(views::CreateSolidSidedBorder(
       1, 0, 1, 0,
-      ui::GetSigninConfirmationPromptBarColor(
-          GetNativeTheme(), ui::kSigninConfirmationPromptBarBorderAlpha)));
+      ui::GetSigninConfirmationPromptBarColor(GetNativeTheme(), 0x1F)));
   prompt_bar->SetBackground(
       views::CreateSolidBackground(kPromptBarBackgroundColor));
 
