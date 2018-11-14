@@ -394,9 +394,14 @@ TEST_F(SkippedFrameTrackerTest, NoSkips_ActiveIdleActive_FramePulledIsPush) {
   EXPECT_FALSE(tracker_.IsActive());
 }
 
+// Simulate that SetNeedsRedraw is called, then the client realized that it
+// doesn't need a new BeginFrame.
 TEST_F(SkippedFrameTrackerTest, NoFrameProduced) {
   EXPECT_TRUE(WillProduceFrame());
   EXPECT_TRUE(WillNotProduceFrame());
+
+  // Since no BeginFrame is needed, number of frames produced and the number
+  // of skipped frames should all be 0.
   EXPECT_EQ(0, client_.amount_produced_);
   EXPECT_EQ(0, client_.amount_skipped_);
 }
