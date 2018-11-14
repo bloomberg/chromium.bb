@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -163,6 +164,17 @@ const GURL& WebController::GetUrl() {
 void WebController::LoadURL(const GURL& url) {
   web_contents_->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(url));
+}
+
+void WebController::ClickOrTapElement(const std::vector<std::string>& selectors,
+                                      base::OnceCallback<void(bool)> callback) {
+#if defined(OS_ANDROID)
+  TapElement(selectors, std::move(callback));
+#else
+  // TODO(crbug.com/806868): Remove 'ClickElement' since this feature is only
+  // available on Android.
+  ClickElement(selectors, std::move(callback));
+#endif
 }
 
 void WebController::ClickElement(const std::vector<std::string>& selectors,
@@ -960,6 +972,14 @@ void WebController::OnClearFieldForDispatchKeyEvent(
     return;
   }
 
+  // TODO(crbug.com/806868): Substitute mouse click with touch tap.
+  //
+  // Note that 'KeyDown' will not be handled by the element immediately after
+  // touch tap. Add ~1 second delay before 'DispatchKeyDownEvent' in
+  // 'OnClickOrTapElementForDispatchKeyEvent' solved the problem, needs more
+  // investigation for this timing issue. One possible reason is that events
+  // from different devices are not guarranteed to be handled in order (needs a
+  // way to make sure previous events have been handled).
   ClickElement(selectors,
                base::BindOnce(&WebController::OnClickElementForDispatchKeyEvent,
                               weak_ptr_factory_.GetWeakPtr(), value,

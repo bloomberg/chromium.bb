@@ -38,7 +38,7 @@ void ClickAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
-  delegate->ClickElement(
+  delegate->ClickOrTapElement(
       ExtractVector(proto_.click().element_to_click().selectors()),
       base::BindOnce(&::autofill_assistant::ClickAction::OnClick,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

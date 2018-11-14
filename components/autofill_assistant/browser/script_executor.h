@@ -75,8 +75,8 @@ class ScriptExecutor : public ActionDelegate {
   void WaitForElement(const std::vector<std::string>& selectors,
                       base::OnceCallback<void(bool)> callback) override;
   void ShowStatusMessage(const std::string& message) override;
-  void ClickElement(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(bool)> callback) override;
+  void ClickOrTapElement(const std::vector<std::string>& selectors,
+                         base::OnceCallback<void(bool)> callback) override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,

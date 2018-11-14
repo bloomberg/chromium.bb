@@ -13,7 +13,8 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
-// An action to perform a mouse left button click on a given element on Web.
+// An action to perform a mouse left button click on a given element on Web,
+// which is implemented as a touch tap on Mobile.
 class ClickAction : public Action {
  public:
   explicit ClickAction(const ActionProto& proto);

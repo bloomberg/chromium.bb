@@ -63,18 +63,12 @@ class WebController {
   // been loaded.
   virtual void LoadURL(const GURL& url);
 
-  // Perform a mouse left button click on the element given by |selectors| and
-  // return the result through callback.
+  // Perform a mouse left button click or a touch tap on the element given by
+  // |selectors| and return the result through callback.
   // CSS selectors in |selectors| are ordered from top frame to the frame
   // contains the element and the element.
-  virtual void ClickElement(const std::vector<std::string>& selectors,
-                            base::OnceCallback<void(bool)> callback);
-
-  // Perform a touch tap on the element given by |selectors| and return the
-  // result through callback. CSS selectors in |selectors| are ordered from top
-  // frame to the frame contains the element and the element.
-  virtual void TapElement(const std::vector<std::string>& selectors,
-                          base::OnceCallback<void(bool)> callback);
+  virtual void ClickOrTapElement(const std::vector<std::string>& selectors,
+                                 base::OnceCallback<void(bool)> callback);
 
   // Fill the address form given by |selectors| with the given address
   // |profile|.
@@ -164,6 +158,19 @@ class WebController {
 
  private:
   friend class WebControllerBrowserTest;
+
+  // Perform a mouse left button click on the element given by |selectors| and
+  // return the result through callback.
+  // CSS selectors in |selectors| are ordered from top frame to the frame
+  // contains the element and the element.
+  void ClickElement(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback);
+
+  // Perform a touch tap on the element given by |selectors| and return the
+  // result through callback. CSS selectors in |selectors| are ordered from top
+  // frame to the frame contains the element and the element.
+  void TapElement(const std::vector<std::string>& selectors,
+                  base::OnceCallback<void(bool)> callback);
 
   struct FindElementResult {
     FindElementResult() = default;
