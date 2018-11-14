@@ -36,7 +36,7 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
   ReferrerPolicy GetReferrerPolicy() const override;
   const String GetOutgoingReferrer() const override;
 
-  HttpsState GetHttpsState() const;
+  HttpsState GetHttpsState() const override;
 
   void Trace(Visitor* visitor) override;
 

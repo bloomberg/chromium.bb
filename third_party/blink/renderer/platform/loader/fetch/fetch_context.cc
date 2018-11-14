@@ -48,7 +48,8 @@ class NullFetchContext final : public FetchContext {
                 KURL(),
                 nullptr /* security_origin */,
                 kReferrerPolicyDefault,
-                String())) {}
+                String(),
+                HttpsState::kNone)) {}
 
   const FetchClientSettingsObject* GetFetchClientSettingsObject()
       const override {

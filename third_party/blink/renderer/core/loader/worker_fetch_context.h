@@ -11,7 +11,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -35,7 +34,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
-  const FetchClientSettingsObjectImpl* GetFetchClientSettingsObject()
+  const FetchClientSettingsObject* GetFetchClientSettingsObject()
       const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
@@ -138,7 +137,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   const scoped_refptr<WebWorkerFetchContext> web_context_;
   Member<SubresourceFilter> subresource_filter_;
 
-  const Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
+  const Member<FetchClientSettingsObject> fetch_client_settings_object_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally

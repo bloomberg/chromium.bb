@@ -204,7 +204,8 @@ String ExecutionContext::OutgoingReferrer() const {
 FetchClientSettingsObjectSnapshot*
 ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
   return new FetchClientSettingsObjectSnapshot(
-      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer());
+      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer(),
+      GetHttpsState());
 }
 
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,

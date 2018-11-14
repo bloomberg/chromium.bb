@@ -31,16 +31,19 @@ struct CrossThreadFetchClientSettingsObjectData {
       KURL base_url,
       scoped_refptr<const SecurityOrigin> security_origin,
       ReferrerPolicy referrer_policy,
-      String outgoing_referrer)
+      String outgoing_referrer,
+      HttpsState https_state)
       : base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
         referrer_policy(referrer_policy),
-        outgoing_referrer(std::move(outgoing_referrer)) {}
+        outgoing_referrer(std::move(outgoing_referrer)),
+        https_state(https_state) {}
 
-  KURL base_url;
-  scoped_refptr<const SecurityOrigin> security_origin;
-  ReferrerPolicy referrer_policy;
-  String outgoing_referrer;
+  const KURL base_url;
+  const scoped_refptr<const SecurityOrigin> security_origin;
+  const ReferrerPolicy referrer_policy;
+  const String outgoing_referrer;
+  const HttpsState https_state;
 };
 
 // This takes a partial snapshot of the execution context's states so that an
@@ -62,7 +65,8 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       const KURL& base_url,
       const scoped_refptr<const SecurityOrigin> security_origin,
       ReferrerPolicy referrer_policy,
-      const String& outgoing_referrer);
+      const String& outgoing_referrer,
+      HttpsState https_state);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
@@ -74,12 +78,13 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const String GetOutgoingReferrer() const override {
     return outgoing_referrer_;
   }
+  HttpsState GetHttpsState() const override { return https_state_; }
 
   // Gets a copy of the data suitable for passing to another thread.
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData> CopyData() const {
     return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
         base_url_.Copy(), security_origin_->IsolatedCopy(), referrer_policy_,
-        outgoing_referrer_.IsolatedCopy());
+        outgoing_referrer_.IsolatedCopy(), https_state_);
   }
 
  private:
@@ -87,6 +92,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const scoped_refptr<const SecurityOrigin> security_origin_;
   const ReferrerPolicy referrer_policy_;
   const String outgoing_referrer_;
+  const HttpsState https_state_;
 };
 
 }  // namespace blink
