@@ -6864,4 +6864,28 @@ TEST(HeapTest, ShrinkVector) {
   vector.ShrinkToFit();
 }
 
+namespace {
+
+class MixinCheckingConstructionScope : public GarbageCollectedMixin {
+ public:
+  MixinCheckingConstructionScope() {
+    // Oilpan treats mixin construction as forbidden scopes for garbage
+    // collection.
+    CHECK(ThreadState::Current()->IsMixinInConstruction());
+  }
+};
+
+class UsingMixinCheckingConstructionScope
+    : public GarbageCollected<UsingMixinCheckingConstructionScope>,
+      public MixinCheckingConstructionScope {
+  USING_GARBAGE_COLLECTED_MIXIN(UsingMixinCheckingConstructionScope);
+};
+
+}  // namespace
+
+TEST(HeapTest, NoConservativeGCDuringMixinConstruction) {
+  // Regression test: https://crbug.com/904546
+  MakeGarbageCollected<UsingMixinCheckingConstructionScope>();
+}
+
 }  // namespace blink

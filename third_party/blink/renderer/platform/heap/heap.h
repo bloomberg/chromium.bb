@@ -524,15 +524,39 @@ class GarbageCollected {
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
+template <typename T, bool is_mixin = IsGarbageCollectedMixin<T>::value>
+class ConstructTrait {
+ public:
+};
+
+template <typename T>
+class ConstructTrait<T, false> {
+ public:
+  template <typename... Args>
+  static T* Construct(Args&&... args) {
+    // Placement new as regular operator new() is deleted.
+    return ::new (
+        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value))
+        T(std::forward<Args>(args)...);
+  }
+};
+
+template <typename T>
+class ConstructTrait<T, true> {
+ public:
+  template <typename... Args>
+  static T* Construct(Args&&... args) {
+    // TODO(mlippautz): Inline GarbageCollectedMixin::operator new() here.
+    return new T(std::forward<Args>(args)...);
+  }
+};
+
 // Constructs an instance of T, which is a garbage collected type.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  // Uses placement new so we can force MakeGarbageCollected usage by deleting
-  // the new operator.
-  return ::new (T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value))
-      T(std::forward<Args>(args)...);
+  return ConstructTrait<T>::Construct(std::forward<Args>(args)...);
 }
 
 // Assigning class types to their arenas.
