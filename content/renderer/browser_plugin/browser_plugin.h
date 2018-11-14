@@ -191,9 +191,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnAttachACK(
-      int browser_plugin_instance_id,
-      const base::Optional<viz::LocalSurfaceId>& child_local_surface_id);
+  void OnAttachACK(int browser_plugin_instance_id);
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
   void OnDidUpdateVisualProperties(int browser_plugin_instance_id,

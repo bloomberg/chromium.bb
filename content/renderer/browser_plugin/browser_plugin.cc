@@ -327,12 +327,8 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
   render_view->GetWebView()->AdvanceFocus(reverse);
 }
 
-void BrowserPlugin::OnAttachACK(
-    int browser_plugin_instance_id,
-    const base::Optional<viz::LocalSurfaceId>& child_local_surface_id) {
+void BrowserPlugin::OnAttachACK(int browser_plugin_instance_id) {
   attached_ = true;
-  if (child_local_surface_id)
-    parent_local_surface_id_allocator_.Reset(*child_local_surface_id);
   SynchronizeVisualProperties();
 }
 
