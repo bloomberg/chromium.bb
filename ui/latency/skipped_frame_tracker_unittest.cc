@@ -394,5 +394,12 @@ TEST_F(SkippedFrameTrackerTest, NoSkips_ActiveIdleActive_FramePulledIsPush) {
   EXPECT_FALSE(tracker_.IsActive());
 }
 
+TEST_F(SkippedFrameTrackerTest, NoFrameProduced) {
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(WillNotProduceFrame());
+  EXPECT_EQ(0, client_.amount_produced_);
+  EXPECT_EQ(0, client_.amount_skipped_);
+}
+
 }  // namespace
 }  // namespace ui
