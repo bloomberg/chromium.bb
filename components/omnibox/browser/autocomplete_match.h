@@ -139,9 +139,12 @@ struct AutocompleteMatch {
   // Gets the vector icon identifier for the icon to be shown for |type|. If
   // |is_bookmark| is true, returns a bookmark icon rather than what the type
   // would determine.
-  static const gfx::VectorIcon& TypeToVectorIcon(Type type,
-                                                 bool is_bookmark,
-                                                 DocumentType document_type);
+  static const gfx::VectorIcon& TypeToVectorIcon(Type type, bool is_bookmark);
+
+  // Gets the VectorIcon to be shown for a match, which may depend on match
+  // contents.  This is preferable to using TypeToVectorIcon when a match
+  // instance is available because it can make a more informed choice.
+  const gfx::VectorIcon& GetVectorIcon(bool is_bookmark) const;
 #endif
 
   // Comparison function for determining when one match is better than another.

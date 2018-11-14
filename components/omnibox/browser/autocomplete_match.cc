@@ -204,10 +204,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 // static
-const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
-    Type type,
-    bool is_bookmark,
-    DocumentType document_type) {
+const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
+                                                           bool is_bookmark) {
   if (is_bookmark)
     return omnibox::kBookmarkIcon;
 
@@ -224,23 +222,8 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
-      return omnibox::kPageIcon;
-
     case Type::DOCUMENT_SUGGESTION:
-      switch (document_type) {
-        case DocumentType::DRIVE_DOCS:
-          return omnibox::kDriveDocsIcon;
-        case DocumentType::DRIVE_FORMS:
-          return omnibox::kDriveFormsIcon;
-        case DocumentType::DRIVE_SHEETS:
-          return omnibox::kDriveSheetsIcon;
-        case DocumentType::DRIVE_SLIDES:
-          return omnibox::kDriveSlidesIcon;
-        case DocumentType::DRIVE_OTHER:
-          return omnibox::kDriveLogoIcon;
-        default:
-          return omnibox::kPageIcon;
-      }
+      return omnibox::kPageIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_HISTORY:
@@ -271,6 +254,33 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
   NOTREACHED();
   static const gfx::VectorIcon dummy = {};
   return dummy;
+}
+
+const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
+    bool is_bookmark) const {
+  if (is_bookmark)
+    return omnibox::kBookmarkIcon;
+  switch (type) {
+    case Type::DOCUMENT_SUGGESTION:
+      switch (document_type) {
+        case DocumentType::DRIVE_DOCS:
+          return omnibox::kDriveDocsIcon;
+        case DocumentType::DRIVE_FORMS:
+          return omnibox::kDriveFormsIcon;
+        case DocumentType::DRIVE_SHEETS:
+          return omnibox::kDriveSheetsIcon;
+        case DocumentType::DRIVE_SLIDES:
+          return omnibox::kDriveSlidesIcon;
+        case DocumentType::DRIVE_OTHER:
+          return omnibox::kDriveLogoIcon;
+        default:
+          return omnibox::kPageIcon;
+      }
+    case Type::PEDAL:
+      return (pedal ? pedal->GetVectorIcon() : omnibox::kPedalIcon);
+    default:
+      return TypeToVectorIcon(type, is_bookmark);
+  }
 }
 #endif
 

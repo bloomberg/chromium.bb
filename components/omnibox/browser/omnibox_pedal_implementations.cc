@@ -5,10 +5,16 @@
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/strings/grit/components_strings.h"
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#endif
 
 // A small convenience wrapper for the common implementation pattern below.
 class OmniboxPedalCommon : public OmniboxPedal {
@@ -56,6 +62,12 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedalCommon {
                 "history clear",
                 "history clear chrome",
             }) {}
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kAnswerWhenIsIcon;
+  }
+#endif
 };
 
 // =============================================================================
