@@ -67,7 +67,9 @@ UiControllerAndroid::UiControllerAndroid(
     jobject jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues)
+    const JavaParamRef<jobjectArray>& parameterValues,
+    const JavaParamRef<jstring>& jlocale,
+    const JavaParamRef<jstring>& jcountryCode)
     : ui_delegate_(nullptr) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
@@ -75,9 +77,16 @@ UiControllerAndroid::UiControllerAndroid(
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
   browser_context_ = web_contents->GetBrowserContext();
+
+  auto locale = base::android::ConvertJavaStringToUTF8(jlocale);
+  std::string country_code;
+  if (jcountryCode)
+    country_code = base::android::ConvertJavaStringToUTF8(jcountryCode);
+
   Controller::CreateForWebContents(
       web_contents, base::WrapUnique(this),
-      BuildParametersFromJava(env, parameterNames, parameterValues));
+      BuildParametersFromJava(env, parameterNames, parameterValues), locale,
+      country_code);
   DCHECK(ui_delegate_);
 }
 
@@ -406,9 +415,12 @@ static jlong JNI_AutofillAssistantUiController_Init(
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues) {
+    const JavaParamRef<jobjectArray>& parameterValues,
+    const JavaParamRef<jstring>& jlocale,
+    const JavaParamRef<jstring>& jcountryCode) {
   auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
-      env, jcaller, webContents, parameterNames, parameterValues);
+      env, jcaller, webContents, parameterNames, parameterValues, jlocale,
+      jcountryCode);
   return reinterpret_cast<intptr_t>(ui_controller_android);
 }
 

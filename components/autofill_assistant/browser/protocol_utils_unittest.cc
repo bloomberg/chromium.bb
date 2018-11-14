@@ -17,6 +17,16 @@ using ::testing::Not;
 using ::testing::IsEmpty;
 using ::testing::ElementsAre;
 
+ClientContextProto CreateClientContextProto() {
+  ClientContextProto context;
+  context.mutable_chrome()->set_chrome_version("v");
+  return context;
+}
+
+void AssertClientContext(const ClientContextProto& context) {
+  EXPECT_EQ("v", context.chrome().chrome_version());
+}
+
 TEST(ProtocolUtilsTest, NoScripts) {
   std::vector<std::unique_ptr<Script>> scripts;
   EXPECT_TRUE(ProtocolUtils::ParseScripts("", &scripts));
@@ -76,10 +86,9 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
           "script_path", GURL("http://example.com/"), parameters,
-          "server_payload")));
+          "server_payload", CreateClientContextProto())));
 
-  EXPECT_THAT(request.client_context().chrome().chrome_version(),
-              Not(IsEmpty()));
+  AssertClientContext(request.client_context());
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
@@ -99,11 +108,11 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), parameters)));
+      GURL("http://example.com/"), parameters, CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
 
   EXPECT_EQ("http://example.com/", request.url());
-  EXPECT_THAT(request.client_context().chrome().chrome_version(),
-              Not(IsEmpty()));
   ASSERT_EQ(2, request.script_parameters_size());
   EXPECT_EQ("a", request.script_parameters(0).name());
   EXPECT_EQ("b", request.script_parameters(0).value());

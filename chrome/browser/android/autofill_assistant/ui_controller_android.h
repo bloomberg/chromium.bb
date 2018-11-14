@@ -30,7 +30,9 @@ class UiControllerAndroid : public UiController,
       jobject jcaller,
       const base::android::JavaParamRef<jobject>& webContents,
       const base::android::JavaParamRef<jobjectArray>& parameterNames,
-      const base::android::JavaParamRef<jobjectArray>& parameterValues);
+      const base::android::JavaParamRef<jobjectArray>& parameterValues,
+      const base::android::JavaParamRef<jstring>& locale,
+      const base::android::JavaParamRef<jstring>& countryCode);
   ~UiControllerAndroid() override;
 
   // Overrides UiController:
