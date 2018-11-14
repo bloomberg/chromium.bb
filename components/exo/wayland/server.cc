@@ -95,6 +95,7 @@
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wayland/server_util.h"
+#include "components/exo/wayland/wayland_input_delegate.h"
 #include "components/exo/wayland/zcr_notification_shell.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wm_helper.h"
@@ -178,41 +179,6 @@ double GetDefaultDeviceScaleFactor() {
   }
   return WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
 }
-
-class WaylandInputDelegate {
- public:
-  class Observer {
-   public:
-    virtual void OnDelegateDestroying(WaylandInputDelegate* delegate) = 0;
-    virtual void OnSendTimestamp(base::TimeTicks time_stamp) = 0;
-
-   protected:
-    virtual ~Observer() = default;
-  };
-
-  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
-
-  void RemoveObserver(Observer* observer) {
-    observers_.RemoveObserver(observer);
-  }
-
-  void SendTimestamp(base::TimeTicks time_stamp) {
-    for (auto& observer : observers_)
-      observer.OnSendTimestamp(time_stamp);
-  }
-
- protected:
-  WaylandInputDelegate() = default;
-  virtual ~WaylandInputDelegate() {
-    for (auto& observer : observers_)
-      observer.OnDelegateDestroying(this);
-  }
-
- private:
-  base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandInputDelegate);
-};
 
 uint32_t WaylandDataDeviceManagerDndAction(DndAction action) {
   switch (action) {
