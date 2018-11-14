@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -117,23 +118,37 @@ void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   DCHECK(IsContextThread());
-  if (resource_fetcher_)
-    return resource_fetcher_;
+  if (inside_settings_resource_fetcher_)
+    return inside_settings_resource_fetcher_;
+  inside_settings_resource_fetcher_ =
+      CreateFetcherInternal(new FetchClientSettingsObjectImpl(*this));
+  return inside_settings_resource_fetcher_;
+}
 
+ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
+    FetchClientSettingsObject* fetch_client_settings_object) {
+  DCHECK(IsContextThread());
   InitializeWebFetchContextIfNeeded();
   WorkerFetchContext* fetch_context = WorkerFetchContext::Create(
-      *this, web_worker_fetch_context_, subresource_filter_);
-  resource_fetcher_ = ResourceFetcher::Create(fetch_context);
+      *this, web_worker_fetch_context_, subresource_filter_,
+      fetch_client_settings_object);
+  ResourceFetcher* resource_fetcher = ResourceFetcher::Create(fetch_context);
   if (IsContextPaused())
-    resource_fetcher_->SetDefersLoading(true);
-  DCHECK(resource_fetcher_);
-  return resource_fetcher_;
+    resource_fetcher->SetDefersLoading(true);
+  resource_fetchers_.insert(resource_fetcher);
+  return resource_fetcher;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
   DCHECK(IsContextThread());
-  DCHECK(resource_fetcher_);
-  return resource_fetcher_;
+  DCHECK(inside_settings_resource_fetcher_);
+  return inside_settings_resource_fetcher_;
+}
+
+ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
+    FetchClientSettingsObject* fetch_client_settings_object) {
+  DCHECK(IsContextThread());
+  return CreateFetcherInternal(fetch_client_settings_object);
 }
 
 bool WorkerOrWorkletGlobalScope::IsJSExecutionForbidden() const {
@@ -157,9 +172,9 @@ void WorkerOrWorkletGlobalScope::Dispose() {
   script_controller_->Dispose();
   script_controller_.Clear();
 
-  if (resource_fetcher_) {
-    resource_fetcher_->StopFetching();
-    resource_fetcher_->ClearContext();
+  for (ResourceFetcher* resource_fetcher : resource_fetchers_) {
+    resource_fetcher->StopFetching();
+    resource_fetcher->ClearContext();
   }
 }
 
@@ -227,18 +242,19 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
 void WorkerOrWorkletGlobalScope::TasksWerePaused() {
   ExecutionContext::TasksWerePaused();
-  if (resource_fetcher_)
-    resource_fetcher_->SetDefersLoading(true);
+  for (ResourceFetcher* resource_fetcher : resource_fetchers_)
+    resource_fetcher->SetDefersLoading(true);
 }
 
 void WorkerOrWorkletGlobalScope::TasksWereUnpaused() {
   ExecutionContext::TasksWereUnpaused();
-  if (resource_fetcher_)
-    resource_fetcher_->SetDefersLoading(false);
+  for (ResourceFetcher* resource_fetcher : resource_fetchers_)
+    resource_fetcher->SetDefersLoading(false);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
-  visitor->Trace(resource_fetcher_);
+  visitor->Trace(inside_settings_resource_fetcher_);
+  visitor->Trace(resource_fetchers_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(script_controller_);
   visitor->Trace(modulator_);
