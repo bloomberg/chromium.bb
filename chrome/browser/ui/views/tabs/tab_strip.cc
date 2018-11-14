@@ -429,8 +429,14 @@ void TabStrip::StopAllHighlighting() {
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   const bool was_single_tab_mode = SingleTabMode();
 
+  // Get view child index of where we want to insert
+  int view_index = 0;
+  if (model_index > 0) {
+    view_index = GetIndexOf(tab_at(model_index - 1)) + 1;
+  }
+
   Tab* tab = new Tab(this, animation_container_.get());
-  AddChildView(tab);
+  AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tab->SetData(std::move(data));
   UpdateTabsClosingMap(model_index, 1);
@@ -487,8 +493,14 @@ void TabStrip::MoveTab(int from_model_index,
                        int to_model_index,
                        TabRendererData data) {
   DCHECK_GT(tabs_.view_size(), 0);
+
   const Tab* last_tab = GetLastVisibleTab();
   tab_at(from_model_index)->SetData(std::move(data));
+
+  // Keep child views in same order as tab strip model.
+  const int to_view_index = GetIndexOf(tab_at(to_model_index));
+  ReorderChildView(tab_at(from_model_index), to_view_index);
+
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
     int pinned_count = 0;

@@ -311,6 +311,40 @@ TEST_P(TabStripTest, RemoveTab) {
   EXPECT_EQ(0, observer.last_tab_removed());
 }
 
+namespace {
+
+bool TabViewsInOrder(TabStrip* tab_strip) {
+  for (int i = 1; i < tab_strip->tab_count(); ++i) {
+    Tab* left = tab_strip->tab_at(i - 1);
+    Tab* right = tab_strip->tab_at(i);
+
+    if (tab_strip->GetIndexOf(right) < tab_strip->GetIndexOf(left)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
+// Verifies child view order matches model order.
+TEST_P(TabStripTest, TabViewOrder) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
+  controller_->AddTab(2, false);
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+
+  tab_strip_->MoveTab(0, 1, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(1, 2, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(1, 0, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(0, 2, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+}
+
 TEST_P(TabStripTest, VisibilityInOverflow) {
   constexpr int kInitialWidth = 250;
   tab_strip_->SetBounds(0, 0, kInitialWidth, 20);
