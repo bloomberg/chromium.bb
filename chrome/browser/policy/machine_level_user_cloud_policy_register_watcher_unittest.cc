@@ -38,6 +38,7 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   std::string RetrieveDMToken() override { return dm_token_; }
   std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
   std::string RetrieveClientId() override { return kClientId; }
+  bool ShouldDisplayErrorMessageOnFailure() override { return true; }
 
   std::string InitClientId() override {
     NOTREACHED();
@@ -50,6 +51,10 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   std::string InitDMToken() override {
     NOTREACHED();
     return std::string();
+  }
+  bool InitEnrollmentErrorOption() override {
+    NOTREACHED();
+    return true;
   }
 
   void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }

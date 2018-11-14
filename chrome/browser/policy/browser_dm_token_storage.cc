@@ -83,6 +83,13 @@ void BrowserDMTokenStorage::OnDMTokenStored(bool success) {
     std::move(store_callback_).Run(success);
 }
 
+bool BrowserDMTokenStorage::ShouldDisplayErrorMessageOnFailure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  InitIfNeeded();
+  return should_display_error_message_on_failure_;
+}
+
 void BrowserDMTokenStorage::ScheduleUnusedPolicyDirectoryDeletion() {
   // TODO(crbug.com/883869): Add a UMA metrics to track the deletion progress.
   content::BrowserThread::PostAfterStartupTask(
@@ -113,6 +120,8 @@ void BrowserDMTokenStorage::InitIfNeeded() {
 
   dm_token_ = InitDMToken();
   DVLOG(1) << "DM Token = " << dm_token_;
+
+  should_display_error_message_on_failure_ = InitEnrollmentErrorOption();
 }
 
 void BrowserDMTokenStorage::DeletePolicyDirectory() {}

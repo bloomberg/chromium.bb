@@ -31,6 +31,7 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
+  bool InitEnrollmentErrorOption() override;
   void SaveDMToken(const std::string& token) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;

@@ -49,6 +49,10 @@ class BrowserDMTokenStorage {
   // invoked.
   void OnDMTokenStored(bool success);
 
+  // Return true if we display error message dialog when enrollment process
+  // fails.
+  virtual bool ShouldDisplayErrorMessageOnFailure();
+
   // Set the mock BrowserDMTokenStorage for testing. The caller owns the
   // instance of the storage.
   static void SetForTesting(BrowserDMTokenStorage* storage) {
@@ -82,6 +86,9 @@ class BrowserDMTokenStorage {
   // Gets the DM token and stores it in |dm_token_|. This implementation is
   // platform dependant.
   virtual std::string InitDMToken() = 0;
+  // Gets the boolean value that determines if error message will be displayed
+  // when enrollment fails.
+  virtual bool InitEnrollmentErrorOption() = 0;
   // Saves the DM token. This implementation is platform dependant.
   virtual void SaveDMToken(const std::string& token) = 0;
 
@@ -96,6 +103,7 @@ class BrowserDMTokenStorage {
   std::string client_id_;
   std::string enrollment_token_;
   std::string dm_token_;
+  bool should_display_error_message_on_failure_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

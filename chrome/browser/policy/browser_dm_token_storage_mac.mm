@@ -181,6 +181,11 @@ std::string BrowserDMTokenStorageMac::InitDMToken() {
   return token;
 }
 
+bool BrowserDMTokenStorageMac::InitEnrollmentErrorOption() {
+  // TODO(crbug/904983): Load the policy value for this option.
+  return true;
+}
+
 void BrowserDMTokenStorageMac::SaveDMToken(const std::string& token) {
   std::string client_id = RetrieveClientId();
   base::PostTaskWithTraitsAndReplyWithResult(
