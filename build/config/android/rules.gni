@@ -2433,6 +2433,13 @@ if (enable_java_templates) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
         proguard_mapping_path = _proguard_mapping_path
+        if (_use_chromium_linker) {
+          proguard_configs +=
+              [ "//base/android/proguard/explicit_jni_registration.flags" ]
+        } else {
+          proguard_configs +=
+              [ "//base/android/proguard/implicit_jni_registration.flags" ]
+        }
       }
 
       # Don't depend on the runtime_deps target in order to avoid having to
