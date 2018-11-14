@@ -5,6 +5,7 @@
 #include "chromeos/services/ime/public/cpp/rulebased/rules_data.h"
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ar.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/bn_phone.h"
 #include "chromeos/services/ime/public/cpp/rulebased/def/ckb_ar.h"
@@ -203,24 +204,80 @@ KeyMap ParseKeyMap(const char** raw_key_map, bool is_102) {
   return key_map;
 }
 
+// The prefix unit can be /[...]/ or a single character
+// (e.g. /[a-z]/, /[\\[\\]]/, /a/, /\\+/, etc.).
+std::string WrapPrefixUnit(const std::string& re_unit) {
+  return "(?:" + re_unit + "|$)";
+}
+
+// Expands the given regexp string so that it can match with prefixes.
+// For example, /(abc)+[a-z]/ can be expanded as:
+// /((?:a|$)(?:b|$)(?:c|$)+(?:[a-z]|$))/
+// So, the string "abcabcx" can match the original regexp, and all its prefix
+// can match the expanded prefix regexp. e.g. "abca".
+std::string Prefixalize(const std::string& re_str) {
+  // Using UTF16 string for iteration in character basis.
+  base::string16 restr16 = base::UTF8ToUTF16(re_str);
+  std::string ret;
+  bool escape = false;
+  int bracket = -1;
+  int brace = -1;
+  for (size_t i = 0; i < restr16.length(); ++i) {
+    std::string ch = base::UTF16ToUTF8(restr16.substr(i, 1));
+    if (escape) {
+      if (bracket < 0) {
+        ret += WrapPrefixUnit("\\" + ch);
+      }
+      escape = false;
+      continue;
+    }
+    // |escape| == false.
+    if (ch == "\\") {
+      escape = true;
+    } else if (ch == "[") {
+      bracket = i;
+    } else if (ch == "{" && bracket < 0) {
+      brace = i;
+    } else if (bracket >= 0) {
+      if (ch == "]") {
+        ret += WrapPrefixUnit(
+            base::UTF16ToUTF8(restr16.substr(bracket, i - bracket + 1)));
+        bracket = -1;
+      }
+    } else if (brace >= 0) {
+      if (ch == "}") {
+        ret += base::UTF16ToUTF8(restr16.substr(brace, i - brace + 1));
+        brace = -1;
+      }
+    } else if (re2::RE2::FullMatch(ch, "[+*?.()|]")) {
+      ret += ch;
+    } else {
+      ret += WrapPrefixUnit(ch);
+    }
+  }
+  return ret;
+}
+
 // Parses the raw transform definition string and generate a transform rule map,
-// and a merged regexp which is used to do the quick check whether a given
-// string can match one of the transform rules.
+// a merged regexp which is used to do the quick check whether a given
+// string can match one of the transform rules, and a prefix regexp which is
+// used to check whether there will be future transform matches.
 // |raw_transforms| is a list of strings, the strings at the even number of
 // index are the regexp to define the rule, and the strings at the odd number of
 // index are the string to replace the matched string. It can contains "\\1",
 // "\\2", etc. to represent the strings in the matched sub groups.
 // e.g. this definition can swap the 2 digits when type "~":
 //      "([0-9])([0-9])~" -> "\\2\\1"
-std::unique_ptr<re2::RE2> ParseTransforms(
+std::pair<std::unique_ptr<re2::RE2>, std::unique_ptr<re2::RE2>> ParseTransforms(
     const char** raw_transforms,
     uint16_t trans_count,
     std::map<uint16_t, TransformRule>& re_map) {
   if (!trans_count)
-    return nullptr;
+    return std::make_pair(nullptr, nullptr);
 
   DCHECK(!(trans_count & 1));
 
+  std::string all_prefixes;
   std::string all_trans;
   uint16_t sum_of_groups = 1;
   for (uint16_t i = 0; i < trans_count; i += 2) {
@@ -230,12 +287,15 @@ std::unique_ptr<re2::RE2> ParseTransforms(
     auto from_re = std::make_unique<re2::RE2>(from + "$");
     int group_count = from_re->NumberOfCapturingGroups();
     all_trans += "(" + from + "$)|";
+    all_prefixes += Prefixalize(from) + "|";
 
     re_map[sum_of_groups] = std::make_pair(std::move(from_re), to);
     sum_of_groups += group_count + 1;
   }
-  return std::make_unique<re2::RE2>(
-      all_trans.substr(0, all_trans.length() - 1));
+  return std::make_pair(
+      std::make_unique<re2::RE2>(all_trans.substr(0, all_trans.length() - 1)),
+      std::make_unique<re2::RE2>(
+          all_prefixes.substr(0, all_prefixes.length() - 1)));
 }
 
 // Parses the history prune regexp and returns the RE2 instance.
@@ -266,8 +326,10 @@ std::unique_ptr<RulesData> RulesData::Create(const char*** key_map,
   for (uint8_t i = 0; i < kKeyMapCount; ++i) {
     data->key_maps_[i] = ParseKeyMap(key_map[i], is_102_keyboard);
   }
-  data->transform_re_merged_ =
+  auto regexes =
       ParseTransforms(transforms, transforms_count, data->transform_rules_);
+  data->transform_re_merged_ = std::move(regexes.first);
+  data->prefix_re_ = std::move(regexes.second);
   data->history_prune_re_ = ParseHistoryPrune(history_prune);
   return data;
 }
@@ -346,6 +408,23 @@ bool RulesData::MatchHistoryPrune(const std::string& str) const {
   if (!history_prune_re_)
     return false;
   return re2::RE2::FullMatch(str, *history_prune_re_);
+}
+
+bool RulesData::PredictTransform(const std::string& str, int transat) const {
+  if (!prefix_re_)
+    return false;
+
+  std::string s = transat > 0 ? str.substr(0, transat) + kTransatDelimit +
+                                    str.substr(transat)
+                              : str;
+  // Try to match the prefix re by all of the suffix of the context string.
+  size_t len = str.length();
+  for (size_t i = 0; i < len; ++i) {
+    std::string suffix = s.substr(len - i - 1);
+    if (re2::RE2::FullMatch(suffix, *prefix_re_))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace rulebased
