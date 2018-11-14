@@ -978,6 +978,8 @@ jinja_template_resources("chrome_test_apk_template_resources") {
 #      symbols required for lazy JNI registration.
 #    enable_compressed_relocations: Optional. If true, enable compressed
 #      ELF relocations to reduce native library size.
+#    use_gnu_hash_style: If true, the final library will include only GNU hash
+#      tables, rather than both SysV and GNU types (the default).
 template("chrome_common_shared_library") {
   shared_library(target_name) {
     forward_variables_from(invoker,
@@ -985,6 +987,7 @@ template("chrome_common_shared_library") {
                            [
                              "enable_compressed_relocations",
                              "export_java_symbols",
+                             "use_gnu_hash_style",
                            ])
     _export_java_symbols =
         defined(invoker.export_java_symbols) && invoker.export_java_symbols
@@ -1018,6 +1021,20 @@ template("chrome_common_shared_library") {
         invoker.enable_compressed_relocations) {
       configs += [ "//build/config/android:lld_pack_relocations" ]
     }
+
+    if (invoker.use_gnu_hash_style && target_cpu != "mipsel" &&
+        target_cpu != "mips64el") {
+      # By default, the static linker will create ELF executables with both
+      # SysV and GNU hash tables. Now that the chromium linker supports the GNU
+      # format, which is considerably smaller, ensure that the SysV one is
+      # never compiled in the final library (http://crbug.com/742525#c28). GNU
+      # hash support was added in Android M. Also not supported on MIPS
+      # architecture (http://crbug.com/811306).
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += [ "-Wl,--hash-style=gnu" ]
+    }
   }
 }
 
@@ -1034,20 +1051,8 @@ template("chrome_shared_library") {
       ldflags = [ "-Wl,--long-plt" ]
     }
 
-    if (chromium_linker_supported && target_cpu != "mipsel" &&
-        target_cpu != "mipsel64") {
-      # By default, the static linker will create ELF executables with both
-      # SysV and GNU hash tables. Now that the chromium linker supports the
-      # GNU format, which is considerably smaller, ensure that the SysV one
-      # is never compiled in the final library. Note that MIPS platforms do
-      # not support the GNU format though.
-      if (!defined(ldflags)) {
-        ldflags = []
-      }
-      ldflags += [ "-Wl,--hash-style=gnu" ]
-    }
-
     enable_compressed_relocations = chromium_linker_supported && use_lld
+    use_gnu_hash_style = chromium_linker_supported
   }
 }
 
@@ -1315,14 +1320,7 @@ if (!android_64bit_target_cpu ||
 
     export_java_symbols = true
     enable_compressed_relocations = use_lld
-
-    if (target_cpu != "mipsel" && target_cpu != "mips64el") {
-      # .gnu.hash support added in Android M. Without this flag, library will also
-      # contain an unused .hash section. (http://crbug.com/742525#c28)
-      # Not to be used for MIPS arhitecture since MIPS does not
-      # support hashstyle gnu: http://crbug.com/811306
-      ldflags = [ "-Wl,--hash-style=gnu" ]
-    }
+    use_gnu_hash_style = true
   }
 } else {
   group("monochrome_secondary_abi_lib") {
