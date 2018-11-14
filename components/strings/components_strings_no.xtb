@@ -728,6 +728,7 @@
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5932224571077948991">Nettstedet viser forstyrrende eller villedende annonser</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
+<translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
 <translation id="5966151627327109289">Logger deg av de fleste nettstedene. Det kan hende at du mister tilgangen til beskyttet innhold fra <ph name="SITE" /> og enkelte andre nettsteder.</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
@@ -1195,6 +1196,7 @@ Mer informasjon:
 <translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
 <translation id="936602727769022409">Du kan miste tilgangen til Google-kontoen din. Chromium anbefaler at du endrer passordet ditt nå. Du blir bedt om å logge på.</translation>
 <translation id="939736085109172342">Ny mappe</translation>
+<translation id="945855313015696284">Gå gjennom informasjonen nedenfor, og slett eventuelle ugyldige kort</translation>
 <translation id="951104842009476243">Godkjente debetkort og forhåndsbetalte kort</translation>
 <translation id="962484866189421427">Dette innholdet kan prøve å installere villedende apper som gir seg ut for å være noe annet, eller samle inn data som kan brukes til å spore deg. <ph name="BEGIN_LINK" />Vis det likevel<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>

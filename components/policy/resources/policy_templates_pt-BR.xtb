@@ -129,7 +129,7 @@
 
       Quando esta política for definida, cada item será tratado como uma regra, de forma semelhante à política <ph name="URL_LIST_POLICY_NAME" />. No entanto, a lógica é inversa: quando houver correspondência com as regras, um navegador alternativo não será aberto.
 
-      Ao contrário da <ph name="URL_LIST_POLICY_NAME" />, as regras se aplicam nas duas direções. Ou seja, quando os suplementos do Internet Explorer estiverem presentes e ativados, isso também controlará se o <ph name="IE_PRODUCT_NAME" /> abrirá esses URLs no <ph name="PRODUCT_NAME" />.</translation>
+      Ao contrário da <ph name="URL_LIST_POLICY_NAME" />, as regras se aplicam nas duas direções. Ou seja, quando o suplemento do Internet Explorer estiver presente e ativado, isso também controlará se o <ph name="IE_PRODUCT_NAME" /> abrirá esses URLs no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Usar um script de proxy .pac</translation>
 <translation id="1304973015437969093">IDs de extensões//aplicativos e URLs de atualização deverão ser instalados silenciosamente</translation>
 <translation id="1307454923744766368">Origens ou padrões de nome de host aos quais as restrições sobre
@@ -219,7 +219,7 @@
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
-<translation id="1523774894176285446">Navegador alternativo para iniciar sites configurados.</translation>
+<translation id="1523774894176285446">Navegador alternativo que será iniciado com sites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
 <translation id="1541170838458414064">Restringir o tamanho da página de impressão</translation>
@@ -650,7 +650,7 @@
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
 <translation id="2663739737868438950">
       Esta política se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
-      Recomendamos que você consulte a configuração de política IsolateOrigins para ter os melhores resultados de isolamento e impacto limitado para os usuários, usando IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração, SitePerProcess, isola todos os sites.
+      Recomendamos que você consulte a configuração de política IsolateOrigins para ter isolamento e limitar o impacto aos usuários, usando IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração, SitePerProcess, isola todos os sites.
       Se a política estiver ativada, cada site será executado com o próprio processo.
       Se a política estiver desativada, os recursos IsolateOrigins e SitePerProcess serão desativados. Os usuários ainda poderão ativar SitePerProcess manualmente, por sinalização da linha de comando.
       Se a política não estiver configurada, o usuário conseguirá alterar essa configuração.
@@ -956,12 +956,12 @@
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
 <translation id="3500732098526756068">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta os usuários quando eles reutilizam a senha protegida em sites possivelmente suspeitos.
 
-      É possível usar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar qual senha proteger.
+      É possível usar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar a senha que será protegida.
 
       Se esta política for definida como "PasswordProtectionWarningOff"', nenhum aviso de proteção de senha será mostrado.
-      Se esta política for definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar a senha protegida em um site não pertencente à lista de permissões.
-      Se esta política for definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar a senha protegida em um site de phishing.
-      Se esta política não for definida, apenas as senhas do Google serão protegidas pelo serviço de proteção de senha, mas o usuário conseguirá alterar a configuração.</translation>
+      Se esta política for definida como "PasswordProtectionWarningOnPasswordReuse", o aviso será exibido quando o usuário reutilizar a senha protegida em um site não pertencente à lista de permissões.
+      Se esta política for definida como "PasswordProtectionWarningOnPhishingReuse", o aviso será exibido quando o usuário reutilizar a senha protegida em um site de phishing.
+      Se esta política não for definida, apenas as senhas do Google serão protegidas pelo serviço, mas o usuário conseguirá alterar a configuração.</translation>
 <translation id="3502555714327823858">Permitir todos os modos duplex</translation>
 <translation id="350443680860256679">Configurar ARC</translation>
 <translation id="3504791027627803580">Especifica o URL do mecanismo de pesquisa usado para pesquisas de imagens. As solicitações de pesquisa são enviadas com o método GET. Por outro lado, se a política DefaultSearchProviderImageURLPostParams estiver definida, as solicitações de pesquisa de imagens usarão o método POST.
@@ -997,7 +997,7 @@
 <translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3624171042292187668">
-      Recomendamos que você consulte a configuração da política IsolateOrigins para ter os melhores resultados de isolamento e impacto limitado para os usuários, usando IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração, SitePerProcess, isola todos os sites.
+      Recomendamos que você consulte a configuração da política IsolateOrigins para ter isolamento e limitar o impacto aos usuários, usando IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração, SitePerProcess, isola todos os sites.
       Se a política estiver ativada, cada site será executado com o próprio processo.
       Se a política estiver desativada, os recursos IsolateOrigins e SitePerProcess serão desativados. Os usuários ainda poderão ativar SitePerProcess manualmente por sinalização da linha de comando.
       Se a política não for configurada, o usuário poderá alterar essa configuração.
@@ -1555,7 +1555,7 @@
 
       Se a política for definida como "verdadeira" ou não for especificada, os ciclos de vida de guias serão ativados.</translation>
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="5213038356678567351">Sites que nunca devem acionar uma troca de navegador.</translation>
+<translation id="5213038356678567351">Sites que nunca acionarão uma troca de navegador.</translation>
 <translation id="5219844027738217407">Em apps Android, esta política afeta somente o microfone. Quando esta política é definida como true, o microfone é silenciado para todos os apps Android, sem exceções.</translation>
 <translation id="5228316810085661003">O período de espera para login automático na conta local do dispositivo.
 
@@ -1728,7 +1728,7 @@
 
       OBSERVAÇÃO: no Android, o isolamento de sites é experimental. A compatibilidade será aprimorada com o tempo, mas pode haver problemas de desempenho por enquanto.
 
-      OBSERVAÇÃO: esta política se aplica apenas ao Chrome no Android sendo executado estritamente em dispositivos com mais de 1 GB de RAM. Para aplicar a política em plataformas não Android, use IsolateOrigins.
+      OBSERVAÇÃO: esta política se aplica apenas ao Chrome no Android sendo executado estritamente em dispositivos com mais de 1 GB de RAM. Para aplicar a política em outras plataformas que não sejam o Android, use IsolateOrigins.
       </translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
@@ -1760,7 +1760,7 @@
 
       Quando esta política for definida, cada item será tratado como uma regra para abrir algo em um navegador alternativo. No <ph name="PRODUCT_NAME" />, essas regras são usadas para determinar se um URL será aberto em um navegador alternativo ou não.
 
-      Quando os suplementos do Internet Explorer estiverem presentes e ativados, o Internet Explorer retornará ao <ph name="PRODUCT_NAME" /> quando não houver correspondência com as regras.
+      Quando o suplemento do Internet Explorer estiver presente e ativado, o Internet Explorer retornará ao <ph name="PRODUCT_NAME" /> quando não houver correspondência com as regras.
 
       Se as regras forem contraditórias, o <ph name="PRODUCT_NAME" /> usará a regra mais específica.</translation>
 <translation id="5732972008943405952">Importar dados de preenchimento automático de formulários do navegador padrão na primeira execução</translation>
@@ -1829,7 +1829,7 @@
       Esta política se aplica à tela de login. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão de usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
       Se a política estiver ativada, cada origem indicada em uma lista separada por vírgulas será executada no próprio processo. Isso também isolará as origens indicadas por subdomínios. Por exemplo, a especificação de https://example.com/ também isolará https://foo.example.com/ como parte do site https://example.com/.
       Se a política estiver desativada, os recursos IsolateOrigins e SitePerProcess serão desativados. Os usuários ainda poderão ativar IsolateOrigins manualmente por sinalização de linha de comando.
-      Se a política não estiver configurada, as configurações de isolamento de sites padrão da plataforma serão usadas para a tela de login.
+      Se a política não estiver configurada, as configurações padrão de isolamento de sites da plataforma serão usadas para a tela de login.
       </translation>
 <translation id="5901427587865226597">Apenas impressão duplex</translation>
 <translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.
@@ -2188,7 +2188,7 @@
 
       Especifica os sinalizadores a serem aplicados ao <ph name="PRODUCT_NAME" /> quando ele for iniciado. Os sinalizadores especificados são aplicados apenas na tela de login. Os sinalizadores definidos por meio desta política não são propagados em sessões de usuário.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
-<translation id="6857824281777105940">Esta política controla a permissão de fornecimento de informações sobre o "Navegação segura", incluindo o número do aviso e o número do clique de aviso.
+<translation id="6857824281777105940">Esta política controla a permissão de fornecimento de informações sobre o "Navegação segura", incluindo o número do aviso e do clique de aviso.
 
       Quando esta política não for configurada ou for definida como true, os dados do "Navegação segura" serão coletados.
       Quando esta política for definida como false, os dados do "Navegação segura" não serão coletados.
@@ -2340,7 +2340,7 @@
       Quando esta política não for definida, um padrão específico da plataforma será usado: Internet Explorer para Windows ou Safari para Mac OS X. No Linux, a inicialização de um navegador alternativo falhará quando a configuração não for feita.
 
       Quando esta política for definida como ${ie}, ${firefox}, ${safari} ou
-      ${opera}, esse navegador será iniciado, caso esteja instalado. O ${ie} está
+      ${opera}, o navegador correspondente será iniciado, caso esteja instalado. O ${ie} está
       disponível apenas no Windows, e o ${safari} está disponível apenas no Windows e no Mac
       OS X.
 

@@ -166,6 +166,7 @@
     अगली स्क्रीन पर, समस्या को ठीक करने में सहायता के लिए कृपया सुझाव भेजें.</translation>
 <translation id="1217668622537098248">कार्रवाई के बाद बायां क्लिक वापस लाएं</translation>
 <translation id="121783623783282548">पासवर्ड मेल नहीं खाते.</translation>
+<translation id="1219533395013150448">आपकी Assisatant इन रिकॉर्डिंग का इस्तेमाल आपकी आवाज़ का नमूना बनाने के लिए करती है. आपकी आवाज़ का यह नमूना आपके डिवाइस की मेमोरी में सेव किया जाता है. Assistant की सेटिंग में जाकर इस नमूने को मिटाएं या बदलें. अपने Google गतिविधि नियंत्रणों में बोले गए निर्देशों को देखें या मिटाएं.</translation>
 <translation id="122082903575839559">प्रमाणपत्र हस्ताक्षर कलन विधि</translation>
 <translation id="1221024147024329929">RSA सुरक्षित तरीका के साथ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">केवल चयन</translation>
@@ -616,6 +617,7 @@
 <translation id="1880905663253319515">प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" हटाएं?</translation>
 <translation id="1886996562706621347">साइटों को प्रोटोकॉल के लिए डिफ़ॉल्‍ट हैंडलर बनने के लिए पूछने देने की अनुमति दें (सुझाव)</translation>
 <translation id="1887442540531652736">साइन-इन गड़बड़ी</translation>
+<translation id="1887597546629269384">दोबारा "Hey Google" बोलें</translation>
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
 <translation id="1889984860246851556">प्रॉक्सी सेटिंग खोलें</translation>
 <translation id="1890674179660343635">&lt;span&gt;आईडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -713,6 +715,7 @@
 <translation id="2048653237708779538">कार्रवाई उपलब्ध नहीं है</translation>
 <translation id="204914487372604757">शॉर्टकट बनाएं</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
+<translation id="2052369079215022979">आपके संगठन की ओर से प्रबंधित</translation>
 <translation id="2053312383184521053">निष्क्रिय स्थिति डेटा</translation>
 <translation id="205560151218727633">Google Assistant लोगो</translation>
 <translation id="2058456167109518507">डिवाइस की पहचान हुई</translation>
@@ -899,6 +902,7 @@
 <translation id="2336381494582898602">पॉवरवॉश</translation>
 <translation id="2339120501444485379">नया नाम डालें</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> युग्मित करना चाहता है</translation>
+<translation id="2342740338116612727">बुकमार्क जोड़े गए</translation>
 <translation id="2344028582131185878">स्वचालित डाउनलोड</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" /> में 1 पेज</translation>
 <translation id="2347644257713614136">Hangouts और Cast for Education का इस्तेमाल 'Google निजता नीति' से नियंत्रित होता है.</translation>
@@ -1676,6 +1680,7 @@
 <translation id="3550915441744863158">Chrome अपने आप अपडेट हो जाता है इसलिए आपके पास हमेशा नवीनतम वर्शन रहता है</translation>
 <translation id="3551320343578183772">टैब बंद करें</translation>
 <translation id="3552780134252864554">बाहर निकलने पर साफ़ की गई</translation>
+<translation id="3553146918065661815">⌘Q के ज़रिए छोड़ने से पहले चेतावनी दिखाएं</translation>
 <translation id="3555812735919707620">एक्सटेंशन निकालें</translation>
 <translation id="3556000484321257665">आपका खोज इंजन <ph name="URL" /> में बदल दिया गया था.</translation>
 <translation id="3559262020195162408">डिवाइस पर नीति इंस्टॉल नहीं की जा सकी.</translation>
@@ -1746,6 +1751,7 @@
 <translation id="3651488188562686558">वाई-फ़ाई से डिसकनेक्ट करें</translation>
 <translation id="3652817283076144888">शुरू हो रहा है</translation>
 <translation id="3653160965917900914">नेटवर्क फ़ाइल शेयर</translation>
+<translation id="3653842108912548333">Voice Match सुविधा के ज़रिए अपनी Assistant एक्सेस करें</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> को अपना माइक्रोफ़ोन एक्सेस करते रहने दें</translation>
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{उसे एक फ़ाइल की स्‍थायी ऐक्‍सेस प्राप्‍त है.}one{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}other{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}}</translation>
@@ -2286,6 +2292,7 @@
 <translation id="4524832533047962394">दिया गया नामांकन मोड ऑपरेटिंग सिस्‍टम के इस वर्शन पर काम नहीं करता है. कृपया पक्का करें कि आप सबसे नया वर्शन चला रहे हैं.</translation>
 <translation id="4525382759303819021">'Play स्टोर' ऐप्लिकेशन के लिए नए अपडेट और सुझाव पाएं</translation>
 <translation id="4530494379350999373">मूल</translation>
+<translation id="4533846798469727141">अब "Hey Google" बोलें</translation>
 <translation id="4533985347672295764">CPU समय</translation>
 <translation id="4534661889221639075">फिर से कोशिश करें.</translation>
 <translation id="4535127706710932914">सामान्य प्रोफ़ाइल</translation>
@@ -3261,6 +3268,7 @@
 <translation id="5990386583461751448">अनुवाद किया गया</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{यह पक्का करने के लिए कि आप वेब ब्राउज़ करते रह सकते हैं, अपने एडमिन को यह ऐप्लिकेशन हटाने के लिए कहें.}one{यह पक्का करने के लिए कि आप वेब ब्राउज़ करते रह सकते हैं, अपने एडमिन को ये ऐप्लिकेशन हटाने के लिए कहें.}other{यह पक्का करने के लिए कि आप वेब ब्राउज़ करते रह सकते हैं, अपने एडमिन को ये ऐप्लिकेशन हटाने के लिए कहें.}}</translation>
 <translation id="5997337190805127100">साइट एक्सेस के बारे में ज़्यादा जानें</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' के लिए <ph name="RESULT_COUNT" /> नतीजे मिले हैं</translation>
 <translation id="6002458620803359783">पसंदीदा आवाज़ें</translation>
 <translation id="6005695835120147974">मीडिया राउटर</translation>
 <translation id="6006484371116297560">क्लासिक</translation>
@@ -3510,6 +3518,7 @@
 <translation id="637062427944097960">यह फ़ाइल किसी अलग डेस्कटॉप पर खुली है. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) पर जाएं.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">फिर से कोशिश करें</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' के लिए एक नतीजा मिला है</translation>
 <translation id="6380143666419481200">स्वीकार करें और जारी रखें</translation>
 <translation id="6384275966486438344">अपनी खोज सेटिंग इसमें बदलें: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">साइटें कुकी डेटा को सहेज और पढ़ सकती हैं</translation>
@@ -3527,6 +3536,7 @@
 <translation id="6405510437656969977">जब आप पिन डालने के लिए तैयार हों तब जारी रखें</translation>
 <translation id="6406303162637086258">ब्राउज़र पुनर्प्रारंभ को सिम्युलेट करें</translation>
 <translation id="6406506848690869874">समन्वय</translation>
+<translation id="6406708970972405507">सेटिंग - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और <ph name="WEBSITE_3" /> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="6410257289063177456">चित्र फ़ाइलें</translation>
 <translation id="6410328738210026208">चैनल बदलें और पावरवॉश करें</translation>
@@ -3808,6 +3818,7 @@
 <translation id="6840184929775541289">एक प्रमाणन प्राधिकरण नहीं है</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">त्रुटियां</translation>
+<translation id="6843423766595476978">Ok Google पूरी तरह तैयार है</translation>
 <translation id="6845038076637626672">बड़े दृश्य में खोलें</translation>
 <translation id="685040365210406336">कोई बदलाव न करें</translation>
 <translation id="6851497530878285708">ऐप्लिकेशन चालू</translation>
@@ -4067,6 +4078,7 @@
 <translation id="7246947237293279874">FTP प्रॉक्सी</translation>
 <translation id="7248671827512403053">ऐप्स </translation>
 <translation id="725109152065019550">क्षमा करें, आपके व्यवस्थापक ने आपके खाते पर बाहरी मेमोरी को अक्षम कर दिया है.</translation>
+<translation id="7251346854160851420">डिफ़ॉल्ट वॉलपेपर</translation>
 <translation id="7253521419891527137">&amp;अधिक जानें</translation>
 <translation id="7254554697254365959">इस पेज का अनुवाद नहीं किया जा सका.</translation>
 <translation id="7254951428499890870">क्या आप वाकई "<ph name="APP_NAME" />" को डाइग्नॉस्टिक मोड में लॉन्च करना चाहते हैं?</translation>
@@ -4177,6 +4189,7 @@
 <translation id="7417705661718309329">Google मैप</translation>
 <translation id="741906494724992817">इस ऐप्स के लिए किसी विशेष अनुमति की आवश्यकता नहीं है.</translation>
 <translation id="7419433794191666278">अपने Chromebook को अपने फ़ोन से जोड़ें. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">बुकमार्क हटाए गए</translation>
 <translation id="7421925624202799674">पेज का स्रोत &amp;देखें</translation>
 <translation id="7422192691352527311">प्राथमिकताएं...</translation>
 <translation id="7423098979219808738">पहले पूछें</translation>
@@ -4338,6 +4351,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{बुकमार्क सूची में 1 आइटम है}one{बुकमार्क सूची में # आइटम हैं}other{बुकमार्क सूची में # आइटम हैं}}</translation>
 <translation id="7701040980221191251">कुछ नहीं</translation>
 <translation id="7701869757853594372">उपयोगकर्ता हैंडल</translation>
+<translation id="7702574632857388784"><ph name="FILE_NAME" /> को सूची से हटाएं</translation>
 <translation id="7702907602086592255">डोमेन</translation>
 <translation id="7704305437604973648">कार्य</translation>
 <translation id="7704317875155739195">खोजों और यूआरएल को अपने आप पूरा करें</translation>
@@ -4732,6 +4746,7 @@
 <translation id="8249296373107784235">निरस्त करें</translation>
 <translation id="8249672078237421304">ऐसे पेजों का अनुवाद करना ऑफ़र करें जो उस भाषा में नहीं हैं जिसे आप पढ़ते हैं</translation>
 <translation id="8251578425305135684">थंबनेल निकाला गया.</translation>
+<translation id="8252569384384439529">अपलोड हो रही है...</translation>
 <translation id="8253198102038551905">नेटवर्क गुण प्राप्‍त करने के लिए '+' क्‍लिक करें</translation>
 <translation id="825483282309623688">अपना डेटा पुन: स्थापित करने के लिए, आपको इंटरनेट कनेक्शन की आवश्यकता होगी.</translation>
 <translation id="8256319818471787266">स्‍पार्की</translation>
@@ -4798,6 +4813,7 @@
 <translation id="8371695176452482769">अब बोलें</translation>
 <translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
 <translation id="8373553483208508744">टैब की आवाज़ बंद करें</translation>
+<translation id="8378714024927312812">आपके संगठन की ओर से प्रबंधित</translation>
 <translation id="8379878387931047019">इस डिवाइस पर इस तरह की 'सुरक्षा चाबी' काम नहीं करती है जिसका इस वेबसाइट में अनुरोध किया गया है</translation>
 <translation id="8382913212082956454">ईमेल पते की कॉपी बनाएं</translation>
 <translation id="8386091599636877289">नीति नहीं मिली.</translation>
@@ -4836,6 +4852,7 @@
 <translation id="8438566539970814960">खोजों और ब्राउज़िंग को बेहतर बनाएं</translation>
 <translation id="8439506636278576865">इस भाषा में पृष्ठों का अनुवाद करने का ऑफ़र दें</translation>
 <translation id="8440630305826533614">Linux ऐप्लिकेशन</translation>
+<translation id="8446474770554547328">तीन बार "Ok Google" रिकॉर्ड करने से आपकी आवाज़ का नमूना बनता है. इसे आपके डिवाइस की मेमोरी में सेव किया जाता है. Assistant की सेटिंग में जाकर इस नमूने को मिटाएं या बदलें. अपने Google गतिविधि नियंत्रणों में बोले गए निर्देशों को देखें या मिटाएं.</translation>
 <translation id="8446884382197647889">अधिक जानें</translation>
 <translation id="8447409163267621480">Ctrl या Alt में से किसी एक को शामिल करें</translation>
 <translation id="8448729345478502352">अपनी स्क्रीन पर मौजूद आइटम को छोटा या बड़ा करें</translation>
