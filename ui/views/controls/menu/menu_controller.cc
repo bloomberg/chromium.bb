@@ -2156,7 +2156,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       // Menu fits above anchor bounds.
       menu_bounds.set_y(above_anchor);
       item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
-    } else {
+    } else if (item->GetDelegate()->ShouldTryPositioningBesideAnchor()) {
       const int left_of_anchor = anchor_bounds.x() - menu_bounds.width();
       const int right_of_anchor = anchor_bounds.right();
 
@@ -2174,6 +2174,11 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         if (menu_bounds.x() < monitor_bounds.x())
           menu_bounds.set_x(right_of_anchor);
       }
+    } else {
+      // The delegate doesn't want the menu repositioned to the side, and it
+      // doesn't fit on the screen in any orientation - just clip the menu to
+      // the screen and let the scrolling arrows appear.
+      menu_bounds.Intersect(monitor_bounds);
     }
   }
 
