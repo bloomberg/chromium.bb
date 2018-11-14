@@ -340,10 +340,6 @@ void BackgroundFetchDelegateImpl::UpdateUI(
   }
 
   UpdateOfflineItemAndUpdateObservers(&job_details);
-
-  // UpdateUI() can only be called once, and only when the background fetch
-  // has succeeded or failed, so we can delete |job_details| now.
-  job_details_map_.erase(job_details_iter);
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadStarted(
