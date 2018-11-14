@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
+#include "ash/multi_user/user_switch_animator.h"
 
+#include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/multi_user/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
-#include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -19,23 +18,25 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
+namespace ash {
 namespace {
 
 // The minimal possible animation time for animations which should happen
 // "instantly".
-const int kMinimalAnimationTimeMS = 1;
+constexpr base::TimeDelta kMinimalAnimationTime =
+    base::TimeDelta::FromMilliseconds(1);
 
 // logic while the user gets switched.
 class UserChangeActionDisabler {
  public:
   UserChangeActionDisabler() {
-    ash::WindowPositioner::DisableAutoPositioning(true);
-    ash::Shell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
+    WindowPositioner::DisableAutoPositioning(true);
+    Shell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
   }
 
   ~UserChangeActionDisabler() {
-    ash::WindowPositioner::DisableAutoPositioning(false);
-    ash::Shell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
+    WindowPositioner::DisableAutoPositioning(false);
+    Shell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
   }
 
  private:
@@ -78,36 +79,37 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
 
 }  // namespace
 
-UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
-    MultiUserWindowManagerChromeOS* owner,
-    const AccountId& new_account_id,
-    int animation_speed_ms)
+UserSwitchAnimator::UserSwitchAnimator(
+    MultiUserWindowManager* owner,
+    mojom::WallpaperUserInfoPtr wallpaper_user_info,
+    base::TimeDelta animation_speed)
     : owner_(owner),
-      new_account_id_(new_account_id),
-      animation_speed_ms_(animation_speed_ms),
+      wallpaper_user_info_(std::move(wallpaper_user_info)),
+      new_account_id_(wallpaper_user_info_->account_id),
+      animation_speed_(animation_speed),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover(NULL)),
       windows_by_account_id_() {
   BuildUserToWindowsListMap();
   AdvanceUserTransitionAnimation();
 
-  if (!animation_speed_ms_) {
+  if (animation_speed_.is_zero()) {
     FinalizeAnimation();
   } else {
     user_changed_animation_timer_.reset(new base::RepeatingTimer());
     user_changed_animation_timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(animation_speed_ms_),
-        base::Bind(&UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation,
-                   base::Unretained(this)));
+        FROM_HERE, animation_speed_,
+        base::BindRepeating(&UserSwitchAnimator::AdvanceUserTransitionAnimation,
+                            base::Unretained(this)));
   }
 }
 
-UserSwitchAnimatorChromeOS::~UserSwitchAnimatorChromeOS() {
+UserSwitchAnimator::~UserSwitchAnimator() {
   FinalizeAnimation();
 }
 
 // static
-bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
+bool UserSwitchAnimator::CoversScreen(aura::Window* window) {
   // Full screen covers the screen naturally. Since a normal window can have the
   // same size as the work area, we only compare the bounds against the work
   // area.
@@ -120,7 +122,7 @@ bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
   return work_area == bounds;
 }
 
-void UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation() {
+void UserSwitchAnimator::AdvanceUserTransitionAnimation() {
   DCHECK_NE(animation_step_, ANIMATION_STEP_ENDED);
 
   TransitionWallpaper(animation_step_);
@@ -138,7 +140,8 @@ void UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation() {
     case ANIMATION_STEP_FINALIZE:
       user_changed_animation_timer_.reset();
       animation_step_ = ANIMATION_STEP_ENDED;
-      owner_->NotifyAfterUserSwitchAnimationFinished();
+      if (owner_->delegate_)
+        owner_->delegate_->OnDidSwitchActiveAccount();
       break;
     case ANIMATION_STEP_ENDED:
       NOTREACHED();
@@ -146,29 +149,31 @@ void UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation() {
   }
 }
 
-void UserSwitchAnimatorChromeOS::CancelAnimation() {
+void UserSwitchAnimator::CancelAnimation() {
   animation_step_ = ANIMATION_STEP_ENDED;
 }
 
-void UserSwitchAnimatorChromeOS::FinalizeAnimation() {
+void UserSwitchAnimator::FinalizeAnimation() {
   user_changed_animation_timer_.reset();
   while (ANIMATION_STEP_ENDED != animation_step_)
     AdvanceUserTransitionAnimation();
 }
 
-void UserSwitchAnimatorChromeOS::TransitionWallpaper(
-    AnimationStep animation_step) {
+void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
+  WallpaperController* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+
   // Handle the wallpaper switch.
   if (animation_step == ANIMATION_STEP_HIDE_OLD_USER) {
     // Set the wallpaper cross dissolve animation duration to our complete
     // animation cycle for a fade in and fade out.
-    int duration =
-        NO_USER_COVERS_SCREEN == screen_cover_ ? (2 * animation_speed_ms_) : 0;
-    WallpaperControllerClient::Get()->SetAnimationDuration(
-        base::TimeDelta::FromMilliseconds(
-            std::max(duration, kMinimalAnimationTimeMS)));
+    base::TimeDelta duration =
+        animation_speed_ * (NO_USER_COVERS_SCREEN == screen_cover_ ? 2 : 0);
+    wallpaper_controller->SetAnimationDuration(
+        duration > kMinimalAnimationTime ? duration : kMinimalAnimationTime);
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
-      WallpaperControllerClient::Get()->ShowUserWallpaper(new_account_id_);
+      DCHECK(wallpaper_user_info_);
+      wallpaper_controller->ShowUserWallpaper(std::move(wallpaper_user_info_));
       wallpaper_user_id_for_test_ =
           (NO_USER_COVERS_SCREEN == screen_cover_ ? "->" : "") +
           new_account_id_.Serialize();
@@ -176,37 +181,34 @@ void UserSwitchAnimatorChromeOS::TransitionWallpaper(
   } else if (animation_step == ANIMATION_STEP_FINALIZE) {
     // Revert the wallpaper cross dissolve animation duration back to the
     // default.
-    if (screen_cover_ == NEW_USER_COVERS_SCREEN)
-      WallpaperControllerClient::Get()->ShowUserWallpaper(new_account_id_);
+    if (screen_cover_ == NEW_USER_COVERS_SCREEN) {
+      DCHECK(wallpaper_user_info_);
+      wallpaper_controller->ShowUserWallpaper(std::move(wallpaper_user_info_));
+    }
 
     // Coming here the wallpaper user id is the final result. No matter how we
     // got here.
     wallpaper_user_id_for_test_ = new_account_id_.Serialize();
-    WallpaperControllerClient::Get()->SetAnimationDuration(base::TimeDelta());
+    wallpaper_controller->SetAnimationDuration(base::TimeDelta());
   }
 }
 
-void UserSwitchAnimatorChromeOS::TransitionUserShelf(
-    AnimationStep animation_step) {
+void UserSwitchAnimator::TransitionUserShelf(AnimationStep animation_step) {
   if (animation_step != ANIMATION_STEP_SHOW_NEW_USER)
     return;
 
-  ChromeLauncherController* chrome_launcher_controller =
-      ChromeLauncherController::instance();
-  // Some unit tests have no ChromeLauncherController.
-  if (chrome_launcher_controller) {
-    chrome_launcher_controller->ActiveUserChanged(
-        new_account_id_.GetUserEmail());
-  }
+  if (owner_->delegate_)
+    owner_->delegate_->OnTransitionUserShelfToNewAccount();
 }
 
-void UserSwitchAnimatorChromeOS::TransitionWindows(
-    AnimationStep animation_step) {
+void UserSwitchAnimator::TransitionWindows(AnimationStep animation_step) {
   // Disable the window position manager and the MRU window tracker temporarily.
   UserChangeActionDisabler disabler;
 
   // Animation duration.
-  int duration = std::max(kMinimalAnimationTimeMS, 2 * animation_speed_ms_);
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      std::max(kMinimalAnimationTime.InMilliseconds(),
+               2 * animation_speed_.InMilliseconds()));
 
   switch (animation_step) {
     case ANIMATION_STEP_HIDE_OLD_USER: {
@@ -229,7 +231,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
           // different than that of the for_show_account_id) should retrun to
           // their
           // original owners' desktops.
-          MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator itr =
+          MultiUserWindowManager::WindowToEntryMap::const_iterator itr =
               owner_->window_to_entry().find(window);
           DCHECK(itr != owner_->window_to_entry().end());
           if (show_for_account_id != itr->second->owner() &&
@@ -291,7 +293,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
       aura::Window::Windows mru_list =
-          ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList();
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&
@@ -312,13 +314,11 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
   }
 }
 
-UserSwitchAnimatorChromeOS::TransitioningScreenCover
-UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
+UserSwitchAnimator::TransitioningScreenCover UserSwitchAnimator::GetScreenCover(
+    aura::Window* root_window) {
   TransitioningScreenCover cover = NO_USER_COVERS_SCREEN;
-  for (MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator it_map =
-           owner_->window_to_entry().begin();
-       it_map != owner_->window_to_entry().end(); ++it_map) {
-    aura::Window* window = it_map->first;
+  for (auto& pair : owner_->window_to_entry()) {
+    aura::Window* window = pair.first;
     if (root_window && window->GetRootWindow() != root_window)
       continue;
     if (window->IsVisible() && CoversScreen(window)) {
@@ -337,7 +337,7 @@ UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
   return cover;
 }
 
-void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
+void UserSwitchAnimator::BuildUserToWindowsListMap() {
   // This is to be called only at the time this animation is constructed.
   DCHECK(windows_by_account_id_.empty());
 
@@ -362,3 +362,5 @@ void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
     }
   }
 }
+
+}  // namespace ash
