@@ -33,6 +33,12 @@ using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 
 enum class FeatureTestState { kDisabled, kEnabled };
 
+// An engagement score above MEDIUM.
+const int kHighEngagement = 20;
+
+// An engagement score below MEDIUM.
+const int kLowEngagement = 1;
+
 struct SiteEngagementTestCase {
   const char* const navigated;
   const char* const suggested;
@@ -201,7 +207,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        TopDomainIdn_EngagedSite_NoInfobar) {
   const GURL url = embedded_test_server()->GetURL("googlé.com", "/title1.html");
-  SetSiteEngagementScore(url, 20);
+  SetSiteEngagementScore(url, kHighEngagement);
   TestInfobarNotShown(url);
   CheckNoUkm();
 }
@@ -217,6 +223,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
       embedded_test_server()->GetURL("googlé.com", "/title1.html");
 
   if (GetParam() == FeatureTestState::kEnabled) {
+    // Even if the navigated site has a low engagement score, it should be
+    // considered for lookalike suggestions.
+    SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
     // If the feature is enabled, the UI will be displayed. Expect extra
     // histogram entries for kInfobarShown and kLinkClicked events.
     TestInfobarShown(kNavigatedUrl,
@@ -256,16 +265,19 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // a feature param.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        Idn_SiteEngagement_Match) {
-  SetSiteEngagementScore(GURL("http://site1.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.site2.test"), 20);
-  SetSiteEngagementScore(GURL("http://sité3.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
+  SetSiteEngagementScore(GURL("http://site1.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.site2.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://sité3.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.sité4.test"), kHighEngagement);
 
   std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
     const GURL kNavigatedUrl =
         embedded_test_server()->GetURL(test_case.navigated, "/title1.html");
+    // Even if the navigated site has a low engagement score, it should be
+    // considered for lookalike suggestions.
+    SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
 
     if (GetParam() == FeatureTestState::kEnabled) {
       // If the feature is enabled, the UI will be displayed. Expect extra
@@ -306,6 +318,20 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
            LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
 }
 
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       Idn_SiteEngagement_Match_Ignored) {
+  // Test that navigations to a site with a high engagement score shouldn't
+  // record metrics or show infobar.
+  base::HistogramTester histograms;
+  SetSiteEngagementScore(GURL("http://site5.test"), kHighEngagement);
+  const GURL high_engagement_url =
+      embedded_test_server()->GetURL("síte5.test", "/title1.html");
+  SetSiteEngagementScore(high_engagement_url, kHighEngagement);
+  TestInfobarNotShown(high_engagement_url);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                              0);
+}
+
 // IDNs with a single label should be properly handled. There are two cases
 // where this might occur:
 // 1. The navigated URL is an IDN with a single label.
@@ -320,7 +346,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   // Case 2: An IDN with a single label with a site engagement score shouldn't
   // cause a crash.
-  SetSiteEngagementScore(GURL("http://tést"), 20);
+  SetSiteEngagementScore(GURL("http://tést"), kHighEngagement);
   TestInfobarNotShown(
       embedded_test_server()->GetURL("tést.com", "/title1.html"));
 
