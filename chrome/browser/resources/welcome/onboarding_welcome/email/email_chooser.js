@@ -65,6 +65,9 @@ Polymer({
 
     this.emailProxy_.getEmailList().then(list => {
       this.emailList_ = list;
+
+      // Pre-select fist email provider.
+      this.selectedEmailProvider_ = this.emailList_[0];
     });
 
     window.addEventListener('beforeunload', () => {
@@ -151,6 +154,9 @@ Polymer({
   addBookmark_: function(emailProvider) {
     if (emailProvider.bookmarkId)
       return;
+
+    // Indicates that the emailProvider is being added as a bookmark.
+    emailProvider.bookmarkId = 'pending';
 
     this.emailProxy_.cacheBookmarkIcon(emailProvider.id);
     this.bookmarkProxy_.toggleBookmarkBar(true);
