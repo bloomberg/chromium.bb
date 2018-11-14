@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -17,50 +17,22 @@
 namespace unified_consent {
 namespace {
 
-class TestSyncService : public syncer::FakeSyncService {
+class TestSyncService : public syncer::TestSyncService {
  public:
-  void set_sync_initialized(bool sync_initialized) {
-    sync_initialized_ = sync_initialized;
-  }
+  TestSyncService() { SetActiveDataTypes({}); }
+
   void AddActiveDataType(syncer::ModelType type) {
-    sync_active_data_types_.Put(type);
+    syncer::ModelTypeSet active_types = GetActiveDataTypes();
+    active_types.Put(type);
+    SetActiveDataTypes(active_types);
   }
-  void ClearActiveDataTypes() { sync_active_data_types_.Clear(); }
+
   void FireOnStateChangeOnAllObservers() {
     for (auto& observer : observers_)
       observer.OnStateChanged(this);
   }
 
-  // syncer::FakeSyncService:
-  int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
-  TransportState GetTransportState() const override {
-    return TransportState::ACTIVE;
-  }
-  syncer::ModelTypeSet GetPreferredDataTypes() const override {
-    return syncer::ModelTypeSet(syncer::ModelType::HISTORY_DELETE_DIRECTIVES,
-                                syncer::ModelType::USER_EVENTS,
-                                syncer::ModelType::EXTENSIONS);
-  }
-  bool IsFirstSetupComplete() const override { return true; }
-
-  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override {
-    if (!sync_initialized_)
-      return syncer::SyncCycleSnapshot();
-    return syncer::SyncCycleSnapshot(
-        syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 5, 2,
-        7, false, 0, base::Time::Now(), base::Time::Now(),
-        std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
-        std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
-        sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-        /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-        /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
-        /*has_remaining_local_changes=*/false);
-  }
-
-  syncer::ModelTypeSet GetActiveDataTypes() const override {
-    return sync_active_data_types_;
-  }
-
+  // syncer::TestSyncService:
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observers_.AddObserver(observer);
   }
@@ -69,8 +41,6 @@ class TestSyncService : public syncer::FakeSyncService {
   }
 
  private:
-  bool sync_initialized_ = false;
-  syncer::ModelTypeSet sync_active_data_types_;
   base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 };
 
@@ -133,7 +103,6 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
 
-  sync_service_.set_sync_initialized(true);
   sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
@@ -162,7 +131,6 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
-  sync_service_.set_sync_initialized(true);
 
   // Peronalized data collection is disabled when only USER_EVENTS are enabled.
   sync_service_.AddActiveDataType(syncer::ModelType::USER_EVENTS);
@@ -172,7 +140,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
   // Peronalized data collection is disabled when only HISTORY_DELETE_DIRECTIVES
   // are enabled.
-  sync_service_.ClearActiveDataTypes();
+  sync_service_.SetActiveDataTypes({});
   sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_FALSE(helper->IsEnabled());
@@ -180,7 +148,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
   // Personalized data collection is enabled iff USER_EVENTS and
   // HISTORY_DELETE_DIRECTIVES are enabled.
-  sync_service_.ClearActiveDataTypes();
+  sync_service_.SetActiveDataTypes({});
   sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.AddActiveDataType(syncer::ModelType::USER_EVENTS);
   sync_service_.FireOnStateChangeOnAllObservers();
@@ -200,7 +168,6 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
 
-  sync_service_.set_sync_initialized(true);
   sync_service_.AddActiveDataType(syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_TRUE(helper->IsEnabled());
