@@ -17216,6 +17216,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromForceSigninWarning">
+  <obsolete>Deprecated as the warning dialog is no longer used.</obsolete>
   <owner>zmin@chromium.org</owner>
   <description>
     Record when a user signs in again from the force sign in auth error warning

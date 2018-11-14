@@ -14,10 +14,6 @@ namespace ui {
 
 class NativeTheme;
 
-// Blend parameters for the dialog prompt bar.
-const SkAlpha kSigninConfirmationPromptBarBackgroundAlpha = 0x0A;
-const SkAlpha kSigninConfirmationPromptBarBorderAlpha = 0x1F;
-
 // Create slightly different colors for the dialog prompt bar.
 SkColor GetSigninConfirmationPromptBarColor(NativeTheme* theme, SkAlpha alpha);
 
