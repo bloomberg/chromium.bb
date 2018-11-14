@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.modelutil;
 
+import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.support.v4.util.ObjectsCompat;
+import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.annotations.RemovableInRelease;
 
@@ -252,6 +256,18 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         public Builder with(
                 ReadableObjectPropertyKey<String> key, Resources resources, @StringRes int resId) {
             if (resId != 0) with(key, resources.getString(resId));
+            return this;
+        }
+
+        /**
+         * @param key The key of the specified {@link ReadableObjectPropertyKey<Drawable>}.
+         * @param context The {@link Context} for obtaining the specified drawable resource.
+         * @param resId The specified drawable resource id.
+         * @return The {@link Builder} with the specified key and drawable resource set.
+         */
+        public Builder with(
+                ReadableObjectPropertyKey<Drawable> key, Context context, @DrawableRes int resId) {
+            if (resId != 0) with(key, AppCompatResources.getDrawable(context, resId));
             return this;
         }
 

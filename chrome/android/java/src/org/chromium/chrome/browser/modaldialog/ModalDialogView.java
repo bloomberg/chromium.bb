@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.modaldialog;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
@@ -114,7 +116,9 @@ public class ModalDialogView implements View.OnClickListener {
     private final View mDialogView;
 
     private FadingEdgeScrollView mScrollView;
+    private ViewGroup mTitleContainer;
     private TextView mTitleView;
+    private ImageView mTitleIcon;
     private TextView mMessageView;
     private ViewGroup mCustomViewContainer;
     private View mButtonBar;
@@ -160,7 +164,9 @@ public class ModalDialogView implements View.OnClickListener {
 
     private void initialize() {
         mScrollView = mDialogView.findViewById(R.id.modal_dialog_scroll_view);
-        mTitleView = mDialogView.findViewById(R.id.title);
+        mTitleContainer = mDialogView.findViewById(R.id.title_container);
+        mTitleView = mTitleContainer.findViewById(R.id.title);
+        mTitleIcon = mTitleContainer.findViewById(R.id.title_icon);
         mMessageView = mDialogView.findViewById(R.id.message);
         mCustomViewContainer = mDialogView.findViewById(R.id.custom);
         mButtonBar = mDialogView.findViewById(R.id.button_bar);
@@ -169,6 +175,8 @@ public class ModalDialogView implements View.OnClickListener {
 
         mPositiveButton.setOnClickListener(this);
         mNegativeButton.setOnClickListener(this);
+        updateContentVisibility();
+        updateButtonVisibility();
     }
 
     @Override
@@ -257,19 +265,32 @@ public class ModalDialogView implements View.OnClickListener {
         updateContentVisibility();
     }
 
+    /**
+     * @param drawable The icon drawable on the title.
+     */
+    public void setTitleIcon(Drawable drawable) {
+        mTitleIcon.setImageDrawable(drawable);
+        updateContentVisibility();
+    }
+
     /** @param titleScrollable Whether the title is scrollable with the message. */
     void setTitleScrollable(boolean titleScrollable) {
         if (mTitleScrollable == titleScrollable) return;
 
         mTitleScrollable = titleScrollable;
         CharSequence title = mTitleView.getText();
+        Drawable icon = mTitleIcon.getDrawable();
 
-        // Hide the previous title view since the scrollable and non-scrollable title view should
-        // not be shown at the same time.
-        mTitleView.setVisibility(View.GONE);
+        // Hide the previous title container since the scrollable and non-scrollable title container
+        // should not be shown at the same time.
+        mTitleContainer.setVisibility(View.GONE);
 
-        mTitleView = mDialogView.findViewById(titleScrollable ? R.id.scrollable_title : R.id.title);
+        mTitleContainer = mDialogView.findViewById(
+                titleScrollable ? R.id.scrollable_title_container : R.id.title_container);
+        mTitleView = mTitleContainer.findViewById(R.id.title);
+        mTitleIcon = mTitleContainer.findViewById(R.id.title_icon);
         setTitle(title);
+        setTitleIcon(icon);
 
         LayoutParams layoutParams = (LayoutParams) mCustomViewContainer.getLayoutParams();
         if (titleScrollable) {
@@ -341,10 +362,14 @@ public class ModalDialogView implements View.OnClickListener {
 
     private void updateContentVisibility() {
         boolean titleVisible = !TextUtils.isEmpty(mTitleView.getText());
+        boolean titleIconVisible = mTitleIcon.getDrawable() != null;
+        boolean titleContainerVisible = titleVisible || titleIconVisible;
         boolean messageVisible = !TextUtils.isEmpty(mMessageView.getText());
-        boolean scrollViewVisible = (mTitleScrollable && titleVisible) || messageVisible;
+        boolean scrollViewVisible = (mTitleScrollable && titleContainerVisible) || messageVisible;
 
         mTitleView.setVisibility(titleVisible ? View.VISIBLE : View.GONE);
+        mTitleIcon.setVisibility(titleIconVisible ? View.VISIBLE : View.GONE);
+        mTitleContainer.setVisibility(titleContainerVisible ? View.VISIBLE : View.GONE);
         mMessageView.setVisibility(messageVisible ? View.VISIBLE : View.GONE);
         mScrollView.setVisibility(scrollViewVisible ? View.VISIBLE : View.GONE);
     }

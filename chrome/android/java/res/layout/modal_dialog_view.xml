@@ -12,18 +12,14 @@
     app:maxWidthLandscape="@dimen/abc_dialog_min_width_major"
     app:maxWidthPortrait="@dimen/abc_dialog_min_width_minor" >
 
-    <android.support.v7.widget.DialogTitle
-        android:id="@+id/title"
-        android:textAppearance="@style/BlackHeadline"
-        android:visibility="gone"
-        style="@style/AlertDialogContent" />
+    <include layout="@layout/modal_dialog_title"
+        android:id="@+id/title_container" />
 
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView
         android:id="@+id/modal_dialog_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:visibility="gone"
         android:fadeScrollbars="false">
 
         <LinearLayout
@@ -31,16 +27,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <android.support.v7.widget.DialogTitle
-                android:id="@+id/scrollable_title"
-                android:textAppearance="@style/BlackHeadline"
-                android:visibility="gone"
-                style="@style/AlertDialogContent" />
+            <include layout="@layout/modal_dialog_title"
+                android:id="@+id/scrollable_title_container"
+                android:visibility="gone" />
 
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/message"
                 android:textAppearance="@style/BlackBody"
-                android:visibility="gone"
                 app:leading="20sp"
                 style="@style/AlertDialogContent" />
 
@@ -59,21 +52,18 @@
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         style="?attr/buttonBarStyle">
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/negative_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             style="?attr/buttonBarNegativeButtonStyle" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/positive_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             style="?attr/buttonBarPositiveButtonStyle" />
 
     </android.support.v7.widget.ButtonBarLayout>
