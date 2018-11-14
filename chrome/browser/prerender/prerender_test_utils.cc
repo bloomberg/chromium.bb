@@ -277,7 +277,8 @@ TestPrerenderContents::TestPrerenderContents(
     const GURL& url,
     const content::Referrer& referrer,
     Origin origin,
-    FinalStatus expected_final_status)
+    FinalStatus expected_final_status,
+    bool ignore_final_status)
     : PrerenderContents(prerender_manager, profile, url, referrer, origin),
       expected_final_status_(expected_final_status),
       observer_(this),
@@ -285,7 +286,7 @@ TestPrerenderContents::TestPrerenderContents(
       was_hidden_(false),
       was_shown_(false),
       should_be_shown_(expected_final_status == FINAL_STATUS_USED),
-      skip_final_checks_(false) {}
+      skip_final_checks_(ignore_final_status) {}
 
 TestPrerenderContents::~TestPrerenderContents() {
   if (skip_final_checks_)
@@ -519,6 +520,10 @@ TestPrerenderContentsFactory::ExpectPrerenderContents(
   return handle;
 }
 
+void TestPrerenderContentsFactory::IgnorePrerenderContents() {
+  expected_contents_queue_.push_back(ExpectedContents(true));
+}
+
 PrerenderContents* TestPrerenderContentsFactory::CreatePrerenderContents(
     PrerenderManager* prerender_manager,
     Profile* profile,
@@ -530,15 +535,15 @@ PrerenderContents* TestPrerenderContentsFactory::CreatePrerenderContents(
     expected = expected_contents_queue_.front();
     expected_contents_queue_.pop_front();
   }
-  TestPrerenderContents* contents = new TestPrerenderContents(
-      prerender_manager, profile, url, referrer, origin, expected.final_status);
+  TestPrerenderContents* contents =
+      new TestPrerenderContents(prerender_manager, profile, url, referrer,
+                                origin, expected.final_status, expected.ignore);
   if (expected.handle)
     expected.handle->OnPrerenderCreated(contents);
   return contents;
 }
 
-TestPrerenderContentsFactory::ExpectedContents::ExpectedContents()
-    : final_status(FINAL_STATUS_MAX) {}
+TestPrerenderContentsFactory::ExpectedContents::ExpectedContents() {}
 
 TestPrerenderContentsFactory::ExpectedContents::ExpectedContents(
     const ExpectedContents& other) = default;
@@ -547,6 +552,9 @@ TestPrerenderContentsFactory::ExpectedContents::ExpectedContents(
     FinalStatus final_status,
     const base::WeakPtr<TestPrerender>& handle)
     : final_status(final_status), handle(handle) {}
+
+TestPrerenderContentsFactory::ExpectedContents::ExpectedContents(bool ignore)
+    : ignore(ignore) {}
 
 TestPrerenderContentsFactory::ExpectedContents::~ExpectedContents() {}
 

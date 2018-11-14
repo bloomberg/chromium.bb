@@ -109,7 +109,8 @@ class TestPrerenderContents : public PrerenderContents,
                         const GURL& url,
                         const content::Referrer& referrer,
                         Origin origin,
-                        FinalStatus expected_final_status);
+                        FinalStatus expected_final_status,
+                        bool ignore_final_status);
 
   ~TestPrerenderContents() override;
 
@@ -280,6 +281,8 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
   std::unique_ptr<TestPrerender> ExpectPrerenderContents(
       FinalStatus final_status);
 
+  void IgnorePrerenderContents();
+
   PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
       Profile* profile,
@@ -293,10 +296,12 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
     ExpectedContents(const ExpectedContents& other);
     ExpectedContents(FinalStatus final_status,
                      const base::WeakPtr<TestPrerender>& handle);
+    explicit ExpectedContents(bool ignore);
     ~ExpectedContents();
 
-    FinalStatus final_status;
-    base::WeakPtr<TestPrerender> handle;
+    FinalStatus final_status = FINAL_STATUS_MAX;
+    bool ignore = false;
+    base::WeakPtr<TestPrerender> handle = nullptr;
   };
 
   base::circular_deque<ExpectedContents> expected_contents_queue_;
