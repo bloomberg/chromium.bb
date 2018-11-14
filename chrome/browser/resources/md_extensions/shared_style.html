@@ -1,0 +1,29 @@
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+
+<dom-module id="shared-style">
+  <template>
+    <style include="cr-shared-style">
+      .page-container {
+        height: 100%;
+        overflow: overlay;
+      }
+
+      .page-content {
+        @apply --cr-card-elevation;
+        background-color: white;
+        margin: auto;
+        min-height: 100%;
+        padding-bottom: 64px;
+        width: var(--cr-toolbar-field-width);
+      }
+
+      .page-header {
+        align-items: center;
+        display: flex;
+        height: 40px;
+        margin-bottom: 12px;
+        padding: 8px 12px 0;
+      }
+    </style>
+  </template>
+</dom-module>

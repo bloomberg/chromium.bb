@@ -23,12 +23,13 @@
 <link rel="import" href="host_permissions_toggle_list.html">
 <link rel="import" href="navigation_helper.html">
 <link rel="import" href="runtime_host_permissions.html">
+<link rel="import" href="shared_style.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="toggle_row.html">
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style">
+    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style shared-style">
       :host {
         --iron-icon-fill-color: var(--google-grey-refresh-700);
         display: block;
@@ -50,29 +51,6 @@
 
       #enable-section .enabled-text {
         color: var(--google-blue-500);
-      }
-
-      #container {
-        height: 100%;
-        overflow: overlay;
-      }
-
-      #main {
-        @apply --cr-card-elevation;
-        background-color: white;
-        box-sizing: border-box;
-        margin: auto;
-        min-height: 100%;
-        padding-bottom: 64px;
-        width: var(--cr-toolbar-field-width);
-      }
-
-      #top-bar {
-        align-items: center;
-        display: flex;
-        height: 40px;
-        margin-bottom: 12px;
-        padding: 8px 12px 0;
       }
 
       #icon {
@@ -191,9 +169,9 @@
         @apply --cr-icon-height-width;
       }
     </style>
-    <div id="container">
-      <div id="main">
-        <div id="top-bar">
+    <div class="page-container" id="container">
+      <div class="page-content">
+        <div class="page-header">
           <paper-icon-button-light class="icon-arrow-back no-overlap">
             <button id="closeButton" aria-label="$i18n{back}"
                 on-click="onCloseButtonTap_"></button>

@@ -26,6 +26,7 @@ def _CheckExterns(input_api, output_api):
   externs_root = join(src_root, 'third_party', 'closure_compiler', 'externs')
 
   api_pair_names = {
+    'activity_log_private.json': 'activity_log_private.js',
     'autofill_private.idl': 'autofill_private.js',
     'automation.idl': 'automation.js',
     'developer_private.idl': 'developer_private.js',
