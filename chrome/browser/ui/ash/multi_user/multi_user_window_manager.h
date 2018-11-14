@@ -34,6 +34,14 @@ class Window;
 //   clean automatically all references of that window upon destruction.
 // - User changes will be tracked via observer. No need to call.
 // - All child windows will be owned by the same owner as its parent.
+//
+// WARNING: in mash this code ends up referencing windows with an aura Env
+// of MUS *and* windows with an aura Env of LOCAL. This is because Arc/Crostini
+// windows are created by Ash, and browser/app windows are created by the
+// browser. Long term this code needs to be refactored out of chrome, at which
+// time *all* windows should be created by Ash. https://crbug.com/875111
+//
+// TODO(sky): rename this (and related classes).
 class MultiUserWindowManager {
  public:
   // Observer to notify of any window owner changes.
