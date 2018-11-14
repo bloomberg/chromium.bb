@@ -946,7 +946,7 @@ deps = {
 
   # Minizip library. Used on Chrome OS.
   'src/third_party/minizip/src': {
-      'url': Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'c47090678d687742eddc60d07c5430279af416d8',
+      'url': Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + '4d4c9db5b019e71b4a40fb41ab21fb47de12ae69',
       'condition': 'checkout_linux',
   },
 
