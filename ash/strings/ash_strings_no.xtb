@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth er deaktivert</translation>
 <translation id="2268813581635650749">Logg alle av</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
+<translation id="2302092602801625023">Denne kontoen er administrert av Family Link</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
 <translation id="2339073806695260576">Trykk på pekepennknappen på hyllen for å ta et notat, ta en skjermdump, bruke laserpekeren eller bruke forstørrelsesglasset.</translation>
 <translation id="2341729377289034582">Låst til vertikal</translation>
@@ -172,6 +173,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Høyttaler (intern)</translation>
+<translation id="3799080171973636491">Du trykket på hurtigtasten for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="380165613292957338">Hei! Hva kan jeg hjelpe deg med?</translation>
 <translation id="383629559565718788">Vis tastaturinnstillinger</translation>
 <translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
@@ -196,12 +198,14 @@
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Du trykket på hurtigtasten for høy kontrast. Vil du slå det på?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Forstørrelsesglass</translation>
 <translation id="4351433414020964307">Assistenten lastes inn …</translation>
 <translation id="435527878592612277">Velg bilde</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
+<translation id="4389184120735010762">Du trykket på hurtigtasten for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
@@ -390,6 +394,7 @@
 <translation id="7886169021410746335">justere personverninnstillinger</translation>
 <translation id="7886277072580235377">Internett-økten din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send e-post</translation>
+<translation id="7897375687985782769">Du har trykket på hurtigtasten for skjermrotasjon. Vil du rotere skjermen?</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
 <translation id="79341161159229895">Kontoen er administrert av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -455,6 +460,7 @@
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8990809378771970590">Bruker <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>

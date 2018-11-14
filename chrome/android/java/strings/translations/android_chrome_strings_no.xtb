@@ -170,6 +170,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">Automatisk</translation>
 <translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sender noe systeminformasjon og sideinnhold til Google</translation>
 <translation id="2234876718134438132">Synkronisering/Google-tjenester</translation>
@@ -240,6 +241,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="2779651927720337254">mislyktes</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
+<translation id="2783359740176230170">Rask betaling</translation>
 <translation id="2803478378562657435">Viser lagrede passord og passordalternativer</translation>
 <translation id="2810645512293415242">Siden er forenklet for å spare data og laste den inn raskere.</translation>
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
@@ -362,6 +364,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3868004864571585162">Informasjonskapsler, medielisenser og nettstedsdata</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
+<translation id="3918221729963301892">Ikke vis igjen</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
 <translation id="393697183122708255">Ingen aktiverte talesøk er tilgjengelige</translation>
@@ -507,6 +510,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /> mens du skanner etter enheter …</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deler skjermen din</translation>
+<translation id="4961107849584082341">Oversett denne siden til hvilket som helst språk</translation>
 <translation id="4961334780091921942">Passordene dine, loggen din med mer på alle enheter</translation>
 <translation id="4961700429721424617">Du logger av en konto som administreres av <ph name="MANAGED_DOMAIN" />. Dette fører til at Chrome-dataene dine slettes fra denne enheten. De fortsetter imidlertid å være lagret i Google-kontoen din.</translation>
 <translation id="497421865427891073">Gå til neste</translation>
@@ -544,6 +548,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5240817131241497236">Innstillingene som kontrollerer synkronisering, personlig tilpasning og andre Google-tjenester i Chrome, er blitt endret. Dette kan påvirke de nåværende innstillingene dine.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Innstillinger<ph name="END_LINK1" /> kan tilpasses når som helst. Google kan bruke innhold på nettsteder du besøker, nettleserinteraksjoner og annen aktivitet for å gi Chrome og Google-tjenester (som Oversetter, Søk og annonser) et personlig preg.</translation>
 <translation id="5271967389191913893">Enheten kan ikke åpne innholdet som skal lastes ned.</translation>
+<translation id="5274381992091475657">Autofyll for assistenten</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="5284584623296338184">Endringer i bokmerker, loggoppføringer, passord og andre innstillinger blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
 <translation id="5300589172476337783">Vis</translation>
@@ -611,6 +616,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
+<translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
 <translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
 
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
@@ -652,6 +658,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="5990142338020175451">Google-tjenester med et mer personlig preg, som for eksempel bedre sideforslag</translation>
 <translation id="6000066717592683814">Behold Google</translation>
+<translation id="6001839398155993679">Sett i gang</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -826,6 +833,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7253272406652746122">Legg til en Google-konto på Kontoer-siden i Innstillinger-appen på enheten din.</translation>
 <translation id="7274013316676448362">Blokkert nettsted</translation>
+<translation id="728491846437309531">Google-assistenten kan hjelpe deg med å gjøre ting raskere og enklere på nettet</translation>
 <translation id="729975465115245577">Enheten din har ingen app som kan lagre passordfilen.</translation>
 <translation id="7302081693174882195">Informasjon: Sortert etter mengden data som er lagret</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>

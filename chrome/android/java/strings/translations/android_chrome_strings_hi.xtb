@@ -170,6 +170,7 @@
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">अपने आप भरने की सुविधा चालू करें</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> के रूप में जारी रखें</translation>
 <translation id="2232379019872353004">कुछ सिस्टम जानकारी और पेज सामग्री Google को भेजती है</translation>
 <translation id="2234876718134438132">सिंक और Google सेवाएं</translation>
@@ -240,6 +241,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंड शेष</translation>
 <translation id="2779651927720337254">डाउनलोड नहीं हो सका</translation>
 <translation id="2781151931089541271">1 सेकंड शेष</translation>
+<translation id="2783359740176230170">तेज़ चेकआउट</translation>
 <translation id="2803478378562657435">सेव किए हुए पासवर्ड और पासवर्ड के विकल्प दिखाए जा रहे हैं</translation>
 <translation id="2810645512293415242">डेटा बचाने और तेज़ी से लोड करने के लिए आसान बनाया गया पेज.</translation>
 <translation id="281504910091592009">अपने <ph name="BEGIN_LINK" />Google खाते<ph name="END_LINK" /> में सेव किए गए पासवर्ड देखें और उन्हें प्रबंधित करें</translation>
@@ -362,6 +364,7 @@
 <translation id="3868004864571585162">कुकी, मीडिया लाइसेंस और साइट डेटा</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
+<translation id="3918221729963301892">फिर से न दिखाएं</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">मेरा डेटा संयोजित करें</translation>
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
@@ -507,6 +510,7 @@
 <translation id="4915549754973153784">डिवाइस स्कैन करने में <ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" />...</translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> आपकी स्क्रीन शेयर कर रहा है</translation>
+<translation id="4961107849584082341">इस पेज का अनुवाद किसी भी भाषा में करें</translation>
 <translation id="4961334780091921942">सभी डिवाइस पर आपके पासवर्ड, इतिहास वगैरह</translation>
 <translation id="4961700429721424617">आप <ph name="MANAGED_DOMAIN" /> द्वारा प्रबंधित खाते से प्रस्थान कर रहे हैं. इससे आपका Chrome डेटा इस डिवाइस से हट जाएगा, लेकिन आपका डेटा आपके Google खाते में बना रहेगा.</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
@@ -544,6 +548,7 @@
 <translation id="5240817131241497236">Chrome में 'सिंक करें', 'मनमुताबिक बनाएं' और दूसरी 'Google सेवाओं' को नियंत्रित करने वाली सेटिंग बदल गई हैं. आपकी मौजूदा सेटिंग पर इसका असर पड़ सकता है.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> कभी भी अपनी पसंद के मुताबिक बनाई जा सकती हैं. Chrome और दूसरी Google सेवाओं, जैसे कि 'अनुवाद', 'खोज' और विज्ञापनों को आपकी पसंद के मुताबिक बनाने के लिए, Google उन साइटों की सामग्री का इस्तेमाल कर सकता है जिन पर आप गए हैं, साथ ही वह ब्राउज़र गतिविधि और इंटरैक्शन का इस्तेमाल भी कर सकता है.</translation>
 <translation id="5271967389191913893">डाउनलोड की जाने वाली सामग्री को डिवाइस नहीं खोल सकता.</translation>
+<translation id="5274381992091475657">Assistant के ज़रिए अपने आप भरें</translation>
 <translation id="528192093759286357">पूर्ण स्क्रीन से बाहर निकलने के लिए ऊपर से खींचें और वापस जाएं स्पर्श करें.</translation>
 <translation id="5284584623296338184">आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग में किए गए बदलाव अब आपके Google खाते में समन्वयित नहीं किए जाएंगे. हालांकि, आपका मौजूदा डेटा आपके Google खाते में संग्रहित रहेगा.</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
@@ -611,6 +616,7 @@
 <translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
 <translation id="5686790454216892815">फ़ाइल का नाम बहुत लंबा है</translation>
 <translation id="5689516760719285838">स्थान</translation>
+<translation id="569536719314091526">'ज़्यादा विकल्प' बटन से इस पेज का अनुवाद किसी भी भाषा में करें</translation>
 <translation id="5719837394786370183">आप जब अपने सभी गुप्त टैब बंद कर देते हैं, तो आपको गुप्त टैब में दिखाई देने वाले पेज, आपके ब्राउज़र के इतिहास, कुकी स्टोर, या खोज इतिहास में नहीं बने रहेंगे. आप जो भी फ़ाइल डाउनलोड करते हैं या जो भी बुकमार्क बनाते हैं उन्हें रखा जाएगा.
 
 हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकतीं हैं.</translation>
@@ -652,6 +658,7 @@
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
 <translation id="5990142338020175451">ज़्यादा निजी Google सेवाएं, जैसे कि बेहतर पेज सुझाव</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
+<translation id="6001839398155993679">आइए, शुरू करें</translation>
 <translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
@@ -826,6 +833,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चुने गए</translation>
 <translation id="7253272406652746122">अपने डिवाइस के सेटिंग ऐप्लिकेशन में खाते पेज से कोई Google खाता जोड़ें.</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
+<translation id="728491846437309531">Google Assistant की मदद से आप वेब पर ज़्यादा तेज़ी से और ज़्यादा आसानी से काम कर सकते हैं</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को संग्रहित करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="7333031090786104871">पिछली साइट अभी भी जोड़ी जा रही है</translation>

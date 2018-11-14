@@ -398,6 +398,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4058278702844053247">En sideinnlasting pågår</translation>
 <translation id="4065205963140826639">Bruk Søk+høyrepilen for å finne Neste-knappen, og trykk på Søk+mellomrom for å klikke på den.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tilder}}</translation>
+<translation id="4086311032171418648">Avslutter læremodus.</translation>
 <translation id="409334809956508737">Forrige objekt</translation>
 <translation id="4099274309791143834">med undermeny</translation>
 <translation id="4101527861445851766">En avmerkingsboks med hake</translation>
@@ -500,6 +501,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4877261390094455813">Angi et søkeord.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Intern link</translation>
+<translation id="4915087353619183190">Starter læremodus. Trykk på en qwerty-tast, en punktskrifttast som kan lastes inn på nytt, eller en berøringshandling for å finne ut den tilhørende funksjonen. Trykk på Ctrl og W eller Esc for å avslutte.</translation>
 <translation id="492295894462528572">Forord</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953585991029886728">Rediger teksten</translation>
