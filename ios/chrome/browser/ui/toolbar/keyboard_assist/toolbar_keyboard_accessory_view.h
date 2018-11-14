@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ASSIST_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ASSIST_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_H_
 
-#import <UIKit/UIKIt.h>
+#import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 
