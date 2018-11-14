@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -17,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -29,8 +31,17 @@ namespace {
 
 // Creates a global/default brightness curve.
 // TODO(crbug.com/881215): add actual default curve and then add unit test too.
-// TODO(crbug.com/881215): add param flag to allow for experiments.
 MonotoneCubicSpline CreateGlobalCurve() {
+  const std::string global_curve = GetFieldTrialParamValueByFeature(
+      features::kAutoScreenBrightness, "global_curve");
+  if (!global_curve.empty()) {
+    const base::Optional<MonotoneCubicSpline> global_curve_spline =
+        MonotoneCubicSpline::FromString(global_curve);
+    if (global_curve_spline)
+      return *global_curve_spline;
+    // TODO(jiameng): log error to UMA.
+  }
+
   const std::vector<double> default_log_lux = {0, 100};
   const std::vector<double> default_brightness = {50, 100};
   return MonotoneCubicSpline(default_log_lux, default_brightness);
