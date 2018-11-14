@@ -213,6 +213,9 @@
         "load:search:yandex": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:yandex:2018": {
+            "DEFAULT": "system_health_mobile_5d042249d1.wprgo"
+        },
         "load:social:facebook": {
             "DEFAULT": "system_health_mobile_028.wprgo"
         },

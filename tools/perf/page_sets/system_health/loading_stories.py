@@ -108,6 +108,12 @@ class LoadYandexStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
+class LoadYandexStory2018(_LoadingStory):
+  NAME = 'load:search:yandex:2018'
+  URL = 'https://yandex.ru/touchsearch?text=science'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadEbayStory(_LoadingStory):
   NAME = 'load:search:ebay'
   # Redirects to the "http://" version.
