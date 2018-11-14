@@ -123,6 +123,37 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   EXPECT_FALSE(app);
 }
 
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  {
+    GURL url(embedded_test_server()->GetURL(
+        "/banners/"
+        "manifest_test_page.html?manifest=manifest_short_name_only.json"));
+    web_app::PendingAppManager::AppInfo app_info = CreateAppInfo(url);
+    app_info.always_update = true;
+    InstallApp(std::move(app_info));
+
+    const extensions::Extension* app =
+        extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+    EXPECT_TRUE(app);
+    EXPECT_EQ("Manifest", app->name());
+  }
+  {
+    GURL url(
+        embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+    web_app::PendingAppManager::AppInfo app_info = CreateAppInfo(url);
+    app_info.always_update = true;
+    InstallApp(std::move(app_info));
+
+    const extensions::Extension* app =
+        extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+    EXPECT_TRUE(app);
+    EXPECT_EQ("Manifest test app", app->name());
+  }
+}
+
 // Test that adding a manifest that points to a chrome:// URL does not actually
 // install a bookmark app that points to a chrome:// URL.
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,

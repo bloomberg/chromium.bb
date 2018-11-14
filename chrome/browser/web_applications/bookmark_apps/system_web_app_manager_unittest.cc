@@ -42,6 +42,7 @@ PendingAppManager::AppInfo GetWindowedAppInfo() {
                                   InstallSource::kSystemInstalled);
   info.create_shortcuts = false;
   info.bypass_service_worker_check = true;
+  info.always_update = true;
   return info;
 }
 

@@ -65,6 +65,9 @@ class PendingAppManager {
     // This should be used for installing all default apps so that good metadata
     // is ensured.
     bool require_manifest = false;
+
+    // Whether the app should be reinstalled even if it is already installed.
+    bool always_update = false;
   };
 
   PendingAppManager();
