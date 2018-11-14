@@ -46,6 +46,10 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;
 
+bool LoginBaseBubbleView::IsPersistent() const {
+  return false;
+}
+
 void LoginBaseBubbleView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
