@@ -157,7 +157,7 @@ Chrome Security chat, or find an area owner to help.
 
 Tips for reproducing bugs:
 
-* [https://clusterfuzz.com/v2/upload-testcase](https://clusterfuzz.com/v2/upload-testcase)
+* [https://clusterfuzz.com/upload-testcase](https://clusterfuzz.com/upload-testcase)
 allows you to upload files to reproduce crashes on various platforms and will
 identify revision ranges when the regression was introduced. If a test case
 requires multiple files, they can be uploaded together in a zip or tar archive.

@@ -5,7 +5,7 @@
 *** aside
 [Getting Started](getting_started.md)
 | [Buildbot](https://build.chromium.org/p/chromium.fyi/buildslaves/slave43-c1)
-| [ClusterFuzz Status](https://clusterfuzz.com/v2/fuzzer-stats)
+| [ClusterFuzz Status](https://clusterfuzz.com/fuzzer-stats)
 | [Cover Bug]
 ***
 
