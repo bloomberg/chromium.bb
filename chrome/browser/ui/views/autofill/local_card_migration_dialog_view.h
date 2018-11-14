@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_VIEW_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
@@ -50,6 +53,8 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  friend class LocalCardMigrationBrowserTestBase;
+
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;
 
@@ -60,6 +65,8 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // Pointer points to the LocalCardMigrationOfferView. Can be null when the
   // dialog is not in the 'offer' state.
   LocalCardMigrationOfferView* offer_view_ = nullptr;
+
+  views::View* card_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogView);
 };
