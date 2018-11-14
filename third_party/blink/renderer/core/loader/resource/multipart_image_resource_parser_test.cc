@@ -4,12 +4,13 @@
 
 #include "third_party/blink/renderer/core/loader/resource/multipart_image_resource_parser.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 namespace multipart_image_resource_parser_test {
@@ -30,7 +31,7 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
     data_.push_back(Vector<char>());
   }
   void MultipartDataReceived(const char* bytes, size_t size) override {
-    data_.back().Append(bytes, size);
+    data_.back().Append(bytes, SafeCast<wtf_size_t>(size));
   }
 
   Vector<ResourceResponse> responses_;
@@ -40,8 +41,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
 TEST(MultipartResponseTest, SkippableLength) {
   struct {
     const char* input;
-    const size_t position;
-    const size_t expected;
+    const wtf_size_t position;
+    const wtf_size_t expected;
   } line_tests[] = {
       {"Line", 0, 0},         {"Line", 2, 0},         {"Line", 10, 0},
       {"\r\nLine", 0, 2},     {"\nLine", 0, 1},       {"\n\nLine", 0, 1},
@@ -50,7 +51,8 @@ TEST(MultipartResponseTest, SkippableLength) {
   };
   for (size_t i = 0; i < arraysize(line_tests); ++i) {
     Vector<char> input;
-    input.Append(line_tests[i].input, strlen(line_tests[i].input));
+    input.Append(line_tests[i].input,
+                 static_cast<wtf_size_t>(strlen(line_tests[i].input)));
     EXPECT_EQ(line_tests[i].expected,
               MultipartImageResourceParser::SkippableLengthForTest(
                   input, line_tests[i].position));
@@ -71,8 +73,9 @@ TEST(MultipartResponseTest, FindBoundary) {
   for (size_t i = 0; i < arraysize(boundary_tests); ++i) {
     Vector<char> boundary, data;
     boundary.Append(boundary_tests[i].boundary,
-                    strlen(boundary_tests[i].boundary));
-    data.Append(boundary_tests[i].data, strlen(boundary_tests[i].data));
+                    static_cast<uint32_t>(strlen(boundary_tests[i].boundary)));
+    data.Append(boundary_tests[i].data,
+                static_cast<uint32_t>(strlen(boundary_tests[i].data)));
     EXPECT_EQ(
         boundary_tests[i].position,
         MultipartImageResourceParser::FindBoundaryForTest(data, &boundary));

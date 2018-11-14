@@ -1769,7 +1769,7 @@ TEST(ImageResourceTest,
   const struct {
     int status_code;
     AtomicString content_range;
-    size_t data_size;
+    uint32_t data_size;
   } tests[] = {
       {200, g_null_atom, sizeof(kBadImageData)},
       {206, BuildContentRange(sizeof(kBadImageData), sizeof(kBadImageData)),
