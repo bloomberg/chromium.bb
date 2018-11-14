@@ -17,7 +17,12 @@ function filter_locale_data {
        /^    AuxExemplarCharacters\{$/, /^    \}$/d
        /^    ExemplarCharacters\{.*\}$/d
        /^    ExemplarCharacters\{$/, /^    \}$/d
-       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
+       /^    ExemplarCharactersNumbers\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{$/, /^    \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{.*\}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)-(short|narrow):alias\{.*\}$/d' ${langpath}
     # Delete empty blocks. Otherwise, locale fallback fails.
     # See crbug.com/v8/8414 .
     sed -r -i \
