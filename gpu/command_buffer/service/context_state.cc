@@ -550,7 +550,10 @@ void ContextState::RestoreGlobalState(const ContextState* prev_state) const {
 
 void ContextState::RestoreState(const ContextState* prev_state) {
   RestoreAllTextureUnitAndSamplerBindings(prev_state);
-  RestoreVertexAttribs(prev_state);
+  // For RasterDecoder, |vertex_attrib_manager| will be nullptr, and we don't
+  // need restore vertex attribs for them.
+  if (vertex_attrib_manager)
+    RestoreVertexAttribs(prev_state);
   // RestoreIndexedUniformBufferBindings must be called before
   // RestoreBufferBindings. This is because setting the indexed uniform buffer
   // bindings via glBindBuffer{Base,Range} also sets the general uniform buffer

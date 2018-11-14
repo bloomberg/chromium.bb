@@ -544,17 +544,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
 
-  gles2::VertexArrayManager* vertex_array_manager() {
-    return vertex_array_manager_.get();
-  }
-
-  // Gets the vertex attrib manager for the given vertex array.
-  gles2::VertexAttribManager* GetVertexAttribManager(GLuint client_id) {
-    gles2::VertexAttribManager* info =
-        vertex_array_manager()->GetVertexAttribManager(client_id);
-    return info;
-  }
-
   gles2::BufferManager* buffer_manager() { return group_->buffer_manager(); }
 
   const gles2::TextureManager* texture_manager() const {
@@ -584,16 +573,6 @@ class RasterDecoderImpl final : public RasterDecoder,
     DCHECK(texture_iter != texture_metadata_.end());
 
     texture_metadata_.erase(texture_iter);
-  }
-
-  // Creates a vertex attrib manager for the given vertex array.
-  scoped_refptr<gles2::VertexAttribManager> CreateVertexAttribManager(
-      GLuint client_id,
-      GLuint service_id,
-      bool client_visible) {
-    return vertex_array_manager()->CreateVertexAttribManager(
-        client_id, service_id, group_->max_vertex_attribs(), client_visible,
-        feature_info_->IsWebGL2OrES3Context());
   }
 
   // Set remaining commands to process to 0 to force DoCommands to return
@@ -704,8 +683,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                             GLsizei height) {
     NOTIMPLEMENTED();
   }
-  void DoBindVertexArrayOES(GLuint array);
-  void EmulateVertexArrayState();
   void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
   void DeletePaintCacheTextBlobsINTERNALHelper(
       GLsizei n,
@@ -803,8 +780,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
   std::unique_ptr<QueryManager> query_manager_;
-
-  std::unique_ptr<gles2::VertexArrayManager> vertex_array_manager_;
 
   // All the state for this context.
   gles2::ContextState state_;
@@ -1003,22 +978,12 @@ ContextResult RasterDecoderImpl::Initialize(
   state_.indexed_uniform_buffer_bindings->SetIsBound(true);
 
   state_.InitGenericAttribs(group_->max_vertex_attribs());
-  vertex_array_manager_.reset(new gles2::VertexArrayManager());
 
   GLuint default_vertex_attrib_service_id = 0;
   if (features().native_vertex_array_object) {
     api()->glGenVertexArraysOESFn(1, &default_vertex_attrib_service_id);
     api()->glBindVertexArrayOESFn(default_vertex_attrib_service_id);
   }
-
-  state_.default_vertex_attrib_manager =
-      CreateVertexAttribManager(0, default_vertex_attrib_service_id, false);
-
-  state_.default_vertex_attrib_manager->Initialize(
-      group_->max_vertex_attribs(), workarounds().init_vertex_attributes);
-
-  // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
-  DoBindVertexArrayOES(0);
 
   query_manager_.reset(new QueryManager());
 
@@ -1106,8 +1071,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   }
 
   // Unbind everything.
-  state_.vertex_attrib_manager = nullptr;
-  state_.default_vertex_attrib_manager = nullptr;
   state_.texture_units.clear();
   state_.sampler_units.clear();
   state_.bound_pixel_pack_buffer = nullptr;
@@ -1120,11 +1083,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);
     query_manager_.reset();
-  }
-
-  if (vertex_array_manager_.get()) {
-    vertex_array_manager_->Destroy(have_context);
-    vertex_array_manager_.reset();
   }
 
   if (group_.get()) {
@@ -1222,22 +1180,10 @@ void RasterDecoderImpl::RestoreGlobalState() const {
 }
 
 void RasterDecoderImpl::ClearAllAttributes() const {
-  // Must use native VAO 0, as RestoreAllAttributes can't fully restore
-  // other VAOs.
-  if (feature_info_->feature_flags().native_vertex_array_object)
-    api()->glBindVertexArrayOESFn(0);
-
-  for (uint32_t i = 0; i < group_->max_vertex_attribs(); ++i) {
-    if (i != 0)  // Never disable attribute 0
-      state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(i, false);
-    if (features().angle_instanced_arrays)
-      api()->glVertexAttribDivisorANGLEFn(i, 0);
-  }
 }
 
 void RasterDecoderImpl::RestoreAllAttributes() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.RestoreVertexAttribs(nullptr);
 }
 
 void RasterDecoderImpl::RestoreState(const gles2::ContextState* prev_state) {
@@ -1439,9 +1385,6 @@ void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
   current_decoder_error_ = error::kLostContext;
   context_was_lost_ = true;
 
-  if (vertex_array_manager_.get()) {
-    vertex_array_manager_->MarkContextLost();
-  }
   state_.MarkContextLost();
   raster_decoder_context_state_->context_lost = true;
 
@@ -3383,95 +3326,9 @@ void RasterDecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
   }
 }
 
-void RasterDecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
-  raster_decoder_context_state_->PessimisticallyResetGrContext();
-  gles2::VertexAttribManager* vao = nullptr;
-  if (client_id != 0) {
-    vao = GetVertexAttribManager(client_id);
-    if (!vao) {
-      // Unlike most Bind* methods, the spec explicitly states that VertexArray
-      // only allows names that have been previously generated. As such, we do
-      // not generate new names here.
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindVertexArrayOES",
-                         "bad vertex array id.");
-      current_decoder_error_ = error::kNoError;
-      return;
-    }
-  } else {
-    vao = state_.default_vertex_attrib_manager.get();
-  }
-
-  // Only set the VAO state if it's changed
-  if (state_.vertex_attrib_manager.get() != vao) {
-    if (state_.vertex_attrib_manager)
-      state_.vertex_attrib_manager->SetIsBound(false);
-    state_.vertex_attrib_manager = vao;
-    if (vao)
-      vao->SetIsBound(true);
-    if (!features().native_vertex_array_object) {
-      EmulateVertexArrayState();
-    } else {
-      GLuint service_id = vao->service_id();
-      api()->glBindVertexArrayOESFn(service_id);
-    }
-  }
-}
-
-// Used when OES_vertex_array_object isn't natively supported
-void RasterDecoderImpl::EmulateVertexArrayState() {
-  // Setup the Vertex attribute state
-  for (uint32_t vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
-    RestoreStateForAttrib(vv, true);
-  }
-
-  // Setup the element buffer
-  gles2::Buffer* element_array_buffer =
-      state_.vertex_attrib_manager->element_array_buffer();
-  api()->glBindBufferFn(
-      GL_ELEMENT_ARRAY_BUFFER,
-      element_array_buffer ? element_array_buffer->service_id() : 0);
-}
-
 void RasterDecoderImpl::RestoreStateForAttrib(GLuint attrib_index,
                                               bool restore_array_binding) {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  const gles2::VertexAttrib* attrib =
-      state_.vertex_attrib_manager->GetVertexAttrib(attrib_index);
-  if (restore_array_binding) {
-    const void* ptr = reinterpret_cast<const void*>(attrib->offset());
-    gles2::Buffer* buffer = attrib->buffer();
-    api()->glBindBufferFn(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
-    api()->glVertexAttribPointerFn(attrib_index, attrib->size(), attrib->type(),
-                                   attrib->normalized(), attrib->gl_stride(),
-                                   ptr);
-  }
-
-  // Attrib divisors should only be non-zero when the ANGLE_instanced_arrays
-  // extension is available
-  DCHECK(attrib->divisor() == 0 ||
-         feature_info_->feature_flags().angle_instanced_arrays);
-
-  if (feature_info_->feature_flags().angle_instanced_arrays)
-    api()->glVertexAttribDivisorANGLEFn(attrib_index, attrib->divisor());
-  api()->glBindBufferFn(GL_ARRAY_BUFFER,
-                        state_.bound_array_buffer.get()
-                            ? state_.bound_array_buffer->service_id()
-                            : 0);
-
-  // Never touch vertex attribute 0's state (in particular, never disable it)
-  // when running on desktop GL with compatibility profile because it will
-  // never be re-enabled.
-  if (attrib_index != 0 || gl_version_info().BehavesLikeGLES()) {
-    // Restore the vertex attrib array enable-state according to
-    // the VertexAttrib enabled_in_driver value (which really represents the
-    // state of the virtual context - not the driver - notably, above the
-    // vertex array object emulation layer).
-    if (attrib->enabled_in_driver()) {
-      api()->glEnableVertexAttribArrayFn(attrib_index);
-    } else {
-      api()->glDisableVertexAttribArrayFn(attrib_index);
-    }
-  }
 }
 
 // Include the auto-generated part of this file. We split this because it means
