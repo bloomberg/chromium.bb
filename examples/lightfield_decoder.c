@@ -89,7 +89,7 @@ static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
 void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
                  size_t frame_size, int tr, int tc, int ref_idx,
                  aom_image_t *reference_images, aom_image_t *output,
-                 int *tile_idx) {
+                 int *tile_idx, unsigned int *output_bit_depth) {
   aom_codec_control_(codec, AV1_SET_TILE_MODE, 1);
   aom_codec_control_(codec, AV1D_EXT_TILE_DEBUG, 1);
   aom_codec_control_(codec, AV1_SET_DECODE_TILE_ROW, tr);
@@ -109,6 +109,13 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
   aom_codec_iter_t iter = NULL;
   aom_image_t *img = aom_codec_get_frame(codec, &iter);
   if (!img) die_codec(codec, "Failed to get frame.");
+
+  // aom_img_alloc() sets bit_depth as follows:
+  // output->bit_depth = (fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 16 : 8;
+  // Use img->bit_depth(read from bitstream), so that aom_shift_img()
+  // works as expected.
+  output->bit_depth = img->bit_depth;
+  *output_bit_depth = img->bit_depth;
 
   // read out the tile size.
   unsigned int tile_size = 0;
@@ -137,6 +144,7 @@ int main(int argc, char **argv) {
   aom_img_fmt_t ref_fmt = 0;
   aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
   aom_image_t output;
+  aom_image_t *output_shifted = NULL;
   size_t frame_size = 0;
   const unsigned char *frame = NULL;
   int i, j;
@@ -252,11 +260,18 @@ int main(int argc, char **argv) {
   int tile_list_cnt = 0;
   int tile_list_writes = 0;
   int tile_idx = 0;
+  aom_image_t *out = NULL;
+  unsigned int output_bit_depth = 0;
+
   while ((fgets(line, 1024, tile_list_fptr)) != NULL) {
     if (line[0] == 'F') {
       // Write out the tile list.
       if (tile_list_cnt) {
-        aom_img_write(&output, outfile);
+        out = &output;
+        // Shift up or down if necessary
+        if (output_bit_depth != 0)
+          aom_shift_img(output_bit_depth, &out, &output_shifted);
+        aom_img_write(out, outfile);
         tile_list_writes++;
       }
 
@@ -267,11 +282,7 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    int image_idx;
-    int ref_idx;
-    int tc;
-    int tr;
-
+    int image_idx, ref_idx, tc, tr;
     sscanf(line, "%d %d %d %d", &image_idx, &ref_idx, &tc, &tr);
     if (image_idx >= num_frames) {
       die("Tile list image_idx out of bounds: %d >= %d.", image_idx,
@@ -284,12 +295,19 @@ int main(int argc, char **argv) {
     frame = frames[image_idx];
     frame_size = frame_sizes[image_idx];
     decode_tile(&codec, frame, frame_size, tr, tc, ref_idx, reference_images,
-                &output, &tile_idx);
+                &output, &tile_idx, &output_bit_depth);
   }
 
   // Write out the last tile list.
-  if (tile_list_writes < tile_list_cnt) aom_img_write(&output, outfile);
+  if (tile_list_writes < tile_list_cnt) {
+    out = &output;
+    // Shift up or down if necessary
+    if (output_bit_depth != 0)
+      aom_shift_img(output_bit_depth, &out, &output_shifted);
+    aom_img_write(out, outfile);
+  }
 
+  if (output_shifted) aom_img_free(output_shifted);
   aom_img_free(&output);
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);
   for (int f = 0; f < num_frames; ++f) {
