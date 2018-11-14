@@ -99,16 +99,13 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
  private:
-  const static base::TimeDelta kNotificationCountUpdateDelay;
+  static const base::TimeDelta kNotificationCountUpdateDelay;
 
   friend class UnifiedSystemTrayTest;
   friend class UnifiedSystemTrayTestApi;
 
   // Private class implements MessageCenterUiDelegate.
   class UiDelegate;
-
-  // Private class implements TrayNetworkStateObserver::Delegate.
-  class NetworkStateDelegate;
 
   // Forwarded from UiDelegate.
   void ShowBubbleInternal(bool show_by_click);
@@ -117,8 +114,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void UpdateNotificationAfterDelay();
 
   const std::unique_ptr<UiDelegate> ui_delegate_;
-
-  std::unique_ptr<NetworkStateDelegate> network_state_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
 

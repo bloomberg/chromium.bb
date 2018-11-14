@@ -5,8 +5,11 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_TRAY_VIEW_H_
 #define ASH_SYSTEM_NETWORK_NETWORK_TRAY_VIEW_H_
 
+#include <memory>
+
 #include "ash/session/session_observer.h"
 #include "ash/system/network/network_icon_animation_observer.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 
@@ -22,15 +25,14 @@ const chromeos::NetworkState* GetConnectedNetwork();
 
 class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver,
-                        public SessionObserver {
+                        public SessionObserver,
+                        public TrayNetworkStateObserver::Delegate {
  public:
   explicit NetworkTrayView(Shelf* shelf);
 
   ~NetworkTrayView() override;
 
   const char* GetClassName() const override;
-
-  void UpdateNetworkStateHandlerIcon();
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -44,15 +46,22 @@ class NetworkTrayView : public TrayItemView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // Updates connection status and notifies accessibility event when necessary.
-  void UpdateConnectionStatus(const chromeos::NetworkState* connected_network,
-                              bool notify_a11y);
+  // TrayNetworkStateObserver::Delegate:
+  void NetworkStateChanged(bool notify_a11y) override;
 
  private:
   void UpdateIcon(bool tray_icon_visible, const gfx::ImageSkia& image);
 
+  void UpdateNetworkStateHandlerIcon();
+
+  // Updates connection status and notifies accessibility event when necessary.
+  void UpdateConnectionStatus(const chromeos::NetworkState* connected_network,
+                              bool notify_a11y);
+
   base::string16 connection_status_string_;
   base::string16 connection_status_tooltip_;
+
+  std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };

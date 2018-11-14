@@ -29,7 +29,10 @@ const NetworkState* GetConnectedNetwork() {
   return handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
 }
 
-NetworkTrayView::NetworkTrayView(Shelf* shelf) : TrayItemView(shelf) {
+NetworkTrayView::NetworkTrayView(Shelf* shelf)
+    : TrayItemView(shelf),
+      network_state_observer_(
+          std::make_unique<TrayNetworkStateObserver>(this)) {
   CreateImageView();
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(GetConnectedNetwork(), true /* notify_a11y */);
@@ -43,6 +46,11 @@ const char* NetworkTrayView::GetClassName() const {
   return "NetworkTrayView";
 }
 
+void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(connection_status_string_);
+  node_data->role = ax::mojom::Role::kButton;
+}
+
 views::View* NetworkTrayView::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
   return GetLocalBounds().Contains(point) ? this : nullptr;
@@ -54,6 +62,28 @@ bool NetworkTrayView::GetTooltipText(const gfx::Point& p,
     return false;
   *tooltip = connection_status_tooltip_;
   return true;
+}
+
+void NetworkTrayView::NetworkIconChanged() {
+  UpdateNetworkStateHandlerIcon();
+  UpdateConnectionStatus(GetConnectedNetwork(), false /* notify_a11y */);
+}
+
+void NetworkTrayView::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  UpdateNetworkStateHandlerIcon();
+}
+
+void NetworkTrayView::NetworkStateChanged(bool notify_a11y) {
+  UpdateNetworkStateHandlerIcon();
+  UpdateConnectionStatus(GetConnectedNetwork(), notify_a11y);
+}
+
+void NetworkTrayView::UpdateIcon(bool tray_icon_visible,
+                                 const gfx::ImageSkia& image) {
+  image_view()->SetImage(image);
+  SetVisible(tray_icon_visible);
+  SchedulePaint();
 }
 
 void NetworkTrayView::UpdateNetworkStateHandlerIcon() {
@@ -74,21 +104,6 @@ void NetworkTrayView::UpdateNetworkStateHandlerIcon() {
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-}
-
-void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(connection_status_string_);
-  node_data->role = ax::mojom::Role::kButton;
-}
-
-void NetworkTrayView::NetworkIconChanged() {
-  UpdateNetworkStateHandlerIcon();
-  UpdateConnectionStatus(GetConnectedNetwork(), false /* notify_a11y */);
-}
-
-void NetworkTrayView::OnSessionStateChanged(
-    session_manager::SessionState state) {
-  UpdateNetworkStateHandlerIcon();
 }
 
 void NetworkTrayView::UpdateConnectionStatus(
@@ -144,13 +159,6 @@ void NetworkTrayView::UpdateConnectionStatus(
       NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
     image_view()->SetAccessibleName(connection_status_string_);
   }
-}
-
-void NetworkTrayView::UpdateIcon(bool tray_icon_visible,
-                                 const gfx::ImageSkia& image) {
-  image_view()->SetImage(image);
-  SetVisible(tray_icon_visible);
-  SchedulePaint();
 }
 
 }  // namespace tray
