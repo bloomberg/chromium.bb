@@ -84,13 +84,9 @@ interface CompositorFrameSinkClient {
   // rid of it.
   DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
 
-  // Notification that a CompositorFrame with given |presentation_token| has
-  // been turned into light the first time on display (or that it failed).
-  DidPresentCompositorFrame(uint32 presentation_token,
-                            gfx.mojom.PresentationFeedback feedback);
-
   // Notification for the client to generate a CompositorFrame.
-  OnBeginFrame(BeginFrameArgs args);
+  OnBeginFrame(BeginFrameArgs args,
+               map<uint32, gfx.mojom.PresentationFeedback> presentations);
 
   // Inform the client that OnBeginFrame may not be called for some time.
   OnBeginFramePausedChanged(bool paused);

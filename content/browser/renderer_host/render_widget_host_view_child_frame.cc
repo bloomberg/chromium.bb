@@ -575,13 +575,6 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
     renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
-void RenderWidgetHostViewChildFrame::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  renderer_compositor_frame_sink_->DidPresentCompositorFrame(presentation_token,
-                                                             feedback);
-}
-
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();
@@ -900,10 +893,11 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
-    const viz::BeginFrameArgs& args) {
+    const viz::BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   host_->ProgressFlingIfNeeded(args.frame_time);
   if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {

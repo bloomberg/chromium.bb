@@ -312,7 +312,9 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   waiting_for_compositor_ack_ = true;
 }
 
-void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
+void VideoFrameSubmitter::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   viz::BeginFrameAck current_begin_frame_ack(args, false);
@@ -398,10 +400,6 @@ void VideoFrameSubmitter::ReclaimResources(
       temp_resources.ReleaseVector();
   resource_provider_->ReceiveReturnsFromParent(std_resources);
 }
-
-void VideoFrameSubmitter::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    ::gfx::mojom::blink::PresentationFeedbackPtr feedback) {}
 
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
