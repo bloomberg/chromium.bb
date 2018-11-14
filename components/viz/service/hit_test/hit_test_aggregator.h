@@ -57,6 +57,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   void SetRegionAt(size_t index,
                    const FrameSinkId& frame_sink_id,
                    uint32_t flags,
+                   uint32_t reasons,
                    const gfx::Rect& rect,
                    const gfx::Transform& transform,
                    int32_t child_count);

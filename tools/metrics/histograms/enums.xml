@@ -2061,6 +2061,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="FAILED_HOSTS">Failed during watching HOSTS.</int>
 </enum>
 
+<enum name="AsyncHitTestReasons">
+  <int value="0" label="Not async hit test"/>
+  <int value="1" label="Iframe has overlapped region"/>
+  <int value="2" label="Iframe is irregularly clipped"/>
+  <int value="3" label="Iframe is not active"/>
+  <int value="4" label="Iframe has perspective transform"/>
+  <int value="5" label="Hit test data submitted by viz hit test draw quad"/>
+</enum>
+
 <enum name="AsyncRevalidationResult">
   <int value="0" label="LOADED">A new entry was stored in the cache.</int>
   <int value="1" label="REVALIDATED">

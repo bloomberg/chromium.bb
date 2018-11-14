@@ -2611,11 +2611,15 @@ static uint32_t GetFlagsForSurfaceLayer(const SurfaceLayerImpl* layer) {
 static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
                                   const LayerImpl* layer,
                                   uint32_t flags,
+                                  uint32_t async_hit_test_reasons,
                                   const gfx::Rect& rect,
                                   const viz::SurfaceId& surface_id,
                                   float device_scale_factor) {
   hit_test_region->frame_sink_id = surface_id.frame_sink_id();
   hit_test_region->flags = flags;
+  hit_test_region->async_hit_test_reasons = async_hit_test_reasons;
+  DCHECK_EQ(!!async_hit_test_reasons,
+            !!(flags & viz::HitTestRegionFlags::kHitTestAsk));
 
   hit_test_region->rect = rect;
   // The transform of hit test region maps a point from parent hit test region
@@ -2677,8 +2681,12 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
           surface_layer->ScreenSpaceTransform(),
           gfx::Rect(surface_layer->bounds()));
       auto flag = GetFlagsForSurfaceLayer(surface_layer);
-      if (overlapping_region.Intersects(layer_screen_space_rect))
+      uint32_t async_hit_test_reasons =
+          viz::AsyncHitTestReasons::kNotAsyncHitTest;
+      if (overlapping_region.Intersects(layer_screen_space_rect)) {
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
+        async_hit_test_reasons |= viz::AsyncHitTestReasons::kOverlappedRegion;
+      }
       if (surface_layer->is_clipped()) {
         bool layer_hit_test_region_is_rectangle =
             active_tree()
@@ -2689,13 +2697,16 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
         content_rect =
             gfx::ScaleToEnclosingRect(surface_layer->visible_layer_rect(),
                                       device_scale_factor, device_scale_factor);
-        if (!layer_hit_test_region_is_rectangle)
+        if (!layer_hit_test_region_is_rectangle) {
           flag |= viz::HitTestRegionFlags::kHitTestAsk;
+          async_hit_test_reasons |= viz::AsyncHitTestReasons::kIrregularClip;
+        }
       }
       const auto& surface_id = surface_layer->range().end();
       hit_test_region_list->regions.emplace_back();
       PopulateHitTestRegion(&hit_test_region_list->regions.back(), layer, flag,
-                            content_rect, surface_id, device_scale_factor);
+                            async_hit_test_reasons, content_rect, surface_id,
+                            device_scale_factor);
       continue;
     }
     // TODO(sunxd): Submit all overlapping layer bounds as hit test regions.

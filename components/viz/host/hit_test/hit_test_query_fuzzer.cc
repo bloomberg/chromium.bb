@@ -26,6 +26,7 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     return;
   viz::FrameSinkId frame_sink_id(GetNextUInt32(fuzz), GetNextUInt32(fuzz));
   uint32_t flags = GetNextUInt32(fuzz);
+  uint32_t reasons = GetNextUInt32(fuzz);
   gfx::Rect rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
                  fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
   int32_t child_count =
@@ -35,7 +36,8 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     std::string matrix_bytes = fuzz->ConsumeBytes(sizeof(gfx::Transform));
     memcpy(&transform, matrix_bytes.data(), sizeof(gfx::Transform));
   }
-  regions->emplace_back(frame_sink_id, flags, rect, transform, child_count);
+  regions->emplace_back(frame_sink_id, flags, rect, transform, child_count,
+                        reasons);
   // Always add the first frame sink id, because the root needs to be in the
   // list of FrameSinkId.
   if (regions->size() == 1 || fuzz->ConsumeBool())

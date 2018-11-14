@@ -25,6 +25,11 @@ struct StructTraits<viz::mojom::AggregatedHitTestRegionDataView,
     return region.flags;
   }
 
+  static uint32_t async_hit_test_reasons(
+      const viz::AggregatedHitTestRegion& region) {
+    return region.async_hit_test_reasons;
+  }
+
   static const gfx::Rect& rect(const viz::AggregatedHitTestRegion& region) {
     return region.rect;
   }
